@@ -18,31 +18,19 @@ pub const NAMEDATALEN: usize = 64;
 
 type LexResult = Result<TokenKind, LexerErrorCode>;
 
-/// Don't derive Default: might become different from GUC flags
-#[derive(Debug, Copy, Clone)]
-pub struct LexerConfig {
-    standard_conforming_strings: bool
-}
-
-impl LexerConfig {
-    pub fn new(standard_conforming_strings: bool) -> Self {
-        Self { standard_conforming_strings }
-    }
-}
-
 #[derive(Debug)]
 pub struct Lexer<'source> {
     buffer: LexerBuffer<'source>,
-    config: LexerConfig
+    standard_conforming_strings: bool
 }
 
 impl<'source> Lexer<'source> {
 
     #[inline]
-    pub fn new(source: &'source [u8], config: LexerConfig) -> Self {
+    pub fn new(source: &'source [u8], standard_conforming_strings: bool) -> Self {
         Self {
             buffer: LexerBuffer::new(source),
-            config
+            standard_conforming_strings
         }
     }
 
@@ -107,7 +95,7 @@ impl<'source> Lexer<'source> {
                 _ => Err(UnknownChar { unknown: b'$' }),
             }
             b'\'' => {
-                if self.config.standard_conforming_strings {
+                if self.standard_conforming_strings {
                     self.lex_quote_string(concatenable_string)
                 }
                 else {
@@ -133,7 +121,7 @@ impl<'source> Lexer<'source> {
                 // TODO: is there a need to check for nchar availability?
                 // https://github.com/postgres/postgres/blob/1d80d6b50e6401828fc445151375f9bde3f99ac6/src/backend/parser/scan.l#L539
                 if self.buffer.consume(b'\'') {
-                    return if self.config.standard_conforming_strings {
+                    return if self.standard_conforming_strings {
                         self.lex_quote_string(false)
                     }
                     else {
@@ -147,7 +135,7 @@ impl<'source> Lexer<'source> {
                 if self.buffer.consume(b'&') {
                     match self.buffer.peek() {
                         Some(b'\'') => { // u&'...'
-                            if !self.config.standard_conforming_strings {
+                            if !self.standard_conforming_strings {
                                 return Err(UnsafeUnicodeString)
                             }
                             self.buffer.advance_char();
@@ -699,7 +687,7 @@ mod tests {
     #[test]
     fn test_empty_string() {
         let source = b"";
-        let mut lex = Lexer::new(source, conf());
+        let mut lex = Lexer::new(source, true);
 
         assert_eq!(Err(LexerError::new(Eof, (0..0, (1, 1)))), lex.next_token());
     }
@@ -707,7 +695,7 @@ mod tests {
     #[test]
     fn test_whitespace() {
         let source = b"\t\r\x0b\x0c\n \x0b\t\r\n \x0c\r\x0b\x0c \n\t";
-        let mut lex = Lexer::new(source, conf());
+        let mut lex = Lexer::new(source, true);
 
         assert_eq!(Err(LexerError::new(Eof, (18..18, (6, 2)))), lex.next_token());
     }
@@ -715,7 +703,7 @@ mod tests {
     #[test]
     fn test_unknown_char() {
         let source = b"\x00";
-        let mut lex = Lexer::new(source, conf());
+        let mut lex = Lexer::new(source, true);
 
         assert_eq!(Err(LexerError::new(UnknownChar { unknown: b'\x00' }, (0..1, (1, 1)))), lex.next_token());
         assert_eq!(Err(LexerError::new(Eof, (1..1, (1, 2)))), lex.next_token());
@@ -724,7 +712,7 @@ mod tests {
     #[test]
     fn test_operators() {
         let source = b". .. ( ) , ; [ ] : :: := % * + - / < = > ^ => <= >= != <>";
-        let mut lex = Lexer::new(source, conf());
+        let mut lex = Lexer::new(source, true);
 
         assert_eq!(Ok(Token::new(Dot, (0..1, (1, 1)))), lex.next_token());
         assert_eq!(Ok(Token::new(DotDot, (2..4, (1, 3)))), lex.next_token());
@@ -760,7 +748,7 @@ mod tests {
         //=-\n\
         -@-\n\
         ";
-        let mut lex = Lexer::new(source, conf());
+        let mut lex = Lexer::new(source, true);
 
         assert_eq!(Ok(Token::new(UserDefinedOperator, (0..3, (1, 1)))), lex.next_token());
         assert_eq!(Ok(Token::new(Minus, (3..4, (1, 4)))), lex.next_token());
@@ -771,7 +759,7 @@ mod tests {
     #[test]
     fn test_param() {
         let source = b"$0123";
-        let mut lex = Lexer::new(source, conf());
+        let mut lex = Lexer::new(source, true);
 
         assert_eq!(Ok(Token::new(Param { index: 123 }, (0..5, (1, 1)))), lex.next_token());
         assert_eof(&mut lex);
@@ -780,7 +768,7 @@ mod tests {
     #[test]
     fn test_hex_number() {
         let source = b"0x_1_C0e_E_a92";
-        let mut lex = Lexer::new(source, conf());
+        let mut lex = Lexer::new(source, true);
 
         assert_eq!(Ok(Token::new(NumberLiteral { radix: 16 }, (0..14, (1, 1)))), lex.next_token());
         assert_eof(&mut lex);
@@ -789,7 +777,7 @@ mod tests {
     #[test]
     fn test_oct_number() {
         let source = b"0o20155_53_7";
-        let mut lex = Lexer::new(source, conf());
+        let mut lex = Lexer::new(source, true);
 
         assert_eq!(Ok(Token::new(NumberLiteral { radix: 8 }, (0..12, (1, 1)))), lex.next_token());
         assert_eof(&mut lex);
@@ -798,7 +786,7 @@ mod tests {
     #[test]
     fn test_bin_number() {
         let source = b"0b1_001000_01001_01101";
-        let mut lex = Lexer::new(source, conf());
+        let mut lex = Lexer::new(source, true);
 
         assert_eq!(Ok(Token::new(NumberLiteral { radix: 2 }, (0..22, (1, 1)))), lex.next_token());
         assert_eof(&mut lex);
@@ -806,17 +794,17 @@ mod tests {
 
     #[test]
     fn test_float() {
-        let source = b".0123";
-        let mut lex = Lexer::new(source, conf());
+        let source = b".01_23e-043_5_00";
+        let mut lex = Lexer::new(source, true);
 
-        assert_eq!(Ok(Token::new(NumberLiteral { radix: 10 }, (0..5, (1, 1)))), lex.next_token());
+        assert_eq!(Ok(Token::new(NumberLiteral { radix: 10 }, (0..16, (1, 1)))), lex.next_token());
         assert_eof(&mut lex);
     }
 
     #[test]
     fn test_dollar_string_with_empty_delim() {
         let source = b"$$some string$$";
-        let mut lex = Lexer::new(source, conf());
+        let mut lex = Lexer::new(source, true);
 
         assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (0..15, (1, 1)))), lex.next_token());
         assert_eof(&mut lex);
@@ -825,7 +813,7 @@ mod tests {
     #[test]
     fn test_dollar_string() {
         let source = b"$foo$bar baz$foo$";
-        let mut lex = Lexer::new(source, conf());
+        let mut lex = Lexer::new(source, true);
 
         assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (0..17, (1, 1)))), lex.next_token());
         assert_eof(&mut lex);
@@ -834,12 +822,98 @@ mod tests {
     #[test]
     fn test_dollar_string_with_dollars() {
         let source = b"$foo$dolla $ dolla $$ bill$$foo$";
-        let mut lex = Lexer::new(source, conf());
+        let mut lex = Lexer::new(source, true);
 
         assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (0..32, (1, 1)))), lex.next_token());
         assert_eof(&mut lex);
     }
 
+    #[test]
+    fn test_quote_string() {
+        let source = b"\
+        ''\n\
+        'concatenable' '\\'''\n\
+        N'national'\
+        ";
+        let mut lex = Lexer::new(source, true);
+
+        assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (0..2, (1, 1)))), lex.next_token());
+        assert_eq!(Ok(Token::new(StringLiteral { concatenable: true }, (3..17, (2, 1)))), lex.next_token());
+        assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (18..23, (2, 16)))), lex.next_token());
+        assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (24..35, (3, 1)))), lex.next_token());
+        assert_eof(&mut lex);
+    }
+
+    #[test]
+    fn test_escape_strings() {
+        let source = b"\
+        '''quotes\\''\n\
+        e'''quotes\\''\n\
+        n'national'\
+        ";
+        let mut lex = Lexer::new(source, false);
+
+        assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (0..12, (1, 1)))), lex.next_token());
+        assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (13..26, (2, 1)))), lex.next_token());
+        assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (27..38, (3, 1)))), lex.next_token());
+        assert_eof(&mut lex);
+    }
+
+    #[test]
+    fn test_bin_string() {
+        let source = b"b'0_156e_wf' x'048_96a_f_d'"; // lexer doesn't validate chars
+        let mut lex = Lexer::new(source, true);
+
+        assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (0..12, (1, 1)))), lex.next_token());
+        assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (13..27, (1, 14)))), lex.next_token());
+        assert_eof(&mut lex);
+    }
+
+    #[test]
+    fn test_unicode_string() {
+        let source = b"\
+        u&''\n\
+        u&'unicode\\'\
+        ";
+        let mut lex = Lexer::new(source, true);
+
+        assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (0..4, (1, 1)))), lex.next_token());
+        assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (5..17, (2, 1)))), lex.next_token());
+        assert_eof(&mut lex);
+    }
+
+    #[test]
+    fn test_identifier() {
+        let source = b"bar xyz efg nun ube foo u&x";
+        let mut lex = Lexer::new(source, true);
+
+        assert_eq!(Ok(Token::new(Identifier, (0..3, (1, 1)))), lex.next_token());
+        assert_eq!(Ok(Token::new(Identifier, (4..7, (1, 5)))), lex.next_token());
+        assert_eq!(Ok(Token::new(Identifier, (8..11, (1, 9)))), lex.next_token());
+        assert_eq!(Ok(Token::new(Identifier, (12..15, (1, 13)))), lex.next_token());
+        assert_eq!(Ok(Token::new(Identifier, (16..19, (1, 17)))), lex.next_token());
+        assert_eq!(Ok(Token::new(Identifier, (20..23, (1, 21)))), lex.next_token());
+        assert_eq!(Ok(Token::new(Identifier, (24..25, (1, 25)))), lex.next_token());
+        assert_eq!(Ok(Token::new(UserDefinedOperator, (25..26, (1, 26)))), lex.next_token());
+        assert_eq!(Ok(Token::new(Identifier, (26..27, (1, 27)))), lex.next_token());
+        assert_eof(&mut lex);
+    }
+
+    #[test]
+    fn test_quote_ident() {
+        let source = b"\
+        \"\"\n\
+        \"\"\"escaped\"\n\
+        u&\"uni\"\"code\"\
+        ";
+        let mut lex = Lexer::new(source, true);
+
+        assert_eq!(Err(LexerError::new(EmptyDelimitedIdentifier, (0..2, (1, 1)))), lex.next_token());
+        assert_eq!(Ok(Token::new(Identifier, (3..14, (2, 1)))), lex.next_token());
+        assert_eq!(Ok(Token::new(Identifier, (15..28, (3, 1)))), lex.next_token());
+        assert_eof(&mut lex);
+    }
+    
     fn assert_eof(lex: &mut Lexer) {
 
         let tok = &lex.next_token();
@@ -851,8 +925,5 @@ mod tests {
 
         panic!("Expected Eof but got: {:?}", tok);
     }
-
-    fn conf() -> LexerConfig {
-        LexerConfig::new(true)
-    }
 }
+
