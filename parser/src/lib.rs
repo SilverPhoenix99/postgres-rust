@@ -70,131 +70,116 @@ impl<'source> Lexer<'source> {
 
     fn lex_token(&mut self, concatenable_string: bool) -> LexResult {
 
-        match self.buffer.advance_char() {
-            None => Err(Eof),
-            Some(c) => {
-                match c {
-                    b'(' => Ok(OpenParenthesis),
-                    b')' => Ok(CloseParenthesis),
-                    b',' => Ok(Comma),
-                    b';' => Ok(Semicolon),
-                    b'[' => Ok(OpenBracket),
-                    b']' => Ok(CloseBracket),
-                    b'.' => {
-                        if self.buffer.consume(b'.') {
-                            Ok(DotDot)
-                        }
-                        else if self.buffer.peek().is_some_and(is_decimal_digit) {
-                            self.lex_dec_float()
-                        }
-                        else {
-                            Ok(Dot)
-                        }
-                    }
-                    b':' => {
-                        if self.buffer.consume(b':') {
-                            Ok(Typecast)
-                        }
-                        else if self.buffer.consume(b'=') {
-                            Ok(ColonEquals)
-                        }
-                        else {
-                            Ok(Colon)
-                        }
-                    }
-                    b'$' => {
-                        match self.buffer.peek() {
-                            Some(c) if is_decimal_digit(c) => self.lex_param(),
-                            Some(b'$') => self.lex_dollar_string(), // empty delimiter
-                            Some(c) if is_ident_start(c) => self.lex_dollar_string(),
-                            Some(_) => Err(UnknownChar { unknown: b'$' }),
-                            None => Err(UnknownChar { unknown: b'$' }),
-                        }
-                    }
-                    b'\'' => {
-                        if self.config.standard_conforming_strings {
-                            self.lex_quote_string(concatenable_string)
-                        }
-                        else {
-                            self.lex_escape_string(concatenable_string)
-                        }
-                    }
-                    b'"' => self.lex_quote_ident(),
-                    b'b' | b'B' | b'x' | b'X' => {
-                        if self.buffer.consume(b'\'') {
-                            return self.lex_binary_string()
-                        }
-                        self.buffer.push_back();
-                        self.lex_identifier()
-                    }
-                    b'e' | b'E' => {
-                        if self.buffer.consume(b'\'') {
-                            return self.lex_escape_string(false)
-                        }
-                        self.buffer.push_back();
-                        self.lex_identifier()
-                    }
-                    b'n' | b'N' => {
-                        // TODO: is there a need to check for nchar availability?
-                        // https://github.com/postgres/postgres/blob/1d80d6b50e6401828fc445151375f9bde3f99ac6/src/backend/parser/scan.l#L539
-                        if self.buffer.consume(b'\'') {
-                            return if self.config.standard_conforming_strings {
-                                self.lex_quote_string(false)
-                            }
-                            else {
-                                self.lex_escape_string(false)
-                            }
-                        }
-                        self.buffer.push_back();
-                        self.lex_identifier()
-                    }
-                    b'u' | b'U' => {
-                        if self.buffer.consume(b'&') {
-                            match self.buffer.peek() {
-                                Some(b'\'') => { // u&'...'
-                                    if !self.config.standard_conforming_strings {
-                                        return Err(UnsafeUnicodeString)
-                                    }
-                                    self.buffer.advance_char();
-                                    self.lex_quote_string(false)
-                                }
-                                Some(b'"') => { // u&"..."
-                                    self.buffer.advance_char();
-                                    self.lex_quote_ident()
-                                }
-                                _ => {
-                                    self.buffer.push_back(); // push back '&'
-                                    self.lex_identifier() // identifier starting with 'u'/'U'
-                                }
-                            }
-                        }
-                        else {
-                            self.lex_identifier() // identifier starting with u/U
-                        }
-                    }
-                    b'0' => {
-                        match self.buffer.peek() {
-                            None => Ok(NumberLiteral { radix: 10 }),
-                            Some(c) => {
-                                match c {
-                                    b'x' | b'X' => self.lex_hex_integer(),
-                                    b'o' | b'O' => self.lex_oct_integer(),
-                                    b'b' | b'B' => self.lex_bin_integer(),
-                                    _ => self.lex_dec_integer(),
-                                }
-                            }
-                        }
-                    }
-                    b'1'..=b'9' => self.lex_dec_integer(),
-                    op if is_op(op) => self.lex_operator(),
-                    id if is_ident_start(id) => self.lex_identifier(),
-                    unknown => {
-                        // This should be unreachable.
-                        // Playing it safe here, so it doesn't panic.
-                        Err(UnknownChar { unknown })
-                    }
+        // eof has already been filtered
+        match self.buffer.advance_char().unwrap() {
+            b'(' => Ok(OpenParenthesis),
+            b')' => Ok(CloseParenthesis),
+            b',' => Ok(Comma),
+            b';' => Ok(Semicolon),
+            b'[' => Ok(OpenBracket),
+            b']' => Ok(CloseBracket),
+            b'.' => {
+                if self.buffer.consume(b'.') {
+                    Ok(DotDot)
+                }
+                else if self.buffer.peek().is_some_and(is_decimal_digit) {
+                    self.lex_dec_float()
+                }
+                else {
+                    Ok(Dot)
                 }
             }
+            b':' => {
+                if self.buffer.consume(b':') {
+                    Ok(Typecast)
+                }
+                else if self.buffer.consume(b'=') {
+                    Ok(ColonEquals)
+                }
+                else {
+                    Ok(Colon)
+                }
+            }
+            b'$' => match self.buffer.peek() {
+                Some(c) if is_decimal_digit(c) => self.lex_param(),
+                Some(b'$') => self.lex_dollar_string(), // empty delimiter
+                Some(c) if is_ident_start(c) => self.lex_dollar_string(),
+                _ => Err(UnknownChar { unknown: b'$' }),
+            }
+            b'\'' => {
+                if self.config.standard_conforming_strings {
+                    self.lex_quote_string(concatenable_string)
+                }
+                else {
+                    self.lex_escape_string(concatenable_string)
+                }
+            }
+            b'"' => self.lex_quote_ident(),
+            b'b' | b'B' | b'x' | b'X' => {
+                if self.buffer.consume(b'\'') {
+                    return self.lex_binary_string()
+                }
+                self.buffer.push_back();
+                self.lex_identifier()
+            }
+            b'e' | b'E' => {
+                if self.buffer.consume(b'\'') {
+                    return self.lex_escape_string(false)
+                }
+                self.buffer.push_back();
+                self.lex_identifier()
+            }
+            b'n' | b'N' => {
+                // TODO: is there a need to check for nchar availability?
+                // https://github.com/postgres/postgres/blob/1d80d6b50e6401828fc445151375f9bde3f99ac6/src/backend/parser/scan.l#L539
+                if self.buffer.consume(b'\'') {
+                    return if self.config.standard_conforming_strings {
+                        self.lex_quote_string(false)
+                    }
+                    else {
+                        self.lex_escape_string(false)
+                    }
+                }
+                self.buffer.push_back();
+                self.lex_identifier()
+            }
+            b'u' | b'U' => {
+                if self.buffer.consume(b'&') {
+                    match self.buffer.peek() {
+                        Some(b'\'') => { // u&'...'
+                            if !self.config.standard_conforming_strings {
+                                return Err(UnsafeUnicodeString)
+                            }
+                            self.buffer.advance_char();
+                            self.lex_quote_string(false)
+                        }
+                        Some(b'"') => { // u&"..."
+                            self.buffer.advance_char();
+                            self.lex_quote_ident()
+                        }
+                        _ => {
+                            self.buffer.push_back(); // push back '&'
+                            self.lex_identifier() // identifier starting with 'u'/'U'
+                        }
+                    }
+                }
+                else {
+                    self.lex_identifier() // identifier starting with u/U
+                }
+            }
+            b'0' => match self.buffer.peek() {
+                None => Ok(NumberLiteral { radix: 10 }),
+                Some(c) => match c {
+                    b'x' | b'X' => self.lex_hex_integer(),
+                    b'o' | b'O' => self.lex_oct_integer(),
+                    b'b' | b'B' => self.lex_bin_integer(),
+                    _ => self.lex_dec_integer(),
+                }
+            }
+            b'1'..=b'9' => self.lex_dec_integer(),
+            op if is_op(op) => self.lex_operator(),
+            id if is_ident_start(id) => self.lex_identifier(),
+            unknown => Err(UnknownChar { unknown }),
         }
     }
 
@@ -403,20 +388,20 @@ impl<'source> Lexer<'source> {
 
     #[inline(always)]
     fn lex_hex_integer(&mut self) -> LexResult {
-        self.lex_number(is_hex_digit, 16)
+        self.lex_prefixed_int(is_hex_digit, 16)
     }
 
     #[inline(always)]
     fn lex_oct_integer(&mut self) -> LexResult {
-        self.lex_number(is_oct_digit, 8)
+        self.lex_prefixed_int(is_oct_digit, 8)
     }
 
     #[inline(always)]
     fn lex_bin_integer(&mut self) -> LexResult {
-        self.lex_number(is_bin_digit, 2)
+        self.lex_prefixed_int(is_bin_digit, 2)
     }
 
-    fn lex_number(&mut self, is_digit: impl Fn(u8) -> bool, radix: i32) -> LexResult {
+    fn lex_prefixed_int(&mut self, is_digit: impl Fn(u8) -> bool, radix: i32) -> LexResult {
         self.buffer.advance_char(); // ignore [xXoObB]
 
         let start_pos = self.buffer.current_index();
@@ -505,7 +490,6 @@ impl<'source> Lexer<'source> {
         // or have separate validation and parsing phases.
 
         loop {
-
             match self.buffer.advance_char() {
                 None => return Err(UnterminatedString),
                 Some(b'\\') => {
@@ -548,8 +532,11 @@ impl<'source> Lexer<'source> {
             if self.buffer.eof() {
                 return Err(UnterminatedString)
             }
-            if self.buffer.consume_string(delim) {
-                return Ok(StringLiteral { concatenable: false })
+            if self.buffer.consume(b'$') {
+                if self.buffer.consume_string(delim) {
+                    return Ok(StringLiteral { concatenable: false });
+                }
+                continue // $ was already consumed
             }
             self.buffer.advance_char();
         }
@@ -814,6 +801,42 @@ mod tests {
         let mut lex = Lexer::new(source, conf());
 
         assert_eq!(Ok(Token::new(NumberLiteral { radix: 2 }, (0..22, (1, 1)))), lex.next_token());
+        assert_eof(&mut lex);
+    }
+
+    #[test]
+    fn test_float() {
+        let source = b".0123";
+        let mut lex = Lexer::new(source, conf());
+
+        assert_eq!(Ok(Token::new(NumberLiteral { radix: 10 }, (0..5, (1, 1)))), lex.next_token());
+        assert_eof(&mut lex);
+    }
+
+    #[test]
+    fn test_dollar_string_with_empty_delim() {
+        let source = b"$$some string$$";
+        let mut lex = Lexer::new(source, conf());
+
+        assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (0..15, (1, 1)))), lex.next_token());
+        assert_eof(&mut lex);
+    }
+
+    #[test]
+    fn test_dollar_string() {
+        let source = b"$foo$bar baz$foo$";
+        let mut lex = Lexer::new(source, conf());
+
+        assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (0..17, (1, 1)))), lex.next_token());
+        assert_eof(&mut lex);
+    }
+
+    #[test]
+    fn test_dollar_string_with_dollars() {
+        let source = b"$foo$dolla $ dolla $$ bill$$foo$";
+        let mut lex = Lexer::new(source, conf());
+
+        assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (0..32, (1, 1)))), lex.next_token());
         assert_eof(&mut lex);
     }
 
