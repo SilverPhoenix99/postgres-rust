@@ -1,0 +1,9 @@
+[package]
+name = "postgres-guc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+postgres-basics = { path = "../basics" }
+bitflags = "2.6.0"
+lazy_static = "1.5.0"
