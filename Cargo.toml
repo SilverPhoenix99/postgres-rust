@@ -1,4 +1,6 @@
 [workspace]
+name = "postgres-rust"
+version = "18.dev"
 resolver = "2"
 
 members = [
