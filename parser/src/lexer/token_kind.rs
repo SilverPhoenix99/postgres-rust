@@ -1,5 +1,3 @@
-use std::ops::Range;
-
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum TokenKind {
     OpenParenthesis,
@@ -41,22 +39,4 @@ pub enum TokenKind {
         /// ```
         concatenable: bool
     },
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Token {
-    pub kind: TokenKind,
-    // TODO premature opt:
-    //   this data is packed together
-    //   considering generics in the future,
-    //   where it could be replaced with ()
-    pub details: (Range<usize>, (usize, usize))
-}
-
-impl Token {
-
-    #[inline]
-    pub fn new(kind: TokenKind, details: (Range<usize>, (usize, usize))) -> Self {
-        Self { kind, details }
-    }
 }

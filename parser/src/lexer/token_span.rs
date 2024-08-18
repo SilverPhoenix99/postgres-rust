@@ -1,5 +1,5 @@
-use crate::lexer::LexerErrorCode::InvalidTokenRange;
-use crate::lexer::{Lexer, LexerError};
+use crate::lexer::LexerError::InvalidTokenRange;
+use crate::lexer::{DetailedError, Lexer};
 use std::ops::Range;
 
 pub struct TokenSpan<'lex, 'source> {
@@ -9,13 +9,14 @@ pub struct TokenSpan<'lex, 'source> {
 
 impl<'lex, 'source> TokenSpan<'lex, 'source> {
 
-    pub fn new(lexer: &'lex Lexer<'source>, start_pos: usize) -> Result<Self, LexerError> {
+    pub fn new(lexer: &'lex Lexer<'source>, start_pos: usize) -> Result<Self, DetailedError> {
 
         let end_pos = lexer.buffer.current_index();
         let range = start_pos..end_pos;
 
         if start_pos > end_pos || end_pos > lexer.buffer.source().len() {
-            return Err(LexerError::new(InvalidTokenRange, (range, lexer.buffer.location())))
+            let details = (range, lexer.buffer.location());
+            return Err((InvalidTokenRange, details))
         }
 
         Ok(Self { lexer, range })
