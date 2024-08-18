@@ -31,6 +31,7 @@ impl<'source> Lexer<'source> {
         }
     }
 
+    /// The token is always a full match, never a substring that's more interesting that the whole match.
     #[inline]
     pub fn next_token(&mut self) -> Result<Token, LexerError> {
 
