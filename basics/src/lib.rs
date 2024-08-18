@@ -6,3 +6,5 @@ pub use concealable::Concealable;
 pub use named::Named;
 
 pub type Oid = u32;
+
+pub const NAMEDATALEN: usize = 64;
