@@ -316,7 +316,7 @@ impl<'source> Lexer<'source> {
         Ok(NumberLiteral { radix: 10 })
     }
 
-    fn lex_dec_real(&mut self) -> Result<bool, LexerErrorCode> {
+    fn lex_dec_real(&mut self) -> Result<(), LexerErrorCode> {
 
         // Returns:
         //   Ok(true)  - When the pattern matched successfully after '[Ee]'.
@@ -331,7 +331,6 @@ impl<'source> Lexer<'source> {
             )?
         */
 
-        let mut float = true;
         if self.buffer.consume_if(|c| c == b'E' || c == b'e') {
             let sign = self.buffer.consume_if(|c| c == b'+' || c == b'-');
             let dec = self.lex_dec_digits();
@@ -342,7 +341,6 @@ impl<'source> Lexer<'source> {
                 }
                 // [Ee] (?![+-\d])
                 self.buffer.push_back();
-                float = false
             }
         }
 
@@ -350,7 +348,7 @@ impl<'source> Lexer<'source> {
             return Err(TrailingJunkAfterNumericLiteral)
         }
 
-        Ok(float)
+        Ok(())
     }
 
     fn lex_dec_digits(&mut self) -> bool {
@@ -793,11 +791,42 @@ mod tests {
     }
 
     #[test]
+    fn test_integer() {
+        let source = b"\
+        0_010\n\
+        9_8_7_6\n\
+        0\
+        ";
+        let mut lex = Lexer::new(source, true);
+
+        assert_eq!(Ok(Token::new(NumberLiteral { radix: 10 }, (0..5, (1, 1)))), lex.next_token());
+        assert_eq!(Ok(Token::new(NumberLiteral { radix: 10 }, (6..13, (2, 1)))), lex.next_token());
+        assert_eq!(Ok(Token::new(NumberLiteral { radix: 10 }, (14..15, (3, 1)))), lex.next_token());
+        assert_eof(&mut lex);
+    }
+
+    #[test]
+    fn test_integer_dot_dot() {
+        let source = b"184..";
+        let mut lex = Lexer::new(source, true);
+
+        assert_eq!(Ok(Token::new(NumberLiteral { radix: 10 }, (0..3, (1, 1)))), lex.next_token());
+        assert_eq!(Ok(Token::new(DotDot, (3..5, (1, 4)))), lex.next_token());
+        assert_eof(&mut lex);
+    }
+
+    #[test]
     fn test_float() {
-        let source = b".01_23e-043_5_00";
+        let source = b"\
+        .01_23e-043_5_00\n\
+        475.\n\
+        1.1\
+        ";
         let mut lex = Lexer::new(source, true);
 
         assert_eq!(Ok(Token::new(NumberLiteral { radix: 10 }, (0..16, (1, 1)))), lex.next_token());
+        assert_eq!(Ok(Token::new(NumberLiteral { radix: 10 }, (17..21, (2, 1)))), lex.next_token());
+        assert_eq!(Ok(Token::new(NumberLiteral { radix: 10 }, (22..25, (3, 1)))), lex.next_token());
         assert_eof(&mut lex);
     }
 
@@ -825,6 +854,18 @@ mod tests {
         let mut lex = Lexer::new(source, true);
 
         assert_eq!(Ok(Token::new(StringLiteral { concatenable: false }, (0..32, (1, 1)))), lex.next_token());
+        assert_eof(&mut lex);
+    }
+
+    #[test]
+    fn test_dollar_string_mismatch() {
+        let source = b"$not a string";
+        let mut lex = Lexer::new(source, true);
+
+        assert_eq!(Err(LexerError::new(UnknownChar { unknown: b'$' }, (0..1, (1, 1)))), lex.next_token());
+        assert_eq!(Ok(Token::new(Identifier, (1..4, (1, 2)))), lex.next_token());
+        assert_eq!(Ok(Token::new(Identifier, (5..6, (1, 6)))), lex.next_token());
+        assert_eq!(Ok(Token::new(Identifier, (7..13, (1, 8)))), lex.next_token());
         assert_eof(&mut lex);
     }
 
