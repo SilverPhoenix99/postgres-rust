@@ -1,6 +1,5 @@
-use crate::lexer_error::LexerError;
-use crate::lexer_error::LexerErrorCode::InvalidTokenRange;
-use crate::Lexer;
+use crate::lexer::LexerErrorCode::InvalidTokenRange;
+use crate::lexer::{Lexer, LexerError};
 use std::ops::Range;
 
 pub struct TokenSpan<'lex, 'source> {

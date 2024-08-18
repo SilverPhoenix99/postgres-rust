@@ -6,7 +6,7 @@ struct LineBuffer {
 }
 
 #[derive(Debug)]
-pub(crate) struct LexerBuffer<'source> {
+pub struct LexerBuffer<'source> {
     source: &'source [u8],
     current_index: usize,
     lines: LineBuffer
