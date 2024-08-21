@@ -1,3 +1,4 @@
+use crate::lexer::token_details::TokenDetails;
 use crate::lexer::LexerError::InvalidTokenRange;
 use crate::lexer::{DetailedError, Lexer};
 use std::ops::Range;
@@ -15,7 +16,7 @@ impl<'lex, 'source> TokenSpan<'lex, 'source> {
         let range = start_pos..end_pos;
 
         if start_pos > end_pos || end_pos > lexer.buffer.source().len() {
-            let details = (range, lexer.buffer.location());
+            let details = TokenDetails::new(range, lexer.buffer.location());
             return Err((InvalidTokenRange, details))
         }
 
@@ -23,8 +24,8 @@ impl<'lex, 'source> TokenSpan<'lex, 'source> {
     }
 
     #[inline]
-    pub fn details(&self) -> (Range<usize>, (usize, usize)) {
-        (self.range.clone(), self.location())
+    pub fn details(&self) -> TokenDetails {
+        TokenDetails::new(self.range.clone(), self.location())
     }
 
     #[inline]
