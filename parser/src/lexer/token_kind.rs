@@ -9,9 +9,7 @@ pub enum IdentifierKind {
     QuotedIdentifier,
 
     /// E.g.: `u&"ident"`
-    UnicodeIdentifier {
-        codepoint_len: u8,
-    }
+    UnicodeIdentifier,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -36,9 +34,7 @@ pub enum StringKind {
     NationalString,
 
     /// E.g.: `u&'str'`
-    UnicodeString {
-        codepoint_len: u8,
-    },
+    UnicodeString,
 
     /// E.g.: `$foo$str$foo$`
     DollarString,
