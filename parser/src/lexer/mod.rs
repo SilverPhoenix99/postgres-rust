@@ -163,13 +163,11 @@ impl<'source> Lexer<'source> {
                                 return Err(UnsafeUnicodeString)
                             }
                             self.buffer.advance_char();
-                            let codepoint_len = if c == b'U' { 8 } else { 4 };
-                            self.lex_quote_string(UnicodeString { codepoint_len }, false)
+                            self.lex_quote_string(UnicodeString, false)
                         }
                         Some(b'"') => { // u&"..."
                             self.buffer.advance_char();
-                            let codepoint_len = if c == b'U' { 8 } else { 4 };
-                            self.lex_quote_ident(UnicodeIdentifier { codepoint_len })
+                            self.lex_quote_ident(UnicodeIdentifier)
                         }
                         _ => {
                             self.buffer.push_back(); // push back '&'
@@ -954,8 +952,8 @@ mod tests {
         ";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(StringLiteral { kind: UnicodeString { codepoint_len: 4 }, concatenable: false }, 0..4, 1, 1), lex.next());
-        assert_eq!(tok(StringLiteral { kind: UnicodeString { codepoint_len: 8 }, concatenable: false }, 5..17, 2, 1), lex.next());
+        assert_eq!(tok(StringLiteral { kind: UnicodeString, concatenable: false }, 0..4, 1, 1), lex.next());
+        assert_eq!(tok(StringLiteral { kind: UnicodeString, concatenable: false }, 5..17, 2, 1), lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -986,7 +984,7 @@ mod tests {
 
         assert_eq!(err(EmptyDelimitedIdentifier, 0..2, 1, 1), lex.next());
         assert_eq!(tok(Identifier(QuotedIdentifier), 3..14, 2, 1), lex.next());
-        assert_eq!(tok(Identifier(UnicodeIdentifier { codepoint_len: 4 }), 15..28, 3, 1), lex.next());
+        assert_eq!(tok(Identifier(UnicodeIdentifier), 15..28, 3, 1), lex.next());
         assert_eq!(None, lex.next());
     }
 
