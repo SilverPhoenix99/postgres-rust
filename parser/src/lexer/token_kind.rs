@@ -1,3 +1,49 @@
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum IdentifierKind {
+
+    /// E.g.: `ident`
+    BasicIdentifier,
+
+    /// E.g.: `"ident"`
+    QuotedIdentifier,
+
+    /// E.g.: `u&"ident"`
+    UnicodeIdentifier {
+        codepoint_len: u8,
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum StringKind {
+
+    /// E.g.: `'str'`
+    BasicString,
+
+    /// E.g.: `e'str'`
+    /// When `standard_conforming_strings` is `false`:
+    ///   * `[eE]` prefix can be omitted;
+    ///   * or it can be a National string (`[nN]` prefix).
+    ExtendedString,
+
+    /// E.g.: `b'010'`
+    BinaryString,
+
+    /// E.g.: `x'1af'`
+    HexString,
+
+    /// E.g.: `n'str'`
+    NationalString,
+
+    /// E.g.: `u&'str'`
+    UnicodeString {
+        codepoint_len: u8,
+    },
+
+    /// E.g.: `$foo$str$foo$`
+    DollarString,
+}
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum TokenKind {
     OpenParenthesis,
@@ -26,9 +72,10 @@ pub enum TokenKind {
     NotEquals,
     UserDefinedOperator,
     Param { index: i32 },
-    Identifier,
+    Identifier(IdentifierKind),
     NumberLiteral { radix: i32 },
     StringLiteral {
+        kind: StringKind,
         /// If this literal can be automatically concatenated
         /// with the previous StringLiteral.
         /// E.g.:
