@@ -1,3 +1,10 @@
+mod ascii_flags;
+mod lexer_buffer;
+mod lexer_error;
+mod locatable;
+mod token_kind;
+mod token_span;
+
 pub use crate::lexer::ascii_flags::*;
 pub use crate::lexer::lexer_buffer::LexerBuffer;
 pub use crate::lexer::lexer_error::LexerError;
@@ -10,13 +17,6 @@ pub use crate::lexer::token_kind::{IdentifierKind, StringKind, TokenKind};
 pub use crate::lexer::token_span::TokenSpan;
 use postgres_basics::NAMEDATALEN;
 use std::iter::FusedIterator;
-
-mod ascii_flags;
-mod lexer_buffer;
-mod lexer_error;
-mod locatable;
-mod token_kind;
-mod token_span;
 
 type LexResult = Result<TokenKind, LexerError>;
 
@@ -120,16 +120,9 @@ impl<'source> Lexer<'source> {
                 }
             }
             b'"' => self.lex_quote_ident(QuotedIdentifier),
-            b'b' | b'B' => {
+            b'b' | b'B' | b'x' | b'X' => {
                 if self.buffer.consume(b'\'') {
-                    return self.lex_binary_string(BinaryString)
-                }
-                self.buffer.push_back();
-                self.lex_identifier()
-            }
-            b'x' | b'X' => {
-                if self.buffer.consume(b'\'') {
-                    return self.lex_binary_string(HexString)
+                    return self.lex_binary_string(BitString)
                 }
                 self.buffer.push_back();
                 self.lex_identifier()
@@ -155,7 +148,7 @@ impl<'source> Lexer<'source> {
                 self.buffer.push_back();
                 self.lex_identifier()
             }
-            c @ (b'u' | b'U') => {
+            b'u' | b'U' => {
                 if self.buffer.consume(b'&') {
                     match self.buffer.peek() {
                         Some(b'\'') => { // u&'...'
@@ -688,7 +681,7 @@ fn to_hex_digit_unsafe(c: &u8) -> i32 {
     (n | 0x20) - 87
 }
 
-fn parse_number_unsafe(
+fn parse_int_unsafe(
     span: &[u8],
     u8_to_i32: impl Fn(&u8) -> i32,
     radix: i32
@@ -935,12 +928,12 @@ mod tests {
     }
 
     #[test]
-    fn test_bin_string() {
+    fn test_bit_string() {
         let source = b"b'0_156e_wf' x'048_96a_f_d'"; // lexer doesn't validate chars
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(StringLiteral { kind: BinaryString, concatenable: false }, 0..12, 1, 1), lex.next());
-        assert_eq!(tok(StringLiteral { kind: HexString, concatenable: false }, 13..27, 1, 14), lex.next());
+        assert_eq!(tok(StringLiteral { kind: BitString, concatenable: false }, 0..12, 1, 1), lex.next());
+        assert_eq!(tok(StringLiteral { kind: BitString, concatenable: false }, 13..27, 1, 14), lex.next());
         assert_eq!(None, lex.next());
     }
 
