@@ -24,11 +24,8 @@ pub enum StringKind {
     ///   * or it can be a National string (`[nN]` prefix).
     ExtendedString,
 
-    /// E.g.: `b'010'`
-    BinaryString,
-
-    /// E.g.: `x'1af'`
-    HexString,
+    /// E.g.: `b'010'` or `x'1af'`
+    BitString,
 
     /// E.g.: `n'str'`
     NationalString,
