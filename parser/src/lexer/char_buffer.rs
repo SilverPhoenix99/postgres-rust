@@ -158,6 +158,8 @@ impl<'src> CharBuffer<'src> {
     }
 }
 
+/// Saves the position of lines (LF/CR/CRLF),
+/// and calculates location (line + column) from indexes.
 impl LineBuffer {
 
     #[inline]
@@ -167,13 +169,23 @@ impl LineBuffer {
         Self { lines }
     }
 
-    #[inline]
     pub fn push(&mut self, line: usize) {
+
+        if
+            self.lines.is_empty()
+            || line > *self.lines.last().unwrap()
+        {
+            // fast path
+            self.lines.push(line);
+            return
+        }
+
         if let Err(index) = self.lines.binary_search(&line) {
             self.lines.insert(index, line)
         }
     }
 
+    /// Calculates the line and column from a given position.
     pub fn location(&self, position: usize) -> (usize, usize) {
 
         match self.lines.binary_search(&position) {
