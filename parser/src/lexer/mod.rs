@@ -1,12 +1,12 @@
 mod ascii_flags;
-mod lexer_buffer;
+mod char_buffer;
 mod lexer_error;
 mod locatable;
 mod token_kind;
 mod token_span;
 
 pub use crate::lexer::ascii_flags::*;
-pub use crate::lexer::lexer_buffer::LexerBuffer;
+pub use crate::lexer::char_buffer::CharBuffer;
 pub use crate::lexer::lexer_error::LexerError;
 use crate::lexer::lexer_error::LexerError::*;
 pub use crate::lexer::locatable::{Locatable, Location};
@@ -25,12 +25,12 @@ type LocatableError = Locatable<LexerError>;
 pub(crate) type LexerResult = Result<LocatableToken, LocatableError>;
 
 #[derive(Debug)]
-pub struct Lexer<'source> {
-    buffer: LexerBuffer<'source>,
+pub struct Lexer<'src> {
+    buffer: CharBuffer<'src>,
     standard_conforming_strings: bool
 }
 
-impl<'source> Iterator for Lexer<'source> {
+impl Iterator for Lexer<'_> {
     type Item = LexerResult;
 
     /// The token is always a full match,
@@ -61,14 +61,14 @@ impl<'source> Iterator for Lexer<'source> {
     }
 }
 
-impl<'source> FusedIterator for Lexer<'source> {}
+impl FusedIterator for Lexer<'_> {}
 
-impl<'source> Lexer<'source> {
+impl<'src> Lexer<'src> {
 
     #[inline]
-    pub fn new(source: &'source [u8], standard_conforming_strings: bool) -> Self {
+    pub fn new(source: &'src [u8], standard_conforming_strings: bool) -> Self {
         Self {
-            buffer: LexerBuffer::new(source),
+            buffer: CharBuffer::new(source),
             standard_conforming_strings
         }
     }
@@ -546,7 +546,7 @@ impl<'source> Lexer<'source> {
     }
 
     #[inline] // it's only used in 1 place
-    fn lex_dollar_delim(&mut self) -> Option<&'source [u8]> {
+    fn lex_dollar_delim(&mut self) -> Option<&'src [u8]> {
 
         // If we're here, then the 1st char is `is_ident_start` or '$' (empty delimiter)
 

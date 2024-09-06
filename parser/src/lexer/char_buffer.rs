@@ -6,16 +6,16 @@ struct LineBuffer {
 }
 
 #[derive(Debug)]
-pub struct LexerBuffer<'source> {
-    source: &'source [u8],
+pub struct CharBuffer<'src> {
+    source: &'src [u8],
     current_index: usize,
     lines: LineBuffer
 }
 
-impl<'source> LexerBuffer<'source> {
+impl<'src> CharBuffer<'src> {
 
     #[inline]
-    pub fn new(source: &'source [u8]) -> Self {
+    pub fn new(source: &'src [u8]) -> Self {
         Self {
             source,
             current_index: 0,
@@ -24,7 +24,7 @@ impl<'source> LexerBuffer<'source> {
     }
 
     #[inline(always)]
-    pub fn source(&self) -> &'source [u8] {
+    pub fn source(&self) -> &'src [u8] {
         self.source
     }
 
