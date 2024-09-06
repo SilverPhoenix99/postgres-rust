@@ -19,7 +19,7 @@ impl Location {
 
     /// Slices the input source, according to the current range
     #[inline(always)]
-    pub fn slice<'source>(&self, source: &'source [u8]) -> &'source [u8] {
+    pub fn slice<'src>(&self, source: &'src [u8]) -> &'src [u8] {
         &source[self.range.clone()]
     }
 
