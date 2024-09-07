@@ -1,7 +1,7 @@
 [package]
 name = "postgres-parser"
-version = "0.1.0"
-edition = "2021"
+edition.workspace = true
+version.workspace = true
 
 [dependencies]
-postgres-basics = { path = "../basics" }
+postgres-basics.workspace = true

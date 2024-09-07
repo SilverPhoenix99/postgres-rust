@@ -3,7 +3,7 @@ use std::ops::Range;
 // FIXME premature optimization:
 //   This data is packed together considering generics in the future,
 //   where it could be replaced with ()
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Location {
     pub range: Range<usize>,
     pub line: usize,
