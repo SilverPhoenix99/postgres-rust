@@ -18,7 +18,7 @@ pub enum StringKind {
     /// E.g.: `'str'`
     BasicString,
 
-    /// E.g.: `e'str'`
+    /// E.g.: `e'str'`, `n'str'`, or `'str'`
     /// When `standard_conforming_strings` is `false`:
     ///   * `[eE]` prefix can be omitted;
     ///   * or it can be a National string (`[nN]` prefix).
