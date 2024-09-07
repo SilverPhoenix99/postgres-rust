@@ -58,20 +58,25 @@ impl<'src> CharBuffer<'src> {
         self.source[self.current_index]
     }
 
+    /// Consumes a char if it matches `expected`.
+    /// Returns `true`, if the char matched.
     #[inline(always)]
-    pub fn consume(&mut self, expected: u8) -> bool {
+    pub fn consume_char(&mut self, expected: u8) -> bool {
         self.consume_if(|c| c == expected)
     }
 
+    /// Consumes a char if one is available (non-eof) and `pred` returns `true`.
     #[inline]
-    pub fn consume_if(&mut self, pred: impl Fn(u8) -> bool) -> bool {
-        if self.peek().is_some_and(&pred) {
-            self.advance_char();
+    pub fn consume_if(&mut self, pred: impl FnOnce(u8) -> bool) -> bool {
+        if self.peek().is_some_and(pred) {
+            self.consume_one();
             return true
         }
         false
     }
 
+    /// Consumes chars while they're available and `pred` returns `true`.
+    /// Returns the number of chars successfully consumed.
     #[inline]
     pub fn consume_while(&mut self, pred: impl Fn(u8) -> bool) -> usize
     {
@@ -82,7 +87,8 @@ impl<'src> CharBuffer<'src> {
         consumed
     }
 
-    pub fn advance_char(&mut self) -> Option<u8> {
+    /// Unconditionally consumes a char, if available.
+    pub fn consume_one(&mut self) -> Option<u8> {
 
         let c = self.peek()?;
         self.buffer_new_line(self.current_index);
@@ -91,11 +97,14 @@ impl<'src> CharBuffer<'src> {
         Some(c)
     }
 
-    pub fn advance_by(&mut self, num_chars: usize) {
+    /// Consumes as many chars as there are available, up to `num_chars`.
+    pub fn consume_many(&mut self, num_chars: usize) -> &'src [u8] {
 
         let start_pos = self.current_index;
         let end_pos = min(start_pos + num_chars, self.source.len());
         self.current_index = end_pos;
+
+        &self.source[start_pos..end_pos]
     }
 
     fn buffer_new_line(&mut self, pos: usize) {
@@ -151,7 +160,7 @@ impl<'src> CharBuffer<'src> {
     pub fn consume_string(&mut self, expected: &[u8]) -> bool {
 
         if self.lookahead(expected) {
-            self.advance_by(expected.len());
+            self.consume_many(expected.len());
             return true
         }
         false

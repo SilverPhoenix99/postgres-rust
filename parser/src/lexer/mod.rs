@@ -79,7 +79,7 @@ impl<'src> Lexer<'src> {
     fn lex_token(&mut self, concatenable_string: bool) -> LexResult {
 
         // eof has already been filtered
-        match self.buffer.advance_char().unwrap() {
+        match self.buffer.consume_one().unwrap() {
             b'(' => Ok(OpenParenthesis),
             b')' => Ok(CloseParenthesis),
             b',' => Ok(Comma),
@@ -87,7 +87,7 @@ impl<'src> Lexer<'src> {
             b'[' => Ok(OpenBracket),
             b']' => Ok(CloseBracket),
             b'.' => {
-                if self.buffer.consume(b'.') {
+                if self.buffer.consume_char(b'.') {
                     Ok(DotDot)
                 }
                 else if self.buffer.peek().is_some_and(is_decimal_digit) {
@@ -98,10 +98,10 @@ impl<'src> Lexer<'src> {
                 }
             }
             b':' => {
-                if self.buffer.consume(b':') {
+                if self.buffer.consume_char(b':') {
                     Ok(Typecast)
                 }
-                else if self.buffer.consume(b'=') {
+                else if self.buffer.consume_char(b'=') {
                     Ok(ColonEquals)
                 }
                 else {
@@ -124,19 +124,19 @@ impl<'src> Lexer<'src> {
             }
             b'"' => self.lex_quote_ident(QuotedIdentifier),
             b'b' | b'B' => {
-                if self.buffer.consume(b'\'') {
+                if self.buffer.consume_char(b'\'') {
                     return self.lex_bit_string(BinaryString)
                 }
                 self.lex_identifier()
             }
             b'x' | b'X' => {
-                if self.buffer.consume(b'\'') {
+                if self.buffer.consume_char(b'\'') {
                     return self.lex_bit_string(HexString)
                 }
                 self.lex_identifier()
             }
             b'e' | b'E' => {
-                if self.buffer.consume(b'\'') {
+                if self.buffer.consume_char(b'\'') {
                     return self.lex_extended_string(false)
                 }
                 self.lex_identifier()
@@ -144,7 +144,7 @@ impl<'src> Lexer<'src> {
             b'n' | b'N' => {
                 // TODO: is there a need to check for nchar availability?
                 // https://github.com/postgres/postgres/blob/1d80d6b50e6401828fc445151375f9bde3f99ac6/src/backend/parser/scan.l#L539
-                if self.buffer.consume(b'\'') {
+                if self.buffer.consume_char(b'\'') {
                     let tok = if self.standard_conforming_strings {
                         self.lex_quote_string(NationalString, false)
                     }
@@ -156,17 +156,17 @@ impl<'src> Lexer<'src> {
                 self.lex_identifier()
             }
             b'u' | b'U' => {
-                if self.buffer.consume(b'&') {
+                if self.buffer.consume_char(b'&') {
                     match self.buffer.peek() {
                         Some(b'\'') => { // u&'...'
                             if !self.standard_conforming_strings {
                                 return Err(UnsafeUnicodeString)
                             }
-                            self.buffer.advance_char();
+                            self.buffer.consume_one();
                             self.lex_quote_string(UnicodeString, false)
                         }
                         Some(b'"') => { // u&"..."
-                            self.buffer.advance_char();
+                            self.buffer.consume_one();
                             self.lex_quote_ident(UnicodeIdentifier)
                         }
                         _ => {
@@ -213,7 +213,7 @@ impl<'src> Lexer<'src> {
             }
 
             // Consume all ops for now, and check for restrictions afterward
-            let c = self.buffer.advance_char().unwrap();
+            let c = self.buffer.consume_one().unwrap();
             pg_op |= is_pg_op(c)
         }
 
@@ -324,7 +324,7 @@ impl<'src> Lexer<'src> {
         self.buffer.push_back();
         self.lex_dec_digits();
 
-        if self.buffer.consume(b'.') {
+        if self.buffer.consume_char(b'.') {
             if self.buffer.peek().is_some_and(|c| c == b'.') {
                 // Don't consume '..' now.
                 // It'll get consumed later as DotDot.
@@ -385,7 +385,7 @@ impl<'src> Lexer<'src> {
         }
 
         while consumed > 0 {
-            let underscore = self.buffer.consume(b'_');
+            let underscore = self.buffer.consume_char(b'_');
             consumed = self.buffer.consume_while(is_decimal_digit);
 
             if consumed == 0 && underscore {
@@ -412,14 +412,14 @@ impl<'src> Lexer<'src> {
     }
 
     fn lex_prefixed_int(&mut self, is_digit: impl Fn(u8) -> bool, radix: i32) -> LexResult {
-        self.buffer.advance_char(); // ignore [xXoObB]
+        self.buffer.consume_one(); // ignore [xXoObB]
 
         let start_pos = self.buffer.current_index();
 
         // /(_?{digit}+)*/
         let mut consumed = usize::MAX;
         while consumed > 0 {
-            self.buffer.consume(b'_');
+            self.buffer.consume_char(b'_');
             consumed = self.buffer.consume_while(&is_digit);
         }
 
@@ -444,7 +444,7 @@ impl<'src> Lexer<'src> {
         // No content validation to simplify the lexer.
 
         loop {
-            match self.buffer.advance_char() {
+            match self.buffer.consume_one() {
                 None => return Err(UnterminatedString),
                 Some(b'\'') => return Ok(StringLiteral { kind, concatenable: false }),
                 _ => {}
@@ -457,12 +457,12 @@ impl<'src> Lexer<'src> {
         let start_pos = self.buffer.current_index();
 
         loop {
-            match self.buffer.advance_char() {
+            match self.buffer.consume_one() {
                 None => return Err(UnterminatedQuotedIdentifier),
                 Some(b'"') => {
                     if let Some(b'"') = self.buffer.peek() {
                         // escaped double quote '""'
-                        self.buffer.advance_char();
+                        self.buffer.consume_one();
                     } else {
                         return if self.buffer.current_index() - start_pos == 1 {
                             Err(EmptyDelimitedIdentifier) // only consumed '"'
@@ -479,11 +479,11 @@ impl<'src> Lexer<'src> {
     fn lex_quote_string(&mut self, kind: StringKind, concatenable: bool) -> LexResult {
 
         loop {
-            match self.buffer.advance_char() {
+            match self.buffer.consume_one() {
                 None => return Err(UnterminatedString),
                 Some(b'\'') => {
                     if let Some(b'\'') = self.buffer.peek() {
-                        self.buffer.advance_char();
+                        self.buffer.consume_one();
                     } else {
                         return Ok(StringLiteral { kind, concatenable })
                     }
@@ -500,16 +500,16 @@ impl<'src> Lexer<'src> {
         // or have separate validation and parsing phases.
 
         loop {
-            match self.buffer.advance_char() {
+            match self.buffer.consume_one() {
                 None => return Err(UnterminatedString),
                 Some(b'\\') => {
-                    if self.buffer.advance_char().is_none() {
+                    if self.buffer.consume_one().is_none() {
                         return Err(UnterminatedString);
                     }
                 }
                 Some(b'\'') => {
                     if let Some(b'\'') = self.buffer.peek() {
-                        self.buffer.advance_char();
+                        self.buffer.consume_one();
                     } else {
                         return Ok(StringLiteral { kind: ExtendedString, concatenable })
                     }
@@ -553,13 +553,13 @@ impl<'src> Lexer<'src> {
             if self.buffer.eof() {
                 return Err(UnterminatedString)
             }
-            if self.buffer.consume(b'$') {
+            if self.buffer.consume_char(b'$') {
                 if self.buffer.consume_string(delim) {
                     return Ok(StringLiteral { kind: DollarString, concatenable: false });
                 }
                 continue // $ was already consumed
             }
-            self.buffer.advance_char();
+            self.buffer.consume_one();
         }
     }
 
@@ -570,7 +570,7 @@ impl<'src> Lexer<'src> {
 
         let start_pos = self.buffer.current_index();
 
-        if self.buffer.consume(b'$') {
+        if self.buffer.consume_char(b'$') {
             // Empty delimiter
             let span = TokenSpan::new(self, start_pos).unwrap();
             return Some(span.slice())
@@ -580,7 +580,7 @@ impl<'src> Lexer<'src> {
             self.buffer.consume_while(is_dollar_quote_cont);
         }
 
-        if !self.buffer.consume(b'$') {
+        if !self.buffer.consume_char(b'$') {
             // This is the only time the lexer needs to backtrack many chars.
             self.buffer.seek(start_pos);
             return None
@@ -641,7 +641,7 @@ impl<'src> Lexer<'src> {
             return false
         }
 
-        while let Some(c) = self.buffer.advance_char() {
+        while let Some(c) = self.buffer.consume_one() {
             if is_new_line(c) {
                 break
             }
@@ -676,7 +676,7 @@ impl<'src> Lexer<'src> {
                 return Err(err)
             }
 
-            self.buffer.advance_char();
+            self.buffer.consume_one();
         }
     }
 }
