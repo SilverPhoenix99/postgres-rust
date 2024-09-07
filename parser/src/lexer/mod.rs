@@ -120,9 +120,16 @@ impl<'src> Lexer<'src> {
                 }
             }
             b'"' => self.lex_quote_ident(QuotedIdentifier),
-            b'b' | b'B' | b'x' | b'X' => {
+            b'b' | b'B' => {
                 if self.buffer.consume(b'\'') {
-                    return self.lex_bit_string()
+                    return self.lex_bit_string(BinaryString)
+                }
+                self.buffer.push_back();
+                self.lex_identifier()
+            }
+            b'x' | b'X' => {
+                if self.buffer.consume(b'\'') {
+                    return self.lex_bit_string(HexString)
                 }
                 self.buffer.push_back();
                 self.lex_identifier()
@@ -188,7 +195,7 @@ impl<'src> Lexer<'src> {
         }
     }
 
-    #[inline] // it's only used in 1 place
+    #[inline] // Only called from a single place
     fn lex_operator(&mut self) -> LexResult {
 
         self.buffer.push_back(); // so it's easier to consume
@@ -254,7 +261,7 @@ impl<'src> Lexer<'src> {
         }
     }
 
-    #[inline] // it's only used in 1 place
+    #[inline] // Only called from a single place
     fn lex_param(&mut self) -> LexResult {
 
         // $ has already been consumed, so no need to worry about it here
@@ -295,7 +302,7 @@ impl<'src> Lexer<'src> {
         }
     }
 
-    #[inline] // it's only used in 1 place
+    #[inline] // Only called from a single place
     fn lex_dec_float(&mut self) -> LexResult {
 
         // \. {dec_digits} {dec_real}
@@ -431,15 +438,15 @@ impl<'src> Lexer<'src> {
         Ok(NumberLiteral { radix })
     }
 
-    #[inline] // it's only used in 1 place
-    fn lex_bit_string(&mut self) -> LexResult {
+    #[inline] // Only called from a single place
+    fn lex_bit_string(&mut self, kind: StringKind) -> LexResult {
 
         // No content validation to simplify the lexer.
 
         loop {
             match self.buffer.advance_char() {
                 None => return Err(UnterminatedString),
-                Some(b'\'') => return Ok(StringLiteral { kind: BitString, concatenable: false }),
+                Some(b'\'') => return Ok(StringLiteral { kind, concatenable: false }),
                 _ => {}
             }
         }
@@ -545,7 +552,7 @@ impl<'src> Lexer<'src> {
         }
     }
 
-    #[inline] // it's only used in 1 place
+    #[inline] // Only called from a single place
     fn lex_dollar_delim(&mut self) -> Option<&'src [u8]> {
 
         // If we're here, then the 1st char is `is_ident_start` or '$' (empty delimiter)
@@ -572,7 +579,7 @@ impl<'src> Lexer<'src> {
         Some(span.slice())
     }
 
-    #[inline] // it's only used in 1 place
+    #[inline] // Only called from a single place
     fn skip_trivia(&mut self) -> Result<bool, LocatableError> {
 
         // Postgres:
@@ -616,7 +623,7 @@ impl<'src> Lexer<'src> {
         Ok(!block_comment && start_line != end_line)
     }
 
-    #[inline] // it's only used in 1 place
+    #[inline] // Only called from a single place
     fn skip_comment(&mut self) -> bool {
 
         if !self.buffer.consume_string(b"--") {
@@ -932,8 +939,8 @@ mod tests {
         let source = b"b'0_156e_wf' x'048_96a_f_d'"; // lexer doesn't validate chars
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(StringLiteral { kind: BitString, concatenable: false }, 0..12, 1, 1), lex.next());
-        assert_eq!(tok(StringLiteral { kind: BitString, concatenable: false }, 13..27, 1, 14), lex.next());
+        assert_eq!(tok(StringLiteral { kind: BinaryString, concatenable: false }, 0..12, 1, 1), lex.next());
+        assert_eq!(tok(StringLiteral { kind: HexString, concatenable: false }, 13..27, 1, 14), lex.next());
         assert_eq!(None, lex.next());
     }
 

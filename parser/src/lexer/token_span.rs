@@ -2,14 +2,14 @@ use crate::lexer::LexerError::InvalidTokenRange;
 use crate::lexer::{Lexer, Locatable, LocatableError, Location};
 use std::ops::Range;
 
-pub struct TokenSpan<'lex> {
-    lexer: &'lex Lexer<'lex>,
+pub struct TokenSpan<'lex, 'src> {
+    lexer: &'lex Lexer<'src>,
     range: Range<usize>,
 }
 
-impl<'lex> TokenSpan<'lex> {
+impl<'lex, 'src> TokenSpan<'lex, 'src> {
 
-    pub fn new(lexer: &'lex Lexer<'lex>, start_pos: usize) -> Result<Self, LocatableError> {
+    pub fn new(lexer: &'lex Lexer<'src>, start_pos: usize) -> Result<Self, LocatableError> {
 
         let end_pos = lexer.buffer.current_index();
         let range = start_pos..end_pos;
@@ -35,7 +35,7 @@ impl<'lex> TokenSpan<'lex> {
     }
 
     #[inline]
-    pub fn slice(&self) -> &'lex [u8] {
+    pub fn slice(&self) -> &'src [u8] {
         let source = self.lexer.buffer.source();
         &source[self.range()]
     }
