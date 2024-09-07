@@ -1,5 +1,6 @@
 mod ascii_flags;
 mod char_buffer;
+mod keyword;
 mod lexer_error;
 mod locatable;
 mod token_kind;
@@ -7,6 +8,8 @@ mod token_span;
 
 pub use crate::lexer::ascii_flags::*;
 pub use crate::lexer::char_buffer::CharBuffer;
+use crate::lexer::keyword::KEYWORDS;
+pub use crate::lexer::keyword::{Keyword, KeywordCategory, KeywordDetails};
 pub use crate::lexer::lexer_error::LexerError;
 use crate::lexer::lexer_error::LexerError::*;
 pub use crate::lexer::locatable::{Locatable, Location};
@@ -124,35 +127,32 @@ impl<'src> Lexer<'src> {
                 if self.buffer.consume(b'\'') {
                     return self.lex_bit_string(BinaryString)
                 }
-                self.buffer.push_back();
                 self.lex_identifier()
             }
             b'x' | b'X' => {
                 if self.buffer.consume(b'\'') {
                     return self.lex_bit_string(HexString)
                 }
-                self.buffer.push_back();
                 self.lex_identifier()
             }
             b'e' | b'E' => {
                 if self.buffer.consume(b'\'') {
                     return self.lex_extended_string(false)
                 }
-                self.buffer.push_back();
                 self.lex_identifier()
             }
             b'n' | b'N' => {
                 // TODO: is there a need to check for nchar availability?
                 // https://github.com/postgres/postgres/blob/1d80d6b50e6401828fc445151375f9bde3f99ac6/src/backend/parser/scan.l#L539
                 if self.buffer.consume(b'\'') {
-                    return if self.standard_conforming_strings {
+                    let tok = if self.standard_conforming_strings {
                         self.lex_quote_string(NationalString, false)
                     }
                     else {
                         self.lex_extended_string(false)
-                    }
+                    };
+                    return tok
                 }
-                self.buffer.push_back();
                 self.lex_identifier()
             }
             b'u' | b'U' => {
@@ -522,9 +522,20 @@ impl<'src> Lexer<'src> {
     #[inline]
     fn lex_identifier(&mut self) -> LexResult {
 
-        // {ident_start} was already consumed
+        // To prevent re-consuming it, {ident_start} was already consumed.
+        let start_pos = self.buffer.current_index() - 1;
 
         self.buffer.consume_while(is_ident_cont);
+
+        let ident = TokenSpan::new(self, start_pos)
+            .unwrap()
+            .slice()
+            .to_ascii_lowercase();
+
+        if let Some(kw) = KEYWORDS.get(ident.as_slice()) {
+            return Ok(Keyword(kw))
+        }
+
         Ok(Identifier(BasicIdentifier))
     }
 
@@ -897,9 +908,9 @@ mod tests {
         let mut lex = Lexer::new(source, true);
 
         assert_eq!(err(UnknownChar { unknown: b'$' }, 0..1, 1, 1), lex.next());
-        assert_eq!(tok(Identifier(BasicIdentifier), 1..4, 1, 2), lex.next());
+        assert_kw(Keyword::Not, lex.next());
         assert_eq!(tok(Identifier(BasicIdentifier), 5..6, 1, 6), lex.next());
-        assert_eq!(tok(Identifier(BasicIdentifier), 7..13, 1, 8), lex.next());
+        assert_kw(Keyword::StringKw, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -974,6 +985,15 @@ mod tests {
     }
 
     #[test]
+    fn test_keyword() {
+        let source = b"SeLeCt FrOm";
+        let mut lex = Lexer::new(source, true);
+        assert_kw(Keyword::Select, lex.next());
+        assert_kw(Keyword::From, lex.next());
+        assert_eq!(None, lex.next());
+    }
+
+    #[test]
     fn test_quote_ident() {
         let source = b"\
         \"\"\n\
@@ -998,5 +1018,16 @@ mod tests {
         Some(Err(
             Location::new(range, line, col).of(err)
         ))
+    }
+
+    fn assert_kw(expected: Keyword, actual: Option<LexerResult>) {
+        match actual {
+            Some(Ok(Locatable(Keyword(kw), _))) => {
+                assert_eq!(expected, kw.keyword);
+            }
+            _ => {
+                panic!("expected keyword token `{expected:?}`, got {actual:?}");
+            }
+        }
     }
 }
