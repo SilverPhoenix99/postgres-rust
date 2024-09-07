@@ -12,9 +12,7 @@ mod guc_stack;
 mod config_metadata;
 mod generic_config;
 mod enum_config;
-mod backslash_quote;
 
-pub use backslash_quote::BackslashQuote;
 pub use bool_config::{BoolConfig, SimpleBoolConfig};
 pub use config_group::ConfigGroup;
 pub use config_metadata::ConfigMetadata;
@@ -30,6 +28,7 @@ pub use guc_stack_state::GucStackState;
 pub use guc_status::GucStatus;
 use lazy_static::lazy_static;
 pub use opaque::Opaque;
+use postgres_basics::guc::BackslashQuote;
 
 pub struct Guc {
     enable_seqscan: SimpleBoolConfig,
