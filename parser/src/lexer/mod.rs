@@ -122,7 +122,7 @@ impl<'src> Lexer<'src> {
             b'"' => self.lex_quote_ident(QuotedIdentifier),
             b'b' | b'B' | b'x' | b'X' => {
                 if self.buffer.consume(b'\'') {
-                    return self.lex_binary_string(BitString)
+                    return self.lex_bit_string()
                 }
                 self.buffer.push_back();
                 self.lex_identifier()
@@ -432,14 +432,14 @@ impl<'src> Lexer<'src> {
     }
 
     #[inline] // it's only used in 1 place
-    fn lex_binary_string(&mut self, kind: StringKind) -> LexResult {
+    fn lex_bit_string(&mut self) -> LexResult {
 
         // No content validation to simplify the lexer.
 
         loop {
             match self.buffer.advance_char() {
                 None => return Err(UnterminatedString),
-                Some(b'\'') => return Ok(StringLiteral { kind, concatenable: false }),
+                Some(b'\'') => return Ok(StringLiteral { kind: BitString, concatenable: false }),
                 _ => {}
             }
         }
