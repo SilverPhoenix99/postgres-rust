@@ -1,3 +1,4 @@
+use crate::lexer::KeywordDetails;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum IdentifierKind {
@@ -69,6 +70,7 @@ pub enum TokenKind {
     UserDefinedOperator,
     Param { index: i32 },
     Identifier(IdentifierKind),
+    Keyword(&'static KeywordDetails),
     NumberLiteral { radix: i32 },
     StringLiteral {
         kind: StringKind,
