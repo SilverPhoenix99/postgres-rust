@@ -10,3 +10,8 @@
     * Assume only UTF-8;
     * If any code uses encodings, throw an error (user input), or just implicitly use UTF-8 (internally);
     * If needed, make no-op code.
+* Support i18n.
+  * For now, all output will be EN.
+* `Guc` 1st implementation will be read-only.
+  * Options to change the settings will return an error or be ignored.
+  * Every object will have access to the global instance, but that will change in the future.
