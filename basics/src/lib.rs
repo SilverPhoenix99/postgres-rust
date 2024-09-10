@@ -11,13 +11,20 @@ macro_rules! qn_fn_name {
     }};
 }
 
+#[macro_export]
+macro_rules! fn_info {
+    () => { FnInfo::new(file!(), qn_fn_name!(), line!()) };
+}
+
 mod concealable;
+mod fn_info;
 pub mod guc;
 mod named;
 pub mod wchar;
 pub mod sql_state;
 
 pub use concealable::Concealable;
+pub use fn_info::FnInfo;
 pub use named::Named;
 
 pub type Oid = u32;
