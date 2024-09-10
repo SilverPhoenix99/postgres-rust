@@ -1,0 +1,27 @@
+
+# replace left recursion
+a : a b  <=> a : b a  => a : b+
+  | b          | b
+
+# empty string
+a : a b  <=> a : b a    => a : b*
+  | _          | _
+
+# generalised rule
+a : a b | c  =>  a : c d      =>  a : c d | c  => a : c d?  => a : c (b+)?  => a : c b*
+                 d : b d | _      d : b d | b     d : b+
+
+a : a b c | c    => a : c (b c)*
+
+a : ( b | a c )?  => a : b? c*
+a : b ( c | a )   => a : b+ c
+a : ( b c )* b    => a : b ( c b )*
+
+-----------------------------------------
+-- Order precedence parsing (Pratt)
+-----------------------------------------
+
+non   : next | next op next
+left  : next | left op next   =>  left  : next (op next)+
+right : next | next op right  =>  right : next (op right)?
+unary : op next
