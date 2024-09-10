@@ -14,6 +14,7 @@ pub enum LogLevel {
     /// Server operational messages; sent only to server log by default.
     Log               = 15,
     /// Same as LOG for server reporting, but never sent to client.
+    /// Alias: `CommError`
     LogServerOnly     = 16,
     /// Messages specifically requested by user (eg `VACUUM VERBOSE` output); always sent to
     /// client regardless of `client_min_messages`, but by default not sent to server log.

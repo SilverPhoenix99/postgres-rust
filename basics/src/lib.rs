@@ -1,6 +1,7 @@
 mod concealable;
 pub mod guc;
 mod named;
+pub mod wchar;
 pub mod sql_state;
 
 pub use concealable::Concealable;
