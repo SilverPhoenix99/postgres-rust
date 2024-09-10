@@ -701,7 +701,7 @@ fn to_hex_digit_unsafe(c: &u8) -> i32 {
 
 fn parse_int_unsafe(
     span: &[u8],
-    u8_to_i32: impl Fn(&u8) -> i32,
+    u8_to_i32: impl Fn(u8) -> i32,
     radix: i32
 ) -> Option<i32>
 {
@@ -711,7 +711,7 @@ fn parse_int_unsafe(
     span.iter()
         .filter_map(|c|
             if *c != b'_' {
-                Some(u8_to_i32(c))
+                Some(u8_to_i32(*c))
             }
             else {
                 None
