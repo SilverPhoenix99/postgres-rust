@@ -1,5 +1,6 @@
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[repr(u8)]
+#[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum LogLevel {
     /// Debugging messages, in categories of decreasing detail.
     Debug5            = 10,
