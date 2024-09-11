@@ -9,7 +9,7 @@ pub enum BackslashQuote {
 }
 
 impl Named for BackslashQuote {
-    fn name(self: Self) -> &'static str {
+    fn name(&self) -> &'static str {
         match self {
             Self::SafeEncoding => "safe_encoding",
             Self::Off => "off",
