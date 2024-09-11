@@ -1,36 +1,109 @@
-# gen kws
-x = File.readlines('../../postgres/src/include/parser/kwlist.h');
 
-categories = {
-  'UNRESERVED_KEYWORD' => 'Unreserved',
-  'COL_NAME_KEYWORD' => 'ColumnName',
-  'TYPE_FUNC_NAME_KEYWORD' => 'TypeFuncName',
-  'RESERVED_KEYWORD' => 'Reserved',
-}
+require 'pathname'
+require 'set'
 
-y = x.map {
-  _1.match(/^PG_KEYWORD\(\s*"(\w+)"\s*,\s*(\w+)\s*,\s*(\w+)\s*,\s*(\w+)\s*.*/)
-}.
-compact.map {
-  kw = _1[2].sub(/_P$/, '').split('_').map(&:capitalize).join
-  {
-    text: _1[1],
-    keyword: kw,
-    category: 'KeywordCategory::' + categories[_1[3]],
-    bare: _1[4] == 'BARE_LABEL',
+class KeywordsGenerator
+
+  CATEGORIES = {
+    'UNRESERVED_KEYWORD' => 'Unreserved',
+    'COL_NAME_KEYWORD' => 'ColumnName',
+    'TYPE_FUNC_NAME_KEYWORD' => 'TypeFuncName',
+    'RESERVED_KEYWORD' => 'Reserved',
   }
-};
 
-Clipboard.copy y.map { "#{_1[:keyword]}," }.join("\n")
+  # Keywords that clash with Rust classes.
+  # These will have a 'Kw' suffix.
+  CLASHES = Set['String']
 
-Clipboard.copy(
-  y.map do
-    text = _1[:text]
-    kw = _1[:keyword]
-    category = _1[:category]
-    bare = _1[:bare]
-    "    b\"#{text}\" => keyword(#{kw}, b\"#{text}\", #{category}, #{bare}),"
-  end.
-  join("\n")
-)
+  def self.run!(input, output)
+    new(input, output).run!
+  end
 
+  def initialize(input, output)
+    @input = Pathname(input)
+    @output = Pathname(output)
+  end
+
+  def run!
+    generated = generate
+    @output.write(generated)
+  end
+
+  def generate
+    enums = gen_keyword_enums
+    map = gen_keywords_map
+    [
+      'use super::Keyword::*;',
+      'use super::KeywordDetails;',
+      'use ColumnNameKeyword::*;',
+      'use ReservedKeyword::*;',
+      'use TypeFuncNameKeyword::*;',
+      'use UnreservedKeyword::*;',
+      '',
+      *enums,
+      '',
+      *map,
+      ''
+    ].join("\n")
+  end
+
+  def gen_keyword_enums
+
+    keywords.group_by { |kw| kw[:category] }
+      .flat_map do |category, kws|
+
+        kws = kws.map do |kw|
+          "    #{kw[:keyword]},"
+        end
+
+        [
+          '#[derive(Debug, Clone, Copy, PartialEq)]',
+          "pub enum #{category}Keyword {",
+          *kws,
+          "}\n"
+        ]
+      end
+
+  end
+
+  def gen_keywords_map
+
+    kws = keywords.map do |kw|
+      text = "b\"#{kw[:text]}\""
+      category = kw[:category]
+      keyword = kw[:keyword]
+      bare = kw[:bare]
+      "    #{text} => KeywordDetails::new(#{category}(#{keyword}), #{text}, #{bare}),"
+    end
+
+    [
+      "pub(super) static KEYWORDS: phf::Map<&'static [u8], KeywordDetails> = phf::phf_map! {",
+      *kws,
+      '};'
+    ]
+  end
+
+  def keywords
+    @keywords ||= read_file
+      .filter_map { |line| line.match(/^PG_KEYWORD\(\K([^)]+)/) }
+      .map do |match|
+        text, keyword, category, bare = match[0].split(/\s*,\s*/)
+        keyword = keyword.sub(/_P$/, '').split('_').map(&:capitalize).join
+        keyword += 'Kw' if CLASHES.include?(keyword)
+        {
+          text: text[1..-2], # remove quotes
+          keyword:,
+          category: CATEGORIES[category],
+          bare: bare == 'BARE_LABEL'
+        }
+      end
+
+  end
+
+  def read_file
+    @lines ||= @input.readlines
+  end
+
+end
+
+KeywordsGenerator.run!($ARGV[0], $ARGV[1]) if __FILE__ == $PROGRAM_NAME

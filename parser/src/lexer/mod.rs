@@ -8,8 +8,14 @@ mod token_span;
 
 pub use crate::lexer::ascii_flags::*;
 pub use crate::lexer::char_buffer::CharBuffer;
-use crate::lexer::keyword::KEYWORDS;
-pub use crate::lexer::keyword::{Keyword, KeywordCategory, KeywordDetails};
+pub use crate::lexer::keyword::{
+    ColumnNameKeyword,
+    Keyword,
+    KeywordDetails,
+    ReservedKeyword,
+    TypeFuncNameKeyword,
+    UnreservedKeyword
+};
 pub use crate::lexer::lexer_error::LexerError;
 use crate::lexer::lexer_error::LexerError::*;
 pub use crate::lexer::locatable::{Locatable, Location};
@@ -532,7 +538,7 @@ impl<'src> Lexer<'src> {
             .slice()
             .to_ascii_lowercase();
 
-        if let Some(kw) = KEYWORDS.get(ident.as_slice()) {
+        if let Some(kw) = KeywordDetails::find(ident.as_slice()) {
             return Ok(Keyword(kw))
         }
 
@@ -684,6 +690,10 @@ impl<'src> Lexer<'src> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::lexer::keyword::ReservedKeyword::Not;
+    use crate::lexer::keyword::UnreservedKeyword::StringKw;
+    use crate::lexer::Keyword::{Reserved, Unreserved};
+    use crate::lexer::ReservedKeyword::{From, Select};
     use std::ops::Range;
 
     #[test]
@@ -867,9 +877,9 @@ mod tests {
         let mut lex = Lexer::new(source, true);
 
         assert_eq!(err(UnknownChar { unknown: b'$' }, 0..1, 1, 1), lex.next());
-        assert_kw(Keyword::Not, lex.next());
+        assert_kw(Reserved(Not), lex.next());
         assert_eq!(tok(Identifier(BasicIdentifier), 5..6, 1, 6), lex.next());
-        assert_kw(Keyword::StringKw, lex.next());
+        assert_kw(Unreserved(StringKw), lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -947,8 +957,8 @@ mod tests {
     fn test_keyword() {
         let source = b"SeLeCt FrOm";
         let mut lex = Lexer::new(source, true);
-        assert_kw(Keyword::Select, lex.next());
-        assert_kw(Keyword::From, lex.next());
+        assert_kw(Reserved(Select), lex.next());
+        assert_kw(Reserved(From), lex.next());
         assert_eq!(None, lex.next());
     }
 
