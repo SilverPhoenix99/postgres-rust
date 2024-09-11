@@ -681,47 +681,6 @@ impl<'src> Lexer<'src> {
     }
 }
 
-fn to_hex_digit_unsafe(c: &u8) -> i32 {
-
-    let n = *c as i32;
-
-    if n <= b'A' as i32 {
-        return n - b'0' as i32
-    }
-
-    // The bit trick essentially changes uppercase to lowercase, then subtracts by 87.
-    // This correctly gives b'A'..b'F' -> 10..15:
-    // * 'A' - 87 = 10
-    // * 'F' - 87 = 15
-
-    // The difference between lowercase and uppercase is only in bit 6: 2**6 == 32 == 0x20
-
-    (n | 0x20) - 87
-}
-
-fn parse_int_unsafe(
-    span: &[u8],
-    u8_to_i32: impl Fn(u8) -> i32,
-    radix: i32
-) -> Option<i32>
-{
-    // Assumes the span only contains '_' or digits (dec, oct, hex)
-
-    // try parse to i32 and return IntLiteral
-    span.iter()
-        .filter_map(|c|
-            if *c != b'_' {
-                Some(u8_to_i32(*c))
-            }
-            else {
-                None
-            }
-        ) // ignore underscores
-        .try_fold(0i32, |acc, n|
-            acc.checked_mul(radix)?.checked_add(n)
-        )
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
