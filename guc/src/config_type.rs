@@ -16,7 +16,7 @@ impl Named for ConfigType {
      *
      * Note: these strings are deliberately not localized.
      */
-    fn name(self: Self) -> &'static str {
+    fn name(&self) -> &'static str {
         match self {
             Self::Bool => "bool",
             Self::Int => "integer",

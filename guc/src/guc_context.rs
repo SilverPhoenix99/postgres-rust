@@ -45,7 +45,7 @@ pub enum GucContext {
 }
 
 impl Named for GucContext {
-    fn name(self: Self) -> &'static str {
+    fn name(&self) -> &'static str {
         match self {
             Self::Internal => "internal",
             Self::Postmaster => "postmaster",

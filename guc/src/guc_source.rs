@@ -49,12 +49,12 @@ pub enum GucSource {
 }
 
 impl Named for GucSource {
-    /*
+    /**
      * Displayable names for source types (enum GucSource)
      *
      * Note: these strings are deliberately not localized.
      */
-    fn name(self: Self) -> &'static str {
+    fn name(&self) -> &'static str {
         match self {
             Self::Default => "default",
             Self::DynamicDefault => "default",
