@@ -5,3 +5,5 @@ version.workspace = true
 
 [dependencies]
 postgres-basics.workspace = true
+bitflags.workspace = true
+phf.workspace = true
