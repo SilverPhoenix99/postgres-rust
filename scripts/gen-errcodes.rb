@@ -1,16 +1,28 @@
 
+require 'pathname'
+
 class ErrCodesGenerator
 
-  def self.run!
-    new.run!
+  def self.run!(input, output_root, enums_file: 'enums.rs', variant_sets_file: 'variant_sets.rs')
+    output_root = Pathname(output_root)
+    enums_file = output_root / enums_file
+    variant_sets_file = output_root / variant_sets_file
+    new(input:, enums_file:, variant_sets_file:).run!
+  end
+
+  def initialize(input:, enums_file:, variant_sets_file:)
+    @input = Pathname(input)
+    @enums_file = Pathname(enums_file)
+    @variant_sets_file = Pathname(variant_sets_file)
   end
 
   def run!
     enums = render_enums
-    File.write('../basics/src/sql_state/enums.rs', enums)
+    @enums_file.write(enums)
 
     variant_sets = render_variant_sets
-    File.write('../basics/src/sql_state/variant_sets.rs', variant_sets)
+    @variant_sets_file.write(variant_sets)
+
     nil
   end
 
@@ -50,7 +62,7 @@ class ErrCodesGenerator
         [section, *codes].map do |line|
           "    #{line}"
         end
-          .prepend("")
+          .prepend('')
       end
 
       [
@@ -135,11 +147,11 @@ class ErrCodesGenerator
   end
 
   def lines
-    @lines ||= File.readlines('../../postgres/src/backend/utils/errcodes.txt').tap do |f|
+    @lines ||= @input.readlines.tap do |f|
       f.reject! { _1.match?(/^\s*(#|$)/) }
     end.map!(&:chomp!);
   end
 
 end
 
-ErrCodesGenerator.run! if __FILE__ == $PROGRAM_NAME
+ErrCodesGenerator.run!($ARGV[0], $ARGV[1]) if __FILE__ == $PROGRAM_NAME
