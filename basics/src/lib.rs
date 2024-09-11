@@ -13,7 +13,7 @@ macro_rules! qn_fn_name {
 
 #[macro_export]
 macro_rules! fn_info {
-    () => { FnInfo::new(file!(), qn_fn_name!(), line!()) };
+    () => { postgres_basics::FnInfo::new(file!(), postgres_basics::qn_fn_name!(), line!()) };
 }
 
 mod concealable;
