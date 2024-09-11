@@ -9,7 +9,7 @@ members = [
 
 [workspace.package]
 edition = "2021"
-version = "0.1.0-18.dev"
+version = "18.0.0-devel"
 
 [workspace.dependencies]
 bitflags = "2.6.0"
