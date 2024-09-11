@@ -15,3 +15,5 @@
 * `Guc` 1st implementation will be read-only.
   * Options to change the settings will return an error or be ignored.
   * Every object will have access to the global instance, but that will change in the future.
+* For now logging is reported via `Result`.
+  * Later, this will be used to actually log out at certain end/finish/completion points.
