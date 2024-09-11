@@ -13,7 +13,7 @@ class KeywordsGenerator
 
   # Keywords that clash with Rust classes.
   # These will have a 'Kw' suffix.
-  CLASHES = Set['String']
+  CLASHES = Set['String', 'Option']
 
   def self.run!(input, output)
     new(input, output).run!
