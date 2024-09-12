@@ -62,17 +62,16 @@ impl<'src> CharBuffer<'src> {
     /// Returns `true`, if the char matched.
     #[inline(always)]
     pub fn consume_char(&mut self, expected: u8) -> bool {
-        self.consume_if(|c| c == expected)
+        self.consume_if(|c| c == expected).is_some()
     }
 
     /// Consumes a char if one is available (non-eof) and `pred` returns `true`.
     #[inline]
-    pub fn consume_if(&mut self, pred: impl FnOnce(u8) -> bool) -> bool {
+    pub fn consume_if(&mut self, pred: impl FnOnce(u8) -> bool) -> Option<u8> {
         if self.peek().is_some_and(pred) {
-            self.consume_one();
-            return true
+            return self.consume_one();
         }
-        false
+        None
     }
 
     /// Consumes chars while they're available and `pred` returns `true`.
@@ -81,7 +80,7 @@ impl<'src> CharBuffer<'src> {
     pub fn consume_while(&mut self, pred: impl Fn(u8) -> bool) -> usize
     {
         let mut consumed = 0;
-        while self.consume_if(&pred) {
+        while self.consume_if(&pred).is_some() {
             consumed += 1;
         }
         consumed
