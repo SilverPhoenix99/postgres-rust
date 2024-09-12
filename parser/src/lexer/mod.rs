@@ -278,7 +278,7 @@ impl<'src> Lexer<'src> {
 
         // check junk
         let consumed = self.buffer.consume_if(is_ident_start);
-        if consumed {
+        if consumed.is_some() {
             return Err(TrailingJunkAfterParameter)
         }
 
@@ -361,8 +361,10 @@ impl<'src> Lexer<'src> {
             )?
         */
 
-        if self.buffer.consume_if(|c| c == b'E' || c == b'e') {
-            let sign = self.buffer.consume_if(|c| c == b'+' || c == b'-');
+        let exp = self.buffer.consume_if(|c| c == b'E' || c == b'e');
+        if exp.is_some() {
+            let sign = self.buffer.consume_if(|c| c == b'+' || c == b'-')
+                .is_some();
             let dec = self.lex_dec_digits();
             if !dec {
                 if sign {
@@ -582,7 +584,7 @@ impl<'src> Lexer<'src> {
             return Some(span.slice())
         }
 
-        if self.buffer.consume_if(is_ident_start) {
+        if self.buffer.consume_if(is_ident_start).is_some() {
             self.buffer.consume_while(is_dollar_quote_cont);
         }
 
