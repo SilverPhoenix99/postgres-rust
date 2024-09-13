@@ -1,8 +1,11 @@
-mod basic_string_decoder;
-mod bit_string_decoder;
+mod basic_decoder;
+mod bit_decoder;
+mod complex_decoder;
+mod unicode_decoder;
 
-pub use basic_string_decoder::BasicStringDecoder;
-pub use bit_string_decoder::{BitStringDecoder, BitStringError};
+pub use basic_decoder::BasicStringDecoder;
+pub use bit_decoder::{BitStringDecoder, BitStringError};
+pub use unicode_decoder::UnicodeStringError;
 
 #[inline(always)]
 pub fn decode_char(c: u8, radix: u32) -> Option<u32> {
