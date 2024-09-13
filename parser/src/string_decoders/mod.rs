@@ -5,7 +5,7 @@ mod unicode_decoder;
 
 pub use basic_decoder::BasicStringDecoder;
 pub use bit_decoder::{BitStringDecoder, BitStringError};
-pub use unicode_decoder::UnicodeStringError;
+pub use unicode_decoder::{UnicodeStringDecoder, UnicodeStringError};
 
 #[inline(always)]
 pub fn decode_char(c: u8, radix: u32) -> Option<u32> {

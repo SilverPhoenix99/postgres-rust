@@ -16,6 +16,7 @@ macro_rules! fn_info {
     () => { postgres_basics::FnInfo::new(file!(), postgres_basics::qn_fn_name!(), line!()) };
 }
 
+pub mod ascii;
 mod char_buffer;
 mod concealable;
 mod fn_info;
