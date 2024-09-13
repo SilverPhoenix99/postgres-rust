@@ -7,8 +7,10 @@ pub struct TokenSpan<'lex, 'src> {
     range: Range<usize>,
 }
 
-impl<'lex, 'src> TokenSpan<'lex, 'src> {
-
+impl<'lex, 'src> TokenSpan<'lex, 'src>
+where
+    'src: 'lex
+{
     pub fn new(lexer: &'lex Lexer<'src>, start_pos: usize) -> Result<Self, LocatableError> {
 
         let end_pos = lexer.buffer.current_index();
