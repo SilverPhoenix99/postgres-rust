@@ -1,11 +1,9 @@
-mod ascii_flags;
 mod keyword;
 mod lexer_error;
 mod locatable;
 mod token_kind;
 mod token_span;
 
-pub use crate::lexer::ascii_flags::*;
 pub use crate::lexer::keyword::{
     ColumnNameKeyword,
     Keyword,
@@ -22,6 +20,7 @@ use crate::lexer::token_kind::StringKind::*;
 use crate::lexer::token_kind::TokenKind::*;
 pub use crate::lexer::token_kind::{IdentifierKind, StringKind, TokenKind};
 pub use crate::lexer::token_span::TokenSpan;
+use postgres_basics::ascii::*;
 use postgres_basics::{CharBuffer, NAMEDATALEN};
 use std::iter::FusedIterator;
 
