@@ -16,13 +16,15 @@ macro_rules! fn_info {
     () => { postgres_basics::FnInfo::new(file!(), postgres_basics::qn_fn_name!(), line!()) };
 }
 
+mod char_buffer;
 mod concealable;
 mod fn_info;
 pub mod guc;
 mod named;
-pub mod wchar;
 pub mod sql_state;
+pub mod wchar;
 
+pub use char_buffer::CharBuffer;
 pub use concealable::Concealable;
 pub use fn_info::FnInfo;
 pub use named::Named;

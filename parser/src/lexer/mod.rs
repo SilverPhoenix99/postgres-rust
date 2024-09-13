@@ -1,5 +1,4 @@
 mod ascii_flags;
-mod char_buffer;
 mod keyword;
 mod lexer_error;
 mod locatable;
@@ -7,7 +6,6 @@ mod token_kind;
 mod token_span;
 
 pub use crate::lexer::ascii_flags::*;
-pub use crate::lexer::char_buffer::CharBuffer;
 pub use crate::lexer::keyword::{
     ColumnNameKeyword,
     Keyword,
@@ -24,7 +22,7 @@ use crate::lexer::token_kind::StringKind::*;
 use crate::lexer::token_kind::TokenKind::*;
 pub use crate::lexer::token_kind::{IdentifierKind, StringKind, TokenKind};
 pub use crate::lexer::token_span::TokenSpan;
-use postgres_basics::NAMEDATALEN;
+use postgres_basics::{CharBuffer, NAMEDATALEN};
 use std::iter::FusedIterator;
 
 type LexResult = Result<TokenKind, LexerError>;
@@ -697,10 +695,9 @@ impl<'src> Lexer<'src> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lexer::keyword::ReservedKeyword::Not;
-    use crate::lexer::keyword::UnreservedKeyword::StringKw;
     use crate::lexer::Keyword::{Reserved, Unreserved};
-    use crate::lexer::ReservedKeyword::{From, Select};
+    use crate::lexer::ReservedKeyword::{From, Not, Select};
+    use crate::lexer::UnreservedKeyword::StringKw;
     use std::ops::Range;
 
     #[test]
