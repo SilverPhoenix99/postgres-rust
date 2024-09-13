@@ -158,15 +158,23 @@ impl<'src> CharBuffer<'src> {
     }
 }
 
+impl Default for LineBuffer {
+
+    #[inline]
+    fn default() -> Self {
+        let mut lines = Vec::with_capacity(8);
+        lines.push(0);
+        Self { lines }
+    }
+}
+
 /// Saves the position of lines (LF/CR/CRLF),
 /// and calculates location (line + column) from indexes.
 impl LineBuffer {
 
-    #[inline]
+    #[inline(always)]
     pub fn new() -> Self {
-        let mut lines = Vec::with_capacity(8);
-        lines.push(0);
-        Self { lines }
+        Self::default()
     }
 
     pub fn push(&mut self, line: usize) {
