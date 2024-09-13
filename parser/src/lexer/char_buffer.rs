@@ -29,6 +29,11 @@ impl<'src> CharBuffer<'src> {
     }
 
     #[inline(always)]
+    pub fn remainder(&self) -> &'src [u8] {
+        &self.source[self.current_index..]
+    }
+
+    #[inline(always)]
     pub fn current_index(&self) -> usize {
         self.current_index
     }
@@ -45,17 +50,17 @@ impl<'src> CharBuffer<'src> {
 
     #[inline]
     pub fn peek(&self) -> Option<u8> {
-        if self.eof() { None } else { Some(self.peek_unsafe()) }
+        if self.eof() {
+            None
+        }
+        else {
+            Some(self.source[self.current_index])
+        }
     }
 
     #[inline(always)]
     pub fn eof(&self) -> bool {
         self.current_index == self.source.len()
-    }
-
-    #[inline(always)]
-    pub(crate) fn peek_unsafe(&self) -> u8 {
-        self.source[self.current_index]
     }
 
     /// Consumes a char if it matches `expected`.
@@ -142,23 +147,10 @@ impl<'src> CharBuffer<'src> {
         self.current_index = pos;
     }
 
-    pub fn lookahead(&self, expected: &[u8]) -> bool {
-        let len = self.source.len() - self.current_index;
-        if len < expected.len() {
-            return false
-        }
-
-        let end_pos = self.current_index + expected.len();
-        let span = self.current_index..end_pos;
-        let actual = &self.source[span];
-
-        actual == expected
-    }
-
     #[inline]
     pub fn consume_string(&mut self, expected: &[u8]) -> bool {
 
-        if self.lookahead(expected) {
+        if self.remainder().starts_with(expected) {
             self.consume_many(expected.len());
             return true
         }

@@ -212,7 +212,11 @@ impl<'src> Lexer<'src> {
         let start_pos = self.buffer.current_index();
         let mut pg_op = false;
         while self.buffer.peek().is_some_and(is_op) {
-            if self.buffer.lookahead(b"--") || self.buffer.lookahead(b"/*") {
+            let is_comment_start = {
+                let rem = self.buffer.remainder();
+                rem.starts_with(b"--") || rem.starts_with(b"/*")
+            };
+            if is_comment_start {
                 // This condition never happens for the 1st char,
                 // because trivia have already been consumed.
                 break
@@ -226,7 +230,7 @@ impl<'src> Lexer<'src> {
         // Length is guaranteed to be at least 1,
         // so it's safe to unwrap,
         // even though there's a push_back.
-        let mut op = TokenSpan::new(self, start_pos).unwrap().slice();
+        let op = TokenSpan::new(self, start_pos).unwrap().slice();
 
         match op {
             b"%"  => Ok(Percent),
@@ -251,10 +255,11 @@ impl<'src> Lexer<'src> {
                     // Custom operators that only have SQL-standard chars
                     // cannot have '+' or '-' as suffixes.
                     // E.g., '=-' should be tokenized as '=' and '-' separately.
-                    while let Some(b'+' | b'-') = op.last() {
-                        op = &op[..(op.len() - 1)];
-                        self.buffer.push_back()
-                    }
+                    let num = op.iter()
+                        .rev()
+                        .take_while(|c| **c == b'+' || **c == b'-')
+                        .count();
+                    self.buffer.seek(self.buffer.current_index() - num);
                 }
 
                 if op.len() >= NAMEDATALEN {
@@ -667,7 +672,7 @@ impl<'src> Lexer<'src> {
         }
 
         loop {
-            if self.buffer.lookahead(b"/*") {
+            if self.buffer.remainder().starts_with(b"/*") {
                 self.skip_block_comment()?;
                 continue
             }
