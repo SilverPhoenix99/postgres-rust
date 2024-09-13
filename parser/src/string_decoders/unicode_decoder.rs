@@ -1,0 +1,125 @@
+use crate::string_decoders::complex_decoder::ComplexStringDecoder;
+use crate::string_decoders::complex_decoder::UnicodeChar::*;
+use crate::string_decoders::complex_decoder::UnicodeCharError::*;
+use crate::string_decoders::UnicodeStringError::*;
+use postgres_basics::{wchar, CharBuffer};
+use std::str::Utf8Error;
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum UnicodeStringError {
+    Utf8Err(Utf8Error),
+    InvalidUnicodeCodepoint,
+    InvalidUnicodeSurrogatePair,
+}
+
+pub struct UnicodeStringDecoder<'src> {
+    input: CharBuffer<'src>,
+    quote: u8,
+    escape: u8,
+}
+
+impl<'src> ComplexStringDecoder<'src> for UnicodeStringDecoder<'src> {
+    fn input(&mut self) -> &mut CharBuffer<'src> {
+        &mut self.input
+    }
+}
+
+impl<'src> UnicodeStringDecoder<'src> {
+
+    pub fn new(source: &'src [u8], is_ident: bool, escape: u8) -> Self {
+        let input = CharBuffer::new(source);
+        let quote = if is_ident { b'"' } else { b'\'' };
+        Self { input, quote, escape }
+    }
+
+    pub fn decode(&mut self) -> Result<String, UnicodeStringError> {
+
+        // see [str_udeescape](https://github.com/postgres/postgres/blob/1c61fd8b527954f0ec522e5e60a11ce82628b681/src/backend/parser/parser.c#L372)
+
+        // Quotes are escaped by duplicating themselves.
+        // '' -> '
+        // "" -> "
+
+        let mut out = Vec::with_capacity(self.input.source().len());
+
+        while let Some(c) = self.input.consume_one() {
+
+            if c == self.quote {
+                out.push(c);
+
+                // ignore duplicate quote char (escapes itself: '' or "")
+                self.input.consume_char(self.quote);
+
+                continue
+            }
+
+            if c != self.escape {
+                out.push(c);
+                continue
+            }
+
+            let start_pos = self.input.current_index();
+            let unicode_len = if self.input.consume_char(b'+') { 6 } else { 4 };
+
+            let c = match self.decode_unicode_char(unicode_len) {
+                Ok(Utf8(c)) => c,
+                Ok(SurrogateFirst(first)) => {
+                    if !self.input.consume_char(self.escape) {
+                        return Err(InvalidUnicodeSurrogatePair)
+                    }
+
+                    let unicode_len = if self.input.consume_char(b'+') { 6 } else { 4 };
+                    if let Ok(SurrogateSecond(second)) = self.decode_unicode_char(unicode_len) {
+                        wchar::decode_utf16(first, second)
+                            .ok_or(InvalidUnicodeSurrogatePair)? // should be unreachable
+                    } else {
+                        return Err(InvalidUnicodeSurrogatePair)
+                    }
+                }
+                Err(LenTooShort { .. }) => {
+                    // It wasn't a valid Unicode escape.
+                    // Just push all chars up to here
+
+                    out.push(self.escape);
+
+                    let end_pos = self.input.current_index();
+                    let src = &self.input.source()[start_pos..end_pos];
+                    out.extend_from_slice(src);
+                    continue
+                },
+                Ok(SurrogateSecond(_)) => return Err(InvalidUnicodeSurrogatePair),
+                Err(InvalidUnicodeEscape) => return Err(InvalidUnicodeCodepoint),
+            };
+
+            let len = c.len_utf8();
+            if len == 1 {
+                // fast path
+                out.push(c as u8);
+                continue
+            }
+
+            // Avoid allocating a string, by encoding the char directly,
+            // and pushing the raw bytes directly into the output buffer.
+            let mut buff = [0; 4];
+            c.encode_utf8(&mut buff);
+            out.extend_from_slice(&buff[..len]);
+        }
+
+        String::from_utf8(out)
+            .map_err(|err| Utf8Err(err.utf8_error()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_unicode_string() {
+        let mut decoder = UnicodeStringDecoder::new(b"''d!0061t\\+000061 a!b \\", false, b'!');
+        assert_eq!(
+            Ok("'dat\\+000061 a!b \\".to_string()),
+            decoder.decode()
+        )
+    }
+}
