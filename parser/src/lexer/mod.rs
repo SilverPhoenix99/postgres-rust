@@ -19,7 +19,7 @@ use crate::lexer::token_kind::IdentifierKind::*;
 use crate::lexer::token_kind::StringKind::*;
 use crate::lexer::token_kind::TokenKind::*;
 pub use crate::lexer::token_kind::{IdentifierKind, StringKind, TokenKind};
-pub use crate::lexer::token_span::TokenSpan;
+use crate::lexer::token_span::TokenSpan;
 use postgres_basics::ascii::*;
 use postgres_basics::{CharBuffer, NAMEDATALEN};
 use std::iter::FusedIterator;
