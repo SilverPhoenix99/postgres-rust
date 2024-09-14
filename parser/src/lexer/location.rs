@@ -1,5 +1,8 @@
 use std::ops::Range;
 
+// A simple helper tuple type, to hold information related to some location.
+pub type Located<T> = (T, Location);
+
 // FIXME premature optimization:
 //   This data is packed together considering generics in the future,
 //   where it could be replaced with ()
@@ -21,31 +24,5 @@ impl Location {
     #[inline(always)]
     pub fn slice<'src>(&self, source: &'src [u8]) -> &'src [u8] {
         &source[self.range.clone()]
-    }
-
-    #[inline(always)]
-    pub fn of<T>(self, value: T) -> Locatable<T> {
-        Locatable::new(value, self)
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Locatable<T>(pub T, pub Location);
-
-impl<T> Locatable<T> {
-
-    #[inline(always)]
-    pub fn new(value: T, loc: Location) -> Self {
-        Self(value, loc)
-    }
-
-    #[inline(always)]
-    pub fn value(&self) -> &T {
-        &self.0
-    }
-
-    #[inline(always)]
-    pub fn loc(&self) -> &Location {
-        &self.1
     }
 }
