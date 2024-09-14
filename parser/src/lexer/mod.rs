@@ -1,20 +1,18 @@
 mod keyword;
 mod lexer_error;
-mod locatable;
+mod location;
 mod token_kind;
 mod token_span;
 
-pub use crate::lexer::keyword::{
-    ColumnNameKeyword,
-    Keyword,
-    KeywordDetails,
-    ReservedKeyword,
-    TypeFuncNameKeyword,
-    UnreservedKeyword
-};
+pub use crate::lexer::keyword::ColumnNameKeyword;
+pub use crate::lexer::keyword::Keyword;
+pub use crate::lexer::keyword::KeywordDetails;
+pub use crate::lexer::keyword::ReservedKeyword;
+pub use crate::lexer::keyword::TypeFuncNameKeyword;
+pub use crate::lexer::keyword::UnreservedKeyword;
 pub use crate::lexer::lexer_error::LexerError;
 use crate::lexer::lexer_error::LexerError::*;
-pub use crate::lexer::locatable::{Locatable, Location};
+pub use crate::lexer::location::{Located, Location};
 use crate::lexer::token_kind::IdentifierKind::*;
 use crate::lexer::token_kind::StringKind::*;
 use crate::lexer::token_kind::TokenKind::*;
@@ -26,9 +24,7 @@ use std::iter::FusedIterator;
 
 type LexResult = Result<TokenKind, LexerError>;
 
-pub(crate) type LocatableToken = Locatable<TokenKind>;
-type LocatableError = Locatable<LexerError>;
-pub(crate) type LexerResult = Result<LocatableToken, LocatableError>;
+pub(crate) type DeprecatedLexerResult = Located<LexResult>;
 
 #[derive(Debug)]
 pub struct Lexer<'src> {
@@ -37,32 +33,33 @@ pub struct Lexer<'src> {
 }
 
 impl Iterator for Lexer<'_> {
-    type Item = LexerResult;
+    type Item = Located<LexResult>;
 
     /// The token is always a full match,
     /// never a substring that's more interesting that the whole match.
     fn next(&mut self) -> Option<Self::Item> {
 
+        let start_pos = self.buffer.current_index();
+
         let concatenable_whitespace = match self.skip_trivia() {
             Ok(concatenable_whitespace) => concatenable_whitespace,
-            Err(err) => return Some(Err(err))
+            Err((err, loc)) => {
+                return Some((Err(err), loc))
+            }
         };
 
         if self.buffer.eof() {
             return None
         }
 
-        let start_pos = self.buffer.current_index();
 
         let token = self.lex_token(concatenable_whitespace);
 
-        let location = TokenSpan::new(self, start_pos)
-            .unwrap()
-            .location();
+        let location = TokenSpan::new(self, start_pos).location();
 
         match token {
-            Ok(kind) => Some(Ok(location.of(kind))),
-            Err(err_code) => Some(Err(location.of(err_code))),
+            Ok(kind) => Some((Ok(kind), location)),
+            Err(err_code) => Some((Err(err_code), location)),
         }
     }
 }
@@ -227,7 +224,7 @@ impl<'src> Lexer<'src> {
         // Length is guaranteed to be at least 1,
         // so it's safe to unwrap,
         // even though there's a push_back.
-        let op = TokenSpan::new(self, start_pos).unwrap().slice();
+        let op = TokenSpan::new(self, start_pos).slice();
 
         match op {
             b"%"  => Ok(Percent),
@@ -284,7 +281,7 @@ impl<'src> Lexer<'src> {
             return Err(TrailingJunkAfterParameter)
         }
 
-        let span = TokenSpan::new(self, start_pos).unwrap();
+        let span = TokenSpan::new(self, start_pos);
 
         if span.range().len() >= 10 && span.slice()[0] > b'2' {
             // Careful with leading 0's.
@@ -538,7 +535,6 @@ impl<'src> Lexer<'src> {
         self.buffer.consume_while(is_ident_cont);
 
         let ident = TokenSpan::new(self, start_pos)
-            .unwrap()
             .slice()
             .to_ascii_lowercase();
 
@@ -582,7 +578,7 @@ impl<'src> Lexer<'src> {
 
         if self.buffer.consume_char(b'$') {
             // Empty delimiter
-            let span = TokenSpan::new(self, start_pos).unwrap();
+            let span = TokenSpan::new(self, start_pos);
             return Some(span.slice())
         }
 
@@ -596,12 +592,12 @@ impl<'src> Lexer<'src> {
             return None
         }
 
-        let span = TokenSpan::new(self, start_pos).unwrap();
+        let span = TokenSpan::new(self, start_pos);
         Some(span.slice())
     }
 
     #[inline] // Only called from a single place
-    fn skip_trivia(&mut self) -> Result<bool, LocatableError> {
+    fn skip_trivia(&mut self) -> Result<bool, Located<LexerError>> {
 
         // Postgres:
         //   Returns Ok(true) if the whitespace contains \n and no block comments.
@@ -660,7 +656,7 @@ impl<'src> Lexer<'src> {
         true
     }
 
-    fn skip_block_comment(&mut self) -> Result<bool, LocatableError> {
+    fn skip_block_comment(&mut self) -> Result<bool, Located<LexerError>> {
 
         let start_pos = self.buffer.current_index();
 
@@ -679,11 +675,8 @@ impl<'src> Lexer<'src> {
             }
 
             if self.buffer.eof() {
-                let err = TokenSpan::new(self, start_pos)
-                    .unwrap()
-                    .location()
-                    .of(UnterminatedBlockComment);
-                return Err(err)
+                let loc = TokenSpan::new(self, start_pos).location();
+                return Err((UnterminatedBlockComment, loc))
             }
 
             self.buffer.consume_one();
@@ -980,21 +973,23 @@ mod tests {
         assert_eq!(None, lex.next());
     }
 
-    fn tok(kind: TokenKind, range: Range<usize>, line: usize, col: usize) -> Option<LexerResult> {
-        Some(Ok(
-            Location::new(range, line, col).of(kind)
+    fn tok(kind: TokenKind, range: Range<usize>, line: usize, col: usize) -> Option<Located<LexResult>> {
+        Some((
+            Ok(kind),
+            Location::new(range, line, col)
         ))
     }
 
-    fn err(err: LexerError, range: Range<usize>, line: usize, col: usize) -> Option<LexerResult> {
-        Some(Err(
-            Location::new(range, line, col).of(err)
+    fn err(err: LexerError, range: Range<usize>, line: usize, col: usize) -> Option<Located<LexResult>> {
+        Some((
+            Err(err),
+            Location::new(range, line, col)
         ))
     }
 
-    fn assert_kw(expected: Keyword, actual: Option<LexerResult>) {
+    fn assert_kw(expected: Keyword, actual: Option<Located<LexResult>>) {
         match actual {
-            Some(Ok(Locatable(Keyword(kw), _))) => {
+            Some((Ok(Keyword(kw)), _)) => {
                 assert_eq!(expected, kw.keyword);
             }
             _ => {
