@@ -115,7 +115,7 @@ impl<'src> Lexer<'src> {
                 Some(c) if is_decimal_digit(c) => self.lex_param(),
                 Some(b'$') => self.lex_dollar_string(), // empty delimiter
                 Some(c) if is_ident_start(c) => self.lex_dollar_string(),
-                _ => Err(UnknownChar { unknown: b'$' }),
+                _ => Err(UnexpectedChar { unknown: b'$' }),
             }
             b'\'' => {
                 if self.standard_conforming_strings {
@@ -194,7 +194,9 @@ impl<'src> Lexer<'src> {
             b'1'..=b'9' => self.lex_dec_integer(),
             op if is_op(op) => self.lex_operator(),
             id if is_ident_start(id) => self.lex_identifier(),
-            unknown => Err(UnknownChar { unknown }),
+            unknown => {
+                Err(UnexpectedChar { unknown })
+            },
         }
     }
 
@@ -454,7 +456,10 @@ impl<'src> Lexer<'src> {
 
         loop {
             match self.buffer.consume_one() {
-                None => return Err(UnterminatedString),
+                None => {
+                    let err = if kind == HexString { UnterminatedHexString } else { UnterminatedBitString };
+                    return Err(err)
+                },
                 Some(b'\'') => return Ok(StringLiteral { kind, concatenable: false }),
                 _ => {}
             }
@@ -489,7 +494,7 @@ impl<'src> Lexer<'src> {
 
         loop {
             match self.buffer.consume_one() {
-                None => return Err(UnterminatedString),
+                None => return Err(UnterminatedQuotedString),
                 Some(b'\'') => {
                     if let Some(b'\'') = self.buffer.peek() {
                         self.buffer.consume_one();
@@ -510,10 +515,10 @@ impl<'src> Lexer<'src> {
 
         loop {
             match self.buffer.consume_one() {
-                None => return Err(UnterminatedString),
+                None => return Err(UnterminatedQuotedString),
                 Some(b'\\') => {
                     if self.buffer.consume_one().is_none() {
-                        return Err(UnterminatedString);
+                        return Err(UnterminatedQuotedString);
                     }
                 }
                 Some(b'\'') => {
@@ -552,13 +557,13 @@ impl<'src> Lexer<'src> {
         // even if the delimiter is empty (i.e., '$$'),
         // so it's easier to match and consume.
         let delim = match self.lex_dollar_delim() {
-            None => return Err(UnknownChar { unknown: b'$' }),
+            None => return Err(UnexpectedChar { unknown: b'$' }),
             Some(d) => d
         };
 
         loop {
             if self.buffer.eof() {
-                return Err(UnterminatedString)
+                return Err(UnterminatedDollarQuotedString)
             }
             if self.buffer.consume_char(b'$') {
                 if self.buffer.consume_string(delim) {
@@ -714,7 +719,7 @@ mod tests {
         let source = b"\x00";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(err(UnknownChar { unknown: b'\x00' }, 0..1, 1, 1), lex.next());
+        assert_eq!(err(UnexpectedChar { unknown: b'\x00' }, 0..1, 1, 1), lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -873,7 +878,7 @@ mod tests {
         let source = b"$not a string";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(err(UnknownChar { unknown: b'$' }, 0..1, 1, 1), lex.next());
+        assert_eq!(err(UnexpectedChar { unknown: b'$' }, 0..1, 1, 1), lex.next());
         assert_kw(Reserved(Not), lex.next());
         assert_eq!(tok(Identifier(BasicIdentifier), 5..6, 1, 6), lex.next());
         assert_kw(Unreserved(StringKw), lex.next());
