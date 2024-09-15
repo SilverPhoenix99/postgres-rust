@@ -44,10 +44,10 @@ impl Iterator for Lexer<'_> {
             return None
         }
 
-        let start_pos = self.buffer.current_index();
+        let start_index = self.buffer.current_index();
         let token = self.lex_token(concatenable_whitespace);
 
-        let location = self.buffer.location_starting_at(start_pos);
+        let location = self.buffer.location_starting_at(start_index);
 
         match token {
             Ok(kind) => Some((Ok(kind), location)),
@@ -423,7 +423,7 @@ impl<'src> Lexer<'src> {
     fn lex_prefixed_int(&mut self, is_digit: impl Fn(u8) -> bool, radix: i32) -> LexResult {
         self.buffer.consume_one(); // ignore [xXoObB]
 
-        let start_pos = self.buffer.current_index();
+        let start_index = self.buffer.current_index();
 
         // /(_?{digit}+)*/
         let mut consumed = usize::MAX;
@@ -432,9 +432,9 @@ impl<'src> Lexer<'src> {
             consumed = self.buffer.consume_while(&is_digit);
         }
 
-        let end_pos = self.buffer.current_index();
+        let end_index = self.buffer.current_index();
         let span = self.buffer.source();
-        let span = &span[start_pos..end_pos];
+        let span = &span[start_index..end_index];
 
         if span.is_empty() || span.last().is_some_and(|c| *c == b'_') {
             return Err(InvalidInteger { radix })
@@ -463,7 +463,7 @@ impl<'src> Lexer<'src> {
 
     fn lex_quote_ident(&mut self, ident_kind: IdentifierKind) -> LexResult {
 
-        let start_pos = self.buffer.current_index();
+        let start_index = self.buffer.current_index();
 
         loop {
             match self.buffer.consume_one() {
@@ -473,7 +473,7 @@ impl<'src> Lexer<'src> {
                         // escaped double quote '""'
                         self.buffer.consume_one();
                     } else {
-                        return if self.buffer.current_index() - start_pos == 1 {
+                        return if self.buffer.current_index() - start_index == 1 {
                             Err(EmptyDelimitedIdentifier) // only consumed '"'
                         } else {
                             Ok(Identifier(ident_kind))
@@ -613,7 +613,7 @@ impl<'src> Lexer<'src> {
             return Ok(false)
         }
 
-        let start_pos = self.buffer.current_index();
+        let start_index = self.buffer.current_index();
 
         let mut block_comment = false;
         loop {
@@ -635,7 +635,7 @@ impl<'src> Lexer<'src> {
             break
         }
 
-        let (start_line, _) = self.buffer.position_at(start_pos);
+        let (start_line, _) = self.buffer.position_at(start_index);
         let (end_line, _) = self.buffer.position();
 
         Ok(!block_comment && start_line != end_line)
@@ -691,7 +691,6 @@ mod tests {
     use crate::lexer::Keyword::{Reserved, Unreserved};
     use crate::lexer::ReservedKeyword::{From, Not, Select};
     use crate::lexer::UnreservedKeyword::StringKw;
-    use postgres_basics::Located;
     use std::ops::Range;
 
     #[test]
