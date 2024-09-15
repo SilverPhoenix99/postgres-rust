@@ -7,3 +7,4 @@ version.workspace = true
 postgres-basics.workspace = true
 bitflags.workspace = true
 phf.workspace = true
+thiserror.workspace = true
