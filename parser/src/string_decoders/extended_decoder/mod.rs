@@ -1,17 +1,12 @@
+mod extended_string_error;
+
+pub use extended_string_error::ExtendedStringError;
 use postgres_basics::ascii::{is_hex_digit, is_oct_digit};
 use postgres_basics::guc::BackslashQuote;
 use postgres_basics::guc::BackslashQuote::SafeEncoding;
 use postgres_basics::UnicodeChar::{SurrogateFirst, SurrogateSecond};
 use postgres_basics::{wchar, CharBuffer, UnicodeChar};
-use std::str::Utf8Error;
 use ExtendedStringError::*;
-
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum ExtendedStringError {
-    Utf8(Utf8Error),
-    NonstandardUseOfBackslashQuote,
-    InvalidUnicodeCodepoint,
-}
 
 pub struct ExtendedStringDecoder<'src> {
     input: CharBuffer<'src>,
@@ -75,6 +70,10 @@ impl<'src> ExtendedStringDecoder<'src> {
                 b'r' => out.push(b'\r'),
                 b't' => out.push(b'\t'),
                 b'v' => out.push(b'\x0b'), // '\v'
+                b'\\' => {
+                    // TODO: warn
+                    out.push(b'\\')
+                },
                 b'\'' => { // b"\\'"
                     if self.forbid_backslash_quote() {
                         // TODO: check client encoding in the condition
@@ -114,20 +113,28 @@ impl<'src> ExtendedStringDecoder<'src> {
                         Ok(UnicodeChar::Utf8(c)) => c,
                         Ok(SurrogateFirst(first)) => {
                             if !self.input.consume_char(b'\\') {
-                                return Err(InvalidUnicodeCodepoint)
+                                return Err(InvalidUnicodeSurrogatePair)
                             }
 
-                            let unicode_len = if self.input.consume_char(b'u') { 4 } else if self.input.consume_char(b'U') { 8 } else { return Err(InvalidUnicodeCodepoint) };
+                            let unicode_len = if self.input.consume_char(b'u') {
+                                4
+                            }
+                            else if self.input.consume_char(b'U') {
+                                8
+                            }
+                            else {
+                                return Err(InvalidUnicodeSurrogatePair)
+                            };
 
                             match self.input.consume_unicode_char(unicode_len) {
                                 Ok(SurrogateSecond(second)) => {
-                                   wchar::decode_utf16(first, second)
-                                       .ok_or(InvalidUnicodeCodepoint)?
+                                    wchar::decode_utf16(first, second)
+                                        .ok_or(InvalidUnicodeSurrogatePair)?
                                 },
-                                _ => return Err(InvalidUnicodeCodepoint)
+                                _ => return Err(InvalidUnicodeSurrogatePair)
                             }
                         }
-                        _ => return Err(InvalidUnicodeCodepoint),
+                        _ => return Err(InvalidUnicodeSurrogatePair),
                     };
 
                     let len = c.len_utf8();
