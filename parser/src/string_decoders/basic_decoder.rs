@@ -1,4 +1,4 @@
-use std::string::FromUtf8Error;
+use std::str::Utf8Error;
 
 pub struct BasicStringDecoder<'src> {
     source: &'src [u8],
@@ -12,7 +12,7 @@ impl<'src> BasicStringDecoder<'src> {
         BasicStringDecoder { source, is_ident }
     }
 
-    pub fn decode(&self) -> Result<String, FromUtf8Error> {
+    pub fn decode(&self) -> Result<String, Utf8Error> {
 
         let src = self.source.to_vec();
 
@@ -23,7 +23,8 @@ impl<'src> BasicStringDecoder<'src> {
             ("'", "''")
         };
 
-        let string = String::from_utf8(src)?
+        let string = String::from_utf8(src)
+            .map_err(|e| e.utf8_error())?
             .replace(escape, quote);
 
         Ok(string)
