@@ -1,13 +1,12 @@
-use crate::string_decoders::complex_decoder::ComplexStringDecoder;
-use crate::string_decoders::complex_decoder::UnicodeChar::*;
-use crate::string_decoders::complex_decoder::UnicodeCharError::*;
-use crate::string_decoders::UnicodeStringError::*;
-use postgres_basics::{wchar, CharBuffer};
+use postgres_basics::UnicodeChar::{SurrogateFirst, SurrogateSecond};
+use postgres_basics::UnicodeCharError::*;
+use postgres_basics::{wchar, CharBuffer, UnicodeChar};
 use std::str::Utf8Error;
+use UnicodeStringError::*;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum UnicodeStringError {
-    Utf8Err(Utf8Error),
+    Utf8(Utf8Error),
     InvalidUnicodeCodepoint,
     InvalidUnicodeSurrogatePair,
 }
@@ -16,12 +15,6 @@ pub struct UnicodeStringDecoder<'src> {
     input: CharBuffer<'src>,
     quote: u8,
     escape: u8,
-}
-
-impl<'src> ComplexStringDecoder<'src> for UnicodeStringDecoder<'src> {
-    fn input(&mut self) -> &mut CharBuffer<'src> {
-        &mut self.input
-    }
 }
 
 impl<'src> UnicodeStringDecoder<'src> {
@@ -61,15 +54,15 @@ impl<'src> UnicodeStringDecoder<'src> {
             let start_pos = self.input.current_index();
             let unicode_len = if self.input.consume_char(b'+') { 6 } else { 4 };
 
-            let c = match self.decode_unicode_char(unicode_len) {
-                Ok(Utf8(c)) => c,
+            let c = match self.input.consume_unicode_char(unicode_len) {
+                Ok(UnicodeChar::Utf8(c)) => c,
                 Ok(SurrogateFirst(first)) => {
                     if !self.input.consume_char(self.escape) {
                         return Err(InvalidUnicodeSurrogatePair)
                     }
 
                     let unicode_len = if self.input.consume_char(b'+') { 6 } else { 4 };
-                    if let Ok(SurrogateSecond(second)) = self.decode_unicode_char(unicode_len) {
+                    if let Ok(SurrogateSecond(second)) = self.input.consume_unicode_char(unicode_len) {
                         wchar::decode_utf16(first, second)
                             .ok_or(InvalidUnicodeSurrogatePair)? // should be unreachable
                     } else {
@@ -106,7 +99,7 @@ impl<'src> UnicodeStringDecoder<'src> {
         }
 
         String::from_utf8(out)
-            .map_err(|err| Utf8Err(err.utf8_error()))
+            .map_err(|err| Utf8(err.utf8_error()))
     }
 }
 

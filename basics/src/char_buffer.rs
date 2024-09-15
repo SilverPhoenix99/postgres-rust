@@ -1,9 +1,26 @@
-use crate::Location;
+use crate::{wchar, Location};
 use std::cmp::min;
+use UnicodeChar::*;
+use UnicodeCharError::*;
 
 pub type Position = (usize, usize);
 
+pub enum UnicodeChar {
+    SurrogateFirst(u16),
+    SurrogateSecond(u16),
+    Utf8(char),
+}
+
+pub enum UnicodeCharError {
+    LenTooShort {
+        expected: usize,
+        actual: usize,
+    },
+    InvalidUnicodeEscape,
+}
+
 #[derive(Debug, Clone)]
+#[repr(transparent)]
 struct LineBuffer {
     lines: Vec<usize> // where each line begins (i.e., col 1)
 }
@@ -64,7 +81,7 @@ impl<'src> CharBuffer<'src> {
         let (line, col) = self.lines.position(start_index);
         Location::new(start_index..self.current_index, line, col)
     }
-    
+
     pub fn slice(&self, start_index: usize) -> &'src [u8] {
         assert!(start_index <= self.current_index);
         &self.source[start_index..self.current_index]
@@ -177,6 +194,56 @@ impl<'src> CharBuffer<'src> {
             return true
         }
         false
+    }
+
+    /// Consume a hexadecimal representation of a Unicode char,
+    /// represented in either in UTF-16 or UTF-32.
+    ///
+    /// E.g.: `"0061"` outputs `Utf8('a')`
+    pub fn consume_unicode_char(&mut self, unicode_len: usize) -> Result<UnicodeChar, UnicodeCharError> {
+
+        debug_assert!(unicode_len <= 8, "unicode encoded chars cannot be longer than 8 chars");
+
+        let slice = self.remainder();
+        if slice.len() < unicode_len {
+            return Err(LenTooShort {
+                expected: unicode_len,
+                actual: slice.len(),
+            })
+        }
+
+        let c = slice[..unicode_len]
+            .iter()
+            .enumerate()
+            .map(|(n, d)| {
+                char::from(*d)
+                    .to_digit(16)
+                    .ok_or({ 
+                        LenTooShort { expected: unicode_len, actual: n } 
+                    })
+            })
+            .try_fold(0, |acc, d|
+                Ok((acc << 4) + d?)
+            )?;
+
+        let result = {
+            if wchar::is_utf16_surrogate_first(c as u16) {
+                Ok(SurrogateFirst(c as u16))
+            } else if wchar::is_utf16_surrogate_second(c as u16) {
+                Ok(SurrogateSecond(c as u16))
+            }
+            else {
+                char::from_u32(c)
+                    .map(Utf8)
+                    .ok_or(InvalidUnicodeEscape)
+            }
+        };
+
+        if result.is_ok() {
+            self.consume_many(unicode_len);
+        }
+
+        result
     }
 }
 

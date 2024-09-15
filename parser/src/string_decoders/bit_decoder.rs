@@ -1,4 +1,3 @@
-use crate::string_decoders::decode_char;
 use bitvec::boxed::BitBox;
 use bitvec::vec::BitVec;
 use BitStringError::{BitStringTooLong, InvalidBinaryDigit};
@@ -38,7 +37,9 @@ impl<'src> BitStringDecoder<'src> {
 
         let src = self.source.iter()
             .map(|c|
-                decode_char(*c, radix).ok_or(InvalidBinaryDigit)
+                 (*c as char)
+                     .to_digit(radix)
+                     .ok_or(InvalidBinaryDigit)
             );
 
         let buffer = if self.bits_per_char == 1 {
