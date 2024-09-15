@@ -24,8 +24,6 @@ use std::iter::FusedIterator;
 
 type LexResult = Result<TokenKind, LexerError>;
 
-pub(crate) type DeprecatedLexerResult = Located<LexResult>;
-
 #[derive(Debug)]
 pub struct Lexer<'src> {
     buffer: CharBuffer<'src>,
@@ -36,10 +34,8 @@ impl Iterator for Lexer<'_> {
     type Item = Located<LexResult>;
 
     /// The token is always a full match,
-    /// never a substring that's more interesting that the whole match.
+    /// never a substring that's more interesting than the whole match.
     fn next(&mut self) -> Option<Self::Item> {
-
-        let start_pos = self.buffer.current_index();
 
         let concatenable_whitespace = match self.skip_trivia() {
             Ok(concatenable_whitespace) => concatenable_whitespace,
@@ -52,7 +48,7 @@ impl Iterator for Lexer<'_> {
             return None
         }
 
-
+        let start_pos = self.buffer.current_index();
         let token = self.lex_token(concatenable_whitespace);
 
         let location = TokenSpan::new(self, start_pos).location();
