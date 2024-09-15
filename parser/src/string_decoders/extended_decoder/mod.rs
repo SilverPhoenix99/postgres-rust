@@ -1,16 +1,24 @@
 mod extended_string_error;
+mod extended_string_warning;
 
 pub use extended_string_error::ExtendedStringError;
+pub use extended_string_warning::ExtendedStringWarning;
 use postgres_basics::ascii::{is_hex_digit, is_oct_digit};
 use postgres_basics::guc::BackslashQuote;
 use postgres_basics::guc::BackslashQuote::SafeEncoding;
 use postgres_basics::UnicodeChar::{SurrogateFirst, SurrogateSecond};
 use postgres_basics::{wchar, CharBuffer, UnicodeChar};
 use ExtendedStringError::*;
+use ExtendedStringWarning::*;
 
 pub struct ExtendedStringDecoder<'src> {
     input: CharBuffer<'src>,
     backslash_quote: BackslashQuote,
+}
+
+pub struct ExtendedStringResult {
+    result: Result<String, ExtendedStringError>,
+    warning: Option<ExtendedStringWarning>,
 }
 
 impl<'src> ExtendedStringDecoder<'src> {
@@ -21,8 +29,7 @@ impl<'src> ExtendedStringDecoder<'src> {
         Self { input, backslash_quote }
     }
 
-    pub fn decode(&mut self) -> Result<String, ExtendedStringError> {
-
+    pub fn decode(&mut self) -> ExtendedStringResult {
         // see `<xe>` and <xeu> rules in
         // [scan.l](https://github.com/postgres/postgres/blob/77761ee5dddc0518235a51c533893e81e5f375b9/src/backend/parser/scan.l#L275-L281)
 
@@ -38,6 +45,7 @@ impl<'src> ExtendedStringDecoder<'src> {
         // UNICODE: [\\]U[0-9A-Fa-f]{8} => consume_unicode_char(8) (Ok(None) is an error here)
 
         let mut out = Vec::with_capacity(self.input.source().len());
+        let mut warning: Option<ExtendedStringWarning> = None;
 
         while let Some(c) = self.input.consume_one() {
 
@@ -71,14 +79,18 @@ impl<'src> ExtendedStringDecoder<'src> {
                 b't' => out.push(b'\t'),
                 b'v' => out.push(b'\x0b'), // '\v'
                 b'\\' => {
-                    // TODO: warn
+                    warning.get_or_insert(NonstandardBackslashEscape);
                     out.push(b'\\')
                 },
                 b'\'' => { // b"\\'"
                     if self.forbid_backslash_quote() {
                         // TODO: check client encoding in the condition
-                        return Err(NonstandardUseOfBackslashQuote)
+                        return ExtendedStringResult {
+                            result: Err(NonstandardUseOfBackslashQuote),
+                            warning
+                        }
                     }
+                    warning.get_or_insert(NonstandardQuoteEscape);
                     out.push(b'\'')
                 },
                 b'0'..=b'7' => { // octal escape
@@ -107,13 +119,17 @@ impl<'src> ExtendedStringDecoder<'src> {
                     }
                 },
                 b'u' | b'U' => {
+
+                    warning.get_or_insert(NonstandardEscape);
+
                     let unicode_len = if c.is_ascii_lowercase() { 4 } else { 8 };
+                    let err_result = ExtendedStringResult { result: Err(InvalidUnicodeSurrogatePair), warning };
 
                     let c = match self.input.consume_unicode_char(unicode_len) {
                         Ok(UnicodeChar::Utf8(c)) => c,
                         Ok(SurrogateFirst(first)) => {
                             if !self.input.consume_char(b'\\') {
-                                return Err(InvalidUnicodeSurrogatePair)
+                                return err_result
                             }
 
                             let unicode_len = if self.input.consume_char(b'u') {
@@ -123,18 +139,22 @@ impl<'src> ExtendedStringDecoder<'src> {
                                 8
                             }
                             else {
-                                return Err(InvalidUnicodeSurrogatePair)
+                                return err_result
                             };
 
                             match self.input.consume_unicode_char(unicode_len) {
                                 Ok(SurrogateSecond(second)) => {
-                                    wchar::decode_utf16(first, second)
-                                        .ok_or(InvalidUnicodeSurrogatePair)?
+                                    if let Some(c) = wchar::decode_utf16(first, second) {
+                                        c
+                                    }
+                                    else {
+                                        return err_result
+                                    }
                                 },
-                                _ => return Err(InvalidUnicodeSurrogatePair)
+                                _ => return err_result
                             }
                         }
-                        _ => return Err(InvalidUnicodeSurrogatePair),
+                        _ => return err_result,
                     };
 
                     let len = c.len_utf8();
@@ -154,8 +174,10 @@ impl<'src> ExtendedStringDecoder<'src> {
             }
         }
 
-        String::from_utf8(out)
-            .map_err(|err| Utf8(err.utf8_error()))
+        let result = String::from_utf8(out)
+            .map_err(|err| Utf8(err.utf8_error()));
+
+        ExtendedStringResult { result, warning }
     }
 
     fn forbid_backslash_quote(&self) -> bool {
@@ -175,7 +197,7 @@ mod tests {
         );
         assert_eq!(
             Ok("data'\\'\x08\x0c\n\r\t\x0b xy".to_string()),
-            decoder.decode()
+            decoder.decode().result
         )
     }
 }
