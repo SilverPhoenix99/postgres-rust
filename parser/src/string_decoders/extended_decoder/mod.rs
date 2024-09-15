@@ -17,8 +17,8 @@ pub struct ExtendedStringDecoder<'src> {
 }
 
 pub struct ExtendedStringResult {
-    result: Result<String, ExtendedStringError>,
-    warning: Option<ExtendedStringWarning>,
+    pub result: Result<String, ExtendedStringError>,
+    pub warning: Option<ExtendedStringWarning>,
 }
 
 impl<'src> ExtendedStringDecoder<'src> {
@@ -123,38 +123,13 @@ impl<'src> ExtendedStringDecoder<'src> {
                     warning.get_or_insert(NonstandardEscape);
 
                     let unicode_len = if c.is_ascii_lowercase() { 4 } else { 8 };
-                    let err_result = ExtendedStringResult { result: Err(InvalidUnicodeSurrogatePair), warning };
 
-                    let c = match self.input.consume_unicode_char(unicode_len) {
-                        Ok(UnicodeChar::Utf8(c)) => c,
-                        Ok(SurrogateFirst(first)) => {
-                            if !self.input.consume_char(b'\\') {
-                                return err_result
-                            }
-
-                            let unicode_len = if self.input.consume_char(b'u') {
-                                4
-                            }
-                            else if self.input.consume_char(b'U') {
-                                8
-                            }
-                            else {
-                                return err_result
-                            };
-
-                            match self.input.consume_unicode_char(unicode_len) {
-                                Ok(SurrogateSecond(second)) => {
-                                    if let Some(c) = wchar::decode_utf16(first, second) {
-                                        c
-                                    }
-                                    else {
-                                        return err_result
-                                    }
-                                },
-                                _ => return err_result
-                            }
+                    let c = match self.consume_unicode(unicode_len) {
+                        Some(c) => c,
+                        None => return ExtendedStringResult {
+                            result: Err(InvalidUnicodeSurrogatePair),
+                            warning
                         }
-                        _ => return err_result,
                     };
 
                     let len = c.len_utf8();
@@ -178,6 +153,36 @@ impl<'src> ExtendedStringDecoder<'src> {
             .map_err(|err| Utf8(err.utf8_error()));
 
         ExtendedStringResult { result, warning }
+    }
+
+    fn consume_unicode(&mut self, unicode_len: usize) -> Option<char> {
+
+        let first = self.input.consume_unicode_char(unicode_len).ok()?;
+
+        if let UnicodeChar::Utf8(c) = first {
+            return Some(c)
+        }
+
+        if let SurrogateFirst(first) = first {
+            if !self.input.consume_char(b'\\') {
+                return None
+            }
+
+            let unicode_len = if self.input.consume_char(b'u') {
+                4
+            } else if self.input.consume_char(b'U') {
+                8
+            } else {
+                return None
+            };
+
+            let second = self.input.consume_unicode_char(unicode_len).ok()?;
+            if let SurrogateSecond(second) = second {
+                return wchar::decode_utf16(first, second)
+            }
+        }
+
+        None
     }
 
     fn forbid_backslash_quote(&self) -> bool {
