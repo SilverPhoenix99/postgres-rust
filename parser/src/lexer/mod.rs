@@ -1,8 +1,6 @@
 mod keyword;
 mod lexer_error;
-mod location;
 mod token_kind;
-mod token_span;
 
 pub use crate::lexer::keyword::ColumnNameKeyword;
 pub use crate::lexer::keyword::Keyword;
@@ -12,14 +10,12 @@ pub use crate::lexer::keyword::TypeFuncNameKeyword;
 pub use crate::lexer::keyword::UnreservedKeyword;
 pub use crate::lexer::lexer_error::LexerError;
 use crate::lexer::lexer_error::LexerError::*;
-pub use crate::lexer::location::{Located, Location};
 use crate::lexer::token_kind::IdentifierKind::*;
 use crate::lexer::token_kind::StringKind::*;
 use crate::lexer::token_kind::TokenKind::*;
 pub use crate::lexer::token_kind::{IdentifierKind, StringKind, TokenKind};
-use crate::lexer::token_span::TokenSpan;
 use postgres_basics::ascii::*;
-use postgres_basics::{CharBuffer, NAMEDATALEN};
+use postgres_basics::{CharBuffer, Located, Location, NAMEDATALEN};
 use std::iter::FusedIterator;
 
 type LexResult = Result<TokenKind, LexerError>;
@@ -51,7 +47,7 @@ impl Iterator for Lexer<'_> {
         let start_pos = self.buffer.current_index();
         let token = self.lex_token(concatenable_whitespace);
 
-        let location = TokenSpan::new(self, start_pos).location();
+        let location = self.buffer.location_starting_at(start_pos);
 
         match token {
             Ok(kind) => Some((Ok(kind), location)),
@@ -70,6 +66,11 @@ impl<'src> Lexer<'src> {
             buffer: CharBuffer::new(source),
             standard_conforming_strings
         }
+    }
+
+    /// Zero-length position.
+    pub fn current_location(&self) -> Location {
+        self.buffer.location()
     }
 
     fn lex_token(&mut self, concatenable_string: bool) -> LexResult {
@@ -199,7 +200,7 @@ impl<'src> Lexer<'src> {
         // All trivia have already been consumed, so it never starts as a comment ("/*" or "--").
         // The length is guaranteed to be at least 1.
 
-        let start_pos = self.buffer.current_index();
+        let start_index = self.buffer.current_index();
         let mut pg_op = false;
         while self.buffer.peek().is_some_and(is_op) {
             let is_comment_start = {
@@ -220,7 +221,7 @@ impl<'src> Lexer<'src> {
         // Length is guaranteed to be at least 1,
         // so it's safe to unwrap,
         // even though there's a push_back.
-        let op = TokenSpan::new(self, start_pos).slice();
+        let op = self.buffer.slice(start_index);
 
         match op {
             b"%"  => Ok(Percent),
@@ -267,7 +268,7 @@ impl<'src> Lexer<'src> {
 
         // $ has already been consumed, so no need to worry about it here
 
-        let start_pos = self.buffer.current_index();
+        let start_index = self.buffer.current_index();
 
         self.buffer.consume_while(is_decimal_digit);
 
@@ -277,9 +278,9 @@ impl<'src> Lexer<'src> {
             return Err(TrailingJunkAfterParameter)
         }
 
-        let span = TokenSpan::new(self, start_pos);
+        let slice = self.buffer.slice(start_index);
 
-        if span.range().len() >= 10 && span.slice()[0] > b'2' {
+        if slice.len() >= 10 && slice[0] > b'2' {
             // Careful with leading 0's.
             // Fail fast:
             //   The leading digit in i32::MAX is '2',
@@ -288,7 +289,6 @@ impl<'src> Lexer<'src> {
             return Err(ParameterNumberTooLarge)
         }
 
-        let slice = span.slice();
         let param = slice.iter()
             .map(|d| (d - b'0') as i32)
             .try_fold(0i32, |acc, n|
@@ -526,12 +526,11 @@ impl<'src> Lexer<'src> {
     fn lex_identifier(&mut self) -> LexResult {
 
         // To prevent re-consuming it, {ident_start} was already consumed.
-        let start_pos = self.buffer.current_index() - 1;
+        let start_index = self.buffer.current_index() - 1;
 
         self.buffer.consume_while(is_ident_cont);
 
-        let ident = TokenSpan::new(self, start_pos)
-            .slice()
+        let ident = self.buffer.slice(start_index)
             .to_ascii_lowercase();
 
         if let Some(kw) = KeywordDetails::find(ident.as_slice()) {
@@ -570,12 +569,12 @@ impl<'src> Lexer<'src> {
 
         // If we're here, then the 1st char is `is_ident_start` or '$' (empty delimiter)
 
-        let start_pos = self.buffer.current_index();
+        let start_index = self.buffer.current_index();
 
         if self.buffer.consume_char(b'$') {
             // Empty delimiter
-            let span = TokenSpan::new(self, start_pos);
-            return Some(span.slice())
+            let slice = self.buffer.slice(start_index);
+            return Some(slice)
         }
 
         if self.buffer.consume_if(is_ident_start).is_some() {
@@ -584,12 +583,12 @@ impl<'src> Lexer<'src> {
 
         if !self.buffer.consume_char(b'$') {
             // This is the only time the lexer needs to backtrack many chars.
-            self.buffer.seek(start_pos);
+            self.buffer.seek(start_index);
             return None
         }
 
-        let span = TokenSpan::new(self, start_pos);
-        Some(span.slice())
+        let slice = self.buffer.slice(start_index);
+        Some(slice)
     }
 
     #[inline] // Only called from a single place
@@ -630,8 +629,8 @@ impl<'src> Lexer<'src> {
             break
         }
 
-        let (start_line, _) = self.buffer.location_at(start_pos);
-        let (end_line, _) = self.buffer.location();
+        let (start_line, _) = self.buffer.position_at(start_pos);
+        let (end_line, _) = self.buffer.position();
 
         Ok(!block_comment && start_line != end_line)
     }
@@ -654,7 +653,7 @@ impl<'src> Lexer<'src> {
 
     fn skip_block_comment(&mut self) -> Result<bool, Located<LexerError>> {
 
-        let start_pos = self.buffer.current_index();
+        let start_index = self.buffer.current_index();
 
         if !self.buffer.consume_string(b"/*") {
             return Ok(false)
@@ -671,7 +670,7 @@ impl<'src> Lexer<'src> {
             }
 
             if self.buffer.eof() {
-                let loc = TokenSpan::new(self, start_pos).location();
+                let loc = self.buffer.location_starting_at(start_index);
                 return Err((UnterminatedBlockComment, loc))
             }
 
@@ -686,6 +685,7 @@ mod tests {
     use crate::lexer::Keyword::{Reserved, Unreserved};
     use crate::lexer::ReservedKeyword::{From, Not, Select};
     use crate::lexer::UnreservedKeyword::StringKw;
+    use postgres_basics::Located;
     use std::ops::Range;
 
     #[test]

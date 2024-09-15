@@ -1,11 +1,8 @@
 use std::ops::Range;
 
-// A simple helper tuple type, to hold information related to some location.
+/// A simple helper tuple type, to hold information related to some location.
 pub type Located<T> = (T, Location);
 
-// FIXME premature optimization:
-//   This data is packed together considering generics in the future,
-//   where it could be replaced with ()
 #[derive(Debug, Clone, PartialEq)]
 pub struct Location {
     pub range: Range<usize>,

@@ -1,4 +1,7 @@
+use crate::Location;
 use std::cmp::min;
+
+pub type Position = (usize, usize);
 
 #[derive(Debug, Clone)]
 struct LineBuffer {
@@ -39,13 +42,32 @@ impl<'src> CharBuffer<'src> {
     }
 
     #[inline(always)]
-    pub fn location(&self) -> (usize, usize) {
-        self.location_at(self.current_index)
+    pub fn position(&self) -> Position {
+        self.position_at(self.current_index)
     }
 
     #[inline(always)]
-    pub fn location_at(&self, position: usize) -> (usize, usize) {
-        self.lines.location(position)
+    pub fn position_at(&self, index: usize) -> Position {
+        self.lines.position(index)
+    }
+
+    /// Location's range will always be zero-length.
+    #[inline(always)]
+    pub fn location(&self) -> Location {
+        self.location_starting_at(self.current_index)
+    }
+
+    /// Panics when `start_index > self.current_index()`.
+    #[inline]
+    pub fn location_starting_at(&self, start_index: usize) -> Location {
+        assert!(start_index <= self.current_index);
+        let (line, col) = self.lines.position(start_index);
+        Location::new(start_index..self.current_index, line, col)
+    }
+    
+    pub fn slice(&self, start_index: usize) -> &'src [u8] {
+        assert!(start_index <= self.current_index);
+        &self.source[start_index..self.current_index]
     }
 
     #[inline]
@@ -104,19 +126,19 @@ impl<'src> CharBuffer<'src> {
     /// Consumes as many chars as there are available, up to `num_chars`.
     pub fn consume_many(&mut self, num_chars: usize) -> &'src [u8] {
 
-        let start_pos = self.current_index;
-        let end_pos = min(start_pos + num_chars, self.source.len());
-        self.current_index = end_pos;
+        let start_index = self.current_index;
+        let end_index = min(start_index + num_chars, self.source.len());
+        self.current_index = end_index;
 
-        &self.source[start_pos..end_pos]
+        &self.source[start_index..end_index]
     }
 
-    fn buffer_new_line(&mut self, pos: usize) {
+    fn buffer_new_line(&mut self, index: usize) {
 
-        let c = self.source[pos];
+        let c = self.source[index];
         if c == b'\n' {
             // Unix style LF
-            self.lines.push(pos + 1);
+            self.lines.push(index + 1);
             return
         }
 
@@ -124,11 +146,11 @@ impl<'src> CharBuffer<'src> {
             return
         }
 
-        let pos = pos + 1;
-        if pos >= self.source.len() || self.source[pos] != b'\n' {
+        let index = index + 1;
+        if index >= self.source.len() || self.source[index] != b'\n' {
             // Old Mac style CR
             // Push only if not followed by a \n.
-            self.lines.push(pos + 1)
+            self.lines.push(index + 1)
         }
 
         // Windows style CRLF
@@ -143,8 +165,8 @@ impl<'src> CharBuffer<'src> {
     #[inline]
     /// Use sparingly!
     pub fn seek(&mut self, index: usize) {
-        let pos = min(index, self.source.len());
-        self.current_index = pos;
+        let index = min(index, self.source.len());
+        self.current_index = index;
     }
 
     #[inline]
@@ -194,13 +216,13 @@ impl LineBuffer {
     }
 
     /// Calculates the line and column from a given position.
-    pub fn location(&self, position: usize) -> (usize, usize) {
+    pub fn position(&self, index: usize) -> Position {
 
-        match self.lines.binary_search(&position) {
+        match self.lines.binary_search(&index) {
             Ok(index) => (index + 1, 1),
             Err(line) => {
                 let line_start = self.lines[line - 1];
-                (line, position - line_start + 1)
+                (line, index - line_start + 1)
             }
         }
     }
@@ -214,12 +236,12 @@ mod test {
     fn test_location() {
         let buf = LineBuffer { lines: vec![0, 10, 23] };
 
-        assert_eq!((1, 1), buf.location(0));
-        assert_eq!((1, 6), buf.location(5));
-        assert_eq!((2, 1), buf.location(10));
-        assert_eq!((2, 3), buf.location(12));
-        assert_eq!((2, 8), buf.location(17));
-        assert_eq!((3, 1), buf.location(23));
-        assert_eq!((3, 5), buf.location(27));
+        assert_eq!((1, 1), buf.position(0));
+        assert_eq!((1, 6), buf.position(5));
+        assert_eq!((2, 1), buf.position(10));
+        assert_eq!((2, 3), buf.position(12));
+        assert_eq!((2, 8), buf.position(17));
+        assert_eq!((3, 1), buf.position(23));
+        assert_eq!((3, 5), buf.position(27));
     }
 }
