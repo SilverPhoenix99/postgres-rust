@@ -21,6 +21,7 @@ mod char_buffer;
 mod concealable;
 mod fn_info;
 pub mod guc;
+mod location;
 mod named;
 pub mod sql_state;
 pub mod wchar;
@@ -28,6 +29,7 @@ pub mod wchar;
 pub use char_buffer::CharBuffer;
 pub use concealable::Concealable;
 pub use fn_info::FnInfo;
+pub use location::{Located, Location};
 pub use named::Named;
 
 pub type Oid = u32;
