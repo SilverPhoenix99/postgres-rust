@@ -1,16 +1,14 @@
-use crate::string_decoders::complex_decoder::ComplexStringDecoder;
-use crate::string_decoders::complex_decoder::UnicodeChar::*;
-use crate::string_decoders::decode_char;
-use crate::string_decoders::ExtendedStringError::*;
 use postgres_basics::ascii::{is_hex_digit, is_oct_digit};
 use postgres_basics::guc::BackslashQuote;
 use postgres_basics::guc::BackslashQuote::SafeEncoding;
-use postgres_basics::{wchar, CharBuffer};
+use postgres_basics::UnicodeChar::{SurrogateFirst, SurrogateSecond};
+use postgres_basics::{wchar, CharBuffer, UnicodeChar};
 use std::str::Utf8Error;
+use ExtendedStringError::*;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum ExtendedStringError {
-    Utf8Err(Utf8Error),
+    Utf8(Utf8Error),
     NonstandardUseOfBackslashQuote,
     InvalidUnicodeCodepoint,
 }
@@ -18,13 +16,6 @@ pub enum ExtendedStringError {
 pub struct ExtendedStringDecoder<'src> {
     input: CharBuffer<'src>,
     backslash_quote: BackslashQuote,
-}
-
-impl<'src> ComplexStringDecoder<'src> for ExtendedStringDecoder<'src> {
-
-    fn input(&mut self) -> &mut CharBuffer<'src> {
-        &mut self.input
-    }
 }
 
 impl<'src> ExtendedStringDecoder<'src> {
@@ -103,9 +94,9 @@ impl<'src> ExtendedStringDecoder<'src> {
                 },
                 b'x' => { // hex escape
                     if let Some(d) = self.input.consume_if(is_hex_digit) {
-                        let mut decoded = decode_char(d, 16).unwrap() as u8;
+                        let mut decoded = (d as char).to_digit(16).unwrap() as u8;
                         if let Some(d) = self.input.consume_if(is_hex_digit) {
-                            let d = decode_char(d, 16).unwrap() as u8;
+                            let d = (d as char).to_digit(16).unwrap() as u8;
                             decoded = (decoded << 4) | d;
                         }
                         out.push(decoded)
@@ -119,8 +110,8 @@ impl<'src> ExtendedStringDecoder<'src> {
                 b'u' | b'U' => {
                     let unicode_len = if c.is_ascii_lowercase() { 4 } else { 8 };
 
-                    let c = match self.decode_unicode_char(unicode_len) {
-                        Ok(Utf8(c)) => c,
+                    let c = match self.input.consume_unicode_char(unicode_len) {
+                        Ok(UnicodeChar::Utf8(c)) => c,
                         Ok(SurrogateFirst(first)) => {
                             if !self.input.consume_char(b'\\') {
                                 return Err(InvalidUnicodeCodepoint)
@@ -128,7 +119,7 @@ impl<'src> ExtendedStringDecoder<'src> {
 
                             let unicode_len = if self.input.consume_char(b'u') { 4 } else if self.input.consume_char(b'U') { 8 } else { return Err(InvalidUnicodeCodepoint) };
 
-                            match self.decode_unicode_char(unicode_len) {
+                            match self.input.consume_unicode_char(unicode_len) {
                                 Ok(SurrogateSecond(second)) => {
                                    wchar::decode_utf16(first, second)
                                        .ok_or(InvalidUnicodeCodepoint)?
@@ -157,7 +148,7 @@ impl<'src> ExtendedStringDecoder<'src> {
         }
 
         String::from_utf8(out)
-            .map_err(|err| Utf8Err(err.utf8_error()))
+            .map_err(|err| Utf8(err.utf8_error()))
     }
 
     fn forbid_backslash_quote(&self) -> bool {

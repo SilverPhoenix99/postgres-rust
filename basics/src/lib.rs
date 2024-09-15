@@ -26,7 +26,7 @@ mod named;
 pub mod sql_state;
 pub mod wchar;
 
-pub use char_buffer::CharBuffer;
+pub use char_buffer::{CharBuffer, Position, UnicodeChar, UnicodeCharError};
 pub use concealable::Concealable;
 pub use fn_info::FnInfo;
 pub use location::{Located, Location};
