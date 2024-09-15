@@ -1,11 +1,64 @@
 mod enums;
-mod err_code;
 mod variant_sets;
 
+use crate::sql_state::variant_sets::{ERROR_VARIANTS, WARNING_VARIANTS};
+use crate::sql_state::SuccessSqlState::SuccessfulCompletion;
 use core::fmt;
 use core::fmt::{Display, Formatter, Write};
 pub use enums::{ErrorSqlState, SuccessSqlState, WarningSqlState};
-pub use err_code::ErrCode;
+use std::mem;
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum SqlState {
+    Success(SuccessSqlState),
+    Warning(WarningSqlState),
+    Error(ErrorSqlState)
+}
+
+impl SqlState {
+    pub fn sqlstate(&self) -> u32 {
+        match self {
+            Self::Success(code) => u32::from(*code),
+            Self::Warning(code) => u32::from(*code),
+            Self::Error(code) => u32::from(*code),
+        }
+    }
+}
+
+impl Display for SqlState {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Success(code) => code.fmt(f),
+            Self::Warning(code) => code.fmt(f),
+            Self::Error(code) => code.fmt(f),
+        }
+    }
+}
+
+impl TryFrom<u32> for SqlState {
+    type Error = ();
+
+    fn try_from(value: u32) -> Result<Self, ()> {
+
+        if value == 0 {
+            Ok(Self::Success(SuccessfulCompletion))
+        }
+        else if value > 0x2aaaaaaa /* `ZZZZZ` */ {
+            Err(())
+        }
+        else if value >= 0x000c0000 /* 03000 */ && ERROR_VARIANTS.contains(&value) {
+            let code = unsafe { mem::transmute::<u32, ErrorSqlState>(value) };
+            Ok(Self::Error(code))
+        }
+        else if WARNING_VARIANTS.contains(&value) {
+            let code = unsafe { mem::transmute::<u32, WarningSqlState>(value) };
+            Ok(Self::Warning(code))
+        }
+        else {
+            Err(())
+        }
+    }
+}
 
 fn fmt(code: u32, formatter: &mut Formatter<'_>) -> fmt::Result {
 
