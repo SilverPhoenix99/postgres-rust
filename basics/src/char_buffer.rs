@@ -218,8 +218,8 @@ impl<'src> CharBuffer<'src> {
             .map(|(n, d)| {
                 char::from(*d)
                     .to_digit(16)
-                    .ok_or({ 
-                        LenTooShort { expected: unicode_len, actual: n } 
+                    .ok_or({
+                        LenTooShort { expected: unicode_len, actual: n }
                     })
             })
             .try_fold(0, |acc, d|
