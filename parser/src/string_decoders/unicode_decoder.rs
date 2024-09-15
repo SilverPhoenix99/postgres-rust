@@ -51,7 +51,7 @@ impl<'src> UnicodeStringDecoder<'src> {
                 continue
             }
 
-            let start_pos = self.input.current_index();
+            let start_index = self.input.current_index();
             let unicode_len = if self.input.consume_char(b'+') { 6 } else { 4 };
 
             let c = match self.input.consume_unicode_char(unicode_len) {
@@ -75,8 +75,8 @@ impl<'src> UnicodeStringDecoder<'src> {
 
                     out.push(self.escape);
 
-                    let end_pos = self.input.current_index();
-                    let src = &self.input.source()[start_pos..end_pos];
+                    let end_index = self.input.current_index();
+                    let src = &self.input.source()[start_index..end_index];
                     out.extend_from_slice(src);
                     continue
                 },
