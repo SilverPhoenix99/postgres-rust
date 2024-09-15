@@ -18,7 +18,7 @@ use postgres_basics::ascii::*;
 use postgres_basics::{CharBuffer, Located, Location, NAMEDATALEN};
 use std::iter::FusedIterator;
 
-type LexResult = Result<TokenKind, LexerError>;
+pub type LexResult = Result<TokenKind, LexerError>;
 
 #[derive(Debug)]
 pub struct Lexer<'src> {
@@ -68,9 +68,15 @@ impl<'src> Lexer<'src> {
         }
     }
 
-    /// Zero-length position.
+    /// Zero-length `range`.
+    #[inline(always)]
     pub fn current_location(&self) -> Location {
         self.buffer.location()
+    }
+
+    #[inline(always)]
+    pub fn eof(&self) -> bool {
+        self.buffer.eof()
     }
 
     fn lex_token(&mut self, concatenable_string: bool) -> LexResult {
