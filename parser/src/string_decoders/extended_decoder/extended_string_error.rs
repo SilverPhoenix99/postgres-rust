@@ -5,39 +5,49 @@ use ExtendedStringError::*;
 #[derive(Debug, Copy, Clone, PartialEq, thiserror::Error)]
 pub enum ExtendedStringError {
 
-    // TODO: yyerror, aka scanner_yyerror
-    #[error("invalid Unicode escape value")]
+    /// Invalid UTF-8 char.
+    // TODO: yyerror, aka scanner_yyerror (i.e., "%s at end of input" vs r#"%s at or near "%s""#)
+    #[error(r#"invalid byte sequence for encoding "UTF8""#)]
     Utf8(Utf8Error),
 
+    /// When the `\u`|`\U` escape is invalid UTF-32.
+    #[error("invalid Unicode escape value")]
+    InvalidUnicodeValue(usize),
+
+    /// Invalid UTF-16 surrogate pair.
+    // TODO: yyerror, aka scanner_yyerror
+    #[error("invalid Unicode surrogate pair")]
+    InvalidUnicodeSurrogatePair(usize),
+
+    /// When the string uses the unsafe `\'` escape
     #[error(r"unsafe use of \' in a string literal")]
     NonstandardUseOfBackslashQuote,
 
+    /// When the format of the escape doesn't match \uXXXX or \UXXXXXXXX.
     #[error("invalid Unicode escape")]
-    InvalidUnicodeEscape,
-
-    // TODO: yyerror, aka scanner_yyerror
-    #[error("invalid Unicode surrogate pair")]
-    InvalidUnicodeSurrogatePair,
+    InvalidUnicodeEscape(usize),
 }
 
 impl ExtendedStringError {
     pub fn sqlstate(self) -> SqlState {
         match self {
-            Utf8(_) => Error(ErrorSqlState::SyntaxError),
+            Utf8(_) => Error(ErrorSqlState::CharacterNotInRepertoire),
+            InvalidUnicodeValue(_) => Error(ErrorSqlState::SyntaxError),
+            InvalidUnicodeSurrogatePair(_) => Error(ErrorSqlState::SyntaxError),
             NonstandardUseOfBackslashQuote => Error(ErrorSqlState::NonstandardUseOfEscapeCharacter),
-            InvalidUnicodeEscape => Error(ErrorSqlState::InvalidEscapeSequence),
-            InvalidUnicodeSurrogatePair => Error(ErrorSqlState::SyntaxError),
+            InvalidUnicodeEscape(_) => Error(ErrorSqlState::InvalidEscapeSequence),
         }
     }
 
     pub fn hint(self) -> Option<&'static str> {
         match self {
             Utf8(_) => None,
+            InvalidUnicodeValue(_) => None,
+            InvalidUnicodeSurrogatePair(_) => None,
             NonstandardUseOfBackslashQuote => Some(
                 r"Use '' to write quotes in strings. \' is insecure in client-only encodings."
             ),
-            InvalidUnicodeEscape => Some(r"Unicode escapes must be \uXXXX or \UXXXXXXXX."),
-            InvalidUnicodeSurrogatePair => None,
+            InvalidUnicodeEscape(_) => Some(r"Unicode escapes must be \uXXXX or \UXXXXXXXX."),
         }
     }
 }

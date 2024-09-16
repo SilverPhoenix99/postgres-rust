@@ -7,7 +7,8 @@ use postgres_basics::ascii::{is_hex_digit, is_oct_digit};
 use postgres_basics::guc::BackslashQuote;
 use postgres_basics::guc::BackslashQuote::SafeEncoding;
 use postgres_basics::UnicodeChar::{SurrogateFirst, SurrogateSecond};
-use postgres_basics::{wchar, CharBuffer, UnicodeChar};
+use postgres_basics::UnicodeCharError::LenTooShort;
+use postgres_basics::{wchar, CharBuffer, UnicodeChar, UnicodeCharError};
 use ExtendedStringError::*;
 use ExtendedStringWarning::*;
 
@@ -125,9 +126,9 @@ impl<'src> ExtendedStringDecoder<'src> {
                     let unicode_len = if c.is_ascii_lowercase() { 4 } else { 8 };
 
                     let c = match self.consume_unicode(unicode_len) {
-                        Some(c) => c,
-                        None => return ExtendedStringResult {
-                            result: Err(InvalidUnicodeSurrogatePair),
+                        Ok(c) => c,
+                        Err(err) => return ExtendedStringResult {
+                            result: Err(err),
                             warning
                         }
                     };
@@ -150,39 +151,47 @@ impl<'src> ExtendedStringDecoder<'src> {
         }
 
         let result = String::from_utf8(out)
-            .map_err(|err| Utf8(err.utf8_error()));
+            .map_err(|err| {
+                // pg_verifymbstr -> pg_verify_mbstr -> report_invalid_encoding
+                // see [report_invalid_encoding](https://github.com/postgres/postgres/blob/d5622acb32b3c11a27b323138fbee9c715742b38/src/backend/utils/mb/mbutils.c#L1698-L1721)
+                Utf8(err.utf8_error())
+            });
 
         ExtendedStringResult { result, warning }
     }
 
-    fn consume_unicode(&mut self, unicode_len: usize) -> Option<char> {
+    fn consume_unicode(&mut self, unicode_len: usize) -> Result<char, ExtendedStringError> {
 
-        let first = self.input.consume_unicode_char(unicode_len).ok()?;
+        let start_index = self.input.current_index() - 2; // include `\u`
 
-        if let UnicodeChar::Utf8(c) = first {
-            return Some(c)
+        let first = match self.input.consume_unicode_char(unicode_len) {
+            Ok(UnicodeChar::Utf8(c)) => return Ok(c),
+            Ok(SurrogateFirst(first)) => Ok(first),
+            Ok(SurrogateSecond(_)) => Err(InvalidUnicodeSurrogatePair(start_index)),
+            Err(LenTooShort { .. }) => Err(InvalidUnicodeEscape(start_index)),
+            Err(UnicodeCharError::InvalidUnicodeEscape) => Err(InvalidUnicodeValue(start_index)),
+        }?;
+
+        let start_index = self.input.current_index();
+        let invalid_pair = InvalidUnicodeSurrogatePair(start_index);
+        if !self.input.consume_char(b'\\') {
+            return Err(invalid_pair)
         }
 
-        if let SurrogateFirst(first) = first {
-            if !self.input.consume_char(b'\\') {
-                return None
-            }
+        let unicode_len = if self.input.consume_char(b'u') {
+            4
+        } else if self.input.consume_char(b'U') {
+            8
+        } else {
+            return Err(invalid_pair)
+        };
 
-            let unicode_len = if self.input.consume_char(b'u') {
-                4
-            } else if self.input.consume_char(b'U') {
-                8
-            } else {
-                return None
-            };
+        let second = match self.input.consume_unicode_char(unicode_len) {
+            Ok(SurrogateSecond(second)) => second,
+            _ => return Err(invalid_pair),
+        };
 
-            let second = self.input.consume_unicode_char(unicode_len).ok()?;
-            if let SurrogateSecond(second) = second {
-                return wchar::decode_utf16(first, second)
-            }
-        }
-
-        None
+        wchar::decode_utf16(first, second).ok_or(invalid_pair)
     }
 
     fn forbid_backslash_quote(&self) -> bool {
