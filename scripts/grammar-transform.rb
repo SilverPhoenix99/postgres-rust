@@ -189,8 +189,7 @@ class Grammar
           rules.flatten.select { |sym| productions.key?(sym) && sym != :__empty }
         end
         .tally
-        .select { |name, count| count == 1 } # only shows up once on the right hand side
-        .keys
+        .filter_map { |name, count| count == 1 && name } # only shows up once on the right hand side
         .to_set;
 
       if uniques.empty?
@@ -198,9 +197,8 @@ class Grammar
       end
 
       productions = productions.
-        each_with_object({}) do |(name, rules), h|
-          next if uniques.include?(name) # remove the rule
-          h[name] = rules.
+        each_with_object({}) do |(name, rules), prods|
+          prods[name] = rules.
             map do |rule|
               h, *t = rule.each_with_index.
                 select { |sym, _| uniques.include?(sym) }.
@@ -222,6 +220,16 @@ class Grammar
             end
             .flatten(1)
         end;
+
+        referenced = productions.
+          flat_map do |name, rules|
+            rules = rules.flatten.select { |sym| productions.key?(sym) }
+            rules << name if name == @start_sym # start symbol is always referenced
+            rules
+          end.
+          to_set;
+
+        productions = productions.select { |name, _rules| referenced.include?(name) }
     end
 
     Grammar.new(productions)
