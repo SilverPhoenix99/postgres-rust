@@ -1,15 +1,10 @@
+mod unicode_string_error;
+
 use postgres_basics::UnicodeChar::{SurrogateFirst, SurrogateSecond};
 use postgres_basics::UnicodeCharError::*;
 use postgres_basics::{wchar, CharBuffer, UnicodeChar};
-use std::str::Utf8Error;
+pub use unicode_string_error::UnicodeStringError;
 use UnicodeStringError::*;
-
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum UnicodeStringError {
-    Utf8(Utf8Error),
-    InvalidUnicodeCodepoint,
-    InvalidUnicodeSurrogatePair,
-}
 
 pub struct UnicodeStringDecoder<'src> {
     input: CharBuffer<'src>,
