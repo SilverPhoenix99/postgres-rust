@@ -1,4 +1,13 @@
-use postgres_basics::sql_state::{ErrorSqlState, SqlState, SqlState::Error};
+use postgres_basics::sql_state::{
+    ErrorSqlState::{
+        CharacterNotInRepertoire,
+        InvalidEscapeSequence,
+        NonstandardUseOfEscapeCharacter,
+        SyntaxError
+    },
+    SqlState,
+    SqlState::Error
+};
 use std::str::Utf8Error;
 use ExtendedStringError::*;
 
@@ -10,7 +19,7 @@ pub enum ExtendedStringError {
     #[error(r#"invalid byte sequence for encoding "UTF8""#)]
     Utf8(Utf8Error),
 
-    /// When the `\u`|`\U` escape is invalid UTF-32.
+    /// When the `\uXXXX`|`\UXXXXXXXX` escape is invalid UTF-32.
     #[error("invalid Unicode escape value")]
     InvalidUnicodeValue(usize),
 
@@ -31,11 +40,11 @@ pub enum ExtendedStringError {
 impl ExtendedStringError {
     pub fn sqlstate(self) -> SqlState {
         match self {
-            Utf8(_) => Error(ErrorSqlState::CharacterNotInRepertoire),
-            InvalidUnicodeValue(_) => Error(ErrorSqlState::SyntaxError),
-            InvalidUnicodeSurrogatePair(_) => Error(ErrorSqlState::SyntaxError),
-            NonstandardUseOfBackslashQuote => Error(ErrorSqlState::NonstandardUseOfEscapeCharacter),
-            InvalidUnicodeEscape(_) => Error(ErrorSqlState::InvalidEscapeSequence),
+            Utf8(_) => Error(CharacterNotInRepertoire),
+            InvalidUnicodeValue(_) => Error(SyntaxError),
+            InvalidUnicodeSurrogatePair(_) => Error(SyntaxError),
+            NonstandardUseOfBackslashQuote => Error(NonstandardUseOfEscapeCharacter),
+            InvalidUnicodeEscape(_) => Error(InvalidEscapeSequence),
         }
     }
 

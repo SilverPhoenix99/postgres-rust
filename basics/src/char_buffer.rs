@@ -12,11 +12,12 @@ pub enum UnicodeChar {
 }
 
 pub enum UnicodeCharError {
-    LenTooShort {
-        expected: usize,
-        actual: usize,
-    },
-    InvalidUnicodeEscape,
+
+    /// When the number of bytes don't match the expected number.
+    LenTooShort(/* actual_len: */usize),
+
+    /// When it's an invalid UTF-32 char (and invalid UTF-16 surrogate).
+    InvalidUnicodeValue,
 }
 
 #[derive(Debug, Clone)]
@@ -206,10 +207,7 @@ impl<'src> CharBuffer<'src> {
 
         let slice = self.remainder();
         if slice.len() < unicode_len {
-            return Err(LenTooShort {
-                expected: unicode_len,
-                actual: slice.len(),
-            })
+            return Err(LenTooShort(slice.len()))
         }
 
         let c = slice[..unicode_len]
@@ -218,9 +216,7 @@ impl<'src> CharBuffer<'src> {
             .map(|(n, d)| {
                 char::from(*d)
                     .to_digit(16)
-                    .ok_or({
-                        LenTooShort { expected: unicode_len, actual: n }
-                    })
+                    .ok_or(LenTooShort(n))
             })
             .try_fold(0, |acc, d|
                 Ok((acc << 4) + d?)
@@ -235,7 +231,7 @@ impl<'src> CharBuffer<'src> {
             else {
                 char::from_u32(c)
                     .map(Utf8)
-                    .ok_or(InvalidUnicodeEscape)
+                    .ok_or(InvalidUnicodeValue)
             }
         };
 

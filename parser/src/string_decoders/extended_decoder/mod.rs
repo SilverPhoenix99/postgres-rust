@@ -168,8 +168,8 @@ impl<'src> ExtendedStringDecoder<'src> {
             Ok(UnicodeChar::Utf8(c)) => return Ok(c),
             Ok(SurrogateFirst(first)) => Ok(first),
             Ok(SurrogateSecond(_)) => Err(InvalidUnicodeSurrogatePair(start_index)),
-            Err(LenTooShort { .. }) => Err(InvalidUnicodeEscape(start_index)),
-            Err(UnicodeCharError::InvalidUnicodeEscape) => Err(InvalidUnicodeValue(start_index)),
+            Err(LenTooShort(_)) => Err(InvalidUnicodeEscape(start_index)),
+            Err(UnicodeCharError::InvalidUnicodeValue) => Err(InvalidUnicodeValue(start_index)),
         }?;
 
         let start_index = self.input.current_index();
