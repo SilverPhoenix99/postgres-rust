@@ -1,8 +1,13 @@
 mod unicode_string_error;
 
-use postgres_basics::UnicodeChar::{SurrogateFirst, SurrogateSecond};
-use postgres_basics::UnicodeCharError::*;
-use postgres_basics::{wchar, CharBuffer, UnicodeChar};
+use postgres_basics::{
+    wchar,
+    CharBuffer,
+    UnicodeChar,
+    UnicodeChar::{SurrogateFirst, SurrogateSecond},
+    UnicodeCharError,
+    UnicodeCharError::LenTooShort
+};
 pub use unicode_string_error::UnicodeStringError;
 use UnicodeStringError::*;
 
@@ -33,6 +38,7 @@ impl<'src> UnicodeStringDecoder<'src> {
         while let Some(c) = self.input.consume_one() {
 
             if c == self.quote {
+                // <xus>{xqdouble} | <xui>{xddouble}
                 out.push(c);
 
                 // ignore duplicate quote char (escapes itself: '' or "")
@@ -46,38 +52,13 @@ impl<'src> UnicodeStringDecoder<'src> {
                 continue
             }
 
-            let start_index = self.input.current_index();
-            let unicode_len = if self.input.consume_char(b'+') { 6 } else { 4 };
+            if self.input.consume_char(self.escape) {
+                // double escape char, like `\\`, or `!!`
+                out.push(self.escape);
+                continue
+            }
 
-            let c = match self.input.consume_unicode_char(unicode_len) {
-                Ok(UnicodeChar::Utf8(c)) => c,
-                Ok(SurrogateFirst(first)) => {
-                    if !self.input.consume_char(self.escape) {
-                        return Err(InvalidUnicodeSurrogatePair)
-                    }
-
-                    let unicode_len = if self.input.consume_char(b'+') { 6 } else { 4 };
-                    if let Ok(SurrogateSecond(second)) = self.input.consume_unicode_char(unicode_len) {
-                        wchar::decode_utf16(first, second)
-                            .ok_or(InvalidUnicodeSurrogatePair)? // should be unreachable
-                    } else {
-                        return Err(InvalidUnicodeSurrogatePair)
-                    }
-                }
-                Err(LenTooShort { .. }) => {
-                    // It wasn't a valid Unicode escape.
-                    // Just push all chars up to here
-
-                    out.push(self.escape);
-
-                    let end_index = self.input.current_index();
-                    let src = &self.input.source()[start_index..end_index];
-                    out.extend_from_slice(src);
-                    continue
-                },
-                Ok(SurrogateSecond(_)) => return Err(InvalidUnicodeSurrogatePair),
-                Err(InvalidUnicodeEscape) => return Err(InvalidUnicodeCodepoint),
-            };
+            let c = self.consume_unicode()?;
 
             let len = c.len_utf8();
             if len == 1 {
@@ -96,6 +77,36 @@ impl<'src> UnicodeStringDecoder<'src> {
         String::from_utf8(out)
             .map_err(|err| Utf8(err.utf8_error()))
     }
+
+    fn consume_unicode(&mut self) -> Result<char, UnicodeStringError> {
+
+        let start_index = self.input.current_index() - 1; // include `\`
+        let unicode_len = if self.input.consume_char(b'+') { 6 } else { 4 };
+
+        let first = match self.input.consume_unicode_char(unicode_len) {
+            Ok(UnicodeChar::Utf8(c)) => return Ok(c),
+            Ok(SurrogateFirst(first)) => Ok(first),
+            Ok(SurrogateSecond(_)) => Err(InvalidUnicodeSurrogatePair(start_index)),
+            Err(LenTooShort(_)) => Err(InvalidUnicodeEscape(start_index)),
+            Err(UnicodeCharError::InvalidUnicodeValue) => Err(InvalidUnicodeValue(start_index))
+        }?;
+
+        let start_index = self.input.current_index();
+        let invalid_pair = InvalidUnicodeSurrogatePair(start_index);
+
+        if !self.input.consume_char(self.escape) {
+            return Err(invalid_pair)
+        }
+
+        let unicode_len = if self.input.consume_char(b'+') { 6 } else { 4 };
+
+        let second = match self.input.consume_unicode_char(unicode_len) {
+            Ok(SurrogateSecond(second)) => second,
+            _ => return Err(invalid_pair),
+        };
+
+        wchar::decode_utf16(first, second).ok_or(invalid_pair)
+    }
 }
 
 #[cfg(test)]
@@ -104,9 +115,10 @@ mod tests {
 
     #[test]
     fn test_unicode_string() {
-        let mut decoder = UnicodeStringDecoder::new(b"''d!0061t\\+000061 a!b \\", false, b'!');
+        let source = br"''d!0061t\+000061 a!!b \";
+        let mut decoder = UnicodeStringDecoder::new(source, false, b'!');
         assert_eq!(
-            Ok("'dat\\+000061 a!b \\".to_string()),
+            Ok(r"'dat\+000061 a!b \".to_string()),
             decoder.decode()
         )
     }
