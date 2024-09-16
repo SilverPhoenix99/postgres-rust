@@ -297,18 +297,16 @@ impl<'src> Lexer<'src> {
             return Err(ParameterNumberTooLarge)
         }
 
-        let param = slice.iter()
+        // i32 is used to match original PG's expectation that it won't be > i32::MAX
+        slice.iter()
             .map(|d| (d - b'0') as i32)
             .try_fold(0i32, |acc, n|
                 acc.checked_mul(10)?.checked_add(n)
-            );
-
-        if let Some(index) = param {
-            Ok(Param { index })
-        }
-        else {
-            Err(ParameterNumberTooLarge)
-        }
+            )
+            .map_or(
+                Err(ParameterNumberTooLarge),
+                |index| Ok(Param { index })
+            )
     }
 
     #[inline] // Only called from a single place
