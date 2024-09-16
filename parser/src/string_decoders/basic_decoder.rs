@@ -14,7 +14,7 @@ impl<'src> BasicStringDecoder<'src> {
 
     pub fn decode(&self) -> Result<String, Utf8Error> {
 
-        let src = self.source.to_vec();
+        let src = std::str::from_utf8(self.source)?;
 
         let (quote, escape) = if self.is_ident {
             (r#"""#, r#""""#)
@@ -23,8 +23,7 @@ impl<'src> BasicStringDecoder<'src> {
             ("'", "''")
         };
 
-        let string = String::from_utf8(src)
-            .map_err(|e| e.utf8_error())?
+        let string = src.to_string()
             .replace(escape, quote);
 
         Ok(string)
