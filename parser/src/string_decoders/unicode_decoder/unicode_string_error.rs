@@ -1,3 +1,4 @@
+use postgres_basics::sql_state::ErrorSqlState::CharacterNotInRepertoire;
 use postgres_basics::sql_state::{
     ErrorSqlState::SyntaxError,
     SqlState,
@@ -10,7 +11,7 @@ use UnicodeStringError::*;
 pub enum UnicodeStringError {
 
     /// Invalid UTF-8 char.
-    // Doesn't seem to exist in `parser.c` -> `str_udeescape()`
+    // FIXME: Doesn't seem to exist in `parser.c` -> `str_udeescape()`
     #[error(r#"invalid byte sequence for encoding "UTF8""#)]
     Utf8(Utf8Error),
 
@@ -31,7 +32,7 @@ impl UnicodeStringError {
 
     pub fn sqlstate(self) -> SqlState {
         match self {
-            Utf8(_) => todo!(),
+            Utf8(_) => Error(CharacterNotInRepertoire),
             InvalidUnicodeValue(_) => Error(SyntaxError),
             InvalidUnicodeSurrogatePair(_) => Error(SyntaxError),
             InvalidUnicodeEscape(_) => Error(SyntaxError),
@@ -40,7 +41,7 @@ impl UnicodeStringError {
 
     pub fn hint(self) -> Option<&'static str> {
         match self {
-            Utf8(_) => todo!(),
+            Utf8(_) => None,
             InvalidUnicodeValue(_) => None,
             InvalidUnicodeSurrogatePair(_) => None,
             InvalidUnicodeEscape(_) => Some(r"Unicode escapes must be \XXXX or \+XXXXXX."),
