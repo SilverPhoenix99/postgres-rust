@@ -13,7 +13,7 @@ class KeywordsGenerator
 
   # Keywords that clash with Rust classes.
   # These will have a 'Kw' suffix.
-  CLASHES = Set['String', 'Option']
+  CLASHES = Set['String', 'Option', 'None']
 
   def self.run!(input, output)
     new(input, output).run!
@@ -42,7 +42,6 @@ class KeywordsGenerator
       'use UnreservedKeyword::*;',
       '',
       *enums,
-      '',
       *map,
       ''
     ].join("\n")
@@ -58,7 +57,7 @@ class KeywordsGenerator
         end
 
         [
-          '#[derive(Debug, Clone, Copy, PartialEq)]',
+          '#[derive(Debug, Clone, Copy, Eq, PartialEq)]',
           "pub enum #{category}Keyword {",
           *kws,
           "}\n"

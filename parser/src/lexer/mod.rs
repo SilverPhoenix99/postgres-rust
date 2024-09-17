@@ -421,6 +421,7 @@ impl<'src> Lexer<'src> {
     }
 
     fn lex_prefixed_int(&mut self, is_digit: impl Fn(u8) -> bool, radix: i32) -> LexResult {
+
         self.buffer.consume_one(); // ignore [xXoObB]
 
         let start_index = self.buffer.current_index();

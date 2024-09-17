@@ -7,7 +7,7 @@ use ReservedKeyword::*;
 use TypeFuncNameKeyword::*;
 use UnreservedKeyword::*;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum UnreservedKeyword {
     Abort,
     Absent,
@@ -337,7 +337,7 @@ pub enum UnreservedKeyword {
     Zone,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum ReservedKeyword {
     All,
     Analyse,
@@ -419,7 +419,7 @@ pub enum ReservedKeyword {
     With,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum TypeFuncNameKeyword {
     Authorization,
     Binary,
@@ -446,7 +446,7 @@ pub enum TypeFuncNameKeyword {
     Verbose,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum ColumnNameKeyword {
     Between,
     Bigint,
@@ -481,7 +481,7 @@ pub enum ColumnNameKeyword {
     MergeAction,
     National,
     Nchar,
-    None,
+    NoneKw,
     Normalize,
     Nullif,
     Numeric,
@@ -512,7 +512,6 @@ pub enum ColumnNameKeyword {
     Xmlserialize,
     Xmltable,
 }
-
 
 pub(super) static KEYWORDS: phf::Map<&'static [u8], KeywordDetails> = phf::phf_map! {
     b"abort" => KeywordDetails::new(Unreserved(Abort), b"abort", true),
@@ -784,7 +783,7 @@ pub(super) static KEYWORDS: phf::Map<&'static [u8], KeywordDetails> = phf::phf_m
     b"nfkc" => KeywordDetails::new(Unreserved(Nfkc), b"nfkc", true),
     b"nfkd" => KeywordDetails::new(Unreserved(Nfkd), b"nfkd", true),
     b"no" => KeywordDetails::new(Unreserved(No), b"no", true),
-    b"none" => KeywordDetails::new(ColumnName(None), b"none", true),
+    b"none" => KeywordDetails::new(ColumnName(NoneKw), b"none", true),
     b"normalize" => KeywordDetails::new(ColumnName(Normalize), b"normalize", true),
     b"normalized" => KeywordDetails::new(Unreserved(Normalized), b"normalized", true),
     b"not" => KeywordDetails::new(Reserved(Not), b"not", true),
