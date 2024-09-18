@@ -144,7 +144,10 @@ class Grammar
   end
 
   # collapse productions that only have 1 rule into their caller
-  def inline_single_rule_productions
+  def inline_single_rule_productions(include: Set.new, exclude: Set.new)
+
+    include = Set.new(include) unless include.is_a?(Set)
+    exclude = Set.new(exclude) unless exclude.is_a?(Set)
 
     productions = @productions;
 
@@ -155,6 +158,10 @@ class Grammar
         rules.size == 1 &&
         !rules.first.include?(name) # recursive
       end;
+
+      single_prods.select! { |k, _| include.include?(k) } unless include.empty?
+      single_prods.reject! { |k, _| exclude.include?(k) } unless exclude.empty?
+
       return Grammar.new(productions) if single_prods.empty?
 
       productions = productions.transform_values do |rules|
@@ -166,7 +173,7 @@ class Grammar
       end;
 
       reacheable = productions.values.flatten.to_set;
-      reacheable << @start_sym; # the start symbol is never reacheable per se
+      reacheable << @start_sym; # the start symbol is always reacheable
 
       reacheable = productions.select { |name, _| reacheable.include?(name) };
 
@@ -500,10 +507,40 @@ load './grammar-transform.rb';
 
 grammar = Grammar.load_bison('../../postgres/src/backend/parser/gram.y');
 
-grammar2 = grammar.remove_redundant_rules.
-  remove_indirect_left_recursion!.
+# grammar2 = grammar.remove_redundant_rules.
+#   remove_indirect_left_recursion!.
+#   remove_direct_left_recursion.
+#   inline_singleton_productions;
+
+include_prods = %i[
+  attr_name
+  CheckPointStmt
+  columnElem
+  ConstInterval
+  copy_generic_opt_arg_list_item
+  cursor_name
+  drop_option
+  file_name
+  func_return
+  generic_option_arg
+  generic_option_name
+  Iconst
+  JsonType
+  merge_delete
+  name
+  param_name
+  Sconst
+  select_offset_value
+  TransitionRelName
+]
+
+grammar2 = grammar.remove_indirect_left_recursion!.
   remove_direct_left_recursion.
-  inline_singleton_productions;
+  inline_single_rule_productions(include: include_prods);
+
+Clipboard.copy grammar2.to_bison
+
 grammar2.save_bison './tmp/grammar2.bison.rb'
+
 
 grammar = Grammar.load_bison('./tmp/grammar2.bison.rb');
