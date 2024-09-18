@@ -13,7 +13,23 @@ class KeywordsGenerator
 
   # Keywords that clash with Rust classes.
   # These will have a 'Kw' suffix.
-  CLASHES = Set['String', 'Option', 'None']
+  CLASHES = %w[
+    Copy
+    Default
+    Drop
+    Error
+    Location
+    None
+    Option
+    Owned
+    Parser
+    Range
+    Ref
+    Stdin
+    Stdout
+    String
+    System
+  ].to_set
 
   def self.run!(input, output)
     new(input, output).run!
