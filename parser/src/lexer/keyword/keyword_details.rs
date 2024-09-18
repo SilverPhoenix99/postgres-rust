@@ -23,6 +23,11 @@ impl KeywordDetails {
     }
 
     #[inline(always)]
+    pub fn text(&self) -> &'static str {
+        unsafe { std::str::from_utf8_unchecked(self.text) }
+    }
+
+    #[inline(always)]
     pub fn unreserved(&self) -> bool {
         matches!(self.keyword, Unreserved(_))
     }
