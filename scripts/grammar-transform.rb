@@ -104,6 +104,7 @@ class Grammar
     end
   end
 
+  # removes productions that only have 1 singleton rule and are only used once
   def remove_redundant_rules
 
     productions = @productions
