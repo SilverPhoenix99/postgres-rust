@@ -15,7 +15,7 @@ keywords_output = RUST_PROJECT_ROOT / 'parser/src/lexer/keyword/keywords.rs'
 
 CLEAN << keywords_output
 
-file keywords_output => [keywords_input, 'gen-kws.rb'] do | |
+file keywords_output => [keywords_input, 'gen-kws.rb'] do
   require_relative 'gen-kws.rb'
   KeywordsGenerator.run!(keywords_input, keywords_output)
 end
@@ -33,7 +33,7 @@ err_codes_outputs = [
   err_codes_root / 'variant_sets.rs'
 ]
 
-CLEAN += err_codes_outputs
+CLEAN.push(*err_codes_outputs)
 
 err_codes_outputs.each do |output|
   file output => [err_codes_input, 'gen-errcodes.rb']
