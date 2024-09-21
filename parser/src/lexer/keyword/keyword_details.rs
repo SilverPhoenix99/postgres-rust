@@ -1,9 +1,9 @@
 use crate::lexer::keyword::keywords::KEYWORDS;
-use crate::lexer::Keyword;
 use crate::lexer::Keyword::{ColumnName, Reserved, TypeFuncName, Unreserved};
+use crate::lexer::{ColumnNameKeyword, Keyword, ReservedKeyword, TypeFuncNameKeyword, UnreservedKeyword};
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct KeywordDetails {
     pub keyword: Keyword,
     pub text: &'static [u8],
@@ -28,23 +28,40 @@ impl KeywordDetails {
     }
 
     #[inline(always)]
-    pub fn unreserved(&self) -> bool {
-        matches!(self.keyword, Unreserved(_))
+    pub fn unreserved(&self) -> Option<UnreservedKeyword> {
+        match self.keyword {
+            Unreserved(kw) => Some(kw),
+            _ => None
+        }
     }
 
     #[inline(always)]
-    pub fn col_name(&self) -> bool {
-        matches!(self.keyword, ColumnName(_))
+    pub fn keyword(&self) -> Keyword {
+        self.keyword
     }
 
     #[inline(always)]
-    pub fn type_func_name(&self) -> bool {
-        matches!(self.keyword, TypeFuncName(_))
+    pub fn col_name(&self) -> Option<ColumnNameKeyword> {
+        match self.keyword {
+            ColumnName(kw) => Some(kw),
+            _ => None
+        }
     }
 
     #[inline(always)]
-    pub fn reserved(&self) -> bool {
-        matches!(self.keyword, Reserved(_))
+    pub fn type_func_name(&self) -> Option<TypeFuncNameKeyword> {
+        match self.keyword {
+            TypeFuncName(kw) => Some(kw),
+            _ => None
+        }
+    }
+
+    #[inline(always)]
+    pub fn reserved(&self) -> Option<ReservedKeyword> {
+        match self.keyword {
+            Reserved(kw) => Some(kw),
+            _ => None
+        }
     }
 }
 
