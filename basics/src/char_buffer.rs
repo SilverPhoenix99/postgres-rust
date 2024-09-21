@@ -13,7 +13,7 @@ pub enum UnicodeChar {
 
 pub enum UnicodeCharError {
 
-    /// When the number of bytes don't match the expected number.
+    /// When the number of bytes doesn't match the expected number.
     LenTooShort(/* actual_len: */usize),
 
     /// When it's an invalid UTF-32 char (and invalid UTF-16 surrogate).

@@ -56,7 +56,7 @@ pub enum StringKind {
     DollarString,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum TokenKind {
     OpenParenthesis,
     CloseParenthesis,
@@ -110,22 +110,22 @@ impl TokenKind {
 
     #[inline(always)]
     pub fn unreserved_keyword(&self) -> Option<&'static KeywordDetails> {
-        self.keyword().filter(|kw| kw.unreserved())
+        self.keyword().filter(|kw| kw.unreserved().is_some())
     }
 
     #[inline(always)]
     pub fn col_name_keyword(&self) -> Option<&'static KeywordDetails> {
-        self.keyword().filter(|kw| kw.col_name())
+        self.keyword().filter(|kw| kw.col_name().is_some())
     }
 
     #[inline(always)]
     pub fn type_func_name_keyword(&self) -> Option<&'static KeywordDetails> {
-        self.keyword().filter(|kw| kw.type_func_name())
+        self.keyword().filter(|kw| kw.type_func_name().is_some())
     }
 
     #[inline(always)]
     pub fn reserved_keyword(&self) -> Option<&'static KeywordDetails> {
-        self.keyword().filter(|kw| kw.reserved())
+        self.keyword().filter(|kw| kw.reserved().is_some())
     }
 
     #[inline(always)]
