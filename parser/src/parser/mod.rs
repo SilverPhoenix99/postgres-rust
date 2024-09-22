@@ -393,32 +393,15 @@ impl<'src> Parser<'src> {
     /// Alias: `RoleId`
     fn role_id(&mut self) -> OptResult<Cow<'static, str>> {
 
-        // Similar to role_spec, but only an identifier, i.e., disallows builtin roles
+        // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
-        let role= self.buffer.consume(|tok|
-            match tok.keyword() {
-                None => Ok(None),
-                Some(KeywordDetails { keyword: ColumnName(NoneKw), .. }) => Err(ReservedRoleSpec("none")),
-                Some(KeywordDetails { keyword: Reserved(CurrentRole), .. }) => Err(ForbiddenRoleSpec("CURRENT_ROLE")),
-                Some(KeywordDetails { keyword: Reserved(CurrentUser), .. }) => Err(ForbiddenRoleSpec("CURRENT_USER")),
-                Some(KeywordDetails { keyword: Reserved(SessionUser), .. }) => Err(ForbiddenRoleSpec("SESSION_USER")),
-                Some(KeywordDetails { keyword: Reserved(_), .. }) => {
-                    // There's no easy way to signal this out, so we'll take the hit,
-                    // and let `identifier()` fail the match.
-                    Ok(None)
-                },
-                Some(kw) => Ok(Some(kw.text().into()))
-            }
-        )?;
-
-        if let Some(role) = role {
-            return Ok(Some(role))
-        }
-
-        match self.identifier()? {
+        match self.role_spec()? {
             None => Ok(None),
-            Some(ident) if ident == "public" => Err(Some(ReservedRoleSpec("public"))),
-            Some(ident) => Ok(Some(ident.into())),
+            Some(RoleSpec::Name(role)) => Ok(Some(role)),
+            Some(RoleSpec::Public) => Err(Some(ReservedRoleSpec("public"))),
+            Some(RoleSpec::CurrentRole) => Err(Some(ForbiddenRoleSpec("CURRENT_ROLE"))),
+            Some(RoleSpec::CurrentUser) => Err(Some(ForbiddenRoleSpec("CURRENT_USER"))),
+            Some(RoleSpec::SessionUser) => Err(Some(ForbiddenRoleSpec("SESSION_USER"))),
         }
     }
 
@@ -435,29 +418,33 @@ impl<'src> Parser<'src> {
                 | non_reserved_word
         */
 
-        let role= self.buffer.consume(|tok| match tok.keyword() {
-            None => Ok(None),
-            Some(KeywordDetails { keyword: ColumnName(NoneKw), .. }) => Err(ReservedRoleSpec("none")),
-            Some(KeywordDetails { keyword: Reserved(CurrentRole), .. }) => Ok(Some(RoleSpec::CurrentRole)),
-            Some(KeywordDetails { keyword: Reserved(CurrentUser), .. }) => Ok(Some(RoleSpec::CurrentUser)),
-            Some(KeywordDetails { keyword: Reserved(SessionUser), .. }) => Ok(Some(RoleSpec::SessionUser)),
-            Some(KeywordDetails { keyword: Reserved(_), .. }) => {
-                // There's no easy way to signal this out, so we'll take the hit,
-                // and let `identifier()` fail the match.
-                Ok(None)
-            },
-            Some(kw) => Ok(Some(RoleSpec::Name(kw.text().into())))
-        })?;
-
-        if let Some(role) = role {
-            return Ok(Some(role))
+        if let Some(ident) = self.identifier()? {
+            return if ident == "public" {
+                Ok(Some(RoleSpec::Public))
+            }
+            else {
+                Ok(Some(RoleSpec::Name(ident.into())))
+            }
         }
 
-        match self.identifier()? {
-            None => Ok(None),
-            Some(ident) if ident == "public" => Ok(Some(RoleSpec::Public)),
-            Some(ident) => Ok(Some(RoleSpec::Name(ident.into()))),
-        }
+        self.buffer.consume(|tok| {
+
+            let kw = match tok.keyword() {
+                Some(kw) => kw,
+                None => return Ok(None),
+            };
+
+            match kw.keyword() {
+                ColumnName(NoneKw) => Err(ReservedRoleSpec("none")),
+                Reserved(CurrentRole) => Ok(Some(RoleSpec::CurrentRole)),
+                Reserved(CurrentUser) => Ok(Some(RoleSpec::CurrentUser)),
+                Reserved(SessionUser) => Ok(Some(RoleSpec::SessionUser)),
+                Reserved(_) => Ok(None),
+                _ => Ok(Some(
+                    RoleSpec::Name(kw.text().into())
+                )),
+            }
+        })
     }
 
     /// Alias: `ColId`
@@ -496,7 +483,7 @@ impl<'src> Parser<'src> {
     /// Alias: `BareColLabel`
     #[inline(always)]
     fn bare_col_label(&mut self) -> OptResult<Cow<'static, str>> {
-        self.ident_or_keyword(|kw| kw.bare)
+        self.ident_or_keyword(KeywordDetails::bare)
     }
 
     fn ident_or_keyword<P>(&mut self, pred: P) -> OptResult<Cow<'static, str>>

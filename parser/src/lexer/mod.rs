@@ -999,7 +999,7 @@ mod tests {
     fn assert_kw(expected: Keyword, actual: Option<Located<LexResult>>) {
         match actual {
             Some((Ok(Keyword(kw)), _)) => {
-                assert_eq!(expected, kw.keyword);
+                assert_eq!(expected, kw.keyword());
             }
             _ => {
                 panic!("expected keyword token `{expected:?}`, got {actual:?}");
