@@ -30,11 +30,6 @@ impl Location {
     }
 
     #[inline(always)]
-    pub fn position(&self) -> Position {
-        (self.line, self.col)
-    }
-
-    #[inline(always)]
     pub fn line(&self) -> usize {
         self.line
     }
@@ -42,5 +37,21 @@ impl Location {
     #[inline(always)]
     pub fn col(&self) -> usize {
         self.col
+    }
+
+    #[inline(always)]
+    pub fn position(&self) -> Position {
+        (self.line, self.col)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_position() {
+        let loc = Location::new(0..0, 3, 5);
+        assert_eq!((3, 5), loc.position())
     }
 }
