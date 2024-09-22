@@ -4,7 +4,7 @@ use std::ops::Range;
 /// A simple helper tuple type, to hold information related to some location.
 pub type Located<T> = (T, Location);
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Location {
     range: Range<usize>,
     line: usize,
