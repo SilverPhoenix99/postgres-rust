@@ -6,7 +6,7 @@ use postgres_basics::sql_state::{
 use std::str::Utf8Error;
 use UnicodeStringError::*;
 
-#[derive(Debug, Copy, Clone, PartialEq, thiserror::Error)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
 pub enum UnicodeStringError {
 
     /// Invalid UTF-8 char.
