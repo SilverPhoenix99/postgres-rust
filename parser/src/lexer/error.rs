@@ -1,6 +1,6 @@
 use postgres_basics::sql_state::{ErrorSqlState, SqlState};
 
-#[derive(Debug, Copy, Clone, PartialEq, thiserror::Error)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
 pub enum LexerError {
 
     #[error("Unexpected character {0:?}", *(.unknown) as char)]
