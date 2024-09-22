@@ -130,7 +130,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
                 (result, None)
             },
             ExtendedString { .. } => {
-                let mut decoder = ExtendedStringDecoder::new(slice, self.0.config.backslash_quote);
+                let mut decoder = ExtendedStringDecoder::new(slice, self.0.config.backslash_quote());
                 let ExtendedStringResult { result, warning } = decoder.decode();
 
                 let result = match result {

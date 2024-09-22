@@ -13,18 +13,34 @@ pub enum ParseMode {
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ParserConfig {
-    pub standard_conforming_strings: bool,
-    pub backslash_quote: BackslashQuote,
-    pub mode: ParseMode
+    standard_conforming_strings: bool,
+    backslash_quote: BackslashQuote,
+    mode: ParseMode
 }
 
 impl ParserConfig {
 
+    #[inline(always)]
     pub fn new(standard_conforming_strings: bool, backslash_quote: BackslashQuote, mode: ParseMode) -> Self {
         Self {
             standard_conforming_strings,
             backslash_quote,
             mode
         }
+    }
+
+    #[inline(always)]
+    pub fn standard_conforming_strings(&self) -> bool {
+        self.standard_conforming_strings
+    }
+
+    #[inline(always)]
+    pub fn backslash_quote(&self) -> BackslashQuote {
+        self.backslash_quote
+    }
+
+    #[inline(always)]
+    pub fn mode(&self) -> ParseMode {
+        self.mode
     }
 }
