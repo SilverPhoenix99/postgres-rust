@@ -198,3 +198,70 @@ fn strip_delimiters(kind: StringKind, slice: &[u8]) -> &[u8] {
 
     &slice[range]
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::parser::{ParseMode, ParserConfig};
+    use postgres_basics::guc::BackslashQuote;
+
+    #[test]
+    fn test_parse_basic_string() {
+        let mut parser = new_parser(b"'a basic string'");
+        let mut string_parser = StringParser(&mut parser);
+
+        let result = string_parser.parse();
+        assert_eq!(Ok(Some(StringLiteral("a basic string".into()))), result.result);
+    }
+
+    #[test]
+    fn test_parse_basic_string_concatenable() {
+
+        let mut parser = new_parser(
+            b"'a basic string'\n\
+            ' that concatenates'"
+        );
+        let mut string_parser = StringParser(&mut parser);
+
+        let result = string_parser.parse();
+        assert_eq!(Ok(Some(StringLiteral("a basic string that concatenates".into()))), result.result);
+    }
+
+    #[test]
+    fn test_dollar_string() {
+        let mut parser = new_parser(b"$dollar$a $ string$dollar$");
+        let mut string_parser = StringParser(&mut parser);
+
+        let result = string_parser.parse();
+        assert_eq!(Ok(Some(StringLiteral("a $ string".into()))), result.result);
+    }
+
+    #[test]
+    fn test_unicode_string() {
+        let mut parser = new_parser(br"u&'!0061n unicode string' UESCAPE '!'");
+        let mut string_parser = StringParser(&mut parser);
+
+        let result = string_parser.parse();
+        assert_eq!(Ok(Some(StringLiteral("an unicode string".into()))), result.result);
+    }
+
+    #[test]
+    fn test_extended_string() {
+        let mut parser = new_parser(br"e'\u0061n extended string'");
+        let mut string_parser = StringParser(&mut parser);
+
+        let result = string_parser.parse();
+        assert_eq!(Ok(Some(StringLiteral("an extended string".into()))), result.result);
+    }
+
+    fn new_parser(source: &[u8]) -> Parser<'_> {
+
+        let config = ParserConfig::new(
+            true,
+            BackslashQuote::SafeEncoding,
+            ParseMode::Default
+        );
+
+        Parser::new(source, config)
+    }
+}
