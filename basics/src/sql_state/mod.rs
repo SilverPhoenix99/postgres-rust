@@ -1,11 +1,13 @@
 mod enums;
 mod variant_sets;
 
-use crate::sql_state::variant_sets::{ERROR_VARIANTS, WARNING_VARIANTS};
-use crate::sql_state::SuccessSqlState::SuccessfulCompletion;
+pub use self::enums::{ErrorSqlState, SuccessSqlState, WarningSqlState};
+use self::{
+    variant_sets::{ERROR_VARIANTS, WARNING_VARIANTS},
+    SuccessSqlState::SuccessfulCompletion,
+};
 use core::fmt;
 use core::fmt::{Display, Formatter, Write};
-pub use enums::{ErrorSqlState, SuccessSqlState, WarningSqlState};
 use std::mem;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -26,7 +28,7 @@ impl SqlState {
 }
 
 impl Display for SqlState {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Success(code) => code.fmt(f),
             Self::Warning(code) => code.fmt(f),
@@ -46,7 +48,7 @@ impl TryFrom<u32> for SqlState {
         else if value > 0x2aaaaaaa /* `ZZZZZ` */ {
             Err(())
         }
-        else if value >= 0x000c0000 /* 03000 */ && ERROR_VARIANTS.contains(&value) {
+        else if value >= 0x000c0000 /* `03000` */ && ERROR_VARIANTS.contains(&value) {
             let code = unsafe { mem::transmute::<u32, ErrorSqlState>(value) };
             Ok(Self::Error(code))
         }

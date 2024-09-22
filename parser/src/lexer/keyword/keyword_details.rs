@@ -1,6 +1,12 @@
-use crate::lexer::keyword::keywords::KEYWORDS;
-use crate::lexer::Keyword::{ColumnName, Reserved, TypeFuncName, Unreserved};
-use crate::lexer::{ColumnNameKeyword, Keyword, ReservedKeyword, TypeFuncNameKeyword, UnreservedKeyword};
+use crate::lexer::{
+    keyword::keywords::KEYWORDS,
+    ColumnNameKeyword,
+    Keyword,
+    Keyword::{ColumnName, Reserved, TypeFuncName, Unreserved},
+    ReservedKeyword,
+    TypeFuncNameKeyword,
+    UnreservedKeyword,
+};
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
