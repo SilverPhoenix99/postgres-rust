@@ -9,3 +9,6 @@ bitvec.workspace = true
 phf.workspace = true
 thiserror.workspace = true
 postgres-basics.workspace = true
+
+[dev-dependencies]
+assert_matches.workspace = true
