@@ -89,15 +89,15 @@ impl<'p, 'src> StringParser<'p, 'src> {
 
         let mut string = slice.to_vec();
 
-        let mut end_index = loc.range.end;
+        let mut end_index = loc.range().end;
         while let Ok(Some((suffix_kind, suffix_loc))) = self.try_consume(true) {
             let suffix_slice = suffix_loc.slice(self.0.source);
             let suffix_slice = strip_delimiters(suffix_kind, suffix_slice);
             string.extend_from_slice(suffix_slice);
-            end_index = suffix_loc.range.end;
+            end_index = suffix_loc.range().end;
         }
 
-        let loc = Location::new(loc.range.start..end_index, loc.line, loc.col);
+        let loc = Location::new(loc.range().start..end_index, loc.line(), loc.col());
 
         self.decode_string(kind, &string, loc)
     }
