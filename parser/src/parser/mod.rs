@@ -391,6 +391,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `RoleId`
+    #[inline]
     fn role_id(&mut self) -> OptResult<Cow<'static, str>> {
 
         // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
