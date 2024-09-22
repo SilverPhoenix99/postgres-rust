@@ -107,7 +107,7 @@ impl<T, E> RequiredResult<T, E> for ReqResult<T, E> {
 
     /// **Warning**: This method never returns `Ok(None)` or `Err(None)`,
     /// it just wraps the value or error in `Some(_)`.
-    /// 
+    ///
     /// This is just a convenience method to convert a `ReqResult` to an `OptResult`.
     #[inline(always)]
     fn optional(self) -> OptResult<T, E> {
@@ -115,5 +115,163 @@ impl<T, E> RequiredResult<T, E> for ReqResult<T, E> {
             Ok(ok) => Ok(Some(ok)),
             Err(err) => Err(err),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    type O = Option<usize>;
+
+    #[test]
+    fn test_eof() {
+        assert!(!Ok::<O, O>(Some(1)).eof());
+        assert!(!Ok::<O, O>(None).eof());
+        assert!(!Err::<O, O>(Some(1)).eof());
+        assert!(Err::<O, O>(None).eof());
+    }
+
+    #[test]
+    fn test_no_match() {
+        assert!(!Ok::<O, O>(Some(1)).no_match());
+        assert!(Ok::<O, O>(None).no_match());
+        assert!(!Err::<O, O>(Some(1)).no_match());
+        assert!(!Err::<O, O>(None).no_match());
+    }
+
+    #[test]
+    fn test_map_eof() {
+        assert_eq!(
+            Ok(Some(1)),
+            Ok(Some(1)).map_eof(|| Err(Some(1)) )
+        );
+        assert_eq!(
+            Ok(None),
+            Ok::<O, O>(None).map_eof(|| Err(Some(1)) )
+        );
+        assert_eq!(
+            Err(Some(1)),
+            Err(Some(1)).map_eof(|| Ok(Some(1)) )
+        );
+        assert_eq!(
+            Ok(Some(1)),
+            Err::<O, O>(None).map_eof(|| Ok(Some(1)) )
+        );
+    }
+
+    #[test]
+    fn test_map_no_match() {
+        assert_eq!(
+            Ok(Some(1)),
+            Ok(Some(1)).map_no_match(|| Err(Some(1)) )
+        );
+        assert_eq!(
+            Err(Some(1)),
+            Ok::<O, O>(None).map_no_match(|| Err(Some(1)) )
+        );
+        assert_eq!(
+            Err(Some(1)),
+            Err(Some(1)).map_no_match(|| Ok(Some(1)) )
+        );
+        assert_eq!(
+            Err(None),
+            Err::<O, O>(None).map_no_match(|| Ok(Some(1)) )
+        );
+    }
+
+    #[test]
+    fn test_map_none() {
+        assert_eq!(
+            Ok(1),
+            Ok(Some(1)).map_none(|| Err(Some(1)) )
+        );
+        assert_eq!(
+            Err(Some(1)),
+            Ok::<O, O>(None).map_none(|| Err(Some(1)) )
+        );
+        assert_eq!(
+            Err(Some(1)),
+            Err(Some(1)).map_none(|| Ok(1) )
+        );
+        assert_eq!(
+            Ok(1),
+            Err::<O, O>(None).map_none(|| Ok(1) )
+        );
+    }
+
+    #[test]
+    fn test_replace_eof() {
+        assert_eq!(
+            Ok(Some(1)),
+            Ok(Some(1)).replace_eof(Err(Some(1)))
+        );
+        assert_eq!(
+            Ok(None),
+            Ok::<O, O>(None).replace_eof(Err(Some(1)))
+        );
+        assert_eq!(
+            Err(Some(1)),
+            Err(Some(1)).replace_eof(Ok(Some(1)))
+        );
+        assert_eq!(
+            Ok(Some(1)),
+            Err::<O, O>(None).replace_eof(Ok(Some(1)))
+        );
+    }
+
+    #[test]
+    fn test_replace_no_match() {
+        assert_eq!(
+            Ok(Some(1)),
+            Ok(Some(1)).replace_no_match(Err(Some(1)))
+        );
+        assert_eq!(
+            Err(Some(1)),
+            Ok::<O, O>(None).replace_no_match(Err(Some(1)))
+        );
+        assert_eq!(
+            Err(Some(1)),
+            Err(Some(1)).replace_no_match(Ok(Some(1)))
+        );
+        assert_eq!(
+            Err(None),
+            Err::<O, O>(None).replace_no_match(Ok(Some(1)))
+        );
+    }
+
+    #[test]
+    fn test_replace_none() {
+        assert_eq!(
+            Ok(1),
+            Ok(Some(1)).replace_none(Err(Some(1)))
+        );
+        assert_eq!(
+            Err(Some(1)),
+            Ok::<O, O>(None).replace_none(Err(Some(1)))
+        );
+        assert_eq!(
+            Err(Some(1)),
+            Err(Some(1)).replace_none(Ok(1))
+        );
+        assert_eq!(
+            Ok(1),
+            Err::<O, O>(None).replace_none(Ok(1))
+        );
+    }
+
+    #[test]
+    fn test_required() {
+        assert_eq!(Ok(1),        Ok::<O, O>(Some(1)).required());
+        assert_eq!(Err(Some(0)), Ok::<O, O>(None).required());
+        assert_eq!(Err(Some(1)), Err::<O, O>(Some(1)).required());
+        assert_eq!(Err(Some(0)), Err::<O, O>(None).required());
+    }
+
+    #[test]
+    fn test_optional() {
+        assert_eq!(Ok(Some(1)), Ok::<usize, O>(1).optional());
+        assert_eq!(Err(Some(1)), Err::<usize, O>(Some(1)).optional());
+        assert_eq!(Err(None), Err::<usize, O>(None).optional());
     }
 }
