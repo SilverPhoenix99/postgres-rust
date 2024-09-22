@@ -62,6 +62,16 @@ impl TryFrom<u32> for SqlState {
     }
 }
 
+impl From<SqlState> for u32 {
+    fn from(value: SqlState) -> Self {
+        match value {
+            SqlState::Success(code) => code.into(),
+            SqlState::Warning(code) => code.into(),
+            SqlState::Error(code) => code.into(),
+        }
+    }
+}
+
 fn fmt(code: u32, formatter: &mut Formatter<'_>) -> fmt::Result {
 
     (0..5).rev()
@@ -121,5 +131,33 @@ impl Display for ErrorSqlState {
     #[inline(always)]
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         fmt(u32::from(*self), f)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ErrorSqlState::SyntaxError;
+    use super::SqlState::*;
+    use super::*;
+
+    #[test]
+    fn test_from() {
+        assert_eq!(0, u32::from(Success(SuccessfulCompletion)));
+        assert_eq!(0x40000, u32::from(Warning(WarningSqlState::Warning)));
+        assert_eq!(0x4086001, u32::from(Error(SyntaxError)));
+    }
+
+    #[test]
+    fn test_try_from() {
+        assert_eq!(Ok(Success(SuccessfulCompletion)), SqlState::try_from(0));
+        assert_eq!(Ok(Warning(WarningSqlState::Warning)), SqlState::try_from(0x40000));
+        assert_eq!(Ok(Error(SyntaxError)), SqlState::try_from(0x4086001));
+    }
+    
+    #[test]
+    fn test_to_string() {
+        assert_eq!("00000", Success(SuccessfulCompletion).to_string());
+        assert_eq!("01000", Warning(WarningSqlState::Warning).to_string());
+        assert_eq!("42601", Error(SyntaxError).to_string());
     }
 }
