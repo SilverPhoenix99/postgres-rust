@@ -35,7 +35,7 @@ pub enum StringKind {
     ///   * or it can be a National string (`[nN]` prefix).
     ExtendedString {
         /// See `BasicString.concatenable`.
-        /// 
+        ///
         /// Only applies when this string doesn't have a prefix
         concatenable: bool
     },
@@ -130,7 +130,7 @@ impl TokenKind {
 
     #[inline(always)]
     pub fn bare_label_keyword(&self) -> Option<&'static KeywordDetails> {
-        self.keyword().filter(|kw| kw.bare)
+        self.keyword().filter(|kw| kw.bare())
     }
 
     #[inline(always)]

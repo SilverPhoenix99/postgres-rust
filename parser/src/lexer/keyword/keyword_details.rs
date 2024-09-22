@@ -11,15 +11,15 @@ use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct KeywordDetails {
-    pub keyword: Keyword,
-    pub text: &'static [u8],
-    pub bare: bool,
+    keyword: Keyword,
+    text: &'static [u8],
+    bare: bool,
 }
 
 impl KeywordDetails {
 
     #[inline(always)]
-    pub(super) const fn new(keyword: Keyword, text: &'static [u8], bare: bool,) -> Self {
+    pub(super) const fn new(keyword: Keyword, text: &'static [u8], bare: bool) -> Self {
         KeywordDetails { keyword, text, bare }
     }
 
@@ -29,7 +29,18 @@ impl KeywordDetails {
     }
 
     #[inline(always)]
+    pub fn bare(&self) -> bool {
+        self.bare
+    }
+
+    #[inline(always)]
+    pub fn keyword(&self) -> Keyword {
+        self.keyword
+    }
+
+    #[inline(always)]
     pub fn text(&self) -> &'static str {
+        // SAFETY: all keywords are ascii
         unsafe { std::str::from_utf8_unchecked(self.text) }
     }
 
@@ -39,11 +50,6 @@ impl KeywordDetails {
             Unreserved(kw) => Some(kw),
             _ => None
         }
-    }
-
-    #[inline(always)]
-    pub fn keyword(&self) -> Keyword {
-        self.keyword
     }
 
     #[inline(always)]
