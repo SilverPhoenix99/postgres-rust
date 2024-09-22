@@ -4,7 +4,8 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
-postgres-basics.workspace = true
 bitflags.workspace = true
+bitvec.workspace = true
 phf.workspace = true
 thiserror.workspace = true
+postgres-basics.workspace = true
