@@ -3,12 +3,14 @@ mod bit_decoder;
 mod extended_decoder;
 mod unicode_decoder;
 
-pub use basic_decoder::BasicStringDecoder;
-pub use bit_decoder::{BitStringDecoder, BitStringError};
-pub use extended_decoder::{
-    ExtendedStringDecoder,
-    ExtendedStringError,
-    ExtendedStringResult,
-    ExtendedStringWarning
+pub use self::{
+    basic_decoder::BasicStringDecoder,
+    bit_decoder::{BitStringDecoder, BitStringError},
+    extended_decoder::{
+        ExtendedStringDecoder,
+        ExtendedStringError,
+        ExtendedStringResult,
+        ExtendedStringWarning
+    },
+    unicode_decoder::{UnicodeStringDecoder, UnicodeStringError}
 };
-pub use unicode_decoder::{UnicodeStringDecoder, UnicodeStringError};

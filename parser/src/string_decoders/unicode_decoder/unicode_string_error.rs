@@ -1,6 +1,5 @@
-use postgres_basics::sql_state::ErrorSqlState::CharacterNotInRepertoire;
 use postgres_basics::sql_state::{
-    ErrorSqlState::SyntaxError,
+    ErrorSqlState::{CharacterNotInRepertoire, SyntaxError},
     SqlState,
     SqlState::Error
 };

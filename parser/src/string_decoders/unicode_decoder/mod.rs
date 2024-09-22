@@ -1,5 +1,7 @@
 mod unicode_string_error;
 
+pub use self::unicode_string_error::UnicodeStringError;
+use self::unicode_string_error::UnicodeStringError::*;
 use postgres_basics::{
     wchar,
     CharBuffer,
@@ -8,8 +10,6 @@ use postgres_basics::{
     UnicodeCharError,
     UnicodeCharError::LenTooShort
 };
-pub use unicode_string_error::UnicodeStringError;
-use UnicodeStringError::*;
 
 pub struct UnicodeStringDecoder<'src> {
     input: CharBuffer<'src>,

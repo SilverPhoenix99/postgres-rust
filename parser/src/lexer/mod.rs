@@ -1,19 +1,23 @@
 mod keyword;
-mod lexer_error;
+mod error;
 mod token_kind;
 
-pub use crate::lexer::keyword::ColumnNameKeyword;
-pub use crate::lexer::keyword::Keyword;
-pub use crate::lexer::keyword::KeywordDetails;
-pub use crate::lexer::keyword::ReservedKeyword;
-pub use crate::lexer::keyword::TypeFuncNameKeyword;
-pub use crate::lexer::keyword::UnreservedKeyword;
-pub use crate::lexer::lexer_error::LexerError;
-use crate::lexer::lexer_error::LexerError::*;
-use crate::lexer::token_kind::IdentifierKind::*;
-use crate::lexer::token_kind::StringKind::*;
-use crate::lexer::token_kind::TokenKind::*;
-pub use crate::lexer::token_kind::{IdentifierKind, StringKind, TokenKind};
+pub use self::{
+    error::LexerError,
+    keyword::{
+        ColumnNameKeyword,
+        Keyword,
+        KeywordDetails,
+        ReservedKeyword,
+        TypeFuncNameKeyword,
+        UnreservedKeyword,
+    },
+    token_kind::{IdentifierKind, StringKind, TokenKind},
+};
+use self::{
+    error::LexerError::*,
+    token_kind::{IdentifierKind::*, StringKind::*, TokenKind::*},
+};
 use postgres_basics::ascii::*;
 use postgres_basics::{CharBuffer, Located, Location, NAMEDATALEN};
 use std::iter::FusedIterator;

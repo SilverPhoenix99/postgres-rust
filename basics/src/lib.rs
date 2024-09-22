@@ -26,11 +26,13 @@ mod named;
 pub mod sql_state;
 pub mod wchar;
 
-pub use char_buffer::{CharBuffer, Position, UnicodeChar, UnicodeCharError};
-pub use concealable::Concealable;
-pub use fn_info::FnInfo;
-pub use location::{Located, Location};
-pub use named::Named;
+pub use self::{
+    char_buffer::{CharBuffer, Position, UnicodeChar, UnicodeCharError},
+    concealable::Concealable,
+    fn_info::FnInfo,
+    location::{Located, Location},
+    named::Named,
+};
 
 pub type Oid = u32;
 
