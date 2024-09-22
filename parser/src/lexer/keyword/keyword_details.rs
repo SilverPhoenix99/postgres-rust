@@ -86,3 +86,44 @@ impl Display for KeywordDetails {
         f.write_str(text)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_unreserved() {
+        let kw = KEYWORDS.get(b"abort").unwrap();
+        assert_eq!(Some(UnreservedKeyword::Abort), kw.unreserved());
+
+        let kw = KEYWORDS.get(b"between").unwrap();
+        assert_eq!(None, kw.unreserved());
+    }
+    
+    #[test]
+    fn test_col_name() {
+        let kw = KEYWORDS.get(b"between").unwrap();
+        assert_eq!(Some(ColumnNameKeyword::Between), kw.col_name());
+
+        let kw = KEYWORDS.get(b"authorization").unwrap();
+        assert_eq!(None, kw.col_name());
+    }
+    
+    #[test]
+    fn test_type_func_name() {
+        let kw = KEYWORDS.get(b"authorization").unwrap();
+        assert_eq!(Some(TypeFuncNameKeyword::Authorization), kw.type_func_name());
+
+        let kw = KEYWORDS.get(b"analyze").unwrap();
+        assert_eq!(None, kw.type_func_name());
+    }
+    
+    #[test]
+    fn test_reserved() {
+        let kw = KEYWORDS.get(b"analyze").unwrap();
+        assert_eq!(Some(ReservedKeyword::Analyze), kw.reserved());
+
+        let kw = KEYWORDS.get(b"abort").unwrap();
+        assert_eq!(None, kw.reserved());
+    }
+}
