@@ -47,6 +47,7 @@ impl<'src> TokenBuffer<'src> {
     ///
     /// When a mapper doesn't match anything, then it should return `Ok(None)`,
     /// to signal that iteration should continue to the next mapper.
+    #[inline]
     pub fn consume_any<T>(
         &mut self,
         mappers: &[&dyn Fn(&TokenKind) -> ConsumerResult<T>]
@@ -156,5 +157,114 @@ where
                 Ok(None)
             }
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::lexer::IdentifierKind::BasicIdentifier;
+    use crate::parser::Lexer;
+    use crate::parser::ParserError::BitStringTooLong;
+    use TokenKind::Identifier;
+
+    #[test]
+    fn test_eof() {
+        let lexer = Lexer::new(b"", true);
+        let buffer =  TokenBuffer::new(lexer);
+
+        assert!(buffer.eof())
+    }
+
+    #[test]
+    fn test_next_and_peek_and_current_location() {
+        let lexer = Lexer::new(b"two identifiers", true);
+        let mut buffer =  TokenBuffer::new(lexer);
+
+        assert_matches!(buffer.peek(), Some((Ok(_), _)));
+        assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
+
+        buffer.next();
+
+        assert_matches!(buffer.peek(), Some((Ok(_), _)));
+        assert_eq!(Location::new(4..15, 1, 5), buffer.current_location());
+
+        buffer.next();
+
+        assert_matches!(buffer.peek(), None);
+        assert_eq!(Location::new(15..15, 1, 16), buffer.current_location());
+    }
+
+    #[test]
+    fn test_consume_eq() {
+        let lexer = Lexer::new(b"two identifiers", true);
+        let mut buffer =  TokenBuffer::new(lexer);
+
+        assert_eq!(Ok(None), buffer.consume_eq(TokenKind::Comma));
+
+        assert_eq!(
+            Ok(Some(Identifier(BasicIdentifier))),
+            buffer.consume_eq(Identifier(BasicIdentifier))
+        );
+    }
+
+    #[test]
+    fn test_consume_returning_err() {
+        let lexer = Lexer::new(b"two identifiers", true);
+        let mut buffer =  TokenBuffer::new(lexer);
+
+        let result: OptResult<TokenKind> = buffer.consume(|_| Err(BitStringTooLong));
+        assert_eq!(Err(Some(BitStringTooLong)), result);
+        assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
+    }
+
+    #[test]
+    fn test_consume_returning_ok() {
+        let lexer = Lexer::new(b"two identifiers", true);
+        let mut buffer =  TokenBuffer::new(lexer);
+
+        let result = buffer.consume(|tok| Ok(Some(*tok)));
+        assert_eq!(Ok(Some(Identifier(BasicIdentifier))), result);
+        assert_eq!(Location::new(4..15, 1, 5), buffer.current_location());
+    }
+
+    #[test]
+    fn test_consume_returning_none() {
+        let lexer = Lexer::new(b"two identifiers", true);
+        let mut buffer =  TokenBuffer::new(lexer);
+
+        let result: OptResult<TokenKind> = buffer.consume(|_| None);
+        assert_eq!(Ok(None), result);
+        assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
+    }
+
+    #[test]
+    fn test_consume_returning_some() {
+        let lexer = Lexer::new(b"two identifiers", true);
+        let mut buffer =  TokenBuffer::new(lexer);
+
+        let result = buffer.consume(|tok| Some(*tok));
+        assert_eq!(Ok(Some(Identifier(BasicIdentifier))), result);
+        assert_eq!(Location::new(4..15, 1, 5), buffer.current_location());
+    }
+
+    #[test]
+    fn test_consume_returning_false() {
+        let lexer = Lexer::new(b"two identifiers", true);
+        let mut buffer =  TokenBuffer::new(lexer);
+
+        let result = buffer.consume(|_| false);
+        assert_eq!(Ok(None), result);
+        assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
+    }
+
+    #[test]
+    fn test_consume_returning_true() {
+        let lexer = Lexer::new(b"two identifiers", true);
+        let mut buffer =  TokenBuffer::new(lexer);
+
+        let result = buffer.consume(|_| true);
+        assert_eq!(Ok(Some(Identifier(BasicIdentifier))), result);
+        assert_eq!(Location::new(4..15, 1, 5), buffer.current_location());
     }
 }

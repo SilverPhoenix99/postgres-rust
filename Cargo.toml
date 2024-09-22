@@ -12,6 +12,7 @@ edition = "2021"
 version = "18.0.0-devel"
 
 [workspace.dependencies]
+assert_matches = "1"
 bitflags = "2"
 bitvec = "1"
 lazy_static = "1"
