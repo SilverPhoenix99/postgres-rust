@@ -134,7 +134,7 @@ pub struct Parser<'src> {
 impl<'src> Parser<'src> {
 
     pub fn new(source: &'src [u8], config: ParserConfig) -> Self {
-        let lexer = Lexer::new(source, config.standard_conforming_strings);
+        let lexer = Lexer::new(source, config.standard_conforming_strings());
         Self {
             buffer: TokenBuffer::new(lexer),
             source,

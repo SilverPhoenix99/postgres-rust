@@ -5,7 +5,6 @@ use bitvec::boxed::BitBox;
 use std::borrow::Cow;
 use std::num::NonZero;
 
-
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RoleSpec {
     Public,

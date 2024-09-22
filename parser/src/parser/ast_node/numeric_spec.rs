@@ -23,7 +23,6 @@ impl NumericSpec {
     #[inline]
     pub fn new(precision: NonZero<u16>, scale: Option<i16>) -> Self {
 
-
         match scale {
             None => Self::with_precision(precision),
             Some(scale) => {
