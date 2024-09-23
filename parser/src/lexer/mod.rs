@@ -75,7 +75,7 @@ impl<'src> Lexer<'src> {
     /// Zero-length `range`.
     #[inline(always)]
     pub fn current_location(&self) -> Location {
-        self.buffer.location()
+        self.buffer.current_location()
     }
 
     #[inline(always)]
@@ -644,7 +644,7 @@ impl<'src> Lexer<'src> {
         }
 
         let (start_line, _) = self.buffer.position_at(start_index);
-        let (end_line, _) = self.buffer.position();
+        let (end_line, _) = self.buffer.current_position();
 
         Ok(!block_comment && start_line != end_line)
     }

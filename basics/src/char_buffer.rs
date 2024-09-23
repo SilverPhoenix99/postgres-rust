@@ -6,12 +6,14 @@ use UnicodeCharError::*;
 /// A tuple of `(line, column)`.
 pub type Position = (usize, usize);
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum UnicodeChar {
     SurrogateFirst(u16),
     SurrogateSecond(u16),
     Utf8(char),
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum UnicodeCharError {
 
     /// When the number of bytes doesn't match the expected number.
@@ -61,7 +63,7 @@ impl<'src> CharBuffer<'src> {
     }
 
     #[inline(always)]
-    pub fn position(&self) -> Position {
+    pub fn current_position(&self) -> Position {
         self.position_at(self.current_index)
     }
 
@@ -72,20 +74,22 @@ impl<'src> CharBuffer<'src> {
 
     /// Location's range will always be zero-length.
     #[inline(always)]
-    pub fn location(&self) -> Location {
+    pub fn current_location(&self) -> Location {
         self.location_starting_at(self.current_index)
     }
 
     /// Panics when `start_index > self.current_index()`.
     #[inline]
     pub fn location_starting_at(&self, start_index: usize) -> Location {
-        assert!(start_index <= self.current_index);
+        assert!(start_index <= self.current_index, "start_index shouldn't be past current_index");
         let (line, col) = self.lines.position(start_index);
         Location::new(start_index..self.current_index, line, col)
     }
 
+    /// Panics when `start_index > self.current_index()`.
+    #[inline]
     pub fn slice(&self, start_index: usize) -> &'src [u8] {
-        assert!(start_index <= self.current_index);
+        assert!(start_index <= self.current_index, "start_index shouldn't be past current_index");
         &self.source[start_index..self.current_index]
     }
 
@@ -123,8 +127,7 @@ impl<'src> CharBuffer<'src> {
     /// Consumes chars while they're available and `pred` returns `true`.
     /// Returns the number of chars successfully consumed.
     #[inline]
-    pub fn consume_while(&mut self, pred: impl Fn(u8) -> bool) -> usize
-    {
+    pub fn consume_while(&mut self, pred: impl Fn(u8) -> bool) -> usize {
         let mut consumed = 0;
         while self.consume_if(&pred).is_some() {
             consumed += 1;
@@ -204,7 +207,7 @@ impl<'src> CharBuffer<'src> {
     /// E.g.: `"0061"` outputs `Utf8('a')`
     pub fn consume_unicode_char(&mut self, unicode_len: usize) -> Result<UnicodeChar, UnicodeCharError> {
 
-        debug_assert!(unicode_len <= 8, "unicode encoded chars cannot be longer than 8 chars");
+        debug_assert!(unicode_len <= 8, "unicode encoded chars should be <= 8 chars");
 
         let slice = self.remainder();
         if slice.len() < unicode_len {
@@ -254,8 +257,8 @@ impl Default for LineBuffer {
     }
 }
 
-/// Saves the position of lines (LF/CR/CRLF),
-/// and calculates location (line + column) from indexes.
+/// Saves the indexes of lines (LF/CR/CRLF),
+/// and calculates positions (line + column) from indexes.
 impl LineBuffer {
 
     #[inline(always)]
@@ -279,7 +282,7 @@ impl LineBuffer {
         }
     }
 
-    /// Calculates the line and column from a given position.
+    /// Calculates the line and column from a given index.
     pub fn position(&self, index: usize) -> Position {
 
         match self.lines.binary_search(&index) {
@@ -297,7 +300,182 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_location() {
+    fn test_remainder() {
+        let buffer = CharBuffer {
+            current_index: 1,
+            source: b"abc",
+            lines: LineBuffer::default()
+        };
+
+        assert_eq!(b"bc", buffer.remainder());
+    }
+
+    #[test]
+    fn test_current_position() {
+        let buffer = CharBuffer {
+            current_index: 1,
+            source: b"abc",
+            lines: LineBuffer::default()
+        };
+
+        assert_eq!((1, 2), buffer.current_position());
+    }
+
+    #[test]
+    fn test_position_at() {
+        let buffer = CharBuffer::new(b"abc");
+
+        assert_eq!((1, 3), buffer.position_at(2));
+    }
+
+    #[test]
+    fn test_current_location() {
+        let buffer = CharBuffer {
+            current_index: 1,
+            source: b"abc",
+            lines: LineBuffer::default()
+        };
+
+        assert_eq!(Location::new(1..1, 1, 2), buffer.current_location());
+    }
+
+    #[test]
+    fn test_location_starting_at() {
+        let buffer = CharBuffer {
+            current_index: 1,
+            source: b"abc",
+            lines: LineBuffer::default()
+        };
+
+        assert_eq!(Location::new(0..1, 1, 1), buffer.location_starting_at(0));
+    }
+
+    #[test]
+    fn test_slice() {
+        let buffer = CharBuffer {
+            current_index: 2,
+            source: b"abc",
+            lines: LineBuffer::default()
+        };
+
+        assert_eq!(b"ab", buffer.slice(0));
+    }
+
+    #[test]
+    fn test_peek() {
+        let buffer = CharBuffer {
+            current_index: 1,
+            source: b"abc",
+            lines: LineBuffer::default()
+        };
+
+        assert_eq!(Some(b'b'), buffer.peek());
+    }
+
+    #[test]
+    fn test_eof() {
+        let buffer = CharBuffer {
+            current_index: 1,
+            source: b"abc",
+            lines: LineBuffer::default()
+        };
+
+        assert!(!buffer.eof());
+
+        let buffer = CharBuffer {
+            current_index: 3,
+            source: b"abc",
+            lines: LineBuffer::default()
+        };
+
+        assert!(buffer.eof());
+    }
+
+    #[test]
+    fn test_consume_char() {
+        let mut buffer = CharBuffer::new(b"abc");
+
+        assert!(!buffer.consume_char(b'b'));
+        assert!(buffer.consume_char(b'a'));
+    }
+
+    #[test]
+    fn test_consume_if() {
+        let mut buffer = CharBuffer::new(b"abc");
+
+        assert_eq!(None, buffer.consume_if(|c| c == b'b'));
+        assert_eq!(Some(b'a'), buffer.consume_if(|c| c == b'a'));
+    }
+
+    #[test]
+    fn test_consume_while() {
+        let mut buffer = CharBuffer::new(b"aaabc");
+
+        assert_eq!(0, buffer.consume_while(|c| c == b'b'));
+        assert_eq!(3, buffer.consume_while(|c| c == b'a'));
+    }
+
+    #[test]
+    fn test_consume_one() {
+        let mut buffer = CharBuffer::new(b"a");
+
+        assert_eq!(Some(b'a'), buffer.consume_one());
+        assert_eq!(None, buffer.consume_one());
+    }
+
+    #[test]
+    fn test_consume_many() {
+        let mut buffer = CharBuffer::new(b"abc");
+
+        assert_eq!(b"ab", buffer.consume_many(2));
+        assert_eq!(b"c", buffer.consume_many(2));
+        assert_eq!(b"", buffer.consume_many(2));
+    }
+
+    #[test]
+    fn test_push_back() {
+        let mut buffer = CharBuffer {
+            current_index: 1,
+            source: b"abc",
+            lines: LineBuffer::default()
+        };
+
+        assert_eq!(Some(b'b'), buffer.peek());
+        buffer.push_back();
+        assert_eq!(Some(b'a'), buffer.peek());
+    }
+
+    #[test]
+    fn test_seek() {
+        let mut buffer = CharBuffer {
+            current_index: 2,
+            source: b"abc",
+            lines: LineBuffer::default()
+        };
+
+        assert_eq!(Some(b'c'), buffer.peek());
+        buffer.seek(0);
+        assert_eq!(Some(b'a'), buffer.peek());
+    }
+
+    #[test]
+    fn test_consume_string() {
+        let mut buffer = CharBuffer::new(b"abc");
+
+        assert!(!buffer.consume_string(b"bc"));
+        assert!(buffer.consume_string(b"ab"));
+    }
+
+    #[test]
+    fn test_consume_unicode_char() {
+        let mut buffer = CharBuffer::new(b"0000640061");
+
+        assert_eq!(Ok(Utf8('d')), buffer.consume_unicode_char(6));
+        assert_eq!(Ok(Utf8('a')), buffer.consume_unicode_char(4));
+    }
+
+    #[test]
+    fn test_line_buffer_position() {
         let buf = LineBuffer { lines: vec![0, 10, 23] };
 
         assert_eq!((1, 1), buf.position(0));
