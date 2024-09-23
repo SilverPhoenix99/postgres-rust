@@ -37,16 +37,19 @@ impl Display for SqlState {
     }
 }
 
-impl TryFrom<u32> for SqlState {
-    type Error = ();
+#[derive(Debug, PartialEq)]
+pub struct UnknownSqlState;
 
-    fn try_from(value: u32) -> Result<Self, ()> {
+impl TryFrom<u32> for SqlState {
+    type Error = UnknownSqlState;
+
+    fn try_from(value: u32) -> Result<Self, UnknownSqlState> {
 
         if value == 0 {
             Ok(Self::Success(SuccessfulCompletion))
         }
         else if value > 0x2aaaaaaa /* `ZZZZZ` */ {
-            Err(())
+            Err(UnknownSqlState)
         }
         else if value >= 0x000c0000 /* `03000` */ && ERROR_VARIANTS.contains(&value) {
             let code = unsafe { mem::transmute::<u32, ErrorSqlState>(value) };
@@ -57,7 +60,7 @@ impl TryFrom<u32> for SqlState {
             Ok(Self::Warning(code))
         }
         else {
-            Err(())
+            Err(UnknownSqlState)
         }
     }
 }
