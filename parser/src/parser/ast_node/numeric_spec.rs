@@ -1,5 +1,12 @@
 use std::num::NonZero;
 use std::ops::RangeInclusive;
+use NewNumericSpecError::{PrecisionOutOfRange, ScaleOutOfRange};
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum NewNumericSpecError {
+    PrecisionOutOfRange(u16),
+    ScaleOutOfRange(i16),
+}
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct NumericSpec {
@@ -21,22 +28,22 @@ impl NumericSpec {
     pub const UNSPECIFIED_SCALE: i32 = 16383;
 
     #[inline]
-    pub fn new(precision: NonZero<u16>, scale: Option<i16>) -> Self {
+    pub fn new(precision: NonZero<u16>, scale: i16) -> Result<Self, NewNumericSpecError> {
 
-        match scale {
-            None => Self::with_precision(precision),
-            Some(scale) => {
-                debug_assert!(Self::VALID_SPECIFIED_PRECISION.contains(&precision.get()));
-                debug_assert!(Self::VALID_SPECIFIED_SCALE.contains(&scale));
-                Self { precision, scale }
-            },
+        if !Self::VALID_SPECIFIED_PRECISION.contains(&precision.get()) {
+            return Err(PrecisionOutOfRange(precision.get()))
         }
+
+        if !Self::VALID_SPECIFIED_SCALE.contains(&scale) {
+            return Err(ScaleOutOfRange(scale))
+        }
+
+        Ok(Self { precision, scale })
     }
 
     #[inline(always)]
-    pub fn with_precision(precision: NonZero<u16>) -> Self {
-        debug_assert!(Self::VALID_SPECIFIED_PRECISION.contains(&precision.get()));
-        Self { precision, scale: 0 }
+    pub fn with_precision(precision: NonZero<u16>) -> Result<Self, NewNumericSpecError> {
+        Self::new(precision, 0)
     }
 
     /// Total number of digits the value can have, before & after the decimal point.
@@ -86,5 +93,42 @@ impl Default for NumericSpec {
             },
             scale: i16::MAX
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new() {
+        unsafe {
+            assert_eq!(Err(PrecisionOutOfRange(1001)), NumericSpec::new(NonZero::new_unchecked(1001), 10));
+            assert_eq!(Err(ScaleOutOfRange(-1001)), NumericSpec::new(NonZero::new_unchecked(1), -1001));
+            assert_eq!(Err(ScaleOutOfRange(1001)), NumericSpec::new(NonZero::new_unchecked(1), 1001));
+
+            let spec = NumericSpec::new(NonZero::new_unchecked(1000), 10).unwrap();
+            assert_eq!(1000, spec.precision());
+            assert_eq!(10, spec.scale());
+        }
+    }
+
+    #[test]
+    fn test_with_precision() {
+        unsafe {
+            assert_eq!(Err(PrecisionOutOfRange(1001)), NumericSpec::with_precision(NonZero::new_unchecked(1001)));
+
+            let spec = NumericSpec::with_precision(NonZero::new_unchecked(1000)).unwrap();
+            assert_eq!(1000, spec.precision());
+            assert_eq!(0, spec.scale());
+        }
+    }
+
+    #[test]
+    fn test_default() {
+        let spec = NumericSpec::default();
+
+        assert_eq!(NumericSpec::UNSPECIFIED_PRECISION, spec.precision());
+        assert_eq!(NumericSpec::UNSPECIFIED_SCALE, spec.scale());
     }
 }
