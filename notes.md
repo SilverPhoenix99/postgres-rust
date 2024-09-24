@@ -5,6 +5,7 @@
   * `backend/utils/mb/stringinfo_mb.c` / `include/mb/stringinfo_mb.h`
 
 # TO DO
+* Test `NumericSpec`.
 * Support encodings besides UTF-8: `include/mb/pg_wchar.h`, `common/wchar.c`
   * For now:
     * Assume only UTF-8;
@@ -17,3 +18,27 @@
   * Every object will have access to the global instance, but that will change in the future.
 * For now logging is reported via `Result`.
   * Later, this will be used to actually log out at certain end/finish/completion points.
+
+# Build C Postgres
+
+```sh
+pacman -S flex bison icu-devel
+
+mkdir pg_build
+cd pg_build
+
+time ../postgres/configure ICU_CFLAGS='-I/usr/include' ICU_LIBS='-L/usr/lib -licui18n -licuuc -licudata' --host=x86_64-w64-mingw32 --enable-debug --enable-cassert
+
+#time make -j $(nproc)
+
+for f in $(find -name Makefile -exec grep -lP '^generated-headers:' {} \+ | xargs dirname) ; do
+  echo $f
+  (
+    cd $f
+    make generated-headers
+  )
+done
+
+( cd ./src/backend/parser/ ; make scan.c )
+
+```
