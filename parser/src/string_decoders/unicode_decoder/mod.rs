@@ -1,15 +1,6 @@
 mod unicode_string_error;
 
 pub use self::unicode_string_error::UnicodeStringError;
-use self::unicode_string_error::UnicodeStringError::*;
-use postgres_basics::{
-    wchar,
-    CharBuffer,
-    UnicodeChar,
-    UnicodeChar::{SurrogateFirst, SurrogateSecond},
-    UnicodeCharError,
-    UnicodeCharError::LenTooShort
-};
 
 pub struct UnicodeStringDecoder<'src> {
     input: CharBuffer<'src>,
@@ -123,3 +114,13 @@ mod tests {
         )
     }
 }
+
+use self::unicode_string_error::UnicodeStringError::*;
+use postgres_basics::{
+    wchar,
+    CharBuffer,
+    UnicodeChar,
+    UnicodeChar::{SurrogateFirst, SurrogateSecond},
+    UnicodeCharError,
+    UnicodeCharError::LenTooShort
+};

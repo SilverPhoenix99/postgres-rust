@@ -1,7 +1,3 @@
-use crate::lexer::{LexResult, Lexer, TokenKind};
-use crate::parser::{OptResult, ParserError};
-use postgres_basics::{Located, Location};
-
 pub(super) struct TokenBuffer<'src> {
     lexer: Lexer<'src>,
     peeked: Option<Option<Located<LexResult>>>
@@ -268,3 +264,7 @@ mod tests {
         assert_eq!(Location::new(4..15, 1, 5), buffer.current_location());
     }
 }
+
+use crate::lexer::{LexResult, Lexer, TokenKind};
+use crate::parser::{OptResult, ParserError};
+use postgres_basics::{Located, Location};

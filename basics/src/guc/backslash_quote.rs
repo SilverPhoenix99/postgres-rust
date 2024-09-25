@@ -1,5 +1,3 @@
-use crate::Named;
-
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub enum BackslashQuote {
     Off,
@@ -17,3 +15,5 @@ impl Named for BackslashQuote {
         }
     }
 }
+
+use crate::Named;

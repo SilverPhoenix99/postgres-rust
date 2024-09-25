@@ -1,16 +1,3 @@
-use postgres_basics::sql_state::{
-    ErrorSqlState::{
-        CharacterNotInRepertoire,
-        InvalidEscapeSequence,
-        NonstandardUseOfEscapeCharacter,
-        SyntaxError
-    },
-    SqlState,
-    SqlState::Error
-};
-use std::str::Utf8Error;
-use ExtendedStringError::*;
-
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
 pub enum ExtendedStringError {
 
@@ -60,3 +47,16 @@ impl ExtendedStringError {
         }
     }
 }
+
+use postgres_basics::sql_state::{
+    ErrorSqlState::{
+        CharacterNotInRepertoire,
+        InvalidEscapeSequence,
+        NonstandardUseOfEscapeCharacter,
+        SyntaxError
+    },
+    SqlState,
+    SqlState::Error
+};
+use std::str::Utf8Error;
+use ExtendedStringError::*;

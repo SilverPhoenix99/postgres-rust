@@ -13,22 +13,22 @@ mod config_metadata;
 mod generic_config;
 mod enum_config;
 
-pub use bool_config::{BoolConfig, SimpleBoolConfig};
-pub use config_group::ConfigGroup;
-pub use config_metadata::ConfigMetadata;
-pub use config_type::ConfigType;
-pub use config_var::ConfigVar;
-pub use enum_config::{EnumConfig, SimpleEnumConfig};
-pub use generic_config::GenericConfig;
-pub use guc_context::GucContext;
-pub use guc_flags::GucFlags;
-pub use guc_source::GucSource;
-pub use guc_stack::GucStack;
-pub use guc_stack_state::GucStackState;
-pub use guc_status::GucStatus;
-use lazy_static::lazy_static;
-pub use opaque::Opaque;
-use postgres_basics::guc::BackslashQuote;
+pub use self::{
+    bool_config::{BoolConfig, SimpleBoolConfig},
+    config_group::ConfigGroup,
+    config_metadata::ConfigMetadata,
+    config_type::ConfigType,
+    config_var::ConfigVar,
+    enum_config::{EnumConfig, SimpleEnumConfig},
+    generic_config::GenericConfig,
+    guc_context::GucContext,
+    guc_flags::GucFlags,
+    guc_source::GucSource,
+    guc_stack::GucStack,
+    guc_stack_state::GucStackState,
+    guc_status::GucStatus,
+    opaque::Opaque,
+};
 
 pub struct Guc {
     enable_seqscan: SimpleBoolConfig,
@@ -111,3 +111,6 @@ lazy_static! {
         ),
     };
 }
+
+use lazy_static::lazy_static;
+use postgres_basics::guc::BackslashQuote;

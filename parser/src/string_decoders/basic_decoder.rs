@@ -1,5 +1,3 @@
-use std::str::Utf8Error;
-
 pub struct BasicStringDecoder<'src> {
     source: &'src [u8],
     is_ident: bool
@@ -44,3 +42,5 @@ mod tests {
         )
     }
 }
+
+use std::str::Utf8Error;

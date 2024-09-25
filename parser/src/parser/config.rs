@@ -1,5 +1,3 @@
-use postgres_basics::guc::BackslashQuote;
-
 #[derive(Debug, Default, Copy, Clone, PartialEq)]
 pub enum ParseMode {
     #[default]
@@ -44,3 +42,5 @@ impl ParserConfig {
         self.mode
     }
 }
+
+use postgres_basics::guc::BackslashQuote;

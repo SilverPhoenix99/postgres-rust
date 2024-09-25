@@ -1,5 +1,3 @@
-use postgres_basics::Named;
-
 /**
  * The following type records the source of the current setting.  A
  * new setting can only take effect if the previous setting had the
@@ -73,3 +71,5 @@ impl Named for GucSource {
         }
     }
 }
+
+use postgres_basics::Named;

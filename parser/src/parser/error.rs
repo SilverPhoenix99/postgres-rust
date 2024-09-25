@@ -1,9 +1,3 @@
-use crate::lexer::LexerError;
-use crate::string_decoders::{BitStringError, ExtendedStringError, UnicodeStringError};
-use std::str::Utf8Error;
-use std::string::FromUtf8Error;
-use ParserError::*;
-
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub enum ParserError {
     /// When a production fails.
@@ -87,3 +81,9 @@ impl From<BitStringError> for ParserError {
         }
     }
 }
+
+use crate::lexer::LexerError;
+use crate::string_decoders::{BitStringError, ExtendedStringError, UnicodeStringError};
+use std::str::Utf8Error;
+use std::string::FromUtf8Error;
+use ParserError::*;

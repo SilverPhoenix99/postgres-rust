@@ -1,5 +1,3 @@
-use crate::Opaque;
-
 #[derive(Debug)]
 pub enum ConfigVar {
     BoolVal(bool, /*Option<Opaque>*/),

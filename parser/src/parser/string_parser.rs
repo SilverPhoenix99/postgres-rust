@@ -1,10 +1,3 @@
-use crate::lexer::{StringKind, StringKind::*};
-use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::{AstNode, AstNode::*, OptResult, Parser, ParserError};
-use crate::string_decoders::*;
-use postgres_basics::{Located, Location};
-use std::str::Utf8Error;
-
 pub struct StringParserResult {
     pub result: OptResult<AstNode>,
     pub warning: Option<Located<ExtendedStringWarning>>
@@ -264,3 +257,10 @@ mod tests {
         Parser::new(source, config)
     }
 }
+
+use crate::lexer::{StringKind, StringKind::*};
+use crate::parser::token_buffer::TokenConsumer;
+use crate::parser::{AstNode, AstNode::*, OptResult, Parser, ParserError};
+use crate::string_decoders::*;
+use postgres_basics::{Located, Location};
+use std::str::Utf8Error;

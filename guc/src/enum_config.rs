@@ -1,6 +1,3 @@
-use crate::{ConfigMetadata, GenericConfig};
-use std::fmt::Debug;
-
 #[derive(Debug)]
 pub struct EnumConfig<T>
 where
@@ -42,3 +39,6 @@ where
         Self { metadata, config, gen: GenericConfig::default() }
     }
 }
+
+use crate::{ConfigMetadata, GenericConfig};
+use std::fmt::Debug;

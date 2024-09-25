@@ -1,5 +1,3 @@
-use crate::lexer::KeywordDetails;
-
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum IdentifierKind {
 
@@ -214,3 +212,5 @@ mod tests {
         assert_eq!(None, Semicolon.keyword());
     }
 }
+
+use crate::lexer::KeywordDetails;

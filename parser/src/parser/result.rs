@@ -1,5 +1,3 @@
-use crate::parser::ParserError;
-
 /// The default result type for most productions.
 ///
 /// `Ok(None)` and `Err(None)` are soft errors: there's a valid token
@@ -275,3 +273,5 @@ mod tests {
         assert_eq!(Err(None), Err::<usize, O>(None).optional());
     }
 }
+
+use crate::parser::ParserError;

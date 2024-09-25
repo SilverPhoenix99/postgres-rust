@@ -1,5 +1,3 @@
-use bitflags::bitflags;
-
 bitflags! {
     /**
      * Bit values in "flags" of a GUC variable.  Note that these don't appear
@@ -69,3 +67,5 @@ impl Default for GucFlags {
         Self::None
     }
 }
+
+use bitflags::bitflags;
