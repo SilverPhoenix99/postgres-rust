@@ -58,9 +58,9 @@ impl LexerError {
     }
 
     pub fn detail(self) -> Option<&'static str> {
-        if self != Self::UnsafeUnicodeString {
-            return None
+        if self == Self::UnsafeUnicodeString {
+            return Some(r#"String constants with Unicode escapes cannot be used when "standard_conforming_strings" is off."#)
         }
-        Some(r#"String constants with Unicode escapes cannot be used when "standard_conforming_strings" is off."#)
+        None
     }
 }
