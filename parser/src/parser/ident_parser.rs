@@ -5,7 +5,6 @@ use crate::string_decoders::{BasicStringDecoder, UnicodeStringDecoder};
 use postgres_basics::NAMEDATALEN;
 use std::str::Utf8Error;
 
-#[repr(transparent)]
 pub(super) struct IdentifierParser<'p, 'src>(
     pub &'p mut Parser<'src>,
 );
