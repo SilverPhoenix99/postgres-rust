@@ -19,7 +19,7 @@ pub enum ExtendedStringError {
     #[error(r#"invalid byte sequence for encoding "UTF8""#)]
     Utf8(Utf8Error),
 
-    /// When the `\uXXXX`|`\UXXXXXXXX` escape is invalid UTF-32.
+    /// When the result of parsing the `\uXXXX`|`\UXXXXXXXX` escape gives back invalid UTF-16/UTF-32.
     #[error("invalid Unicode escape value")]
     InvalidUnicodeValue(usize),
 
