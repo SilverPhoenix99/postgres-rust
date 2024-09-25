@@ -59,7 +59,6 @@ impl StringParserResult {
     }
 }
 
-#[repr(transparent)]
 pub(super) struct StringParser<'p, 'src>(
     pub &'p mut Parser<'src>,
 );

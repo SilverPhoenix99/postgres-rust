@@ -24,7 +24,6 @@ pub enum UnicodeCharError {
 }
 
 #[derive(Debug, Clone)]
-#[repr(transparent)]
 struct LineBuffer {
     lines: Vec<usize> // where each line begins (i.e., col 1)
 }
