@@ -1,6 +1,3 @@
-use crate::Position;
-use std::ops::Range;
-
 /// A simple helper tuple type, to hold information related to some location.
 pub type Located<T> = (T, Location);
 
@@ -55,3 +52,6 @@ mod tests {
         assert_eq!((3, 5), loc.position())
     }
 }
+
+use crate::Position;
+use std::ops::Range;

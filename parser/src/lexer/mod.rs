@@ -14,13 +14,6 @@ pub use self::{
     },
     token_kind::{IdentifierKind, StringKind, TokenKind},
 };
-use self::{
-    error::LexerError::*,
-    token_kind::{IdentifierKind::*, StringKind::*, TokenKind::*},
-};
-use postgres_basics::ascii::*;
-use postgres_basics::{CharBuffer, Located, Location, NAMEDATALEN};
-use std::iter::FusedIterator;
 
 pub type LexResult = Result<TokenKind, LexerError>;
 
@@ -1007,3 +1000,11 @@ mod tests {
         }
     }
 }
+
+use self::{
+    error::LexerError::*,
+    token_kind::{IdentifierKind::*, StringKind::*, TokenKind::*},
+};
+use postgres_basics::ascii::*;
+use postgres_basics::{CharBuffer, Located, Location, NAMEDATALEN};
+use std::iter::FusedIterator;

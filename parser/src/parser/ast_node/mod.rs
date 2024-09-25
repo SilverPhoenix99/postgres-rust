@@ -1,9 +1,6 @@
 pub mod numeric_spec;
 
 pub use self::numeric_spec::NumericSpec;
-use bitvec::boxed::BitBox;
-use std::borrow::Cow;
-use std::num::NonZero;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RoleSpec {
@@ -49,3 +46,7 @@ pub enum AstNode {
     BooleanLiteral(bool),
     NullLiteral,
 }
+
+use bitvec::boxed::BitBox;
+use std::borrow::Cow;
+use std::num::NonZero;

@@ -1,5 +1,3 @@
-use postgres_basics::sql_state::{ErrorSqlState, SqlState};
-
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
 pub enum LexerError {
 
@@ -64,3 +62,5 @@ impl LexerError {
         None
     }
 }
+
+use postgres_basics::sql_state::{ErrorSqlState, SqlState};

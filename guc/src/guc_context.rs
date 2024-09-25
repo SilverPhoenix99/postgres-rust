@@ -1,5 +1,3 @@
-use postgres_basics::Named;
-
 /// Certain options can only be set at certain times.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub enum GucContext {
@@ -57,3 +55,5 @@ impl Named for GucContext {
         }
     }
 }
+
+use postgres_basics::Named;

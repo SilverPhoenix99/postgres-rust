@@ -1,11 +1,3 @@
-use postgres_basics::sql_state::{
-    ErrorSqlState::{CharacterNotInRepertoire, SyntaxError},
-    SqlState,
-    SqlState::Error
-};
-use std::str::Utf8Error;
-use UnicodeStringError::*;
-
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
 pub enum UnicodeStringError {
 
@@ -47,3 +39,11 @@ impl UnicodeStringError {
         }
     }
 }
+
+use postgres_basics::sql_state::{
+    ErrorSqlState::{CharacterNotInRepertoire, SyntaxError},
+    SqlState,
+    SqlState::Error
+};
+use std::str::Utf8Error;
+use UnicodeStringError::*;

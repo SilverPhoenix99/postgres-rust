@@ -1,6 +1,3 @@
-use postgres_basics::Oid;
-use crate::{GucContext, GucSource, GucStack, GucStatus, Opaque};
-
 /// Variable fields, initialized at runtime
 #[derive(Debug, Default)]
 pub struct GenericConfig {
@@ -35,3 +32,6 @@ pub struct GenericConfig {
     /// line in source file
     sourceline: i32,
 }
+
+use crate::{GucContext, GucSource, GucStack, GucStatus};
+use postgres_basics::Oid;

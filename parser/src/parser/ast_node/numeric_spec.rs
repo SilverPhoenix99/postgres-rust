@@ -1,7 +1,3 @@
-use std::num::NonZero;
-use std::ops::RangeInclusive;
-use NewNumericSpecError::{PrecisionOutOfRange, ScaleOutOfRange};
-
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum NewNumericSpecError {
     PrecisionOutOfRange(u16),
@@ -132,3 +128,7 @@ mod tests {
         assert_eq!(NumericSpec::UNSPECIFIED_SCALE, spec.scale());
     }
 }
+
+use std::num::NonZero;
+use std::ops::RangeInclusive;
+use NewNumericSpecError::{PrecisionOutOfRange, ScaleOutOfRange};

@@ -1,5 +1,3 @@
-use bitflags::bitflags;
-
 bitflags! {
     /// bit values in status field
     #[derive(Debug, Clone, Copy, PartialEq)]
@@ -21,3 +19,5 @@ impl Default for GucStatus {
         Self::None
     }
 }
+
+use bitflags::bitflags;

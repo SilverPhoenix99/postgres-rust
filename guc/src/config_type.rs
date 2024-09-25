@@ -1,5 +1,3 @@
-use postgres_basics::Named;
-
 /// GUC supports these types of variables:
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ConfigType {
@@ -26,3 +24,5 @@ impl Named for ConfigType {
         }
     }
 }
+
+use postgres_basics::Named;

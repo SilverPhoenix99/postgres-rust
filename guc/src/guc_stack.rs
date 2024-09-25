@@ -1,6 +1,3 @@
-use postgres_basics::Oid;
-use crate::{ConfigVar, GucContext, GucSource, GucStackState};
-
 #[derive(Debug)]
 pub struct GucStack {
     /// Nesting depth at which we made entry.
@@ -22,3 +19,6 @@ pub struct GucStack {
     /// `SET` value in a `GucStackState::Local` entry.
     masked: ConfigVar,
 }
+
+use crate::{ConfigVar, GucContext, GucSource, GucStackState};
+use postgres_basics::Oid;

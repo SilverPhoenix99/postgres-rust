@@ -1,7 +1,3 @@
-use bitvec::boxed::BitBox;
-use bitvec::vec::BitVec;
-use BitStringError::{BitStringTooLong, InvalidBinaryDigit};
-
 const BITS_PER_BYTE: usize = 8;
 const VARBITMAXLEN: usize = i32::MAX as usize - BITS_PER_BYTE + 1;
 
@@ -90,3 +86,7 @@ mod tests {
         )
     }
 }
+
+use bitvec::boxed::BitBox;
+use bitvec::vec::BitVec;
+use BitStringError::{BitStringTooLong, InvalidBinaryDigit};

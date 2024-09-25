@@ -1,6 +1,3 @@
-use postgres_basics::sql_state::{ErrorSqlState, SqlState};
-use ExtendedStringWarning::*;
-
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum ExtendedStringWarning {
     NonstandardEscape,
@@ -33,3 +30,6 @@ impl ExtendedStringWarning {
         }
     }
 }
+
+use postgres_basics::sql_state::{ErrorSqlState, SqlState};
+use ExtendedStringWarning::*;

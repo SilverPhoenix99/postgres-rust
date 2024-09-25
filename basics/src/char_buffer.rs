@@ -1,8 +1,3 @@
-use crate::{wchar, Location};
-use std::cmp::min;
-use UnicodeChar::*;
-use UnicodeCharError::*;
-
 /// A tuple of `(line, column)`.
 pub type Position = (usize, usize);
 
@@ -486,3 +481,8 @@ mod tests {
         assert_eq!((3, 5), buf.position(27));
     }
 }
+
+use crate::{wchar, Location};
+use std::cmp::min;
+use UnicodeChar::*;
+use UnicodeCharError::*;

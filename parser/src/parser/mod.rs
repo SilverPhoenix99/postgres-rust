@@ -19,52 +19,6 @@ pub use self::{
     error::ParserError,
     result::{OptResult, ReqResult},
 };
-use self::{
-    ast_node::{
-        CharacterType::Bpchar,
-        NumericType::*,
-    },
-    error::ParserError::*,
-    ident_parser::IdentifierParser,
-    result::{OptionalResult, RequiredResult},
-    string_parser::{StringParser, StringParserResult},
-    token_buffer::{TokenBuffer, TokenConsumer}
-};
-use crate::lexer::{
-    ColumnNameKeyword::{
-        Bigint,
-        Boolean,
-        Char,
-        Character,
-        Dec,
-        Decimal,
-        Float,
-        Int,
-        Integer,
-        National,
-        Nchar,
-        NoneKw,
-        Numeric,
-        Precision,
-        Real,
-        Smallint,
-        Varchar,
-    },
-    Keyword::{ColumnName, Reserved, Unreserved},
-    KeywordDetails,
-    Lexer,
-    ReservedKeyword::{CurrentRole, CurrentUser, SessionUser},
-    TokenKind::{CloseParenthesis, Comma, Minus, NumberLiteral, OpenParenthesis, Plus},
-    UnreservedKeyword,
-    UnreservedKeyword::{Double, Uescape},
-};
-use crate::string_decoders::ExtendedStringWarning;
-use postgres_basics::{
-    ascii::{is_hex_digit, is_whitespace},
-    sql_state::{SqlState, WarningSqlState},
-    Located,
-};
-use std::borrow::Cow;
 
 macro_rules! list_production {
     (gather { $production:expr } delim { $separator:expr }) => {
@@ -587,3 +541,50 @@ fn uescape_escape(source: &[u8]) -> Option<u8> {
 
     Some(escape)
 }
+
+use self::{
+    ast_node::{
+        CharacterType::Bpchar,
+        NumericType::*,
+    },
+    error::ParserError::*,
+    ident_parser::IdentifierParser,
+    result::{OptionalResult, RequiredResult},
+    string_parser::{StringParser, StringParserResult},
+    token_buffer::{TokenBuffer, TokenConsumer}
+};
+use crate::lexer::{
+    ColumnNameKeyword::{
+        Bigint,
+        Boolean,
+        Char,
+        Character,
+        Dec,
+        Decimal,
+        Float,
+        Int,
+        Integer,
+        National,
+        Nchar,
+        NoneKw,
+        Numeric,
+        Precision,
+        Real,
+        Smallint,
+        Varchar,
+    },
+    Keyword::{ColumnName, Reserved, Unreserved},
+    KeywordDetails,
+    Lexer,
+    ReservedKeyword::{CurrentRole, CurrentUser, SessionUser},
+    TokenKind::{CloseParenthesis, Comma, Minus, NumberLiteral, OpenParenthesis, Plus},
+    UnreservedKeyword,
+    UnreservedKeyword::{Double, Uescape},
+};
+use crate::string_decoders::ExtendedStringWarning;
+use postgres_basics::{
+    ascii::{is_hex_digit, is_whitespace},
+    sql_state::{SqlState, WarningSqlState},
+    Located,
+};
+use std::borrow::Cow;

@@ -1,5 +1,3 @@
-use crate::{ConfigGroup, ConfigType, GucContext, GucFlags};
-
 /// Constant fields, must be set correctly in initial value.
 #[derive(Debug)]
 pub struct ConfigMetadata {
@@ -68,3 +66,5 @@ impl ConfigMetadata {
         self.vartype
     }
 }
+
+use crate::{ConfigGroup, ConfigType, GucContext, GucFlags};

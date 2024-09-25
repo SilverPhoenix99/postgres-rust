@@ -1,10 +1,3 @@
-use crate::lexer::IdentifierKind::*;
-use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::{OptResult, Parser, ParserError};
-use crate::string_decoders::{BasicStringDecoder, UnicodeStringDecoder};
-use postgres_basics::NAMEDATALEN;
-use std::str::Utf8Error;
-
 pub(super) struct IdentifierParser<'p, 'src>(
     pub &'p mut Parser<'src>,
 );
@@ -118,3 +111,10 @@ mod tests {
         Parser::new(source, config)
     }
 }
+
+use crate::lexer::IdentifierKind::*;
+use crate::parser::token_buffer::TokenConsumer;
+use crate::parser::{OptResult, Parser, ParserError};
+use crate::string_decoders::{BasicStringDecoder, UnicodeStringDecoder};
+use postgres_basics::NAMEDATALEN;
+use std::str::Utf8Error;

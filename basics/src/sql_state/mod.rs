@@ -2,13 +2,6 @@ mod enums;
 mod variant_sets;
 
 pub use self::enums::{ErrorSqlState, SuccessSqlState, WarningSqlState};
-use self::{
-    variant_sets::{ERROR_VARIANTS, WARNING_VARIANTS},
-    SuccessSqlState::SuccessfulCompletion,
-};
-use core::fmt;
-use core::fmt::{Display, Formatter, Write};
-use std::mem;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum SqlState {
@@ -164,3 +157,11 @@ mod tests {
         assert_eq!("42601", Error(SyntaxError).to_string());
     }
 }
+
+use self::{
+    variant_sets::{ERROR_VARIANTS, WARNING_VARIANTS},
+    SuccessSqlState::SuccessfulCompletion,
+};
+use core::fmt;
+use core::fmt::{Display, Formatter, Write};
+use std::mem;

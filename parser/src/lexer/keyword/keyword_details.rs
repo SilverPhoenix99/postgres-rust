@@ -1,14 +1,3 @@
-use crate::lexer::{
-    keyword::keywords::KEYWORDS,
-    ColumnNameKeyword,
-    Keyword,
-    Keyword::{ColumnName, Reserved, TypeFuncName, Unreserved},
-    ReservedKeyword,
-    TypeFuncNameKeyword,
-    UnreservedKeyword,
-};
-use std::fmt::{Display, Formatter};
-
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct KeywordDetails {
     keyword: Keyword,
@@ -127,3 +116,14 @@ mod tests {
         assert_eq!(None, kw.reserved());
     }
 }
+
+use crate::lexer::{
+    keyword::keywords::KEYWORDS,
+    ColumnNameKeyword,
+    Keyword,
+    Keyword::{ColumnName, Reserved, TypeFuncName, Unreserved},
+    ReservedKeyword,
+    TypeFuncNameKeyword,
+    UnreservedKeyword,
+};
+use std::fmt::{Display, Formatter};
