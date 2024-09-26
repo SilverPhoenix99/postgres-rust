@@ -576,6 +576,25 @@ mod tests {
     const DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding, ParseMode::Default);
 
     #[test]
+    fn test_role_list() {
+        let source = b"public , CuRrEnT_rOlE,CURRENT_USER, session_user ,coalesce,xxYYzz none";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let actual = parser.role_list().unwrap();
+
+        let expected = [
+            RoleSpec::Public,
+            RoleSpec::CurrentRole,
+            RoleSpec::CurrentUser,
+            RoleSpec::SessionUser,
+            RoleSpec::Name("coalesce".into()),
+            RoleSpec::Name("xxyyzz".into()),
+        ];
+
+        assert_eq!(expected, actual.as_slice());
+    }
+    
+    #[test]
     fn test_role_id() {
 
         let mut parser = Parser::new(b"coalesce xxyyzz", DEFAULT_CONFIG);
@@ -709,7 +728,7 @@ mod tests {
 
     #[test]
     fn test_identifier() {
-        let source = b"test_identifier";
+        let source = b"tEsT_iDeNtIfIeR";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.identifier().unwrap().unwrap();
