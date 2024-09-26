@@ -67,7 +67,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
             Err(Some(err)) => return StringParserResult::err(err),
         };
 
-        let slice = loc.slice(self.0.source);
+        let slice = loc.slice(self.0.buffer.source());
         let slice = strip_delimiters(kind, slice);
 
         if kind == DollarString {
@@ -83,7 +83,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
 
         let mut end_index = loc.range().end;
         while let Ok(Some((suffix_kind, suffix_loc))) = self.try_consume(true) {
-            let suffix_slice = suffix_loc.slice(self.0.source);
+            let suffix_slice = suffix_loc.slice(self.0.buffer.source());
             let suffix_slice = strip_delimiters(suffix_kind, suffix_slice);
             string.extend_from_slice(suffix_slice);
             end_index = suffix_loc.range().end;

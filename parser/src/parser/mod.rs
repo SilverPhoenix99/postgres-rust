@@ -55,7 +55,6 @@ pub struct ParserResult {
 
 pub struct Parser<'src> {
     buffer: TokenBuffer<'src>,
-    source: &'src [u8],
     config: ParserConfig,
     warnings: Vec<Located<ParserWarning>>,
 }
@@ -66,7 +65,14 @@ impl<'src> Parser<'src> {
         let lexer = Lexer::new(source, config.standard_conforming_strings());
         Self {
             buffer: TokenBuffer::new(lexer),
-            source,
+            config,
+            warnings: Vec::new(),
+        }
+    }
+
+    pub fn with_lexer(lexer: Lexer<'src>, config: ParserConfig) -> Self {
+        Self {
+            buffer: TokenBuffer::new(lexer),
             config,
             warnings: Vec::new(),
         }
@@ -109,7 +115,7 @@ impl<'src> Parser<'src> {
 
         todo!()
     }
-    
+
     /// Alias: `ConstTypename`
     fn const_typename(&mut self) -> OptResult<NumericType> {
 
@@ -338,13 +344,14 @@ impl<'src> Parser<'src> {
     fn i32_literal(&mut self) -> OptResult<i32> {
 
         let loc = self.buffer.current_location();
+        let source = self.buffer.source();
 
         self.buffer.consume(|tok| {
 
             let NumberLiteral { radix } = tok else { return None };
             let radix = *radix;
 
-            loc.slice(self.source)
+            loc.slice(source)
                 .iter()
                 .map(|d| (*d - b'0') as i32)
                 .try_fold(
@@ -512,11 +519,12 @@ impl<'src> Parser<'src> {
         }
 
         let loc = self.buffer.current_location();
+        let source = self.buffer.source();
 
         let escape = self.buffer
             .consume(|tok| match tok.string_kind() {
                 Some(_) => {
-                    let slice = loc.slice(self.source);
+                    let slice = loc.slice(source);
                     match uescape_escape(slice) {
                         Some(escape) => Ok(Some(escape)),
                         None => Err(InvalidUescapeDelimiter),
@@ -557,6 +565,167 @@ fn uescape_escape(source: &[u8]) -> Option<u8> {
     }
 
     Some(escape)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::parser::AstNode::StringLiteral;
+    use postgres_basics::guc::BackslashQuote;
+
+    const DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding, ParseMode::Default);
+
+    #[test]
+    fn test_role_id() {
+
+        let mut parser = Parser::new(b"coalesce xxyyzz", DEFAULT_CONFIG);
+        let actual = parser.role_id().unwrap().unwrap();
+        assert_eq!("coalesce", actual);
+        let actual = parser.role_id().unwrap().unwrap();
+        assert_eq!("xxyyzz", actual);
+
+        let mut parser = Parser::new(b"none", DEFAULT_CONFIG);
+        let actual = parser.role_id().unwrap_err().unwrap();
+        assert_eq!(ReservedRoleSpec("none"), actual);
+
+        let mut parser = Parser::new(b"public", DEFAULT_CONFIG);
+        let actual = parser.role_id().unwrap_err().unwrap();
+        assert_eq!(ReservedRoleSpec("public"), actual);
+
+        let mut parser = Parser::new(b"current_role", DEFAULT_CONFIG);
+        let actual = parser.role_id().unwrap_err().unwrap();
+        assert_eq!(ForbiddenRoleSpec("CURRENT_ROLE"), actual);
+
+        let mut parser = Parser::new(b"current_user", DEFAULT_CONFIG);
+        let actual = parser.role_id().unwrap_err().unwrap();
+        assert_eq!(ForbiddenRoleSpec("CURRENT_USER"), actual);
+
+        let mut parser = Parser::new(b"session_user", DEFAULT_CONFIG);
+        let actual = parser.role_id().unwrap_err().unwrap();
+        assert_eq!(ForbiddenRoleSpec("SESSION_USER"), actual);
+    }
+    
+    #[test]
+    fn test_role_spec() {
+        let source = b"public CuRrEnT_rOlE CURRENT_USER session_user coalesce xxyyzz";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let actual = parser.role_spec().unwrap().unwrap();
+        assert_eq!(RoleSpec::Public, actual);
+        let actual = parser.role_spec().unwrap().unwrap();
+        assert_eq!(RoleSpec::CurrentRole, actual);
+        let actual = parser.role_spec().unwrap().unwrap();
+        assert_eq!(RoleSpec::CurrentUser, actual);
+        let actual = parser.role_spec().unwrap().unwrap();
+        assert_eq!(RoleSpec::SessionUser, actual);
+        let actual = parser.role_spec().unwrap().unwrap();
+        assert_eq!(RoleSpec::Name("coalesce".into()), actual);
+        let actual = parser.role_spec().unwrap().unwrap();
+        assert_eq!(RoleSpec::Name("xxyyzz".into()), actual);
+
+        let mut parser = Parser::new(b"collate", DEFAULT_CONFIG);
+        let actual = parser.role_spec();
+        assert_eq!(Ok(None), actual);
+
+        let mut parser = Parser::new(b"none", DEFAULT_CONFIG);
+        let actual = parser.role_spec().unwrap_err().unwrap();
+        assert_eq!(ReservedRoleSpec("none"), actual);
+    }
+    
+    #[test]
+    fn test_col_id() {
+        let source = b"cascaded xxyyzz coalesce";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let actual = parser.col_id().unwrap().unwrap();
+        assert_eq!("cascaded", actual);
+        let actual = parser.col_id().unwrap().unwrap();
+        assert_eq!("xxyyzz", actual);
+        let actual = parser.col_id().unwrap().unwrap();
+        assert_eq!("coalesce", actual);
+    }
+
+    #[test]
+    fn test_type_function_name() {
+        let source = b"before xxyyzz collation";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let actual = parser.type_function_name().unwrap().unwrap();
+        assert_eq!("before", actual);
+        let actual = parser.type_function_name().unwrap().unwrap();
+        assert_eq!("xxyyzz", actual);
+        let actual = parser.type_function_name().unwrap().unwrap();
+        assert_eq!("collation", actual);
+    }
+    
+    #[test]
+    fn test_non_reserved_word() {
+        let source = b"breadth xxyyzz boolean authorization";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let actual = parser.non_reserved_word().unwrap().unwrap();
+        assert_eq!("breadth", actual);
+        let actual = parser.non_reserved_word().unwrap().unwrap();
+        assert_eq!("xxyyzz", actual);
+        let actual = parser.non_reserved_word().unwrap().unwrap();
+        assert_eq!("boolean", actual);
+        let actual = parser.non_reserved_word().unwrap().unwrap();
+        assert_eq!("authorization", actual);
+    }
+
+    #[test]
+    fn test_col_label() {
+        let source = b"sequence xxyyzz character";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let actual = parser.col_label().unwrap().unwrap();
+        assert_eq!("sequence", actual);
+        let actual = parser.col_label().unwrap().unwrap();
+        assert_eq!("xxyyzz", actual);
+        let actual = parser.col_label().unwrap().unwrap();
+        assert_eq!("character", actual);
+    }
+
+    #[test]
+    fn test_bare_col_label() {
+        let source = b"sequence xxyyzz";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let actual = parser.bare_col_label().unwrap().unwrap();
+        assert_eq!("sequence", actual);
+        let actual = parser.bare_col_label().unwrap().unwrap();
+        assert_eq!("xxyyzz", actual);
+    }
+
+    #[test]
+    fn test_string() {
+        let source = b"'test string'";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let actual = parser.string().unwrap().unwrap();
+
+        assert_eq!(StringLiteral("test string".into()), actual);
+    }
+
+    #[test]
+    fn test_identifier() {
+        let source = b"test_identifier";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let actual = parser.identifier().unwrap().unwrap();
+
+        assert_eq!("test_identifier", actual);
+    }
+
+    #[test]
+    fn test_uescape() {
+        let source = b"UESCAPE '!'";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let actual = parser.uescape().unwrap();
+
+        assert_eq!(b'!', actual);
+    }
 }
 
 use self::{

@@ -11,6 +11,11 @@ impl<'src> TokenBuffer<'src> {
     }
 
     #[inline(always)]
+    pub fn source(&self) -> &'src [u8] {
+        self.lexer.source()
+    }
+
+    #[inline(always)]
     pub fn eof(&self) -> bool {
         self.lexer.eof()
     }

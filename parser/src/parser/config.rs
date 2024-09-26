@@ -19,7 +19,7 @@ pub struct ParserConfig {
 impl ParserConfig {
 
     #[inline(always)]
-    pub fn new(standard_conforming_strings: bool, backslash_quote: BackslashQuote, mode: ParseMode) -> Self {
+    pub const fn new(standard_conforming_strings: bool, backslash_quote: BackslashQuote, mode: ParseMode) -> Self {
         Self {
             standard_conforming_strings,
             backslash_quote,

@@ -17,7 +17,7 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
             return Ok(None)
         };
 
-        let slice = loc.slice(self.0.source);
+        let slice = loc.slice(self.0.buffer.source());
 
         let ident = match kind {
             BasicIdentifier => {
