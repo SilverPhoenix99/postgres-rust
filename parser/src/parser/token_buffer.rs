@@ -1,6 +1,6 @@
 pub(super) struct TokenBuffer<'src> {
     lexer: Lexer<'src>,
-    peeked: Option<Option<Located<LexResult>>>
+    peeked: Option<Option<LexerResult>>
 }
 
 impl<'src> TokenBuffer<'src> {
@@ -20,7 +20,8 @@ impl<'src> TokenBuffer<'src> {
     #[inline(always)]
     pub fn current_location(&mut self) -> Location {
         match self.peek() {
-            Some((_, loc)) => loc.clone(),
+            Some(Ok((_, loc))) => loc.clone(),
+            Some(Err(err)) => err.location().clone(),
             None => self.lexer.current_location(),
         }
     }
@@ -31,7 +32,7 @@ impl<'src> TokenBuffer<'src> {
     }
 
     #[inline(always)]
-    pub fn peek(&mut self) -> &Option<Located<LexResult>> {
+    pub fn peek(&mut self) -> &Option<LexerResult> {
         self.peeked.get_or_insert_with(|| self.lexer.next())
     }
 
@@ -71,7 +72,7 @@ impl<'src> TokenBuffer<'src> {
 
 /// Consumers are not allowed to return `Err(None)` (Eof),
 /// which is an internal error that's only returned by the `TokenBuffer` directly.
-pub(super) type ConsumerResult<T> = Result<Option<T>, ParserError>;
+pub(super) type ConsumerResult<T> = Result<Option<T>, ParserErrorKind>;
 
 pub(super) trait TokenConsumer<TOut, FRes> {
     fn consume<F>(&mut self, f: F) -> OptResult<TOut>
@@ -90,7 +91,7 @@ impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenBuffer<'_> {
             // Eof never matches
             None => Err(None),
 
-            Some((Ok(tok), _)) => {
+            Some(Ok((tok, _))) => {
                 match mapper(tok) {
 
                     // The mapper matched the token.
@@ -109,7 +110,7 @@ impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenBuffer<'_> {
                 }
             },
 
-            Some((Err(lex_err), _)) => {
+            Some(Err(lex_err)) => {
                 Err(Some(lex_err.clone().into()))
             }
         }
@@ -161,7 +162,7 @@ mod tests {
     use super::*;
     use crate::lexer::IdentifierKind::BasicIdentifier;
     use crate::parser::Lexer;
-    use crate::parser::ParserError::BitStringTooLong;
+    use crate::parser::ParserErrorKind::BitStringTooLong;
     use TokenKind::Identifier;
 
     #[test]
@@ -177,12 +178,12 @@ mod tests {
         let lexer = Lexer::new(b"two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
-        assert_matches!(buffer.peek(), Some((Ok(_), _)));
+        assert_matches!(buffer.peek(), Some(Ok((_, _))));
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
 
         buffer.next();
 
-        assert_matches!(buffer.peek(), Some((Ok(_), _)));
+        assert_matches!(buffer.peek(), Some(Ok((_, _))));
         assert_eq!(Location::new(4..15, 1, 5), buffer.current_location());
 
         buffer.next();
@@ -265,6 +266,6 @@ mod tests {
     }
 }
 
-use crate::lexer::{LexResult, Lexer, TokenKind};
-use crate::parser::{OptResult, ParserError};
-use postgres_basics::{Located, Location};
+use crate::lexer::{Lexer, LexerResult, TokenKind};
+use crate::parser::{OptResult, ParseReport, ParserErrorKind};
+use postgres_basics::Location;

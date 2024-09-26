@@ -3,7 +3,7 @@ mod error;
 mod token_kind;
 
 pub use self::{
-    error::LexerError,
+    error::{LexerError, LexerErrorKind},
     keyword::{
         ColumnNameKeyword,
         Keyword,
@@ -15,7 +15,8 @@ pub use self::{
     token_kind::{IdentifierKind, StringKind, TokenKind},
 };
 
-pub type LexResult = Result<TokenKind, LexerError>;
+pub type LexerResult = Result<Located<TokenKind>, LexerError>;
+type LexResult<T = TokenKind> = Result<T, (LexerErrorKind, FnInfo)>;
 
 #[derive(Debug)]
 pub struct Lexer<'src> {
@@ -24,7 +25,7 @@ pub struct Lexer<'src> {
 }
 
 impl Iterator for Lexer<'_> {
-    type Item = Located<LexResult>;
+    type Item = LexerResult;
 
     /// The token is always a full match,
     /// never a substring that's more interesting than the whole match.
@@ -32,8 +33,8 @@ impl Iterator for Lexer<'_> {
 
         let concatenable_whitespace = match self.skip_trivia() {
             Ok(concatenable_whitespace) => concatenable_whitespace,
-            Err((err, loc)) => {
-                return Some((Err(err), loc))
+            Err(err) => {
+                return Some(Err(err))
             }
         };
 
@@ -47,8 +48,11 @@ impl Iterator for Lexer<'_> {
         let location = self.buffer.location_starting_at(start_index);
 
         match token {
-            Ok(kind) => Some((Ok(kind), location)),
-            Err(err_code) => Some((Err(err_code), location)),
+            Ok(kind) => Some(Ok((kind, location))),
+            Err((err_code, fninfo)) => {
+                let report = LexerError::new(err_code, fninfo, location);
+                Some(Err(report))
+            },
         }
     }
 }
@@ -112,7 +116,7 @@ impl<'src> Lexer<'src> {
                 Some(c) if is_decimal_digit(c) => self.lex_param(),
                 Some(b'$') => self.lex_dollar_string(), // empty delimiter
                 Some(c) if is_ident_start(c) => self.lex_dollar_string(),
-                _ => Err(UnexpectedChar { unknown: b'$' }),
+                _ => Err((UnexpectedChar { unknown: b'$' }, fn_info!())),
             }
             b'\'' => {
                 if self.standard_conforming_strings {
@@ -160,7 +164,7 @@ impl<'src> Lexer<'src> {
                     match self.buffer.peek() {
                         Some(b'\'') => { // u&'...'
                             if !self.standard_conforming_strings {
-                                return Err(UnsafeUnicodeString)
+                                return Err((UnsafeUnicodeString, fn_info!()))
                             }
                             self.buffer.consume_one();
                             self.lex_quote_string(UnicodeString)
@@ -192,7 +196,7 @@ impl<'src> Lexer<'src> {
             op if is_op(op) => self.lex_operator(),
             id if is_ident_start(id) => self.lex_identifier(),
             unknown => {
-                Err(UnexpectedChar { unknown })
+                Err((UnexpectedChar { unknown }, fn_info!()))
             },
         }
     }
@@ -259,7 +263,7 @@ impl<'src> Lexer<'src> {
                 }
 
                 if op.len() >= NAMEDATALEN {
-                    Err(OperatorTooLong)
+                    Err((OperatorTooLong, fn_info!()))
                 }
                 else {
                     Ok(UserDefinedOperator)
@@ -280,7 +284,7 @@ impl<'src> Lexer<'src> {
         // check junk
         let consumed = self.buffer.consume_if(is_ident_start);
         if consumed.is_some() {
-            return Err(TrailingJunkAfterParameter)
+            return Err((TrailingJunkAfterParameter, fn_info!()))
         }
 
         let slice = self.buffer.slice(start_index);
@@ -291,7 +295,7 @@ impl<'src> Lexer<'src> {
             //   The leading digit in i32::MAX is '2',
             //   so if the leading digit is above,
             //   then the string can't be safely parsed as an i32.
-            return Err(ParameterNumberTooLarge)
+            return Err((ParameterNumberTooLarge, fn_info!()))
         }
 
         // i32 is used to match original PG's expectation that it won't be > i32::MAX
@@ -301,7 +305,7 @@ impl<'src> Lexer<'src> {
                 acc.checked_mul(10)?.checked_add(n)
             )
             .map_or(
-                Err(ParameterNumberTooLarge),
+                Err((ParameterNumberTooLarge, fn_info!())),
                 |index| Ok(Param { index })
             )
     }
@@ -344,7 +348,7 @@ impl<'src> Lexer<'src> {
         Ok(NumberLiteral { radix: 10 })
     }
 
-    fn lex_dec_real(&mut self) -> Result<(), LexerError> {
+    fn lex_dec_real(&mut self) -> LexResult<()> {
 
         // Returns:
         //   Ok(true)  - When the pattern matched successfully after '[Ee]'.
@@ -367,7 +371,7 @@ impl<'src> Lexer<'src> {
             if !dec {
                 if sign {
                     // [Ee] [+-] (?!\d)
-                    return Err(TrailingJunkAfterNumericLiteral)
+                    return Err((TrailingJunkAfterNumericLiteral, fn_info!()))
                 }
                 // [Ee] (?![+-\d])
                 self.buffer.push_back();
@@ -375,7 +379,7 @@ impl<'src> Lexer<'src> {
         }
 
         if self.buffer.peek().is_some_and(is_ident_start) {
-            return Err(TrailingJunkAfterNumericLiteral)
+            return Err((TrailingJunkAfterNumericLiteral, fn_info!()))
         }
 
         Ok(())
@@ -435,11 +439,11 @@ impl<'src> Lexer<'src> {
         let span = &span[start_index..end_index];
 
         if span.is_empty() || span.last().is_some_and(|c| *c == b'_') {
-            return Err(InvalidInteger { radix })
+            return Err((InvalidInteger { radix }, fn_info!()))
         }
 
         if self.buffer.peek().is_some_and(is_ident_start) {
-            return Err(TrailingJunkAfterNumericLiteral)
+            return Err((TrailingJunkAfterNumericLiteral, fn_info!()))
         }
 
         Ok(NumberLiteral { radix })
@@ -453,8 +457,13 @@ impl<'src> Lexer<'src> {
         loop {
             match self.buffer.consume_one() {
                 None => {
-                    let err = if kind == HexString { UnterminatedHexString } else { UnterminatedBitString };
-                    return Err(err)
+                    let err = if kind == HexString {
+                        UnterminatedHexString
+                    }
+                    else {
+                        UnterminatedBitString
+                    };
+                    return Err((err, fn_info!()))
                 },
                 Some(b'\'') => return Ok(StringLiteral(kind)),
                 _ => {}
@@ -467,21 +476,25 @@ impl<'src> Lexer<'src> {
         let start_index = self.buffer.current_index();
 
         loop {
-            match self.buffer.consume_one() {
-                None => return Err(UnterminatedQuotedIdentifier),
-                Some(b'"') => {
-                    if let Some(b'"') = self.buffer.peek() {
-                        // escaped double quote '""'
-                        self.buffer.consume_one();
-                    } else {
-                        return if self.buffer.current_index() - start_index == 1 {
-                            Err(EmptyDelimitedIdentifier) // only consumed '"'
-                        } else {
-                            Ok(Identifier(ident_kind))
-                        }
-                    }
-                }
-                _ => {} // consume the char and continue
+            let Some(c) = self.buffer.consume_one() else {
+                return Err((UnterminatedQuotedIdentifier, fn_info!()))
+            };
+
+            if c != b'"' {
+                continue
+            }
+
+            if let Some(b'"') = self.buffer.peek() {
+                // escaped double quote '""'
+                self.buffer.consume_one();
+                continue
+            }
+
+            return if self.buffer.current_index() - start_index == 1 {
+                Err((EmptyDelimitedIdentifier, fn_info!())) // only consumed '"'
+            }
+            else {
+                Ok(Identifier(ident_kind))
             }
         }
     }
@@ -489,17 +502,20 @@ impl<'src> Lexer<'src> {
     fn lex_quote_string(&mut self, kind: StringKind) -> LexResult {
 
         loop {
-            match self.buffer.consume_one() {
-                None => return Err(UnterminatedQuotedString),
-                Some(b'\'') => {
-                    if let Some(b'\'') = self.buffer.peek() {
-                        self.buffer.consume_one();
-                    } else {
-                        return Ok(StringLiteral(kind))
-                    }
-                }
-                _ => {} // consume the char and continue
+            let Some(c) = self.buffer.consume_one() else {
+                return Err((UnterminatedQuotedString, fn_info!()))
+            };
+
+            if c != b'\'' {
+                continue
             }
+
+            if let Some(b'\'') = self.buffer.peek() {
+                self.buffer.consume_one();
+                continue
+            }
+
+            return Ok(StringLiteral(kind))
         }
     }
 
@@ -510,21 +526,21 @@ impl<'src> Lexer<'src> {
         // or have separate validation and parsing phases.
 
         loop {
-            match self.buffer.consume_one() {
-                None => return Err(UnterminatedQuotedString),
-                Some(b'\\') => {
-                    if self.buffer.consume_one().is_none() {
-                        return Err(UnterminatedQuotedString);
-                    }
+            let Some(c) = self.buffer.consume_one() else {
+                return Err((UnterminatedQuotedString, fn_info!()))
+            };
+
+            if c == b'\\' && self.buffer.consume_one().is_none() {
+                return Err((UnterminatedQuotedString, fn_info!()))
+            }
+
+            if c == b'\'' {
+                if let Some(b'\'') = self.buffer.peek() {
+                    self.buffer.consume_one();
                 }
-                Some(b'\'') => {
-                    if let Some(b'\'') = self.buffer.peek() {
-                        self.buffer.consume_one();
-                    } else {
-                        return Ok(StringLiteral( ExtendedString { concatenable } ))
-                    }
+                else {
+                    return Ok(StringLiteral( ExtendedString { concatenable } ))
                 }
-                _ => {} // consume the char and continue
             }
         }
     }
@@ -552,14 +568,14 @@ impl<'src> Lexer<'src> {
         // The delimiter always contains '$' as the last char,
         // even if the delimiter is empty (i.e., '$$'),
         // so it's easier to match and consume.
-        let delim = match self.lex_dollar_delim() {
-            None => return Err(UnexpectedChar { unknown: b'$' }),
-            Some(d) => d
+        
+        let Some(delim) = self.lex_dollar_delim() else {
+            return Err((UnexpectedChar { unknown: b'$' }, fn_info!()))
         };
 
         loop {
             if self.buffer.eof() {
-                return Err(UnterminatedDollarQuotedString)
+                return Err((UnterminatedDollarQuotedString, fn_info!()))
             }
             if self.buffer.consume_char(b'$') {
                 if self.buffer.consume_string(delim) {
@@ -599,7 +615,7 @@ impl<'src> Lexer<'src> {
     }
 
     #[inline] // Only called from a single place
-    fn skip_trivia(&mut self) -> Result<bool, Located<LexerError>> {
+    fn skip_trivia(&mut self) -> Result<bool, LexerError> {
 
         // Postgres:
         //   Returns Ok(true) if the whitespace contains \n and no block comments.
@@ -658,7 +674,7 @@ impl<'src> Lexer<'src> {
         true
     }
 
-    fn skip_block_comment(&mut self) -> Result<bool, Located<LexerError>> {
+    fn skip_block_comment(&mut self) -> Result<bool, LexerError> {
 
         let start_index = self.buffer.current_index();
 
@@ -678,7 +694,8 @@ impl<'src> Lexer<'src> {
 
             if self.buffer.eof() {
                 let loc = self.buffer.location_starting_at(start_index);
-                return Err((UnterminatedBlockComment, loc))
+                let report = LexerError::new(UnterminatedBlockComment, fn_info!(), loc);
+                return Err(report)
             }
 
             self.buffer.consume_one();
@@ -692,6 +709,7 @@ mod tests {
     use crate::lexer::Keyword::{Reserved, Unreserved};
     use crate::lexer::ReservedKeyword::{From, Not, Select};
     use crate::lexer::UnreservedKeyword::StringKw;
+    use crate::parser::ParseReport;
     use std::ops::Range;
 
     #[test]
@@ -715,7 +733,7 @@ mod tests {
         let source = b"\x00";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(err(UnexpectedChar { unknown: b'\x00' }, 0..1, 1, 1), lex.next());
+        assert_err(UnexpectedChar { unknown: b'\x00' }, 0..1, 1, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -724,31 +742,31 @@ mod tests {
         let source = b". .. ( ) , ; [ ] : :: := % * + - / < = > ^ => <= >= != <>";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(Dot, 0..1, 1, 1), lex.next());
-        assert_eq!(tok(DotDot, 2..4, 1, 3), lex.next());
-        assert_eq!(tok(OpenParenthesis, 5..6, 1, 6), lex.next());
-        assert_eq!(tok(CloseParenthesis, 7..8, 1, 8), lex.next());
-        assert_eq!(tok(Comma, 9..10, 1, 10), lex.next());
-        assert_eq!(tok(Semicolon, 11..12, 1, 12), lex.next());
-        assert_eq!(tok(OpenBracket, 13..14, 1, 14), lex.next());
-        assert_eq!(tok(CloseBracket, 15..16, 1, 16), lex.next());
-        assert_eq!(tok(Colon, 17..18, 1, 18), lex.next());
-        assert_eq!(tok(Typecast, 19..21, 1, 20), lex.next());
-        assert_eq!(tok(ColonEquals, 22..24, 1, 23), lex.next());
-        assert_eq!(tok(Percent, 25..26, 1, 26), lex.next());
-        assert_eq!(tok(Mul, 27..28, 1, 28), lex.next());
-        assert_eq!(tok(Plus, 29..30, 1, 30), lex.next());
-        assert_eq!(tok(Minus, 31..32, 1, 32), lex.next());
-        assert_eq!(tok(Div, 33..34, 1, 34), lex.next());
-        assert_eq!(tok(Less, 35..36, 1, 36), lex.next());
-        assert_eq!(tok(Equals, 37..38, 1, 38), lex.next());
-        assert_eq!(tok(Greater, 39..40, 1, 40), lex.next());
-        assert_eq!(tok(Circumflex, 41..42, 1, 42), lex.next());
-        assert_eq!(tok(EqualsGreater, 43..45, 1, 44), lex.next());
-        assert_eq!(tok(LessEquals, 46..48, 1, 47), lex.next());
-        assert_eq!(tok(GreaterEquals, 49..51, 1, 50), lex.next());
-        assert_eq!(tok(NotEquals, 52..54, 1, 53), lex.next());
-        assert_eq!(tok(NotEquals, 55..57, 1, 56), lex.next());
+        assert_tok(Dot, 0..1, 1, 1, lex.next());
+        assert_tok(DotDot, 2..4, 1, 3, lex.next());
+        assert_tok(OpenParenthesis, 5..6, 1, 6, lex.next());
+        assert_tok(CloseParenthesis, 7..8, 1, 8, lex.next());
+        assert_tok(Comma, 9..10, 1, 10, lex.next());
+        assert_tok(Semicolon, 11..12, 1, 12, lex.next());
+        assert_tok(OpenBracket, 13..14, 1, 14, lex.next());
+        assert_tok(CloseBracket, 15..16, 1, 16, lex.next());
+        assert_tok(Colon, 17..18, 1, 18, lex.next());
+        assert_tok(Typecast, 19..21, 1, 20, lex.next());
+        assert_tok(ColonEquals, 22..24, 1, 23, lex.next());
+        assert_tok(Percent, 25..26, 1, 26, lex.next());
+        assert_tok(Mul, 27..28, 1, 28, lex.next());
+        assert_tok(Plus, 29..30, 1, 30, lex.next());
+        assert_tok(Minus, 31..32, 1, 32, lex.next());
+        assert_tok(Div, 33..34, 1, 34, lex.next());
+        assert_tok(Less, 35..36, 1, 36, lex.next());
+        assert_tok(Equals, 37..38, 1, 38, lex.next());
+        assert_tok(Greater, 39..40, 1, 40, lex.next());
+        assert_tok(Circumflex, 41..42, 1, 42, lex.next());
+        assert_tok(EqualsGreater, 43..45, 1, 44, lex.next());
+        assert_tok(LessEquals, 46..48, 1, 47, lex.next());
+        assert_tok(GreaterEquals, 49..51, 1, 50, lex.next());
+        assert_tok(NotEquals, 52..54, 1, 53, lex.next());
+        assert_tok(NotEquals, 55..57, 1, 56, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -760,9 +778,9 @@ mod tests {
         ";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(UserDefinedOperator, 0..3, 1, 1), lex.next());
-        assert_eq!(tok(Minus, 3..4, 1, 4), lex.next());
-        assert_eq!(tok(UserDefinedOperator, 5..8, 2, 1), lex.next());
+        assert_tok(UserDefinedOperator, 0..3, 1, 1, lex.next());
+        assert_tok(Minus, 3..4, 1, 4, lex.next());
+        assert_tok(UserDefinedOperator, 5..8, 2, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -771,7 +789,7 @@ mod tests {
         let source = b"$0123";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(Param { index: 123 }, 0..5, 1, 1), lex.next());
+        assert_tok(Param { index: 123 }, 0..5, 1, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -780,7 +798,7 @@ mod tests {
         let source = b"0x_1_C0e_E_a92";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(NumberLiteral { radix: 16 }, 0..14, 1, 1), lex.next());
+        assert_tok(NumberLiteral { radix: 16 }, 0..14, 1, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -789,7 +807,7 @@ mod tests {
         let source = b"0o20155_53_7";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(NumberLiteral { radix: 8 }, 0..12, 1, 1), lex.next());
+        assert_tok(NumberLiteral { radix: 8 }, 0..12, 1, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -798,7 +816,7 @@ mod tests {
         let source = b"0b1_001000_01001_01101";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(NumberLiteral { radix: 2 }, 0..22, 1, 1), lex.next());
+        assert_tok(NumberLiteral { radix: 2 }, 0..22, 1, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -811,9 +829,9 @@ mod tests {
         ";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(NumberLiteral { radix: 10 }, 0..5, 1, 1), lex.next());
-        assert_eq!(tok(NumberLiteral { radix: 10 }, 6..13, 2, 1), lex.next());
-        assert_eq!(tok(NumberLiteral { radix: 10 }, 14..15, 3, 1), lex.next());
+        assert_tok(NumberLiteral { radix: 10 }, 0..5, 1, 1, lex.next());
+        assert_tok(NumberLiteral { radix: 10 }, 6..13, 2, 1, lex.next());
+        assert_tok(NumberLiteral { radix: 10 }, 14..15, 3, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -822,8 +840,8 @@ mod tests {
         let source = b"184..";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(NumberLiteral { radix: 10 }, 0..3, 1, 1), lex.next());
-        assert_eq!(tok(DotDot, 3..5, 1, 4), lex.next());
+        assert_tok(NumberLiteral { radix: 10 }, 0..3, 1, 1, lex.next());
+        assert_tok(DotDot, 3..5, 1, 4, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -836,9 +854,9 @@ mod tests {
         ";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(NumberLiteral { radix: 10 }, 0..16, 1, 1), lex.next());
-        assert_eq!(tok(NumberLiteral { radix: 10 }, 17..21, 2, 1), lex.next());
-        assert_eq!(tok(NumberLiteral { radix: 10 }, 22..25, 3, 1), lex.next());
+        assert_tok(NumberLiteral { radix: 10 }, 0..16, 1, 1, lex.next());
+        assert_tok(NumberLiteral { radix: 10 }, 17..21, 2, 1, lex.next());
+        assert_tok(NumberLiteral { radix: 10 }, 22..25, 3, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -847,7 +865,7 @@ mod tests {
         let source = b"$$some string$$";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(StringLiteral(DollarString), 0..15, 1, 1), lex.next());
+        assert_tok(StringLiteral(DollarString), 0..15, 1, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -856,7 +874,7 @@ mod tests {
         let source = b"$foo$bar baz$foo$";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(StringLiteral(DollarString), 0..17, 1, 1), lex.next());
+        assert_tok(StringLiteral(DollarString), 0..17, 1, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -865,7 +883,7 @@ mod tests {
         let source = b"$foo$dolla $ dolla $$ bill$$foo$";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(StringLiteral(DollarString), 0..32, 1, 1), lex.next());
+        assert_tok(StringLiteral(DollarString), 0..32, 1, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -874,9 +892,9 @@ mod tests {
         let source = b"$not a string";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(err(UnexpectedChar { unknown: b'$' }, 0..1, 1, 1), lex.next());
+        assert_err(UnexpectedChar { unknown: b'$' }, 0..1, 1, 1, lex.next());
         assert_kw(Reserved(Not), lex.next());
-        assert_eq!(tok(Identifier(BasicIdentifier), 5..6, 1, 6), lex.next());
+        assert_tok(Identifier(BasicIdentifier), 5..6, 1, 6, lex.next());
         assert_kw(Unreserved(StringKw), lex.next());
         assert_eq!(None, lex.next());
     }
@@ -890,10 +908,10 @@ mod tests {
         ";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(StringLiteral(BasicString { concatenable: false }), 0..2, 1, 1), lex.next());
-        assert_eq!(tok(StringLiteral(BasicString { concatenable: true }), 3..17, 2, 1), lex.next());
-        assert_eq!(tok(StringLiteral(BasicString { concatenable: false }), 18..23, 2, 16), lex.next());
-        assert_eq!(tok(StringLiteral(NationalString), 24..35, 3, 1), lex.next());
+        assert_tok(StringLiteral(BasicString { concatenable: false }), 0..2, 1, 1, lex.next());
+        assert_tok(StringLiteral(BasicString { concatenable: true }), 3..17, 2, 1, lex.next());
+        assert_tok(StringLiteral(BasicString { concatenable: false }), 18..23, 2, 16, lex.next());
+        assert_tok(StringLiteral(NationalString), 24..35, 3, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -906,9 +924,9 @@ mod tests {
         ";
         let mut lex = Lexer::new(source, false);
 
-        assert_eq!(tok(StringLiteral(ExtendedString { concatenable: false }), 0..12, 1, 1), lex.next());
-        assert_eq!(tok(StringLiteral(ExtendedString { concatenable: false }), 13..26, 2, 1), lex.next());
-        assert_eq!(tok(StringLiteral(ExtendedString { concatenable: false }), 27..38, 3, 1), lex.next());
+        assert_tok(StringLiteral(ExtendedString { concatenable: false }), 0..12, 1, 1, lex.next());
+        assert_tok(StringLiteral(ExtendedString { concatenable: false }), 13..26, 2, 1, lex.next());
+        assert_tok(StringLiteral(ExtendedString { concatenable: false }), 27..38, 3, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -917,8 +935,8 @@ mod tests {
         let source = b"b'0_156e_wf' x'048_96a_f_d'"; // lexer doesn't validate chars
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(StringLiteral(BinaryString), 0..12, 1, 1), lex.next());
-        assert_eq!(tok(StringLiteral(HexString), 13..27, 1, 14), lex.next());
+        assert_tok(StringLiteral(BinaryString), 0..12, 1, 1, lex.next());
+        assert_tok(StringLiteral(HexString), 13..27, 1, 14, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -930,8 +948,8 @@ mod tests {
         ";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(tok(StringLiteral(UnicodeString), 0..4, 1, 1), lex.next());
-        assert_eq!(tok(StringLiteral(UnicodeString), 5..17, 2, 1), lex.next());
+        assert_tok(StringLiteral(UnicodeString), 0..4, 1, 1, lex.next());
+        assert_tok(StringLiteral(UnicodeString), 5..17, 2, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -939,15 +957,15 @@ mod tests {
     fn test_identifier() {
         let source = b"bar xyz efg nun ube foo u&x";
         let mut lex = Lexer::new(source, true);
-        assert_eq!(tok(Identifier(BasicIdentifier), 0..3, 1, 1), lex.next());
-        assert_eq!(tok(Identifier(BasicIdentifier), 4..7, 1, 5), lex.next());
-        assert_eq!(tok(Identifier(BasicIdentifier), 8..11, 1, 9), lex.next());
-        assert_eq!(tok(Identifier(BasicIdentifier), 12..15, 1, 13), lex.next());
-        assert_eq!(tok(Identifier(BasicIdentifier), 16..19, 1, 17), lex.next());
-        assert_eq!(tok(Identifier(BasicIdentifier), 20..23, 1, 21), lex.next());
-        assert_eq!(tok(Identifier(BasicIdentifier), 24..25, 1, 25), lex.next());
-        assert_eq!(tok(UserDefinedOperator, 25..26, 1, 26), lex.next());
-        assert_eq!(tok(Identifier(BasicIdentifier), 26..27, 1, 27), lex.next());
+        assert_tok(Identifier(BasicIdentifier), 0..3, 1, 1, lex.next());
+        assert_tok(Identifier(BasicIdentifier), 4..7, 1, 5, lex.next());
+        assert_tok(Identifier(BasicIdentifier), 8..11, 1, 9, lex.next());
+        assert_tok(Identifier(BasicIdentifier), 12..15, 1, 13, lex.next());
+        assert_tok(Identifier(BasicIdentifier), 16..19, 1, 17, lex.next());
+        assert_tok(Identifier(BasicIdentifier), 20..23, 1, 21, lex.next());
+        assert_tok(Identifier(BasicIdentifier), 24..25, 1, 25, lex.next());
+        assert_tok(UserDefinedOperator, 25..26, 1, 26, lex.next());
+        assert_tok(Identifier(BasicIdentifier), 26..27, 1, 27, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -969,42 +987,51 @@ mod tests {
         ";
         let mut lex = Lexer::new(source, true);
 
-        assert_eq!(err(EmptyDelimitedIdentifier, 0..2, 1, 1), lex.next());
-        assert_eq!(tok(Identifier(QuotedIdentifier), 3..14, 2, 1), lex.next());
-        assert_eq!(tok(Identifier(UnicodeIdentifier), 15..28, 3, 1), lex.next());
+        assert_err(EmptyDelimitedIdentifier, 0..2, 1, 1, lex.next());
+        assert_tok(Identifier(QuotedIdentifier), 3..14, 2, 1, lex.next());
+        assert_tok(Identifier(UnicodeIdentifier), 15..28, 3, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
-    fn tok(kind: TokenKind, range: Range<usize>, line: usize, col: usize) -> Option<Located<LexResult>> {
-        Some((
-            Ok(kind),
-            Location::new(range, line, col)
-        ))
+    fn assert_tok(
+        expected_kind: TokenKind,
+        range: Range<usize>,
+        line: usize,
+        col: usize,
+        actual: Option<LexerResult>
+    ) {
+        let expected_loc = Location::new(range, line, col);
+        let expected = (expected_kind, expected_loc);
+
+        assert_matches!(actual, Some(Ok(res)) if res == expected);
     }
 
-    fn err(err: LexerError, range: Range<usize>, line: usize, col: usize) -> Option<Located<LexResult>> {
-        Some((
-            Err(err),
-            Location::new(range, line, col)
-        ))
+    fn assert_err(
+        expected_err: LexerErrorKind,
+        range: Range<usize>,
+        line: usize,
+        col: usize,
+        actual: Option<LexerResult>
+    ) {
+        let expected_loc = Location::new(range, line, col);
+
+        assert_matches!(actual, Some(Err(err)) if err.source() == expected_err && expected_loc.eq(err.location()));
     }
 
-    fn assert_kw(expected: Keyword, actual: Option<Located<LexResult>>) {
-        match actual {
-            Some((Ok(Keyword(kw)), _)) => {
-                assert_eq!(expected, kw.keyword());
-            }
-            _ => {
-                panic!("expected keyword token `{expected:?}`, got {actual:?}");
-            }
-        }
+    fn assert_kw(expected: Keyword, actual: Option<LexerResult>) {
+
+        let (actual, _) = actual
+            .expect("should have been Some(Ok(_))")
+            .expect("should have been Ok((Keyword(_), _))");
+
+        assert_matches!(actual, Keyword(kw) if expected == kw.keyword())
     }
 }
 
 use self::{
-    error::LexerError::*,
+    error::LexerErrorKind::*,
     token_kind::{IdentifierKind::*, StringKind::*, TokenKind::*},
 };
 use postgres_basics::ascii::*;
-use postgres_basics::{CharBuffer, Located, Location, NAMEDATALEN};
+use postgres_basics::{fn_info, CharBuffer, FnInfo, Located, Location, NAMEDATALEN};
 use std::iter::FusedIterator;

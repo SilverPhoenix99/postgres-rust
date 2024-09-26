@@ -5,6 +5,7 @@ mod error;
 mod string_parser;
 mod token_buffer;
 mod result;
+mod parse_report;
 
 pub use self::{
     ast_node::{
@@ -16,7 +17,8 @@ pub use self::{
         SystemType,
     },
     config::{ParseMode, ParserConfig},
-    error::ParserError,
+    error::ParserErrorKind,
+    parse_report::ParseReport,
     result::{OptResult, ReqResult},
 };
 
@@ -74,7 +76,7 @@ impl ParserWarning {
 }
 
 pub struct ParserResult {
-    pub result: Result<Vec<AstNode>, Located<ParserError>>,
+    pub result: Result<Vec<AstNode>, Located<ParserErrorKind>>,
     pub warnings: Vec<Located<ParserWarning>>,
 }
 
@@ -98,15 +100,15 @@ impl<'src> Parser<'src> {
     }
 
     /// Not reentrant!
-    pub fn parse(&mut self, mode: ParseMode) -> ParserResult {
+    pub fn parse(&mut self) -> ParserResult {
 
         // match mode {
-        //     ParseMode::TypeName => {todo!()}
-        //     ParseMode::PlpgsqlExpr => {todo!()}
-        //     ParseMode::PlpgsqlAssign1 => {todo!()}
-        //     ParseMode::PlpgsqlAssign2 => {todo!()}
-        //     ParseMode::PlpgsqlAssign3 => {todo!()}
-        //     ParseMode::Default => {todo!()} // if no match
+        //     ParseMode::TypeName => {}
+        //     ParseMode::PlpgsqlExpr => {}
+        //     ParseMode::PlpgsqlAssign1 => {}
+        //     ParseMode::PlpgsqlAssign2 => {}
+        //     ParseMode::PlpgsqlAssign3 => {}
+        //     ParseMode::Default => {} // if no match
         // }
 
         todo!()
@@ -134,8 +136,25 @@ impl<'src> Parser<'src> {
 
         todo!()
     }
+    
+    /// Alias: `ConstTypename`
+    fn const_typename(&mut self) -> OptResult<NumericType> {
 
-    /// Alias: `Numeric`
+        /*
+        ConstTypename :
+            numeric // Numeric
+          | character ( '(' ICONST ')' )? // ConstCharacter
+          | BIT (VARYING)? ( '(' expr_list ')' )? // ConstBit
+          | TIMESTAMP ( '(' ICONST ')' )? ( (WITH_LA | WITHOUT_LA) TIME ZONE )? // ConstDatetime
+          | TIME ( '(' ICONST ')' )? ( (WITH_LA | WITHOUT_LA) TIME ZONE )?      // ConstDatetime
+          | JSON
+        */
+
+        todo!()
+    }
+
+    /// Alias: `Numeric`<p/>
+    /// Inline: `opt_float`
     fn numeric(&mut self) -> OptResult<NumericType> {
 
         /*
@@ -196,23 +215,52 @@ impl<'src> Parser<'src> {
         }
 
         if kw == ColumnName(Float) {
+            // opt_float: '(' ICONST ')'
             return match self.i32_literal_paren().replace_eof(Ok(None))? {
                 None => Ok(Some(Float8)),
-                Some(num) => {
-                    match num {
-                        ..=0 => Err(Some(FloatPrecisionUnderflow(num))),
-                        1..=24 => Ok(Some(Float4)),
-                        25..=53 => Ok(Some(Float8)),
-                        54.. => Err(Some(FloatPrecisionOverflow(num))),
-                    }
-                }
+                Some(num @ ..=0) => Err(Some(FloatPrecisionUnderflow(num))),
+                Some(1..=24) => Ok(Some(Float4)),
+                Some(25..=53) => Ok(Some(Float8)),
+                Some(num @ 54..) => Err(Some(FloatPrecisionOverflow(num))),
             }
         }
 
-        todo!("(DEC | DECIMAL | NUMERIC) opt_type_modifiers")
+        let type_mods = self.opt_type_modifiers()?;
+        Ok(Some(NumericType::Numeric(type_mods)))
     }
 
-    /// Production: '(' ICONST ')'
+    fn opt_type_modifiers(&mut self) -> OptResult<Vec<AstNode>> {
+
+        // '(' expr_list ')'
+
+        if self.buffer.consume_eq(OpenParenthesis)?.is_none() {
+            return Ok(None)
+        }
+
+        let exprs = self.expr_list()?;
+
+        self.buffer.consume_eq(OpenParenthesis).required()?;
+
+        Ok(Some(exprs))
+    }
+
+    /// Post-condition: Vec is **Not** empty
+    fn expr_list(&mut self) -> ReqResult<Vec<AstNode>> {
+
+        // a_expr ( ',' a_expr )*
+
+        list_production!(
+            gather { self.a_expr() }
+            delim { self.buffer.consume_eq(Comma) }
+        ).required()
+    }
+
+    fn a_expr(&mut self) -> OptResult<AstNode> {
+
+        todo!()
+    }
+
+    /// Production: `'(' ICONST ')'`
     fn i32_literal_paren(&mut self) -> OptResult<i32> {
 
         if self.buffer.consume_eq(OpenParenthesis)?.is_none() {
@@ -246,9 +294,8 @@ impl<'src> Parser<'src> {
                 )
         })?;
 
-        let char_type = match char_type {
-            None => return Ok(None),
-            Some(char_type) => char_type,
+        let Some(char_type) = char_type else {
+            return Ok(None)
         };
 
         if matches!(char_type, Varchar) {
@@ -321,18 +368,16 @@ impl<'src> Parser<'src> {
 
         self.buffer.consume(|tok| {
 
-            if let NumberLiteral { radix } = tok {
-                let radix = *radix;
-                let slice = loc.slice(self.source);
-                return slice.iter()
-                    .map(|d| (*d - b'0') as i32)
-                    .try_fold(
-                        0i32,
-                        |acc, n| acc.checked_mul(radix)?.checked_add(n)
-                    )
-            }
+            let NumberLiteral { radix } = tok else { return None };
+            let radix = *radix;
 
-            None
+            loc.slice(self.source)
+                .iter()
+                .map(|d| (*d - b'0') as i32)
+                .try_fold(
+                    0i32,
+                    |acc, n| acc.checked_mul(radix)?.checked_add(n)
+                )
         })
     }
 
@@ -384,9 +429,8 @@ impl<'src> Parser<'src> {
 
         self.buffer.consume(|tok| {
 
-            let kw = match tok.keyword() {
-                Some(kw) => kw,
-                None => return Ok(None),
+            let Some(kw) = tok.keyword() else {
+                return Ok(None)
             };
 
             match kw.keyword() {
@@ -479,7 +523,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Production: `UESCAPE SCONST`
-    fn uescape(&mut self) -> Result<u8, ParserError> {
+    fn uescape(&mut self) -> Result<u8, ParserErrorKind> {
 
         // Try to consume UESCAPE + the string following it.
         // see [base_yylex](https://github.com/postgres/postgres/blob/1c61fd8b527954f0ec522e5e60a11ce82628b681/src/backend/parser/parser.c#L256)
@@ -547,7 +591,7 @@ use self::{
         CharacterType::Bpchar,
         NumericType::*,
     },
-    error::ParserError::*,
+    error::ParserErrorKind::*,
     ident_parser::IdentifierParser,
     result::{OptionalResult, RequiredResult},
     string_parser::{StringParser, StringParserResult},

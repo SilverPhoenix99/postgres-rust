@@ -21,14 +21,14 @@ impl StringParserResult {
     }
 
     #[inline(always)]
-    fn err_warn(err: ParserError, warning: Located<ExtendedStringWarning>) -> Self {
+    fn err_warn(err: ParserErrorKind, warning: Located<ExtendedStringWarning>) -> Self {
         let mut res = Self::err(err);
         res.warning = Some(warning);
         res
     }
 
     #[inline(always)]
-    fn err(err: ParserError) -> Self {
+    fn err(err: ParserErrorKind) -> Self {
         Self {
             result: Err(Some(err)),
             warning: None
@@ -127,7 +127,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
 
                 let result = match result {
                     Ok(string) => Ok(StringLiteral(string)),
-                    Err(err) => Err(ParserError::ExtendedString(err)),
+                    Err(err) => Err(ParserErrorKind::ExtendedString(err)),
                 };
 
                 (result, warning)
@@ -142,7 +142,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
                 let result = UnicodeStringDecoder::new(slice, false, escape)
                     .decode()
                     .map(StringLiteral)
-                    .map_err(ParserError::UnicodeString);
+                    .map_err(ParserErrorKind::UnicodeString);
 
                 (result, None)
             }
@@ -260,7 +260,7 @@ mod tests {
 
 use crate::lexer::{StringKind, StringKind::*};
 use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::{AstNode, AstNode::*, OptResult, Parser, ParserError};
+use crate::parser::{AstNode, AstNode::*, OptResult, Parser, ParserErrorKind};
 use crate::string_decoders::*;
 use postgres_basics::{Located, Location};
 use std::str::Utf8Error;
