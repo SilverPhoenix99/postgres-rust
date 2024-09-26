@@ -15,8 +15,8 @@ pub enum RoleSpec {
 // see https://www.postgresql.org/docs/current/datatype-character.html
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum CharacterType {
-    Varchar(Option<NonZero<u32>>),
-    Bpchar(Option<NonZero<u32>>),
+    Varchar(Option<u32>),
+    Bpchar(Option<u32>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -52,4 +52,3 @@ pub enum AstNode {
 
 use bitvec::boxed::BitBox;
 use std::borrow::Cow;
-use std::num::NonZero;

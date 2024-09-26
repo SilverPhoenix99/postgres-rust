@@ -257,19 +257,16 @@ impl<'src> Parser<'src> {
 
         /*
         character :
-            CHARACTER (VARYING)?
-          | CHAR_P (VARYING)?
-          | VARCHAR
-          | NATIONAL CHARACTER (VARYING)?
-          | NATIONAL CHAR_P (VARYING)?
-          | NCHAR (VARYING)?
+            VARCHAR
+          | (CHARACTER | CHAR_P | NCHAR) (VARYING)?
+          | NATIONAL ( CHARACTER | CHAR_P) (VARYING)?
         */
 
         let char_type = self.buffer.consume(|tok| {
 
             tok.keyword().and_then(KeywordDetails::col_name)
                 .filter(|col_name|
-                    matches!(col_name, Varchar | National | Nchar | Character | Char)
+                    matches!(col_name, Varchar | Character | Char | National | Nchar)
                 )
         })?;
 
@@ -277,11 +274,11 @@ impl<'src> Parser<'src> {
             return Ok(None)
         };
 
-        if matches!(char_type, Varchar) {
+        if char_type == Varchar {
             return Ok(Some(CharacterType::Varchar(None)))
         }
 
-        if matches!(char_type, National | Nchar) {
+        if char_type == National {
 
             self.buffer
                 .consume(|tok| {
@@ -299,7 +296,7 @@ impl<'src> Parser<'src> {
                 tok.keyword().and_then(KeywordDetails::unreserved),
                 Some(UnreservedKeyword::Varying)
             )
-        })?;
+        }).replace_eof(Ok(None))?;
 
         let char_type = if varying.is_some() {
             CharacterType::Varchar(None)
@@ -574,6 +571,36 @@ mod tests {
     use postgres_basics::guc::BackslashQuote;
 
     const DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding, ParseMode::Default);
+
+    #[test]
+    fn test_character() {
+        const EXPECTED_VARCHAR: OptResult<CharacterType> = Ok(Some(CharacterType::Varchar(None)));
+        const EXPECTED_BPCHAR: OptResult<CharacterType> = Ok(Some(Bpchar(None)));
+
+        let sources = &[
+            (EXPECTED_VARCHAR, "varchar"),
+            (EXPECTED_VARCHAR, "char varying"),
+            (EXPECTED_VARCHAR, "character varying"),
+            (EXPECTED_VARCHAR, "nchar varying"),
+            (EXPECTED_VARCHAR, "national char varying"),
+            (EXPECTED_VARCHAR, "national character varying"),
+            (EXPECTED_BPCHAR, "char"),
+            (EXPECTED_BPCHAR, "character"),
+            (EXPECTED_BPCHAR, "nchar"),
+            (EXPECTED_BPCHAR, "national char"),
+            (EXPECTED_BPCHAR, "national character"),
+        ];
+
+        for (expected, source) in sources {
+            let mut parser = Parser::new(source.as_bytes(), DEFAULT_CONFIG);
+            let actual = parser.character();
+            assert_eq!(
+                expected,
+                &actual,
+                r"expected {expected:?} for source {source:?} but actually got {actual:?}",
+            );
+        }
+    }
 
     #[test]
     fn test_signed_i32_literal() {
