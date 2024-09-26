@@ -1,5 +1,5 @@
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
-pub enum LexerError {
+pub enum LexerErrorKind {
 
     #[error("Unexpected character {0:?}", *(.unknown) as char)]
     UnexpectedChar { unknown: u8 },
@@ -50,17 +50,80 @@ pub enum LexerError {
     UnsafeUnicodeString,
 }
 
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct LexerError {
+    source: LexerErrorKind,
+    fn_info: FnInfo,
+    location: Location,
+}
+
 impl LexerError {
-    pub fn sqlstate(self) -> SqlState {
-        SqlState::Error(ErrorSqlState::SyntaxError)
+
+    #[inline(always)]
+    pub fn new(source: LexerErrorKind, fn_info: FnInfo, location: Location) -> Self {
+        Self { source, fn_info, location }
     }
 
-    pub fn detail(self) -> Option<&'static str> {
-        if self == Self::UnsafeUnicodeString {
-            return Some(r#"String constants with Unicode escapes cannot be used when "standard_conforming_strings" is off."#)
-        }
-        None
+    #[inline(always)]
+    pub fn source(&self) -> LexerErrorKind {
+        self.source
     }
 }
 
+impl Error for LexerError {
+
+    #[inline(always)]
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        Some(&self.source)
+    }
+}
+
+impl Display for LexerError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let sqlstate= self.sqlstate();
+        let source = self.source;
+        let position = self.location.range().start + 1;
+        writeln!(f, "[{sqlstate}] ERROR: {source}")?;
+        write!(f, "Position: {position}")
+    }
+}
+
+impl ParseReport for LexerError {
+
+    #[inline(always)]
+    fn location(&self) -> &Location {
+        &self.location
+    }
+}
+
+impl SqlReport for LexerError {
+
+    fn sqlstate(&self) -> SqlState {
+        SqlState::Error(SyntaxError)
+    }
+
+    #[inline(always)]
+    fn fn_info(&self) -> FnInfo {
+        self.fn_info
+    }
+
+    fn detail(&self) -> Option<Cow<'static, str>> {
+        if self.source == UnsafeUnicodeString {
+            Some(
+                r#"String constants with Unicode escapes cannot be used when "standard_conforming_strings" is off."#.into()
+            )
+        }
+        else {
+            None
+        }
+    }
+}
+
+use crate::lexer::LexerErrorKind::UnsafeUnicodeString;
+use crate::parser::ParseReport;
 use postgres_basics::sql_state::{ErrorSqlState, SqlState};
+use postgres_basics::{FnInfo, Location, SqlReport};
+use std::borrow::Cow;
+use std::error::Error;
+use std::fmt::{Debug, Display, Formatter};
+use ErrorSqlState::SyntaxError;

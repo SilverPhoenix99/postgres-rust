@@ -223,7 +223,8 @@ impl<'src> CharBuffer<'src> {
         let result = {
             if wchar::is_utf16_surrogate_first(c as u16) {
                 Ok(SurrogateFirst(c as u16))
-            } else if wchar::is_utf16_surrogate_second(c as u16) {
+            }
+            else if wchar::is_utf16_surrogate_second(c as u16) {
                 Ok(SurrogateSecond(c as u16))
             }
             else {

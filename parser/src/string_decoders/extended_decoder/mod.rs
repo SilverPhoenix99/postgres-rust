@@ -56,14 +56,11 @@ impl<'src> ExtendedStringDecoder<'src> {
                 continue
             }
 
-            let c = match self.input.consume_one() {
-                None => {
-                    // this is possible: '\\'
-                    // but this will complain about unterminated string: e'\\'
-                    out.push(b'\\');
-                    break
-                }
-                Some(c) => c,
+            let Some(c) = self.input.consume_one() else {
+                // this is possible: '\\'
+                // but this will complain about unterminated string: e'\\'
+                out.push(b'\\');
+                break
             };
 
             match c {
@@ -174,15 +171,16 @@ impl<'src> ExtendedStringDecoder<'src> {
 
         let unicode_len = if self.input.consume_char(b'u') {
             4
-        } else if self.input.consume_char(b'U') {
+        }
+        else if self.input.consume_char(b'U') {
             8
-        } else {
+        }
+        else {
             return Err(invalid_pair)
         };
 
-        let second = match self.input.consume_unicode_char(unicode_len) {
-            Ok(SurrogateSecond(second)) => second,
-            _ => return Err(invalid_pair),
+        let Ok(SurrogateSecond(second)) = self.input.consume_unicode_char(unicode_len) else {
+            return Err(invalid_pair)
         };
 
         wchar::decode_utf16(first, second).ok_or(invalid_pair)

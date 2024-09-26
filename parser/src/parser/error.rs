@@ -1,5 +1,5 @@
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
-pub enum ParserError {
+pub enum ParserErrorKind {
     /// When a production fails.
     #[default]
     Syntax,
@@ -55,25 +55,25 @@ pub enum ParserError {
     FloatPrecisionOverflow(i32),
 }
 
-impl From<LexerError> for ParserError {
+impl From<LexerError> for ParserErrorKind {
     fn from(value: LexerError) -> Self {
         Lexer(value)
     }
 }
 
-impl From<Utf8Error> for ParserError {
+impl From<Utf8Error> for ParserErrorKind {
     fn from(value: Utf8Error) -> Self {
         Utf8(value)
     }
 }
 
-impl From<FromUtf8Error> for ParserError {
+impl From<FromUtf8Error> for ParserErrorKind {
     fn from(value: FromUtf8Error) -> Self {
         Utf8(value.utf8_error())
     }
 }
 
-impl From<BitStringError> for ParserError {
+impl From<BitStringError> for ParserErrorKind {
     fn from(value: BitStringError) -> Self {
         match value {
             BitStringError::BitStringTooLong => BitStringTooLong,
@@ -86,4 +86,4 @@ use crate::lexer::LexerError;
 use crate::string_decoders::{BitStringError, ExtendedStringError, UnicodeStringError};
 use std::str::Utf8Error;
 use std::string::FromUtf8Error;
-use ParserError::*;
+use ParserErrorKind::*;

@@ -8,8 +8,10 @@ pub struct FnInfo {
 
 impl FnInfo {
 
+    // The order of the parameters is important here.
+    // qn_fn_name!() is used last, because the macro expands to multiple lines.
     #[inline(always)]
-    pub fn new(file_name: &'static str, function: &'static str, line_number: u32) -> Self {
+    pub fn new(file_name: &'static str, line_number: u32, function: &'static str) -> Self {
         Self { file_name, function, line_number }
     }
 

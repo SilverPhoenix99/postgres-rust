@@ -13,9 +13,8 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
                 .map(|tok| (tok, loc.clone()))
         )?;
 
-        let (kind, loc) = match result {
-            Some((kind, loc)) => (kind, loc),
-            None => return Ok(None),
+        let Some((kind, loc)) = result else {
+            return Ok(None)
         };
 
         let slice = loc.slice(self.0.source);
@@ -42,7 +41,7 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
 
                 UnicodeStringDecoder::new(slice, true, escape)
                     .decode()
-                    .map_err(ParserError::UnicodeString)
+                    .map_err(ParserErrorKind::UnicodeString)
             },
         };
 
@@ -114,7 +113,7 @@ mod tests {
 
 use crate::lexer::IdentifierKind::*;
 use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::{OptResult, Parser, ParserError};
+use crate::parser::{OptResult, Parser, ParserErrorKind};
 use crate::string_decoders::{BasicStringDecoder, UnicodeStringDecoder};
 use postgres_basics::NAMEDATALEN;
 use std::str::Utf8Error;

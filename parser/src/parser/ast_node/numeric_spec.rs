@@ -1,7 +1,16 @@
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+// See [numerictypmodin](https://github.com/postgres/postgres/blob/a7e5237f268ea378c514635d65a55aa47621958a/src/backend/utils/adt/numeric.c#L1326)
+#[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
 pub enum NewNumericSpecError {
+    #[error("NUMERIC precision {} must be between {} and {}", .0, NumericSpec::VALID_SPECIFIED_PRECISION.start(), NumericSpec::VALID_SPECIFIED_PRECISION.end())]
     PrecisionOutOfRange(u16),
+    #[error("NUMERIC scale {} must be between {} and {}", .0, NumericSpec::VALID_SPECIFIED_SCALE.start(), NumericSpec::VALID_SPECIFIED_SCALE.end())]
     ScaleOutOfRange(i16),
+}
+
+impl NewNumericSpecError {
+    pub fn sqlstate(&self) -> SqlState {
+        SqlState::Error(InvalidParameterValue)
+    }
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -129,6 +138,8 @@ mod tests {
     }
 }
 
+use postgres_basics::sql_state::ErrorSqlState::InvalidParameterValue;
+use postgres_basics::sql_state::SqlState;
 use std::num::NonZero;
 use std::ops::RangeInclusive;
 use NewNumericSpecError::{PrecisionOutOfRange, ScaleOutOfRange};

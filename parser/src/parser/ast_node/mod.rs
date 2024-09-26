@@ -19,7 +19,7 @@ pub enum CharacterType {
     Bpchar(Option<NonZero<u32>>),
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum NumericType {
     Bool,
     Int2,
@@ -27,10 +27,13 @@ pub enum NumericType {
     Int8,
     Float4,
     Float8,
-    Numeric(NumericSpec),
+    // Needs to distinguish between not having anything, or an empty list.
+    // This will be checked at a later phase.
+    // E.g.: `NUMERIC` vs `NUMERIC()` (the latter is invalid)
+    Numeric(Option<Vec<AstNode>>),
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum SystemType {
     Character(CharacterType),
     Numeric(NumericType),

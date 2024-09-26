@@ -10,12 +10,12 @@
 ///                    Might be recoverable if the token was optional.
 /// * `Err(Some(_))` : Unrecoverable error.
 /// * `Err(None)`    : Eof. Might be recoverable if the token was optional.
-pub type OptResult<T, E = ParserError> = Result<Option<T>, Option<E>>;
+pub type OptResult<T, E = ParserErrorKind> = Result<Option<T>, Option<E>>;
 
 /// Used when a result must exist, and when otherwise it's considered a `Syntax` error.
-pub type ReqResult<T, E = ParserError> = Result<T, Option<E>>;
+pub type ReqResult<T, E = ParserErrorKind> = Result<T, Option<E>>;
 
-pub(super) trait OptionalResult<T, E = ParserError>: Sized
+pub(super) trait OptionalResult<T, E = ParserErrorKind>: Sized
 where
     E: Default
 {
@@ -274,4 +274,4 @@ mod tests {
     }
 }
 
-use crate::parser::ParserError;
+use crate::parser::ParserErrorKind;

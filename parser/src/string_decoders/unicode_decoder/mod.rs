@@ -91,9 +91,8 @@ impl<'src> UnicodeStringDecoder<'src> {
 
         let unicode_len = if self.input.consume_char(b'+') { 6 } else { 4 };
 
-        let second = match self.input.consume_unicode_char(unicode_len) {
-            Ok(SurrogateSecond(second)) => second,
-            _ => return Err(invalid_pair),
+        let Ok(SurrogateSecond(second)) = self.input.consume_unicode_char(unicode_len) else {
+            return Err(invalid_pair)
         };
 
         wchar::decode_utf16(first, second).ok_or(invalid_pair)
