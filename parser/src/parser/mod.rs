@@ -6,6 +6,7 @@ mod string_parser;
 mod token_buffer;
 mod result;
 mod parse_report;
+mod warning;
 
 pub use self::{
     ast_node::{
@@ -20,6 +21,7 @@ pub use self::{
     error::ParserErrorKind,
     parse_report::ParseReport,
     result::{OptResult, ReqResult},
+    warning::ParserWarning,
 };
 
 macro_rules! list_production {
@@ -43,35 +45,6 @@ macro_rules! list_production {
 
             Ok(Some(elements))
         })()
-    }
-}
-
-pub enum ParserWarning {
-    DeprecatedGlobalTemporaryTable,
-    NonstandardEscape(ExtendedStringWarning),
-}
-
-impl ParserWarning {
-
-    pub fn sqlstate(self) -> SqlState {
-        match self {
-            Self::DeprecatedGlobalTemporaryTable => SqlState::Warning(WarningSqlState::Warning),
-            Self::NonstandardEscape(warn) => warn.sqlstate(),
-        }
-    }
-
-    pub fn message(self) -> &'static str {
-        match self {
-            Self::DeprecatedGlobalTemporaryTable => "GLOBAL is deprecated in temporary table creation",
-            Self::NonstandardEscape(warn) => warn.message()
-        }
-    }
-
-    pub fn hint(self) -> Option<&'static str> {
-        match self {
-            Self::DeprecatedGlobalTemporaryTable => None,
-            Self::NonstandardEscape(warn) => Some(warn.hint()),
-        }
     }
 }
 
@@ -625,10 +598,8 @@ use crate::lexer::{
     UnreservedKeyword,
     UnreservedKeyword::{Double, Uescape},
 };
-use crate::string_decoders::ExtendedStringWarning;
 use postgres_basics::{
     ascii::{is_hex_digit, is_whitespace},
-    sql_state::{SqlState, WarningSqlState},
     Located,
 };
 use std::borrow::Cow;
