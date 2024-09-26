@@ -138,17 +138,15 @@ impl<'src> Parser<'src> {
 
         /*
         Numeric :
-            INT_P
+            BOOLEAN
+          | INT_P
           | INTEGER
           | SMALLINT
           | BIGINT
           | REAL
-          | FLOAT_P ( '(' ICONST ')' )?
-          | DOUBLE_P PRECISION
-          | DECIMAL_P opt_type_modifiers
-          | DEC opt_type_modifiers
-          | NUMERIC opt_type_modifiers
-          | BOOLEAN_P
+          | FLOAT ( '(' ICONST ')' )?
+          | DOUBLE PRECISION
+          | (DECIMAL | DEC | NUMERIC) opt_type_modifiers
         */
 
         let kw = self.buffer.consume(|tok| {
@@ -572,6 +570,57 @@ mod tests {
 
     const DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding, ParseMode::Default);
 
+    #[test]
+    fn test_numeric() {
+
+        let source = b"boolean smallint int integer bigint real float float(17) float(44) double precision";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let actual = parser.numeric().unwrap().unwrap();
+        assert_eq!(Bool, actual);
+        let actual = parser.numeric().unwrap().unwrap();
+        assert_eq!(Int2, actual);
+        let actual = parser.numeric().unwrap().unwrap();
+        assert_eq!(Int4, actual);
+        let actual = parser.numeric().unwrap().unwrap();
+        assert_eq!(Int4, actual);
+        let actual = parser.numeric().unwrap().unwrap();
+        assert_eq!(Int8, actual);
+        let actual = parser.numeric().unwrap().unwrap();
+        assert_eq!(Float4, actual);
+        let actual = parser.numeric().unwrap().unwrap();
+        assert_eq!(Float8, actual);
+        let actual = parser.numeric().unwrap().unwrap();
+        assert_eq!(Float4, actual);
+        let actual = parser.numeric().unwrap().unwrap();
+        assert_eq!(Float8, actual);
+        let actual = parser.numeric().unwrap().unwrap();
+        assert_eq!(Float8, actual);
+
+        // TODO: (DECIMAL | DEC | NUMERIC) opt_type_modifiers
+    }
+    
+    #[test] #[ignore]
+    fn test_opt_type_modifiers() {
+        todo!()
+    }
+    
+    #[test] #[ignore]
+    fn test_expr_list() {
+        todo!()
+    }
+
+    #[test] #[ignore]
+    fn test_a_expr() {
+        todo!()
+    }
+
+    #[test]
+    fn test_i32_literal_paren() {
+        let mut parser = Parser::new(b" (123 )", DEFAULT_CONFIG);
+        let actual = parser.i32_literal_paren().unwrap().unwrap();
+        assert_eq!(123, actual);
+    }
+    
     #[test]
     fn test_character() {
         const EXPECTED_VARCHAR: OptResult<CharacterType> = Ok(Some(CharacterType::Varchar(None)));
