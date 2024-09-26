@@ -21,9 +21,10 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
 
         let ident = match kind {
             BasicIdentifier => {
-                std::str::from_utf8(slice)
-                    .map(String::from)
-                    .map_err(Utf8Error::into)
+                match std::str::from_utf8(slice) {
+                    Ok(s) => Ok(s.to_string().to_lowercase()),
+                    Err(err) => Err(err.into())
+                }
             },
             QuotedIdentifier => {
                 // Strip delimiters:
@@ -69,7 +70,7 @@ mod tests {
 
     #[test]
     fn test_basic_ident() {
-        let mut parser = new_parser(b"some_identifier");
+        let mut parser = new_parser(b"sOmE_iDeNtIfIeR");
         let mut ident_parser = IdentifierParser(&mut parser);
 
         assert_eq!(Ok(Some("some_identifier".into())), ident_parser.parse());
