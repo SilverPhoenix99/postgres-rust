@@ -69,6 +69,11 @@ impl<'src> Lexer<'src> {
         }
     }
 
+    #[inline(always)]
+    pub fn source(&self) -> &'src [u8] {
+        self.buffer.source()
+    }
+
     /// Zero-length `range`.
     #[inline(always)]
     pub fn current_location(&self) -> Location {
