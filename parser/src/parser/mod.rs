@@ -128,6 +128,27 @@ impl<'src> Parser<'src> {
           | JSON
         */
 
+        if let Some(num) = self.numeric()? {
+            return Ok(Some(num))
+        }
+
+        if let Some(character) = self.character()? {
+
+            let len = self.i32_literal_paren().replace_eof(Ok(None))?;
+            let character = match character {
+                CharacterSystemType::Varchar => { SystemType::Varchar(len) },
+                CharacterSystemType::Bpchar => SystemType::Bpchar(len),
+            };
+
+            return Ok(Some(character))
+        }
+
+        let bit = self.buffer.consume_kw_eq(ColumnName(ColumnNameKeyword::Bit))?;
+        if bit.is_some() {
+            let varying = self.buffer.consume_kw_eq(Unreserved(UnreservedKeyword::Varying))
+                .replace_eof(Ok(None))?;
+        }
+
         todo!()
     }
 
@@ -148,9 +169,9 @@ impl<'src> Parser<'src> {
           | (DECIMAL | DEC | NUMERIC) opt_type_modifiers
         */
 
-        let kw = self.buffer.consume(|tok| {
-            match tok.keyword().map(KeywordDetails::keyword)? {
-                kw @ (
+        let kw = self.buffer.consume(|tok|
+            tok.keyword().map(KeywordDetails::keyword).filter(|kw|
+                matches!(kw,
                     ColumnName(
                           Int
                         | Integer
@@ -164,10 +185,9 @@ impl<'src> Parser<'src> {
                         | Boolean
                     )
                     | Unreserved(Double)
-                ) => Some(kw),
-                _ => None,
-            }
-        })?;
+                )
+            )
+        )?;
 
         let kw = match kw {
             None => return Ok(None),
@@ -180,13 +200,7 @@ impl<'src> Parser<'src> {
         };
 
         if kw == Unreserved(Double) {
-            self.buffer.consume(|tok|
-                matches!(
-                    tok.keyword().map(KeywordDetails::keyword),
-                    Some(ColumnName(Precision))
-                )
-            ).required()?;
-
+            self.buffer.consume_kw_eq(ColumnName(Precision)).required()?;
             return Ok(Some(Float8))
         }
 
@@ -201,8 +215,10 @@ impl<'src> Parser<'src> {
             }
         }
 
-        let type_mods = self.opt_type_modifiers()?
+        let type_mods = self.opt_type_modifiers()
+            .replace_eof(Ok(None))?
             .unwrap_or_else(Vec::new);
+
         Ok(Some(SystemType::Numeric(type_mods)))
     }
 
@@ -253,7 +269,7 @@ impl<'src> Parser<'src> {
         Ok(Some(num))
     }
 
-    fn character(&mut self) -> OptResult<SystemType> {
+    fn character(&mut self) -> OptResult<CharacterSystemType> {
 
         /*
         character :
@@ -262,47 +278,42 @@ impl<'src> Parser<'src> {
           | NATIONAL ( CHARACTER | CHAR_P) (VARYING)?
         */
 
-        let char_type = self.buffer.consume(|tok| {
-
-            tok.keyword().and_then(KeywordDetails::col_name)
+        let char_type = self.buffer.consume(|tok|
+            tok.keyword()
+                .and_then(KeywordDetails::col_name)
                 .filter(|col_name|
                     matches!(col_name, Varchar | Character | Char | National | Nchar)
                 )
-        })?;
+        )?;
 
         let Some(char_type) = char_type else {
             return Ok(None)
         };
 
         if char_type == Varchar {
-            return Ok(Some(SystemType::Varchar(None)))
+            return Ok(Some(CharacterSystemType::Varchar))
         }
 
         if char_type == National {
 
             self.buffer
-                .consume(|tok| {
+                .consume(|tok|
                     matches!(
                         tok.keyword().and_then(KeywordDetails::col_name),
                         Some(Character | Char)
                     )
-                })
-                .required()
-                .optional()?;
+                )
+                .required()?;
         }
 
-        let varying = self.buffer.consume(|tok| {
-            matches!(
-                tok.keyword().and_then(KeywordDetails::unreserved),
-                Some(UnreservedKeyword::Varying)
-            )
-        }).replace_eof(Ok(None))?;
+        let varying = self.buffer.consume_kw_eq(Unreserved(UnreservedKeyword::Varying))
+            .replace_eof(Ok(None))?;
 
         let char_type = if varying.is_some() {
-            SystemType::Varchar(None)
+            CharacterSystemType::Varchar
         }
         else {
-            Bpchar(None)
+            CharacterSystemType::Bpchar
         };
 
         Ok(Some(char_type))
@@ -505,9 +516,7 @@ impl<'src> Parser<'src> {
         // Try to consume UESCAPE + the string following it.
         // see [base_yylex](https://github.com/postgres/postgres/blob/1c61fd8b527954f0ec522e5e60a11ce82628b681/src/backend/parser/parser.c#L256)
 
-        let uescape = self.buffer.consume(|tok|
-            matches!(tok.keyword().and_then(KeywordDetails::unreserved), Some(Uescape))
-        );
+        let uescape = self.buffer.consume_kw_eq(Unreserved(Uescape));
 
         match uescape {
             Ok(None) | Err(None) => return Ok(b'\\'),
@@ -567,7 +576,7 @@ fn uescape_escape(source: &[u8]) -> Option<u8> {
 #[cfg(test)]
 mod tests {
     use super::AstLiteral::StringLiteral;
-    use super::SystemType::{Bool, Bpchar, Float4, Float8, Int2, Int4, Int8};
+    use super::SystemType::{Bool, Float4, Float8, Int2, Int4, Int8};
     use super::*;
     use postgres_basics::guc::BackslashQuote;
 
@@ -626,8 +635,8 @@ mod tests {
 
     #[test]
     fn test_character() {
-        const EXPECTED_VARCHAR: OptResult<SystemType> = Ok(Some(SystemType::Varchar(None)));
-        const EXPECTED_BPCHAR: OptResult<SystemType> = Ok(Some(Bpchar(None)));
+        const EXPECTED_VARCHAR: OptResult<CharacterSystemType> = Ok(Some(CharacterSystemType::Varchar));
+        const EXPECTED_BPCHAR: OptResult<CharacterSystemType> = Ok(Some(CharacterSystemType::Bpchar));
 
         let sources = &[
             (EXPECTED_VARCHAR, "varchar"),
@@ -850,9 +859,10 @@ use self::{
     token_buffer::{TokenBuffer, TokenConsumer},
     AstLiteral::NullLiteral,
     AstNode::Literal,
-    SystemType::{Bool, Bpchar, Float4, Float8, Int2, Int4, Int8},
+    SystemType::{Bool, Float4, Float8, Int2, Int4, Int8},
 };
 use crate::lexer::{
+    ColumnNameKeyword,
     ColumnNameKeyword::{
         Bigint,
         Boolean,
@@ -878,8 +888,9 @@ use crate::lexer::{
     ReservedKeyword::{CurrentRole, CurrentUser, SessionUser},
     TokenKind::{CloseParenthesis, Comma, Minus, NumberLiteral, OpenParenthesis, Plus},
     UnreservedKeyword,
-    UnreservedKeyword::{Double, Uescape},
+    UnreservedKeyword::{Double, Uescape}
 };
+use crate::parser::ast_node::CharacterSystemType;
 use postgres_basics::{
     ascii::{is_hex_digit, is_whitespace},
     Located,
