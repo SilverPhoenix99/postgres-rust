@@ -11,13 +11,24 @@ pub enum RoleSpec {
     Name(Cow<'static, str>),
 }
 
+/// Redundant enum, to avoid using `unreachable!()`.
+#[derive(Debug, Clone, PartialEq)]
+pub(super) enum CharacterSystemType {
+    Varchar,
+    Bpchar
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum SystemType {
     // Character types:
     // If limited, the maximum is 10MB == 10,485,760
     // see https://www.postgresql.org/docs/current/datatype-character.html
-    Varchar(Option<u32>),
-    Bpchar(Option<u32>),
+    Varchar(Option<i32>),
+    /// Blank-Padded Character string
+    Bpchar(Option<i32>),
+    // Bit string types:
+    Bit(Vec<AstNode>),
+    Varbit(Vec<AstNode>),
     // Numeric types:
     Bool,
     Int2,

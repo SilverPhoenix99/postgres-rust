@@ -73,6 +73,13 @@ impl<'src> TokenBuffer<'src> {
     pub fn consume_eq(&mut self, kind: TokenKind) -> OptResult<TokenKind> {
         self.consume(|tok| kind.eq(tok))
     }
+
+    #[inline(always)]
+    pub fn consume_kw_eq(&mut self, keyword: Keyword) -> OptResult<&'static KeywordDetails> {
+        self.consume(|tok|
+            tok.keyword().filter(|details| details.keyword() == keyword)
+        )
+    }
 }
 
 /// Consumers are not allowed to return `Err(None)` (Eof),
@@ -271,6 +278,6 @@ mod tests {
     }
 }
 
-use crate::lexer::{Lexer, LexerResult, TokenKind};
+use crate::lexer::{Keyword, KeywordDetails, Lexer, LexerResult, TokenKind};
 use crate::parser::{OptResult, ParseReport, ParserErrorKind};
 use postgres_basics::Location;
