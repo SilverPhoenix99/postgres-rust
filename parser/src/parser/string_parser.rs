@@ -1,5 +1,5 @@
 pub struct StringParserResult {
-    pub result: OptResult<AstNode>,
+    pub result: OptResult<AstLiteral>,
     pub warning: Option<Located<ExtendedStringWarning>>
 }
 
@@ -259,8 +259,14 @@ mod tests {
 }
 
 use crate::lexer::{StringKind, StringKind::*};
-use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::{AstNode, AstNode::*, OptResult, Parser, ParserErrorKind};
+use crate::parser::{
+    token_buffer::TokenConsumer,
+    AstLiteral,
+    AstLiteral::{BitStringLiteral, StringLiteral},
+    OptResult,
+    Parser,
+    ParserErrorKind,
+};
 use crate::string_decoders::*;
 use postgres_basics::{Located, Location};
 use std::str::Utf8Error;
