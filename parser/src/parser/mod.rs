@@ -10,10 +10,9 @@ mod warning;
 
 pub use self::{
     ast_node::{
+        AstLiteral,
         AstNode,
-        CharacterType,
         NumericSpec,
-        NumericType,
         RoleSpec,
         SystemType,
     },
@@ -117,7 +116,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `ConstTypename`
-    fn const_typename(&mut self) -> OptResult<NumericType> {
+    fn const_typename(&mut self) -> OptResult<SystemType> {
 
         /*
         ConstTypename :
@@ -134,7 +133,7 @@ impl<'src> Parser<'src> {
 
     /// Alias: `Numeric`<p/>
     /// Inline: `opt_float`
-    fn numeric(&mut self) -> OptResult<NumericType> {
+    fn numeric(&mut self) -> OptResult<SystemType> {
 
         /*
         Numeric :
@@ -202,8 +201,9 @@ impl<'src> Parser<'src> {
             }
         }
 
-        let type_mods = self.opt_type_modifiers()?;
-        Ok(Some(NumericType::Numeric(type_mods)))
+        let type_mods = self.opt_type_modifiers()?
+            .unwrap_or_else(Vec::new);
+        Ok(Some(SystemType::Numeric(type_mods)))
     }
 
     fn opt_type_modifiers(&mut self) -> OptResult<Vec<AstNode>> {
@@ -234,7 +234,9 @@ impl<'src> Parser<'src> {
 
     fn a_expr(&mut self) -> OptResult<AstNode> {
 
-        todo!()
+        // TODO
+        self.buffer.consume_eq(Plus)?;
+        Ok(Some(Literal(NullLiteral)))
     }
 
     /// Production: `'(' ICONST ')'`
@@ -251,7 +253,7 @@ impl<'src> Parser<'src> {
         Ok(Some(num))
     }
 
-    fn character(&mut self) -> OptResult<CharacterType> {
+    fn character(&mut self) -> OptResult<SystemType> {
 
         /*
         character :
@@ -273,7 +275,7 @@ impl<'src> Parser<'src> {
         };
 
         if char_type == Varchar {
-            return Ok(Some(CharacterType::Varchar(None)))
+            return Ok(Some(SystemType::Varchar(None)))
         }
 
         if char_type == National {
@@ -297,7 +299,7 @@ impl<'src> Parser<'src> {
         }).replace_eof(Ok(None))?;
 
         let char_type = if varying.is_some() {
-            CharacterType::Varchar(None)
+            SystemType::Varchar(None)
         }
         else {
             Bpchar(None)
@@ -479,7 +481,7 @@ impl<'src> Parser<'src> {
     /// * `USCONST` as `StringLiteral`
     /// * `BCONST` as `BitStringLiteral`
     /// * `XCONST` as `BitStringLiteral`
-    fn string(&mut self) -> OptResult<AstNode> {
+    fn string(&mut self) -> OptResult<AstLiteral> {
 
         let StringParserResult { result, warning } = StringParser(self).parse();
 
@@ -564,8 +566,9 @@ fn uescape_escape(source: &[u8]) -> Option<u8> {
 
 #[cfg(test)]
 mod tests {
+    use super::AstLiteral::StringLiteral;
+    use super::SystemType::{Bool, Bpchar, Float4, Float8, Int2, Int4, Int8};
     use super::*;
-    use crate::parser::AstNode::StringLiteral;
     use postgres_basics::guc::BackslashQuote;
 
     const DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding, ParseMode::Default);
@@ -598,12 +601,12 @@ mod tests {
 
         // TODO: (DECIMAL | DEC | NUMERIC) opt_type_modifiers
     }
-    
+
     #[test] #[ignore]
     fn test_opt_type_modifiers() {
         todo!()
     }
-    
+
     #[test] #[ignore]
     fn test_expr_list() {
         todo!()
@@ -620,11 +623,11 @@ mod tests {
         let actual = parser.i32_literal_paren().unwrap().unwrap();
         assert_eq!(123, actual);
     }
-    
+
     #[test]
     fn test_character() {
-        const EXPECTED_VARCHAR: OptResult<CharacterType> = Ok(Some(CharacterType::Varchar(None)));
-        const EXPECTED_BPCHAR: OptResult<CharacterType> = Ok(Some(Bpchar(None)));
+        const EXPECTED_VARCHAR: OptResult<SystemType> = Ok(Some(SystemType::Varchar(None)));
+        const EXPECTED_BPCHAR: OptResult<SystemType> = Ok(Some(Bpchar(None)));
 
         let sources = &[
             (EXPECTED_VARCHAR, "varchar"),
@@ -685,7 +688,7 @@ mod tests {
 
         assert_eq!(expected, actual.as_slice());
     }
-    
+
     #[test]
     fn test_role_id() {
 
@@ -715,7 +718,7 @@ mod tests {
         let actual = parser.role_id().unwrap_err().unwrap();
         assert_eq!(ForbiddenRoleSpec("SESSION_USER"), actual);
     }
-    
+
     #[test]
     fn test_role_spec() {
         let source = b"public CuRrEnT_rOlE CURRENT_USER session_user coalesce xxyyzz";
@@ -742,7 +745,7 @@ mod tests {
         let actual = parser.role_spec().unwrap_err().unwrap();
         assert_eq!(ReservedRoleSpec("none"), actual);
     }
-    
+
     #[test]
     fn test_col_id() {
         let source = b"cascaded xxyyzz coalesce";
@@ -768,7 +771,7 @@ mod tests {
         let actual = parser.type_function_name().unwrap().unwrap();
         assert_eq!("collation", actual);
     }
-    
+
     #[test]
     fn test_non_reserved_word() {
         let source = b"breadth xxyyzz boolean authorization";
@@ -840,15 +843,14 @@ mod tests {
 }
 
 use self::{
-    ast_node::{
-        CharacterType::Bpchar,
-        NumericType::*,
-    },
     error::ParserErrorKind::*,
     ident_parser::IdentifierParser,
     result::{OptionalResult, RequiredResult},
     string_parser::{StringParser, StringParserResult},
-    token_buffer::{TokenBuffer, TokenConsumer}
+    token_buffer::{TokenBuffer, TokenConsumer},
+    AstLiteral::NullLiteral,
+    AstNode::Literal,
+    SystemType::{Bool, Bpchar, Float4, Float8, Int2, Int4, Int8},
 };
 use crate::lexer::{
     ColumnNameKeyword::{

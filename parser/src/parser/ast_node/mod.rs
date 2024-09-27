@@ -11,36 +11,25 @@ pub enum RoleSpec {
     Name(Cow<'static, str>),
 }
 
-// If limited, the maximum is 10MB == 10,485,760
-// see https://www.postgresql.org/docs/current/datatype-character.html
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum CharacterType {
+#[derive(Debug, Clone, PartialEq)]
+pub enum SystemType {
+    // Character types:
+    // If limited, the maximum is 10MB == 10,485,760
+    // see https://www.postgresql.org/docs/current/datatype-character.html
     Varchar(Option<u32>),
     Bpchar(Option<u32>),
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum NumericType {
+    // Numeric types:
     Bool,
     Int2,
     Int4,
     Int8,
     Float4,
     Float8,
-    // Needs to distinguish between not having anything, or an empty list.
-    // This will be checked at a later phase.
-    // E.g.: `NUMERIC` vs `NUMERIC()` (the latter is invalid)
-    Numeric(Option<Vec<AstNode>>),
+    Numeric(Vec<AstNode>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum SystemType {
-    Character(CharacterType),
-    Numeric(NumericType),
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum AstNode {
+pub enum AstLiteral {
     StringLiteral(String),
     BitStringLiteral(BitBox),
     IntegerLiteral(i32),
@@ -48,6 +37,13 @@ pub enum AstNode {
     NumericLiteral(String), // TODO: Replace with some kind of BigDecimal
     BooleanLiteral(bool),
     NullLiteral,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum AstNode {
+    Literal(AstLiteral),
+    SystemType(SystemType),
+    TypeCast(/* ??? */)
 }
 
 use bitvec::boxed::BitBox;
