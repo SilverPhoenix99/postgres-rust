@@ -36,15 +36,11 @@ err_codes_outputs = [
 CLEAN.push(*err_codes_outputs)
 
 err_codes_outputs.each do |output|
-  file output => [err_codes_input, 'gen-errcodes.rb']
+  file output => [err_codes_input, 'gen-errcodes.rb'] do
+    require_relative 'gen-errcodes.rb'
+    ErrCodesGenerator.run!(err_codes_input, err_codes_root)
+  end
 end
 
-file err_codes_input => :build_err_codes
-file 'gen-errcodes.rb' => :build_err_codes
-
-task :build_err_codes do
-  require_relative 'gen-errcodes.rb'
-  ErrCodesGenerator.run!(err_codes_input, err_codes_root)
-end
-
+task build_err_codes: err_codes_outputs
 task build: :build_err_codes
