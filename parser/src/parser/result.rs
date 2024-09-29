@@ -23,14 +23,14 @@ where
     fn no_match(&self) -> bool;
 
     /// Maps an optional production into a required one,
-    /// by converting No Match (`Ok(Some)`) and Eof (`Err(None)`)
+    /// by converting No Match (`Ok(None)`) and Eof (`Err(None)`)
     /// into a Syntax error.
     ///
     /// #### Warning:
     /// This method is lossy.
     /// After converting to a "Required" result,
     /// it won't be possible to distinguish between
-    /// No Match (`Ok(Some)`) and Eof (`Err(None)`).
+    /// No Match (`Ok(None)`) and Eof (`Err(None)`).
     #[inline(always)]
     fn required(self) -> ReqResult<T, E> {
         self.replace_none(Err(Some(E::default())))

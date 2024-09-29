@@ -16,10 +16,12 @@ pub use self::{
         ClosePortalStmt,
         DeallocateStmt,
         DiscardStmt,
+        IsolationLevel,
         NumericSpec,
         ReassignOwnedStmt,
         RoleSpec,
         SystemType,
+        TransactionMode,
         UnlistenStmt,
         VariableShowStmt,
     },
@@ -99,6 +101,14 @@ impl<'src> Parser<'src> {
         todo!()
     }
 
+    fn toplevel_stmt(&mut self) -> OptResult<AstNode> {
+
+        if let Some(node) = self.stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.begin_stmt()? { Ok(Some(node.into())) }
+        else if let Some(node) = self.end_stmt()? { Ok(Some(node.into())) }
+        else { Ok(None) }
+    }
+
     fn stmt(&mut self) -> OptResult<AstNode> {
         use UnreservedKeyword::Checkpoint;
 
@@ -106,11 +116,14 @@ impl<'src> Parser<'src> {
             return Ok(Some(AstNode::CheckPoint))
         }
 
-        if let Some(node) = self.alter_stmt()? { Ok(Some(node)) }
+        if let Some(node) = self.abort_stmt()? { Ok(Some(node.into())) }
+        else if let Some(node) = self.alter_stmt()? { Ok(Some(node)) }
         else if let Some(node) = self.analyze_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.call_stmt()? { Ok(Some(node)) }
         else if let Some(node) = self.close_stmt()? { Ok(Some(node.into())) }
         else if let Some(node) = self.cluster_stmt()? { Ok(Some(node)) }
         else if let Some(node) = self.comment_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.commit_stmt()? { Ok(Some(node.into())) }
         else if let Some(node) = self.copy_stmt()? { Ok(Some(node)) }
         else if let Some(node) = self.deallocate_stmt()? { Ok(Some(node.into())) }
         else if let Some(node) = self.discard_stmt()? { Ok(Some(node.into())) }
@@ -123,16 +136,153 @@ impl<'src> Parser<'src> {
         else if let Some(node) = self.load_stmt()? { Ok(Some(LoadStmt(node))) }
         else if let Some(node) = self.lock_stmt()? { Ok(Some(node)) }
         else if let Some(node) = self.move_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.notify_stmt()? { Ok(Some(node.into())) }
         else if let Some(node) = self.prepare_stmt()? { Ok(Some(node)) }
         else if let Some(node) = self.reassign_owner_stmt()? { Ok(Some(node.into())) }
         else if let Some(node) = self.reindex_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.release_savepoint_stmt()? { Ok(Some(node.into())) }
         else if let Some(node) = self.revoke_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.rollback_stmt()? { Ok(Some(node.into())) }
+        else if let Some(node) = self.savepoint_stmt()? { Ok(Some(node.into())) }
         else if let Some(node) = self.security_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.set_stmt()? { Ok(Some(node)) }
         else if let Some(node) = self.show_stmt()? { Ok(Some(node.into())) }
+        else if let Some(node) = self.start_transaction_stmt()? { Ok(Some(node.into())) }
         else if let Some(node) = self.truncate_stmt()? { Ok(Some(node)) }
         else if let Some(node) = self.unlisten_stmt()? { Ok(Some(node.into())) }
         else if let Some(node) = self.vacuum_stmt()? { Ok(Some(node)) }
         else { Ok(None) }
+    }
+
+    fn opt_transaction(&mut self) -> ReqResult<()> {
+        use UnreservedKeyword::{Transaction, Work};
+
+        // Skips over WORK | TRANSACTION
+        self.buffer.consume(|tok|
+            matches!(tok.keyword().and_then(KeywordDetails::unreserved), Some(Work | Transaction))
+        ).replace_eof(Ok(None))?;
+
+        Ok(())
+    }
+
+    fn opt_transaction_chain(&mut self) -> ReqResult<bool> {
+        use ReservedKeyword::And;
+        use UnreservedKeyword::{Chain, No};
+
+        if self.buffer.consume_kw_eq(Reserved(And)).replace_eof(Ok(None))?.is_none() {
+            return Ok(false)
+        }
+
+        let result = self.buffer.consume_kw_eq(Unreserved(No)).replace_eof(Ok(None))?.is_none();
+
+        self.buffer.consume_kw_eq(Unreserved(Chain)).required()?;
+
+        Ok(result)
+    }
+
+    /// Post-condition: if `Ok(Some(_))`, then Vec is **Not** empty
+    /// Alias: `transaction_mode_list_or_empty`
+    fn opt_transaction_mode_list(&mut self) -> OptResult<Vec<TransactionMode>> {
+
+        let mut elements = match self.transaction_mode()? {
+            None => return Ok(None),
+            Some(element) => vec![element],
+        };
+
+        loop {
+            let comma = match self.buffer.consume_eq(Comma) {
+                Ok(comma) => comma.is_some(),
+                Err(None) => break,
+                Err(Some(err)) => return Err(Some(err)),
+            };
+
+            match self.transaction_mode().replace_eof(Ok(None))? {
+                Some(element) => elements.push(element),
+                None => {
+                    if comma { return Err(Some(ParserErrorKind::default())) }
+                    break
+                },
+            }
+        }
+
+        Ok(Some(elements))
+    }
+
+    fn transaction_mode(&mut self) -> OptResult<TransactionMode> {
+        use ReservedKeyword::{Deferrable, Not, Only};
+        use UnreservedKeyword::{Isolation, Level, Read, Write};
+
+        let result = self.buffer.consume(|tok|
+            match tok.keyword().map(KeywordDetails::keyword) {
+                kw @ Some(Reserved(Deferrable | Not) | Unreserved(Isolation | Read)) => kw,
+                _ => None
+            }
+        )?;
+
+        let Some(result) = result else { return Ok(None) };
+
+        match result {
+            Reserved(Deferrable) => Ok(Some(TransactionMode::Deferrable)),
+            Reserved(Not) => {
+                self.buffer.consume_kw_eq(Reserved(Deferrable)).required()?;
+                Ok(Some(TransactionMode::NotDeferrable))
+            },
+            Unreserved(Isolation) => {
+                self.buffer.consume_kw_eq(Unreserved(Level)).required()?;
+                let isolation_level = self.isolation_level()?;
+                Ok(Some(TransactionMode::IsolationLevel(isolation_level)))
+            },
+            Unreserved(Read) => {
+                let result = self.buffer.consume(|tok|
+                    match tok.keyword().map(KeywordDetails::keyword) {
+                        kw @ Some(Reserved(Only) | Unreserved(Write)) => kw,
+                        _ => None
+                    }
+                ).required()?;
+
+                match result {
+                    Reserved(Only) => Ok(Some(TransactionMode::ReadOnly)),
+                    Unreserved(Write) => Ok(Some(TransactionMode::ReadWrite)),
+                    _ => unreachable!(),
+                }
+            },
+            _ => Ok(None)
+        }
+    }
+
+    /// Alias: `iso_level`
+    fn isolation_level(&mut self) -> ReqResult<IsolationLevel> {
+        use UnreservedKeyword::{Committed, Read, Repeatable, Serializable, Uncommitted};
+
+        let result = self.buffer.consume(|tok|
+            match tok.keyword().map(KeywordDetails::keyword) {
+                Some(Unreserved(kw @ (Read | Repeatable | Serializable))) => Some(kw),
+                _ => None
+            }
+        ).required()?;
+
+        match result {
+            Serializable => Ok(IsolationLevel::Serializable),
+            Repeatable => {
+                self.buffer.consume_kw_eq(Unreserved(Read)).required()?;
+                Ok(IsolationLevel::RepeatableRead)
+            },
+            Read => {
+                let result = self.buffer.consume(|tok|
+                    match tok.keyword().map(KeywordDetails::keyword) {
+                        Some(Unreserved(kw @ (Committed | Uncommitted))) => Some(kw),
+                        _ => None
+                    }
+                ).required()?;
+
+                match result {
+                    Committed => Ok(IsolationLevel::ReadCommitted),
+                    Uncommitted => Ok(IsolationLevel::ReadUncommitted),
+                    _ => unreachable!(),
+                }
+            },
+            _ => unreachable!(),
+        }
     }
 
     fn var_name(&mut self) -> ReqResult<Vec<Cow<'static, str>>> {
@@ -647,17 +797,44 @@ mod tests {
     pub(in crate::parser) const DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding, ParseMode::Default);
 
     #[test]
+    fn test_toplevel_stmt() {
+        let sources = [
+            // TODO: begin
+            "start transaction", // stmt
+            "end transaction",
+        ];
+
+        for source in sources {
+            let mut parser = Parser::new(source.as_bytes(), DEFAULT_CONFIG);
+            let actual = parser.toplevel_stmt();
+
+            // This only quickly tests that statement types aren't missing.
+            // More in-depth testing is within each statement's module.
+            assert_matches!(actual, Ok(Some(_)),
+                r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
+            )
+        }
+    }
+
+    #[test]
     fn test_stmt() {
-        let sources = &[
-            // TODO: alter, analyze, cluster, comment, copy, do, drop, explain, fetch, import, lock, move, prepare,
-            //       reindex, revoke, security, truncate, vacuum
+        let sources = [
+            // TODO: alter, analyze, call, cluster, comment, copy, do, drop, explain, fetch, import, lock, move,
+            //       prepare, reindex, revoke, security, set, truncate, vacuum
+            "abort transaction",
             "close all",
+            "commit and no chain",
             "deallocate all",
             "discard all",
             "listen ident",
             "load 'test string'",
+            "notify test_ident, 'test-payload'",
             "reassign owned by public, test_role to target_role",
+            "release savepoint test_ident",
+            "rollback to test_ident",
+            "savepoint test_ident",
             "show all",
+            "start transaction read only, read write deferrable",
             "unlisten *",
         ];
 
@@ -671,9 +848,116 @@ mod tests {
                 r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
             )
         }
-        
     }
-    
+
+    #[test]
+    fn test_opt_transaction() {
+        let mut parser = Parser::new(b"transaction work", DEFAULT_CONFIG);
+        assert_eq!(Ok(()), parser.opt_transaction());
+        assert_eq!(Ok(()), parser.opt_transaction());
+    }
+
+    #[test]
+    fn test_opt_transaction_chain() {
+        let mut parser = Parser::new(b"", DEFAULT_CONFIG);
+        assert_eq!(Ok(false), parser.opt_transaction_chain());
+
+        let mut parser = Parser::new(b"and no chain", DEFAULT_CONFIG);
+        assert_eq!(Ok(false), parser.opt_transaction_chain());
+
+        let mut parser = Parser::new(b"and chain", DEFAULT_CONFIG);
+        assert_eq!(Ok(true), parser.opt_transaction_chain());
+    }
+
+    #[test]
+    fn test_opt_transaction_mode_list() {
+        let mut parser = Parser::new(b"no_match", DEFAULT_CONFIG);
+        assert_eq!(Ok(None), parser.opt_transaction_mode_list());
+
+        let mut parser = Parser::new(
+            b"read only , read write isolation level read committed",
+            DEFAULT_CONFIG
+        );
+
+        let expected = vec![
+            TransactionMode::ReadOnly,
+            TransactionMode::ReadWrite,
+            TransactionMode::IsolationLevel(IsolationLevel::ReadCommitted),
+        ];
+
+        assert_eq!(Ok(Some(expected)), parser.opt_transaction_mode_list());
+    }
+
+    #[test]
+    fn test_transaction_mode() {
+
+        let mut parser = Parser::new(
+            b"\
+                read only \
+                read write \
+                deferrable \
+                not deferrable \
+                isolation level read committed \
+                isolation level read uncommitted \
+                isolation level repeatable read \
+                isolation level serializable\
+            ",
+            DEFAULT_CONFIG
+        );
+
+        let expected = [
+            TransactionMode::ReadOnly,
+            TransactionMode::ReadWrite,
+            TransactionMode::Deferrable,
+            TransactionMode::NotDeferrable,
+            TransactionMode::IsolationLevel(IsolationLevel::ReadCommitted),
+            TransactionMode::IsolationLevel(IsolationLevel::ReadUncommitted),
+            TransactionMode::IsolationLevel(IsolationLevel::RepeatableRead),
+            TransactionMode::IsolationLevel(IsolationLevel::Serializable),
+        ];
+
+        for expected_mode in expected {
+            assert_eq!(Ok(Some(expected_mode)), parser.transaction_mode());
+        }
+    }
+
+    #[test]
+    fn test_isolation_level() {
+
+        let mut parser = Parser::new(
+            b"\
+                read committed \
+                read uncommitted \
+                repeatable read \
+                serializable\
+            ",
+            DEFAULT_CONFIG
+        );
+
+        let expected = [
+            IsolationLevel::ReadCommitted,
+            IsolationLevel::ReadUncommitted,
+            IsolationLevel::RepeatableRead,
+            IsolationLevel::Serializable,
+        ];
+
+        for expected_mode in expected {
+            assert_eq!(Ok(expected_mode), parser.isolation_level());
+        }
+    }
+
+    #[test]
+    fn test_var_name() {
+        let mut parser = Parser::new(b"test.qualified.name", DEFAULT_CONFIG);
+        let expected = vec![
+            "test".into(),
+            "qualified".into(),
+            "name".into()
+        ];
+
+        assert_eq!(Ok(expected), parser.var_name());
+    }
+
     #[test]
     fn test_numeric() {
 
@@ -730,7 +1014,7 @@ mod tests {
         const EXPECTED_VARCHAR: OptResult<CharacterSystemType> = Ok(Some(CharacterSystemType::Varchar));
         const EXPECTED_BPCHAR: OptResult<CharacterSystemType> = Ok(Some(CharacterSystemType::Bpchar));
 
-        let sources = &[
+        let sources = [
             (EXPECTED_VARCHAR, "varchar"),
             (EXPECTED_VARCHAR, "char varying"),
             (EXPECTED_VARCHAR, "character varying"),
@@ -749,7 +1033,7 @@ mod tests {
             let actual = parser.character();
             assert_eq!(
                 expected,
-                &actual,
+                actual,
                 r"expected {expected:?} for source {source:?} but actually got {actual:?}",
             );
         }
@@ -944,13 +1228,14 @@ mod tests {
 }
 
 use self::{
+    ast_node::CharacterSystemType,
     error::ParserErrorKind::*,
     ident_parser::IdentifierParser,
     result::{OptionalResult, RequiredResult},
     string_parser::{StringParser, StringParserResult},
     token_buffer::{TokenBuffer, TokenConsumer},
     AstLiteral::NullLiteral,
-    AstNode::Literal,
+    AstNode::{ListenStmt, Literal, LoadStmt},
     SystemType::{Bool, Float4, Float8, Int2, Int4, Int8},
 };
 use crate::lexer::Keyword::{ColumnName, Reserved, Unreserved};
@@ -959,15 +1244,10 @@ use crate::lexer::{
     KeywordDetails,
     Lexer,
     ReservedKeyword,
-    TokenKind
-    ,
+    TokenKind,
     UnreservedKeyword
 };
-use crate::parser::ast_node::CharacterSystemType;
-use crate::parser::AstNode::{ListenStmt, LoadStmt};
-use postgres_basics::{
-    ascii::{is_hex_digit, is_whitespace},
-    Located,
-};
+use postgres_basics::ascii::{is_hex_digit, is_whitespace};
+use postgres_basics::Located;
 use std::borrow::Cow;
 use TokenKind::Comma;
