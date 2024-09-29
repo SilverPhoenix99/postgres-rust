@@ -7,14 +7,21 @@ mod token_buffer;
 mod result;
 mod parse_report;
 mod warning;
+mod stmt_parsers;
 
 pub use self::{
     ast_node::{
         AstLiteral,
         AstNode,
+        ClosePortalStmt,
+        DeallocateStmt,
+        DiscardStmt,
         NumericSpec,
+        ReassignOwnedStmt,
         RoleSpec,
         SystemType,
+        UnlistenStmt,
+        VariableShowStmt,
     },
     config::{ParseMode, ParserConfig},
     error::ParserErrorKind,
@@ -92,6 +99,50 @@ impl<'src> Parser<'src> {
         todo!()
     }
 
+    fn stmt(&mut self) -> OptResult<AstNode> {
+        use UnreservedKeyword::Checkpoint;
+
+        if self.buffer.consume_kw_eq(Unreserved(Checkpoint))?.is_some() {
+            return Ok(Some(AstNode::CheckPoint))
+        }
+
+        if let Some(node) = self.alter_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.analyze_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.close_stmt()? { Ok(Some(node.into())) }
+        else if let Some(node) = self.cluster_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.comment_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.copy_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.deallocate_stmt()? { Ok(Some(node.into())) }
+        else if let Some(node) = self.discard_stmt()? { Ok(Some(node.into())) }
+        else if let Some(node) = self.do_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.drop_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.explain_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.fetch_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.import_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.listen_stmt()? { Ok(Some(ListenStmt(node))) }
+        else if let Some(node) = self.load_stmt()? { Ok(Some(LoadStmt(node))) }
+        else if let Some(node) = self.lock_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.move_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.prepare_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.reassign_owner_stmt()? { Ok(Some(node.into())) }
+        else if let Some(node) = self.reindex_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.revoke_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.security_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.show_stmt()? { Ok(Some(node.into())) }
+        else if let Some(node) = self.truncate_stmt()? { Ok(Some(node)) }
+        else if let Some(node) = self.unlisten_stmt()? { Ok(Some(node.into())) }
+        else if let Some(node) = self.vacuum_stmt()? { Ok(Some(node)) }
+        else { Ok(None) }
+    }
+
+    fn var_name(&mut self) -> ReqResult<Vec<Cow<'static, str>>> {
+
+        list_production!(
+            gather { self.col_id() }
+            delim { self.buffer.consume_eq(TokenKind::Dot) }
+        ).required()
+    }
+
     /// Alias: `AexprConst`
     fn a_expr_const(&mut self) -> OptResult<()> {
 
@@ -147,6 +198,7 @@ impl<'src> Parser<'src> {
         if bit.is_some() {
             let varying = self.buffer.consume_kw_eq(Unreserved(UnreservedKeyword::Varying))
                 .replace_eof(Ok(None))?;
+            // TODO: self.expr_list()
         }
 
         todo!()
@@ -155,6 +207,8 @@ impl<'src> Parser<'src> {
     /// Alias: `Numeric`<p/>
     /// Inline: `opt_float`
     fn numeric(&mut self) -> OptResult<SystemType> {
+        use ColumnNameKeyword::{Bigint, Boolean, Dec, Decimal, Float, Int, Integer, Numeric, Precision, Real, Smallint};
+        use UnreservedKeyword::Double;
 
         /*
         Numeric :
@@ -223,6 +277,7 @@ impl<'src> Parser<'src> {
     }
 
     fn opt_type_modifiers(&mut self) -> OptResult<Vec<AstNode>> {
+        use TokenKind::{CloseParenthesis, OpenParenthesis};
 
         // '(' expr_list ')'
 
@@ -232,7 +287,7 @@ impl<'src> Parser<'src> {
 
         let exprs = self.expr_list()?;
 
-        self.buffer.consume_eq(OpenParenthesis).required()?;
+        self.buffer.consume_eq(CloseParenthesis).required()?;
 
         Ok(Some(exprs))
     }
@@ -249,6 +304,7 @@ impl<'src> Parser<'src> {
     }
 
     fn a_expr(&mut self) -> OptResult<AstNode> {
+        use TokenKind::Plus;
 
         // TODO
         self.buffer.consume_eq(Plus)?;
@@ -257,6 +313,7 @@ impl<'src> Parser<'src> {
 
     /// Production: `'(' ICONST ')'`
     fn i32_literal_paren(&mut self) -> OptResult<i32> {
+        use TokenKind::{CloseParenthesis, OpenParenthesis};
 
         if self.buffer.consume_eq(OpenParenthesis)?.is_none() {
             return Ok(None)
@@ -270,6 +327,7 @@ impl<'src> Parser<'src> {
     }
 
     fn character(&mut self) -> OptResult<CharacterSystemType> {
+        use ColumnNameKeyword::{Char, Character, National, Nchar, Varchar};
 
         /*
         character :
@@ -321,6 +379,7 @@ impl<'src> Parser<'src> {
 
     /// Alias: `SignedIconst`
     fn signed_i32_literal(&mut self) -> OptResult<i32> {
+        use TokenKind::{Minus, Plus};
 
         // ('+' | '-')? ICONST
 
@@ -350,6 +409,7 @@ impl<'src> Parser<'src> {
 
     /// Alias: `ICONST`
     fn i32_literal(&mut self) -> OptResult<i32> {
+        use TokenKind::NumberLiteral;
 
         let loc = self.buffer.current_location();
         let source = self.buffer.source();
@@ -380,16 +440,17 @@ impl<'src> Parser<'src> {
     /// Alias: `RoleId`
     #[inline]
     fn role_id(&mut self) -> OptResult<Cow<'static, str>> {
+        use RoleSpec::*;
 
         // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
         match self.role_spec()? {
             None => Ok(None),
-            Some(RoleSpec::Name(role)) => Ok(Some(role)),
-            Some(RoleSpec::Public) => Err(Some(ReservedRoleSpec("public"))),
-            Some(RoleSpec::CurrentRole) => Err(Some(ForbiddenRoleSpec("CURRENT_ROLE"))),
-            Some(RoleSpec::CurrentUser) => Err(Some(ForbiddenRoleSpec("CURRENT_USER"))),
-            Some(RoleSpec::SessionUser) => Err(Some(ForbiddenRoleSpec("SESSION_USER"))),
+            Some(Name(role)) => Ok(Some(role)),
+            Some(Public) => Err(Some(ReservedRoleSpec("public"))),
+            Some(CurrentRole) => Err(Some(ForbiddenRoleSpec("CURRENT_ROLE"))),
+            Some(CurrentUser) => Err(Some(ForbiddenRoleSpec("CURRENT_USER"))),
+            Some(SessionUser) => Err(Some(ForbiddenRoleSpec("SESSION_USER"))),
         }
     }
 
@@ -416,6 +477,8 @@ impl<'src> Parser<'src> {
         }
 
         self.buffer.consume(|tok| {
+            use ColumnNameKeyword::NoneKw;
+            use ReservedKeyword::{CurrentRole, CurrentUser, SessionUser};
 
             let Some(kw) = tok.keyword() else {
                 return Ok(None)
@@ -512,6 +575,7 @@ impl<'src> Parser<'src> {
 
     /// Production: `UESCAPE SCONST`
     fn uescape(&mut self) -> Result<u8, ParserErrorKind> {
+        use UnreservedKeyword::Uescape;
 
         // Try to consume UESCAPE + the string following it.
         // see [base_yylex](https://github.com/postgres/postgres/blob/1c61fd8b527954f0ec522e5e60a11ce82628b681/src/backend/parser/parser.c#L256)
@@ -580,8 +644,36 @@ mod tests {
     use super::*;
     use postgres_basics::guc::BackslashQuote;
 
-    const DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding, ParseMode::Default);
+    pub(in crate::parser) const DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding, ParseMode::Default);
 
+    #[test]
+    fn test_stmt() {
+        let sources = &[
+            // TODO: alter, analyze, cluster, comment, copy, do, drop, explain, fetch, import, lock, move, prepare,
+            //       reindex, revoke, security, truncate, vacuum
+            "close all",
+            "deallocate all",
+            "discard all",
+            "listen ident",
+            "load 'test string'",
+            "reassign owned by public, test_role to target_role",
+            "show all",
+            "unlisten *",
+        ];
+
+        for source in sources {
+            let mut parser = Parser::new(source.as_bytes(), DEFAULT_CONFIG);
+            let actual = parser.stmt();
+
+            // This only quickly tests that statement types aren't missing.
+            // More in-depth testing is within each statement's module.
+            assert_matches!(actual, Ok(Some(_)),
+                r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
+            )
+        }
+        
+    }
+    
     #[test]
     fn test_numeric() {
 
@@ -861,38 +953,21 @@ use self::{
     AstNode::Literal,
     SystemType::{Bool, Float4, Float8, Int2, Int4, Int8},
 };
+use crate::lexer::Keyword::{ColumnName, Reserved, Unreserved};
 use crate::lexer::{
     ColumnNameKeyword,
-    ColumnNameKeyword::{
-        Bigint,
-        Boolean,
-        Char,
-        Character,
-        Dec,
-        Decimal,
-        Float,
-        Int,
-        Integer,
-        National,
-        Nchar,
-        NoneKw,
-        Numeric,
-        Precision,
-        Real,
-        Smallint,
-        Varchar,
-    },
-    Keyword::{ColumnName, Reserved, Unreserved},
     KeywordDetails,
     Lexer,
-    ReservedKeyword::{CurrentRole, CurrentUser, SessionUser},
-    TokenKind::{CloseParenthesis, Comma, Minus, NumberLiteral, OpenParenthesis, Plus},
-    UnreservedKeyword,
-    UnreservedKeyword::{Double, Uescape}
+    ReservedKeyword,
+    TokenKind
+    ,
+    UnreservedKeyword
 };
 use crate::parser::ast_node::CharacterSystemType;
+use crate::parser::AstNode::{ListenStmt, LoadStmt};
 use postgres_basics::{
     ascii::{is_hex_digit, is_whitespace},
     Located,
 };
 use std::borrow::Cow;
+use TokenKind::Comma;
