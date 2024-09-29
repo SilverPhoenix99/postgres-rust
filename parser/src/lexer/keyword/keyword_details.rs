@@ -88,7 +88,7 @@ mod tests {
         let kw = KEYWORDS.get(b"between").unwrap();
         assert_eq!(None, kw.unreserved());
     }
-    
+
     #[test]
     fn test_col_name() {
         let kw = KEYWORDS.get(b"between").unwrap();
@@ -97,7 +97,7 @@ mod tests {
         let kw = KEYWORDS.get(b"authorization").unwrap();
         assert_eq!(None, kw.col_name());
     }
-    
+
     #[test]
     fn test_type_func_name() {
         let kw = KEYWORDS.get(b"authorization").unwrap();
@@ -106,7 +106,7 @@ mod tests {
         let kw = KEYWORDS.get(b"analyze").unwrap();
         assert_eq!(None, kw.type_func_name());
     }
-    
+
     #[test]
     fn test_reserved() {
         let kw = KEYWORDS.get(b"analyze").unwrap();
