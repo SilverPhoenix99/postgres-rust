@@ -25,6 +25,7 @@ class KeywordsGenerator
     Parser
     Range
     Ref
+    Some
     Stdin
     Stdout
     String
