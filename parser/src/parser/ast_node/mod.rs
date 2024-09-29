@@ -106,6 +106,64 @@ pub enum UnlistenStmt {
     Name(Cow<'static, str>),
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum IsolationLevel {
+    ReadUncommitted,
+    ReadCommitted,
+    RepeatableRead,
+    Serializable,
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum TransactionMode {
+    IsolationLevel(IsolationLevel),
+    ReadOnly,
+    ReadWrite,
+    Deferrable,
+    NotDeferrable,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum TransactionStmt {
+    Begin(Vec<TransactionMode>),
+    /// Semantically identical to `BEGIN`.
+    Start(Vec<TransactionMode>),
+    Commit { chain: bool },
+    CommitPrepared(String),
+    Savepoint(Cow<'static, str>),
+    Release(Cow<'static, str>),
+    Prepare(String),
+    Rollback { chain: bool },
+    RollbackTo(Cow<'static, str>),
+    RollbackPrepared(String),
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct NotifyStmt {
+    condition_name: Cow<'static, str>,
+    payload: Option<String>
+}
+
+impl NotifyStmt {
+    #[inline(always)]
+    pub fn new(condition_name: Cow<'static, str>) -> Self {
+        Self { condition_name, payload: None }
+    }
+
+    #[inline(always)]
+    pub fn with_payload(condition_name: Cow<'static, str>, payload: String) -> Self {
+        Self { condition_name, payload: Some(payload) }
+    }
+
+    pub fn condition_name(&self) -> &Cow<'static, str> {
+        &self.condition_name
+    }
+
+    pub fn payload(&self) -> &Option<String> {
+        &self.payload
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum AstNode {
     Literal(AstLiteral),
@@ -120,6 +178,8 @@ pub enum AstNode {
     ReassignOwnedStmt(ReassignOwnedStmt),
     VariableShowStmt(VariableShowStmt),
     UnlistenStmt(UnlistenStmt),
+    TransactionStmt(TransactionStmt),
+    NotifyStmt(NotifyStmt),
 }
 
 impl From<AstLiteral> for AstNode {
@@ -167,6 +227,18 @@ impl From<VariableShowStmt> for AstNode {
 impl From<UnlistenStmt> for AstNode {
     fn from(value: UnlistenStmt) -> Self {
         Self::UnlistenStmt(value)
+    }
+}
+
+impl From<TransactionStmt> for AstNode {
+    fn from(value: TransactionStmt) -> Self {
+        Self::TransactionStmt(value)
+    }
+}
+
+impl From<NotifyStmt> for AstNode {
+    fn from(value: NotifyStmt) -> Self {
+        Self::NotifyStmt(value)
     }
 }
 
