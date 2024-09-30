@@ -229,6 +229,16 @@ impl AlterRoleStmt {
     pub fn options(&self) -> &Vec<AlterRoleOption> {
         &self.options
     }
+
+    #[inline(always)]
+    pub fn add(&self) -> bool {
+        self.action == AlterRoleAction::Add
+    }
+
+    #[inline(always)]
+    pub fn remove(&self) -> bool {
+        self.action == AlterRoleAction::Remove
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
