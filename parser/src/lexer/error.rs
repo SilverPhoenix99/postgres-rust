@@ -103,8 +103,8 @@ impl SqlReport for LexerError {
     }
 
     #[inline(always)]
-    fn fn_info(&self) -> FnInfo {
-        self.fn_info
+    fn fn_info(&self) -> &FnInfo {
+        &self.fn_info
     }
 
     fn detail(&self) -> Option<Cow<'static, str>> {
