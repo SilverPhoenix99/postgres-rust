@@ -20,6 +20,7 @@ pub use self::{
         ClosePortalStmt,
         DeallocateStmt,
         DiscardStmt,
+        EventTriggerState,
         IsolationLevel,
         NumericSpec,
         ReassignOwnedStmt,
@@ -333,10 +334,8 @@ impl<'src> Parser<'src> {
         use UnreservedKeyword::{Committed, Read, Repeatable, Serializable, Uncommitted};
 
         let result = self.buffer.consume(|tok|
-            match tok.keyword().map(KeywordDetails::keyword) {
-                Some(Unreserved(kw @ (Read | Repeatable | Serializable))) => Some(kw),
-                _ => None
-            }
+            tok.keyword().and_then(KeywordDetails::unreserved)
+                .filter(|kw| matches!(kw, Read | Repeatable | Serializable))
         ).required()?;
 
         match result {
@@ -347,10 +346,8 @@ impl<'src> Parser<'src> {
             },
             Read => {
                 let result = self.buffer.consume(|tok|
-                    match tok.keyword().map(KeywordDetails::keyword) {
-                        Some(Unreserved(kw @ (Committed | Uncommitted))) => Some(kw),
-                        _ => None
-                    }
+                    tok.keyword().and_then(KeywordDetails::unreserved)
+                        .filter(|kw| matches!(kw, Committed | Uncommitted))
                 ).required()?;
 
                 match result {
@@ -1317,6 +1314,7 @@ use self::{
     SystemType::{Bool, Float4, Float8, Int2, Int4, Int8},
 };
 use crate::lexer::Keyword::{ColumnName, Reserved, Unreserved};
+use crate::lexer::UnreservedKeyword::{Read, Repeatable, Serializable};
 use crate::lexer::{
     ColumnNameKeyword,
     KeywordDetails,
