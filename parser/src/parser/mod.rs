@@ -37,7 +37,7 @@ pub use self::{
 };
 
 macro_rules! list_production {
-    (gather { $production:expr } delim { $separator:expr }) => {
+    (gather $production:block delim $separator:block) => {
         (|| {
             let mut elements = match $production? {
                 None => return Ok(None),
