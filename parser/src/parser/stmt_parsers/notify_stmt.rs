@@ -11,9 +11,7 @@ impl Parser<'_> {
             return Ok(Some(NotifyStmt::new(condition_name)))
         }
 
-        let StringLiteral(payload) = self.string().required()? else {
-            return Err(Some(ParserErrorKind::default()))
-        };
+        let payload = self.string().required()?;
 
         Ok(Some(NotifyStmt::with_payload(condition_name, payload)))
     }
@@ -24,8 +22,7 @@ use crate::lexer::TokenKind::Comma;
 use crate::lexer::UnreservedKeyword::Notify;
 use crate::parser::ast_node::NotifyStmt;
 use crate::parser::result::OptionalResult;
-use crate::parser::{AstLiteral, OptResult, Parser, ParserErrorKind};
-use AstLiteral::StringLiteral;
+use crate::parser::{OptResult, Parser};
 
 #[cfg(test)]
 mod tests {

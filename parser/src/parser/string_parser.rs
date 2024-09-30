@@ -1,71 +1,12 @@
-pub struct StringParserResult {
-    pub result: OptResult<AstLiteral>,
-    pub warning: Option<Located<ExtendedStringWarning>>
-}
-
-impl StringParserResult {
-
-    #[inline(always)]
-    fn string_warn(string: String, warning: Located<ExtendedStringWarning>) -> Self {
-        let mut res = Self::string(string);
-        res.warning = Some(warning);
-        res
-    }
-
-    #[inline(always)]
-    fn string(string: String) -> Self {
-        Self {
-            result: Ok(Some(StringLiteral(string))),
-            warning: None
-        }
-    }
-
-    #[inline(always)]
-    fn err_warn(err: ParserErrorKind, warning: Located<ExtendedStringWarning>) -> Self {
-        let mut res = Self::err(err);
-        res.warning = Some(warning);
-        res
-    }
-
-    #[inline(always)]
-    fn err(err: ParserErrorKind) -> Self {
-        Self {
-            result: Err(Some(err)),
-            warning: None
-        }
-    }
-
-    #[inline(always)]
-    fn eof() -> Self {
-        Self {
-            result: Err(None),
-            warning: None
-        }
-    }
-
-    #[inline(always)]
-    fn no_match() -> Self {
-        Self {
-            result: Ok(None),
-            warning: None
-        }
-    }
-}
-
 pub(super) struct StringParser<'p, 'src>(
     pub &'p mut Parser<'src>,
 );
 
 impl<'p, 'src> StringParser<'p, 'src> {
 
-    pub fn parse(&mut self) -> StringParserResult {
+    pub fn parse(&mut self) -> OptResult<String> {
 
-        let (kind, loc) = match self.try_consume(false) {
-            Ok(Some(tok)) => tok,
-            Ok(None) => return StringParserResult::no_match(),
-            Err(None) => return StringParserResult::eof(),
-            Err(Some(err)) => return StringParserResult::err(err),
-        };
+        let Some((kind, loc)) = self.try_consume(false)? else { return Ok(None) };
 
         let slice = loc.slice(self.0.buffer.source());
         let slice = strip_delimiters(kind, slice);
@@ -74,8 +15,8 @@ impl<'p, 'src> StringParser<'p, 'src> {
             // Not concatenable, and no escapes to deal with.
 
             return match std::str::from_utf8(slice) {
-                Ok(string) => StringParserResult::string(string.into()),
-                Err(err) => StringParserResult::err(err.into()),
+                Ok(string) => Ok(Some(string.to_owned())),
+                Err(err) => Err(Some(err.into())),
             };
         }
 
@@ -111,60 +52,44 @@ impl<'p, 'src> StringParser<'p, 'src> {
         )
     }
 
-    fn decode_string(&mut self, kind: StringKind, slice: &[u8], loc: Location) -> StringParserResult {
+    fn decode_string(&mut self, kind: StringKind, slice: &[u8], loc: Location) -> OptResult<String> {
 
-        let (result, warning) = match kind {
+        let result = match kind {
             BasicString { .. } | NationalString => {
-                let result = BasicStringDecoder::new(slice, false)
+                BasicStringDecoder::new(slice, false)
                     .decode()
-                    .map(StringLiteral)
-                    .map_err(Utf8Error::into);
-                (result, None)
+                    .map_err(Utf8Error::into)
             },
             ExtendedString { .. } => {
                 let mut decoder = ExtendedStringDecoder::new(slice, self.0.config.backslash_quote());
                 let ExtendedStringResult { result, warning } = decoder.decode();
 
-                let result = match result {
-                    Ok(string) => Ok(StringLiteral(string)),
-                    Err(err) => Err(ParserErrorKind::ExtendedString(err)),
-                };
+                if let Some(warning) = warning {
+                    let warning = ParserWarning::NonstandardEscape(warning);
+                    self.0.warnings.push((warning, loc));
+                }
 
-                (result, warning)
+                result.map_err(ParserErrorKind::ExtendedString)
             },
             UnicodeString => {
 
-                let escape = match self.0.uescape() {
-                    Ok(escape) => escape,
-                    Err(err) => return StringParserResult::err(err),
-                };
+                let escape = self.0.uescape().map_err(Some)?;
 
-                let result = UnicodeStringDecoder::new(slice, false, escape)
+                UnicodeStringDecoder::new(slice, false, escape)
                     .decode()
-                    .map(StringLiteral)
-                    .map_err(ParserErrorKind::UnicodeString);
-
-                (result, None)
-            }
-            BinaryString | HexString => {
-                let result = BitStringDecoder::new(slice, kind == HexString)
-                    .decode()
-                    .map(BitStringLiteral)
-                    .map_err(BitStringError::into);
-
-                (result, None)
+                    .map_err(ParserErrorKind::UnicodeString)
             }
             DollarString => unreachable!("`$` strings don't have any escapes"),
         };
 
-        StringParserResult {
-            result: result.map(Some).map_err(Some),
-            warning: warning.map(|w| (w, loc)),
+        match result {
+            Ok(result) => Ok(Some(result)),
+            Err(err) => Err(Some(err)),
         }
     }
 }
 
-fn strip_delimiters(kind: StringKind, slice: &[u8]) -> &[u8] {
+pub(super) fn strip_delimiters(kind: StringKind, slice: &[u8]) -> &[u8] {
     let range = match kind {
         DollarString => {
             let delim_len = slice.iter()
@@ -184,7 +109,7 @@ fn strip_delimiters(kind: StringKind, slice: &[u8]) -> &[u8] {
             let delim_len = if slice[0] == b'\'' { 1 } else { 2 };
             delim_len..(slice.len() - 1)
         }
-        BinaryString | HexString | NationalString => 2..(slice.len() - 1),
+        NationalString => 2..(slice.len() - 1),
         UnicodeString => 3..(slice.len() - 1),
     };
 
@@ -203,7 +128,7 @@ mod tests {
         let mut string_parser = StringParser(&mut parser);
 
         let result = string_parser.parse();
-        assert_eq!(Ok(Some(StringLiteral("a basic string".into()))), result.result);
+        assert_eq!(Ok(Some("a basic string".into())), result);
     }
 
     #[test]
@@ -216,7 +141,7 @@ mod tests {
         let mut string_parser = StringParser(&mut parser);
 
         let result = string_parser.parse();
-        assert_eq!(Ok(Some(StringLiteral("a basic string that concatenates".into()))), result.result);
+        assert_eq!(Ok(Some("a basic string that concatenates".into())), result);
     }
 
     #[test]
@@ -225,7 +150,7 @@ mod tests {
         let mut string_parser = StringParser(&mut parser);
 
         let result = string_parser.parse();
-        assert_eq!(Ok(Some(StringLiteral("a $ string".into()))), result.result);
+        assert_eq!(Ok(Some("a $ string".into())), result);
     }
 
     #[test]
@@ -234,7 +159,7 @@ mod tests {
         let mut string_parser = StringParser(&mut parser);
 
         let result = string_parser.parse();
-        assert_eq!(Ok(Some(StringLiteral("an unicode string".into()))), result.result);
+        assert_eq!(Ok(Some("an unicode string".into())), result);
     }
 
     #[test]
@@ -243,7 +168,7 @@ mod tests {
         let mut string_parser = StringParser(&mut parser);
 
         let result = string_parser.parse();
-        assert_eq!(Ok(Some(StringLiteral("an extended string".into()))), result.result);
+        assert_eq!(Ok(Some("an extended string".into())), result);
     }
 
     fn new_parser(source: &[u8]) -> Parser<'_> {
@@ -253,7 +178,7 @@ mod tests {
 }
 
 use crate::lexer::{StringKind, StringKind::*};
-use crate::parser::{token_buffer::TokenConsumer, AstLiteral, AstLiteral::{BitStringLiteral, StringLiteral}, OptResult, Parser, ParserConfig, ParserErrorKind};
+use crate::parser::{token_buffer::TokenConsumer, OptResult, Parser, ParserErrorKind, ParserWarning};
 use crate::string_decoders::*;
 use postgres_basics::{Located, Location};
 use std::str::Utf8Error;

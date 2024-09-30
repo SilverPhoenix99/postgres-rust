@@ -9,10 +9,7 @@ impl Parser<'_> {
             Err(None) => return Ok(Some(TransactionStmt::Rollback { chain: false })),
             Err(Some(err)) => return Err(Some(err)),
             Ok(Some(_)) => {
-                let StringLiteral(string) = self.string().required()? else {
-                    return Err(Some(ParserErrorKind::default()))
-                };
-
+                let string = self.string().required()?;
                 return Ok(Some(TransactionStmt::RollbackPrepared(string)))
             }
             Ok(None) => {/* try the next match */}
@@ -45,7 +42,6 @@ use crate::lexer::ReservedKeyword::To;
 use crate::lexer::UnreservedKeyword::{Prepared, Rollback, Savepoint};
 use crate::parser::ast_node::TransactionStmt;
 use crate::parser::result::OptionalResult;
-use crate::parser::AstLiteral::StringLiteral;
 use crate::parser::{OptResult, Parser, ParserErrorKind};
 
 #[cfg(test)]

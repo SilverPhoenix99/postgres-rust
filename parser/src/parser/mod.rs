@@ -8,6 +8,7 @@ mod result;
 mod parse_report;
 mod warning;
 mod stmt_parsers;
+mod bit_string_parser;
 
 pub use self::{
     ast_node::{
@@ -772,18 +773,17 @@ impl<'src> Parser<'src> {
     /// Aliases:
     /// * `SCONST` as `StringLiteral`
     /// * `USCONST` as `StringLiteral`
+    #[inline(always)]
+    fn string(&mut self) -> OptResult<String> {
+        StringParser(self).parse()
+    }
+
+    /// Aliases:
     /// * `BCONST` as `BitStringLiteral`
     /// * `XCONST` as `BitStringLiteral`
-    fn string(&mut self) -> OptResult<AstLiteral> {
-
-        let StringParserResult { result, warning } = StringParser(self).parse();
-
-        if let Some((warning, loc)) = warning {
-            let warning = ParserWarning::NonstandardEscape(warning);
-            self.warnings.push((warning, loc));
-        }
-
-        result
+    #[inline(always)]
+    fn bit_string(&mut self) -> OptResult<BitBox> {
+        BitStringParser(self).parse()
     }
 
     /// Alias: `IDENT`
@@ -858,7 +858,6 @@ fn uescape_escape(source: &[u8]) -> Option<u8> {
 
 #[cfg(test)]
 mod tests {
-    use super::AstLiteral::StringLiteral;
     use super::SystemType::{Bool, Float4, Float8, Int2, Int4, Int8};
     use super::*;
     use postgres_basics::guc::BackslashQuote;
@@ -1272,7 +1271,7 @@ mod tests {
 
         let actual = parser.string().unwrap().unwrap();
 
-        assert_eq!(StringLiteral("test string".into()), actual);
+        assert_eq!("test string", actual.as_str());
     }
 
     #[test]
@@ -1298,10 +1297,11 @@ mod tests {
 
 use self::{
     ast_node::CharacterSystemType,
+    bit_string_parser::BitStringParser,
     error::ParserErrorKind::*,
     ident_parser::IdentifierParser,
     result::{OptionalResult, RequiredResult},
-    string_parser::{StringParser, StringParserResult},
+    string_parser::StringParser,
     token_buffer::{TokenBuffer, TokenConsumer},
     AstLiteral::NullLiteral,
     AstNode::{ListenStmt, Literal, LoadStmt},
@@ -1316,6 +1316,7 @@ use crate::lexer::{
     TokenKind,
     UnreservedKeyword
 };
+use bitvec::boxed::BitBox;
 use postgres_basics::ascii::{is_hex_digit, is_whitespace};
 use postgres_basics::Located;
 use std::borrow::Cow;
