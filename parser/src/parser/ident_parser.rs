@@ -65,7 +65,7 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::{ParseMode, Parser, ParserConfig};
+    use crate::parser::{Parser, ParserConfig};
     use postgres_basics::guc::BackslashQuote;
 
     #[test]
@@ -101,13 +101,7 @@ mod tests {
     }
 
     fn new_parser(source: &[u8]) -> Parser<'_> {
-
-        let config = ParserConfig::new(
-            true,
-            BackslashQuote::SafeEncoding,
-            ParseMode::Default
-        );
-
+        let config = ParserConfig::new(true, BackslashQuote::SafeEncoding);
         Parser::new(source, config)
     }
 }

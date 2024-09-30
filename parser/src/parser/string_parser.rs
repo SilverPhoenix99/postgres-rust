@@ -194,7 +194,7 @@ fn strip_delimiters(kind: StringKind, slice: &[u8]) -> &[u8] {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::{ParseMode, ParserConfig};
+    use crate::parser::ParserConfig;
     use postgres_basics::guc::BackslashQuote;
 
     #[test]
@@ -247,26 +247,13 @@ mod tests {
     }
 
     fn new_parser(source: &[u8]) -> Parser<'_> {
-
-        let config = ParserConfig::new(
-            true,
-            BackslashQuote::SafeEncoding,
-            ParseMode::Default
-        );
-
+        let config = ParserConfig::new(true, BackslashQuote::SafeEncoding);
         Parser::new(source, config)
     }
 }
 
 use crate::lexer::{StringKind, StringKind::*};
-use crate::parser::{
-    token_buffer::TokenConsumer,
-    AstLiteral,
-    AstLiteral::{BitStringLiteral, StringLiteral},
-    OptResult,
-    Parser,
-    ParserErrorKind,
-};
+use crate::parser::{token_buffer::TokenConsumer, AstLiteral, AstLiteral::{BitStringLiteral, StringLiteral}, OptResult, Parser, ParserConfig, ParserErrorKind};
 use crate::string_decoders::*;
 use postgres_basics::{Located, Location};
 use std::str::Utf8Error;
