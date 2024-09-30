@@ -1,4 +1,5 @@
 mod abort_stmt;
+mod alter_group_stmt;
 mod alter_stmt;
 mod analyze_stmt;
 mod begin_stmt;

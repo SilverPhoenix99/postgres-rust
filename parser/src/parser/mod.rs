@@ -12,6 +12,9 @@ mod bit_string_parser;
 
 pub use self::{
     ast_node::{
+        AlterRoleAction,
+        AlterRoleOption,
+        AlterRoleStmt,
         AstLiteral,
         AstNode,
         ClosePortalStmt,
@@ -65,25 +68,28 @@ pub struct ParserResult {
 pub struct Parser<'src> {
     buffer: TokenBuffer<'src>,
     config: ParserConfig,
+    /// All the warnings that have been collected while parsing.
     warnings: Vec<Located<ParserWarning>>,
+    /// Overrides the default error location.
+    /// Useful when lookahead is needed,
+    /// or when the error happens somewhere inside the token.
+    err_loc_override: Option<Location>,
 }
 
 impl<'src> Parser<'src> {
 
     pub fn new(source: &'src [u8], config: ParserConfig) -> Self {
         let lexer = Lexer::new(source, config.standard_conforming_strings());
-        Self {
-            buffer: TokenBuffer::new(lexer),
-            config,
-            warnings: Vec::new(),
-        }
+        Self::with_lexer(lexer, config)
     }
 
+    #[inline(always)]
     pub fn with_lexer(lexer: Lexer<'src>, config: ParserConfig) -> Self {
         Self {
             buffer: TokenBuffer::new(lexer),
             config,
             warnings: Vec::new(),
+            err_loc_override: None
         }
     }
 
@@ -93,7 +99,8 @@ impl<'src> Parser<'src> {
         let result = match self.stmtmulti() {
             Ok(stmts) => Ok(stmts),
             Err(err) => {
-                let loc = self.buffer.current_location();
+                let loc = self.err_loc_override.take()
+                    .unwrap_or_else(|| self.buffer.current_location());
                 Err((err, loc))
             }
         };
@@ -660,17 +667,17 @@ impl<'src> Parser<'src> {
     /// Alias: `RoleId`
     #[inline]
     fn role_id(&mut self) -> OptResult<Cow<'static, str>> {
-        use RoleSpec::*;
 
         // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
         match self.role_spec()? {
             None => Ok(None),
-            Some(Name(role)) => Ok(Some(role)),
-            Some(Public) => Err(Some(ReservedRoleSpec("public"))),
-            Some(CurrentRole) => Err(Some(ForbiddenRoleSpec("CURRENT_ROLE"))),
-            Some(CurrentUser) => Err(Some(ForbiddenRoleSpec("CURRENT_USER"))),
-            Some(SessionUser) => Err(Some(ForbiddenRoleSpec("SESSION_USER"))),
+            Some(role_spec) => {
+                match role_spec.into_role_id() {
+                    Ok(role) => Ok(Some(role)),
+                    Err(err) => Err(Some(err))
+                }
+            },
         }
     }
 
@@ -887,9 +894,10 @@ mod tests {
     #[test]
     fn test_stmt() {
         let sources = [
-            // TODO: alter, analyze, call, cluster, comment, copy, do, drop, explain, fetch, import, lock, move,
+            // TODO: analyze, call, cluster, comment, copy, do, drop, explain, fetch, import, lock, move,
             //       prepare, reindex, revoke, security, set, truncate, vacuum
             "abort transaction",
+            "alter group some_group add user public",
             "close all",
             "commit and no chain",
             "deallocate all",
@@ -1318,7 +1326,7 @@ use crate::lexer::{
 };
 use bitvec::boxed::BitBox;
 use postgres_basics::ascii::{is_hex_digit, is_whitespace};
-use postgres_basics::Located;
+use postgres_basics::{Located, Location};
 use std::borrow::Cow;
 use std::mem;
 use TokenKind::{Comma, Semicolon};
