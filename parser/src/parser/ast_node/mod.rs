@@ -11,6 +11,18 @@ pub enum RoleSpec {
     Name(Cow<'static, str>),
 }
 
+impl RoleSpec {
+    pub fn into_role_id(self) -> Result<Cow<'static, str>, ParserErrorKind> {
+        match self {
+            Self::Name(role) => Ok(role),
+            Self::Public => Err(ReservedRoleSpec("public")),
+            Self::CurrentRole => Err(ForbiddenRoleSpec("CURRENT_ROLE")),
+            Self::CurrentUser => Err(ForbiddenRoleSpec("CURRENT_USER")),
+            Self::SessionUser => Err(ForbiddenRoleSpec("SESSION_USER")),
+        }
+    }
+}
+
 /// Redundant enum, to avoid using `unreachable!()`.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub(super) enum CharacterSystemType {
@@ -77,14 +89,17 @@ pub struct ReassignOwnedStmt {
 }
 
 impl ReassignOwnedStmt {
+    #[inline(always)]
     pub fn new(roles: Vec<RoleSpec>, new_role: RoleSpec) -> Self {
         Self { roles, new_role }
     }
 
+    #[inline(always)]
     pub fn roles(&self) -> &Vec<RoleSpec> {
         &self.roles
     }
 
+    #[inline(always)]
     pub fn new_role(&self) -> &RoleSpec {
         &self.new_role
     }
@@ -155,13 +170,74 @@ impl NotifyStmt {
         Self { condition_name, payload: Some(payload) }
     }
 
+    #[inline(always)]
     pub fn condition_name(&self) -> &Cow<'static, str> {
         &self.condition_name
     }
 
+    #[inline(always)]
     pub fn payload(&self) -> &Option<String> {
         &self.payload
     }
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum AlterRoleAction {
+    Add,
+    Remove,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum AlterRoleOption {
+    RoleMembers(Vec<RoleSpec>),
+    Password(Option<String>),
+    Inherit(bool),
+    ConnectionLimit(i32),
+    ValidUntil(String),
+    SuperUser(bool),
+    CreateRole(bool),
+    Replication(bool),
+    CreateDatabase(bool),
+    CanLogin(bool),
+    BypassRls(bool),
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct AlterRoleStmt {
+    role: RoleSpec,
+    action: AlterRoleAction,
+    options: Vec<AlterRoleOption>,
+}
+
+impl AlterRoleStmt {
+    #[inline(always)]
+    pub fn new(role: RoleSpec, action: AlterRoleAction, options: Vec<AlterRoleOption>) -> Self {
+        Self { role, action, options }
+    }
+
+    #[inline(always)]
+    pub fn role(&self) -> &RoleSpec {
+        &self.role
+    }
+
+    #[inline(always)]
+    pub fn action(&self) -> AlterRoleAction {
+        self.action
+    }
+
+    #[inline(always)]
+    pub fn options(&self) -> &Vec<AlterRoleOption> {
+        &self.options
+    }
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum RenameStmt {
+    Role {
+        sub_name: Cow<'static, str>,
+        new_name: Cow<'static, str>,
+    },
+    // TODO
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -180,67 +256,95 @@ pub enum AstNode {
     UnlistenStmt(UnlistenStmt),
     TransactionStmt(TransactionStmt),
     NotifyStmt(NotifyStmt),
+    AlterRoleStmt(AlterRoleStmt),
+    RenameStmt(RenameStmt),
 }
 
 impl From<AstLiteral> for AstNode {
+    #[inline(always)]
     fn from(value: AstLiteral) -> Self {
         Self::Literal(value)
     }
 }
 
 impl From<SystemType> for AstNode {
+    #[inline(always)]
     fn from(value: SystemType) -> Self {
         Self::SystemType(value)
     }
 }
 
 impl From<ClosePortalStmt> for AstNode {
+    #[inline(always)]
     fn from(value: ClosePortalStmt) -> Self {
         Self::ClosePortalStmt(value)
     }
 }
 
 impl From<DeallocateStmt> for AstNode {
+    #[inline(always)]
     fn from(value: DeallocateStmt) -> Self {
         Self::DeallocateStmt(value)
     }
 }
 
 impl From<DiscardStmt> for AstNode {
+    #[inline(always)]
     fn from(value: DiscardStmt) -> Self {
         Self::DiscardStmt(value)
     }
 }
 
 impl From<ReassignOwnedStmt> for AstNode {
+    #[inline(always)]
     fn from(value: ReassignOwnedStmt) -> Self {
         Self::ReassignOwnedStmt(value)
     }
 }
 
 impl From<VariableShowStmt> for AstNode {
+    #[inline(always)]
     fn from(value: VariableShowStmt) -> Self {
         Self::VariableShowStmt(value)
     }
 }
 
 impl From<UnlistenStmt> for AstNode {
+    #[inline(always)]
     fn from(value: UnlistenStmt) -> Self {
         Self::UnlistenStmt(value)
     }
 }
 
 impl From<TransactionStmt> for AstNode {
+    #[inline(always)]
     fn from(value: TransactionStmt) -> Self {
         Self::TransactionStmt(value)
     }
 }
 
 impl From<NotifyStmt> for AstNode {
+    #[inline(always)]
     fn from(value: NotifyStmt) -> Self {
         Self::NotifyStmt(value)
     }
 }
 
+impl From<AlterRoleStmt> for AstNode {
+    #[inline(always)]
+    fn from(value: AlterRoleStmt) -> Self {
+        Self::AlterRoleStmt(value)
+    }
+}
+
+impl From<RenameStmt> for AstNode {
+    #[inline(always)]
+    fn from(value: RenameStmt) -> Self {
+        Self::RenameStmt(value)
+    }
+}
+
+use crate::parser::ParserErrorKind;
+use crate::parser::ParserErrorKind::{ForbiddenRoleSpec, ReservedRoleSpec};
 use bitvec::boxed::BitBox;
 use std::borrow::Cow;

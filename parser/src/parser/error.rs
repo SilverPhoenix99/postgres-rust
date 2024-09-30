@@ -53,6 +53,15 @@ pub enum ParserErrorKind {
     /// When the float precision is > 53
     // #[error("precision for type float must be less than 54 bits")]
     FloatPrecisionOverflow(i32),
+
+    /// When an identifier is used as an unrecognized role option
+    // #[error(r#"unrecognized role option "{0}""#)]
+    UnrecognizedRoleOption(String),
+
+    /// When "UNENCRYPTED PASSWORD" is used as a role option
+    // #[error("UNENCRYPTED PASSWORD is no longer supported")]
+    // hint = "Remove UNENCRYPTED to store the password in encrypted form instead."
+    UnencryptedPassword,
 }
 
 impl From<LexerError> for ParserErrorKind {

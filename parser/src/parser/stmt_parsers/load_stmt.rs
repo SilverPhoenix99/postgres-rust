@@ -11,7 +11,6 @@ impl Parser<'_> {
 
 use crate::lexer::Keyword::Unreserved;
 use crate::lexer::UnreservedKeyword::Load;
-use crate::parser::result::OptionalResult;
 use crate::parser::{OptResult, Parser};
 
 #[cfg(test)]
