@@ -5,18 +5,14 @@ impl Parser<'_> {
             return Ok(None)
         }
 
-        match self.string().required()? {
-            StringLiteral(lit) => Ok(Some(lit)),
-            _ => Err(Some(ParserErrorKind::default()))
-        }
+        self.string()
     }
 }
 
 use crate::lexer::Keyword::Unreserved;
 use crate::lexer::UnreservedKeyword::Load;
 use crate::parser::result::OptionalResult;
-use crate::parser::AstLiteral::StringLiteral;
-use crate::parser::{OptResult, Parser, ParserErrorKind};
+use crate::parser::{OptResult, Parser};
 
 #[cfg(test)]
 mod tests {

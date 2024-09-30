@@ -12,7 +12,7 @@ pub use self::{
         TypeFuncNameKeyword,
         UnreservedKeyword,
     },
-    token_kind::{IdentifierKind, StringKind, TokenKind},
+    token_kind::{BitStringKind, IdentifierKind, StringKind, TokenKind},
 };
 
 pub type LexerResult = Result<Located<TokenKind>, LexerError>;
@@ -455,7 +455,7 @@ impl<'src> Lexer<'src> {
     }
 
     #[inline] // Only called from a single place
-    fn lex_bit_string(&mut self, kind: StringKind) -> LexResult {
+    fn lex_bit_string(&mut self, kind: BitStringKind) -> LexResult {
 
         // No content validation to simplify the lexer.
 
@@ -470,7 +470,7 @@ impl<'src> Lexer<'src> {
                     };
                     return Err((err, fn_info!()))
                 },
-                Some(b'\'') => return Ok(StringLiteral(kind)),
+                Some(b'\'') => return Ok(BitStringLiteral(kind)),
                 _ => {}
             }
         }
@@ -573,7 +573,7 @@ impl<'src> Lexer<'src> {
         // The delimiter always contains '$' as the last char,
         // even if the delimiter is empty (i.e., '$$'),
         // so it's easier to match and consume.
-        
+
         let Some(delim) = self.lex_dollar_delim() else {
             return Err((UnexpectedChar { unknown: b'$' }, fn_info!()))
         };
@@ -940,8 +940,8 @@ mod tests {
         let source = b"b'0_156e_wf' x'048_96a_f_d'"; // lexer doesn't validate chars
         let mut lex = Lexer::new(source, true);
 
-        assert_tok(StringLiteral(BinaryString), 0..12, 1, 1, lex.next());
-        assert_tok(StringLiteral(HexString), 13..27, 1, 14, lex.next());
+        assert_tok(BitStringLiteral(BinaryString), 0..12, 1, 1, lex.next());
+        assert_tok(BitStringLiteral(HexString), 13..27, 1, 14, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -1035,7 +1035,7 @@ mod tests {
 
 use self::{
     error::LexerErrorKind::*,
-    token_kind::{IdentifierKind::*, StringKind::*, TokenKind::*},
+    token_kind::{BitStringKind::*, IdentifierKind::*, StringKind::*, TokenKind::*},
 };
 use postgres_basics::ascii::*;
 use postgres_basics::{fn_info, CharBuffer, FnInfo, Located, Location, NAMEDATALEN};

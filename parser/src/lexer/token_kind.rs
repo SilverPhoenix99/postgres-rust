@@ -38,12 +38,6 @@ pub enum StringKind {
         concatenable: bool
     },
 
-    /// E.g.: `b'010'`
-    BinaryString,
-
-    /// E.g.: `x'1af'`
-    HexString,
-
     /// E.g.: `n'str'`
     NationalString,
 
@@ -52,6 +46,15 @@ pub enum StringKind {
 
     /// E.g.: `$foo$str$foo$`
     DollarString,
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum BitStringKind {
+    /// E.g.: `b'010'`
+    BinaryString,
+
+    /// E.g.: `x'1af'`
+    HexString,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -86,6 +89,7 @@ pub enum TokenKind {
     Keyword(&'static KeywordDetails),
     NumberLiteral { radix: i32 },
     StringLiteral(StringKind),
+    BitStringLiteral(BitStringKind),
 }
 
 impl TokenKind {
@@ -102,6 +106,14 @@ impl TokenKind {
     pub fn string_kind(&self) -> Option<StringKind> {
         match self {
             TokenKind::StringLiteral(kind) => Some(*kind),
+            _ => None
+        }
+    }
+
+    #[inline(always)]
+    pub fn bit_string_kind(&self) -> Option<BitStringKind> {
+        match self {
+            TokenKind::BitStringLiteral(kind) => Some(*kind),
             _ => None
         }
     }
@@ -143,6 +155,7 @@ impl TokenKind {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use BitStringKind::*;
     use IdentifierKind::*;
     use StringKind::*;
     use TokenKind::*;
@@ -157,6 +170,12 @@ mod tests {
     fn test_string_kind() {
         assert_eq!(Some(UnicodeString), StringLiteral(UnicodeString).string_kind());
         assert_eq!(None, CloseParenthesis.string_kind())
+    }
+
+    #[test]
+    fn test_bit_string_kind() {
+        assert_eq!(Some(HexString), BitStringLiteral(HexString).bit_string_kind());
+        assert_eq!(None, CloseParenthesis.bit_string_kind())
     }
 
     #[test]
