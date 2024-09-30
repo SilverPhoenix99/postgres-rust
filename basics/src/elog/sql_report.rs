@@ -3,7 +3,7 @@ pub trait SqlReport: Error {
 
     fn sqlstate(&self) -> SqlState;
 
-    fn fn_info(&self) -> FnInfo;
+    fn fn_info(&self) -> &FnInfo;
 
     fn hint(&self) -> Option<Cow<'static, str>> {
         None
