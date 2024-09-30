@@ -260,89 +260,32 @@ pub enum AstNode {
     RenameStmt(RenameStmt),
 }
 
-impl From<AstLiteral> for AstNode {
-    #[inline(always)]
-    fn from(value: AstLiteral) -> Self {
-        Self::Literal(value)
-    }
+macro_rules! impl_from {
+    ($variant:ident) => {
+        impl_from!($variant => $variant);
+    };
+    ($from:ty => $variant:ident) => {
+        impl From<$from> for AstNode {
+            #[inline(always)]
+            fn from(value: $from) -> Self {
+                Self::$variant(value)
+            }
+        }
+    };
 }
 
-impl From<SystemType> for AstNode {
-    #[inline(always)]
-    fn from(value: SystemType) -> Self {
-        Self::SystemType(value)
-    }
-}
-
-impl From<ClosePortalStmt> for AstNode {
-    #[inline(always)]
-    fn from(value: ClosePortalStmt) -> Self {
-        Self::ClosePortalStmt(value)
-    }
-}
-
-impl From<DeallocateStmt> for AstNode {
-    #[inline(always)]
-    fn from(value: DeallocateStmt) -> Self {
-        Self::DeallocateStmt(value)
-    }
-}
-
-impl From<DiscardStmt> for AstNode {
-    #[inline(always)]
-    fn from(value: DiscardStmt) -> Self {
-        Self::DiscardStmt(value)
-    }
-}
-
-impl From<ReassignOwnedStmt> for AstNode {
-    #[inline(always)]
-    fn from(value: ReassignOwnedStmt) -> Self {
-        Self::ReassignOwnedStmt(value)
-    }
-}
-
-impl From<VariableShowStmt> for AstNode {
-    #[inline(always)]
-    fn from(value: VariableShowStmt) -> Self {
-        Self::VariableShowStmt(value)
-    }
-}
-
-impl From<UnlistenStmt> for AstNode {
-    #[inline(always)]
-    fn from(value: UnlistenStmt) -> Self {
-        Self::UnlistenStmt(value)
-    }
-}
-
-impl From<TransactionStmt> for AstNode {
-    #[inline(always)]
-    fn from(value: TransactionStmt) -> Self {
-        Self::TransactionStmt(value)
-    }
-}
-
-impl From<NotifyStmt> for AstNode {
-    #[inline(always)]
-    fn from(value: NotifyStmt) -> Self {
-        Self::NotifyStmt(value)
-    }
-}
-
-impl From<AlterRoleStmt> for AstNode {
-    #[inline(always)]
-    fn from(value: AlterRoleStmt) -> Self {
-        Self::AlterRoleStmt(value)
-    }
-}
-
-impl From<RenameStmt> for AstNode {
-    #[inline(always)]
-    fn from(value: RenameStmt) -> Self {
-        Self::RenameStmt(value)
-    }
-}
+impl_from!(AlterRoleStmt);
+impl_from!(AstLiteral => Literal);
+impl_from!(ClosePortalStmt);
+impl_from!(DeallocateStmt);
+impl_from!(DiscardStmt);
+impl_from!(NotifyStmt);
+impl_from!(ReassignOwnedStmt);
+impl_from!(RenameStmt);
+impl_from!(SystemType);
+impl_from!(TransactionStmt);
+impl_from!(UnlistenStmt);
+impl_from!(VariableShowStmt);
 
 use crate::parser::ParserErrorKind;
 use crate::parser::ParserErrorKind::{ForbiddenRoleSpec, ReservedRoleSpec};
