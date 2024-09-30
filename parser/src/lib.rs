@@ -1,7 +1,6 @@
 #[cfg(test)]
 #[macro_use]
 extern crate assert_matches;
-extern crate core;
 
 pub mod lexer;
 pub mod parser;
