@@ -250,6 +250,14 @@ pub enum RenameStmt {
     // TODO
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum EventTriggerState {
+    FiresOnReplica,
+    FiresOnOrigin,
+    FiresAlways,
+    Disabled,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum AstNode {
     Literal(AstLiteral),
