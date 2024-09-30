@@ -2,17 +2,19 @@ pub mod numeric_spec;
 
 pub use self::numeric_spec::NumericSpec;
 
+type CowStr = Cow<'static, str>;
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RoleSpec {
     Public,
     CurrentRole,
     CurrentUser,
     SessionUser,
-    Name(Cow<'static, str>),
+    Name(CowStr),
 }
 
 impl RoleSpec {
-    pub fn into_role_id(self) -> Result<Cow<'static, str>, ParserErrorKind> {
+    pub fn into_role_id(self) -> Result<CowStr, ParserErrorKind> {
         match self {
             Self::Name(role) => Ok(role),
             Self::Public => Err(ReservedRoleSpec("public")),
@@ -65,13 +67,13 @@ pub enum AstLiteral {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ClosePortalStmt {
     All,
-    Name(Cow<'static, str>),
+    Name(CowStr),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DeallocateStmt {
     All,
-    Name(Cow<'static, str>)
+    Name(CowStr)
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -118,7 +120,7 @@ pub enum VariableShowStmt {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum UnlistenStmt {
     All,
-    Name(Cow<'static, str>),
+    Name(CowStr),
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -145,33 +147,33 @@ pub enum TransactionStmt {
     Start(Vec<TransactionMode>),
     Commit { chain: bool },
     CommitPrepared(String),
-    Savepoint(Cow<'static, str>),
-    Release(Cow<'static, str>),
+    Savepoint(CowStr),
+    Release(CowStr),
     Prepare(String),
     Rollback { chain: bool },
-    RollbackTo(Cow<'static, str>),
+    RollbackTo(CowStr),
     RollbackPrepared(String),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct NotifyStmt {
-    condition_name: Cow<'static, str>,
+    condition_name: CowStr,
     payload: Option<String>
 }
 
 impl NotifyStmt {
     #[inline(always)]
-    pub fn new(condition_name: Cow<'static, str>) -> Self {
+    pub fn new(condition_name: CowStr) -> Self {
         Self { condition_name, payload: None }
     }
 
     #[inline(always)]
-    pub fn with_payload(condition_name: Cow<'static, str>, payload: String) -> Self {
+    pub fn with_payload(condition_name: CowStr, payload: String) -> Self {
         Self { condition_name, payload: Some(payload) }
     }
 
     #[inline(always)]
-    pub fn condition_name(&self) -> &Cow<'static, str> {
+    pub fn condition_name(&self) -> &CowStr {
         &self.condition_name
     }
 
@@ -244,9 +246,13 @@ impl AlterRoleStmt {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RenameStmt {
     Role {
-        sub_name: Cow<'static, str>,
-        new_name: Cow<'static, str>,
+        sub_name: CowStr,
+        new_name: CowStr,
     },
+    EventTrigger {
+        trigger: CowStr,
+        new_name: CowStr,
+    }
     // TODO
 }
 
@@ -258,6 +264,15 @@ pub enum EventTriggerState {
     Disabled,
 }
 
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum AlterOwnerStmt {
+    EventTrigger {
+        trigger: CowStr,
+        new_owner: RoleSpec,
+    },
+    // TODO
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum AstNode {
     Literal(AstLiteral),
@@ -267,7 +282,7 @@ pub enum AstNode {
     ClosePortalStmt(ClosePortalStmt),
     DeallocateStmt(DeallocateStmt),
     DiscardStmt(DiscardStmt),
-    ListenStmt(Cow<'static, str>),
+    ListenStmt(CowStr),
     LoadStmt(String),
     ReassignOwnedStmt(ReassignOwnedStmt),
     VariableShowStmt(VariableShowStmt),
@@ -276,6 +291,11 @@ pub enum AstNode {
     NotifyStmt(NotifyStmt),
     AlterRoleStmt(AlterRoleStmt),
     RenameStmt(RenameStmt),
+    AlterEventTrigStmt {
+        trigger: CowStr,
+        state: EventTriggerState
+    },
+    AlterOwnerStmt(AlterOwnerStmt)
 }
 
 macro_rules! impl_from {
@@ -292,6 +312,7 @@ macro_rules! impl_from {
     };
 }
 
+impl_from!(AlterOwnerStmt);
 impl_from!(AlterRoleStmt);
 impl_from!(AstLiteral => Literal);
 impl_from!(ClosePortalStmt);

@@ -6,6 +6,7 @@ impl Parser<'_> {
         }
 
         if let Some(node) = self.alter_group_stmt()? { return Ok(Some(node)) }
+        else if let Some(node) = self.alter_event_trigger_stmt()? { return Ok(Some(node)) }
 
         todo!()
     }
@@ -19,7 +20,8 @@ mod tests {
     #[test]
     fn test_alter_group() {
         let sources = [
-            "alter group some_group rename to new_group_name"
+            "alter group some_group rename to new_group_name",
+            "alter event trigger some_trigger owner to current_user",
         ];
 
         for source in sources {

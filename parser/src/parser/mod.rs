@@ -12,6 +12,7 @@ mod bit_string_parser;
 
 pub use self::{
     ast_node::{
+        AlterOwnerStmt,
         AlterRoleAction,
         AlterRoleOption,
         AlterRoleStmt,
