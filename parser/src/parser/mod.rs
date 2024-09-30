@@ -23,6 +23,7 @@ pub use self::{
         IsolationLevel,
         NumericSpec,
         ReassignOwnedStmt,
+        RenameStmt,
         RoleSpec,
         SystemType,
         TransactionMode,
