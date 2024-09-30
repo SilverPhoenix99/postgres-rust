@@ -1,30 +1,14 @@
-#[derive(Debug, Default, Copy, Clone, PartialEq)]
-pub enum ParseMode {
-    #[default]
-    Default,
-    TypeName,
-    PlpgsqlExpr,
-    PlpgsqlAssign1,
-    PlpgsqlAssign2,
-    PlpgsqlAssign3,
-}
-
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ParserConfig {
     standard_conforming_strings: bool,
     backslash_quote: BackslashQuote,
-    mode: ParseMode
 }
 
 impl ParserConfig {
 
     #[inline(always)]
-    pub const fn new(standard_conforming_strings: bool, backslash_quote: BackslashQuote, mode: ParseMode) -> Self {
-        Self {
-            standard_conforming_strings,
-            backslash_quote,
-            mode
-        }
+    pub const fn new(standard_conforming_strings: bool, backslash_quote: BackslashQuote) -> Self {
+        Self { standard_conforming_strings, backslash_quote }
     }
 
     #[inline(always)]
@@ -35,11 +19,6 @@ impl ParserConfig {
     #[inline(always)]
     pub fn backslash_quote(&self) -> BackslashQuote {
         self.backslash_quote
-    }
-
-    #[inline(always)]
-    pub fn mode(&self) -> ParseMode {
-        self.mode
     }
 }
 

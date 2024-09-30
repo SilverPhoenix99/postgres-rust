@@ -25,7 +25,7 @@ pub use self::{
         UnlistenStmt,
         VariableShowStmt,
     },
-    config::{ParseMode, ParserConfig},
+    config::ParserConfig,
     error::ParserErrorKind,
     parse_report::ParseReport,
     result::{OptResult, ReqResult},
@@ -89,16 +89,85 @@ impl<'src> Parser<'src> {
     /// Not reentrant!
     pub fn parse(&mut self) -> ParserResult {
 
-        // match mode {
-        //     ParseMode::TypeName => {}
-        //     ParseMode::PlpgsqlExpr => {}
-        //     ParseMode::PlpgsqlAssign1 => {}
-        //     ParseMode::PlpgsqlAssign2 => {}
-        //     ParseMode::PlpgsqlAssign3 => {}
-        //     ParseMode::Default => {} // if no match
-        // }
+        let result = match self.stmtmulti() {
+            Ok(stmts) => Ok(stmts),
+            Err(err) => {
+                let loc = self.buffer.current_location();
+                Err((err, loc))
+            }
+        };
 
-        todo!()
+        ParserResult {
+            result,
+            warnings: mem::take(&mut self.warnings),
+        }
+    }
+
+    fn stmtmulti(&mut self) -> Result<Vec<AstNode>, ParserErrorKind> {
+
+        // This production is slightly cheating, not because it's more efficient,
+        // but helps simplify capturing errors a bit.
+        // Production:
+        //     ( stmt? ((';')+ stmt?)* )?
+        // Original production:
+        //     ( stmt? (';' stmt?)* )?
+
+        let mut stmts = match self.toplevel_stmt() {
+            Ok(Some(stmt)) => vec![stmt],
+            Ok(None) => {
+                // something went wrong with the 1st token already?!
+                return Err(ParserErrorKind::default())
+            }
+            Err(None) => { // eof
+                // The string didn't have anything useful: empty, whitespace or comments
+                return Ok(Vec::new());
+            },
+            Err(Some(err)) => return Err(err),
+        };
+
+        while self.semicolons()? {
+
+            let stmt = match self.toplevel_stmt() {
+                Ok(Some(stmt)) => stmt,
+                Ok(None) => {
+                    // No stmt matched
+                    return Err(ParserErrorKind::default())
+                }
+                Err(Some(err)) => return Err(err),
+                Err(None) => break,
+            };
+
+            stmts.push(stmt);
+        }
+
+        // if it's not Eof, then something didn't match properly
+        if self.buffer.peek().is_some() {
+            return Err(ParserErrorKind::default())
+        }
+
+        Ok(stmts)
+    }
+
+    /// Returns `true` if it consumed at least 1 `;` (semicolon)
+    fn semicolons(&mut self) -> Result<bool, ParserErrorKind> {
+
+        // Production: (';')*
+
+        let mut saw_semicolon = false;
+        loop {
+            match self.buffer.consume_eq(Semicolon) {
+                Ok(Some(_)) => {
+                    saw_semicolon = true;
+                }
+                Ok(None) | Err(None) => {
+                    // not a semicolon
+                    break
+                },
+                Err(Some(err)) => return Err(err),
+            }
+        }
+
+        Ok(saw_semicolon)
     }
 
     fn toplevel_stmt(&mut self) -> OptResult<AstNode> {
@@ -794,7 +863,7 @@ mod tests {
     use super::*;
     use postgres_basics::guc::BackslashQuote;
 
-    pub(in crate::parser) const DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding, ParseMode::Default);
+    pub(in crate::parser) const DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding);
 
     #[test]
     fn test_toplevel_stmt() {
@@ -1250,4 +1319,5 @@ use crate::lexer::{
 use postgres_basics::ascii::{is_hex_digit, is_whitespace};
 use postgres_basics::Located;
 use std::borrow::Cow;
-use TokenKind::Comma;
+use std::mem;
+use TokenKind::{Comma, Semicolon};
