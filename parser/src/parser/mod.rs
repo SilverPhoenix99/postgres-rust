@@ -35,7 +35,6 @@ pub use self::{
     config::ParserConfig,
     error::ParserErrorKind,
     parse_report::ParseReport,
-    result::{OptResult, ReqResult},
     warning::ParserWarning,
 };
 
@@ -1307,26 +1306,28 @@ use self::{
     bit_string_parser::BitStringParser,
     error::ParserErrorKind::*,
     ident_parser::IdentifierParser,
-    result::{OptionalResult, RequiredResult},
+    result::{OptResult, OptionalResult, ReqResult, RequiredResult},
     string_parser::StringParser,
     token_buffer::{TokenBuffer, TokenConsumer},
     AstLiteral::NullLiteral,
     AstNode::{ListenStmt, Literal, LoadStmt},
     SystemType::{Bool, Float4, Float8, Int2, Int4, Int8},
 };
-use crate::lexer::Keyword::{ColumnName, Reserved, Unreserved};
-use crate::lexer::UnreservedKeyword::{Read, Repeatable, Serializable};
 use crate::lexer::{
     ColumnNameKeyword,
+    Keyword::{ColumnName, Reserved, Unreserved},
     KeywordDetails,
     Lexer,
     ReservedKeyword,
     TokenKind,
+    TokenKind::{Comma, Semicolon},
     UnreservedKeyword
 };
 use bitvec::boxed::BitBox;
-use postgres_basics::ascii::{is_hex_digit, is_whitespace};
-use postgres_basics::{Located, Location};
+use postgres_basics::{
+    ascii::{is_hex_digit, is_whitespace},
+    Located,
+    Location,
+};
 use std::borrow::Cow;
 use std::mem;
-use TokenKind::{Comma, Semicolon};

@@ -13,10 +13,7 @@ macro_rules! qn_fn_name {
 
 #[macro_export]
 macro_rules! fn_info {
-    () => {{
-        use postgres_basics::{FnInfo, qn_fn_name};
-        FnInfo::new(file!(), line!(), qn_fn_name!())
-    }};
+    () => { $crate::FnInfo::new(file!(), line!(), $crate::qn_fn_name!()) };
 }
 
 pub mod ascii;
@@ -51,5 +48,12 @@ mod tests {
     fn test_qn_fn_name() {
         let fn_name = module_path!().to_owned() + "::test_qn_fn_name";
         assert_eq!(fn_name, qn_fn_name!());
+    }
+
+    #[test]
+    fn test_fn_info() {
+        let fn_info = fn_info!();
+        let fn_name = module_path!().to_owned() + "::test_fn_info";
+        assert_eq!(fn_name, fn_info.function());
     }
 }
