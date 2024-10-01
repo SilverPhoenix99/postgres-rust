@@ -6,7 +6,7 @@ pub enum UnicodeStringError {
     #[error(r#"invalid byte sequence for encoding "UTF8""#)]
     Utf8(Utf8Error),
 
-    /// When the `\XXXX`|`\+XXXXXX` escape is invalid UTF-32.
+    /// When the result of parsing the `\XXXX`|`\+XXXXXX` escape gives back invalid UTF-16/UTF-32.
     #[error("invalid Unicode escape value")]
     InvalidUnicodeValue(usize),
 
@@ -14,14 +14,13 @@ pub enum UnicodeStringError {
     #[error("invalid Unicode surrogate pair")]
     InvalidUnicodeSurrogatePair(usize),
 
-    /// When the format of the escape doesn't match \uXXXX or \UXXXXXXXX.
+    /// When the format of the escape doesn't match \XXXX or \+XXXXXX.
     #[error("invalid Unicode escape")]
-    InvalidUnicodeEscape(usize),
+    InvalidUnicodeEscape(usize), 
 }
 
-impl UnicodeStringError {
-
-    pub fn sqlstate(self) -> SqlState {
+impl HasSqlState for UnicodeStringError {
+    fn sql_state(&self) -> SqlState {
         match self {
             Utf8(_) => Error(CharacterNotInRepertoire),
             InvalidUnicodeValue(_) => Error(SyntaxError),
@@ -29,21 +28,23 @@ impl UnicodeStringError {
             InvalidUnicodeEscape(_) => Error(SyntaxError),
         }
     }
+}
 
-    pub fn hint(self) -> Option<&'static str> {
+impl ErrorReport for UnicodeStringError {
+    fn hint(&self) -> Option<Cow<'static, str>> {
         match self {
-            Utf8(_) => None,
-            InvalidUnicodeValue(_) => None,
-            InvalidUnicodeSurrogatePair(_) => None,
-            InvalidUnicodeEscape(_) => Some(r"Unicode escapes must be \XXXX or \+XXXXXX."),
+            InvalidUnicodeEscape(_) => Some(r"Unicode escapes must be \XXXX or \+XXXXXX.".into()),
+            _ => None,
         }
     }
 }
 
-use postgres_basics::sql_state::{
-    ErrorSqlState::{CharacterNotInRepertoire, SyntaxError},
-    SqlState,
-    SqlState::Error
+use postgres_basics::{
+    elog::{ErrorReport, HasSqlState},
+    sql_state::ErrorSqlState::{CharacterNotInRepertoire, SyntaxError},
+    sql_state::SqlState,
+    sql_state::SqlState::Error,
 };
+use std::borrow::Cow;
 use std::str::Utf8Error;
 use UnicodeStringError::*;
