@@ -1,19 +1,10 @@
 mod lexer_error_kind;
 
-use crate::lexer::LexerErrorKind::UnsafeUnicodeString;
-use crate::parser::ParseReport;
 pub use lexer_error_kind::LexerErrorKind;
-use postgres_basics::sql_state::ErrorSqlState::SyntaxError;
-use postgres_basics::sql_state::SqlState;
-use postgres_basics::{FnInfo, Location, SqlReport};
-use std::borrow::Cow;
-use std::error::Error;
-use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct LexerError {
-    source: LexerErrorKind,
-    fn_info: FnInfo,
+    report: SimpleErrorReport<LexerErrorKind>,
     location: Location,
 }
 
@@ -21,60 +12,80 @@ impl LexerError {
 
     #[inline(always)]
     pub fn new(source: LexerErrorKind, fn_info: FnInfo, location: Location) -> Self {
-        Self { source, fn_info, location }
+        Self { 
+            report: SimpleErrorReport::new(source, fn_info),
+            location
+        }
     }
 
     #[inline(always)]
     pub fn source(&self) -> LexerErrorKind {
-        self.source
+        *self.report.source()
     }
 }
 
 impl Error for LexerError {
-
     #[inline(always)]
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        Some(&self.source)
+        Error::source(&self.report)
     }
 }
 
 impl Display for LexerError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let sqlstate= self.sqlstate();
-        let source = self.source;
+        let sql_state= self.sql_state();
+        let source = self.source();
         let position = self.location.range().start + 1;
-        writeln!(f, "[{sqlstate}] ERROR: {source}")?;
+        writeln!(f, "[{sql_state}] ERROR: {source}")?;
         write!(f, "Position: {position}")
     }
 }
 
-impl ParseReport for LexerError {
+impl HasSqlState for LexerError {
+    #[inline(always)]
+    fn sql_state(&self) -> SqlState {
+        self.source().sql_state()
+    }
+}
 
+impl HasFnInfo for LexerError {
+    fn fn_info(&self) -> &FnInfo {
+        self.report.fn_info()
+    }
+}
+
+impl HasLocation for LexerError {
     #[inline(always)]
     fn location(&self) -> &Location {
         &self.location
     }
 }
 
-impl SqlReport for LexerError {
-
-    fn sqlstate(&self) -> SqlState {
-        SqlState::Error(SyntaxError)
+impl ErrorReport for LexerError {
+    #[inline(always)]
+    fn hint(&self) -> Option<Cow<'static, str>> {
+        self.source().hint()
     }
 
     #[inline(always)]
-    fn fn_info(&self) -> &FnInfo {
-        &self.fn_info
+    fn detail(&self) -> Option<Cow<'static, str>> {
+        self.source().detail()
     }
 
-    fn detail(&self) -> Option<Cow<'static, str>> {
-        if self.source == UnsafeUnicodeString {
-            Some(
-                r#"String constants with Unicode escapes cannot be used when "standard_conforming_strings" is off."#.into()
-            )
-        }
-        else {
-            None
-        }
+    #[inline(always)]
+    fn detail_log(&self) -> Option<Cow<'static, str>> {
+        self.source().detail_log()
     }
 }
+
+impl SqlReport for LexerError {}
+
+impl ParseReport for LexerError {}
+
+use crate::error::{HasLocation, ParseReport};
+use postgres_basics::elog::{ErrorReport, HasFnInfo, HasSqlState, SimpleErrorReport, SqlReport};
+use postgres_basics::sql_state::SqlState;
+use postgres_basics::{FnInfo, Location};
+use std::borrow::Cow;
+use std::error::Error;
+use std::fmt::{Display, Formatter};

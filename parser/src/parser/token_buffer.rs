@@ -278,6 +278,7 @@ mod tests {
     }
 }
 
+use crate::error::HasLocation;
 use crate::lexer::{Keyword, KeywordDetails, Lexer, LexerResult, TokenKind};
-use crate::parser::{OptResult, ParseReport, ParserErrorKind};
+use crate::parser::{OptResult, ParserErrorKind};
 use postgres_basics::Location;

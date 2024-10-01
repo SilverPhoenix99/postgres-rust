@@ -19,7 +19,7 @@ macro_rules! fn_info {
 pub mod ascii;
 mod char_buffer;
 mod concealable;
-mod elog;
+pub mod elog;
 mod fn_info;
 pub mod guc;
 mod location;
@@ -30,7 +30,6 @@ pub mod wchar;
 pub use self::{
     char_buffer::{CharBuffer, Position, UnicodeChar, UnicodeCharError},
     concealable::Concealable,
-    elog::SqlReport,
     fn_info::FnInfo,
     location::{Located, Location},
     named::Named,

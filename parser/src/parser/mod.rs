@@ -5,7 +5,6 @@ mod error;
 mod string_parser;
 mod token_buffer;
 mod result;
-mod parse_report;
 mod warning;
 mod stmt_parsers;
 mod bit_string_parser;
@@ -34,7 +33,6 @@ pub use self::{
     },
     config::ParserConfig,
     error::ParserErrorKind,
-    parse_report::ParseReport,
     warning::ParserWarning,
 };
 

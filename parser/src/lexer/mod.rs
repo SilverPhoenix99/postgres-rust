@@ -711,10 +711,10 @@ impl<'src> Lexer<'src> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::HasLocation;
     use crate::lexer::Keyword::{Reserved, Unreserved};
     use crate::lexer::ReservedKeyword::{From, Not, Select};
     use crate::lexer::UnreservedKeyword::StringKw;
-    use crate::parser::ParseReport;
     use std::ops::Range;
 
     #[test]
@@ -1037,6 +1037,13 @@ use self::{
     error::LexerErrorKind::*,
     token_kind::{BitStringKind::*, IdentifierKind::*, StringKind::*, TokenKind::*},
 };
-use postgres_basics::ascii::*;
-use postgres_basics::{fn_info, CharBuffer, FnInfo, Located, Location, NAMEDATALEN};
+use postgres_basics::{
+    ascii::*,
+    fn_info,
+    CharBuffer,
+    FnInfo,
+    Located,
+    Location,
+    NAMEDATALEN,
+};
 use std::iter::FusedIterator;

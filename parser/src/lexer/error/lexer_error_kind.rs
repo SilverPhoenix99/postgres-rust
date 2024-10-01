@@ -49,3 +49,32 @@ pub enum LexerErrorKind {
     #[error("unsafe use of string constant with Unicode escapes")]
     UnsafeUnicodeString,
 }
+
+impl HasSqlState for LexerErrorKind {
+    #[inline(always)]
+    fn sql_state(&self) -> SqlState {
+        SqlState::Error(SyntaxError)
+    }
+}
+
+impl ErrorReport for LexerErrorKind {
+    #[inline(always)]
+    fn detail(&self) -> Option<Cow<'static, str>> {
+        if UnsafeUnicodeString.eq(self) {
+            Some(
+                r#"String constants with Unicode escapes cannot be used when "standard_conforming_strings" is off."#.into()
+            )
+        }
+        else {
+            None
+        }
+    }
+}
+
+use postgres_basics::{
+    elog::{ErrorReport, HasSqlState},
+    sql_state::ErrorSqlState::SyntaxError,
+    sql_state::SqlState,
+};
+use std::borrow::Cow;
+use LexerErrorKind::UnsafeUnicodeString;
