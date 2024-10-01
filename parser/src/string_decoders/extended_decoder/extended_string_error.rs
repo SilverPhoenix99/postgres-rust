@@ -24,8 +24,8 @@ pub enum ExtendedStringError {
     InvalidUnicodeEscape(usize),
 }
 
-impl ExtendedStringError {
-    pub fn sqlstate(self) -> SqlState {
+impl HasSqlState for ExtendedStringError {
+    fn sql_state(&self) -> SqlState {
         match self {
             Utf8(_) => Error(CharacterNotInRepertoire),
             InvalidUnicodeValue(_) => Error(SyntaxError),
@@ -34,29 +34,31 @@ impl ExtendedStringError {
             InvalidUnicodeEscape(_) => Error(InvalidEscapeSequence),
         }
     }
+}
 
-    pub fn hint(self) -> Option<&'static str> {
+impl ErrorReport for ExtendedStringError {
+    fn hint(&self) -> Option<Cow<'static, str>> {
         match self {
-            Utf8(_) => None,
-            InvalidUnicodeValue(_) => None,
-            InvalidUnicodeSurrogatePair(_) => None,
             NonstandardUseOfBackslashQuote => Some(
-                r"Use '' to write quotes in strings. \' is insecure in client-only encodings."
+                r"Use '' to write quotes in strings. \' is insecure in client-only encodings.".into()
             ),
-            InvalidUnicodeEscape(_) => Some(r"Unicode escapes must be \uXXXX or \UXXXXXXXX."),
+            InvalidUnicodeEscape(_) => Some(r"Unicode escapes must be \uXXXX or \UXXXXXXXX.".into()),
+            _ => None,
         }
     }
 }
 
-use postgres_basics::sql_state::{
-    ErrorSqlState::{
+use postgres_basics::{
+    elog::{ErrorReport, HasSqlState},
+    sql_state::ErrorSqlState::{
         CharacterNotInRepertoire,
         InvalidEscapeSequence,
         NonstandardUseOfEscapeCharacter,
         SyntaxError
     },
-    SqlState,
-    SqlState::Error
+    sql_state::SqlState,
+    sql_state::SqlState::Error
 };
+use std::borrow::Cow;
 use std::str::Utf8Error;
 use ExtendedStringError::*;
