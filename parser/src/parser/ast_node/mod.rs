@@ -4,6 +4,21 @@ pub use self::numeric_spec::NumericSpec;
 
 type CowStr = Cow<'static, str>;
 
+/// Generates `From` impls, where the input is wrapped in an output enum variant.
+macro_rules! impl_from {
+    ($variant:ident for $for_:ident) => {
+        impl_from!($variant for $for_ => $variant);
+    };
+    ($from:ident for $for_:ident => $variant:ident) => {
+        impl From<$from> for $for_ {
+            #[inline(always)]
+            fn from(value: $from) -> Self {
+                Self::$variant(value)
+            }
+        }
+    };
+}
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RoleSpec {
     Public,
@@ -298,33 +313,19 @@ pub enum AstNode {
     AlterOwnerStmt(AlterOwnerStmt)
 }
 
-macro_rules! impl_from {
-    ($variant:ident) => {
-        impl_from!($variant => $variant);
-    };
-    ($from:ty => $variant:ident) => {
-        impl From<$from> for AstNode {
-            #[inline(always)]
-            fn from(value: $from) -> Self {
-                Self::$variant(value)
-            }
-        }
-    };
-}
-
-impl_from!(AlterOwnerStmt);
-impl_from!(AlterRoleStmt);
-impl_from!(AstLiteral => Literal);
-impl_from!(ClosePortalStmt);
-impl_from!(DeallocateStmt);
-impl_from!(DiscardStmt);
-impl_from!(NotifyStmt);
-impl_from!(ReassignOwnedStmt);
-impl_from!(RenameStmt);
-impl_from!(SystemType);
-impl_from!(TransactionStmt);
-impl_from!(UnlistenStmt);
-impl_from!(VariableShowStmt);
+impl_from!(AlterOwnerStmt for AstNode);
+impl_from!(AlterRoleStmt for AstNode);
+impl_from!(AstLiteral for AstNode => Literal);
+impl_from!(ClosePortalStmt for AstNode);
+impl_from!(DeallocateStmt for AstNode);
+impl_from!(DiscardStmt for AstNode);
+impl_from!(NotifyStmt for AstNode);
+impl_from!(ReassignOwnedStmt for AstNode);
+impl_from!(RenameStmt for AstNode);
+impl_from!(SystemType for AstNode);
+impl_from!(TransactionStmt for AstNode);
+impl_from!(UnlistenStmt for AstNode);
+impl_from!(VariableShowStmt for AstNode);
 
 use crate::parser::ParserErrorKind;
 use crate::parser::ParserErrorKind::{ForbiddenRoleSpec, ReservedRoleSpec};
