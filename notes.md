@@ -6,7 +6,7 @@
 
 # TO DO
 * Test `NumericSpec`.
-* Support encodings besides UTF-8: `include/mb/pg_wchar.h`, `common/wchar.c`
+* Support encodings besides UTF-8: `include/mb/pg_wchar.h`, `common/wchar.c`, etc
   * For now:
     * Assume only UTF-8;
     * If any code uses encodings, throw an error (user input), or just implicitly use UTF-8 (internally);

@@ -227,10 +227,13 @@ impl<'src> CharBuffer<'src> {
             else if wchar::is_utf16_surrogate_second(c as u16) {
                 Ok(SurrogateSecond(c as u16))
             }
-            else {
+            else if c > 0 {
                 char::from_u32(c)
                     .map(Utf8)
                     .ok_or(InvalidUnicodeValue)
+            }
+            else {
+                Err(InvalidUnicodeValue)
             }
         };
 
