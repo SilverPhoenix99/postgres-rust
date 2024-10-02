@@ -28,7 +28,10 @@ pub enum ParserErrorKind {
     UnicodeString(#[from] UnicodeStringError),
 
     /// When a bit string exceeds `VARBITMAXLEN`
-    #[error("TODO: bit string too long")] // TODO
+    #[error(
+        "bit string length exceeds the maximum allowed ({})",
+        crate::string_decoders::VARBITMAXLEN
+    )]
     BitStringTooLong,
 
     /// When a char is not a valid binary digit in a bit string.
@@ -86,14 +89,14 @@ impl HasSqlState for ParserErrorKind {
             Lexer(err) => err.sql_state(),
             NonstandardUseOfEscapeCharacter => {todo!()},
             ReservedRoleSpec(_) => SqlState::Error(ReservedName),
-            Self::BitStringTooLong => {todo!()},
+            Self::BitStringTooLong => SqlState::Error(ProgramLimitExceeded),
             Self::InvalidBinaryDigit => {todo!()},
+            Utf8(_) => {todo!()},
             Syntax => SqlState::Error(SyntaxError),
             UescapeDelimiterMissing => SqlState::Error(SyntaxError),
             UnencryptedPassword => SqlState::Error(FeatureNotSupported),
             UnicodeString(err) => err.sql_state(),
             UnrecognizedRoleOption(_) => SqlState::Error(SyntaxError),
-            Utf8(_) => {todo!()},
         }
     }
 }
@@ -113,12 +116,12 @@ impl ErrorReport for ParserErrorKind {
             ReservedRoleSpec(_) => None,
             Self::BitStringTooLong => {todo!()},
             Self::InvalidBinaryDigit => {todo!()},
+            Utf8(_) => {todo!()},
             Syntax => None,
             UescapeDelimiterMissing => None,
             UnencryptedPassword => Some("Remove UNENCRYPTED to store the password in encrypted form instead.".into()),
             UnicodeString(err) => err.hint(),
             UnrecognizedRoleOption(_) => None,
-            Utf8(_) => {todo!()},
         }
     }
 
@@ -136,12 +139,12 @@ impl ErrorReport for ParserErrorKind {
             ReservedRoleSpec(_) => None,
             Self::BitStringTooLong => {todo!()},
             Self::InvalidBinaryDigit => {todo!()},
+            Utf8(_) => {todo!()},
             Syntax => None,
             UescapeDelimiterMissing => None,
             UnencryptedPassword => None,
             UnicodeString(err) => err.detail(),
             UnrecognizedRoleOption(_) => None,
-            Utf8(_) => {todo!()},
         }
     }
 
@@ -159,12 +162,12 @@ impl ErrorReport for ParserErrorKind {
             ReservedRoleSpec(_) => None,
             Self::BitStringTooLong => {todo!()},
             Self::InvalidBinaryDigit => {todo!()},
+            Utf8(_) => {todo!()},
             Syntax => None,
             UescapeDelimiterMissing => None,
             UnencryptedPassword => None,
             UnicodeString(err) => err.detail_log(),
             UnrecognizedRoleOption(_) => None,
-            Utf8(_) => {todo!()},
         }
     }
 }
@@ -197,9 +200,17 @@ use crate::string_decoders::{
     ExtendedStringError,
     UnicodeStringError
 };
-use postgres_basics::elog::{ErrorReport, HasSqlState};
-use postgres_basics::sql_state::ErrorSqlState::{FeatureNotSupported, InvalidParameterValue, ReservedName, SyntaxError};
-use postgres_basics::sql_state::SqlState;
+use postgres_basics::{
+    elog::{ErrorReport, HasSqlState},
+    sql_state::ErrorSqlState::{
+        FeatureNotSupported,
+        InvalidParameterValue,
+        ProgramLimitExceeded,
+        ReservedName,
+        SyntaxError
+    },
+    sql_state::SqlState,
+};
 use std::borrow::Cow;
 use std::str::Utf8Error;
 use std::string::FromUtf8Error;

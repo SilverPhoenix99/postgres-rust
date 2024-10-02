@@ -1,5 +1,5 @@
 const BITS_PER_BYTE: usize = 8;
-const VARBITMAXLEN: usize = i32::MAX as usize - BITS_PER_BYTE + 1;
+pub const VARBITMAXLEN: usize = i32::MAX as usize - BITS_PER_BYTE + 1;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum BitStringError {
