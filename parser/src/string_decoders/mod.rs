@@ -5,7 +5,7 @@ mod unicode_decoder;
 
 pub use self::{
     basic_decoder::BasicStringDecoder,
-    bit_decoder::{BitStringDecoder, BitStringError},
+    bit_decoder::{BitStringDecoder, BitStringError, VARBITMAXLEN},
     extended_decoder::{
         ExtendedStringDecoder,
         ExtendedStringError,
