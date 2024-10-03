@@ -3,7 +3,7 @@ pub type Located<T> = (T, Location);
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Location {
-    range: Range<usize>,
+    range: Range<usize>, // in bytes
     line: usize,
     col: usize,
 }
@@ -17,7 +17,7 @@ impl Location {
 
     /// Slices the input source, according to the current range
     #[inline(always)]
-    pub fn slice<'src>(&self, source: &'src [u8]) -> &'src [u8] {
+    pub fn slice<'src>(&self, source: &'src str) -> &'src str {
         &source[self.range.clone()]
     }
 

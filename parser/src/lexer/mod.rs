@@ -44,7 +44,6 @@ impl Iterator for Lexer<'_> {
 
         let start_index = self.buffer.current_index();
         let token = self.lex_token(concatenable_whitespace);
-
         let location = self.buffer.location_starting_at(start_index);
 
         match token {
@@ -62,7 +61,7 @@ impl FusedIterator for Lexer<'_> {}
 impl<'src> Lexer<'src> {
 
     #[inline]
-    pub fn new(source: &'src [u8], standard_conforming_strings: bool) -> Self {
+    pub fn new(source: &'src str, standard_conforming_strings: bool) -> Self {
         Self {
             buffer: CharBuffer::new(source),
             standard_conforming_strings
@@ -70,7 +69,7 @@ impl<'src> Lexer<'src> {
     }
 
     #[inline(always)]
-    pub fn source(&self) -> &'src [u8] {
+    pub fn source(&self) -> &'src str {
         self.buffer.source()
     }
 
@@ -89,14 +88,14 @@ impl<'src> Lexer<'src> {
 
         // eof has already been filtered
         match self.buffer.consume_one().unwrap() {
-            b'(' => Ok(OpenParenthesis),
-            b')' => Ok(CloseParenthesis),
-            b',' => Ok(Comma),
-            b';' => Ok(Semicolon),
-            b'[' => Ok(OpenBracket),
-            b']' => Ok(CloseBracket),
-            b'.' => {
-                if self.buffer.consume_char(b'.') {
+            '(' => Ok(OpenParenthesis),
+            ')' => Ok(CloseParenthesis),
+            ',' => Ok(Comma),
+            ';' => Ok(Semicolon),
+            '[' => Ok(OpenBracket),
+            ']' => Ok(CloseBracket),
+            '.' => {
+                if self.buffer.consume_char('.') {
                     Ok(DotDot)
                 }
                 else if self.buffer.peek().is_some_and(is_decimal_digit) {
@@ -106,24 +105,24 @@ impl<'src> Lexer<'src> {
                     Ok(Dot)
                 }
             }
-            b':' => {
-                if self.buffer.consume_char(b':') {
+            ':' => {
+                if self.buffer.consume_char(':') {
                     Ok(Typecast)
                 }
-                else if self.buffer.consume_char(b'=') {
+                else if self.buffer.consume_char('=') {
                     Ok(ColonEquals)
                 }
                 else {
                     Ok(Colon)
                 }
             }
-            b'$' => match self.buffer.peek() {
+            '$' => match self.buffer.peek() {
                 Some(c) if is_decimal_digit(c) => self.lex_param(),
-                Some(b'$') => self.lex_dollar_string(), // empty delimiter
+                Some('$') => self.lex_dollar_string(), // empty delimiter
                 Some(c) if is_ident_start(c) => self.lex_dollar_string(),
-                _ => Err((UnexpectedChar { unknown: b'$' }, fn_info!())),
+                _ => Err((UnexpectedChar { unknown: '$' }, fn_info!())),
             }
-            b'\'' => {
+            '\'' => {
                 if self.standard_conforming_strings {
                     self.lex_quote_string(BasicString { concatenable: concatenable_string })
                 }
@@ -131,29 +130,29 @@ impl<'src> Lexer<'src> {
                     self.lex_extended_string(concatenable_string)
                 }
             }
-            b'"' => self.lex_quote_ident(QuotedIdentifier),
-            b'b' | b'B' => {
-                if self.buffer.consume_char(b'\'') {
+            '"' => self.lex_quote_ident(QuotedIdentifier),
+            'b' | 'B' => {
+                if self.buffer.consume_char('\'') {
                     return self.lex_bit_string(BinaryString)
                 }
                 self.lex_identifier()
             }
-            b'x' | b'X' => {
-                if self.buffer.consume_char(b'\'') {
+            'x' | 'X' => {
+                if self.buffer.consume_char('\'') {
                     return self.lex_bit_string(HexString)
                 }
                 self.lex_identifier()
             }
-            b'e' | b'E' => {
-                if self.buffer.consume_char(b'\'') {
+            'e' | 'E' => {
+                if self.buffer.consume_char('\'') {
                     return self.lex_extended_string(false)
                 }
                 self.lex_identifier()
             }
-            b'n' | b'N' => {
+            'n' | 'N' => {
                 // TODO: is there a need to check for nchar availability?
                 // https://github.com/postgres/postgres/blob/1d80d6b50e6401828fc445151375f9bde3f99ac6/src/backend/parser/scan.l#L539
-                if self.buffer.consume_char(b'\'') {
+                if self.buffer.consume_char('\'') {
                     let tok = if self.standard_conforming_strings {
                         self.lex_quote_string(NationalString)
                     }
@@ -164,17 +163,17 @@ impl<'src> Lexer<'src> {
                 }
                 self.lex_identifier()
             }
-            b'u' | b'U' => {
-                if self.buffer.consume_char(b'&') {
+            'u' | 'U' => {
+                if self.buffer.consume_char('&') {
                     match self.buffer.peek() {
-                        Some(b'\'') => { // u&'...'
+                        Some('\'') => { // u&'...'
                             if !self.standard_conforming_strings {
                                 return Err((UnsafeUnicodeString, fn_info!()))
                             }
                             self.buffer.consume_one();
                             self.lex_quote_string(UnicodeString)
                         }
-                        Some(b'"') => { // u&"..."
+                        Some('"') => { // u&"..."
                             self.buffer.consume_one();
                             self.lex_quote_ident(UnicodeIdentifier)
                         }
@@ -188,16 +187,16 @@ impl<'src> Lexer<'src> {
                     self.lex_identifier() // identifier starting with u/U
                 }
             }
-            b'0' => match self.buffer.peek() {
+            '0' => match self.buffer.peek() {
                 None => Ok(NumberLiteral { radix: 10 }),
                 Some(c) => match c {
-                    b'x' | b'X' => self.lex_hex_integer(),
-                    b'o' | b'O' => self.lex_oct_integer(),
-                    b'b' | b'B' => self.lex_bin_integer(),
+                    'x' | 'X' => self.lex_hex_integer(),
+                    'o' | 'O' => self.lex_oct_integer(),
+                    'b' | 'B' => self.lex_bin_integer(),
                     _ => self.lex_dec_integer(),
                 }
             }
-            b'1'..=b'9' => self.lex_dec_integer(),
+            '1'..='9' => self.lex_dec_integer(),
             op if is_op(op) => self.lex_operator(),
             id if is_ident_start(id) => self.lex_identifier(),
             unknown => {
@@ -219,7 +218,7 @@ impl<'src> Lexer<'src> {
         while self.buffer.peek().is_some_and(is_op) {
             let is_comment_start = {
                 let rem = self.buffer.remainder();
-                rem.starts_with(b"--") || rem.starts_with(b"/*")
+                rem.starts_with("--") || rem.starts_with("/*")
             };
             if is_comment_start {
                 // This condition never happens for the 1st char,
@@ -235,23 +234,23 @@ impl<'src> Lexer<'src> {
         // Length is guaranteed to be at least 1,
         // so it's safe to unwrap,
         // even though there's a push_back.
-        let op = self.buffer.slice(start_index);
+        let mut op = self.buffer.slice(start_index);
 
         match op {
-            b"%"  => Ok(Percent),
-            b"*"  => Ok(Mul),
-            b"+"  => Ok(Plus),
-            b"-"  => Ok(Minus),
-            b"/"  => Ok(Div),
-            b"<"  => Ok(Less),
-            b"="  => Ok(Equals),
-            b">"  => Ok(Greater),
-            b"^"  => Ok(Circumflex),
-            b"=>" => Ok(EqualsGreater),
-            b"<=" => Ok(LessEquals),
-            b">=" => Ok(GreaterEquals),
-            b"!=" => Ok(NotEquals),
-            b"<>" => Ok(NotEquals),
+            "%"  => Ok(Percent),
+            "*"  => Ok(Mul),
+            "+"  => Ok(Plus),
+            "-"  => Ok(Minus),
+            "/"  => Ok(Div),
+            "<"  => Ok(Less),
+            "="  => Ok(Equals),
+            ">"  => Ok(Greater),
+            "^"  => Ok(Circumflex),
+            "=>" => Ok(EqualsGreater),
+            "<=" => Ok(LessEquals),
+            ">=" => Ok(GreaterEquals),
+            "!=" => Ok(NotEquals),
+            "<>" => Ok(NotEquals),
             _ => {
                 // Custom operator with PG op chars can have '+' or '-' as suffixes.
                 // E.g., '?-' is a valid operator.
@@ -260,11 +259,16 @@ impl<'src> Lexer<'src> {
                     // Custom operators that only have SQL-standard chars
                     // cannot have '+' or '-' as suffixes.
                     // E.g., '=-' should be tokenized as '=' and '-' separately.
-                    let num = op.iter()
+                    let num = op.as_bytes()
+                        .iter()
                         .rev()
                         .take_while(|c| **c == b'+' || **c == b'-')
                         .count();
+                    // SAFETY: only returns ASCII chars ('+' and '-')
                     self.buffer.seek(self.buffer.current_index() - num);
+
+                    let len = op.len() - num;
+                    op = &op[..len];
                 }
 
                 if op.len() >= NAMEDATALEN {
@@ -292,7 +296,8 @@ impl<'src> Lexer<'src> {
             return Err((TrailingJunkAfterParameter, fn_info!()))
         }
 
-        let slice = self.buffer.slice(start_index);
+        // SAFETY: They're all ASCII decimal digits
+        let slice = self.buffer.slice(start_index).as_bytes();
 
         if slice.len() >= 10 && slice[0] > b'2' {
             // Careful with leading 0's.
@@ -337,8 +342,8 @@ impl<'src> Lexer<'src> {
         self.buffer.push_back();
         self.lex_dec_digits();
 
-        if self.buffer.consume_char(b'.') {
-            if self.buffer.peek().is_some_and(|c| c == b'.') {
+        if self.buffer.consume_char('.') {
+            if self.buffer.peek().is_some_and(|c| c == '.') {
                 // Don't consume '..' now.
                 // It'll get consumed later as DotDot.
                 self.buffer.push_back();
@@ -368,9 +373,9 @@ impl<'src> Lexer<'src> {
             )?
         */
 
-        let exp = self.buffer.consume_if(|c| c == b'E' || c == b'e');
+        let exp = self.buffer.consume_if(|c| c == 'E' || c == 'e');
         if exp.is_some() {
-            let sign = self.buffer.consume_if(|c| c == b'+' || c == b'-')
+            let sign = self.buffer.consume_if(|c| c == '+' || c == '-')
                 .is_some();
             let dec = self.lex_dec_digits();
             if !dec {
@@ -400,7 +405,7 @@ impl<'src> Lexer<'src> {
         }
 
         while consumed > 0 {
-            let underscore = self.buffer.consume_char(b'_');
+            let underscore = self.buffer.consume_char('_');
             consumed = self.buffer.consume_while(is_decimal_digit);
 
             if consumed == 0 && underscore {
@@ -426,7 +431,7 @@ impl<'src> Lexer<'src> {
         self.lex_prefixed_int(is_bin_digit, 2)
     }
 
-    fn lex_prefixed_int(&mut self, is_digit: impl Fn(u8) -> bool, radix: i32) -> LexResult {
+    fn lex_prefixed_int(&mut self, is_digit: impl Fn(char) -> bool, radix: u32) -> LexResult {
 
         self.buffer.consume_one(); // ignore [xXoObB]
 
@@ -435,13 +440,12 @@ impl<'src> Lexer<'src> {
         // /(_?{digit}+)*/
         let mut consumed = usize::MAX;
         while consumed > 0 {
-            self.buffer.consume_char(b'_');
+            self.buffer.consume_char('_');
             consumed = self.buffer.consume_while(&is_digit);
         }
 
-        let end_index = self.buffer.current_index();
-        let span = self.buffer.source();
-        let span = &span[start_index..end_index];
+        // SAFETY: They're all ASCII chars ('_', or decimal & hex digits)
+        let span = self.buffer.slice(start_index).as_bytes();
 
         if span.is_empty() || span.last().is_some_and(|c| *c == b'_') {
             return Err((InvalidInteger { radix }, fn_info!()))
@@ -470,7 +474,7 @@ impl<'src> Lexer<'src> {
                     };
                     return Err((err, fn_info!()))
                 },
-                Some(b'\'') => return Ok(BitStringLiteral(kind)),
+                Some('\'') => return Ok(BitStringLiteral(kind)),
                 _ => {}
             }
         }
@@ -485,11 +489,11 @@ impl<'src> Lexer<'src> {
                 return Err((UnterminatedQuotedIdentifier, fn_info!()))
             };
 
-            if c != b'"' {
+            if c != '"' {
                 continue
             }
 
-            if let Some(b'"') = self.buffer.peek() {
+            if let Some('"') = self.buffer.peek() {
                 // escaped double quote '""'
                 self.buffer.consume_one();
                 continue
@@ -511,11 +515,11 @@ impl<'src> Lexer<'src> {
                 return Err((UnterminatedQuotedString, fn_info!()))
             };
 
-            if c != b'\'' {
+            if c != '\'' {
                 continue
             }
 
-            if let Some(b'\'') = self.buffer.peek() {
+            if let Some('\'') = self.buffer.peek() {
                 self.buffer.consume_one();
                 continue
             }
@@ -535,12 +539,12 @@ impl<'src> Lexer<'src> {
                 return Err((UnterminatedQuotedString, fn_info!()))
             };
 
-            if c == b'\\' && self.buffer.consume_one().is_none() {
+            if c == '\\' && self.buffer.consume_one().is_none() {
                 return Err((UnterminatedQuotedString, fn_info!()))
             }
 
-            if c == b'\'' {
-                if let Some(b'\'') = self.buffer.peek() {
+            if c == '\'' {
+                if let Some('\'') = self.buffer.peek() {
                     self.buffer.consume_one();
                 }
                 else {
@@ -561,7 +565,7 @@ impl<'src> Lexer<'src> {
         let ident = self.buffer.slice(start_index)
             .to_ascii_lowercase();
 
-        if let Some(kw) = KeywordDetails::find(ident.as_slice()) {
+        if let Some(kw) = KeywordDetails::find(&ident) {
             return Ok(Keyword(kw))
         }
 
@@ -575,14 +579,14 @@ impl<'src> Lexer<'src> {
         // so it's easier to match and consume.
 
         let Some(delim) = self.lex_dollar_delim() else {
-            return Err((UnexpectedChar { unknown: b'$' }, fn_info!()))
+            return Err((UnexpectedChar { unknown: '$' }, fn_info!()))
         };
 
         loop {
             if self.buffer.eof() {
                 return Err((UnterminatedDollarQuotedString, fn_info!()))
             }
-            if self.buffer.consume_char(b'$') {
+            if self.buffer.consume_char('$') {
                 if self.buffer.consume_string(delim) {
                     return Ok(StringLiteral(DollarString));
                 }
@@ -593,13 +597,13 @@ impl<'src> Lexer<'src> {
     }
 
     #[inline] // Only called from a single place
-    fn lex_dollar_delim(&mut self) -> Option<&'src [u8]> {
+    fn lex_dollar_delim(&mut self) -> Option<&'src str> {
 
         // If we're here, then the 1st char is `is_ident_start` or '$' (empty delimiter)
 
         let start_index = self.buffer.current_index();
 
-        if self.buffer.consume_char(b'$') {
+        if self.buffer.consume_char('$') {
             // Empty delimiter
             let slice = self.buffer.slice(start_index);
             return Some(slice)
@@ -609,8 +613,9 @@ impl<'src> Lexer<'src> {
             self.buffer.consume_while(is_dollar_quote_cont);
         }
 
-        if !self.buffer.consume_char(b'$') {
+        if !self.buffer.consume_char('$') {
             // This is the only time the lexer needs to backtrack many chars.
+            // SAFETY: `start_index` was given by the buffer itself, so it's a safe and correct index to give back to it.
             self.buffer.seek(start_index);
             return None
         }
@@ -666,7 +671,7 @@ impl<'src> Lexer<'src> {
     #[inline] // Only called from a single place
     fn skip_comment(&mut self) -> bool {
 
-        if !self.buffer.consume_string(b"--") {
+        if !self.buffer.consume_string("--") {
             return false
         }
 
@@ -683,17 +688,17 @@ impl<'src> Lexer<'src> {
 
         let start_index = self.buffer.current_index();
 
-        if !self.buffer.consume_string(b"/*") {
+        if !self.buffer.consume_string("/*") {
             return Ok(false)
         }
 
         loop {
-            if self.buffer.remainder().starts_with(b"/*") {
+            if self.buffer.remainder().starts_with("/*") {
                 self.skip_block_comment()?;
                 continue
             }
 
-            if self.buffer.consume_string(b"*/") {
+            if self.buffer.consume_string("*/") {
                 return Ok(true)
             }
 
@@ -719,7 +724,7 @@ mod tests {
 
     #[test]
     fn test_empty_string() {
-        let source = b"";
+        let source = "";
         let mut lex = Lexer::new(source, true);
 
         assert_eq!(None, lex.next());
@@ -727,7 +732,7 @@ mod tests {
 
     #[test]
     fn test_whitespace() {
-        let source = b"\t\r\x0b\x0c\n \x0b\t\r\n \x0c\r\x0b\x0c \n\t";
+        let source = "\t\r\x0b\x0c\n \x0b\t\r\n \x0c\r\x0b\x0c \n\t";
         let mut lex = Lexer::new(source, true);
 
         assert_eq!(None, lex.next());
@@ -735,16 +740,16 @@ mod tests {
 
     #[test]
     fn test_unknown_char() {
-        let source = b"\x00";
+        let source = "\x00";
         let mut lex = Lexer::new(source, true);
 
-        assert_err(UnexpectedChar { unknown: b'\x00' }, 0..1, 1, 1, lex.next());
+        assert_err(UnexpectedChar { unknown: '\x00' }, 0..1, 1, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
     #[test]
     fn test_operators() {
-        let source = b". .. ( ) , ; [ ] : :: := % * + - / < = > ^ => <= >= != <>";
+        let source = ". .. ( ) , ; [ ] : :: := % * + - / < = > ^ => <= >= != <>";
         let mut lex = Lexer::new(source, true);
 
         assert_tok(Dot, 0..1, 1, 1, lex.next());
@@ -777,7 +782,7 @@ mod tests {
 
     #[test]
     fn test_user_defined_operators() {
-        let source = b"\
+        let source = "\
         //=-\n\
         -@-\n\
         ";
@@ -791,7 +796,7 @@ mod tests {
 
     #[test]
     fn test_param() {
-        let source = b"$0123";
+        let source = "$0123";
         let mut lex = Lexer::new(source, true);
 
         assert_tok(Param { index: 123 }, 0..5, 1, 1, lex.next());
@@ -800,7 +805,7 @@ mod tests {
 
     #[test]
     fn test_hex_number() {
-        let source = b"0x_1_C0e_E_a92";
+        let source = "0x_1_C0e_E_a92";
         let mut lex = Lexer::new(source, true);
 
         assert_tok(NumberLiteral { radix: 16 }, 0..14, 1, 1, lex.next());
@@ -809,7 +814,7 @@ mod tests {
 
     #[test]
     fn test_oct_number() {
-        let source = b"0o20155_53_7";
+        let source = "0o20155_53_7";
         let mut lex = Lexer::new(source, true);
 
         assert_tok(NumberLiteral { radix: 8 }, 0..12, 1, 1, lex.next());
@@ -818,7 +823,7 @@ mod tests {
 
     #[test]
     fn test_bin_number() {
-        let source = b"0b1_001000_01001_01101";
+        let source = "0b1_001000_01001_01101";
         let mut lex = Lexer::new(source, true);
 
         assert_tok(NumberLiteral { radix: 2 }, 0..22, 1, 1, lex.next());
@@ -827,7 +832,7 @@ mod tests {
 
     #[test]
     fn test_integer() {
-        let source = b"\
+        let source = "\
         0_010\n\
         9_8_7_6\n\
         0\
@@ -842,7 +847,7 @@ mod tests {
 
     #[test]
     fn test_integer_dot_dot() {
-        let source = b"184..";
+        let source = "184..";
         let mut lex = Lexer::new(source, true);
 
         assert_tok(NumberLiteral { radix: 10 }, 0..3, 1, 1, lex.next());
@@ -852,7 +857,7 @@ mod tests {
 
     #[test]
     fn test_float() {
-        let source = b"\
+        let source = "\
         .01_23e-043_5_00\n\
         475.\n\
         1.1\
@@ -867,7 +872,7 @@ mod tests {
 
     #[test]
     fn test_dollar_string_with_empty_delim() {
-        let source = b"$$some string$$";
+        let source = "$$some string$$";
         let mut lex = Lexer::new(source, true);
 
         assert_tok(StringLiteral(DollarString), 0..15, 1, 1, lex.next());
@@ -876,7 +881,7 @@ mod tests {
 
     #[test]
     fn test_dollar_string() {
-        let source = b"$foo$bar baz$foo$";
+        let source = "$foo$bar baz$foo$";
         let mut lex = Lexer::new(source, true);
 
         assert_tok(StringLiteral(DollarString), 0..17, 1, 1, lex.next());
@@ -885,7 +890,7 @@ mod tests {
 
     #[test]
     fn test_dollar_string_with_dollars() {
-        let source = b"$foo$dolla $ dolla $$ bill$$foo$";
+        let source = "$foo$dolla $ dolla $$ bill$$foo$";
         let mut lex = Lexer::new(source, true);
 
         assert_tok(StringLiteral(DollarString), 0..32, 1, 1, lex.next());
@@ -894,10 +899,10 @@ mod tests {
 
     #[test]
     fn test_dollar_string_mismatch() {
-        let source = b"$not a string";
+        let source = "$not a string";
         let mut lex = Lexer::new(source, true);
 
-        assert_err(UnexpectedChar { unknown: b'$' }, 0..1, 1, 1, lex.next());
+        assert_err(UnexpectedChar { unknown: '$' }, 0..1, 1, 1, lex.next());
         assert_kw(Reserved(Not), lex.next());
         assert_tok(Identifier(BasicIdentifier), 5..6, 1, 6, lex.next());
         assert_kw(Unreserved(StringKw), lex.next());
@@ -906,7 +911,7 @@ mod tests {
 
     #[test]
     fn test_quote_string() {
-        let source = b"\
+        let source = "\
         ''\n\
         'concatenable' '\\'''\n\
         N'national'\
@@ -922,7 +927,7 @@ mod tests {
 
     #[test]
     fn test_escape_strings() {
-        let source = b"\
+        let source = "\
         '''quotes\\''\n\
         e'''quotes\\''\n\
         n'national'\
@@ -937,7 +942,7 @@ mod tests {
 
     #[test]
     fn test_bit_string() {
-        let source = b"b'0_156e_wf' x'048_96a_f_d'"; // lexer doesn't validate chars
+        let source = "b'0_156e_wf' x'048_96a_f_d'"; // lexer doesn't validate chars
         let mut lex = Lexer::new(source, true);
 
         assert_tok(BitStringLiteral(BinaryString), 0..12, 1, 1, lex.next());
@@ -947,7 +952,7 @@ mod tests {
 
     #[test]
     fn test_unicode_string() {
-        let source = b"\
+        let source = "\
         u&''\n\
         U&'unicode\\'\
         ";
@@ -960,7 +965,7 @@ mod tests {
 
     #[test]
     fn test_identifier() {
-        let source = b"bar xyz efg nun ube foo u&x";
+        let source = "bar xyz efg nun ube foo u&x";
         let mut lex = Lexer::new(source, true);
         assert_tok(Identifier(BasicIdentifier), 0..3, 1, 1, lex.next());
         assert_tok(Identifier(BasicIdentifier), 4..7, 1, 5, lex.next());
@@ -976,7 +981,7 @@ mod tests {
 
     #[test]
     fn test_keyword() {
-        let source = b"SeLeCt FrOm";
+        let source = "SeLeCt FrOm";
         let mut lex = Lexer::new(source, true);
         assert_kw(Reserved(Select), lex.next());
         assert_kw(Reserved(From), lex.next());
@@ -985,7 +990,7 @@ mod tests {
 
     #[test]
     fn test_quote_ident() {
-        let source = b"\
+        let source = "\
         \"\"\n\
         \"\"\"escaped\"\n\
         u&\"uni\"\"code\"\
@@ -1008,7 +1013,11 @@ mod tests {
         let expected_loc = Location::new(range, line, col);
         let expected = (expected_kind, expected_loc);
 
-        assert_matches!(actual, Some(Ok(res)) if res == expected);
+        assert_matches!(
+            actual,
+            Some(Ok(res)) if res == expected,
+            "expected {expected:?} but got {actual:?}"
+        );
     }
 
     fn assert_err(

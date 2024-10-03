@@ -14,29 +14,36 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::{Reserved, Unreserved};
-use crate::lexer::ReservedKeyword::All;
-use crate::lexer::UnreservedKeyword::Close;
-use crate::parser::result::OptionalResult;
-use crate::parser::{ClosePortalStmt, OptResult, Parser};
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::Parser;
 
     #[test]
     fn test_close_all() {
-        let mut parser = Parser::new(b"close all", DEFAULT_CONFIG);
+        let mut parser = Parser::new("close all", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(ClosePortalStmt::All)), parser.close_stmt());
     }
 
     #[test]
     fn test_close_named() {
-        let mut parser = Parser::new(b"close abort", DEFAULT_CONFIG);
+        let mut parser = Parser::new("close abort", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(ClosePortalStmt::Name("abort".into()))), parser.close_stmt());
 
-        let mut parser = Parser::new(b"close ident", DEFAULT_CONFIG);
+        let mut parser = Parser::new("close ident", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(ClosePortalStmt::Name("ident".into()))), parser.close_stmt());
     }
 }
+
+use crate::lexer::{
+    Keyword::{Reserved, Unreserved},
+    ReservedKeyword::All,
+    UnreservedKeyword::Close,
+};
+use crate::parser::{
+    result::OptionalResult,
+    ClosePortalStmt,
+    OptResult,
+    Parser,
+};

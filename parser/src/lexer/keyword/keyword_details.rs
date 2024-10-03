@@ -1,19 +1,19 @@
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct KeywordDetails {
     keyword: Keyword,
-    text: &'static [u8],
+    text: &'static str,
     bare: bool,
 }
 
 impl KeywordDetails {
 
     #[inline(always)]
-    pub(super) const fn new(keyword: Keyword, text: &'static [u8], bare: bool) -> Self {
+    pub(super) const fn new(keyword: Keyword, text: &'static str, bare: bool) -> Self {
         KeywordDetails { keyword, text, bare }
     }
 
     #[inline(always)]
-    pub fn find(text: &[u8]) -> Option<&'static KeywordDetails> {
+    pub fn find(text: &str) -> Option<&'static KeywordDetails> {
         KEYWORDS.get(text)
     }
 
@@ -29,8 +29,7 @@ impl KeywordDetails {
 
     #[inline(always)]
     pub fn text(&self) -> &'static str {
-        // SAFETY: all keywords are ascii
-        unsafe { std::str::from_utf8_unchecked(self.text) }
+        self.text
     }
 
     #[inline(always)]
@@ -67,12 +66,9 @@ impl KeywordDetails {
 }
 
 impl Display for KeywordDetails {
+    #[inline(always)]
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-
-        // All keywords are ascii strings
-        let text = std::str::from_utf8(self.text).unwrap();
-
-        f.write_str(text)
+        f.write_str(self.text)
     }
 }
 
@@ -82,37 +78,37 @@ mod tests {
 
     #[test]
     fn test_unreserved() {
-        let kw = KEYWORDS.get(b"abort").unwrap();
+        let kw = KEYWORDS.get("abort").unwrap();
         assert_eq!(Some(UnreservedKeyword::Abort), kw.unreserved());
 
-        let kw = KEYWORDS.get(b"between").unwrap();
+        let kw = KEYWORDS.get("between").unwrap();
         assert_eq!(None, kw.unreserved());
     }
 
     #[test]
     fn test_col_name() {
-        let kw = KEYWORDS.get(b"between").unwrap();
+        let kw = KEYWORDS.get("between").unwrap();
         assert_eq!(Some(ColumnNameKeyword::Between), kw.col_name());
 
-        let kw = KEYWORDS.get(b"authorization").unwrap();
+        let kw = KEYWORDS.get("authorization").unwrap();
         assert_eq!(None, kw.col_name());
     }
 
     #[test]
     fn test_type_func_name() {
-        let kw = KEYWORDS.get(b"authorization").unwrap();
+        let kw = KEYWORDS.get("authorization").unwrap();
         assert_eq!(Some(TypeFuncNameKeyword::Authorization), kw.type_func_name());
 
-        let kw = KEYWORDS.get(b"analyze").unwrap();
+        let kw = KEYWORDS.get("analyze").unwrap();
         assert_eq!(None, kw.type_func_name());
     }
 
     #[test]
     fn test_reserved() {
-        let kw = KEYWORDS.get(b"analyze").unwrap();
+        let kw = KEYWORDS.get("analyze").unwrap();
         assert_eq!(Some(ReservedKeyword::Analyze), kw.reserved());
 
-        let kw = KEYWORDS.get(b"abort").unwrap();
+        let kw = KEYWORDS.get("abort").unwrap();
         assert_eq!(None, kw.reserved());
     }
 }

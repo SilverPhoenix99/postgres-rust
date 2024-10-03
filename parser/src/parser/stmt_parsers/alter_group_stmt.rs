@@ -60,7 +60,7 @@ mod tests {
 
     #[test]
     fn test_group_rename() {
-        let source = b"group some_group rename to new_group_name";
+        let source = "group some_group rename to new_group_name";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let expected = RenameStmt::Role {
@@ -73,7 +73,7 @@ mod tests {
 
     #[test]
     fn test_add_role_to_group() {
-        let source = b"group some_group add user current_role, new_user";
+        let source = "group some_group add user current_role, new_user";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let expected = AlterRoleStmt::new(
@@ -90,7 +90,7 @@ mod tests {
 
     #[test]
     fn test_drop_role_from_group() {
-        let source = b"group some_group drop user session_user, public";
+        let source = "group some_group drop user session_user, public";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let expected = AlterRoleStmt::new(
@@ -106,19 +106,18 @@ mod tests {
     }
 }
 
-use crate::lexer::ReservedKeyword::User;
 use crate::lexer::{
     Keyword::Reserved,
     KeywordDetails,
-    ReservedKeyword::{Group, To},
+    ReservedKeyword::{Group, To, User},
     UnreservedKeyword::{Add, DropKw, Rename},
 };
-use crate::parser::AlterRoleOption::RoleMembers;
 use crate::parser::{
     ast_node::RenameStmt,
     result::OptionalResult,
     token_buffer::TokenConsumer,
     AlterRoleAction,
+    AlterRoleOption::RoleMembers,
     AlterRoleStmt,
     AstNode,
     OptResult,

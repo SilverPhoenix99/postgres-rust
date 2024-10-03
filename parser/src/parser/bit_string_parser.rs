@@ -10,13 +10,12 @@ impl<'p, 'src> BitStringParser<'p, 'src> {
 
         let slice = loc.slice(self.0.buffer.source());
         let slice = &slice[2..(slice.len() - 1)]; // strip delimiters
-
-        let mut string = slice.to_vec();
+        let mut string = slice.to_owned();
 
         while let Ok(Some((suffix_kind, suffix_loc))) = self.try_consume_string() {
             let suffix_slice = suffix_loc.slice(self.0.buffer.source());
             let suffix_slice = strip_delimiters(suffix_kind, suffix_slice);
-            string.extend_from_slice(suffix_slice);
+            string.push_str(suffix_slice);
         }
 
         self.decode(kind, &string)
@@ -43,7 +42,7 @@ impl<'p, 'src> BitStringParser<'p, 'src> {
         )
     }
 
-    fn decode(&mut self, kind: BitStringKind, slice: &[u8]) -> OptResult<BitBox> {
+    fn decode(&mut self, kind: BitStringKind, slice: &str) -> OptResult<BitBox> {
 
         let result = BitStringDecoder::new(slice, kind == HexString)
             .decode();
@@ -66,7 +65,7 @@ mod tests {
     #[test]
     fn test_parse_binary_string() {
         let mut parser = new_parser(
-            b"b'0110'\n\
+            "b'0110'\n\
             '1001'"
         );
         let mut bit_string_parser = BitStringParser(&mut parser);
@@ -80,7 +79,7 @@ mod tests {
     #[test]
     fn test_parse_hex_string() {
         let mut parser = new_parser(
-            b"x'1f'\n\
+            "x'1f'\n\
             'a9'"
         );
         let mut bit_string_parser = BitStringParser(&mut parser);
@@ -96,8 +95,7 @@ mod tests {
         assert_eq!(Ok(Some(expected)), result);
     }
 
-
-    fn new_parser(source: &[u8]) -> Parser<'_> {
+    fn new_parser(source: &str) -> Parser<'_> {
         let config = ParserConfig::new(true, BackslashQuote::SafeEncoding);
         Parser::new(source, config)
     }

@@ -11,12 +11,6 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::Unreserved;
-use crate::lexer::UnreservedKeyword::Savepoint;
-use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::OptionalResult;
-use crate::parser::{OptResult, Parser};
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -24,7 +18,18 @@ mod tests {
 
     #[test]
     fn test_savepoint() {
-        let mut parser = Parser::new(b"savepoint test_ident", DEFAULT_CONFIG);
+        let mut parser = Parser::new("savepoint test_ident", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Savepoint("test_ident".into()))), parser.savepoint_stmt());
     }
 }
+
+use crate::lexer::{
+    Keyword::Unreserved,
+    UnreservedKeyword::Savepoint
+};
+use crate::parser::{
+    ast_node::TransactionStmt,
+    result::OptionalResult,
+    OptResult,
+    Parser,
+};

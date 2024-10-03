@@ -14,12 +14,6 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::Unreserved;
-use crate::lexer::UnreservedKeyword::{Start, Transaction};
-use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::OptionalResult;
-use crate::parser::{OptResult, Parser};
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -28,14 +22,25 @@ mod tests {
 
     #[test]
     fn test_start_transaction() {
-        let mut parser = Parser::new(b"start transaction", DEFAULT_CONFIG);
+        let mut parser = Parser::new("start transaction", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Start(Vec::new()))), parser.start_transaction_stmt());
     }
 
     #[test]
     fn test_start_transaction_with_transaction_modes() {
-        let mut parser = Parser::new(b"start transaction read only, read write deferrable", DEFAULT_CONFIG);
+        let mut parser = Parser::new("start transaction read only, read write deferrable", DEFAULT_CONFIG);
         let modes = vec![TransactionMode::ReadOnly, TransactionMode::ReadWrite, TransactionMode::Deferrable];
         assert_eq!(Ok(Some(TransactionStmt::Start(modes))), parser.start_transaction_stmt());
     }
 }
+
+use crate::lexer::{
+    Keyword::Unreserved,
+    UnreservedKeyword::{Start, Transaction},
+};
+use crate::parser::{
+    ast_node::TransactionStmt,
+    result::OptionalResult,
+    OptResult,
+    Parser,
+};

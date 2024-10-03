@@ -39,15 +39,6 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::ColumnNameKeyword::Time;
-use crate::lexer::Keyword::{ColumnName, Reserved, TypeFuncName, Unreserved};
-use crate::lexer::ReservedKeyword::All;
-use crate::lexer::TypeFuncNameKeyword::Authorization;
-use crate::lexer::UnreservedKeyword::{Isolation, Level, Session, Show, Transaction, Zone};
-use crate::parser::result::OptionalResult;
-use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::{OptResult, Parser, VariableShowStmt};
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -55,34 +46,49 @@ mod tests {
 
     #[test]
     fn test_show_stmt_all() {
-        let mut parser = Parser::new(b"show all", DEFAULT_CONFIG);
+        let mut parser = Parser::new("show all", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(VariableShowStmt::All)), parser.show_stmt());
     }
 
     #[test]
     fn test_show_stmt_session_authorization() {
-        let mut parser = Parser::new(b"show session authorization", DEFAULT_CONFIG);
+        let mut parser = Parser::new("show session authorization", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(VariableShowStmt::SessionAuthorization)), parser.show_stmt());
     }
 
     #[test]
     fn test_show_stmt_timezone() {
-        let mut parser = Parser::new(b"show time zone", DEFAULT_CONFIG);
+        let mut parser = Parser::new("show time zone", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(VariableShowStmt::TimeZone)), parser.show_stmt());
     }
 
     #[test]
     fn test_show_stmt_transaction_isolation() {
-        let mut parser = Parser::new(b"show transaction isolation level", DEFAULT_CONFIG);
+        let mut parser = Parser::new("show transaction isolation level", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(VariableShowStmt::TransactionIsolation)), parser.show_stmt());
     }
 
     #[test]
     fn test_show_stmt_var_name() {
-        let mut parser = Parser::new(b"show qualified.name", DEFAULT_CONFIG);
+        let mut parser = Parser::new("show qualified.name", DEFAULT_CONFIG);
 
         let expected = vec!["qualified".into(), "name".into()];
 
         assert_eq!(Ok(Some(VariableShowStmt::Name(expected))), parser.show_stmt());
     }
 }
+
+use crate::lexer::{
+    ColumnNameKeyword::Time,
+    Keyword::{ColumnName, Reserved, TypeFuncName, Unreserved},
+    ReservedKeyword::All,
+    TypeFuncNameKeyword::Authorization,
+    UnreservedKeyword::{Isolation, Level, Session, Show, Transaction, Zone},
+};
+use crate::parser::{
+    result::OptionalResult,
+    token_buffer::TokenConsumer,
+    OptResult,
+    Parser,
+    VariableShowStmt,
+};

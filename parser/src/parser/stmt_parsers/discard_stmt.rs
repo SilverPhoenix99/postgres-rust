@@ -19,14 +19,6 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::{Reserved, Unreserved};
-use crate::lexer::KeywordDetails;
-use crate::lexer::ReservedKeyword::All;
-use crate::lexer::UnreservedKeyword::{Discard, Plans, Sequences, Temp, Temporary};
-use crate::parser::result::OptionalResult;
-use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::{DiscardStmt, OptResult, Parser};
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -34,27 +26,41 @@ mod tests {
 
     #[test]
     fn test_discard_all() {
-        let mut parser = Parser::new(b"discard all", DEFAULT_CONFIG);
+        let mut parser = Parser::new("discard all", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(DiscardStmt::All)), parser.discard_stmt());
     }
 
     #[test]
     fn test_discard_plans() {
-        let mut parser = Parser::new(b"discard plans", DEFAULT_CONFIG);
+        let mut parser = Parser::new("discard plans", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(DiscardStmt::Plans)), parser.discard_stmt());
     }
 
     #[test]
     fn test_discard_sequences() {
-        let mut parser = Parser::new(b"discard sequences", DEFAULT_CONFIG);
+        let mut parser = Parser::new("discard sequences", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(DiscardStmt::Sequences)), parser.discard_stmt());
     }
 
     #[test]
     fn test_discard_temporary() {
-        let mut parser = Parser::new(b"discard temp", DEFAULT_CONFIG);
+        let mut parser = Parser::new("discard temp", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(DiscardStmt::Temporary)), parser.discard_stmt());
-        let mut parser = Parser::new(b"discard temporary", DEFAULT_CONFIG);
+        let mut parser = Parser::new("discard temporary", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(DiscardStmt::Temporary)), parser.discard_stmt());
     }
 }
+
+use crate::lexer::{
+    Keyword::{Reserved, Unreserved},
+    KeywordDetails,
+    ReservedKeyword::All,
+    UnreservedKeyword::{Discard, Plans, Sequences, Temp, Temporary},
+};
+use crate::parser::{
+    result::OptionalResult,
+    token_buffer::TokenConsumer,
+    DiscardStmt,
+    OptResult,
+    Parser
+};

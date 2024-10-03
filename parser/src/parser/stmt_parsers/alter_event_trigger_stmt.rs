@@ -85,7 +85,7 @@ mod tests {
 
     #[test]
     fn test_alter_enable() {
-        let mut parser = Parser::new(b"event trigger trigger_name enable", DEFAULT_CONFIG);
+        let mut parser = Parser::new("event trigger trigger_name enable", DEFAULT_CONFIG);
 
         let expected = AlterEventTrigStmt {
             trigger: "trigger_name".into(),
@@ -97,7 +97,7 @@ mod tests {
 
     #[test]
     fn test_alter_owner() {
-        let mut parser = Parser::new(b"event trigger trigger_name owner to public", DEFAULT_CONFIG);
+        let mut parser = Parser::new("event trigger trigger_name owner to public", DEFAULT_CONFIG);
 
         let expected = AlterOwnerStmt::EventTrigger {
             trigger: "trigger_name".into(),
@@ -109,7 +109,7 @@ mod tests {
 
     #[test]
     fn test_alter_rename() {
-        let mut parser = Parser::new(b"event trigger trigger_name rename to another_trigger", DEFAULT_CONFIG);
+        let mut parser = Parser::new("event trigger trigger_name rename to another_trigger", DEFAULT_CONFIG);
 
         let expected = RenameStmt::EventTrigger {
             trigger: "trigger_name".into(),
@@ -121,34 +121,46 @@ mod tests {
 
     #[test]
     fn test_disable() {
-        let mut parser = Parser::new(b"disable", DEFAULT_CONFIG);
+        let mut parser = Parser::new("disable", DEFAULT_CONFIG);
         assert_eq!(Ok(Disabled), parser.enable_trigger());
     }
 
     #[test]
     fn test_enable() {
-        let mut parser = Parser::new(b"enable", DEFAULT_CONFIG);
+        let mut parser = Parser::new("enable", DEFAULT_CONFIG);
         assert_eq!(Ok(FiresOnOrigin), parser.enable_trigger());
     }
 
     #[test]
     fn test_enable_replica() {
-        let mut parser = Parser::new(b"enable replica", DEFAULT_CONFIG);
+        let mut parser = Parser::new("enable replica", DEFAULT_CONFIG);
         assert_eq!(Ok(FiresOnReplica), parser.enable_trigger());
     }
 
     #[test]
     fn test_enable_always() {
-        let mut parser = Parser::new(b"enable always", DEFAULT_CONFIG);
+        let mut parser = Parser::new("enable always", DEFAULT_CONFIG);
         assert_eq!(Ok(FiresAlways), parser.enable_trigger());
     }
 }
 
-use crate::lexer::Keyword::{Reserved, Unreserved};
-use crate::lexer::ReservedKeyword::To;
-use crate::lexer::UnreservedKeyword::{Event, Trigger};
-use crate::lexer::{KeywordDetails, UnreservedKeyword, UnreservedKeyword::{Always, Disable, Enable, Replica}};
-use crate::parser::ast_node::AlterOwnerStmt;
-use crate::parser::AstNode::AlterEventTrigStmt;
-use crate::parser::{result::OptionalResult, token_buffer::TokenConsumer, AstNode, EventTriggerState, EventTriggerState::{Disabled, FiresAlways, FiresOnOrigin, FiresOnReplica}, OptResult, Parser, ParserErrorKind, RenameStmt, ReqResult};
-use UnreservedKeyword::{Owner, Rename};
+use crate::lexer::{
+    Keyword::{Reserved, Unreserved},
+    KeywordDetails,
+    ReservedKeyword::To,
+    UnreservedKeyword::{Always, Disable, Enable, Event, Owner, Rename, Replica, Trigger},
+};
+use crate::parser::{
+    ast_node::AlterOwnerStmt,
+    result::OptionalResult,
+    token_buffer::TokenConsumer,
+    AstNode,
+    AstNode::AlterEventTrigStmt,
+    EventTriggerState,
+    EventTriggerState::{Disabled, FiresAlways, FiresOnOrigin, FiresOnReplica},
+    OptResult,
+    Parser,
+    ParserErrorKind,
+    RenameStmt,
+    ReqResult,
+};

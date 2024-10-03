@@ -14,12 +14,6 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::Unreserved;
-use crate::lexer::TokenKind;
-use crate::lexer::UnreservedKeyword::Unlisten;
-use crate::parser::result::OptionalResult;
-use crate::parser::{OptResult, Parser, UnlistenStmt};
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -27,13 +21,25 @@ mod tests {
 
     #[test]
     fn test_unlisten_all() {
-        let mut parser = Parser::new(b"unlisten *", DEFAULT_CONFIG);
+        let mut parser = Parser::new("unlisten *", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(UnlistenStmt::All)), parser.unlisten_stmt());
     }
 
     #[test]
     fn test_unlisten_name() {
-        let mut parser = Parser::new(b"unlisten test_name", DEFAULT_CONFIG);
+        let mut parser = Parser::new("unlisten test_name", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(UnlistenStmt::Name("test_name".into()))), parser.unlisten_stmt());
     }
 }
+
+use crate::lexer::{
+    Keyword::Unreserved,
+    TokenKind,
+    UnreservedKeyword::Unlisten,
+};
+use crate::parser::{
+    result::OptionalResult,
+    OptResult,
+    Parser,
+    UnlistenStmt,
+};

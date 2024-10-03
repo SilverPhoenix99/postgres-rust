@@ -18,12 +18,6 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::{Reserved, Unreserved};
-use crate::lexer::ReservedKeyword::To;
-use crate::lexer::UnreservedKeyword::{By, OwnedKw, Reassign};
-use crate::parser::result::OptionalResult;
-use crate::parser::{OptResult, Parser, ReassignOwnedStmt};
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -32,7 +26,7 @@ mod tests {
 
     #[test]
     fn test_reassign_owner_stmt() {
-        let mut parser = Parser::new(b"reassign owned by public, test_role to target_role", DEFAULT_CONFIG);
+        let mut parser = Parser::new("reassign owned by public, test_role to target_role", DEFAULT_CONFIG);
 
         let expected = ReassignOwnedStmt::new(
             vec![RoleSpec::Public, RoleSpec::Name("test_role".into())],
@@ -42,3 +36,15 @@ mod tests {
         assert_eq!(Ok(Some(expected)), parser.reassign_owner_stmt());
     }
 }
+
+use crate::lexer::{
+    Keyword::{Reserved, Unreserved},
+    ReservedKeyword::To,
+    UnreservedKeyword::{By, OwnedKw, Reassign},
+};
+use crate::parser::{
+    result::OptionalResult,
+    OptResult,
+    Parser,
+    ReassignOwnedStmt,
+};

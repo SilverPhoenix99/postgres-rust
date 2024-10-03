@@ -25,7 +25,7 @@ mod tests {
         ];
 
         for source in sources {
-            let mut parser = Parser::new(source.as_bytes(), DEFAULT_CONFIG);
+            let mut parser = Parser::new(source, DEFAULT_CONFIG);
             let actual = parser.alter_stmt();
 
             // This only quickly tests that statement types aren't missing.

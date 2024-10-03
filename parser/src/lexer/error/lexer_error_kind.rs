@@ -2,7 +2,7 @@
 pub enum LexerErrorKind {
 
     #[error("Unexpected character {0:?}", *(.unknown) as char)]
-    UnexpectedChar { unknown: u8 },
+    UnexpectedChar { unknown: char },
 
     #[error("unterminated /* comment")]
     UnterminatedBlockComment,
@@ -23,7 +23,7 @@ pub enum LexerErrorKind {
             _ => "hexadecimal",
         }
     )]
-    InvalidInteger { radix: i32 },
+    InvalidInteger { radix: u32 },
 
     #[error("trailing junk after numeric literal")]
     TrailingJunkAfterNumericLiteral,

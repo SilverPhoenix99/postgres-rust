@@ -16,12 +16,6 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::{Reserved, Unreserved};
-use crate::lexer::ReservedKeyword::All;
-use crate::lexer::UnreservedKeyword::{Deallocate, Prepare};
-use crate::parser::result::OptionalResult;
-use crate::parser::{DeallocateStmt, OptResult, Parser};
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -29,15 +23,27 @@ mod tests {
 
     #[test]
     fn test_deallocate_all() {
-        let mut parser = Parser::new(b"deallocate all", DEFAULT_CONFIG);
+        let mut parser = Parser::new("deallocate all", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(DeallocateStmt::All)), parser.deallocate_stmt());
     }
 
     #[test]
     fn test_deallocate_named() {
-        let mut parser = Parser::new(b"deallocate abort", DEFAULT_CONFIG);
+        let mut parser = Parser::new("deallocate abort", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(DeallocateStmt::Name("abort".into()))), parser.deallocate_stmt());
-        let mut parser = Parser::new(b"deallocate ident", DEFAULT_CONFIG);
+        let mut parser = Parser::new("deallocate ident", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(DeallocateStmt::Name("ident".into()))), parser.deallocate_stmt());
     }
 }
+
+use crate::lexer::{
+    Keyword::{Reserved, Unreserved},
+    ReservedKeyword::All,
+    UnreservedKeyword::{Deallocate, Prepare},
+};
+use crate::parser::{
+    result::OptionalResult,
+    DeallocateStmt,
+    OptResult,
+    Parser,
+};

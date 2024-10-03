@@ -10,8 +10,8 @@ const IDENT_START_FLAG:   u16 = 0x01_00;
 
 const LOWERCASE_OFFSET: usize = (b'a' - b'A') as usize;
 
-const TABLE: [u16; 256] = const {
-    let mut table = [0; 256];
+const TABLE: [u16; 128] = const {
+    let mut table = [0; 128];
 
     table[b'\t'   as usize] = WHITESPACE_FLAG;
     table[b'\n'   as usize] = WHITESPACE_FLAG | NEW_LINE_FLAG;
@@ -63,79 +63,68 @@ const TABLE: [u16; 256] = const {
         c += 1;
     }
 
-    let mut c = b'\x80' as usize;
-    while c <= b'\xFF' as usize {
-        table[c] = IDENT_START_FLAG;
-        c += 1;
-    }
-
     table
 };
 
 #[inline(always)]
-pub fn is_whitespace(c: u8) -> bool {
-    TABLE[c as usize] & WHITESPACE_FLAG != 0
+pub fn is_whitespace(c: char) -> bool {
+    c.is_ascii() && TABLE[c as usize] & WHITESPACE_FLAG != 0
 }
 
 #[inline(always)]
-pub fn is_new_line(c: u8) -> bool {
-    TABLE[c as usize] & NEW_LINE_FLAG != 0
+pub fn is_new_line(c: char) -> bool {
+    c.is_ascii() && TABLE[c as usize] & NEW_LINE_FLAG != 0
 }
 
 #[inline(always)]
-pub fn is_op(c: u8) -> bool {
-    TABLE[c as usize] & OPERATOR_FLAG != 0
+pub fn is_op(c: char) -> bool {
+    c.is_ascii() && TABLE[c as usize] & OPERATOR_FLAG != 0
 }
 
 #[inline(always)]
-pub fn is_pg_op(c: u8) -> bool {
-    TABLE[c as usize] & PG_OPERATOR_FLAG != 0
+pub fn is_pg_op(c: char) -> bool {
+    c.is_ascii() && TABLE[c as usize] & PG_OPERATOR_FLAG != 0
 }
 
 #[inline(always)]
-pub fn is_sql_standard_op(c: u8) -> bool {
+pub fn is_sql_standard_op(c: char) -> bool {
     // the comparison means: it's an op, but not a PG op
-    TABLE[c as usize] & (OPERATOR_FLAG | PG_OPERATOR_FLAG) == OPERATOR_FLAG
+    c.is_ascii() && TABLE[c as usize] & (OPERATOR_FLAG | PG_OPERATOR_FLAG) == OPERATOR_FLAG
 }
 
 #[inline(always)]
-pub fn is_decimal_digit(c: u8) -> bool {
-    TABLE[c as usize] & DECIMAL_DIGIT_FLAG != 0
+pub fn is_decimal_digit(c: char) -> bool {
+    c.is_ascii() && TABLE[c as usize] & DECIMAL_DIGIT_FLAG != 0
 }
 
 #[inline(always)]
-pub fn is_hex_digit(c: u8) -> bool {
-    TABLE[c as usize] & HEX_DIGIT_FLAG != 0
+pub fn is_hex_digit(c: char) -> bool {
+    c.is_ascii() && TABLE[c as usize] & HEX_DIGIT_FLAG != 0
 }
 
 #[inline(always)]
-pub fn is_oct_digit(c: u8) -> bool {
-    TABLE[c as usize] & OCTAL_DIGIT_FLAG != 0
+pub fn is_oct_digit(c: char) -> bool {
+    c.is_ascii() && TABLE[c as usize] & OCTAL_DIGIT_FLAG != 0
 }
 
 #[inline(always)]
-pub fn is_bin_digit(c: u8) -> bool {
+pub fn is_bin_digit(c: char) -> bool {
     // b'0' = 0x30 == 0b0011_0000
     // b'1' = 0x31 == 0b0011_0001
-    c & b'\xFE' == b'0'
+    (c as u32) & (b'\xFE' as u32) == (b'0' as u32)
 }
 
 #[inline(always)]
-pub fn is_ident_start(c: u8) -> bool {
-    TABLE[c as usize] & IDENT_START_FLAG != 0
+pub fn is_ident_start(c: char) -> bool {
+    !c.is_ascii() || TABLE[c as usize] & IDENT_START_FLAG != 0
 }
 
 #[inline(always)]
-pub fn is_ident_cont(c: u8) -> bool {
-    TABLE[c as usize] & (IDENT_START_FLAG | DECIMAL_DIGIT_FLAG) != 0 || c == b'$'
+pub fn is_ident_cont(c: char) -> bool {
+    !c.is_ascii() || TABLE[c as usize] & (IDENT_START_FLAG | DECIMAL_DIGIT_FLAG) != 0 || c == '$'
 }
 
 #[inline(always)]
-pub fn is_dollar_quote_cont(c: u8) -> bool {
-    TABLE[c as usize] & (IDENT_START_FLAG | DECIMAL_DIGIT_FLAG) != 0
-}
-
-#[inline(always)]
-pub fn is_extended_ascii(c: u8) -> bool {
-    c >= b'\x80'
+pub fn is_dollar_quote_cont(c: char) -> bool {
+    !c.is_ascii() || TABLE[c as usize] & (IDENT_START_FLAG | DECIMAL_DIGIT_FLAG) != 0
 }

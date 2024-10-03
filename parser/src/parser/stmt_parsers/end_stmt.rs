@@ -13,11 +13,6 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::Reserved;
-use crate::lexer::ReservedKeyword::End;
-use crate::parser::ast_node::TransactionStmt;
-use crate::parser::{OptResult, Parser};
-
 #[cfg(test)]
 mod tests {
     use crate::parser::ast_node::TransactionStmt;
@@ -26,37 +21,47 @@ mod tests {
 
     #[test]
     fn test_end() {
-        let mut parser = Parser::new(b"end", DEFAULT_CONFIG);
+        let mut parser = Parser::new("end", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Commit { chain: false })), parser.end_stmt());
     }
 
     #[test]
     fn test_end_chain() {
-        let mut parser = Parser::new(b"end and chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("end and chain", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Commit { chain: true })), parser.end_stmt());
     }
 
     #[test]
     fn test_end_no_chain() {
-        let mut parser = Parser::new(b"end and no chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("end and no chain", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Commit { chain: false })), parser.end_stmt());
     }
 
     #[test]
     fn test_end_transaction() {
-        let mut parser = Parser::new(b"end transaction", DEFAULT_CONFIG);
+        let mut parser = Parser::new("end transaction", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Commit { chain: false })), parser.end_stmt());
     }
 
     #[test]
     fn test_end_transaction_chain() {
-        let mut parser = Parser::new(b"end transaction and chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("end transaction and chain", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Commit { chain: true })), parser.end_stmt());
     }
 
     #[test]
     fn test_end_transaction_no_chain() {
-        let mut parser = Parser::new(b"end transaction and no chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("end transaction and no chain", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Commit { chain: false })), parser.end_stmt());
     }
 }
+
+use crate::lexer::{
+    Keyword::Reserved,
+    ReservedKeyword::End,
+};
+use crate::parser::{
+    ast_node::TransactionStmt,
+    OptResult,
+    Parser,
+};

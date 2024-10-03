@@ -85,7 +85,7 @@ class KeywordsGenerator
   def render_keywords_map
 
     kws = keywords.map do |kw|
-      text = "b\"#{kw[:text]}\""
+      text = kw[:text].inspect
       category = kw[:category]
       keyword = kw[:keyword]
       bare = kw[:bare]
@@ -93,7 +93,7 @@ class KeywordsGenerator
     end
 
     [
-      "pub(super) static KEYWORDS: phf::Map<&'static [u8], KeywordDetails> = phf::phf_map! {",
+      "pub(super) static KEYWORDS: phf::Map<&'static str, KeywordDetails> = phf::phf_map! {",
       *kws,
       '};'
     ]

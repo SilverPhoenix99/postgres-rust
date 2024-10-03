@@ -9,24 +9,18 @@ impl<'p, 'src> StringParser<'p, 'src> {
         let Some((kind, loc)) = self.try_consume(false)? else { return Ok(None) };
 
         let slice = loc.slice(self.0.buffer.source());
-        let slice = strip_delimiters(kind, slice);
+        let mut string = strip_delimiters(kind, slice).to_owned();
 
         if kind == DollarString {
             // Not concatenable, and no escapes to deal with.
-
-            return match std::str::from_utf8(slice) {
-                Ok(string) => Ok(Some(string.to_owned())),
-                Err(err) => Err(Some(err.into())),
-            };
+            return Ok(Some(string));
         }
-
-        let mut string = slice.to_vec();
 
         let mut end_index = loc.range().end;
         while let Ok(Some((suffix_kind, suffix_loc))) = self.try_consume(true) {
             let suffix_slice = suffix_loc.slice(self.0.buffer.source());
             let suffix_slice = strip_delimiters(suffix_kind, suffix_slice);
-            string.extend_from_slice(suffix_slice);
+            string.push_str(suffix_slice);
             end_index = suffix_loc.range().end;
         }
 
@@ -52,13 +46,12 @@ impl<'p, 'src> StringParser<'p, 'src> {
         )
     }
 
-    fn decode_string(&mut self, kind: StringKind, slice: &[u8], loc: Location) -> OptResult<String> {
+    fn decode_string(&mut self, kind: StringKind, slice: &str, loc: Location) -> OptResult<String> {
 
         let result = match kind {
             BasicString { .. } | NationalString => {
-                BasicStringDecoder::new(slice, false)
-                    .decode()
-                    .map_err(Utf8Error::into)
+                let string = BasicStringDecoder::new(slice, false).decode();
+                Ok(string)
             },
             ExtendedString { .. } => {
                 let mut decoder = ExtendedStringDecoder::new(slice, self.0.config.backslash_quote());
@@ -89,14 +82,13 @@ impl<'p, 'src> StringParser<'p, 'src> {
     }
 }
 
-pub(super) fn strip_delimiters(kind: StringKind, slice: &[u8]) -> &[u8] {
+pub(super) fn strip_delimiters(kind: StringKind, slice: &str) -> &str {
     let range = match kind {
         DollarString => {
-            let delim_len = slice.iter()
-                .copied()
+            let delim_len = slice.chars()
                 .enumerate()
                 .skip(1)
-                .find(|(_, c)| *c == b'$')
+                .find(|(_, c)| *c == '$')
                 .map(|(i, _)| i + 1) // include the '$'
                 .unwrap();
 
@@ -106,7 +98,7 @@ pub(super) fn strip_delimiters(kind: StringKind, slice: &[u8]) -> &[u8] {
         BasicString { .. } => 1..(slice.len() - 1),
         ExtendedString { .. } => {
             // `e'`, `n'`, or `'`
-            let delim_len = if slice[0] == b'\'' { 1 } else { 2 };
+            let delim_len = if slice.starts_with('\'') { 1 } else { 2 };
             delim_len..(slice.len() - 1)
         }
         NationalString => 2..(slice.len() - 1),
@@ -124,7 +116,7 @@ mod tests {
 
     #[test]
     fn test_parse_basic_string() {
-        let mut parser = new_parser(b"'a basic string'");
+        let mut parser = new_parser("'a basic string'");
         let mut string_parser = StringParser(&mut parser);
 
         let result = string_parser.parse();
@@ -135,7 +127,7 @@ mod tests {
     fn test_parse_basic_string_concatenable() {
 
         let mut parser = new_parser(
-            b"'a basic string'\n\
+            "'a basic string'\n\
             ' that concatenates'"
         );
         let mut string_parser = StringParser(&mut parser);
@@ -146,7 +138,7 @@ mod tests {
 
     #[test]
     fn test_dollar_string() {
-        let mut parser = new_parser(b"$dollar$a $ string$dollar$");
+        let mut parser = new_parser("$dollar$a $ string$dollar$");
         let mut string_parser = StringParser(&mut parser);
 
         let result = string_parser.parse();
@@ -155,7 +147,7 @@ mod tests {
 
     #[test]
     fn test_unicode_string() {
-        let mut parser = new_parser(br"u&'!0061n unicode string' UESCAPE '!'");
+        let mut parser = new_parser(r"u&'!0061n unicode string' UESCAPE '!'");
         let mut string_parser = StringParser(&mut parser);
 
         let result = string_parser.parse();
@@ -164,14 +156,14 @@ mod tests {
 
     #[test]
     fn test_extended_string() {
-        let mut parser = new_parser(br"e'\u0061n extended string'");
+        let mut parser = new_parser(r"e'\u0061n extended string'");
         let mut string_parser = StringParser(&mut parser);
 
         let result = string_parser.parse();
         assert_eq!(Ok(Some("an extended string".into())), result);
     }
 
-    fn new_parser(source: &[u8]) -> Parser<'_> {
+    fn new_parser(source: &str) -> Parser<'_> {
         let config = ParserConfig::new(true, BackslashQuote::SafeEncoding);
         Parser::new(source, config)
     }
@@ -181,4 +173,3 @@ use crate::lexer::{StringKind, StringKind::*};
 use crate::parser::{token_buffer::TokenConsumer, OptResult, Parser, ParserErrorKind, ParserWarning};
 use crate::string_decoders::*;
 use postgres_basics::{Located, Location};
-use std::str::Utf8Error;
