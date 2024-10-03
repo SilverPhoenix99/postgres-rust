@@ -774,14 +774,6 @@ impl<'src> Parser<'src> {
         StringParser(self).parse()
     }
 
-    /// Aliases:
-    /// * `BCONST` as `BitStringLiteral`
-    /// * `XCONST` as `BitStringLiteral`
-    #[inline(always)]
-    fn bit_string(&mut self) -> OptResult<BitBox> {
-        BitStringParser(self).parse()
-    }
-
     /// Alias: `IDENT`
     #[inline(always)]
     fn identifier(&mut self) -> OptResult<String> {
@@ -1299,7 +1291,6 @@ mod tests {
 
 use self::{
     ast_node::CharacterSystemType,
-    bit_string_parser::BitStringParser,
     error::ParserErrorKind::*,
     ident_parser::IdentifierParser,
     result::{OptResult, OptionalResult, ReqResult, RequiredResult},
@@ -1319,7 +1310,6 @@ use crate::lexer::{
     TokenKind::{Comma, Semicolon},
     UnreservedKeyword
 };
-use bitvec::boxed::BitBox;
 use postgres_basics::{
     ascii::{is_hex_digit, is_whitespace},
     Located,

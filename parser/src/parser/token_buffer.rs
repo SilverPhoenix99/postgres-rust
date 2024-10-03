@@ -174,7 +174,7 @@ mod tests {
     use super::*;
     use crate::lexer::IdentifierKind::BasicIdentifier;
     use crate::parser::Lexer;
-    use crate::parser::ParserErrorKind::BitStringTooLong;
+    use crate::parser::ParserErrorKind::Syntax;
     use TokenKind::Identifier;
 
     #[test]
@@ -222,8 +222,8 @@ mod tests {
         let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
-        let result: OptResult<TokenKind> = buffer.consume(|_| Err(BitStringTooLong));
-        assert_eq!(Err(Some(BitStringTooLong)), result);
+        let result: OptResult<TokenKind> = buffer.consume(|_| Err(Syntax));
+        assert_eq!(Err(Some(Syntax)), result);
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
     }
 
