@@ -78,7 +78,7 @@ pub struct Parser<'src> {
 
 impl<'src> Parser<'src> {
 
-    pub fn new(source: &'src [u8], config: ParserConfig) -> Self {
+    pub fn new(source: &'src str, config: ParserConfig) -> Self {
         let lexer = Lexer::new(source, config.standard_conforming_strings());
         Self::with_lexer(lexer, config)
     }
@@ -638,17 +638,10 @@ impl<'src> Parser<'src> {
         let source = self.buffer.source();
 
         self.buffer.consume(|tok| {
-
             let NumberLiteral { radix } = tok else { return None };
             let radix = *radix;
-
-            loc.slice(source)
-                .iter()
-                .map(|d| (*d - b'0') as i32)
-                .try_fold(
-                    0i32,
-                    |acc, n| acc.checked_mul(radix)?.checked_add(n)
-                )
+            let slice = loc.slice(source);
+            i32::from_str_radix(slice, radix).ok()
         })
     }
 
@@ -796,7 +789,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Production: `UESCAPE SCONST`
-    fn uescape(&mut self) -> Result<u8, ParserErrorKind> {
+    fn uescape(&mut self) -> Result<char, ParserErrorKind> {
         use UnreservedKeyword::Uescape;
 
         // Try to consume UESCAPE + the string following it.
@@ -805,7 +798,7 @@ impl<'src> Parser<'src> {
         let uescape = self.buffer.consume_kw_eq(Unreserved(Uescape));
 
         match uescape {
-            Ok(None) | Err(None) => return Ok(b'\\'),
+            Ok(None) | Err(None) => return Ok('\\'),
             Err(Some(err)) => return Err(err),
             Ok(Some(_)) => {/* it matched */}
         }
@@ -836,27 +829,32 @@ impl<'src> Parser<'src> {
 
 /// Returns UESCAPE's escape char if the string is valid.
 #[inline] // Only called from a single place
-fn uescape_escape(source: &[u8]) -> Option<u8> {
+fn uescape_escape(source: &str) -> Option<char> {
 
-    if source.len() != 3
-        || source[0] != b'\''
-        || source[2] != b'\''
-    {
+    if source.len() != 3 {
+        // Only (some) ASCII chars are acceptable as the escape char
         return None
     }
 
-    let escape = source[1];
+    let mut chars = source.chars();
+    if !chars.next().is_some_and(|c| c == '\'') {
+        return None
+    }
 
+    let Some(escape) = chars.next() else { return None };
     if is_hex_digit(escape)
         || is_whitespace(escape)
-        || escape == b'+'
-        || escape == b'\''
-        || escape == b'"'
+        || escape == '+'
+        || escape == '\''
+        || escape == '"'
     {
         return None
     }
 
-    Some(escape)
+    match chars.next() {
+        Some('\'') => Some(escape),
+        _ => None
+    }
 }
 
 #[cfg(test)]
@@ -876,7 +874,7 @@ mod tests {
         ];
 
         for source in sources {
-            let mut parser = Parser::new(source.as_bytes(), DEFAULT_CONFIG);
+            let mut parser = Parser::new(source, DEFAULT_CONFIG);
             let actual = parser.toplevel_stmt();
 
             // This only quickly tests that statement types aren't missing.
@@ -911,7 +909,7 @@ mod tests {
         ];
 
         for source in sources {
-            let mut parser = Parser::new(source.as_bytes(), DEFAULT_CONFIG);
+            let mut parser = Parser::new(source, DEFAULT_CONFIG);
             let actual = parser.stmt();
 
             // This only quickly tests that statement types aren't missing.
@@ -924,30 +922,30 @@ mod tests {
 
     #[test]
     fn test_opt_transaction() {
-        let mut parser = Parser::new(b"transaction work", DEFAULT_CONFIG);
+        let mut parser = Parser::new("transaction work", DEFAULT_CONFIG);
         assert_eq!(Ok(()), parser.opt_transaction());
         assert_eq!(Ok(()), parser.opt_transaction());
     }
 
     #[test]
     fn test_opt_transaction_chain() {
-        let mut parser = Parser::new(b"", DEFAULT_CONFIG);
+        let mut parser = Parser::new("", DEFAULT_CONFIG);
         assert_eq!(Ok(false), parser.opt_transaction_chain());
 
-        let mut parser = Parser::new(b"and no chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("and no chain", DEFAULT_CONFIG);
         assert_eq!(Ok(false), parser.opt_transaction_chain());
 
-        let mut parser = Parser::new(b"and chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("and chain", DEFAULT_CONFIG);
         assert_eq!(Ok(true), parser.opt_transaction_chain());
     }
 
     #[test]
     fn test_opt_transaction_mode_list() {
-        let mut parser = Parser::new(b"no_match", DEFAULT_CONFIG);
+        let mut parser = Parser::new("no_match", DEFAULT_CONFIG);
         assert_eq!(Ok(None), parser.opt_transaction_mode_list());
 
         let mut parser = Parser::new(
-            b"read only , read write isolation level read committed",
+            "read only , read write isolation level read committed",
             DEFAULT_CONFIG
         );
 
@@ -964,7 +962,7 @@ mod tests {
     fn test_transaction_mode() {
 
         let mut parser = Parser::new(
-            b"\
+            "\
                 read only \
                 read write \
                 deferrable \
@@ -997,7 +995,7 @@ mod tests {
     fn test_isolation_level() {
 
         let mut parser = Parser::new(
-            b"\
+            "\
                 read committed \
                 read uncommitted \
                 repeatable read \
@@ -1020,7 +1018,7 @@ mod tests {
 
     #[test]
     fn test_var_name() {
-        let mut parser = Parser::new(b"test.qualified.name", DEFAULT_CONFIG);
+        let mut parser = Parser::new("test.qualified.name", DEFAULT_CONFIG);
         let expected = vec![
             "test".into(),
             "qualified".into(),
@@ -1033,7 +1031,7 @@ mod tests {
     #[test]
     fn test_numeric() {
 
-        let source = b"boolean smallint int integer bigint real float float(17) float(44) double precision";
+        let source = "boolean smallint int integer bigint real float float(17) float(44) double precision";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
         let actual = parser.numeric().unwrap().unwrap();
         assert_eq!(Bool, actual);
@@ -1076,7 +1074,7 @@ mod tests {
 
     #[test]
     fn test_i32_literal_paren() {
-        let mut parser = Parser::new(b" (123 )", DEFAULT_CONFIG);
+        let mut parser = Parser::new(" (123 )", DEFAULT_CONFIG);
         let actual = parser.i32_literal_paren().unwrap().unwrap();
         assert_eq!(123, actual);
     }
@@ -1101,7 +1099,7 @@ mod tests {
         ];
 
         for (expected, source) in sources {
-            let mut parser = Parser::new(source.as_bytes(), DEFAULT_CONFIG);
+            let mut parser = Parser::new(source, DEFAULT_CONFIG);
             let actual = parser.character();
             assert_eq!(
                 expected,
@@ -1113,7 +1111,7 @@ mod tests {
 
     #[test]
     fn test_signed_i32_literal() {
-        let mut parser = Parser::new(b"-123 +321", DEFAULT_CONFIG);
+        let mut parser = Parser::new("-123 +321", DEFAULT_CONFIG);
         let actual = parser.signed_i32_literal().unwrap().unwrap();
         assert_eq!(-123, actual);
         let actual = parser.signed_i32_literal().unwrap().unwrap();
@@ -1122,14 +1120,14 @@ mod tests {
 
     #[test]
     fn test_i32_literal() {
-        let mut parser = Parser::new(b"123", DEFAULT_CONFIG);
+        let mut parser = Parser::new("123", DEFAULT_CONFIG);
         let actual = parser.i32_literal().unwrap().unwrap();
         assert_eq!(123, actual);
     }
 
     #[test]
     fn test_role_list() {
-        let source = b"public , CuRrEnT_rOlE,CURRENT_USER, session_user ,coalesce,xxYYzz none";
+        let source = "public , CuRrEnT_rOlE,CURRENT_USER, session_user ,coalesce,xxYYzz none";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.role_list().unwrap();
@@ -1149,36 +1147,36 @@ mod tests {
     #[test]
     fn test_role_id() {
 
-        let mut parser = Parser::new(b"coalesce xxyyzz", DEFAULT_CONFIG);
+        let mut parser = Parser::new("coalesce xxyyzz", DEFAULT_CONFIG);
         let actual = parser.role_id().unwrap().unwrap();
         assert_eq!("coalesce", actual);
         let actual = parser.role_id().unwrap().unwrap();
         assert_eq!("xxyyzz", actual);
 
-        let mut parser = Parser::new(b"none", DEFAULT_CONFIG);
+        let mut parser = Parser::new("none", DEFAULT_CONFIG);
         let actual = parser.role_id().unwrap_err().unwrap();
         assert_eq!(ReservedRoleSpec("none"), actual);
 
-        let mut parser = Parser::new(b"public", DEFAULT_CONFIG);
+        let mut parser = Parser::new("public", DEFAULT_CONFIG);
         let actual = parser.role_id().unwrap_err().unwrap();
         assert_eq!(ReservedRoleSpec("public"), actual);
 
-        let mut parser = Parser::new(b"current_role", DEFAULT_CONFIG);
+        let mut parser = Parser::new("current_role", DEFAULT_CONFIG);
         let actual = parser.role_id().unwrap_err().unwrap();
         assert_eq!(ForbiddenRoleSpec("CURRENT_ROLE"), actual);
 
-        let mut parser = Parser::new(b"current_user", DEFAULT_CONFIG);
+        let mut parser = Parser::new("current_user", DEFAULT_CONFIG);
         let actual = parser.role_id().unwrap_err().unwrap();
         assert_eq!(ForbiddenRoleSpec("CURRENT_USER"), actual);
 
-        let mut parser = Parser::new(b"session_user", DEFAULT_CONFIG);
+        let mut parser = Parser::new("session_user", DEFAULT_CONFIG);
         let actual = parser.role_id().unwrap_err().unwrap();
         assert_eq!(ForbiddenRoleSpec("SESSION_USER"), actual);
     }
 
     #[test]
     fn test_role_spec() {
-        let source = b"public CuRrEnT_rOlE CURRENT_USER session_user coalesce xxyyzz";
+        let source = "public CuRrEnT_rOlE CURRENT_USER session_user coalesce xxyyzz";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.role_spec().unwrap().unwrap();
@@ -1194,18 +1192,18 @@ mod tests {
         let actual = parser.role_spec().unwrap().unwrap();
         assert_eq!(RoleSpec::Name("xxyyzz".into()), actual);
 
-        let mut parser = Parser::new(b"collate", DEFAULT_CONFIG);
+        let mut parser = Parser::new("collate", DEFAULT_CONFIG);
         let actual = parser.role_spec();
         assert_eq!(Ok(None), actual);
 
-        let mut parser = Parser::new(b"none", DEFAULT_CONFIG);
+        let mut parser = Parser::new("none", DEFAULT_CONFIG);
         let actual = parser.role_spec().unwrap_err().unwrap();
         assert_eq!(ReservedRoleSpec("none"), actual);
     }
 
     #[test]
     fn test_col_id() {
-        let source = b"cascaded xxyyzz coalesce";
+        let source = "cascaded xxyyzz coalesce";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.col_id().unwrap().unwrap();
@@ -1218,7 +1216,7 @@ mod tests {
 
     #[test]
     fn test_type_function_name() {
-        let source = b"before xxyyzz collation";
+        let source = "before xxyyzz collation";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.type_function_name().unwrap().unwrap();
@@ -1231,7 +1229,7 @@ mod tests {
 
     #[test]
     fn test_non_reserved_word() {
-        let source = b"breadth xxyyzz boolean authorization";
+        let source = "breadth xxyyzz boolean authorization";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.non_reserved_word().unwrap().unwrap();
@@ -1246,7 +1244,7 @@ mod tests {
 
     #[test]
     fn test_col_label() {
-        let source = b"sequence xxyyzz character";
+        let source = "sequence xxyyzz character";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.col_label().unwrap().unwrap();
@@ -1259,7 +1257,7 @@ mod tests {
 
     #[test]
     fn test_bare_col_label() {
-        let source = b"sequence xxyyzz";
+        let source = "sequence xxyyzz";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.bare_col_label().unwrap().unwrap();
@@ -1270,7 +1268,7 @@ mod tests {
 
     #[test]
     fn test_string() {
-        let source = b"'test string'";
+        let source = "'test string'";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.string().unwrap().unwrap();
@@ -1280,7 +1278,7 @@ mod tests {
 
     #[test]
     fn test_identifier() {
-        let source = b"tEsT_iDeNtIfIeR";
+        let source = "tEsT_iDeNtIfIeR";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.identifier().unwrap().unwrap();
@@ -1290,12 +1288,12 @@ mod tests {
 
     #[test]
     fn test_uescape() {
-        let source = b"UESCAPE '!'";
+        let source = "UESCAPE '!'";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.uescape().unwrap();
 
-        assert_eq!(b'!', actual);
+        assert_eq!('!', actual);
     }
 }
 

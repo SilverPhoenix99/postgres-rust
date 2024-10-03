@@ -4,16 +4,16 @@ pub use self::unicode_string_error::UnicodeStringError;
 
 pub struct UnicodeStringDecoder<'src> {
     input: CharBuffer<'src>,
-    quote: u8,
-    escape: u8,
+    quote: char,
+    escape: char,
 }
 
 impl<'src> UnicodeStringDecoder<'src> {
 
-    pub fn new(source: &'src [u8], is_ident: bool, escape: u8) -> Self {
+    pub fn new(source: &'src str, is_ident: bool, uescape: char) -> Self {
         let input = CharBuffer::new(source);
-        let quote = if is_ident { b'"' } else { b'\'' };
-        Self { input, quote, escape }
+        let quote = if is_ident { '"' } else { '\'' };
+        Self { input, quote, escape: uescape }
     }
 
     pub fn decode(&mut self) -> Result<String, UnicodeStringError> {
@@ -24,7 +24,7 @@ impl<'src> UnicodeStringDecoder<'src> {
         // '' -> '
         // "" -> "
 
-        let mut out = Vec::with_capacity(self.input.source().len());
+        let mut out = String::with_capacity(self.input.source().len());
 
         while let Some(c) = self.input.consume_one() {
 
@@ -50,35 +50,22 @@ impl<'src> UnicodeStringDecoder<'src> {
             }
 
             let c = self.consume_unicode()?;
-
-            let len = c.len_utf8();
-            if len == 1 {
-                // fast path
-                out.push(c as u8);
-                continue
-            }
-
-            // Avoid allocating a string, by encoding the char directly,
-            // and pushing the raw bytes directly into the output buffer.
-            let mut buff = [0; 4];
-            c.encode_utf8(&mut buff);
-            out.extend_from_slice(&buff[..len]);
+            out.push(c);
         }
 
-        String::from_utf8(out)
-            .map_err(|err| Utf8(err.utf8_error()))
+        Ok(out)
     }
 
     fn consume_unicode(&mut self) -> Result<char, UnicodeStringError> {
 
         let start_index = self.input.current_index() - 1; // include `\`
-        let unicode_len = if self.input.consume_char(b'+') { 6 } else { 4 };
+        let unicode_len = if self.input.consume_char('+') { 6 } else { 4 };
 
         let first = match self.input.consume_unicode_char(unicode_len) {
             Ok(UnicodeChar::Utf8(c)) => return Ok(c),
             Ok(SurrogateFirst(first)) => Ok(first),
             Ok(SurrogateSecond(_)) => Err(InvalidUnicodeSurrogatePair(start_index)),
-            Err(LenTooShort(_)) => Err(InvalidUnicodeEscape(start_index)),
+            Err(LenTooShort) => Err(InvalidUnicodeEscape(start_index)),
             Err(UnicodeCharError::InvalidUnicodeValue) => Err(InvalidUnicodeValue(start_index))
         }?;
 
@@ -89,7 +76,7 @@ impl<'src> UnicodeStringDecoder<'src> {
             return Err(invalid_pair)
         }
 
-        let unicode_len = if self.input.consume_char(b'+') { 6 } else { 4 };
+        let unicode_len = if self.input.consume_char('+') { 6 } else { 4 };
 
         let Ok(SurrogateSecond(second)) = self.input.consume_unicode_char(unicode_len) else {
             return Err(invalid_pair)
@@ -105,12 +92,9 @@ mod tests {
 
     #[test]
     fn test_unicode_string() {
-        let source = br"''d!0061t\+000061 a!!b \";
-        let mut decoder = UnicodeStringDecoder::new(source, false, b'!');
-        assert_eq!(
-            Ok(r"'dat\+000061 a!b \".to_string()),
-            decoder.decode()
-        )
+        let source = r"''d!0061t\+000061 a!!b \";
+        let mut decoder = UnicodeStringDecoder::new(source, false, '!');
+        assert_eq!(r"'dat\+000061 a!b \", decoder.decode().unwrap())
     }
 }
 

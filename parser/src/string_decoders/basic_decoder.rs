@@ -1,18 +1,16 @@
 pub struct BasicStringDecoder<'src> {
-    source: &'src [u8],
+    source: &'src str,
     is_ident: bool
 }
 
 impl<'src> BasicStringDecoder<'src> {
 
     #[inline(always)]
-    pub fn new(source: &'src [u8], is_ident: bool) -> BasicStringDecoder<'src> {
+    pub fn new(source: &'src str, is_ident: bool) -> BasicStringDecoder<'src> {
         BasicStringDecoder { source, is_ident }
     }
 
-    pub fn decode(&self) -> Result<String, Utf8Error> {
-
-        let src = std::str::from_utf8(self.source)?;
+    pub fn decode(&self) -> String {
 
         let (quote, escape) = if self.is_ident {
             (r#"""#, r#""""#)
@@ -21,10 +19,7 @@ impl<'src> BasicStringDecoder<'src> {
             ("'", "''")
         };
 
-        let string = src.to_string()
-            .replace(escape, quote);
-
-        Ok(string)
+        self.source.replace(escape, quote)
     }
 }
 
@@ -34,13 +29,8 @@ mod tests {
 
     #[test]
     fn test_basic_string() {
-        let src = b"don''t do what Donny Dont does";
+        let src = "don''t do what Donny Dont does";
         let decoder = BasicStringDecoder::new(src, false);
-        assert_eq!(
-            Ok("don't do what Donny Dont does".to_string()),
-            decoder.decode()
-        )
+        assert_eq!("don't do what Donny Dont does", decoder.decode())
     }
 }
-
-use std::str::Utf8Error;

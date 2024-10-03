@@ -9,10 +9,6 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::Unreserved;
-use crate::lexer::UnreservedKeyword::Load;
-use crate::parser::{OptResult, Parser};
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -20,7 +16,13 @@ mod tests {
 
     #[test]
     fn test_load_stmt() {
-        let mut parser = Parser::new(b"load 'test string'", DEFAULT_CONFIG);
+        let mut parser = Parser::new("load 'test string'", DEFAULT_CONFIG);
         assert_eq!(Ok(Some("test string".into())), parser.load_stmt());
     }
 }
+
+use crate::lexer::{
+    Keyword::Unreserved,
+    UnreservedKeyword::Load,
+};
+use crate::parser::{OptResult, Parser};

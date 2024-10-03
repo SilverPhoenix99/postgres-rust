@@ -20,18 +20,12 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
         let slice = loc.slice(self.0.buffer.source());
 
         let ident = match kind {
-            BasicIdentifier => {
-                match std::str::from_utf8(slice) {
-                    Ok(s) => Ok(s.to_string().to_lowercase()),
-                    Err(err) => Err(err.into())
-                }
-            },
+            BasicIdentifier => Ok(slice.to_string().to_lowercase()),
             QuotedIdentifier => {
                 // Strip delimiters:
                 let slice = &slice[1..slice.len() - 1];
-                BasicStringDecoder::new(slice, true)
-                    .decode()
-                    .map_err(Utf8Error::into)
+                let ident = BasicStringDecoder::new(slice, true).decode();
+                Ok(ident)
             },
             UnicodeIdentifier => {
 
@@ -70,7 +64,7 @@ mod tests {
 
     #[test]
     fn test_basic_ident() {
-        let mut parser = new_parser(b"sOmE_iDeNtIfIeR");
+        let mut parser = new_parser("sOmE_iDeNtIfIeR");
         let mut ident_parser = IdentifierParser(&mut parser);
 
         assert_eq!(Ok(Some("some_identifier".into())), ident_parser.parse());
@@ -78,7 +72,7 @@ mod tests {
 
     #[test]
     fn test_quoted_ident() {
-        let mut parser = new_parser(br#""quoted""#);
+        let mut parser = new_parser(r#""quoted""#);
         let mut ident_parser = IdentifierParser(&mut parser);
 
         assert_eq!(Ok(Some("quoted".into())), ident_parser.parse());
@@ -86,7 +80,7 @@ mod tests {
 
     #[test]
     fn test_unicode_ident() {
-        let mut parser = new_parser(br#"u&"d\0061ta""#);
+        let mut parser = new_parser(r#"u&"d\0061ta""#);
         let mut ident_parser = IdentifierParser(&mut parser);
 
         assert_eq!(Ok(Some("data".into())), ident_parser.parse());
@@ -94,13 +88,13 @@ mod tests {
 
     #[test]
     fn test_unicode_ident_with_uescape() {
-        let mut parser = new_parser(br#"u&"d!0061ta" UESCAPE '!'"#);
+        let mut parser = new_parser(r#"u&"d!0061ta" UESCAPE '!'"#);
         let mut ident_parser = IdentifierParser(&mut parser);
 
         assert_eq!(Ok(Some("data".into())), ident_parser.parse());
     }
 
-    fn new_parser(source: &[u8]) -> Parser<'_> {
+    fn new_parser(source: &str) -> Parser<'_> {
         let config = ParserConfig::new(true, BackslashQuote::SafeEncoding);
         Parser::new(source, config)
     }
@@ -111,4 +105,3 @@ use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::{OptResult, Parser, ParserErrorKind};
 use crate::string_decoders::{BasicStringDecoder, UnicodeStringDecoder};
 use postgres_basics::NAMEDATALEN;
-use std::str::Utf8Error;

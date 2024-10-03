@@ -87,7 +87,7 @@ pub enum TokenKind {
     Param { index: i32 },
     Identifier(IdentifierKind),
     Keyword(&'static KeywordDetails),
-    NumberLiteral { radix: i32 },
+    NumberLiteral { radix: u32 },
     StringLiteral(StringKind),
     BitStringLiteral(BitStringKind),
 }
@@ -180,52 +180,52 @@ mod tests {
 
     #[test]
     fn test_unreserved_keyword() {
-        let kw = KeywordDetails::find(b"abort").unwrap();
+        let kw = KeywordDetails::find("abort").unwrap();
         assert_eq!(Some(kw), Keyword(kw).unreserved_keyword());
 
-        let kw = KeywordDetails::find(b"between").unwrap();
+        let kw = KeywordDetails::find("between").unwrap();
         assert_eq!(None, Keyword(kw).unreserved_keyword())
     }
 
     #[test]
     fn test_col_name_keyword() {
-        let kw = KeywordDetails::find(b"between").unwrap();
+        let kw = KeywordDetails::find("between").unwrap();
         assert_eq!(Some(kw), Keyword(kw).col_name_keyword());
 
-        let kw = KeywordDetails::find(b"authorization").unwrap();
+        let kw = KeywordDetails::find("authorization").unwrap();
         assert_eq!(None, Keyword(kw).col_name_keyword())
     }
 
     #[test]
     fn test_type_func_name_keyword() {
-        let kw = KeywordDetails::find(b"authorization").unwrap();
+        let kw = KeywordDetails::find("authorization").unwrap();
         assert_eq!(Some(kw), Keyword(kw).type_func_name_keyword());
 
-        let kw = KeywordDetails::find(b"analyze").unwrap();
+        let kw = KeywordDetails::find("analyze").unwrap();
         assert_eq!(None, Keyword(kw).type_func_name_keyword())
     }
 
     #[test]
     fn test_reserved_keyword() {
-        let kw = KeywordDetails::find(b"analyze").unwrap();
+        let kw = KeywordDetails::find("analyze").unwrap();
         assert_eq!(Some(kw), Keyword(kw).reserved_keyword());
 
-        let kw = KeywordDetails::find(b"abort").unwrap();
+        let kw = KeywordDetails::find("abort").unwrap();
         assert_eq!(None, Keyword(kw).reserved_keyword())
     }
 
     #[test]
     fn test_bare_label_keyword() {
-        let kw = KeywordDetails::find(b"abort").unwrap();
+        let kw = KeywordDetails::find("abort").unwrap();
         assert_eq!(Some(kw), Keyword(kw).bare_label_keyword());
 
-        let kw = KeywordDetails::find(b"array").unwrap();
+        let kw = KeywordDetails::find("array").unwrap();
         assert_eq!(None, Keyword(kw).bare_label_keyword())
     }
 
     #[test]
     fn test_keyword() {
-        let kw = KeywordDetails::find(b"between").unwrap();
+        let kw = KeywordDetails::find("between").unwrap();
         assert_eq!(Some(kw), Keyword(kw).keyword());
 
         assert_eq!(None, Semicolon.keyword());

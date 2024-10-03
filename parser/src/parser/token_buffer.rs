@@ -11,7 +11,7 @@ impl<'src> TokenBuffer<'src> {
     }
 
     #[inline(always)]
-    pub fn source(&self) -> &'src [u8] {
+    pub fn source(&self) -> &'src str {
         self.lexer.source()
     }
 
@@ -179,7 +179,7 @@ mod tests {
 
     #[test]
     fn test_eof() {
-        let lexer = Lexer::new(b"", true);
+        let lexer = Lexer::new("", true);
         let buffer =  TokenBuffer::new(lexer);
 
         assert!(buffer.eof())
@@ -187,7 +187,7 @@ mod tests {
 
     #[test]
     fn test_next_and_peek_and_current_location() {
-        let lexer = Lexer::new(b"two identifiers", true);
+        let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
         assert_matches!(buffer.peek(), Some(Ok((_, _))));
@@ -206,7 +206,7 @@ mod tests {
 
     #[test]
     fn test_consume_eq() {
-        let lexer = Lexer::new(b"two identifiers", true);
+        let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
         assert_eq!(Ok(None), buffer.consume_eq(TokenKind::Comma));
@@ -219,7 +219,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_err() {
-        let lexer = Lexer::new(b"two identifiers", true);
+        let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
         let result: OptResult<TokenKind> = buffer.consume(|_| Err(BitStringTooLong));
@@ -229,7 +229,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_ok() {
-        let lexer = Lexer::new(b"two identifiers", true);
+        let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
         let result = buffer.consume(|tok| Ok(Some(*tok)));
@@ -239,7 +239,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_none() {
-        let lexer = Lexer::new(b"two identifiers", true);
+        let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
         let result: OptResult<TokenKind> = buffer.consume(|_| None);
@@ -249,7 +249,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_some() {
-        let lexer = Lexer::new(b"two identifiers", true);
+        let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
         let result = buffer.consume(|tok| Some(*tok));
@@ -259,7 +259,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_false() {
-        let lexer = Lexer::new(b"two identifiers", true);
+        let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
         let result = buffer.consume(|_| false);
@@ -269,7 +269,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_true() {
-        let lexer = Lexer::new(b"two identifiers", true);
+        let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
         let result = buffer.consume(|_| true);

@@ -37,13 +37,6 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::{Reserved, Unreserved};
-use crate::lexer::ReservedKeyword::To;
-use crate::lexer::UnreservedKeyword::{Prepared, Rollback, Savepoint};
-use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::OptionalResult;
-use crate::parser::{OptResult, Parser, ParserErrorKind};
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -51,67 +44,80 @@ mod tests {
 
     #[test]
     fn test_rollback() {
-        let mut parser = Parser::new(b"rollback", DEFAULT_CONFIG);
+        let mut parser = Parser::new("rollback", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: false })), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_chain() {
-        let mut parser = Parser::new(b"rollback and chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("rollback and chain", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: true })), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_no_chain() {
-        let mut parser = Parser::new(b"rollback and no chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("rollback and no chain", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: false })), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_to() {
-        let mut parser = Parser::new(b"rollback to test_ident", DEFAULT_CONFIG);
+        let mut parser = Parser::new("rollback to test_ident", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::RollbackTo("test_ident".into()))), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_to_savepoint() {
-        let mut parser = Parser::new(b"rollback to savepoint test_ident", DEFAULT_CONFIG);
+        let mut parser = Parser::new("rollback to savepoint test_ident", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::RollbackTo("test_ident".into()))), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_transaction() {
-        let mut parser = Parser::new(b"rollback transaction", DEFAULT_CONFIG);
+        let mut parser = Parser::new("rollback transaction", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: false })), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_transaction_chain() {
-        let mut parser = Parser::new(b"rollback transaction and chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("rollback transaction and chain", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: true })), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_transaction_no_chain() {
-        let mut parser = Parser::new(b"rollback transaction and no chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("rollback transaction and no chain", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: false })), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_transaction_to() {
-        let mut parser = Parser::new(b"rollback transaction to test_ident", DEFAULT_CONFIG);
+        let mut parser = Parser::new("rollback transaction to test_ident", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::RollbackTo("test_ident".into()))), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_transaction_to_savepoint() {
-        let mut parser = Parser::new(b"rollback transaction to savepoint test_ident", DEFAULT_CONFIG);
+        let mut parser = Parser::new("rollback transaction to savepoint test_ident", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::RollbackTo("test_ident".into()))), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_prepared() {
-        let mut parser = Parser::new(b"rollback prepared 'test-string'", DEFAULT_CONFIG);
+        let mut parser = Parser::new("rollback prepared 'test-string'", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::RollbackPrepared("test-string".into()))), parser.rollback_stmt());
     }
 }
+
+use crate::lexer::{
+    Keyword::{Reserved, Unreserved},
+    ReservedKeyword::To,
+    UnreservedKeyword::{Prepared, Rollback, Savepoint},
+};
+use crate::parser::{
+    ast_node::TransactionStmt,
+    result::OptionalResult,
+    OptResult,
+    Parser,
+    ParserErrorKind,
+};

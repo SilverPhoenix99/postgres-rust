@@ -19,7 +19,7 @@ pub struct ExtendedStringResult {
 impl<'src> ExtendedStringDecoder<'src> {
 
     #[inline]
-    pub fn new(source: &'src [u8], backslash_quote: BackslashQuote) -> Self {
+    pub fn new(source: &'src str, backslash_quote: BackslashQuote) -> Self {
         let input = CharBuffer::new(source);
         Self { input, backslash_quote }
     }
@@ -28,31 +28,31 @@ impl<'src> ExtendedStringDecoder<'src> {
         // see `<xe>` and <xeu> rules in
         // [scan.l](https://github.com/postgres/postgres/blob/77761ee5dddc0518235a51c533893e81e5f375b9/src/backend/parser/scan.l#L275-L281)
 
-        // b"''" => b'\''
-        // b"\\'" => b'\''
+        // "''" => '\''
+        // "\\'" => '\''
         //   * backslash_quote in (SafeEncoding, Off) => Err (TO DO: check client encoding)
         //   * TO DO: check_string_escape_warning
-        // [\\](b|f|n|r|t|v) => b'\b' | b'\f' | b'\n' | b'\r' | b'\t' | b'\v'
+        // [\\](b|f|n|r|t|v) => '\b' | '\f' | '\n' | '\r' | '\t' | '\v'
         // [\\][^0-7'bfnrtv\80-\ff] -> not an escape, just return the 2nd char and ignore the backslash
         // [\\][0-7]{1,3}
         // [\\]x[0-9A-Fa-f]{1,2}
         // unicode: [\\]u[0-9A-Fa-f]{4} => consume_unicode_char(4) (Ok(None) is an error here)
         // UNICODE: [\\]U[0-9A-Fa-f]{8} => consume_unicode_char(8) (Ok(None) is an error here)
 
-        let mut out = Vec::with_capacity(self.input.source().len());
+        let mut out = Vec::<u8>::with_capacity(self.input.source().len());
         let mut warning: Option<ExtendedStringWarning> = None;
 
         while let Some(c) = self.input.consume_one() {
 
-            if c == b'\'' {
+            if c == '\'' {
                 out.push(b'\'');
                 // skip '' escape:
-                self.input.consume_char(b'\'');
+                self.input.consume_char('\'');
                 continue
             }
 
-            if c != b'\\' {
-                out.push(c);
+            if c != '\\' {
+                out.push(c as u8);
                 continue
             }
 
@@ -64,17 +64,17 @@ impl<'src> ExtendedStringDecoder<'src> {
             };
 
             match c {
-                b'b' => out.push(b'\x08'), // '\b'
-                b'f' => out.push(b'\x0c'), // '\f'
-                b'n' => out.push(b'\n'),
-                b'r' => out.push(b'\r'),
-                b't' => out.push(b'\t'),
-                b'v' => out.push(b'\x0b'), // '\v'
-                b'\\' => {
+                'b' => out.push(b'\x08'), // '\b'
+                'f' => out.push(b'\x0c'), // '\f'
+                'n' => out.push(b'\n'),
+                'r' => out.push(b'\r'),
+                't' => out.push(b'\t'),
+                'v' => out.push(b'\x0b'), // '\v'
+                '\\' => {
                     warning.get_or_insert(NonstandardBackslashEscape);
                     out.push(b'\\')
                 },
-                b'\'' => { // b"\\'"
+                '\'' => { // "\\'"
                     if self.forbid_backslash_quote() {
                         // TODO: check client encoding in the condition
                         return ExtendedStringResult {
@@ -85,24 +85,39 @@ impl<'src> ExtendedStringDecoder<'src> {
                     warning.get_or_insert(NonstandardQuoteEscape);
                     out.push(b'\'')
                 },
-                b'0'..=b'7' => { // octal escape
-                    let mut decoded = c - b'0';
-                    if let Some(d) = self.input.consume_if(is_oct_digit) {
-                        decoded = (decoded << 3) | (d - b'0');
-                        if let Some(d) = self.input.consume_if(is_oct_digit) {
-                            decoded = (decoded << 3) | (d - b'0');
+                '0'..='7' => { // octal escape
+
+                    // PG doc: It is your responsibility that the byte sequences you create,
+                    //         especially when using the octal or hexadecimal escapes,
+                    //         compose valid characters in the server character set encoding.
+                    // Any octal with 3 digits can go above 0xff, so we'll reproduce here discarding the high bit,
+                    // like PG implicitly does by casting to `unsigned char`.
+
+                    // SAFETY: All digits are checked by `is_oct_digit()`, so it's safe to call `unwrap()`.
+
+                    let mut decoded = c.to_digit(8).unwrap();
+                    if let Some(c) = self.input.consume_if(is_oct_digit) {
+                        decoded = (decoded << 3) | c.to_digit(8).unwrap();
+                        if let Some(c) = self.input.consume_if(is_oct_digit) {
+                            decoded = (decoded << 3) | c.to_digit(8).unwrap();
                         }
                     }
-                    out.push(decoded)
+
+                    // TODO: check 0x00
+
+                    // This is where we strip the high bit (0x1__) with the cast.
+                    out.push(decoded as u8)
                 },
-                b'x' => { // hex escape
-                    if let Some(d) = self.input.consume_if(is_hex_digit) {
-                        let mut decoded = (d as char).to_digit(16).unwrap() as u8;
-                        if let Some(d) = self.input.consume_if(is_hex_digit) {
-                            let d = (d as char).to_digit(16).unwrap() as u8;
-                            decoded = (decoded << 4) | d;
+                'x' => { // hex escape
+                    // SAFETY: All digits are checked by `is_hex_digit()`, so it's safe to call `unwrap()`.
+                    if let Some(c) = self.input.consume_if(is_hex_digit) {
+                        let mut decoded = c.to_digit(16).unwrap();
+                        if let Some(c) = self.input.consume_if(is_hex_digit) {
+                            let c = c.to_digit(16).unwrap();
+                            decoded = (decoded << 4) | c;
                         }
-                        out.push(decoded)
+                        // SAFETY: The maximum value is 0xff.
+                        out.push(decoded as u8)
                     }
                     else {
                         // not an escape
@@ -110,7 +125,7 @@ impl<'src> ExtendedStringDecoder<'src> {
                         out.push(b'x')
                     }
                 },
-                b'u' | b'U' => {
+                'u' | 'U' => {
 
                     warning.get_or_insert(NonstandardEscape);
 
@@ -124,20 +139,9 @@ impl<'src> ExtendedStringDecoder<'src> {
                         }
                     };
 
-                    let len = c.len_utf8();
-                    if len == 1 {
-                        // fast path
-                        out.push(c as u8);
-                        continue
-                    }
-
-                    // Avoid allocating a string, by encoding the char directly,
-                    // and pushing the raw bytes directly into the output buffer.
-                    let mut buff = [0; 4];
-                    c.encode_utf8(&mut buff);
-                    out.extend_from_slice(&buff[..len]);
+                    push_char(&mut out, c)
                 },
-                _ => out.push(c),
+                _ => push_char(&mut out, c),
             }
         }
 
@@ -159,20 +163,20 @@ impl<'src> ExtendedStringDecoder<'src> {
             Ok(UnicodeChar::Utf8(c)) => return Ok(c),
             Ok(SurrogateFirst(first)) => Ok(first),
             Ok(SurrogateSecond(_)) => Err(InvalidUnicodeSurrogatePair(start_index)),
-            Err(LenTooShort(_)) => Err(InvalidUnicodeEscape(start_index)),
+            Err(LenTooShort) => Err(InvalidUnicodeEscape(start_index)),
             Err(UnicodeCharError::InvalidUnicodeValue) => Err(InvalidUnicodeValue(start_index)),
         }?;
 
         let start_index = self.input.current_index();
         let invalid_pair = InvalidUnicodeSurrogatePair(start_index);
-        if !self.input.consume_char(b'\\') {
+        if !self.input.consume_char('\\') {
             return Err(invalid_pair)
         }
 
-        let unicode_len = if self.input.consume_char(b'u') {
+        let unicode_len = if self.input.consume_char('u') {
             4
         }
-        else if self.input.consume_char(b'U') {
+        else if self.input.consume_char('U') {
             8
         }
         else {
@@ -191,6 +195,22 @@ impl<'src> ExtendedStringDecoder<'src> {
     }
 }
 
+fn push_char(buffer: &mut Vec<u8>, c: char) {
+
+    let len = c.len_utf8();
+    if len == 1 {
+        // fast path
+        buffer.push(c as u8);
+        return
+    }
+
+    // Avoid allocating a string, by encoding the char directly,
+    // and pushing the raw bytes directly into the output buffer.
+    let mut buff = [0; 4];
+    c.encode_utf8(&mut buff);
+    buffer.extend_from_slice(&buff[..len]);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -198,13 +218,10 @@ mod tests {
     #[test]
     fn test_extended_string() {
         let mut decoder = ExtendedStringDecoder::new(
-            b"\\x64\\u0061\\164\\U00000061\\'\\\\''\\b\\f\\n\\r\\t\\v x\\y",
+            r"\x64\u0061\164\U00000061\'\\''\b\f\n\r\t\v x\y",
             BackslashQuote::On
         );
-        assert_eq!(
-            Ok("data'\\'\x08\x0c\n\r\t\x0b xy".to_string()),
-            decoder.decode().result
-        )
+        assert_eq!("data'\\'\x08\x0c\n\r\t\x0b xy", decoder.decode().result.unwrap())
     }
 }
 

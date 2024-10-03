@@ -26,37 +26,37 @@ mod tests {
 
     #[test]
     fn test_abort() {
-        let mut parser = Parser::new(b"abort", DEFAULT_CONFIG);
+        let mut parser = Parser::new("abort", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: false })), parser.abort_stmt());
     }
 
     #[test]
     fn test_abort_chain() {
-        let mut parser = Parser::new(b"abort and chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("abort and chain", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: true })), parser.abort_stmt());
     }
 
     #[test]
     fn test_abort_no_chain() {
-        let mut parser = Parser::new(b"abort and no chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("abort and no chain", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: false })), parser.abort_stmt());
     }
 
     #[test]
     fn test_abort_transaction() {
-        let mut parser = Parser::new(b"abort transaction", DEFAULT_CONFIG);
+        let mut parser = Parser::new("abort transaction", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: false })), parser.abort_stmt());
     }
 
     #[test]
     fn test_abort_transaction_chain() {
-        let mut parser = Parser::new(b"abort transaction and chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("abort transaction and chain", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: true })), parser.abort_stmt());
     }
 
     #[test]
     fn test_abort_transaction_no_chain() {
-        let mut parser = Parser::new(b"abort transaction and no chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("abort transaction and no chain", DEFAULT_CONFIG);
         assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: false })), parser.abort_stmt());
     }
 }
