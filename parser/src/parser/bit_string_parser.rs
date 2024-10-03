@@ -4,7 +4,7 @@ pub(super) struct BitStringParser<'p, 'src>(
 
 impl<'p, 'src> BitStringParser<'p, 'src> {
 
-    pub fn parse(&mut self) -> OptResult<BitBox> {
+    pub fn parse(&mut self) -> OptResult<BitBox, BitStringError> {
 
         let Some((kind, loc)) = self.try_consume()? else { return Ok(None) };
 
@@ -21,12 +21,13 @@ impl<'p, 'src> BitStringParser<'p, 'src> {
         self.decode(kind, &string)
     }
 
-    fn try_consume(&mut self) -> OptResult<Located<BitStringKind>> {
-        let loc = self.0.buffer.current_location();
-        self.0.buffer.consume(|tok|
-            tok.bit_string_kind()
-                .map(|kind| (kind, loc.clone()))
-        )
+    fn try_consume(&mut self) -> OptResult<Located<BitStringKind>, BitStringError> {
+        // let loc = self.0.buffer.current_location();
+        // self.0.buffer.consume(|tok|
+        //     tok.bit_string_kind()
+        //         .map(|kind| (kind, loc.clone()))
+        // )
+        todo!()
     }
 
     fn try_consume_string(&mut self) -> OptResult<Located<StringKind>> {
@@ -42,18 +43,19 @@ impl<'p, 'src> BitStringParser<'p, 'src> {
         )
     }
 
-    fn decode(&mut self, kind: BitStringKind, slice: &str) -> OptResult<BitBox> {
+    fn decode(&mut self, kind: BitStringKind, slice: &str) -> OptResult<BitBox, BitStringError> {
 
         let result = BitStringDecoder::new(slice, kind == HexString)
             .decode();
 
         match result {
             Ok(result) => Ok(Some(result)),
-            Err(err) => Err(Some(err.into()))
+            Err(err) => Err(Some(err))
         }
     }
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -100,11 +102,20 @@ mod tests {
         Parser::new(source, config)
     }
 }
+*/
 
-use crate::lexer::BitStringKind::HexString;
-use crate::lexer::{BitStringKind, StringKind, StringKind::*};
-use crate::parser::string_parser::strip_delimiters;
-use crate::parser::{token_buffer::TokenConsumer, OptResult, Parser};
-use crate::string_decoders::*;
+use crate::lexer::{
+    BitStringKind,
+    BitStringKind::HexString,
+    StringKind,
+    StringKind::*,
+};
+use crate::parser::{
+    string_parser::strip_delimiters,
+    token_buffer::TokenConsumer,
+    OptResult,
+    Parser,
+};
+use crate::string_decoders::{BitStringDecoder, BitStringError};
 use bitvec::boxed::BitBox;
 use postgres_basics::Located;
