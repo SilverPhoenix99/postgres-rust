@@ -15,9 +15,8 @@ impl Parser<'_> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::ast_node::TransactionStmt;
+    use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
-    use crate::parser::Parser;
 
     #[test]
     fn test_end() {
@@ -56,12 +55,8 @@ mod tests {
     }
 }
 
-use crate::lexer::{
-    Keyword::Reserved,
-    ReservedKeyword::End,
-};
-use crate::parser::{
-    ast_node::TransactionStmt,
-    OptResult,
-    Parser,
-};
+use crate::lexer::Keyword::Reserved;
+use crate::lexer::ReservedKeyword::End;
+use crate::parser::ast_node::TransactionStmt;
+use crate::parser::OptResult;
+use crate::parser::Parser;
