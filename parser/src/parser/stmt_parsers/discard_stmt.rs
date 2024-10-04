@@ -51,16 +51,17 @@ mod tests {
     }
 }
 
-use crate::lexer::{
-    Keyword::{Reserved, Unreserved},
-    KeywordDetails,
-    ReservedKeyword::All,
-    UnreservedKeyword::{Discard, Plans, Sequences, Temp, Temporary},
-};
-use crate::parser::{
-    result::OptionalResult,
-    token_buffer::TokenConsumer,
-    DiscardStmt,
-    OptResult,
-    Parser
-};
+use crate::lexer::Keyword::Reserved;
+use crate::lexer::Keyword::Unreserved;
+use crate::lexer::KeywordDetails;
+use crate::lexer::ReservedKeyword::All;
+use crate::lexer::UnreservedKeyword::Discard;
+use crate::lexer::UnreservedKeyword::Plans;
+use crate::lexer::UnreservedKeyword::Sequences;
+use crate::lexer::UnreservedKeyword::Temp;
+use crate::lexer::UnreservedKeyword::Temporary;
+use crate::parser::ast_node::DiscardStmt;
+use crate::parser::result::OptionalResult;
+use crate::parser::token_buffer::TokenConsumer;
+use crate::parser::OptResult;
+use crate::parser::Parser;

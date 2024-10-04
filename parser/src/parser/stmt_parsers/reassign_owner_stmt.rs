@@ -21,8 +21,8 @@ impl Parser<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::ast_node::RoleSpec;
     use crate::parser::tests::DEFAULT_CONFIG;
-    use crate::parser::RoleSpec;
 
     #[test]
     fn test_reassign_owner_stmt() {
@@ -37,14 +37,13 @@ mod tests {
     }
 }
 
-use crate::lexer::{
-    Keyword::{Reserved, Unreserved},
-    ReservedKeyword::To,
-    UnreservedKeyword::{By, OwnedKw, Reassign},
-};
-use crate::parser::{
-    result::OptionalResult,
-    OptResult,
-    Parser,
-    ReassignOwnedStmt,
-};
+use crate::lexer::Keyword::Reserved;
+use crate::lexer::Keyword::Unreserved;
+use crate::lexer::ReservedKeyword::To;
+use crate::lexer::UnreservedKeyword::By;
+use crate::lexer::UnreservedKeyword::OwnedKw;
+use crate::lexer::UnreservedKeyword::Reassign;
+use crate::parser::ast_node::ReassignOwnedStmt;
+use crate::parser::result::OptionalResult;
+use crate::parser::OptResult;
+use crate::parser::Parser;

@@ -71,14 +71,10 @@ mod tests {
     }
 }
 
-
-use crate::lexer::{
-    Keyword::Unreserved,
-    UnreservedKeyword::{Commit, Prepared},
-};
-use crate::parser::{
-    ast_node::TransactionStmt,
-    result::OptionalResult,
-    OptResult,
-    Parser,
-};
+use crate::lexer::Keyword::Unreserved;
+use crate::lexer::UnreservedKeyword::Commit;
+use crate::lexer::UnreservedKeyword::Prepared;
+use crate::parser::ast_node::TransactionStmt;
+use crate::parser::result::OptionalResult;
+use crate::parser::OptResult;
+use crate::parser::Parser;

@@ -36,14 +36,10 @@ mod tests {
     }
 }
 
-use crate::lexer::{
-    Keyword::Unreserved,
-    TokenKind::Comma,
-    UnreservedKeyword::Notify,
-};
-use crate::parser::{
-    ast_node::NotifyStmt,
-    result::OptionalResult,
-    OptResult,
-    Parser,
-};
+use crate::lexer::Keyword::Unreserved;
+use crate::lexer::TokenKind::Comma;
+use crate::lexer::UnreservedKeyword::Notify;
+use crate::parser::ast_node::NotifyStmt;
+use crate::parser::result::OptionalResult;
+use crate::parser::OptResult;
+use crate::parser::Parser;

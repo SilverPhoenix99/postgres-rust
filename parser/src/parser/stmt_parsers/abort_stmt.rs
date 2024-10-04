@@ -13,14 +13,9 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::Unreserved;
-use crate::lexer::UnreservedKeyword::Abort;
-use crate::parser::ast_node::TransactionStmt;
-use crate::parser::{OptResult, Parser};
-
 #[cfg(test)]
 mod tests {
-    use crate::parser::ast_node::TransactionStmt;
+    use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::Parser;
 
@@ -60,3 +55,8 @@ mod tests {
         assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: false })), parser.abort_stmt());
     }
 }
+
+use crate::lexer::Keyword::Unreserved;
+use crate::lexer::UnreservedKeyword::Abort;
+use crate::parser::ast_node::TransactionStmt;
+use crate::parser::{OptResult, Parser};

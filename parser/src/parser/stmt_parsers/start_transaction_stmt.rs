@@ -7,7 +7,8 @@ impl Parser<'_> {
 
         self.buffer.consume_kw_eq(Unreserved(Transaction)).required()?;
 
-        let modes = self.opt_transaction_mode_list().replace_eof(Ok(None))?
+        let modes = self.opt_transaction_mode_list()
+            .replace_eof(Ok(None))?
             .unwrap_or_else(Vec::new);
 
         Ok(Some(TransactionStmt::Start(modes)))
@@ -17,7 +18,7 @@ impl Parser<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::TransactionMode;
+    use crate::parser::ast_node::TransactionMode::{Deferrable, ReadOnly, ReadWrite};
     use crate::parser::tests::DEFAULT_CONFIG;
 
     #[test]
@@ -29,18 +30,15 @@ mod tests {
     #[test]
     fn test_start_transaction_with_transaction_modes() {
         let mut parser = Parser::new("start transaction read only, read write deferrable", DEFAULT_CONFIG);
-        let modes = vec![TransactionMode::ReadOnly, TransactionMode::ReadWrite, TransactionMode::Deferrable];
+        let modes = vec![ReadOnly, ReadWrite, Deferrable];
         assert_eq!(Ok(Some(TransactionStmt::Start(modes))), parser.start_transaction_stmt());
     }
 }
 
-use crate::lexer::{
-    Keyword::Unreserved,
-    UnreservedKeyword::{Start, Transaction},
-};
-use crate::parser::{
-    ast_node::TransactionStmt,
-    result::OptionalResult,
-    OptResult,
-    Parser,
-};
+use crate::lexer::Keyword::Unreserved;
+use crate::lexer::UnreservedKeyword::Start;
+use crate::lexer::UnreservedKeyword::Transaction;
+use crate::parser::ast_node::TransactionStmt;
+use crate::parser::result::OptionalResult;
+use crate::parser::OptResult;
+use crate::parser::Parser;

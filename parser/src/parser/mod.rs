@@ -1,36 +1,15 @@
-mod ast_node;
-mod ident_parser;
+pub mod ast_node;
+mod bit_string_parser;
 mod config;
 mod error;
+mod ident_parser;
+mod result;
+mod stmt_parsers;
 mod string_parser;
 mod token_buffer;
-mod result;
 mod warning;
-mod stmt_parsers;
-mod bit_string_parser;
 
 pub use self::{
-    ast_node::{
-        AlterOwnerStmt,
-        AlterRoleAction,
-        AlterRoleOption,
-        AlterRoleStmt,
-        AstLiteral,
-        AstNode,
-        ClosePortalStmt,
-        DeallocateStmt,
-        DiscardStmt,
-        EventTriggerState,
-        IsolationLevel,
-        NumericSpec,
-        ReassignOwnedStmt,
-        RenameStmt,
-        RoleSpec,
-        SystemType,
-        TransactionMode,
-        UnlistenStmt,
-        VariableShowStmt,
-    },
     config::ParserConfig,
     error::ParserErrorKind,
     warning::ParserWarning,
@@ -197,12 +176,12 @@ impl<'src> Parser<'src> {
         else if let Some(node) = self.alter_stmt()? { Ok(Some(node)) }
         else if let Some(node) = self.analyze_stmt()? { Ok(Some(node)) }
         else if let Some(node) = self.call_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.close_stmt()? { Ok(Some(node.into())) }
+        else if let Some(node) = self.close_stmt()? { Ok(Some(ClosePortalStmt(node))) }
         else if let Some(node) = self.cluster_stmt()? { Ok(Some(node)) }
         else if let Some(node) = self.comment_stmt()? { Ok(Some(node)) }
         else if let Some(node) = self.commit_stmt()? { Ok(Some(node.into())) }
         else if let Some(node) = self.copy_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.deallocate_stmt()? { Ok(Some(node.into())) }
+        else if let Some(node) = self.deallocate_stmt()? { Ok(Some(ClosePortalStmt(node))) }
         else if let Some(node) = self.discard_stmt()? { Ok(Some(node.into())) }
         else if let Some(node) = self.do_stmt()? { Ok(Some(node)) }
         else if let Some(node) = self.drop_stmt()? { Ok(Some(node)) }
@@ -226,7 +205,7 @@ impl<'src> Parser<'src> {
         else if let Some(node) = self.show_stmt()? { Ok(Some(node.into())) }
         else if let Some(node) = self.start_transaction_stmt()? { Ok(Some(node.into())) }
         else if let Some(node) = self.truncate_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.unlisten_stmt()? { Ok(Some(node.into())) }
+        else if let Some(node) = self.unlisten_stmt()? { Ok(Some(ClosePortalStmt(node))) }
         else if let Some(node) = self.vacuum_stmt()? { Ok(Some(node)) }
         else { Ok(None) }
     }
@@ -534,6 +513,36 @@ impl<'src> Parser<'src> {
         Ok(Some(Literal(NullLiteral)))
     }
 
+    /// Alias: `handler_name`
+    fn any_name(&mut self) -> OptResult<Vec<Cow<'static, str>>> {
+        let Some(prefix) = self.col_id()? else { return Ok(None) };
+        self.attrs(prefix)
+    }
+
+    fn attrs(&mut self, prefix: Cow<'static, str>) -> OptResult<Vec<Cow<'static, str>>> {
+
+        // A prefix token is passed to prevent a right shift of the Vec later on.
+
+        let mut elements = vec![prefix];
+
+        loop {
+            match self.buffer.consume_eq(TokenKind::Dot) {
+                Ok(Some(_)) => {/* carry on */},
+                Ok(None) | Err(None) => break,
+                Err(Some(err)) => return Err(Some(err)),
+            }
+
+            let element = self.col_label().required()?;
+            elements.push(element);
+        }
+
+        if elements.is_empty() {
+            return Ok(None)
+        }
+
+        Ok(Some(elements))
+    }
+
     /// Production: `'(' ICONST ')'`
     fn i32_literal_paren(&mut self) -> OptResult<i32> {
         use TokenKind::{CloseParenthesis, OpenParenthesis};
@@ -713,7 +722,9 @@ impl<'src> Parser<'src> {
         })
     }
 
-    /// Alias: `ColId`
+    /// Aliases:
+    /// * `ColId`
+    /// * `name`
     #[inline(always)]
     fn col_id(&mut self) -> OptResult<Cow<'static, str>> {
         self.ident_or_keyword(|kw|
@@ -740,7 +751,9 @@ impl<'src> Parser<'src> {
         )
     }
 
-    /// Alias: `ColLabel`
+    /// Aliases:
+    /// * `ColLabel`
+    /// * `attr_name`
     #[inline(always)]
     fn col_label(&mut self) -> OptResult<Cow<'static, str>> {
         self.ident_or_keyword(|_| true)
@@ -767,8 +780,9 @@ impl<'src> Parser<'src> {
     }
 
     /// Aliases:
-    /// * `SCONST` as `StringLiteral`
-    /// * `USCONST` as `StringLiteral`
+    /// * `SCONST`
+    /// * `USCONST`
+    /// * `file_name`
     #[inline(always)]
     fn string(&mut self) -> OptResult<String> {
         StringParser(self).parse()
@@ -851,8 +865,9 @@ fn uescape_escape(source: &str) -> Option<char> {
 
 #[cfg(test)]
 mod tests {
-    use super::SystemType::{Bool, Float4, Float8, Int2, Int4, Int8};
     use super::*;
+    use crate::parser::ast_node::SystemType::{Bool, Float4, Float8, Int2, Int4, Int8};
+    use crate::parser::ast_node::{CharacterSystemType, RoleSpec, TransactionMode};
     use postgres_basics::guc::BackslashQuote;
 
     pub(in crate::parser) const DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding);
@@ -1289,31 +1304,47 @@ mod tests {
     }
 }
 
-use self::{
-    ast_node::CharacterSystemType,
-    error::ParserErrorKind::*,
-    ident_parser::IdentifierParser,
-    result::{OptResult, OptionalResult, ReqResult, RequiredResult},
-    string_parser::StringParser,
-    token_buffer::{TokenBuffer, TokenConsumer},
-    AstLiteral::NullLiteral,
-    AstNode::{ListenStmt, Literal, LoadStmt},
-    SystemType::{Bool, Float4, Float8, Int2, Int4, Int8},
-};
-use crate::lexer::{
-    ColumnNameKeyword,
-    Keyword::{ColumnName, Reserved, Unreserved},
-    KeywordDetails,
-    Lexer,
-    ReservedKeyword,
-    TokenKind,
-    TokenKind::{Comma, Semicolon},
-    UnreservedKeyword
-};
-use postgres_basics::{
-    ascii::{is_hex_digit, is_whitespace},
-    Located,
-    Location,
-};
+use self::ast_node::AstLiteral::NullLiteral;
+use self::ast_node::AstNode;
+use self::ast_node::CharacterSystemType;
+use self::ast_node::EventTriggerState;
+use self::ast_node::IsolationLevel;
+use self::ast_node::RoleSpec;
+use self::ast_node::SystemType;
+use self::ast_node::TransactionMode;
+use self::error::ParserErrorKind::*;
+use self::ident_parser::IdentifierParser;
+use self::result::OptResult;
+use self::result::OptionalResult;
+use self::result::ReqResult;
+use self::result::RequiredResult;
+use self::string_parser::StringParser;
+use self::token_buffer::TokenBuffer;
+use self::token_buffer::TokenConsumer;
+use crate::lexer::ColumnNameKeyword;
+use crate::lexer::Keyword::ColumnName;
+use crate::lexer::Keyword::Reserved;
+use crate::lexer::Keyword::Unreserved;
+use crate::lexer::KeywordDetails;
+use crate::lexer::Lexer;
+use crate::lexer::ReservedKeyword;
+use crate::lexer::TokenKind;
+use crate::lexer::UnreservedKeyword;
+use crate::parser::ast_node::AstNode::ClosePortalStmt;
+use postgres_basics::ascii::is_hex_digit;
+use postgres_basics::ascii::is_whitespace;
+use postgres_basics::Located;
+use postgres_basics::Location;
 use std::borrow::Cow;
 use std::mem;
+use AstNode::ListenStmt;
+use AstNode::Literal;
+use AstNode::LoadStmt;
+use SystemType::Bool;
+use SystemType::Float4;
+use SystemType::Float8;
+use SystemType::Int2;
+use SystemType::Int4;
+use SystemType::Int8;
+use TokenKind::Comma;
+use TokenKind::Semicolon;
