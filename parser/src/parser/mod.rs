@@ -15,6 +15,8 @@ pub use self::{
     warning::ParserWarning,
 };
 
+type CowStr = Cow<'static, str>;
+
 macro_rules! list_production {
     (gather $production:block delim $separator:block) => {
         (|| {
@@ -1077,6 +1079,42 @@ mod tests {
     #[test] #[ignore]
     fn test_a_expr() {
         todo!()
+    }
+
+    #[test]
+    fn test_any_name() {
+        let source = "some_.qualified_.name_";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let actual = parser.any_name();
+
+        assert_matches!(actual, Ok(Some(_)));
+        let actual = actual.unwrap().unwrap();
+
+        let expected: Vec<CowStr> = vec![
+            "some_".into(),
+            "qualified_".into(),
+            "name_".into()
+        ];
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test_attrs() {
+        let source = ".qualified_.name_";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let actual = parser.attrs("*some*".into());
+
+        assert_matches!(actual, Ok(Some(_)));
+        let actual = actual.unwrap().unwrap();
+
+        let expected: Vec<CowStr> = vec![
+            "*some*".into(),
+            "qualified_".into(),
+            "name_".into()
+        ];
+
+        assert_eq!(expected, actual);
     }
 
     #[test]

@@ -25,8 +25,6 @@ pub use self::{
     variable_show_stmt::VariableShowStmt,
 };
 
-type CowStr = Cow<'static, str>;
-
 /// Generates `From` impls, where the input is wrapped in an output enum variant.
 macro_rules! impl_from {
     ($variant:ident for $for_:ident) => {
@@ -201,4 +199,4 @@ impl_from!(SystemType for AstNode);
 impl_from!(TransactionStmt for AstNode);
 impl_from!(VariableShowStmt for AstNode);
 
-use std::borrow::Cow;
+use crate::parser::CowStr;
