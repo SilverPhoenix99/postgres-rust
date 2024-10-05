@@ -17,9 +17,7 @@ impl Parser<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::OneOrAll;
     use crate::parser::tests::DEFAULT_CONFIG;
-    use crate::parser::Parser;
 
     #[test]
     fn test_close_all() {
