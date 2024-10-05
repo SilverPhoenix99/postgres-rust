@@ -38,3 +38,4 @@ mod start_transaction_stmt;
 mod truncate_stmt;
 mod unlisten_stmt;
 mod vacuum_stmt;
+mod alter_conversion_stmt;
