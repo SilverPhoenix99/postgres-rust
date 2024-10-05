@@ -8,6 +8,7 @@ impl Parser<'_> {
         if let Some(node) = self.alter_group_stmt()? { return Ok(Some(node)) }
         else if let Some(node) = self.alter_event_trigger_stmt()? { return Ok(Some(node)) }
         else if let Some(node) = self.alter_collation_stmt()? { return Ok(Some(node)) }
+        else if let Some(node) = self.alter_conversion_stmt()? { return Ok(Some(node)) }
 
         todo!()
     }
@@ -24,6 +25,7 @@ mod tests {
             "alter group some_group rename to new_group_name",
             "alter event trigger some_trigger owner to current_user",
             "alter collation some_name refresh version",
+            "alter conversion some_conversion rename to new_conversion",
         ];
 
         for source in sources {
