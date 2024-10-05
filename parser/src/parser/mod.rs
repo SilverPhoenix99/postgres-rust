@@ -16,6 +16,7 @@ pub use self::{
 };
 
 type CowStr = Cow<'static, str>;
+type QnName = Vec<CowStr>;
 
 macro_rules! list_production {
     (gather $production:block delim $separator:block) => {
@@ -339,7 +340,7 @@ impl<'src> Parser<'src> {
         }
     }
 
-    fn var_name(&mut self) -> ReqResult<Vec<Cow<'static, str>>> {
+    fn var_name(&mut self) -> ReqResult<QnName> {
 
         list_production!(
             gather { self.col_id() }
@@ -516,12 +517,12 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `handler_name`
-    fn any_name(&mut self) -> OptResult<Vec<Cow<'static, str>>> {
+    fn any_name(&mut self) -> OptResult<QnName> {
         let Some(prefix) = self.col_id()? else { return Ok(None) };
         self.attrs(prefix)
     }
 
-    fn attrs(&mut self, prefix: Cow<'static, str>) -> OptResult<Vec<Cow<'static, str>>> {
+    fn attrs(&mut self, prefix: CowStr) -> OptResult<QnName> {
 
         // A prefix token is passed to prevent a right shift of the Vec later on.
 
@@ -666,7 +667,7 @@ impl<'src> Parser<'src> {
 
     /// Alias: `RoleId`
     #[inline]
-    fn role_id(&mut self) -> OptResult<Cow<'static, str>> {
+    fn role_id(&mut self) -> OptResult<CowStr> {
 
         // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
@@ -728,7 +729,7 @@ impl<'src> Parser<'src> {
     /// * `ColId`
     /// * `name`
     #[inline(always)]
-    fn col_id(&mut self) -> OptResult<Cow<'static, str>> {
+    fn col_id(&mut self) -> OptResult<CowStr> {
         self.ident_or_keyword(|kw|
                kw.unreserved().is_some()
             || kw.col_name().is_some()
@@ -736,7 +737,7 @@ impl<'src> Parser<'src> {
     }
 
     #[inline(always)]
-    fn type_function_name(&mut self) -> OptResult<Cow<'static, str>> {
+    fn type_function_name(&mut self) -> OptResult<CowStr> {
         self.ident_or_keyword(|kw|
                kw.unreserved().is_some()
             || kw.type_func_name().is_some()
@@ -745,7 +746,7 @@ impl<'src> Parser<'src> {
 
     /// Alias: `NonReservedWord`
     #[inline(always)]
-    fn non_reserved_word(&mut self) -> OptResult<Cow<'static, str>> {
+    fn non_reserved_word(&mut self) -> OptResult<CowStr> {
         self.ident_or_keyword(|kw|
                kw.unreserved().is_some()
             || kw.col_name().is_some()
@@ -757,17 +758,17 @@ impl<'src> Parser<'src> {
     /// * `ColLabel`
     /// * `attr_name`
     #[inline(always)]
-    fn col_label(&mut self) -> OptResult<Cow<'static, str>> {
+    fn col_label(&mut self) -> OptResult<CowStr> {
         self.ident_or_keyword(|_| true)
     }
 
     /// Alias: `BareColLabel`
     #[inline(always)]
-    fn bare_col_label(&mut self) -> OptResult<Cow<'static, str>> {
+    fn bare_col_label(&mut self) -> OptResult<CowStr> {
         self.ident_or_keyword(KeywordDetails::bare)
     }
 
-    fn ident_or_keyword<P>(&mut self, pred: P) -> OptResult<Cow<'static, str>>
+    fn ident_or_keyword<P>(&mut self, pred: P) -> OptResult<CowStr>
     where
         P: Fn(&KeywordDetails) -> bool
     {
@@ -1090,7 +1091,7 @@ mod tests {
         assert_matches!(actual, Ok(Some(_)));
         let actual = actual.unwrap().unwrap();
 
-        let expected: Vec<CowStr> = vec![
+        let expected: QnName = vec![
             "some_".into(),
             "qualified_".into(),
             "name_".into()
@@ -1108,7 +1109,7 @@ mod tests {
         assert_matches!(actual, Ok(Some(_)));
         let actual = actual.unwrap().unwrap();
 
-        let expected: Vec<CowStr> = vec![
+        let expected: QnName = vec![
             "*some*".into(),
             "qualified_".into(),
             "name_".into()
@@ -1343,12 +1344,12 @@ mod tests {
 }
 
 use self::ast_node::AstLiteral::NullLiteral;
-use self::ast_node::AstNode;
+use self::ast_node::AstNode::{self, ClosePortalStmt, ListenStmt, Literal, LoadStmt};
 use self::ast_node::CharacterSystemType;
 use self::ast_node::EventTriggerState;
 use self::ast_node::IsolationLevel;
 use self::ast_node::RoleSpec;
-use self::ast_node::SystemType;
+use self::ast_node::SystemType::{self, Bool, Float4, Float8, Int2, Int4, Int8};
 use self::ast_node::TransactionMode;
 use self::error::ParserErrorKind::*;
 use self::ident_parser::IdentifierParser;
@@ -1360,29 +1361,15 @@ use self::string_parser::StringParser;
 use self::token_buffer::TokenBuffer;
 use self::token_buffer::TokenConsumer;
 use crate::lexer::ColumnNameKeyword;
-use crate::lexer::Keyword::ColumnName;
-use crate::lexer::Keyword::Reserved;
-use crate::lexer::Keyword::Unreserved;
+use crate::lexer::Keyword::{ColumnName, Reserved, Unreserved};
 use crate::lexer::KeywordDetails;
 use crate::lexer::Lexer;
 use crate::lexer::ReservedKeyword;
-use crate::lexer::TokenKind;
+use crate::lexer::TokenKind::{self, Comma, Semicolon};
 use crate::lexer::UnreservedKeyword;
-use crate::parser::ast_node::AstNode::ClosePortalStmt;
 use postgres_basics::ascii::is_hex_digit;
 use postgres_basics::ascii::is_whitespace;
 use postgres_basics::Located;
 use postgres_basics::Location;
 use std::borrow::Cow;
 use std::mem;
-use AstNode::ListenStmt;
-use AstNode::Literal;
-use AstNode::LoadStmt;
-use SystemType::Bool;
-use SystemType::Float4;
-use SystemType::Float8;
-use SystemType::Int2;
-use SystemType::Int4;
-use SystemType::Int8;
-use TokenKind::Comma;
-use TokenKind::Semicolon;

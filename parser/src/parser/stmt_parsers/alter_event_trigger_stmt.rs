@@ -85,10 +85,8 @@ impl Parser<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::EventTriggerState::FiresAlways;
-    use crate::parser::ast_node::{AlterEventTrigStmt, AlterOwnerStmt, RoleSpec};
+    use crate::parser::ast_node::RoleSpec;
     use crate::parser::tests::DEFAULT_CONFIG;
-    use crate::parser::EventTriggerState::{FiresOnOrigin, FiresOnReplica};
 
     #[test]
     fn test_alter_enable() {

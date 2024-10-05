@@ -22,7 +22,7 @@ impl Parser<'_> {
         ).required()?;
 
         if action == Rename {
-            let sub_name = match role.into_role_id() {
+            let target = match role.into_role_id() {
                 Ok(role_id) => role_id,
                 Err(err) => {
                     self.err_loc_override = Some(role_loc);
@@ -34,7 +34,7 @@ impl Parser<'_> {
             let new_name = self.role_spec().required()?.into_role_id()?;
 
             return Ok(Some(
-                RenameStmt::new(RenameTarget::Role(sub_name), new_name).into()
+                RenameStmt::new(RenameTarget::Role(target), new_name).into()
             ))
         }
 
@@ -55,7 +55,6 @@ impl Parser<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::RoleSpec;
     use crate::parser::tests::DEFAULT_CONFIG;
 
     #[test]
@@ -115,10 +114,7 @@ use crate::lexer::UnreservedKeyword::Add;
 use crate::lexer::UnreservedKeyword::DropKw;
 use crate::lexer::UnreservedKeyword::Rename;
 use crate::parser::ast_node::AlterRoleOption::RoleMembers;
-use crate::parser::ast_node::{AlterRoleAction, AlterRoleStmt, RoleSpec};
-use crate::parser::ast_node::{RenameStmt, RenameTarget};
-use crate::parser::result::OptionalResult;
+use crate::parser::ast_node::{AlterRoleAction, AlterRoleStmt, AstNode, RenameStmt, RenameTarget, RoleSpec};
+use crate::parser::result::{OptResult, OptionalResult};
 use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::AstNode;
-use crate::parser::OptResult;
 use crate::parser::Parser;

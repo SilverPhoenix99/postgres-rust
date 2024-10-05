@@ -46,49 +46,74 @@ pub enum OneOrAll {
     Name(CowStr),
 }
 
+type QnName = Vec<CowStr>;
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct AggregateWithArgtypes {
+    // TODO
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct FunctionWithArgtypes {
+    // TODO
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct OperatorWithArgtypes {
+    // TODO
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct RelationExpr {
+    // TODO
+}
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RenameTarget {
-    Aggregate(/* TODO */),
-    Collation(/* TODO */),
-    Conversion(/* TODO */),
-    Database(/* TODO */),
-    Domain(/* TODO */),
-    DomainConstraint(/* TODO */),
+    Aggregate(AggregateWithArgtypes),
+    Collation(QnName),
+    Conversion(QnName),
+    Database(CowStr),
+    Domain(QnName),
+    DomainConstraint { domain: QnName, constraint: CowStr },
     EventTrigger(CowStr),
-    ForeignDataWrapper(/* TODO */),
-    ForeignServer(/* TODO */),
-    ForeignTable(/* TODO */),
-    ForeignTableColumn(/* TODO */),
-    Function(/* TODO */),
-    Index(/* TODO */),
+    ForeignDataWrapper(CowStr),
+    ForeignServer(CowStr),
+    ForeignTable { target: RelationExpr, missing_ok: bool },
+    ForeignTableColumn { table: RelationExpr, column: CowStr, missing_ok: bool },
+    Function(FunctionWithArgtypes),
+    Index { target: QnName, missing_ok: bool },
     Language(CowStr),
-    MaterializedView(/* TODO */),
-    MaterializedViewColumn(/* TODO */),
-    OperatorClass(/* TODO */),
-    OperatorFamily(/* TODO */),
-    Policy(/* TODO */),
-    Procedure(/* TODO */),
-    Publication(/* TODO */),
+    MaterializedView { target: QnName, missing_ok: bool },
+    MaterializedViewColumn { view: QnName, column: QnName, missing_ok: bool },
+    OperatorClass(QnName),
+    OperatorFamily(QnName),
+    Policy { table: QnName, policy: CowStr, missing_ok: bool },
+    Procedure(FunctionWithArgtypes),
+    Publication(CowStr),
+    /// Aliases:
+    /// * `Group`
+    /// * `User`
     Role(CowStr),
-    Routine(/* TODO */),
-    Rule(/* TODO */),
-    Schema(/* TODO */),
-    Sequence(/* TODO */),
-    StatisticExt(/* TODO */),
-    Subscription(/* TODO */),
-    Table(/* TODO */),
-    TableColumn(/* TODO */),
-    TableConstraint(/* TODO */),
-    Tablespace(/* TODO */),
-    TextSearchConfiguration(/* TODO */),
-    TextSearchDictionary(/* TODO */),
-    TextSearchParser(/* TODO */),
-    TextSearchTemplate(/* TODO */),
-    Trigger(/* TODO */),
-    Type(/* TODO */),
-    TypeAttribute(/* TODO */),
-    View(/* TODO */),
-    ViewColumn(/* TODO */),
+    Routine(FunctionWithArgtypes),
+    Rule { relation: QnName, rule: CowStr },
+    Schema(CowStr),
+    Sequence { target: QnName, missing_ok: bool },
+    Statistic(QnName),
+    Subscription(CowStr),
+    Table { target: RelationExpr, missing_ok: bool },
+    TableColumn { table: RelationExpr, column: CowStr, missing_ok: bool },
+    TableConstraint { table: RelationExpr, constraint: CowStr, missing_ok: bool },
+    Tablespace(CowStr),
+    TextSearchConfiguration(QnName),
+    TextSearchDictionary(QnName),
+    TextSearchParser(QnName),
+    TextSearchTemplate(QnName),
+    Trigger { table: QnName, trigger: CowStr },
+    Type(QnName),
+    TypeAttribute { typ: QnName, attribute: CowStr },
+    View { target: QnName, missing_ok: bool },
+    ViewColumn { view: QnName, column: CowStr, missing_ok: bool },
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -103,43 +128,47 @@ impl RenameStmt {
         Self { target, new_name }
     }
 
-    #[inline(always)]
     pub fn target(&self) -> &RenameTarget {
         &self.target
     }
 
-    #[inline(always)]
     pub fn new_name(&self) -> &CowStr {
         &self.new_name
     }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
+pub enum NumericOnly {
+    FConst { value: String, negative: bool },
+    SignedIConst(i32)
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AlterOwnerTarget {
-    Aggregate(/* TODO */),
-    Collation(CowStr),
-    Conversion(/* TODO */),
-    Database(/* TODO */),
-    Domain(/* TODO */),
+    Aggregate(AggregateWithArgtypes),
+    Collation(QnName),
+    Conversion(QnName),
+    Database(CowStr),
+    Domain(QnName),
     EventTrigger(CowStr),
-    ForeignDataWrapper(/* TODO */),
-    ForeignServer(/* TODO */),
-    Function(/* TODO */),
+    ForeignDataWrapper(CowStr),
+    ForeignServer(CowStr),
+    Function(FunctionWithArgtypes),
     Language(CowStr),
-    LargeObject(/* TODO */),
-    Operator(/* TODO */),
-    OperatorClass(/* TODO */),
-    OperatorFamily(/* TODO */),
-    Procedure(/* TODO */),
-    Publication(/* TODO */),
-    Routine(/* TODO */),
-    Schema(/* TODO */),
-    StatisticExt(/* TODO */),
-    Subscription(/* TODO */),
-    Tablespace(/* TODO */),
-    TextSearchConfiguration(/* TODO */),
-    TextSearchDictionary(/* TODO */),
-    Type(/* TODO */),
+    LargeObject(NumericOnly),
+    Operator(OperatorWithArgtypes),
+    OperatorClass(QnName),
+    OperatorFamily(QnName),
+    Procedure(FunctionWithArgtypes),
+    Publication(CowStr),
+    Routine(FunctionWithArgtypes),
+    Schema(CowStr),
+    Statistic(QnName),
+    Subscription(CowStr),
+    Tablespace(CowStr),
+    TextSearchConfiguration(QnName),
+    TextSearchDictionary(QnName),
+    Type(QnName),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -165,29 +194,79 @@ impl AlterOwnerStmt {
     }
 }
 
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum AlterObjectSchemaTarget {
+    Aggregate(AggregateWithArgtypes),
+    Collation(QnName),
+    Conversion(QnName),
+    Domain(QnName),
+    Extension(CowStr),
+    ForeignTable { target: RelationExpr, missing_ok: bool },
+    Function(FunctionWithArgtypes),
+    MaterializedView { target: QnName, missing_ok: bool },
+    Operator(OperatorWithArgtypes),
+    OperatorClass(QnName),
+    OperatorFamily(QnName),
+    Procedure(FunctionWithArgtypes),
+    Routine(FunctionWithArgtypes),
+    Sequence { target: QnName, missing_ok: bool },
+    Statistic(QnName),
+    Table { target: RelationExpr, missing_ok: bool },
+    TextSearchConfiguration(QnName),
+    TextSearchDictionary(QnName),
+    TextSearchParser(QnName),
+    TextSearchTemplate(QnName),
+    Type(QnName),
+    View { target: QnName, missing_ok: bool },
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct AlterObjectSchemaStmt {
+    target: AlterObjectSchemaTarget,
+    new_schema: CowStr,
+}
+
+impl AlterObjectSchemaStmt {
+    #[inline(always)]
+    pub fn new(target: AlterObjectSchemaTarget, new_schema: CowStr) -> Self {
+        Self { target, new_schema }
+    }
+
+    pub fn target(&self) -> &AlterObjectSchemaTarget {
+        &self.target
+    }
+
+    pub fn new_schema(&self) -> &CowStr {
+        &self.new_schema
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum AstNode {
-    Literal(AstLiteral),
-    SystemType(SystemType),
-    TypeCast(/* ??? */),
+    AlterEventTrigStmt(AlterEventTrigStmt),
+    AlterObjectSchemaStmt(AlterObjectSchemaStmt),
+    AlterOwnerStmt(AlterOwnerStmt),
+    AlterRoleStmt(AlterRoleStmt),
     CheckPoint,
     ClosePortalStmt(OneOrAll),
     DeallocateStmt(OneOrAll),
     DiscardStmt(DiscardStmt),
     ListenStmt(CowStr),
+    Literal(AstLiteral),
     LoadStmt(String),
-    ReassignOwnedStmt(ReassignOwnedStmt),
-    VariableShowStmt(VariableShowStmt),
-    UnlistenStmt(OneOrAll),
-    TransactionStmt(TransactionStmt),
     NotifyStmt(NotifyStmt),
-    AlterRoleStmt(AlterRoleStmt),
+    ReassignOwnedStmt(ReassignOwnedStmt),
+    RefreshCollationVersionStmt(QnName),
     RenameStmt(RenameStmt),
-    AlterEventTrigStmt(AlterEventTrigStmt),
-    AlterOwnerStmt(AlterOwnerStmt),
+    SystemType(SystemType),
+    TransactionStmt(TransactionStmt),
+    TypeCast((/* TODO */)),
+    UnlistenStmt(OneOrAll),
+    VariableShowStmt(VariableShowStmt),
 }
 
 impl_from!(AlterEventTrigStmt for AstNode);
+impl_from!(AlterObjectSchemaStmt for AstNode);
 impl_from!(AlterOwnerStmt for AstNode);
 impl_from!(AlterRoleStmt for AstNode);
 impl_from!(AstLiteral for AstNode => Literal);
