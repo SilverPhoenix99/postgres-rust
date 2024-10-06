@@ -1,11 +1,17 @@
 impl Parser<'_> {
+    /// Alias: `UnlistenStmt`
     pub(in crate::parser) fn unlisten_stmt(&mut self) -> OptResult<OneOrAll> {
 
-        if self.buffer.consume_kw_eq(Unreserved(Unlisten))?.is_none() {
+        /*
+            UNLISTEN '*'
+            UNLISTEN ColId
+        */
+
+        if self.buffer.consume_kw_eq(Unlisten)?.is_none() {
             return Ok(None)
         }
 
-        if self.buffer.consume_eq(TokenKind::Mul)?.is_some() {
+        if self.buffer.consume_eq(Mul)?.is_some() {
             return Ok(Some(OneOrAll::All))
         }
 
@@ -32,14 +38,9 @@ mod tests {
     }
 }
 
-use crate::lexer::{
-    Keyword::Unreserved,
-    TokenKind,
-    UnreservedKeyword::Unlisten,
-};
+use crate::lexer::Keyword::Unlisten;
+use crate::lexer::TokenKind::Mul;
 use crate::parser::ast_node::OneOrAll;
-use crate::parser::{
-    result::OptionalResult,
-    OptResult,
-    Parser,
-};
+use crate::parser::result::OptionalResult;
+use crate::parser::OptResult;
+use crate::parser::Parser;

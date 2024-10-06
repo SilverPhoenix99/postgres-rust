@@ -4,11 +4,11 @@ impl Parser<'_> {
     pub(in crate::parser) fn alter_group_stmt(&mut self) -> OptResult<AstNode> {
 
         /*
-              ALTER GROUP role_id RENAME TO role_id
-            | ALTER GROUP role_spec (ADD | DROP) USER role_list
+            ALTER GROUP role_id RENAME TO role_id
+            ALTER GROUP role_spec (ADD | DROP) USER role_list
         */
 
-        if self.buffer.consume_kw_eq(Reserved(Group))?.is_none() {
+        if self.buffer.consume_kw_eq(Group)?.is_none() {
             return Ok(None)
         }
 
@@ -16,9 +16,8 @@ impl Parser<'_> {
         let role = self.role_spec().required()?;
 
         let action = self.buffer.consume(|tok|
-            tok.keyword().and_then(KeywordDetails::unreserved).filter(|kw|
-                matches!(kw, Add | DropKw | Rename)
-            )
+            tok.keyword().map(KeywordDetails::keyword)
+                .filter(|kw| matches!(kw, Add | DropKw | Rename))
         ).required()?;
 
         if action == Rename {
@@ -30,7 +29,7 @@ impl Parser<'_> {
                 }
             };
 
-            self.buffer.consume_kw_eq(Reserved(To))?;
+            self.buffer.consume_kw_eq(To)?;
             let new_name = self.role_spec().required()?.into_role_id()?;
 
             return Ok(Some(
@@ -38,7 +37,7 @@ impl Parser<'_> {
             ))
         }
 
-        self.buffer.consume_kw_eq(Reserved(User))?;
+        self.buffer.consume_kw_eq(User)?;
 
         let action = if action == Add { AlterRoleAction::Add } else { AlterRoleAction::Remove };
 
@@ -105,14 +104,8 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::Reserved;
+use crate::lexer::Keyword::{Add, DropKw, Group, Rename, To, User};
 use crate::lexer::KeywordDetails;
-use crate::lexer::ReservedKeyword::Group;
-use crate::lexer::ReservedKeyword::To;
-use crate::lexer::ReservedKeyword::User;
-use crate::lexer::UnreservedKeyword::Add;
-use crate::lexer::UnreservedKeyword::DropKw;
-use crate::lexer::UnreservedKeyword::Rename;
 use crate::parser::ast_node::AlterRoleOption::RoleMembers;
 use crate::parser::ast_node::{AlterRoleAction, AlterRoleStmt, AstNode, RenameStmt, RenameTarget, RoleSpec};
 use crate::parser::result::{OptResult, OptionalResult};

@@ -1,11 +1,19 @@
 impl Parser<'_> {
     pub(in crate::parser) fn rollback_stmt(&mut self) -> OptResult<TransactionStmt> {
 
-        if self.buffer.consume_kw_eq(Unreserved(Rollback))?.is_none() {
+        /*
+        TransactionStmt:
+            ROLLBACK opt_transaction opt_transaction_chain
+            ROLLBACK opt_transaction TO SAVEPOINT ColId
+            ROLLBACK opt_transaction TO ColId
+            ROLLBACK PREPARED SCONST
+        */
+
+        if self.buffer.consume_kw_eq(Rollback)?.is_none() {
             return Ok(None)
         }
 
-        match self.buffer.consume_kw_eq(Unreserved(Prepared)) {
+        match self.buffer.consume_kw_eq(Prepared) {
             Err(None) => return Ok(Some(TransactionStmt::Rollback { chain: false })),
             Err(Some(err)) => return Err(Some(err)),
             Ok(Some(_)) => {
@@ -17,11 +25,11 @@ impl Parser<'_> {
 
         self.opt_transaction()?;
 
-        match self.buffer.consume_kw_eq(Reserved(To)) {
+        match self.buffer.consume_kw_eq(To) {
             Err(None) => return Ok(Some(TransactionStmt::Rollback { chain: false })),
             Err(Some(err)) => return Err(Some(err)),
             Ok(Some(_)) => {
-                self.buffer.consume_kw_eq(Unreserved(Savepoint))
+                self.buffer.consume_kw_eq(Savepoint)
                     .map_eof(||
                         Err(Some(ParserErrorKind::default()))
                     )?;
@@ -109,12 +117,7 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::Reserved;
-use crate::lexer::Keyword::Unreserved;
-use crate::lexer::ReservedKeyword::To;
-use crate::lexer::UnreservedKeyword::Prepared;
-use crate::lexer::UnreservedKeyword::Rollback;
-use crate::lexer::UnreservedKeyword::Savepoint;
+use crate::lexer::Keyword::{Prepared, Rollback, Savepoint, To};
 use crate::parser::ast_node::TransactionStmt;
 use crate::parser::result::OptionalResult;
 use crate::parser::OptResult;

@@ -1,7 +1,12 @@
 impl Parser<'_> {
     pub(in crate::parser) fn end_stmt(&mut self) -> OptResult<TransactionStmt> {
 
-        if self.buffer.consume_kw_eq(Reserved(End))?.is_none() {
+        /*
+        TransactionStmtLegacy:
+            END_P opt_transaction opt_transaction_chain
+        */
+
+        if self.buffer.consume_kw_eq(End)?.is_none() {
             return Ok(None)
         }
 
@@ -55,8 +60,7 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::Reserved;
-use crate::lexer::ReservedKeyword::End;
+use crate::lexer::Keyword::End;
 use crate::parser::ast_node::TransactionStmt;
 use crate::parser::OptResult;
 use crate::parser::Parser;

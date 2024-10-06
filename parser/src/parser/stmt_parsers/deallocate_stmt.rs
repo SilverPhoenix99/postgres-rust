@@ -1,13 +1,19 @@
 impl Parser<'_> {
+    /// Alias: `DeallocateStmt`
     pub(in crate::parser) fn deallocate_stmt(&mut self) -> OptResult<OneOrAll> {
 
-        if self.buffer.consume_kw_eq(Unreserved(Deallocate))?.is_none() {
+        /*
+            DEALLOCATE (PREPARE)? ALL
+            DEALLOCATE (PREPARE)? ColId
+        */
+
+        if self.buffer.consume_kw_eq(Deallocate)?.is_none() {
             return Ok(None)
         }
 
-        self.buffer.consume_kw_eq(Unreserved(Prepare)).replace_eof(Ok(None))?;
+        self.buffer.consume_kw_eq(Prepare).replace_eof(Ok(None))?;
 
-        if self.buffer.consume_kw_eq(Reserved(All))?.is_some() {
+        if self.buffer.consume_kw_eq(All)?.is_some() {
             return Ok(Some(OneOrAll::All))
         }
 
@@ -36,11 +42,7 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::Reserved;
-use crate::lexer::Keyword::Unreserved;
-use crate::lexer::ReservedKeyword::All;
-use crate::lexer::UnreservedKeyword::Deallocate;
-use crate::lexer::UnreservedKeyword::Prepare;
+use crate::lexer::Keyword::{All, Deallocate, Prepare};
 use crate::parser::ast_node::OneOrAll;
 use crate::parser::result::OptionalResult;
 use crate::parser::OptResult;

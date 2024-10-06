@@ -1,16 +1,25 @@
 impl Parser<'_> {
+    /// Alias: `VariableShowStmt`
     pub(in crate::parser) fn show_stmt(&mut self) -> OptResult<VariableShowStmt> {
 
-        if self.buffer.consume_kw_eq(Unreserved(Show))?.is_none() {
+        /*
+            SHOW var_name
+            SHOW TIME ZONE
+            SHOW TRANSACTION ISOLATION LEVEL
+            SHOW SESSION AUTHORIZATION
+            SHOW ALL
+        */
+
+        if self.buffer.consume_kw_eq(Show)?.is_none() {
             return Ok(None)
         }
 
         let show_stmt = self.buffer.consume(|tok|
             tok.keyword().and_then(|kw| match kw.keyword() {
-                Reserved(All) => Some(VariableShowStmt::All),
-                Unreserved(Session) => Some(VariableShowStmt::SessionAuthorization),
-                ColumnName(Time) => Some(VariableShowStmt::TimeZone),
-                Unreserved(Transaction) => Some(VariableShowStmt::TransactionIsolation),
+                All => Some(VariableShowStmt::All),
+                Session => Some(VariableShowStmt::SessionAuthorization),
+                Time => Some(VariableShowStmt::TimeZone),
+                Transaction => Some(VariableShowStmt::TransactionIsolation),
                 _ => None
             })
         ).replace_eof(Ok(None))?;
@@ -18,16 +27,16 @@ impl Parser<'_> {
         match show_stmt {
             Some(VariableShowStmt::All) => Ok(Some(VariableShowStmt::All)),
             Some(VariableShowStmt::SessionAuthorization) => {
-                self.buffer.consume_kw_eq(TypeFuncName(Authorization)).required()?;
+                self.buffer.consume_kw_eq(Authorization).required()?;
                 Ok(Some(VariableShowStmt::SessionAuthorization))
             },
             Some(VariableShowStmt::TransactionIsolation) => {
-                self.buffer.consume_kw_eq(Unreserved(Isolation)).required()?;
-                self.buffer.consume_kw_eq(Unreserved(Level)).required()?;
+                self.buffer.consume_kw_eq(Isolation).required()?;
+                self.buffer.consume_kw_eq(Level).required()?;
                 Ok(Some(VariableShowStmt::TransactionIsolation))
             }
             Some(VariableShowStmt::TimeZone) => {
-                self.buffer.consume_kw_eq(Unreserved(Zone)).required()?;
+                self.buffer.consume_kw_eq(Zone).required()?;
                 Ok(Some(VariableShowStmt::TimeZone))
             }
             Some(VariableShowStmt::Name(_)) => unreachable!(),
@@ -78,19 +87,7 @@ mod tests {
     }
 }
 
-use crate::lexer::ColumnNameKeyword::Time;
-use crate::lexer::Keyword::ColumnName;
-use crate::lexer::Keyword::Reserved;
-use crate::lexer::Keyword::TypeFuncName;
-use crate::lexer::Keyword::Unreserved;
-use crate::lexer::ReservedKeyword::All;
-use crate::lexer::TypeFuncNameKeyword::Authorization;
-use crate::lexer::UnreservedKeyword::Isolation;
-use crate::lexer::UnreservedKeyword::Level;
-use crate::lexer::UnreservedKeyword::Session;
-use crate::lexer::UnreservedKeyword::Show;
-use crate::lexer::UnreservedKeyword::Transaction;
-use crate::lexer::UnreservedKeyword::Zone;
+use crate::lexer::Keyword::{All, Authorization, Isolation, Level, Session, Show, Time, Transaction, Zone};
 use crate::parser::ast_node::VariableShowStmt;
 use crate::parser::result::OptionalResult;
 use crate::parser::token_buffer::TokenConsumer;

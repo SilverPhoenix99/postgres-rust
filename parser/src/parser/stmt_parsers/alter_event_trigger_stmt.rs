@@ -2,21 +2,21 @@ impl Parser<'_> {
     pub(in crate::parser) fn alter_event_trigger_stmt(&mut self) -> OptResult<AstNode> {
 
         /*
-            ALTER EVENT TRIGGER ColId enable_trigger    # AlterEventTrigStmt
-          | ALTER EVENT TRIGGER ColId OWNER TO RoleSpec # AlterOwnerStmt
-          | ALTER EVENT TRIGGER ColId RENAME TO ColId   # RenameStmt
+            ALTER EVENT TRIGGER ColId enable_trigger
+            ALTER EVENT TRIGGER ColId OWNER TO RoleSpec
+            ALTER EVENT TRIGGER ColId RENAME TO ColId
         */
 
-        if self.buffer.consume_kw_eq(Unreserved(Event))?.is_none() {
+        if self.buffer.consume_kw_eq(Event)?.is_none() {
             return Ok(None)
         }
 
-        self.buffer.consume_kw_eq(Unreserved(Trigger)).required()?;
+        self.buffer.consume_kw_eq(Trigger).required()?;
 
         let trigger = self.col_id().required()?;
 
         let op = self.buffer.consume(|tok|
-            tok.keyword().and_then(KeywordDetails::unreserved)
+            tok.keyword().map(KeywordDetails::keyword)
                 .filter(|kw| matches!(kw, Owner | Rename))
         ).replace_eof(Err(Some(ParserErrorKind::default())))?;
 
@@ -27,7 +27,7 @@ impl Parser<'_> {
             ))
         };
 
-        self.buffer.consume_kw_eq(Reserved(To)).required()?;
+        self.buffer.consume_kw_eq(To).required()?;
 
         if op == Owner {
             let new_owner = self.role_spec().required()?;
@@ -59,7 +59,7 @@ impl Parser<'_> {
         */
 
         let enable = self.buffer.consume(|tok|
-            tok.keyword().and_then(KeywordDetails::unreserved)
+            tok.keyword().map(KeywordDetails::keyword)
                 .filter(|kw| matches!(kw, Enable | Disable))
                 .map(|kw| kw == Enable)
         ).required()?;
@@ -69,7 +69,7 @@ impl Parser<'_> {
         }
 
         let enable_option = self.buffer.consume(|tok|
-            tok.keyword().and_then(KeywordDetails::unreserved)
+            tok.keyword().map(KeywordDetails::keyword)
                 .filter(|kw| matches!(kw, Replica | Always))
         );
 
@@ -146,10 +146,8 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Reserved, Unreserved};
+use crate::lexer::Keyword::{Always, Disable, Enable, Event, Owner, Rename, Replica, To, Trigger};
 use crate::lexer::KeywordDetails;
-use crate::lexer::ReservedKeyword::To;
-use crate::lexer::UnreservedKeyword::{Always, Disable, Enable, Event, Owner, Rename, Replica, Trigger};
 use crate::parser::ast_node::{AlterEventTrigStmt, AlterOwnerStmt, AlterOwnerTarget, RenameStmt, RenameTarget};
 use crate::parser::result::OptionalResult;
 use crate::parser::token_buffer::TokenConsumer;

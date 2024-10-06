@@ -1,11 +1,17 @@
 impl Parser<'_> {
+    /// Alias: `ClosePortalStmt`
     pub(in crate::parser) fn close_stmt(&mut self) -> OptResult<OneOrAll> {
 
-        if self.buffer.consume_kw_eq(Unreserved(Close))?.is_none() {
+        /*
+            CLOSE ALL
+            CLOSE ColId
+        */
+
+        if self.buffer.consume_kw_eq(Close)?.is_none() {
             return Ok(None)
         }
 
-        if self.buffer.consume_kw_eq(Reserved(All))?.is_some() {
+        if self.buffer.consume_kw_eq(All)?.is_some() {
             return Ok(Some(OneOrAll::All))
         }
 
@@ -35,11 +41,7 @@ mod tests {
     }
 }
 
-use crate::lexer::{
-    Keyword::{Reserved, Unreserved},
-    ReservedKeyword::All,
-    UnreservedKeyword::Close,
-};
+use crate::lexer::Keyword::{All, Close};
 use crate::parser::ast_node::OneOrAll;
 use crate::parser::{
     result::OptionalResult,

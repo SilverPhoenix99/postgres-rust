@@ -1,7 +1,12 @@
 impl Parser<'_> {
     pub(in crate::parser) fn savepoint_stmt(&mut self) -> OptResult<TransactionStmt> {
 
-        if self.buffer.consume_kw_eq(Unreserved(Savepoint))?.is_none() {
+        /*
+        TransactionStmt:
+            SAVEPOINT ColId
+        */
+
+        if self.buffer.consume_kw_eq(Savepoint)?.is_none() {
             return Ok(None)
         }
 
@@ -23,8 +28,7 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::Unreserved;
-use crate::lexer::UnreservedKeyword::Savepoint;
+use crate::lexer::Keyword::Savepoint;
 use crate::parser::ast_node::TransactionStmt;
 use crate::parser::result::OptionalResult;
 use crate::parser::OptResult;

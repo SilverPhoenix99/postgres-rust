@@ -1,7 +1,9 @@
 impl Parser<'_> {
     pub(in crate::parser) fn set_stmt(&mut self) -> OptResult<AstNode> {
 
-        if self.buffer.consume_kw_eq(Unreserved(Set))?.is_none() {
+        // TODO Conflicts
+
+        if self.buffer.consume_kw_eq(Set)?.is_none() {
             return Ok(None)
         }
 
@@ -9,6 +11,7 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::Unreserved;
-use crate::lexer::UnreservedKeyword::Set;
-use crate::parser::{AstNode, OptResult, Parser};
+use crate::lexer::Keyword::Set;
+use crate::parser::AstNode;
+use crate::parser::OptResult;
+use crate::parser::Parser;

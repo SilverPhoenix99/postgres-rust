@@ -1,7 +1,12 @@
 impl Parser<'_> {
+    /// Alias: `TruncateStmt`
     pub(in crate::parser) fn truncate_stmt(&mut self) -> OptResult<AstNode> {
 
-        if self.buffer.consume_kw_eq(Unreserved(Truncate))?.is_none() {
+        /*
+            TRUNCATE opt_table relation_expr_list opt_restart_seqs opt_drop_behavior
+        */
+        
+        if self.buffer.consume_kw_eq(Truncate)?.is_none() {
             return Ok(None)
         }
 
@@ -9,6 +14,7 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::Unreserved;
-use crate::lexer::UnreservedKeyword::Truncate;
-use crate::parser::{AstNode, OptResult, Parser};
+use crate::lexer::Keyword::Truncate;
+use crate::parser::AstNode;
+use crate::parser::OptResult;
+use crate::parser::Parser;

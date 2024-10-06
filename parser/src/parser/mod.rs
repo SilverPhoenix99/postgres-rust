@@ -172,9 +172,8 @@ impl<'src> Parser<'src> {
     }
 
     fn stmt(&mut self) -> OptResult<AstNode> {
-        use UnreservedKeyword::Checkpoint;
 
-        if self.buffer.consume_kw_eq(Unreserved(Checkpoint))?.is_some() {
+        if self.buffer.consume_kw_eq(Keyword::Checkpoint)?.is_some() {
             return Ok(Some(AstNode::CheckPoint))
         }
 
@@ -200,7 +199,7 @@ impl<'src> Parser<'src> {
         else if let Some(node) = self.move_stmt()? { Ok(Some(node)) }
         else if let Some(node) = self.notify_stmt()? { Ok(Some(node.into())) }
         else if let Some(node) = self.prepare_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.reassign_owner_stmt()? { Ok(Some(node.into())) }
+        else if let Some(node) = self.reassign_owned_stmt()? { Ok(Some(node.into())) }
         else if let Some(node) = self.reindex_stmt()? { Ok(Some(node)) }
         else if let Some(node) = self.release_savepoint_stmt()? { Ok(Some(node.into())) }
         else if let Some(node) = self.revoke_stmt()? { Ok(Some(node)) }
@@ -217,27 +216,26 @@ impl<'src> Parser<'src> {
     }
 
     fn opt_transaction(&mut self) -> ReqResult<()> {
-        use UnreservedKeyword::{Transaction, Work};
+        use Keyword::{Transaction, Work};
 
         // Skips over WORK | TRANSACTION
         self.buffer.consume(|tok|
-            matches!(tok.keyword().and_then(KeywordDetails::unreserved), Some(Work | Transaction))
+            matches!(tok.keyword().map(KeywordDetails::keyword), Some(Work | Transaction))
         ).replace_eof(Ok(None))?;
 
         Ok(())
     }
 
     fn opt_transaction_chain(&mut self) -> ReqResult<bool> {
-        use ReservedKeyword::And;
-        use UnreservedKeyword::{Chain, No};
+        use Keyword::{And, Chain, No};
 
-        if self.buffer.consume_kw_eq(Reserved(And)).replace_eof(Ok(None))?.is_none() {
+        if self.buffer.consume_kw_eq(And).replace_eof(Ok(None))?.is_none() {
             return Ok(false)
         }
 
-        let result = self.buffer.consume_kw_eq(Unreserved(No)).replace_eof(Ok(None))?.is_none();
+        let result = self.buffer.consume_kw_eq(No).replace_eof(Ok(None))?.is_none();
 
-        self.buffer.consume_kw_eq(Unreserved(Chain)).required()?;
+        self.buffer.consume_kw_eq(Chain).required()?;
 
         Ok(result)
     }
@@ -271,42 +269,34 @@ impl<'src> Parser<'src> {
     }
 
     fn transaction_mode(&mut self) -> OptResult<TransactionMode> {
-        use ReservedKeyword::{Deferrable, Not, Only};
-        use UnreservedKeyword::{Isolation, Level, Read, Write};
+        use Keyword::{Deferrable, Isolation, Level, Not, Only, Read, Write};
 
         let result = self.buffer.consume(|tok|
-            match tok.keyword().map(KeywordDetails::keyword) {
-                kw @ Some(Reserved(Deferrable | Not) | Unreserved(Isolation | Read)) => kw,
-                _ => None
-            }
+            tok.keyword().map(KeywordDetails::keyword)
+                .filter(|kw| matches!(kw, Deferrable | Not | Isolation | Read))
         )?;
 
         let Some(result) = result else { return Ok(None) };
 
         match result {
-            Reserved(Deferrable) => Ok(Some(TransactionMode::Deferrable)),
-            Reserved(Not) => {
-                self.buffer.consume_kw_eq(Reserved(Deferrable)).required()?;
+            Deferrable => Ok(Some(TransactionMode::Deferrable)),
+            Not => {
+                self.buffer.consume_kw_eq(Deferrable).required()?;
                 Ok(Some(TransactionMode::NotDeferrable))
             },
-            Unreserved(Isolation) => {
-                self.buffer.consume_kw_eq(Unreserved(Level)).required()?;
+            Isolation => {
+                self.buffer.consume_kw_eq(Level).required()?;
                 let isolation_level = self.isolation_level()?;
                 Ok(Some(TransactionMode::IsolationLevel(isolation_level)))
             },
-            Unreserved(Read) => {
-                let result = self.buffer.consume(|tok|
+            Read => {
+                self.buffer.consume(|tok|
                     match tok.keyword().map(KeywordDetails::keyword) {
-                        kw @ Some(Reserved(Only) | Unreserved(Write)) => kw,
+                        Some(Only) => Some(TransactionMode::ReadOnly),
+                        Some(Write) => Some(TransactionMode::ReadWrite),
                         _ => None
                     }
-                ).required()?;
-
-                match result {
-                    Reserved(Only) => Ok(Some(TransactionMode::ReadOnly)),
-                    Unreserved(Write) => Ok(Some(TransactionMode::ReadWrite)),
-                    _ => unreachable!(),
-                }
+                ).required().optional()
             },
             _ => Ok(None)
         }
@@ -314,22 +304,22 @@ impl<'src> Parser<'src> {
 
     /// Alias: `iso_level`
     fn isolation_level(&mut self) -> ReqResult<IsolationLevel> {
-        use UnreservedKeyword::{Committed, Read, Repeatable, Serializable, Uncommitted};
+        use Keyword::{Committed, Read, Repeatable, Serializable, Uncommitted};
 
         let result = self.buffer.consume(|tok|
-            tok.keyword().and_then(KeywordDetails::unreserved)
+            tok.keyword().map(KeywordDetails::keyword)
                 .filter(|kw| matches!(kw, Read | Repeatable | Serializable))
         ).required()?;
 
         match result {
             Serializable => Ok(IsolationLevel::Serializable),
             Repeatable => {
-                self.buffer.consume_kw_eq(Unreserved(Read)).required()?;
+                self.buffer.consume_kw_eq(Read).required()?;
                 Ok(IsolationLevel::RepeatableRead)
             },
             Read => {
                 let result = self.buffer.consume(|tok|
-                    tok.keyword().and_then(KeywordDetails::unreserved)
+                    tok.keyword().map(KeywordDetails::keyword)
                         .filter(|kw| matches!(kw, Committed | Uncommitted))
                 ).required()?;
 
@@ -376,6 +366,7 @@ impl<'src> Parser<'src> {
 
     /// Alias: `ConstTypename`
     fn const_typename(&mut self) -> OptResult<SystemType> {
+        use Keyword::{Bit, Varying};
 
         /*
         ConstTypename :
@@ -402,9 +393,9 @@ impl<'src> Parser<'src> {
             return Ok(Some(character))
         }
 
-        let bit = self.buffer.consume_kw_eq(ColumnName(ColumnNameKeyword::Bit))?;
+        let bit = self.buffer.consume_kw_eq(Bit)?;
         if bit.is_some() {
-            let varying = self.buffer.consume_kw_eq(Unreserved(UnreservedKeyword::Varying))
+            let varying = self.buffer.consume_kw_eq(Varying)
                 .replace_eof(Ok(None))?;
             // TODO: self.expr_list()
         }
@@ -415,8 +406,7 @@ impl<'src> Parser<'src> {
     /// Alias: `Numeric`<p/>
     /// Inline: `opt_float`
     fn numeric(&mut self) -> OptResult<SystemType> {
-        use ColumnNameKeyword::{Bigint, Boolean, Dec, Decimal, Float, Int, Integer, Numeric, Precision, Real, Smallint};
-        use UnreservedKeyword::Double;
+        use Keyword::{Bigint, Boolean, Dec, Decimal, Double, Float, Int, Integer, Numeric, Precision, Real, Smallint};
 
         /*
         Numeric :
@@ -434,39 +424,37 @@ impl<'src> Parser<'src> {
         let kw = self.buffer.consume(|tok|
             tok.keyword().map(KeywordDetails::keyword).filter(|kw|
                 matches!(kw,
-                    ColumnName(
-                          Int
-                        | Integer
-                        | Smallint
-                        | Bigint
-                        | Real
-                        | Float
-                        | Decimal
-                        | Dec
-                        | Numeric
-                        | Boolean
-                    )
-                    | Unreserved(Double)
+                      Smallint
+                    | Int
+                    | Integer
+                    | Bigint
+                    | Real
+                    | Boolean
+                    | Double
+                    | Float
+                    | Decimal
+                    | Dec
+                    | Numeric
                 )
             )
         )?;
 
         let kw = match kw {
             None => return Ok(None),
-            Some(ColumnName(Smallint)) => return Ok(Some(Int2)),
-            Some(ColumnName(Int | Integer)) => return Ok(Some(Int4)),
-            Some(ColumnName(Bigint)) => return Ok(Some(Int8)),
-            Some(ColumnName(Real)) => return Ok(Some(Float4)),
-            Some(ColumnName(Boolean)) => return Ok(Some(Bool)),
+            Some(Smallint) => return Ok(Some(Int2)),
+            Some(Int | Integer) => return Ok(Some(Int4)),
+            Some(Bigint) => return Ok(Some(Int8)),
+            Some(Real) => return Ok(Some(Float4)),
+            Some(Boolean) => return Ok(Some(Bool)),
             Some(kw) => kw,
         };
 
-        if kw == Unreserved(Double) {
-            self.buffer.consume_kw_eq(ColumnName(Precision)).required()?;
+        if kw == Double {
+            self.buffer.consume_kw_eq(Precision).required()?;
             return Ok(Some(Float8))
         }
 
-        if kw == ColumnName(Float) {
+        if kw == Float {
             // opt_float: '(' ICONST ')'
             return match self.i32_literal_paren().replace_eof(Ok(None))? {
                 None => Ok(Some(Float8)),
@@ -552,7 +540,7 @@ impl<'src> Parser<'src> {
     }
 
     fn character(&mut self) -> OptResult<CharacterSystemType> {
-        use ColumnNameKeyword::{Char, Character, National, Nchar, Varchar};
+        use Keyword::{Char, Character, National, Nchar, Varchar};
 
         /*
         character :
@@ -562,8 +550,7 @@ impl<'src> Parser<'src> {
         */
 
         let char_type = self.buffer.consume(|tok|
-            tok.keyword()
-                .and_then(KeywordDetails::col_name)
+            tok.keyword().map(KeywordDetails::keyword)
                 .filter(|col_name|
                     matches!(col_name, Varchar | Character | Char | National | Nchar)
                 )
@@ -582,14 +569,14 @@ impl<'src> Parser<'src> {
             self.buffer
                 .consume(|tok|
                     matches!(
-                        tok.keyword().and_then(KeywordDetails::col_name),
+                        tok.keyword().map(KeywordDetails::keyword),
                         Some(Character | Char)
                     )
                 )
                 .required()?;
         }
 
-        let varying = self.buffer.consume_kw_eq(Unreserved(UnreservedKeyword::Varying))
+        let varying = self.buffer.consume_kw_eq(Keyword::Varying)
             .replace_eof(Ok(None))?;
 
         let char_type = if varying.is_some() {
@@ -753,22 +740,25 @@ impl<'src> Parser<'src> {
         }
 
         self.buffer.consume(|tok| {
-            use ColumnNameKeyword::NoneKw;
-            use ReservedKeyword::{CurrentRole, CurrentUser, SessionUser};
+            use Keyword::{CurrentRole, CurrentUser, NoneKw, SessionUser};
 
-            let Some(kw) = tok.keyword() else {
-                return Ok(None)
-            };
+            let Some(kw) = tok.keyword() else { return Ok(None) };
 
             match kw.keyword() {
-                ColumnName(NoneKw) => Err(ReservedRoleSpec("none")),
-                Reserved(CurrentRole) => Ok(Some(RoleSpec::CurrentRole)),
-                Reserved(CurrentUser) => Ok(Some(RoleSpec::CurrentUser)),
-                Reserved(SessionUser) => Ok(Some(RoleSpec::SessionUser)),
-                Reserved(_) => Ok(None),
-                _ => Ok(Some(
-                    RoleSpec::Name(kw.text().into())
-                )),
+                NoneKw => Err(ReservedRoleSpec("none")),
+                CurrentRole => Ok(Some(RoleSpec::CurrentRole)),
+                CurrentUser => Ok(Some(RoleSpec::CurrentUser)),
+                SessionUser => Ok(Some(RoleSpec::SessionUser)),
+                _ => {
+                    if kw.reserved().is_some() {
+                        Ok(None)
+                    }
+                    else {
+                        Ok(Some(
+                            RoleSpec::Name(kw.text().into())
+                        ))
+                    }
+                },
             }
         })
     }
@@ -847,12 +837,12 @@ impl<'src> Parser<'src> {
 
     /// Production: `UESCAPE SCONST`
     fn uescape(&mut self) -> Result<char, ParserErrorKind> {
-        use UnreservedKeyword::Uescape;
+        use Keyword::Uescape;
 
         // Try to consume UESCAPE + the string following it.
         // see [base_yylex](https://github.com/postgres/postgres/blob/1c61fd8b527954f0ec522e5e60a11ce82628b681/src/backend/parser/parser.c#L256)
 
-        let uescape = self.buffer.consume_kw_eq(Unreserved(Uescape));
+        let uescape = self.buffer.consume_kw_eq(Uescape);
 
         match uescape {
             Ok(None) | Err(None) => return Ok('\\'),
@@ -1464,13 +1454,10 @@ use self::result::RequiredResult;
 use self::string_parser::StringParser;
 use self::token_buffer::TokenBuffer;
 use self::token_buffer::TokenConsumer;
-use crate::lexer::ColumnNameKeyword;
-use crate::lexer::Keyword::{ColumnName, Reserved, Unreserved};
+use crate::lexer::Keyword;
 use crate::lexer::KeywordDetails;
 use crate::lexer::Lexer;
-use crate::lexer::ReservedKeyword;
 use crate::lexer::TokenKind::{self, Comma, NumberLiteral, Semicolon};
-use crate::lexer::UnreservedKeyword;
 use crate::parser::ast_node::{SignedNumber, UnsignedNumber};
 use postgres_basics::ascii;
 use postgres_basics::Located;

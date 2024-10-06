@@ -54,32 +54,25 @@ class KeywordsGenerator
       *enums,
       *map,
       '',
-      'use super::Keyword::*;',
+      'use super::KeywordCategory::*;',
       'use super::KeywordDetails;',
-      'use ColumnNameKeyword::*;',
-      'use ReservedKeyword::*;',
-      'use TypeFuncNameKeyword::*;',
-      'use UnreservedKeyword::*;',
+      'use Keyword::*;',
+      ''
     ].join("\n")
   end
 
   def render_keyword_enums
 
-    keywords.group_by { |kw| kw[:category] }
-      .flat_map do |category, kws|
+    kws = keywords.map do |kw|
+      "    #{kw[:keyword]},"
+    end
 
-        kws = kws.map do |kw|
-          "    #{kw[:keyword]},"
-        end
-
-        [
-          '#[derive(Debug, Clone, Copy, Eq, PartialEq)]',
-          "pub enum #{category}Keyword {",
-          *kws,
-          "}\n"
-        ]
-      end
-
+    [
+      '#[derive(Debug, Clone, Copy, Eq, PartialEq)]',
+      "pub enum Keyword {",
+      *kws,
+      "}\n"
+    ]
   end
 
   def render_keywords_map
@@ -89,7 +82,7 @@ class KeywordsGenerator
       category = kw[:category]
       keyword = kw[:keyword]
       bare = kw[:bare]
-      "    #{text} => KeywordDetails::new(#{category}(#{keyword}), #{text}, #{bare}),"
+      "    #{text} => KeywordDetails::new(#{keyword}, #{text}, #{category}, #{bare}),"
     end
 
     [

@@ -1,7 +1,12 @@
 impl Parser<'_> {
     pub(in crate::parser) fn abort_stmt(&mut self) -> OptResult<TransactionStmt> {
 
-        if self.buffer.consume_kw_eq(Unreserved(Abort))?.is_none() {
+        /*
+        TransactionStmt:
+            ABORT_P opt_transaction opt_transaction_chain
+        */
+
+        if self.buffer.consume_kw_eq(Abort)?.is_none() {
             return Ok(None)
         }
 
@@ -56,7 +61,7 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::Unreserved;
-use crate::lexer::UnreservedKeyword::Abort;
+use crate::lexer::Keyword::Abort;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::{OptResult, Parser};
+use crate::parser::OptResult;
+use crate::parser::Parser;

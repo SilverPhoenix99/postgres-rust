@@ -2,14 +2,15 @@
 pub struct KeywordDetails {
     keyword: Keyword,
     text: &'static str,
+    category: KeywordCategory,
     bare: bool,
 }
 
 impl KeywordDetails {
 
     #[inline(always)]
-    pub(super) const fn new(keyword: Keyword, text: &'static str, bare: bool) -> Self {
-        KeywordDetails { keyword, text, bare }
+    pub(super) const fn new(keyword: Keyword, text: &'static str, category: KeywordCategory, bare: bool) -> Self {
+        KeywordDetails { keyword, text, category, bare }
     }
 
     #[inline(always)]
@@ -33,35 +34,35 @@ impl KeywordDetails {
     }
 
     #[inline(always)]
-    pub fn unreserved(&self) -> Option<UnreservedKeyword> {
-        match self.keyword {
-            Unreserved(kw) => Some(kw),
-            _ => None
+    pub fn unreserved(&self) -> Option<Keyword> {
+        if self.category == Unreserved {
+            return Some(self.keyword)
         }
+        None
     }
 
     #[inline(always)]
-    pub fn col_name(&self) -> Option<ColumnNameKeyword> {
-        match self.keyword {
-            ColumnName(kw) => Some(kw),
-            _ => None
+    pub fn col_name(&self) -> Option<Keyword> {
+        if self.category == ColumnName {
+            return Some(self.keyword)
         }
+        None
     }
 
     #[inline(always)]
-    pub fn type_func_name(&self) -> Option<TypeFuncNameKeyword> {
-        match self.keyword {
-            TypeFuncName(kw) => Some(kw),
-            _ => None
+    pub fn type_func_name(&self) -> Option<Keyword> {
+        if self.category == TypeFuncName {
+            return Some(self.keyword)
         }
+        None
     }
 
     #[inline(always)]
-    pub fn reserved(&self) -> Option<ReservedKeyword> {
-        match self.keyword {
-            Reserved(kw) => Some(kw),
-            _ => None
+    pub fn reserved(&self) -> Option<Keyword> {
+        if self.category == Reserved {
+            return Some(self.keyword)
         }
+        None
     }
 }
 
@@ -75,11 +76,12 @@ impl Display for KeywordDetails {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::lexer::Keyword::{Abort, Analyze, Authorization, Between};
 
     #[test]
     fn test_unreserved() {
         let kw = KEYWORDS.get("abort").unwrap();
-        assert_eq!(Some(UnreservedKeyword::Abort), kw.unreserved());
+        assert_eq!(Some(Abort), kw.unreserved());
 
         let kw = KEYWORDS.get("between").unwrap();
         assert_eq!(None, kw.unreserved());
@@ -88,7 +90,7 @@ mod tests {
     #[test]
     fn test_col_name() {
         let kw = KEYWORDS.get("between").unwrap();
-        assert_eq!(Some(ColumnNameKeyword::Between), kw.col_name());
+        assert_eq!(Some(Between), kw.col_name());
 
         let kw = KEYWORDS.get("authorization").unwrap();
         assert_eq!(None, kw.col_name());
@@ -97,7 +99,7 @@ mod tests {
     #[test]
     fn test_type_func_name() {
         let kw = KEYWORDS.get("authorization").unwrap();
-        assert_eq!(Some(TypeFuncNameKeyword::Authorization), kw.type_func_name());
+        assert_eq!(Some(Authorization), kw.type_func_name());
 
         let kw = KEYWORDS.get("analyze").unwrap();
         assert_eq!(None, kw.type_func_name());
@@ -106,20 +108,17 @@ mod tests {
     #[test]
     fn test_reserved() {
         let kw = KEYWORDS.get("analyze").unwrap();
-        assert_eq!(Some(ReservedKeyword::Analyze), kw.reserved());
+        assert_eq!(Some(Analyze), kw.reserved());
 
         let kw = KEYWORDS.get("abort").unwrap();
         assert_eq!(None, kw.reserved());
     }
 }
 
-use crate::lexer::{
-    keyword::keywords::KEYWORDS,
-    ColumnNameKeyword,
+use super::{
+    keywords::KEYWORDS,
     Keyword,
-    Keyword::{ColumnName, Reserved, TypeFuncName, Unreserved},
-    ReservedKeyword,
-    TypeFuncNameKeyword,
-    UnreservedKeyword,
+    KeywordCategory,
+    KeywordCategory::{ColumnName, Reserved, TypeFuncName, Unreserved},
 };
 use std::fmt::{Display, Formatter};

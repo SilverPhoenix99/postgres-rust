@@ -1,7 +1,12 @@
 impl Parser<'_> {
+    /// Alias: `LoadStmt`
     pub(in crate::parser) fn load_stmt(&mut self) -> OptResult<String> {
 
-        if self.buffer.consume_kw_eq(Unreserved(Load))?.is_none() {
+        /*
+            LOAD SCONST
+        */
+
+        if self.buffer.consume_kw_eq(Load)?.is_none() {
             return Ok(None)
         }
 
@@ -21,8 +26,6 @@ mod tests {
     }
 }
 
-use crate::lexer::{
-    Keyword::Unreserved,
-    UnreservedKeyword::Load,
-};
-use crate::parser::{OptResult, Parser};
+use crate::lexer::Keyword::Load;
+use crate::parser::OptResult;
+use crate::parser::Parser;
