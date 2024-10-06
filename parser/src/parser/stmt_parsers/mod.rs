@@ -1,7 +1,9 @@
 mod abort_stmt;
 mod alter_collation_stmt;
+mod alter_conversion_stmt;
 mod alter_event_trigger_stmt;
 mod alter_group_stmt;
+mod alter_large_object_stmt;
 mod alter_stmt;
 mod analyze_stmt;
 mod begin_stmt;
@@ -38,4 +40,3 @@ mod start_transaction_stmt;
 mod truncate_stmt;
 mod unlisten_stmt;
 mod vacuum_stmt;
-mod alter_conversion_stmt;
