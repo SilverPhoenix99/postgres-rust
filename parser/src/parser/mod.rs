@@ -20,8 +20,11 @@ type QnName = Vec<CowStr>;
 
 macro_rules! list_production {
     (gather $production:block delim $separator:block) => {
+        list_production!(prefix $production gather $production delim $separator)
+    };
+    (prefix $prefix:block gather $production:block delim $separator:block) => {
         (|| {
-            let mut elements = match $production? {
+            let mut elements = match $prefix? {
                 None => return Ok(None),
                 Some(element) => vec![element],
             };
@@ -39,7 +42,7 @@ macro_rules! list_production {
 
             Ok(Some(elements))
         })()
-    }
+    };
 }
 
 pub struct ParserResult {
@@ -526,24 +529,11 @@ impl<'src> Parser<'src> {
 
         // A prefix token is passed to prevent a right shift of the Vec later on.
 
-        let mut elements = vec![prefix];
-
-        loop {
-            match self.buffer.consume_eq(TokenKind::Dot) {
-                Ok(Some(_)) => {/* carry on */},
-                Ok(None) | Err(None) => break,
-                Err(Some(err)) => return Err(Some(err)),
-            }
-
-            let element = self.col_label().required()?;
-            elements.push(element);
-        }
-
-        if elements.is_empty() {
-            return Ok(None)
-        }
-
-        Ok(Some(elements))
+        list_production!(
+            prefix { Ok::<Option<CowStr>, Option<ParserErrorKind>>(Some(prefix)) }
+            gather { self.col_label() }
+            delim { self.buffer.consume_eq(TokenKind::Dot) }
+        )
     }
 
     /// Production: `'(' ICONST ')'`
