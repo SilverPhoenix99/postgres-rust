@@ -1,7 +1,12 @@
 impl Parser<'_> {
+    /// Alias: `ListenStmt`
     pub(in crate::parser) fn listen_stmt(&mut self) -> OptResult<Cow<'static, str>> {
 
-        if self.buffer.consume_kw_eq(Unreserved(Listen))?.is_none() {
+        /*
+            LISTEN ColId
+        */
+
+        if self.buffer.consume_kw_eq(Listen)?.is_none() {
             return Ok(None)
         }
 
@@ -24,13 +29,8 @@ mod tests {
     }
 }
 
-use crate::lexer::{
-    Keyword::Unreserved,
-    UnreservedKeyword::Listen,
-};
-use crate::parser::{
-    result::OptionalResult,
-    OptResult,
-    Parser,
-};
+use crate::lexer::Keyword::Listen;
+use crate::parser::result::OptionalResult;
+use crate::parser::OptResult;
+use crate::parser::Parser;
 use std::borrow::Cow;

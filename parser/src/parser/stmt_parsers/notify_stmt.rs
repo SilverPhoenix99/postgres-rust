@@ -1,7 +1,12 @@
 impl Parser<'_> {
+    /// Alias: `NotifyStmt`
     pub(in crate::parser) fn notify_stmt(&mut self) -> OptResult<NotifyStmt> {
 
-        if self.buffer.consume_kw_eq(Unreserved(Notify))?.is_none() {
+        /*
+            NOTIFY ColId (',' SCONST)?
+        */
+        
+        if self.buffer.consume_kw_eq(Notify)?.is_none() {
             return Ok(None)
         }
 
@@ -36,9 +41,8 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::Unreserved;
+use crate::lexer::Keyword::Notify;
 use crate::lexer::TokenKind::Comma;
-use crate::lexer::UnreservedKeyword::Notify;
 use crate::parser::ast_node::NotifyStmt;
 use crate::parser::result::OptionalResult;
 use crate::parser::OptResult;

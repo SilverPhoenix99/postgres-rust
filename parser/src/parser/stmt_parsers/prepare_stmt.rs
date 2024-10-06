@@ -1,13 +1,13 @@
 impl Parser<'_> {
     pub(in crate::parser) fn prepare_stmt(&mut self) -> OptResult<AstNode> {
 
+        // TODO 
         /*
-        prepare_stmt :
-              PREPARE TRANSACTION SCONST # TransactionStmt
-            | PREPARE ColId prep_type_clause AS PreparableStmt
+            PREPARE TRANSACTION SCONST
+            PREPARE ColId prep_type_clause AS PreparableStmt
         */
 
-        if self.buffer.consume_kw_eq(Unreserved(Prepare))?.is_none() {
+        if self.buffer.consume_kw_eq(Prepare)?.is_none() {
             return Ok(None)
         }
 
@@ -15,6 +15,5 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::Unreserved;
-use crate::lexer::UnreservedKeyword::Prepare;
+use crate::lexer::Keyword::Prepare;
 use crate::parser::{AstNode, OptResult, Parser};

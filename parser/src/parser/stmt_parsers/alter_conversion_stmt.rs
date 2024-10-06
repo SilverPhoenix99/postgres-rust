@@ -6,14 +6,14 @@ impl Parser<'_> {
             ALTER CONVERSION_P any_name SET SCHEMA ColId
         */
 
-        if self.buffer.consume_kw_eq(Unreserved(Conversion))?.is_none() {
+        if self.buffer.consume_kw_eq(Conversion)?.is_none() {
             return Ok(None)
         }
 
         let conversion = self.any_name().required()?;
 
         let op = self.buffer.consume(|tok|
-            tok.keyword().and_then(KeywordDetails::unreserved)
+            tok.keyword().map(KeywordDetails::keyword)
                 .filter(|kw|
                     matches!(kw, Owner | Rename | Set)
                 )
@@ -21,7 +21,7 @@ impl Parser<'_> {
 
         let stmt = match op {
             Owner => {
-                self.buffer.consume_kw_eq(Reserved(To)).required()?;
+                self.buffer.consume_kw_eq(To).required()?;
                 let new_owner = self.role_spec().required()?;
 
                 AlterOwnerStmt::new(
@@ -30,7 +30,7 @@ impl Parser<'_> {
                 ).into()
             },
             Rename => {
-                self.buffer.consume_kw_eq(Reserved(To)).required()?;
+                self.buffer.consume_kw_eq(To).required()?;
                 let new_name = self.col_id().required()?;
 
                 RenameStmt::new(
@@ -39,7 +39,7 @@ impl Parser<'_> {
                 ).into()
             },
             Set => {
-                self.buffer.consume_kw_eq(Unreserved(Schema)).required()?;
+                self.buffer.consume_kw_eq(Schema).required()?;
                 let new_schema = self.col_id().required()?;
 
                 AlterObjectSchemaStmt::new(
@@ -116,10 +116,8 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Reserved, Unreserved};
+use crate::lexer::Keyword::{Conversion, Owner, Rename, Schema, Set, To};
 use crate::lexer::KeywordDetails;
-use crate::lexer::ReservedKeyword::To;
-use crate::lexer::UnreservedKeyword::{Conversion, Owner, Rename, Schema, Set};
 use crate::parser::ast_node::{AlterObjectSchemaTarget, AlterOwnerStmt, AlterOwnerTarget, AstNode, RenameStmt, RenameTarget};
 use crate::parser::result::{OptResult, OptionalResult};
 use crate::parser::token_buffer::TokenConsumer;

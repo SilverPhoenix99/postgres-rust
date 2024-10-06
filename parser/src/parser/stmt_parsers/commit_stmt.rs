@@ -1,11 +1,16 @@
 impl Parser<'_> {
     pub(in crate::parser) fn commit_stmt(&mut self) -> OptResult<TransactionStmt> {
 
-        if self.buffer.consume_kw_eq(Unreserved(Commit))?.is_none() {
+        /*
+            COMMIT opt_transaction opt_transaction_chain
+            COMMIT PREPARED SCONST
+        */
+
+        if self.buffer.consume_kw_eq(Commit)?.is_none() {
             return Ok(None)
         }
 
-        match self.buffer.consume_kw_eq(Unreserved(Prepared)) {
+        match self.buffer.consume_kw_eq(Prepared) {
             Err(None) => return Ok(Some(TransactionStmt::Commit { chain: false })),
             Err(Some(err)) => return Err(Some(err)),
             Ok(Some(_)) => {
@@ -71,9 +76,7 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::Unreserved;
-use crate::lexer::UnreservedKeyword::Commit;
-use crate::lexer::UnreservedKeyword::Prepared;
+use crate::lexer::Keyword::{Commit, Prepared};
 use crate::parser::ast_node::TransactionStmt;
 use crate::parser::result::OptionalResult;
 use crate::parser::OptResult;

@@ -1,11 +1,16 @@
 impl Parser<'_> {
     pub(in crate::parser) fn start_transaction_stmt(&mut self) -> OptResult<TransactionStmt> {
 
-        if self.buffer.consume_kw_eq(Unreserved(Start))?.is_none() {
+        /*
+        TransactionStmt:
+            START TRANSACTION transaction_mode_list_or_empty
+        */
+
+        if self.buffer.consume_kw_eq(Start)?.is_none() {
             return Ok(None)
         }
 
-        self.buffer.consume_kw_eq(Unreserved(Transaction)).required()?;
+        self.buffer.consume_kw_eq(Transaction).required()?;
 
         let modes = self.opt_transaction_mode_list()
             .replace_eof(Ok(None))?
@@ -35,9 +40,7 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::Unreserved;
-use crate::lexer::UnreservedKeyword::Start;
-use crate::lexer::UnreservedKeyword::Transaction;
+use crate::lexer::Keyword::{Start, Transaction};
 use crate::parser::ast_node::TransactionStmt;
 use crate::parser::result::OptionalResult;
 use crate::parser::OptResult;

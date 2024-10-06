@@ -1,20 +1,13 @@
 mod keyword_details;
 mod keywords;
 
-pub use self::{
-    keyword_details::KeywordDetails,
-    keywords::{
-        ColumnNameKeyword,
-        ReservedKeyword,
-        TypeFuncNameKeyword,
-        UnreservedKeyword
-    },
-};
+pub use self::keyword_details::KeywordDetails;
+pub use self::keywords::Keyword;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub enum Keyword {
-    Unreserved(UnreservedKeyword),
-    ColumnName(ColumnNameKeyword),
-    TypeFuncName(TypeFuncNameKeyword),
-    Reserved(ReservedKeyword),
+pub enum KeywordCategory {
+    Unreserved,
+    ColumnName,
+    TypeFuncName,
+    Reserved,
 }

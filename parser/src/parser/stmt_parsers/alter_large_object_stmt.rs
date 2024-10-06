@@ -1,18 +1,20 @@
 impl Parser<'_> {
     pub(in crate::parser) fn alter_large_object_stmt(&mut self) -> OptResult<AstNode> {
 
-        // ALTER LARGE_P OBJECT_P NumericOnly OWNER TO RoleSpec
+        /*
+            ALTER LARGE_P OBJECT_P NumericOnly OWNER TO RoleSpec
+        */
 
-        if self.buffer.consume_kw_eq(Unreserved(Large))?.is_none() {
+        if self.buffer.consume_kw_eq(Large)?.is_none() {
             return Ok(None)
         }
 
-        self.buffer.consume_kw_eq(Unreserved(Object)).required()?;
+        self.buffer.consume_kw_eq(Object).required()?;
 
         let oid = self.signed_number().required()?;
 
-        self.buffer.consume_kw_eq(Unreserved(Owner)).required()?;
-        self.buffer.consume_kw_eq(Reserved(To)).required()?;
+        self.buffer.consume_kw_eq(Owner).required()?;
+        self.buffer.consume_kw_eq(To).required()?;
 
         let new_owner = self.role_spec().required()?;
 
@@ -27,9 +29,9 @@ impl Parser<'_> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::ast_node::{AlterOwnerStmt, AlterOwnerTarget, RoleSpec, SignedNumber};
+    use super::*;
+    use crate::parser::ast_node::{RoleSpec, SignedNumber};
     use crate::parser::tests::DEFAULT_CONFIG;
-    use crate::parser::Parser;
 
     #[test]
     fn test_alter_large_object() {
@@ -50,9 +52,10 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Reserved, Unreserved};
-use crate::lexer::ReservedKeyword::To;
-use crate::lexer::UnreservedKeyword::{Large, Object, Owner};
-use crate::parser::ast_node::{AlterOwnerStmt, AlterOwnerTarget, AstNode};
-use crate::parser::result::{OptResult, OptionalResult};
+use crate::lexer::Keyword::{Large, Object, Owner, To};
+use crate::parser::ast_node::AlterOwnerStmt;
+use crate::parser::ast_node::AlterOwnerTarget;
+use crate::parser::ast_node::AstNode;
+use crate::parser::result::OptResult;
+use crate::parser::result::OptionalResult;
 use crate::parser::Parser;

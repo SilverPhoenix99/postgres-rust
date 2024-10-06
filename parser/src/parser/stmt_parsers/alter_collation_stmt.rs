@@ -8,14 +8,14 @@ impl Parser<'_> {
             ALTER COLLATION any_name SET SCHEMA ColId
         */
 
-        if self.buffer.consume_kw_eq(TypeFuncName(Collation))?.is_none() {
+        if self.buffer.consume_kw_eq(Collation)?.is_none() {
             return Ok(None)
         }
 
         let name = self.any_name().required()?;
 
         let op = self.buffer.consume(|tok|
-            tok.keyword().and_then(KeywordDetails::unreserved)
+            tok.keyword().map(KeywordDetails::keyword)
                 .filter(|kw|
                     matches!(kw, Owner | Refresh | Rename | Set)
                 )
@@ -23,7 +23,7 @@ impl Parser<'_> {
 
         let stmt: AstNode = match op {
             Owner => {
-                self.buffer.consume_kw_eq(Reserved(To)).required()?;
+                self.buffer.consume_kw_eq(To).required()?;
                 let role = self.role_spec().required()?;
                 AstNode::AlterOwnerStmt(
                     AlterOwnerStmt::new(
@@ -33,11 +33,11 @@ impl Parser<'_> {
                 )
             },
             Refresh => {
-                self.buffer.consume_kw_eq(Unreserved(Version)).required()?;
+                self.buffer.consume_kw_eq(Version).required()?;
                 RefreshCollationVersionStmt(name)
             },
             Rename => {
-                self.buffer.consume_kw_eq(Reserved(To)).required()?;
+                self.buffer.consume_kw_eq(To).required()?;
                 let new_name = self.col_id().required()?;
 
                 RenameStmt::new(
@@ -46,7 +46,7 @@ impl Parser<'_> {
                 ).into()
             },
             Set => {
-                self.buffer.consume_kw_eq(Unreserved(Schema)).required()?;
+                self.buffer.consume_kw_eq(Schema).required()?;
                 let new_schema = self.col_id().required()?;
                 
                 AlterObjectSchemaStmt::new(
@@ -135,11 +135,8 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Reserved, TypeFuncName, Unreserved};
+use crate::lexer::Keyword::{Collation, Owner, Refresh, Rename, Schema, Set, To, Version};
 use crate::lexer::KeywordDetails;
-use crate::lexer::ReservedKeyword::To;
-use crate::lexer::TypeFuncNameKeyword::Collation;
-use crate::lexer::UnreservedKeyword::{Owner, Refresh, Rename, Schema, Set, Version};
 use crate::parser::ast_node::AlterObjectSchemaStmt;
 use crate::parser::ast_node::AlterObjectSchemaTarget;
 use crate::parser::ast_node::AlterOwnerStmt;

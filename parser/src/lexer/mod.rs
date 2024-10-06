@@ -4,14 +4,7 @@ mod token_kind;
 
 pub use self::{
     error::{LexerError, LexerErrorKind},
-    keyword::{
-        ColumnNameKeyword,
-        Keyword,
-        KeywordDetails,
-        ReservedKeyword,
-        TypeFuncNameKeyword,
-        UnreservedKeyword,
-    },
+    keyword::{Keyword, KeywordDetails},
     token_kind::{BitStringKind, IdentifierKind, StringKind, TokenKind},
 };
 
@@ -717,9 +710,7 @@ impl<'src> Lexer<'src> {
 mod tests {
     use super::*;
     use crate::error::HasLocation;
-    use crate::lexer::Keyword::{Reserved, Unreserved};
-    use crate::lexer::ReservedKeyword::{From, Not, Select};
-    use crate::lexer::UnreservedKeyword::StringKw;
+    use crate::lexer::Keyword::{From, Not, Select, StringKw};
     use std::ops::Range;
 
     #[test]
@@ -903,9 +894,9 @@ mod tests {
         let mut lex = Lexer::new(source, true);
 
         assert_err(UnexpectedChar { unknown: '$' }, 0..1, 1, 1, lex.next());
-        assert_kw(Reserved(Not), lex.next());
+        assert_kw(Not, lex.next());
         assert_tok(Identifier(BasicIdentifier), 5..6, 1, 6, lex.next());
-        assert_kw(Unreserved(StringKw), lex.next());
+        assert_kw(StringKw, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -983,8 +974,8 @@ mod tests {
     fn test_keyword() {
         let source = "SeLeCt FrOm";
         let mut lex = Lexer::new(source, true);
-        assert_kw(Reserved(Select), lex.next());
-        assert_kw(Reserved(From), lex.next());
+        assert_kw(Select, lex.next());
+        assert_kw(From, lex.next());
         assert_eq!(None, lex.next());
     }
 

@@ -1,7 +1,13 @@
 impl Parser<'_> {
+    /// Alias: `FetchStmt`
     pub(in crate::parser) fn fetch_stmt(&mut self) -> OptResult<AstNode> {
 
-        if self.buffer.consume_kw_eq(Reserved(Fetch))?.is_none() {
+        /*
+            FETCH fetch_args
+            MOVE fetch_args
+        */
+
+        if self.buffer.consume_kw_eq(Fetch)?.is_none() {
             return Ok(None)
         }
 
@@ -9,6 +15,7 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::Reserved;
-use crate::lexer::ReservedKeyword::Fetch;
-use crate::parser::{AstNode, OptResult, Parser};
+use crate::lexer::Keyword::Fetch;
+use crate::parser::AstNode;
+use crate::parser::OptResult;
+use crate::parser::Parser;

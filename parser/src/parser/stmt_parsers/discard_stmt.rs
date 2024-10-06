@@ -1,16 +1,21 @@
 impl Parser<'_> {
+    /// Alias: `DiscardStmt`
     pub(in crate::parser) fn discard_stmt(&mut self) -> OptResult<DiscardStmt> {
 
-        if self.buffer.consume_kw_eq(Unreserved(Discard))?.is_none() {
+        /*
+            DISCARD (ALL | PLANS | SEQUENCES | TEMP | TEMPORARY)
+        */
+
+        if self.buffer.consume_kw_eq(Discard)?.is_none() {
             return Ok(None)
         }
 
         let discard = self.buffer.consume(|tok| {
             match tok.keyword().map(KeywordDetails::keyword) {
-                Some(Reserved(All)) => Some(DiscardStmt::All),
-                Some(Unreserved(Plans)) => Some(DiscardStmt::Plans),
-                Some(Unreserved(Sequences)) => Some(DiscardStmt::Sequences),
-                Some(Unreserved(Temp | Temporary)) => Some(DiscardStmt::Temporary),
+                Some(All) => Some(DiscardStmt::All),
+                Some(Plans) => Some(DiscardStmt::Plans),
+                Some(Sequences) => Some(DiscardStmt::Sequences),
+                Some(Temp | Temporary) => Some(DiscardStmt::Temporary),
                 _ => None,
             }
         }).required()?;
@@ -51,15 +56,8 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::Reserved;
-use crate::lexer::Keyword::Unreserved;
+use crate::lexer::Keyword::{All, Discard, Plans, Sequences, Temp, Temporary};
 use crate::lexer::KeywordDetails;
-use crate::lexer::ReservedKeyword::All;
-use crate::lexer::UnreservedKeyword::Discard;
-use crate::lexer::UnreservedKeyword::Plans;
-use crate::lexer::UnreservedKeyword::Sequences;
-use crate::lexer::UnreservedKeyword::Temp;
-use crate::lexer::UnreservedKeyword::Temporary;
 use crate::parser::ast_node::DiscardStmt;
 use crate::parser::result::OptionalResult;
 use crate::parser::token_buffer::TokenConsumer;
