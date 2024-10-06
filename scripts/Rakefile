@@ -44,3 +44,16 @@ end
 
 task build_err_codes: err_codes_outputs
 task build: :build_err_codes
+
+
+###############################################################################
+# uncache - Removes cargo's compiled caches, except from dependencies
+###############################################################################
+
+task :uncache do
+  require 'json'
+  metadata = `cargo metadata --format-version=1 --no-deps`
+  metadata = JSON.parse(metadata)
+  packages = metadata['packages'].flat_map { |package| ['--package', package['name']] }
+  system 'cargo', 'clean', *packages
+end
