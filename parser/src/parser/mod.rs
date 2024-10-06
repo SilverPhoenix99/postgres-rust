@@ -268,8 +268,17 @@ impl<'src> Parser<'src> {
         Ok(Some(elements))
     }
 
+    /// Alias: `transaction_mode_item`
     fn transaction_mode(&mut self) -> OptResult<TransactionMode> {
         use Keyword::{Deferrable, Isolation, Level, Not, Only, Read, Write};
+
+        /*
+            ISOLATION LEVEL iso_level
+            READ ONLY
+            READ WRITE
+            DEFERRABLE
+            NOT DEFERRABLE
+        */
 
         let result = self.buffer.consume(|tok|
             tok.keyword().map(KeywordDetails::keyword)
@@ -305,6 +314,13 @@ impl<'src> Parser<'src> {
     /// Alias: `iso_level`
     fn isolation_level(&mut self) -> ReqResult<IsolationLevel> {
         use Keyword::{Committed, Read, Repeatable, Serializable, Uncommitted};
+
+        /*
+            READ UNCOMMITTED
+            READ COMMITTED
+            REPEATABLE READ
+            SERIALIZABLE
+        */
 
         let result = self.buffer.consume(|tok|
             tok.keyword().map(KeywordDetails::keyword)
