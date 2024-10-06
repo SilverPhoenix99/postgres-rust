@@ -138,9 +138,15 @@ impl RenameStmt {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum NumericOnly {
-    FConst { value: String, negative: bool },
-    SignedIConst(i32)
+pub enum UnsignedNumber {
+    IConst(u32),
+    Numeric { value: String, radix: u32 },
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum SignedNumber {
+    SignedIConst(i32),
+    Numeric { value: String, radix: u32, negative: bool },
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -155,7 +161,7 @@ pub enum AlterOwnerTarget {
     ForeignServer(CowStr),
     Function(FunctionWithArgtypes),
     Language(CowStr),
-    LargeObject(NumericOnly),
+    LargeObject(SignedNumber),
     Operator(OperatorWithArgtypes),
     OperatorClass(QnName),
     OperatorFamily(QnName),

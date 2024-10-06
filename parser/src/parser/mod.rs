@@ -612,6 +612,62 @@ impl<'src> Parser<'src> {
         Ok(Some(char_type))
     }
 
+    /// Alias: `NumericOnly`
+    fn signed_number(&mut self) -> OptResult<SignedNumber> {
+        use TokenKind::{Minus, Plus};
+
+        // ('+' | '-')? (ICONST | FCONST)
+
+        let sign = self.buffer.consume(|tok|
+            match tok {
+                Minus | Plus => Some(*tok),
+                _ => None
+            }
+        )?;
+
+        let number = self.unsigned_number();
+
+        let number = if sign.is_some() {
+            number.required()?
+        }
+        else {
+            let Some(number) = number? else { return Ok(None) };
+            number
+        };
+
+        let negative = sign.is_some_and(|s| s == Minus);
+
+        let value = match number {
+            UnsignedNumber::IConst(int) => {
+                // SAFETY: `0 <= int <= i32::MAX`
+                let mut int = int as i32;
+                if negative {
+                    int = -int;
+                }
+                SignedNumber::SignedIConst(int)
+            },
+            UnsignedNumber::Numeric { value, radix } => {
+                SignedNumber::Numeric { value, radix, negative }
+            }
+        };
+
+        Ok(Some(value))
+    }
+
+    fn unsigned_number(&mut self) -> OptResult<UnsignedNumber> {
+
+        // ICONST | FCONST
+
+        let loc = self.buffer.current_location();
+        let source = self.buffer.source();
+
+        self.buffer.consume(|tok| {
+            let NumberLiteral { radix } = tok else { return None };
+            let value = loc.slice(source);
+            parse_number(value, *radix)
+        })
+    }
+
     /// Alias: `SignedIconst`
     fn signed_i32_literal(&mut self) -> OptResult<i32> {
         use TokenKind::{Minus, Plus};
@@ -651,9 +707,11 @@ impl<'src> Parser<'src> {
 
         self.buffer.consume(|tok| {
             let NumberLiteral { radix } = tok else { return None };
-            let radix = *radix;
-            let slice = loc.slice(source);
-            i32::from_str_radix(slice, radix).ok()
+
+            let value = loc.slice(source);
+            let Some(UnsignedNumber::IConst(int)) = parse_number(value, *radix) else { return None };
+            // SAFETY: `0 <= int <= i32::MAX`
+            Some(int as i32)
         })
     }
 
@@ -851,8 +909,8 @@ fn uescape_escape(source: &str) -> Option<char> {
     }
 
     let Some(escape) = chars.next() else { return None };
-    if is_hex_digit(escape)
-        || is_whitespace(escape)
+    if ascii::is_hex_digit(escape)
+        || ascii::is_whitespace(escape)
         || escape == '+'
         || escape == '\''
         || escape == '"'
@@ -866,10 +924,26 @@ fn uescape_escape(source: &str) -> Option<char> {
     }
 }
 
+fn parse_number(value: &str, radix: u32) -> Option<UnsignedNumber> {
+
+    let value = value.replace("_", "");
+
+    match i32::from_str_radix(&value, radix) {
+        Ok(int) => {
+            // SAFETY: `0 <= int <= i32::MAX`
+            Some(UnsignedNumber::IConst(int as u32))
+        },
+        Err(_) => {
+            Some(UnsignedNumber::Numeric { value, radix })
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser::ast_node::SystemType::{Bool, Float4, Float8, Int2, Int4, Int8};
+    use crate::parser::ast_node::UnsignedNumber::IConst;
     use crate::parser::ast_node::{CharacterSystemType, RoleSpec, TransactionMode};
     use postgres_basics::guc::BackslashQuote;
 
@@ -1156,6 +1230,46 @@ mod tests {
     }
 
     #[test]
+    fn test_signed_number() {
+        use SignedNumber::{Numeric, SignedIConst};
+
+        let mut parser = Parser::new("1.01 +2.02 -3.03 101 +202 -303", DEFAULT_CONFIG);
+
+        let expected = vec![
+            Numeric { value: "1.01".into(), radix: 10, negative: false },
+            Numeric { value: "2.02".into(), radix: 10, negative: false },
+            Numeric { value: "3.03".into(), radix: 10, negative: true },
+            SignedIConst(101),
+            SignedIConst(202),
+            SignedIConst(-303),
+        ];
+
+        for e in expected {
+            let actual = parser.signed_number();
+            assert_matches!(actual, Ok(Some(_)));
+            let actual = actual.unwrap().unwrap();
+            assert_eq!(e, actual);
+        }
+    }
+
+    #[test]
+    fn test_unsigned_number() {
+        use UnsignedNumber::{IConst, Numeric};
+
+        let mut parser = Parser::new("1.1 11", DEFAULT_CONFIG);
+
+        let actual = parser.unsigned_number();
+        assert_matches!(actual, Ok(Some(_)));
+        let actual = actual.unwrap().unwrap();
+        assert_eq!(Numeric { value: "1.1".into(), radix: 10 }, actual);
+
+        let actual = parser.unsigned_number();
+        assert_matches!(actual, Ok(Some(_)));
+        let actual = actual.unwrap().unwrap();
+        assert_eq!(IConst(11), actual);
+    }
+
+    #[test]
     fn test_signed_i32_literal() {
         let mut parser = Parser::new("-123 +321", DEFAULT_CONFIG);
         let actual = parser.signed_i32_literal().unwrap().unwrap();
@@ -1365,10 +1479,10 @@ use crate::lexer::Keyword::{ColumnName, Reserved, Unreserved};
 use crate::lexer::KeywordDetails;
 use crate::lexer::Lexer;
 use crate::lexer::ReservedKeyword;
-use crate::lexer::TokenKind::{self, Comma, Semicolon};
+use crate::lexer::TokenKind::{self, Comma, NumberLiteral, Semicolon};
 use crate::lexer::UnreservedKeyword;
-use postgres_basics::ascii::is_hex_digit;
-use postgres_basics::ascii::is_whitespace;
+use crate::parser::ast_node::{SignedNumber, UnsignedNumber};
+use postgres_basics::ascii;
 use postgres_basics::Located;
 use postgres_basics::Location;
 use std::borrow::Cow;

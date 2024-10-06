@@ -9,6 +9,7 @@ impl Parser<'_> {
         else if let Some(node) = self.alter_event_trigger_stmt()? { return Ok(Some(node)) }
         else if let Some(node) = self.alter_collation_stmt()? { return Ok(Some(node)) }
         else if let Some(node) = self.alter_conversion_stmt()? { return Ok(Some(node)) }
+        else if let Some(node) = self.alter_large_object_stmt()? { return Ok(Some(node)) }
 
         todo!()
     }
@@ -26,6 +27,7 @@ mod tests {
             "alter event trigger some_trigger owner to current_user",
             "alter collation some_name refresh version",
             "alter conversion some_conversion rename to new_conversion",
+            "alter large object -127 owner to public",
         ];
 
         for source in sources {
