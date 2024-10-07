@@ -3,6 +3,7 @@ mod alter_collation_stmt;
 mod alter_conversion_stmt;
 mod alter_event_trigger_stmt;
 mod alter_group_stmt;
+mod alter_language_stmt;
 mod alter_large_object_stmt;
 mod alter_stmt;
 mod analyze_stmt;

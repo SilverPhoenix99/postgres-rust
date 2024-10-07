@@ -939,7 +939,6 @@ fn parse_number(value: &str, radix: u32) -> Option<UnsignedNumber> {
 mod tests {
     use super::*;
     use crate::parser::ast_node::SystemType::{Bool, Float4, Float8, Int2, Int4, Int8};
-    use crate::parser::ast_node::UnsignedNumber::IConst;
     use crate::parser::ast_node::{CharacterSystemType, RoleSpec, TransactionMode};
     use postgres_basics::guc::BackslashQuote;
 
@@ -948,8 +947,8 @@ mod tests {
     #[test]
     fn test_toplevel_stmt() {
         let sources = [
-            // TODO: begin
-            "start transaction", // stmt
+            "begin transaction",
+            "start transaction",
             "end transaction",
         ];
 
@@ -969,7 +968,7 @@ mod tests {
     fn test_stmt() {
         let sources = [
             // TODO: analyze, call, cluster, comment, copy, do, drop, explain, fetch, import, lock, move,
-            //       prepare, reindex, revoke, security, set, truncate, vacuum
+            //       reindex, revoke, security, set, truncate, vacuum
             "abort transaction",
             "alter group some_group add user public",
             "close all",
@@ -979,6 +978,7 @@ mod tests {
             "listen ident",
             "load 'test string'",
             "notify test_ident, 'test-payload'",
+            "prepare transaction 'tx id'",
             "reassign owned by public, test_role to target_role",
             "release savepoint test_ident",
             "rollback to test_ident",
