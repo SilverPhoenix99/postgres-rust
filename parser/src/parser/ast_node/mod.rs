@@ -269,6 +269,7 @@ pub enum AstNode {
     TypeCast((/* TODO */)),
     UnlistenStmt(OneOrAll),
     VariableShowStmt(VariableShowStmt),
+    PrepareTransaction(String),
 }
 
 impl_from!(AlterEventTrigStmt for AstNode);
