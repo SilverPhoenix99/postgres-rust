@@ -68,6 +68,7 @@ pub enum TokenKind {
     Dot,
     DotDot,
     Colon,
+    /// The cast operator `::`
     Typecast,
     ColonEquals,
     Percent,
