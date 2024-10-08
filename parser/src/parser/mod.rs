@@ -2,6 +2,7 @@ pub mod ast_node;
 mod bit_string_parser;
 mod config;
 mod error;
+mod expr_parsers;
 mod ident_parser;
 mod result;
 mod stmt_parsers;
@@ -513,14 +514,6 @@ impl<'src> Parser<'src> {
             gather { self.a_expr() }
             delim { self.buffer.consume_eq(Comma) }
         ).required()
-    }
-
-    fn a_expr(&mut self) -> OptResult<AstNode> {
-        use TokenKind::Plus;
-
-        // TODO
-        self.buffer.consume_eq(Plus)?;
-        Ok(Some(Literal(NullLiteral)))
     }
 
     /// Alias: `handler_name`
@@ -1453,8 +1446,7 @@ mod tests {
     }
 }
 
-use self::ast_node::AstLiteral::NullLiteral;
-use self::ast_node::AstNode::{self, ClosePortalStmt, ListenStmt, Literal, LoadStmt};
+use self::ast_node::AstNode::{self, ClosePortalStmt, ListenStmt, LoadStmt};
 use self::ast_node::CharacterSystemType;
 use self::ast_node::EventTriggerState;
 use self::ast_node::IsolationLevel;
