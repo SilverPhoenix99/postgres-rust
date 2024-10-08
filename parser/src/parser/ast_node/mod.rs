@@ -30,11 +30,22 @@ macro_rules! impl_from {
     ($variant:ident for $for_:ident) => {
         impl_from!($variant for $for_ => $variant);
     };
+    (box $variant:ident for $for_:ident) => {
+        impl_from!(box $variant for $for_ => $variant);
+    };
     ($from:ident for $for_:ident => $variant:ident) => {
         impl From<$from> for $for_ {
             #[inline(always)]
             fn from(value: $from) -> Self {
                 Self::$variant(value)
+            }
+        }
+    };
+    (box $from:ident for $for_:ident => $variant:ident) => {
+        impl From<$from> for $for_ {
+            #[inline(always)]
+            fn from(value: $from) -> Self {
+                Self::$variant(Box::new(value))
             }
         }
     };
@@ -247,6 +258,74 @@ impl AlterObjectSchemaStmt {
     }
 }
 
+pub type BinaryOperands = Box<(AstNode, AstNode)>;
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum XmlNodeKind {
+    Document,
+    Content,
+}
+
+impl XmlNodeKind {
+    #[inline(always)]
+    pub fn is_document(&self) -> bool {
+        *self == Self::Document
+    }
+    
+    #[inline(always)]
+    pub fn is_content(&self) -> bool {
+        *self == Self::Content
+    }
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum XmlStandalone {
+    Yes,
+    No,
+    NoValue,
+    Omitted,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct XmlElement {
+    name: CowStr,
+    attributes: Vec<AstNode>,
+    args: Vec<AstNode>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct XmlParse {
+    text: AstNode,
+    kind: XmlNodeKind,
+    preserve_whitespace: bool
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct XmlProcessingInstruction {
+    name: CowStr,
+    args: Option<AstNode>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct XmlRoot {
+    version: Option<AstNode>,
+    standalone: XmlStandalone,
+    xml: AstNode,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Typename {
+    // TODO
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct XmlSerialize {
+    kind: XmlNodeKind,
+    x: AstNode,
+    type_name: Typename,
+    indent: bool,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum AstNode {
     AlterEventTrigStmt(AlterEventTrigStmt),
@@ -266,12 +345,141 @@ pub enum AstNode {
     RenameStmt(RenameStmt),
     SystemType(SystemType),
     TransactionStmt(TransactionStmt),
-    TypeCast((/* TODO */)),
+    Typecast((/* TODO */)),
     UnlistenStmt(OneOrAll),
     VariableShowStmt(VariableShowStmt),
     PrepareTransaction(String),
+
+    /* Math operations */
+    Addition(BinaryOperands),
+    UnaryPlus(Box<AstNode>),
+    Subtraction(BinaryOperands),
+    /// Aka `UnaryMinus`
+    Negation(Box<AstNode>),
+    Multiplication(BinaryOperands),
+    Division(BinaryOperands),
+    Modulo(BinaryOperands),
+    Exponentiation(BinaryOperands),
+
+    /* Boolean operations */
+    Less(BinaryOperands),
+    Greater(BinaryOperands),
+    Equals(BinaryOperands),
+    GreaterEquals(BinaryOperands),
+    LessEquals(BinaryOperands),
+    NotEquals(BinaryOperands),
+    Not(Box<AstNode>),
+    /// `IS DISTINCT FROM`
+    Distinct(BinaryOperands),
+    /// `IS NOT DISTINCT FROM`
+    NotDistinct(BinaryOperands),
+
+    /* Xml operations */
+    IsXmlDocument(Box<AstNode>),
+    XmlConcat(Vec<AstNode>),
+    XmlElement(XmlElement),
+    XmlForest(Vec<AstNode>),
+    XmlParse(Box<XmlParse>),
+    XmlProcessingInstruction(Box<XmlProcessingInstruction>),
+    XmlRoot(Box<XmlRoot>),
 }
 
+impl AstNode {
+    #[inline(always)]
+    pub fn addition(left: Self, right: Self) -> Self {
+        Self::Addition(Box::new((left, right)))
+    }
+
+    #[inline(always)]
+    pub fn unary_plus(operand: Self) -> Self {
+        Self::UnaryPlus(Box::new(operand))
+    }
+
+    #[inline(always)]
+    pub fn subtraction(left: Self, right: Self) -> Self {
+        Self::Subtraction(Box::new((left, right)))
+    }
+
+    /// Aka `unary_minus`
+    #[inline(always)]
+    pub fn negation(operand: Self) -> Self {
+        Self::Negation(Box::new(operand))
+    }
+
+    #[inline(always)]
+    pub fn multiplication(left: Self, right: Self) -> Self {
+        Self::Multiplication(Box::new((left, right)))
+    }
+
+    #[inline(always)]
+    pub fn division(left: Self, right: Self) -> Self {
+        Self::Division(Box::new((left, right)))
+    }
+
+    #[inline(always)]
+    pub fn modulo(left: Self, right: Self) -> Self {
+        Self::Modulo(Box::new((left, right)))
+    }
+
+    #[inline(always)]
+    pub fn exponentiation(left: Self, right: Self) -> Self {
+        Self::Exponentiation(Box::new((left, right)))
+    }
+
+    #[inline(always)]
+    pub fn less(left: Self, right: Self) -> Self {
+        Self::Less(Box::new((left, right)))
+    }
+
+    #[inline(always)]
+    pub fn greater(left: Self, right: Self) -> Self {
+        Self::Greater(Box::new((left, right)))
+    }
+
+    #[inline(always)]
+    pub fn equals(left: Self, right: Self) -> Self {
+        Self::Equals(Box::new((left, right)))
+    }
+
+    #[inline(always)]
+    pub fn greater_equals(left: Self, right: Self) -> Self {
+        Self::GreaterEquals(Box::new((left, right)))
+    }
+
+    #[inline(always)]
+    pub fn less_equals(left: Self, right: Self) -> Self {
+        Self::LessEquals(Box::new((left, right)))
+    }
+
+    #[inline(always)]
+    pub fn not_equals(left: Self, right: Self) -> Self {
+        Self::NotEquals(Box::new((left, right)))
+    }
+
+    #[inline(always)]
+    pub fn not(operand: Self) -> Self {
+        Self::Not(Box::new(operand))
+    }
+
+    #[inline(always)]
+    pub fn distinct(left: Self, right: Self) -> Self {
+        Self::Distinct(Box::new((left, right)))
+    }
+
+    #[inline(always)]
+    pub fn not_distinct(left: Self, right: Self) -> Self {
+        Self::NotDistinct(Box::new((left, right)))
+    }
+
+    #[inline(always)]
+    pub fn is_xml_document(operand: Self) -> Self {
+        Self::IsXmlDocument(Box::new(operand))
+    }
+}
+
+impl_from!(box XmlParse for AstNode);
+impl_from!(box XmlProcessingInstruction for AstNode);
+impl_from!(box XmlRoot for AstNode);
 impl_from!(AlterEventTrigStmt for AstNode);
 impl_from!(AlterObjectSchemaStmt for AstNode);
 impl_from!(AlterOwnerStmt for AstNode);
@@ -284,5 +492,6 @@ impl_from!(RenameStmt for AstNode);
 impl_from!(SystemType for AstNode);
 impl_from!(TransactionStmt for AstNode);
 impl_from!(VariableShowStmt for AstNode);
+impl_from!(XmlElement for AstNode);
 
 use crate::parser::CowStr;
