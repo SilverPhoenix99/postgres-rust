@@ -57,6 +57,31 @@ pub enum OneOrAll {
     Name(CowStr),
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum MathOp {
+    Addition,
+    Subtraction,
+    Multiplication,
+    Division,
+    Modulo,
+    Exponentiation,
+    Less,
+    Greater,
+    Equals,
+    LessEquals,
+    GreaterEquals,
+    NotEquals,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum AllOp {
+    MathOp(MathOp),
+    Operator(String),
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct QnOperator(pub Vec<CowStr>, pub AllOp);
+
 type QnName = Vec<CowStr>;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -271,7 +296,7 @@ impl XmlNodeKind {
     pub fn is_document(&self) -> bool {
         *self == Self::Document
     }
-    
+
     #[inline(always)]
     pub fn is_content(&self) -> bool {
         *self == Self::Content
