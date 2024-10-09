@@ -144,6 +144,7 @@ impl<'src> Parser<'src> {
 
     /// Returns `true` if it consumed at least 1 `;` (semicolon)
     fn semicolons(&mut self) -> Result<bool, ParserErrorKind> {
+        use TokenKind::Semicolon;
 
         // Production: (';')*
 
@@ -354,7 +355,7 @@ impl<'src> Parser<'src> {
 
         list_production!(
             gather { self.col_id() }
-            delim { self.buffer.consume_eq(TokenKind::Dot) }
+            delim { self.buffer.consume_eq(Dot) }
         ).required()
     }
 
@@ -529,7 +530,7 @@ impl<'src> Parser<'src> {
         list_production!(
             prefix { Ok::<Option<CowStr>, Option<ParserErrorKind>>(Some(prefix)) }
             gather { self.col_label() }
-            delim { self.buffer.consume_eq(TokenKind::Dot) }
+            delim { self.buffer.consume_eq(Dot) }
         )
     }
 
@@ -686,7 +687,6 @@ impl<'src> Parser<'src> {
 
     /// Alias: `ICONST`
     fn i32_literal(&mut self) -> OptResult<i32> {
-        use TokenKind::NumberLiteral;
 
         let loc = self.buffer.current_location();
         let source = self.buffer.source();
@@ -769,6 +769,114 @@ impl<'src> Parser<'src> {
                     }
                 },
             }
+        })
+    }
+
+    /// Alias: `qual_Op`
+    fn qual_op(&mut self) -> OptResult<QnOperator> {
+
+        if let Some(op) = self.operator()? {
+            let op = AllOp::Operator(op);
+            return Ok(Some(QnOperator(vec![], op)))
+        }
+
+        self.prefixed_operator()
+    }
+
+    /// Production: `OPERATOR '(' any_operator ')'`
+    fn prefixed_operator(&mut self) -> OptResult<QnOperator> {
+        use Keyword::Operator;
+        use TokenKind::{CloseParenthesis, OpenParenthesis};
+
+        if self.buffer.consume_kw_eq(Operator)?.is_none() {
+            return Ok(None);
+        }
+
+        self.buffer.consume_eq(OpenParenthesis).required()?;
+        let op = self.any_operator().required()?;
+        self.buffer.consume_eq(CloseParenthesis).required()?;
+
+        Ok(Some(op))
+    }
+
+    fn any_operator(&mut self) -> OptResult<QnOperator> {
+
+        let mut qn = Vec::new();
+
+        loop {
+            let id = self.col_id()
+                .map_eof(|| {
+                    let err = if qn.is_empty() { None } else { Some(ParserErrorKind::default()) };
+                    Err(err)
+                })?;
+
+            let Some(id) = id else { break };
+            self.buffer.consume_eq(Dot).required()?;
+
+            qn.push(id);
+        }
+
+        let op = self.all_op();
+
+        let op = if qn.is_empty() {
+            let Some(op) = op? else { return Ok(None) };
+            op
+        }
+        else {
+            op.required()?
+        };
+
+        let op = QnOperator(qn, op);
+        Ok(Some(op))
+    }
+
+    /// Alias: `all_Op`
+    fn all_op(&mut self) -> OptResult<AllOp> {
+
+        if let Some(op) = self.math_op()? {
+            return Ok(Some(AllOp::MathOp(op)))
+        }
+
+        if let Some(op) = self.operator()? {
+            return Ok(Some(AllOp::Operator(op)))
+        }
+
+        Ok(None)
+    }
+
+    /// Returns the text of the `UserDefinedOperator`
+    fn operator(&mut self) -> OptResult<String> {
+
+        let loc = self.buffer.current_location();
+        let source = self.buffer.source();
+        self.buffer.consume(|tok| match tok {
+            TokenKind::UserDefinedOperator => {
+                let op = loc.slice(source).to_owned();
+                Some(op)
+            },
+            _ => None
+        })
+    }
+
+    /// Alias: `MathOp`
+    fn math_op(&mut self) -> OptResult<MathOp> {
+        use MathOp::*;
+        use TokenKind::{Circumflex, Div, Minus, Mul, Percent, Plus};
+
+        self.buffer.consume(|tok| match tok {
+            Plus => Some(Addition),
+            Minus => Some(Subtraction),
+            Mul => Some(Multiplication),
+            Div => Some(Division),
+            Percent => Some(Modulo),
+            Circumflex => Some(Exponentiation),
+            TokenKind::Less => Some(Less),
+            TokenKind::Greater => Some(Greater),
+            TokenKind::Equals => Some(Equals),
+            TokenKind::LessEquals => Some(LessEquals),
+            TokenKind::GreaterEquals => Some(GreaterEquals),
+            TokenKind::NotEquals => Some(NotEquals),
+            _ => None
         })
     }
 
@@ -897,7 +1005,7 @@ fn uescape_escape(source: &str) -> Option<char> {
         return None
     }
 
-    let Some(escape) = chars.next() else { return None };
+    let escape = chars.next()?;
     if ascii::is_hex_digit(escape)
         || ascii::is_whitespace(escape)
         || escape == '+'
@@ -931,8 +1039,6 @@ fn parse_number(value: &str, radix: u32) -> Option<UnsignedNumber> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::SystemType::{Bool, Float4, Float8, Int2, Int4, Int8};
-    use crate::parser::ast_node::{CharacterSystemType, RoleSpec, TransactionMode};
     use postgres_basics::guc::BackslashQuote;
 
     pub(in crate::parser) const DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding);
@@ -1351,6 +1457,103 @@ mod tests {
     }
 
     #[test]
+    fn test_qual_op() {
+        use ast_node::{AllOp, QnOperator};
+
+        let source = "operator(|/) <@>";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let actual = parser.qual_op();
+        assert_matches!(actual, Ok(Some(_)));
+        let actual = actual.unwrap().unwrap();
+        assert_eq!(QnOperator(vec![], AllOp::Operator("|/".into())), actual);
+
+        let actual = parser.qual_op();
+        assert_matches!(actual, Ok(Some(_)));
+        let actual = actual.unwrap().unwrap();
+        assert_eq!(QnOperator(vec![], AllOp::Operator("<@>".into())), actual);
+    }
+
+    #[test]
+    fn test_prefixed_operator() {
+        use ast_node::{AllOp, MathOp, QnOperator};
+
+        let source = "operator(some_qn.*)";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let actual = parser.prefixed_operator();
+        assert_matches!(actual, Ok(Some(_)));
+        let actual = actual.unwrap().unwrap();
+
+        assert_eq!(QnOperator(vec!["some_qn".into()], AllOp::MathOp(MathOp::Multiplication)), actual);
+    }
+
+    #[test]
+    fn test_any_operator() {
+        use ast_node::{AllOp, MathOp, QnOperator};
+
+        let source = "@@ != qn_name.+";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let actual = parser.any_operator();
+        assert_matches!(actual, Ok(Some(_)));
+        let actual = actual.unwrap().unwrap();
+        assert_eq!(QnOperator(vec![], AllOp::Operator("@@".into())), actual);
+
+        let actual = parser.any_operator();
+        assert_matches!(actual, Ok(Some(_)));
+        let actual = actual.unwrap().unwrap();
+        assert_eq!(QnOperator(vec![], AllOp::MathOp(MathOp::NotEquals)), actual);
+
+        let actual = parser.any_operator();
+        assert_matches!(actual, Ok(Some(_)));
+        let actual = actual.unwrap().unwrap();
+        assert_eq!(QnOperator(vec!["qn_name".into()], AllOp::MathOp(MathOp::Addition)), actual);
+    }
+
+    #[test]
+    fn test_all_op() {
+        use AllOp::*;
+        use ast_node::MathOp::NotEquals;
+
+        let source = "~@ <>";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        assert_eq!(Ok(Some(Operator("~@".into()))), parser.all_op());
+        assert_eq!(Ok(Some(MathOp(NotEquals))), parser.all_op());
+    }
+
+    #[test]
+    fn test_operator() {
+        let source = "~@";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        assert_eq!(Ok(Some("~@".into())), parser.operator());
+    }
+
+    #[test]
+    fn test_math_op() {
+        use MathOp::*;
+
+        let source = "+ - * / % ^ < > = <= >= != <>";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        assert_eq!(Ok(Some(Addition)), parser.math_op());
+        assert_eq!(Ok(Some(Subtraction)), parser.math_op());
+        assert_eq!(Ok(Some(Multiplication)), parser.math_op());
+        assert_eq!(Ok(Some(Division)), parser.math_op());
+        assert_eq!(Ok(Some(Modulo)), parser.math_op());
+        assert_eq!(Ok(Some(Exponentiation)), parser.math_op());
+        assert_eq!(Ok(Some(Less)), parser.math_op());
+        assert_eq!(Ok(Some(Greater)), parser.math_op());
+        assert_eq!(Ok(Some(Equals)), parser.math_op());
+        assert_eq!(Ok(Some(LessEquals)), parser.math_op());
+        assert_eq!(Ok(Some(GreaterEquals)), parser.math_op());
+        assert_eq!(Ok(Some(NotEquals)), parser.math_op());
+        assert_eq!(Ok(Some(NotEquals)), parser.math_op());
+    }
+
+    #[test]
     fn test_col_id() {
         let source = "cascaded xxyyzz coalesce";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
@@ -1465,8 +1668,8 @@ use self::token_buffer::TokenConsumer;
 use crate::lexer::Keyword;
 use crate::lexer::KeywordDetails;
 use crate::lexer::Lexer;
-use crate::lexer::TokenKind::{self, Comma, NumberLiteral, Semicolon};
-use crate::parser::ast_node::{SignedNumber, UnsignedNumber};
+use crate::lexer::TokenKind::{self, Comma, Dot, NumberLiteral};
+use crate::parser::ast_node::{AllOp, MathOp, QnOperator, SignedNumber, UnsignedNumber};
 use postgres_basics::ascii;
 use postgres_basics::Located;
 use postgres_basics::Location;
