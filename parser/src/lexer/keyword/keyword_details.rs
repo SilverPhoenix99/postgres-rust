@@ -14,11 +14,6 @@ impl KeywordDetails {
     }
 
     #[inline(always)]
-    pub fn find(text: &str) -> Option<&'static KeywordDetails> {
-        KEYWORDS.get(text)
-    }
-
-    #[inline(always)]
     pub fn bare(&self) -> bool {
         self.bare
     }
@@ -75,48 +70,47 @@ impl Display for KeywordDetails {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::lexer::keyword::keywords::KEYWORD_DETAILS;
     use crate::lexer::Keyword::{Abort, Analyze, Authorization, Between};
 
     #[test]
     fn test_unreserved() {
-        let kw = KEYWORDS.get("abort").unwrap();
+        let kw = KEYWORD_DETAILS.get(Abort as usize).unwrap();
         assert_eq!(Some(Abort), kw.unreserved());
 
-        let kw = KEYWORDS.get("between").unwrap();
+        let kw = KEYWORD_DETAILS.get(Between as usize).unwrap();
         assert_eq!(None, kw.unreserved());
     }
 
     #[test]
     fn test_col_name() {
-        let kw = KEYWORDS.get("between").unwrap();
+        let kw = KEYWORD_DETAILS.get(Between as usize).unwrap();
         assert_eq!(Some(Between), kw.col_name());
 
-        let kw = KEYWORDS.get("authorization").unwrap();
+        let kw = KEYWORD_DETAILS.get(Authorization as usize).unwrap();
         assert_eq!(None, kw.col_name());
     }
 
     #[test]
     fn test_type_func_name() {
-        let kw = KEYWORDS.get("authorization").unwrap();
+        let kw = KEYWORD_DETAILS.get(Authorization as usize).unwrap();
         assert_eq!(Some(Authorization), kw.type_func_name());
 
-        let kw = KEYWORDS.get("analyze").unwrap();
+        let kw = KEYWORD_DETAILS.get(Analyze as usize).unwrap();
         assert_eq!(None, kw.type_func_name());
     }
 
     #[test]
     fn test_reserved() {
-        let kw = KEYWORDS.get("analyze").unwrap();
+        let kw = KEYWORD_DETAILS.get(Analyze as usize).unwrap();
         assert_eq!(Some(Analyze), kw.reserved());
 
-        let kw = KEYWORDS.get("abort").unwrap();
+        let kw = KEYWORD_DETAILS.get(Abort as usize).unwrap();
         assert_eq!(None, kw.reserved());
     }
 }
 
 use super::{
-    keywords::KEYWORDS,
     Keyword,
     KeywordCategory,
     KeywordCategory::{ColumnName, Reserved, TypeFuncName, Unreserved},

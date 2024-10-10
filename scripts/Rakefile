@@ -15,8 +15,8 @@ keywords_output = RUST_PROJECT_ROOT / 'parser/src/lexer/keyword/keywords.rs'
 
 CLEAN << keywords_output
 
-file keywords_output => [keywords_input, 'gen-kws.rb'] do
-  require_relative 'gen-kws.rb'
+file keywords_output => [keywords_input, 'gen-keywords.rb'] do
+  require_relative 'gen-keywords.rb'
   KeywordsGenerator.run!(keywords_input, keywords_output)
 end
 

@@ -13,10 +13,8 @@ impl Parser<'_> {
         let role_loc = self.buffer.current_location();
         let role = self.role_spec().required()?;
 
-        let action = self.buffer.consume(|tok|
-            tok.keyword().map(KeywordDetails::keyword)
-                .filter(|kw| matches!(kw, Add | DropKw | Rename))
-        ).required()?;
+        let action = self.buffer.consume_kws(|kw| matches!(kw, Add | DropKw | Rename))
+            .required()?;
 
         if action == Rename {
             return self.rename_group(role, role_loc).map(AstNode::from)
@@ -114,11 +112,9 @@ mod tests {
 }
 
 use crate::lexer::Keyword::{Add, DropKw, Group, Rename, To, User};
-use crate::lexer::KeywordDetails;
 use crate::parser::ast_node::AlterRoleOption::RoleMembers;
 use crate::parser::ast_node::RenameTarget::Role;
 use crate::parser::ast_node::{AlterRoleAction, AlterRoleStmt, AstNode, RenameStmt, RoleSpec};
 use crate::parser::result::{ScanResult, ScanResultTrait};
-use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::Parser;
 use postgres_basics::Location;

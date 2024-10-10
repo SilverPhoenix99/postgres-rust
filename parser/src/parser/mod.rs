@@ -186,11 +186,7 @@ impl<'src> Parser<'src> {
 
         // Skips over WORK | TRANSACTION
 
-        self.buffer
-            .consume(|tok|
-                tok.keyword().map(KeywordDetails::keyword)
-                    .filter(|kw| matches!(kw, Work | Transaction))
-            )
+        self.buffer.consume_kws(|kw| matches!(kw, Work | Transaction))
             .optional()?;
 
         Ok(())
@@ -259,9 +255,8 @@ impl<'src> Parser<'src> {
             | NOT DEFERRABLE
         */
 
-        let result = self.buffer.consume(|tok|
-            tok.keyword().map(KeywordDetails::keyword)
-                .filter(|kw| matches!(kw, Deferrable | Not | Isolation | Read))
+        let result = self.buffer.consume_kws(|kw|
+            matches!(kw, Deferrable | Not | Isolation | Read)
         )?;
 
         match result {
@@ -277,7 +272,7 @@ impl<'src> Parser<'src> {
             },
             Read => {
                 self.buffer
-                    .consume(|tok| match tok.keyword().map(KeywordDetails::keyword) {
+                    .consume(|tok| match tok.keyword() {
                         Some(Only) => Some(TransactionMode::ReadOnly),
                         Some(Write) => Some(TransactionMode::ReadWrite),
                         _ => None
@@ -300,9 +295,8 @@ impl<'src> Parser<'src> {
             SERIALIZABLE
         */
 
-        let kw = self.buffer.consume(|tok|
-            tok.keyword().map(KeywordDetails::keyword)
-                .filter(|kw| matches!(kw, Read | Repeatable | Serializable))
+        let kw = self.buffer.consume_kws(|kw|
+            matches!(kw, Read | Repeatable | Serializable)
         )?;
 
         match kw {
@@ -313,13 +307,11 @@ impl<'src> Parser<'src> {
             },
             Read => {
                 let level = self.buffer
-                    .consume(|tok|
-                        tok.keyword().and_then(|kw| match kw.keyword() {
-                            Committed => Some(IsolationLevel::ReadCommitted),
-                            Uncommitted => Some(IsolationLevel::ReadUncommitted),
-                            _ => None
-                        })
-                    )
+                    .consume(|tok| match tok.keyword() {
+                        Some(Committed) => Some(IsolationLevel::ReadCommitted),
+                        Some(Uncommitted) => Some(IsolationLevel::ReadUncommitted),
+                        _ => None
+                    })
                     .required()?;
 
                 Ok(level)
@@ -425,21 +417,19 @@ impl<'src> Parser<'src> {
           | (DECIMAL | DEC | NUMERIC) opt_type_modifiers
         */
 
-        let kw = self.buffer.consume(|tok|
-            tok.keyword().map(KeywordDetails::keyword).filter(|kw|
-                matches!(kw,
-                      Smallint
-                    | Int
-                    | Integer
-                    | Bigint
-                    | Real
-                    | Boolean
-                    | Double
-                    | Float
-                    | Decimal
-                    | Dec
-                    | Numeric
-                )
+        let kw = self.buffer.consume_kws(|kw|
+            matches!(kw,
+                  Smallint
+                | Int
+                | Integer
+                | Bigint
+                | Real
+                | Boolean
+                | Double
+                | Float
+                | Decimal
+                | Dec
+                | Numeric
             )
         )?;
 
@@ -566,11 +556,8 @@ impl<'src> Parser<'src> {
           | NATIONAL ( CHARACTER | CHAR_P) (VARYING)?
         */
 
-        let char_type = self.buffer.consume(|tok|
-            tok.keyword().map(KeywordDetails::keyword)
-                .filter(|col_name|
-                    matches!(col_name, Varchar | Character | Char | National | Nchar)
-                )
+        let char_type = self.buffer.consume_kws(|kw|
+            matches!(kw, Varchar | Character | Char | National | Nchar)
         )?;
 
         if char_type == Varchar {
@@ -578,14 +565,7 @@ impl<'src> Parser<'src> {
         }
 
         if char_type == National {
-
-            self.buffer
-                .consume(|tok|
-                    matches!(
-                        tok.keyword().map(KeywordDetails::keyword),
-                        Some(Character | Char)
-                    )
-                )
+            self.buffer.consume_kws(|kw| matches!(kw, Character | Char))
                 .required()?;
         }
 
@@ -749,18 +729,18 @@ impl<'src> Parser<'src> {
 
             let Some(kw) = tok.keyword() else { return Ok(None) };
 
-            match kw.keyword() {
+            match kw.details().keyword() {
                 NoneKw => Err(ReservedRoleSpec("none")),
                 CurrentRole => Ok(Some(RoleSpec::CurrentRole)),
                 CurrentUser => Ok(Some(RoleSpec::CurrentUser)),
                 SessionUser => Ok(Some(RoleSpec::SessionUser)),
                 _ => {
-                    if kw.reserved().is_some() {
+                    if kw.details().reserved().is_some() {
                         Ok(None)
                     }
                     else {
                         Ok(Some(
-                            RoleSpec::Name(kw.text().into())
+                            RoleSpec::Name(kw.details().text().into())
                         ))
                     }
                 },
@@ -875,27 +855,27 @@ impl<'src> Parser<'src> {
     #[inline(always)]
     fn col_id(&mut self) -> ScanResult<CowStr> {
         self.ident_or_keyword(|kw|
-               kw.unreserved().is_some()
-            || kw.col_name().is_some()
+               kw.details().unreserved().is_some()
+            || kw.details().col_name().is_some()
         )
     }
 
     #[inline(always)]
     fn type_function_name(&mut self) -> ScanResult<CowStr> {
         self.ident_or_keyword(|kw|
-               kw.unreserved().is_some()
-            || kw.type_func_name().is_some()
+               kw.details().unreserved().is_some()
+            || kw.details().type_func_name().is_some()
         )
     }
 
     /// Alias: `NonReservedWord`
     #[inline(always)]
     fn non_reserved_word(&mut self) -> ScanResult<CowStr> {
-        self.ident_or_keyword(|kw|
-               kw.unreserved().is_some()
-            || kw.col_name().is_some()
-            || kw.type_func_name().is_some()
-        )
+        self.ident_or_keyword(|kw| {
+               kw.details().unreserved().is_some()
+            || kw.details().col_name().is_some()
+            || kw.details().type_func_name().is_some()
+        })
     }
 
     /// Aliases:
@@ -909,21 +889,22 @@ impl<'src> Parser<'src> {
     /// Alias: `BareColLabel`
     #[inline(always)]
     fn bare_col_label(&mut self) -> ScanResult<CowStr> {
-        self.ident_or_keyword(KeywordDetails::bare)
+        self.ident_or_keyword(|kw| kw.details().bare())
     }
 
     fn ident_or_keyword<P>(&mut self, pred: P) -> ScanResult<CowStr>
     where
-        P: Fn(&KeywordDetails) -> bool
+        P: Fn(Keyword) -> bool
     {
         if let Some(ident) = self.identifier().no_match_to_option()? {
             return Ok(ident.into())
         }
 
-        self.buffer.consume(|tok| match tok.keyword() {
-            Some(kw) if pred(kw) => Some(kw.text().into()),
-            _ => None,
-        })
+        self.buffer.consume(|tok|
+            tok.keyword()
+                .filter(|kw| pred(*kw))
+                .map(|kw| kw.details().text().into())
+        )
     }
 
     /// Aliases:
@@ -1599,7 +1580,6 @@ use self::string_parser::StringParser;
 use self::token_buffer::TokenBuffer;
 use self::token_buffer::TokenConsumer;
 use crate::lexer::Keyword;
-use crate::lexer::KeywordDetails;
 use crate::lexer::Lexer;
 use crate::lexer::TokenKind::{self, Comma, Dot, NumberLiteral};
 use crate::parser::result::{EofResultTrait, ScanResult};

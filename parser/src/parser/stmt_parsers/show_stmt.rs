@@ -13,17 +13,15 @@ impl Parser<'_> {
         self.buffer.consume_kw_eq(Show)?;
 
         let show_stmt = self.buffer
-            .consume(|tok|
-                tok.keyword().and_then(|kw| match kw.keyword() {
-                    Keyword::All => Some(All),
-                    Keyword::Session => Some(SessionAuthorization),
-                    Keyword::Time => Some(TimeZone),
-                    Keyword::Transaction => Some(TransactionIsolation),
-                    _ => None
-                })
-            )
+            .consume(|tok| match tok.keyword() {
+                Some(Keyword::All) => Some(All),
+                Some(Keyword::Session) => Some(SessionAuthorization),
+                Some(Keyword::Time) => Some(TimeZone),
+                Some(Keyword::Transaction) => Some(TransactionIsolation),
+                _ => None
+            })
             .optional()?;
-        
+
         let Some(show_stmt) = show_stmt else {
             /*
                 SHOW var_name

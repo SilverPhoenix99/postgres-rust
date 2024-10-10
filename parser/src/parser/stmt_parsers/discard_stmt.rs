@@ -9,7 +9,7 @@ impl Parser<'_> {
         self.buffer.consume_kw_eq(Discard)?;
 
         let stmt = self.buffer
-            .consume(|tok| match tok.keyword().map(KeywordDetails::keyword) {
+            .consume(|tok| match tok.keyword() {
                 Some(All) => Some(DiscardStmt::All),
                 Some(Plans) => Some(DiscardStmt::Plans),
                 Some(Sequences) => Some(DiscardStmt::Sequences),
@@ -56,7 +56,6 @@ mod tests {
 }
 
 use crate::lexer::Keyword::{All, Discard, Plans, Sequences, Temp, Temporary};
-use crate::lexer::KeywordDetails;
 use crate::parser::ast_node::DiscardStmt;
 use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::token_buffer::TokenConsumer;

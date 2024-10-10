@@ -12,11 +12,7 @@ impl Parser<'_> {
 
         let trigger = self.col_id().required()?;
 
-        let op = self.buffer
-            .consume(|tok|
-                tok.keyword().map(KeywordDetails::keyword)
-                    .filter(|kw| matches!(kw, Owner | Rename))
-            )
+        let op = self.buffer.consume_kws(|kw| matches!(kw, Owner | Rename))
             .no_match_to_option()
             .required()?;
 
@@ -68,7 +64,7 @@ impl Parser<'_> {
 
         let enable = self.buffer
             .consume(|tok|
-                tok.keyword().map(KeywordDetails::keyword)
+                tok.keyword()
                     .filter(|kw| matches!(kw, Enable | Disable))
                     .map(|kw| kw == Enable)
             )
@@ -79,7 +75,7 @@ impl Parser<'_> {
         }
 
         let enable_option = self.buffer
-            .consume(|tok| match tok.keyword().map(KeywordDetails::keyword)? {
+            .consume(|tok| match tok.keyword()? {
                 Replica => Some(FiresOnReplica),
                 Always => Some(FiresAlways),
                 _ => None,
@@ -156,7 +152,6 @@ mod tests {
 }
 
 use crate::lexer::Keyword::{Always, Disable, Enable, Event, Owner, Rename, Replica, To, Trigger};
-use crate::lexer::KeywordDetails;
 use crate::parser::ast_node::{AlterEventTrigStmt, AlterOwnerStmt, AlterOwnerTarget, RenameStmt, RenameTarget};
 use crate::parser::result::{EofResultTrait, ScanResult, ScanResultTrait};
 use crate::parser::token_buffer::TokenConsumer;
