@@ -81,7 +81,7 @@ impl Parser<'_> {
                 GreaterEquals => AstNode::greater_equals(expr, right),
                 LessEquals => AstNode::less_equals(expr, right),
                 NotEquals => AstNode::not_equals(expr, right),
-                _ => unreachable!()
+                _ => panic!("unexpected operator {op:?}")
             };
         }
 

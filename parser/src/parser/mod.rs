@@ -300,30 +300,31 @@ impl<'src> Parser<'src> {
             SERIALIZABLE
         */
 
-        let result = self.buffer.consume(|tok|
+        let kw = self.buffer.consume(|tok|
             tok.keyword().map(KeywordDetails::keyword)
                 .filter(|kw| matches!(kw, Read | Repeatable | Serializable))
         )?;
 
-        match result {
+        match kw {
             Serializable => Ok(IsolationLevel::Serializable),
             Repeatable => {
                 self.buffer.consume_kw_eq(Read).required()?;
                 Ok(IsolationLevel::RepeatableRead)
             },
             Read => {
-                let result = self.buffer.consume(|tok|
-                    tok.keyword().map(KeywordDetails::keyword)
-                        .filter(|kw| matches!(kw, Committed | Uncommitted))
-                ).required()?;
+                let level = self.buffer
+                    .consume(|tok|
+                        tok.keyword().and_then(|kw| match kw.keyword() {
+                            Committed => Some(IsolationLevel::ReadCommitted),
+                            Uncommitted => Some(IsolationLevel::ReadUncommitted),
+                            _ => None
+                        })
+                    )
+                    .required()?;
 
-                match result {
-                    Committed => Ok(IsolationLevel::ReadCommitted),
-                    Uncommitted => Ok(IsolationLevel::ReadUncommitted),
-                    _ => unreachable!(),
-                }
+                Ok(level)
             },
-            _ => unreachable!(),
+            _ => panic!("expected keywords Read, Repeatable, or Serializable, but got {kw:?}"),
         }
     }
 
