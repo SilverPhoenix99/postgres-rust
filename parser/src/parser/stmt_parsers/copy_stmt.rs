@@ -1,21 +1,19 @@
 impl Parser<'_> {
     /// Alias: `CopyStmt`
-    pub(in crate::parser) fn copy_stmt(&mut self) -> OptResult<AstNode> {
+    pub(in crate::parser) fn copy_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
 
         /*
             COPY opt_binary qualified_name opt_column_list copy_from opt_program copy_file_name copy_delimiter opt_with copy_options where_clause
             COPY '(' PreparableStmt ')' TO opt_program copy_file_name opt_with copy_options
         */
 
-        if self.buffer.consume_kw_eq(CopyKw)?.is_none() {
-            return Ok(None)
-        }
+        self.buffer.consume_kw_eq(CopyKw)?;
 
         todo!()
     }
 }
 
 use crate::lexer::Keyword::CopyKw;
+use crate::parser::result::ScanErrorKind;
 use crate::parser::AstNode;
-use crate::parser::OptResult;
 use crate::parser::Parser;

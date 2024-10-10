@@ -1,25 +1,23 @@
 impl Parser<'_> {
     /// Alias: `ReassignOwnedStmt`
-    pub(in crate::parser) fn reassign_owned_stmt(&mut self) -> OptResult<ReassignOwnedStmt> {
+    pub(in crate::parser) fn reassign_owned_stmt(&mut self) -> Result<ReassignOwnedStmt, ScanErrorKind> {
 
         /*
             REASSIGN OWNED BY role_list TO RoleSpec
         */
 
-        if self.buffer.consume_kw_eq(Reassign)?.is_none() {
-            return Ok(None)
-        }
+        self.buffer.consume_kw_eq(Reassign)?;
 
         self.buffer.consume_kw_eq(OwnedKw).required()?;
         self.buffer.consume_kw_eq(By).required()?;
 
-        let roles = self.role_list()?;
+        let roles = self.role_list().required()?;
 
         self.buffer.consume_kw_eq(To).required()?;
 
         let new_role = self.role_spec().required()?;
 
-        Ok(Some(ReassignOwnedStmt::new(roles, new_role)))
+        Ok(ReassignOwnedStmt::new(roles, new_role))
     }
 }
 
@@ -28,6 +26,7 @@ mod tests {
     use super::*;
     use crate::parser::ast_node::RoleSpec;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::Parser;
 
     #[test]
     fn test_reassign_owner_stmt() {
@@ -38,12 +37,11 @@ mod tests {
             RoleSpec::Name("target_role".into())
         );
 
-        assert_eq!(Ok(Some(expected)), parser.reassign_owned_stmt());
+        assert_eq!(Ok(expected), parser.reassign_owned_stmt());
     }
 }
 
 use crate::lexer::Keyword::{By, OwnedKw, Reassign, To};
 use crate::parser::ast_node::ReassignOwnedStmt;
-use crate::parser::result::OptionalResult;
-use crate::parser::OptResult;
+use crate::parser::result::{ScanErrorKind, ScanResult};
 use crate::parser::Parser;

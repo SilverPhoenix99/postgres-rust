@@ -4,20 +4,20 @@ pub(super) struct StringParser<'p, 'src>(
 
 impl<'p, 'src> StringParser<'p, 'src> {
 
-    pub fn parse(&mut self) -> OptResult<String> {
+    pub fn parse(&mut self) -> Result<String, ScanErrorKind> {
 
-        let Some((kind, loc)) = self.try_consume(false)? else { return Ok(None) };
+        let (kind, loc) = self.try_consume(false)?;
 
         let slice = loc.slice(self.0.buffer.source());
         let mut string = strip_delimiters(kind, slice).to_owned();
 
         if kind == DollarString {
             // Not concatenable, and no escapes to deal with.
-            return Ok(Some(string));
+            return Ok(string);
         }
 
         let mut end_index = loc.range().end;
-        while let Ok(Some((suffix_kind, suffix_loc))) = self.try_consume(true) {
+        while let Some((suffix_kind, suffix_loc)) = self.try_consume(true).optional()? {
             let suffix_slice = suffix_loc.slice(self.0.buffer.source());
             let suffix_slice = strip_delimiters(suffix_kind, suffix_slice);
             string.push_str(suffix_slice);
@@ -29,7 +29,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
         self.decode_string(kind, &string, loc)
     }
 
-    fn try_consume(&mut self, only_concatenable: bool) -> OptResult<Located<StringKind>> {
+    fn try_consume(&mut self, only_concatenable: bool) -> Result<Located<StringKind>, ScanErrorKind> {
 
         let loc = self.0.buffer.current_location();
 
@@ -46,7 +46,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
         )
     }
 
-    fn decode_string(&mut self, kind: StringKind, slice: &str, loc: Location) -> OptResult<String> {
+    fn decode_string(&mut self, kind: StringKind, slice: &str, loc: Location) -> Result<String, ScanErrorKind> {
 
         let result = match kind {
             BasicString { .. } | NationalString => {
@@ -66,7 +66,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
             },
             UnicodeString => {
 
-                let escape = self.0.uescape().map_err(Some)?;
+                let escape = self.0.uescape()?;
 
                 UnicodeStringDecoder::new(slice, false, escape)
                     .decode()
@@ -75,10 +75,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
             DollarString => unreachable!("`$` strings don't have any escapes"),
         };
 
-        match result {
-            Ok(result) => Ok(Some(result)),
-            Err(err) => Err(Some(err)),
-        }
+        result.map_err(ScanErrorKind::from)
     }
 }
 
@@ -111,7 +108,7 @@ pub(super) fn strip_delimiters(kind: StringKind, slice: &str) -> &str {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ParserConfig;
+    use crate::parser::{Parser, ParserConfig};
     use postgres_basics::guc::BackslashQuote;
 
     #[test]
@@ -120,7 +117,7 @@ mod tests {
         let mut string_parser = StringParser(&mut parser);
 
         let result = string_parser.parse();
-        assert_eq!(Ok(Some("a basic string".into())), result);
+        assert_eq!(Ok("a basic string".into()), result);
     }
 
     #[test]
@@ -133,7 +130,7 @@ mod tests {
         let mut string_parser = StringParser(&mut parser);
 
         let result = string_parser.parse();
-        assert_eq!(Ok(Some("a basic string that concatenates".into())), result);
+        assert_eq!(Ok("a basic string that concatenates".into()), result);
     }
 
     #[test]
@@ -142,7 +139,7 @@ mod tests {
         let mut string_parser = StringParser(&mut parser);
 
         let result = string_parser.parse();
-        assert_eq!(Ok(Some("a $ string".into())), result);
+        assert_eq!(Ok("a $ string".into()), result);
     }
 
     #[test]
@@ -151,7 +148,7 @@ mod tests {
         let mut string_parser = StringParser(&mut parser);
 
         let result = string_parser.parse();
-        assert_eq!(Ok(Some("an unicode string".into())), result);
+        assert_eq!(Ok("an unicode string".into()), result);
     }
 
     #[test]
@@ -160,7 +157,7 @@ mod tests {
         let mut string_parser = StringParser(&mut parser);
 
         let result = string_parser.parse();
-        assert_eq!(Ok(Some("an extended string".into())), result);
+        assert_eq!(Ok("an extended string".into()), result);
     }
 
     fn new_parser(source: &str) -> Parser<'_> {
@@ -170,6 +167,8 @@ mod tests {
 }
 
 use crate::lexer::{StringKind, StringKind::*};
-use crate::parser::{token_buffer::TokenConsumer, OptResult, Parser, ParserErrorKind, ParserWarning};
+use crate::parser::result::{ScanErrorKind, ScanResult};
+use crate::parser::token_buffer::TokenConsumer;
+use crate::parser::{Parser, ParserErrorKind, ParserWarning};
 use crate::string_decoders::*;
 use postgres_basics::{Located, Location};

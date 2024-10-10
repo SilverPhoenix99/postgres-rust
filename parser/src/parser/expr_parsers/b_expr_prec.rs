@@ -1,9 +1,9 @@
 impl Parser<'_> {
-    pub(super) fn b_expr_prec(&mut self, prec: i16) -> OptResult<AstNode> {
+    pub(super) fn b_expr_prec(&mut self, prec: i16) -> Result<AstNode, ScanErrorKind> {
 
         // Precedence climbing
 
-        let Some(mut expr) = self.b_expr_primary()? else { return Ok(None) };
+        let mut expr = self.b_expr_primary()?;
 
         let mut max_prec = 6;
         loop {
@@ -21,7 +21,7 @@ impl Parser<'_> {
                 _ => None,
             });
 
-            let Some((op, assoc)) = op.replace_eof(Ok(None))? else { break };
+            let Some((op, assoc)) = op.optional()? else { break };
 
             max_prec = assoc.max_precedence();
 
@@ -33,7 +33,7 @@ impl Parser<'_> {
 
             if matches!(op, Keyword(_)) { // `Is`
                 let not_expr = self.buffer.consume_kw_eq(Not)
-                    .replace_eof(Ok(None))?
+                    .optional()?
                     .is_some();
 
                 let kw = self.buffer
@@ -85,10 +85,10 @@ impl Parser<'_> {
             };
         }
 
-        Ok(Some(expr))
+        Ok(expr)
     }
 
-    fn b_expr_primary(&self) -> OptResult<AstNode> {
+    fn b_expr_primary(&self) -> Result<AstNode, ScanErrorKind> {
         todo!()
     }
 }
@@ -98,6 +98,6 @@ use crate::lexer::KeywordDetails;
 use crate::lexer::TokenKind::*;
 use crate::parser::ast_node::AstNode;
 use crate::parser::expr_parsers::associativity::Associativity;
-use crate::parser::result::{OptResult, OptionalResult};
+use crate::parser::result::{ScanErrorKind, ScanResult};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::Parser;

@@ -1,22 +1,20 @@
 impl Parser<'_> {
     /// Alias: `UnlistenStmt`
-    pub(in crate::parser) fn unlisten_stmt(&mut self) -> OptResult<OneOrAll> {
+    pub(in crate::parser) fn unlisten_stmt(&mut self) -> Result<OneOrAll, ScanErrorKind> {
 
         /*
             UNLISTEN '*'
             UNLISTEN ColId
         */
 
-        if self.buffer.consume_kw_eq(Unlisten)?.is_none() {
-            return Ok(None)
-        }
+        self.buffer.consume_kw_eq(Unlisten)?;
 
-        if self.buffer.consume_eq(Mul)?.is_some() {
-            return Ok(Some(OneOrAll::All))
+        if self.buffer.consume_eq(Mul).optional()?.is_some() {
+            return Ok(OneOrAll::All)
         }
 
         let name = self.col_id().required()?;
-        Ok(Some(OneOrAll::Name(name)))
+        Ok(OneOrAll::Name(name))
     }
 }
 
@@ -28,19 +26,19 @@ mod tests {
     #[test]
     fn test_unlisten_all() {
         let mut parser = Parser::new("unlisten *", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some(OneOrAll::All)), parser.unlisten_stmt());
+        assert_eq!(Ok(OneOrAll::All), parser.unlisten_stmt());
     }
 
     #[test]
     fn test_unlisten_name() {
         let mut parser = Parser::new("unlisten test_name", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some(OneOrAll::Name("test_name".into()))), parser.unlisten_stmt());
+        assert_eq!(Ok(OneOrAll::Name("test_name".into())), parser.unlisten_stmt());
     }
 }
 
 use crate::lexer::Keyword::Unlisten;
 use crate::lexer::TokenKind::Mul;
 use crate::parser::ast_node::OneOrAll;
-use crate::parser::result::OptionalResult;
-use crate::parser::OptResult;
+use crate::parser::result::ScanErrorKind;
 use crate::parser::Parser;
+use crate::parser::ScanResult;

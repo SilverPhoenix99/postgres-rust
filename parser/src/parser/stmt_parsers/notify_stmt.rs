@@ -1,24 +1,25 @@
 impl Parser<'_> {
     /// Alias: `NotifyStmt`
-    pub(in crate::parser) fn notify_stmt(&mut self) -> OptResult<NotifyStmt> {
+    pub(in crate::parser) fn notify_stmt(&mut self) -> Result<NotifyStmt, ScanErrorKind> {
 
         /*
             NOTIFY ColId (',' SCONST)?
         */
-        
-        if self.buffer.consume_kw_eq(Notify)?.is_none() {
-            return Ok(None)
-        }
+
+        self.buffer.consume_kw_eq(Notify)?;
 
         let condition_name = self.col_id().required()?;
 
-        if self.buffer.consume_eq(Comma).replace_eof(Ok(None))?.is_none() {
-            return Ok(Some(NotifyStmt::new(condition_name)))
+        if self.buffer.consume_eq(Comma).optional()?.is_none() {
+            /*
+                NOTIFY ColId
+            */
+            return Ok(NotifyStmt::new(condition_name))
         }
 
         let payload = self.string().required()?;
 
-        Ok(Some(NotifyStmt::with_payload(condition_name, payload)))
+        Ok(NotifyStmt::with_payload(condition_name, payload))
     }
 }
 
@@ -30,20 +31,19 @@ mod tests {
     #[test]
     fn test_notify() {
         let mut parser = Parser::new("notify test_ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some(NotifyStmt::new("test_ident".into()))), parser.notify_stmt());
+        assert_eq!(Ok(NotifyStmt::new("test_ident".into())), parser.notify_stmt());
     }
 
     #[test]
     fn test_notify_with_payload() {
         let mut parser = Parser::new("notify test_ident, 'test-payload'", DEFAULT_CONFIG);
         let expected = NotifyStmt::with_payload("test_ident".into(), "test-payload".into());
-        assert_eq!(Ok(Some(expected)), parser.notify_stmt());
+        assert_eq!(Ok(expected), parser.notify_stmt());
     }
 }
 
 use crate::lexer::Keyword::Notify;
 use crate::lexer::TokenKind::Comma;
 use crate::parser::ast_node::NotifyStmt;
-use crate::parser::result::OptionalResult;
-use crate::parser::OptResult;
+use crate::parser::result::{ScanErrorKind, ScanResult};
 use crate::parser::Parser;

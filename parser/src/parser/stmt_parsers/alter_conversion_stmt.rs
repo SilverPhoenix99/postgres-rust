@@ -1,23 +1,23 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn alter_conversion_stmt(&mut self) -> OptResult<AstNode> {
+    pub(in crate::parser) fn alter_conversion_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
         /*
-            ALTER CONVERSION_P any_name OWNER TO RoleSpec
-            ALTER CONVERSION_P any_name RENAME TO ColId
-            ALTER CONVERSION_P any_name SET SCHEMA ColId
+            ALTER CONVERSION any_name OWNER TO RoleSpec
+            ALTER CONVERSION any_name RENAME TO ColId
+            ALTER CONVERSION any_name SET SCHEMA ColId
         */
 
-        if self.buffer.consume_kw_eq(Conversion)?.is_none() {
-            return Ok(None)
-        }
+        self.buffer.consume_kw_eq(Conversion)?;
 
         let conversion = self.any_name().required()?;
 
-        let op = self.buffer.consume(|tok|
-            tok.keyword().map(KeywordDetails::keyword)
-                .filter(|kw|
-                    matches!(kw, Owner | Rename | Set)
-                )
-        ).required()?;
+        let op = self.buffer
+            .consume(|tok|
+                tok.keyword().map(KeywordDetails::keyword)
+                    .filter(|kw|
+                        matches!(kw, Owner | Rename | Set)
+                    )
+            )
+            .required()?;
 
         let stmt = match op {
             Owner => {
@@ -47,10 +47,10 @@ impl Parser<'_> {
                     new_schema,
                 ).into()
             },
-            _ => unreachable!()
+            _ => unreachable!("ALTER CONVERSION command must be one of OWNER, RENAME, or SET")
         };
 
-        Ok(Some(stmt))
+        Ok(stmt)
     }
 }
 
@@ -58,7 +58,6 @@ impl Parser<'_> {
 mod tests {
     use super::*;
     use crate::parser::ast_node::RoleSpec::SessionUser;
-    use crate::parser::ast_node::{AlterObjectSchemaStmt, AlterObjectSchemaTarget, AlterOwnerStmt, AlterOwnerTarget, RenameStmt, RenameTarget};
     use crate::parser::tests::DEFAULT_CONFIG;
 
     #[test]
@@ -68,15 +67,12 @@ mod tests {
 
         let actual = parser.alter_conversion_stmt();
 
-        assert_matches!(actual, Ok(Some(_)));
-        let actual = actual.unwrap().unwrap();
-
         let expected = AlterOwnerStmt::new(
             AlterOwnerTarget::Conversion(vec!["conversion_name".into()]),
             SessionUser
         );
 
-        assert_eq!(actual, expected.into());
+        assert_eq!(Ok(expected.into()), actual);
     }
 
     #[test]
@@ -86,15 +82,12 @@ mod tests {
 
         let actual = parser.alter_conversion_stmt();
 
-        assert_matches!(actual, Ok(Some(_)));
-        let actual = actual.unwrap().unwrap();
-
         let expected = RenameStmt::new(
             RenameTarget::Conversion(vec!["conversion_name".into()]),
             "other_conversion".into(),
         );
 
-        assert_eq!(actual, expected.into());
+        assert_eq!(Ok(expected.into()), actual);
     }
 
     #[test]
@@ -104,22 +97,26 @@ mod tests {
 
         let actual = parser.alter_conversion_stmt();
 
-        assert_matches!(actual, Ok(Some(_)));
-        let actual = actual.unwrap().unwrap();
-
         let expected = AlterObjectSchemaStmt::new(
             AlterObjectSchemaTarget::Conversion(vec!["conversion_name".into()]),
             "some_schema".into(),
         );
 
-        assert_eq!(actual, expected.into());
+        assert_eq!(Ok(expected.into()), actual);
     }
 }
 
 use crate::lexer::Keyword::{Conversion, Owner, Rename, Schema, Set, To};
 use crate::lexer::KeywordDetails;
-use crate::parser::ast_node::{AlterObjectSchemaTarget, AlterOwnerStmt, AlterOwnerTarget, AstNode, RenameStmt, RenameTarget};
-use crate::parser::result::{OptResult, OptionalResult};
+use crate::parser::ast_node::{
+    AlterObjectSchemaStmt,
+    AlterObjectSchemaTarget,
+    AlterOwnerStmt,
+    AlterOwnerTarget,
+    AstNode,
+    RenameStmt,
+    RenameTarget
+};
+use crate::parser::result::{ScanErrorKind, ScanResult};
 use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::{ast_node, Parser};
-use ast_node::AlterObjectSchemaStmt;
+use crate::parser::Parser;

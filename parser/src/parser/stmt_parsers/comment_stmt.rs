@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `CommentStmt`
-    pub(in crate::parser) fn comment_stmt(&mut self) -> OptResult<AstNode> {
+    pub(in crate::parser) fn comment_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
 
         /*
             COMMENT ON AGGREGATE aggregate_with_argtypes IS comment_text
@@ -23,10 +23,7 @@ impl Parser<'_> {
             COMMENT ON TYPE_P Typename IS comment_text
         */
 
-        if self.buffer.consume_kw_eq(Comment)?.is_none() {
-            return Ok(None)
-        }
-
+        self.buffer.consume_kw_eq(Comment)?;
         self.buffer.consume_kw_eq(On).required()?;
 
         todo!()
@@ -34,7 +31,7 @@ impl Parser<'_> {
 }
 
 use crate::lexer::Keyword::{Comment, On};
-use crate::parser::result::OptionalResult;
+use crate::parser::result::ScanErrorKind;
 use crate::parser::AstNode;
-use crate::parser::OptResult;
 use crate::parser::Parser;
+use crate::parser::ScanResult;

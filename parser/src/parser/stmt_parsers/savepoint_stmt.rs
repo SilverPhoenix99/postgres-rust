@@ -1,18 +1,16 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn savepoint_stmt(&mut self) -> OptResult<TransactionStmt> {
+    pub(in crate::parser) fn savepoint_stmt(&mut self) -> Result<TransactionStmt, ScanErrorKind> {
 
         /*
         TransactionStmt:
             SAVEPOINT ColId
         */
 
-        if self.buffer.consume_kw_eq(Savepoint)?.is_none() {
-            return Ok(None)
-        }
+        self.buffer.consume_kw_eq(Savepoint)?;
 
         let name = self.col_id().required()?;
 
-        Ok(Some(TransactionStmt::Savepoint(name)))
+        Ok(TransactionStmt::Savepoint(name))
     }
 }
 
@@ -24,12 +22,12 @@ mod tests {
     #[test]
     fn test_savepoint() {
         let mut parser = Parser::new("savepoint test_ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some(TransactionStmt::Savepoint("test_ident".into()))), parser.savepoint_stmt());
+        assert_eq!(Ok(TransactionStmt::Savepoint("test_ident".into())), parser.savepoint_stmt());
     }
 }
 
 use crate::lexer::Keyword::Savepoint;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::OptionalResult;
-use crate::parser::OptResult;
+use crate::parser::result::ScanErrorKind;
 use crate::parser::Parser;
+use crate::parser::ScanResult;
