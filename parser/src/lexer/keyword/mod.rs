@@ -3,7 +3,6 @@ mod keywords;
 
 pub use self::keyword_details::KeywordDetails;
 pub use self::keywords::Keyword;
-
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum KeywordCategory {
     Unreserved,
@@ -11,3 +10,15 @@ pub enum KeywordCategory {
     TypeFuncName,
     Reserved,
 }
+
+impl Keyword {
+    pub fn find(text: &str) -> Option<Self> {
+        KEYWORDS.get(text).copied()
+    }
+
+    pub fn details(&self) -> &'static KeywordDetails {
+        &KEYWORD_DETAILS[*self as usize]
+    }
+}
+
+use crate::lexer::keyword::keywords::{KEYWORDS, KEYWORD_DETAILS};

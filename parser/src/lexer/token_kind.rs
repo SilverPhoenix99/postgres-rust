@@ -87,7 +87,7 @@ pub enum TokenKind {
     UserDefinedOperator,
     Param { index: i32 },
     Identifier(IdentifierKind),
-    Keyword(&'static KeywordDetails),
+    Keyword(Keyword),
     NumberLiteral { radix: u32 },
     StringLiteral(StringKind),
     BitStringLiteral(BitStringKind),
@@ -120,34 +120,34 @@ impl TokenKind {
     }
 
     #[inline(always)]
-    pub fn unreserved_keyword(&self) -> Option<&'static KeywordDetails> {
-        self.keyword().filter(|kw| kw.unreserved().is_some())
+    pub fn unreserved_keyword(&self) -> Option<Keyword> {
+        self.keyword().filter(|kw| kw.details().unreserved().is_some())
     }
 
     #[inline(always)]
-    pub fn col_name_keyword(&self) -> Option<&'static KeywordDetails> {
-        self.keyword().filter(|kw| kw.col_name().is_some())
+    pub fn col_name_keyword(&self) -> Option<Keyword> {
+        self.keyword().filter(|kw| kw.details().col_name().is_some())
     }
 
     #[inline(always)]
-    pub fn type_func_name_keyword(&self) -> Option<&'static KeywordDetails> {
-        self.keyword().filter(|kw| kw.type_func_name().is_some())
+    pub fn type_func_name_keyword(&self) -> Option<Keyword> {
+        self.keyword().filter(|kw| kw.details().type_func_name().is_some())
     }
 
     #[inline(always)]
-    pub fn reserved_keyword(&self) -> Option<&'static KeywordDetails> {
-        self.keyword().filter(|kw| kw.reserved().is_some())
+    pub fn reserved_keyword(&self) -> Option<Keyword> {
+        self.keyword().filter(|kw| kw.details().reserved().is_some())
     }
 
     #[inline(always)]
-    pub fn bare_label_keyword(&self) -> Option<&'static KeywordDetails> {
-        self.keyword().filter(|kw| kw.bare())
+    pub fn bare_label_keyword(&self) -> Option<Keyword> {
+        self.keyword().filter(|kw| kw.details().bare())
     }
 
     #[inline(always)]
-    pub fn keyword(&self) -> Option<&'static KeywordDetails> {
+    pub fn keyword(&self) -> Option<Keyword> {
         match self {
-            TokenKind::Keyword(kw) => Some(kw),
+            TokenKind::Keyword(kw) => Some(*kw),
             _ => None
         }
     }
@@ -181,56 +181,56 @@ mod tests {
 
     #[test]
     fn test_unreserved_keyword() {
-        let kw = KeywordDetails::find("abort").unwrap();
+        let kw = super::Keyword::find("abort").unwrap();
         assert_eq!(Some(kw), Keyword(kw).unreserved_keyword());
 
-        let kw = KeywordDetails::find("between").unwrap();
+        let kw = super::Keyword::find("between").unwrap();
         assert_eq!(None, Keyword(kw).unreserved_keyword())
     }
 
     #[test]
     fn test_col_name_keyword() {
-        let kw = KeywordDetails::find("between").unwrap();
+        let kw = super::Keyword::find("between").unwrap();
         assert_eq!(Some(kw), Keyword(kw).col_name_keyword());
 
-        let kw = KeywordDetails::find("authorization").unwrap();
+        let kw = super::Keyword::find("authorization").unwrap();
         assert_eq!(None, Keyword(kw).col_name_keyword())
     }
 
     #[test]
     fn test_type_func_name_keyword() {
-        let kw = KeywordDetails::find("authorization").unwrap();
+        let kw = super::Keyword::find("authorization").unwrap();
         assert_eq!(Some(kw), Keyword(kw).type_func_name_keyword());
 
-        let kw = KeywordDetails::find("analyze").unwrap();
+        let kw = super::Keyword::find("analyze").unwrap();
         assert_eq!(None, Keyword(kw).type_func_name_keyword())
     }
 
     #[test]
     fn test_reserved_keyword() {
-        let kw = KeywordDetails::find("analyze").unwrap();
+        let kw = super::Keyword::find("analyze").unwrap();
         assert_eq!(Some(kw), Keyword(kw).reserved_keyword());
 
-        let kw = KeywordDetails::find("abort").unwrap();
+        let kw = super::Keyword::find("abort").unwrap();
         assert_eq!(None, Keyword(kw).reserved_keyword())
     }
 
     #[test]
     fn test_bare_label_keyword() {
-        let kw = KeywordDetails::find("abort").unwrap();
+        let kw = super::Keyword::find("abort").unwrap();
         assert_eq!(Some(kw), Keyword(kw).bare_label_keyword());
 
-        let kw = KeywordDetails::find("array").unwrap();
+        let kw = super::Keyword::find("array").unwrap();
         assert_eq!(None, Keyword(kw).bare_label_keyword())
     }
 
     #[test]
     fn test_keyword() {
-        let kw = KeywordDetails::find("between").unwrap();
+        let kw = super::Keyword::find("between").unwrap();
         assert_eq!(Some(kw), Keyword(kw).keyword());
 
         assert_eq!(None, Semicolon.keyword());
     }
 }
 
-use crate::lexer::KeywordDetails;
+use crate::lexer::Keyword;

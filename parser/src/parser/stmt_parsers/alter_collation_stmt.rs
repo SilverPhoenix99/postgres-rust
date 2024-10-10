@@ -12,11 +12,7 @@ impl Parser<'_> {
 
         let name = self.any_name().required()?;
 
-        let op = self.buffer
-            .consume(|tok|
-                tok.keyword().map(KeywordDetails::keyword)
-                    .filter(|kw| matches!(kw, Owner | Refresh | Rename | Set))
-            )
+        let op = self.buffer.consume_kws(|kw| matches!(kw, Owner | Refresh | Rename | Set))
             .required()?;
 
         let stmt: AstNode = match op {
@@ -121,7 +117,6 @@ mod tests {
 }
 
 use crate::lexer::Keyword::{Collation, Owner, Refresh, Rename, Schema, Set, To, Version};
-use crate::lexer::KeywordDetails;
 use crate::parser::ast_node::AstNode::RefreshCollationVersionStmt;
 use crate::parser::ast_node::{
     AlterObjectSchemaStmt,
@@ -133,5 +128,4 @@ use crate::parser::ast_node::{
     RenameTarget
 };
 use crate::parser::result::{ScanResult, ScanResultTrait};
-use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::Parser;

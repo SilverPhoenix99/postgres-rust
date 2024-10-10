@@ -75,9 +75,13 @@ impl<'src> TokenBuffer<'src> {
     }
 
     #[inline(always)]
-    pub fn consume_kw_eq(&mut self, keyword: Keyword) -> ScanResult<&'static KeywordDetails> {
+    pub fn consume_kw_eq(&mut self, keyword: Keyword) -> ScanResult<Keyword> {
+        self.consume_kws(|kw| keyword.eq(kw))
+    }
+
+    pub fn consume_kws(&mut self, pred: impl Fn(&Keyword) -> bool) -> ScanResult<Keyword> {
         self.consume(|tok|
-            tok.keyword().filter(|details| details.keyword() == keyword)
+            tok.keyword().filter(&pred)
         )
     }
 }
@@ -174,8 +178,6 @@ where
 mod tests {
     use super::*;
     use crate::lexer::IdentifierKind::BasicIdentifier;
-    use crate::parser::result::ScanResult;
-    use crate::parser::Lexer;
     use crate::parser::ParserErrorKind::Syntax;
     use TokenKind::Identifier;
 
@@ -281,7 +283,7 @@ mod tests {
 }
 
 use crate::error::HasLocation;
-use crate::lexer::{Keyword, KeywordDetails, Lexer, LexerResult, TokenKind};
+use crate::lexer::{Keyword, Lexer, LexerResult, TokenKind};
 use crate::parser::result::ScanErrorKind::{Eof, NoMatch, ParserErr};
 use crate::parser::result::ScanResult;
 use crate::parser::ParserErrorKind;

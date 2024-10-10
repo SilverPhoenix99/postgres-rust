@@ -556,7 +556,7 @@ impl<'src> Lexer<'src> {
         let ident = self.buffer.slice(start_index)
             .to_ascii_lowercase();
 
-        if let Some(kw) = KeywordDetails::find(&ident) {
+        if let Some(kw) = Keyword::find(&ident) {
             return Ok(Keyword(kw))
         }
 
@@ -1027,7 +1027,7 @@ mod tests {
             .expect("should have been Some(Ok(_))")
             .expect("should have been Ok((Keyword(_), _))");
 
-        assert_matches!(actual, Keyword(kw) if expected == kw.keyword())
+        assert_matches!(actual, Keyword(kw) if expected == kw)
     }
 }
 

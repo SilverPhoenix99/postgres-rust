@@ -10,13 +10,7 @@ impl Parser<'_> {
 
         let conversion = self.any_name().required()?;
 
-        let op = self.buffer
-            .consume(|tok|
-                tok.keyword().map(KeywordDetails::keyword)
-                    .filter(|kw|
-                        matches!(kw, Owner | Rename | Set)
-                    )
-            )
+        let op = self.buffer.consume_kws(|kw| matches!(kw, Owner | Rename | Set))
             .required()?;
 
         let stmt = match op {
@@ -107,7 +101,6 @@ mod tests {
 }
 
 use crate::lexer::Keyword::{Conversion, Owner, Rename, Schema, Set, To};
-use crate::lexer::KeywordDetails;
 use crate::parser::ast_node::{
     AlterObjectSchemaStmt,
     AlterObjectSchemaTarget,
@@ -118,5 +111,4 @@ use crate::parser::ast_node::{
     RenameTarget
 };
 use crate::parser::result::{ScanResult, ScanResultTrait};
-use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::Parser;

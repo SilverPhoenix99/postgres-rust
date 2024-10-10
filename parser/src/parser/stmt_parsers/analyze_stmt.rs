@@ -7,19 +7,13 @@ impl Parser<'_> {
             (ANALYSE | ANALYZE) (VERBOSE)? opt_vacuum_relation_list
         */
 
-        self.buffer.consume(|tok|
-            tok.keyword().map(KeywordDetails::keyword).filter(|kw|
-                matches!(kw, Analyse | Analyze)
-            )
-        )?;
+        self.buffer.consume_kws(|kw| matches!(kw, Analyse | Analyze))?;
 
         todo!()
     }
 }
 
 use crate::lexer::Keyword::{Analyse, Analyze};
-use crate::lexer::KeywordDetails;
 use crate::parser::ast_node::AstNode;
-use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::Parser;
 use crate::parser::result::ScanResult;
+use crate::parser::Parser;

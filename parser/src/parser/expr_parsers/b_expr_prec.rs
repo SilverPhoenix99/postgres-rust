@@ -17,7 +17,7 @@ impl Parser<'_> {
                 op @ (Less | Greater | Equals | GreaterEquals | LessEquals | NotEquals) if range.contains(&1) => {
                     Some((*op, Associativity::Non(1)))
                 },
-                Keyword(kw) if kw.keyword() == Is && range.contains(&0) => Some((Keyword(kw), Associativity::Non(0))),
+                Keyword(Is) if range.contains(&0) => Some((Keyword(Is), Associativity::Non(0))),
                 _ => None,
             });
 
@@ -36,11 +36,7 @@ impl Parser<'_> {
                     .optional()?
                     .is_some();
 
-                let kw = self.buffer
-                    .consume(|tok|
-                        tok.keyword().map(KeywordDetails::keyword)
-                            .filter(|kw| matches!(kw, Document | Distinct))
-                    )
+                let kw = self.buffer.consume_kws(|kw| matches!(kw, Document | Distinct))
                     .required()?;
 
                 expr = if kw == Document {
@@ -94,7 +90,6 @@ impl Parser<'_> {
 }
 
 use crate::lexer::Keyword::{Distinct, Document, From, Is, Not};
-use crate::lexer::KeywordDetails;
 use crate::lexer::TokenKind::*;
 use crate::parser::ast_node::AstNode;
 use crate::parser::expr_parsers::associativity::Associativity;

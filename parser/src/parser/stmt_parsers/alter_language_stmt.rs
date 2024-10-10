@@ -18,11 +18,7 @@ impl Parser<'_> {
 
         let name = self.col_id().required()?;
 
-        let action = self.buffer
-            .consume(|tok|
-                tok.keyword().map(KeywordDetails::keyword)
-                    .filter(|kw| matches!(kw, Owner | Rename))
-            )
+        let action = self.buffer.consume_kws(|kw| matches!(kw, Owner | Rename))
             .required()?;
 
         self.buffer.consume_kw_eq(To).required()?;
@@ -80,8 +76,6 @@ mod tests {
 }
 
 use crate::lexer::Keyword::{Language, Owner, Procedural, Rename, To};
-use crate::lexer::KeywordDetails;
 use crate::parser::ast_node::{AlterOwnerStmt, AlterOwnerTarget, AstNode, RenameStmt, RenameTarget};
 use crate::parser::result::{ScanResult, ScanResultTrait};
-use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::Parser;
