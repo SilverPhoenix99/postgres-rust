@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `LoadStmt`
-    pub(in crate::parser) fn load_stmt(&mut self) -> Result<String, ScanErrorKind> {
+    pub(in crate::parser) fn load_stmt(&mut self) -> ScanResult<String> {
 
         /*
             LOAD SCONST
@@ -25,5 +25,5 @@ mod tests {
 }
 
 use crate::lexer::Keyword::Load;
-use crate::parser::result::ScanErrorKind;
 use crate::parser::Parser;
+use crate::parser::result::ScanResult;

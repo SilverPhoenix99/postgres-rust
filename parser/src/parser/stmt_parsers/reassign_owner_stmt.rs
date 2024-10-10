@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `ReassignOwnedStmt`
-    pub(in crate::parser) fn reassign_owned_stmt(&mut self) -> Result<ReassignOwnedStmt, ScanErrorKind> {
+    pub(in crate::parser) fn reassign_owned_stmt(&mut self) -> ScanResult<ReassignOwnedStmt> {
 
         /*
             REASSIGN OWNED BY role_list TO RoleSpec
@@ -43,5 +43,5 @@ mod tests {
 
 use crate::lexer::Keyword::{By, OwnedKw, Reassign, To};
 use crate::parser::ast_node::ReassignOwnedStmt;
-use crate::parser::result::{ScanErrorKind, ScanResult};
+use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::Parser;

@@ -4,7 +4,7 @@ pub(super) struct IdentifierParser<'p, 'src>(
 
 impl<'p, 'src> IdentifierParser<'p, 'src> {
 
-    pub fn parse(&mut self) -> Result<String, ScanErrorKind> {
+    pub fn parse(&mut self) -> ScanResult<String> {
 
         let loc = self.0.buffer.current_location();
         let kind = self.0.buffer.consume(TokenKind::identifier_kind)?;
@@ -93,7 +93,7 @@ mod tests {
 
 use crate::lexer::IdentifierKind::*;
 use crate::lexer::TokenKind;
-use crate::parser::result::ScanErrorKind;
+use crate::parser::result::{ScanErrorKind, ScanResult};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::{Parser, ParserErrorKind};
 use crate::string_decoders::{BasicStringDecoder, UnicodeStringDecoder};

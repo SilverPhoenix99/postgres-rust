@@ -4,7 +4,7 @@ pub(super) struct BitStringParser<'p, 'src>(
 
 impl<'p, 'src> BitStringParser<'p, 'src> {
 
-    pub fn parse(&mut self) -> Result<BitBox, ScanErrorKind> {
+    pub fn parse(&mut self) -> ScanResult<BitBox> {
 
         let (kind, loc) = self.try_consume()?;
 
@@ -22,7 +22,7 @@ impl<'p, 'src> BitStringParser<'p, 'src> {
         todo!("map error")
     }
 
-    fn try_consume(&mut self) -> Result<Located<BitStringKind>, ScanErrorKind> {
+    fn try_consume(&mut self) -> ScanResult<Located<BitStringKind>> {
         // let loc = self.0.buffer.current_location();
         // self.0.buffer.consume(|tok|
         //     tok.bit_string_kind()
@@ -30,7 +30,7 @@ impl<'p, 'src> BitStringParser<'p, 'src> {
         todo!()
     }
 
-    fn try_consume_string(&mut self) -> Result<Located<StringKind>, ScanErrorKind> {
+    fn try_consume_string(&mut self) -> ScanResult<Located<StringKind>> {
 
         let loc = self.0.buffer.current_location();
 
@@ -99,8 +99,8 @@ use crate::lexer::{
     StringKind,
     StringKind::*,
 };
-use crate::parser::result::ScanErrorKind;
 use crate::parser::{string_parser::strip_delimiters, token_buffer::TokenConsumer, Parser};
 use crate::string_decoders::BitStringDecoder;
 use bitvec::boxed::BitBox;
 use postgres_basics::Located;
+use crate::parser::result::ScanResult;

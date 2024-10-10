@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `NotifyStmt`
-    pub(in crate::parser) fn notify_stmt(&mut self) -> Result<NotifyStmt, ScanErrorKind> {
+    pub(in crate::parser) fn notify_stmt(&mut self) -> ScanResult<NotifyStmt> {
 
         /*
             NOTIFY ColId (',' SCONST)?
@@ -45,5 +45,5 @@ mod tests {
 use crate::lexer::Keyword::Notify;
 use crate::lexer::TokenKind::Comma;
 use crate::parser::ast_node::NotifyStmt;
-use crate::parser::result::{ScanErrorKind, ScanResult};
+use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::Parser;

@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum ScanErrorKind {
+pub(crate) enum ScanErrorKind {
     /// When an unrecoverable error occurs.
     ParserErr(ParserErrorKind),
     /// When there are no more tokens.
@@ -9,7 +9,7 @@ pub enum ScanErrorKind {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum EofErrorKind {
+pub(crate) enum EofErrorKind {
     ParserErr(ParserErrorKind),
     Eof,
 }
@@ -26,7 +26,7 @@ impl Default for ScanErrorKind {
     }
 }
 
-pub(crate) trait ScanResult<T> {
+pub(crate) trait ScanResultTrait<T> {
 
     /// When both `Eof` and `NoMatch` are considered syntax errors.
     /// 
@@ -43,10 +43,12 @@ pub(crate) trait ScanResult<T> {
     /// Usually used when the 1st token is optional,
     /// or there are multiple rules in the production,
     /// but it should still break the whole production on `Eof` and `ParserErr`.
-    fn no_match_to_option(self) -> Result<Option<T>, EofErrorKind>;
+    fn no_match_to_option(self) -> EofResult<Option<T>>;
 }
 
-impl<T> ScanResult<T> for Result<T, ScanErrorKind> {
+pub(crate) type ScanResult<T> = Result<T, ScanErrorKind>;
+
+impl<T> ScanResultTrait<T> for ScanResult<T> {
 
     fn required(self) -> Result<T, ParserErrorKind> {
         self.map_err(|err| match err {
@@ -63,7 +65,7 @@ impl<T> ScanResult<T> for Result<T, ScanErrorKind> {
         }
     }
 
-    fn no_match_to_option(self) -> Result<Option<T>, EofErrorKind> {
+    fn no_match_to_option(self) -> EofResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
             Err(ScanErrorKind::NoMatch) => Ok(None),
@@ -98,14 +100,16 @@ impl From<EofErrorKind> for ParserErrorKind {
     }
 }
 
-pub(crate) trait EofResult<T> {
+pub(crate) trait EofResultTrait<T> {
     /// When `Eof` is considered a `Syntax` error.
     ///
     /// Hoists `Eof` to `ParserErrorKind::default()`.
     fn required(self) -> Result<T, ParserErrorKind>;
 }
 
-impl<T> EofResult<T> for Result<T, EofErrorKind> {
+pub(crate) type EofResult<T> = Result<T, EofErrorKind>;
+
+impl<T> EofResultTrait<T> for EofResult<T> {
     fn required(self) -> Result<T, ParserErrorKind> {
         self.map_err(ParserErrorKind::from)
     }

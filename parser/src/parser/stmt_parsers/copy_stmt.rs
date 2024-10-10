@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `CopyStmt`
-    pub(in crate::parser) fn copy_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
+    pub(in crate::parser) fn copy_stmt(&mut self) -> ScanResult<AstNode> {
 
         /*
             COPY opt_binary qualified_name opt_column_list copy_from opt_program copy_file_name copy_delimiter opt_with copy_options where_clause
@@ -14,6 +14,6 @@ impl Parser<'_> {
 }
 
 use crate::lexer::Keyword::CopyKw;
-use crate::parser::result::ScanErrorKind;
 use crate::parser::AstNode;
 use crate::parser::Parser;
+use crate::parser::result::ScanResult;

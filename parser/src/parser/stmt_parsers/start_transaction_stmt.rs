@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn start_transaction_stmt(&mut self) -> Result<TransactionStmt, ScanErrorKind> {
+    pub(in crate::parser) fn start_transaction_stmt(&mut self) -> ScanResult<TransactionStmt> {
 
         /*
         TransactionStmt:
@@ -39,5 +39,5 @@ mod tests {
 
 use crate::lexer::Keyword::{Start, Transaction};
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::{ScanErrorKind, ScanResult};
+use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::Parser;

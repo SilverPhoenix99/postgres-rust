@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn alter_language_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
+    pub(in crate::parser) fn alter_language_stmt(&mut self) -> ScanResult<AstNode> {
 
         /*
             ALTER (PROCEDURAL)? LANGUAGE ColId OWNER TO RoleSpec # AlterOwnerStmt
@@ -12,7 +12,7 @@ impl Parser<'_> {
         if procedural {
             language.required()?;
         }
-        else { 
+        else {
             language?;
         }
 
@@ -82,6 +82,6 @@ mod tests {
 use crate::lexer::Keyword::{Language, Owner, Procedural, Rename, To};
 use crate::lexer::KeywordDetails;
 use crate::parser::ast_node::{AlterOwnerStmt, AlterOwnerTarget, AstNode, RenameStmt, RenameTarget};
-use crate::parser::result::{ScanErrorKind, ScanResult};
+use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::Parser;

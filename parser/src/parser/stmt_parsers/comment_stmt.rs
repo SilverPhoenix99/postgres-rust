@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `CommentStmt`
-    pub(in crate::parser) fn comment_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
+    pub(in crate::parser) fn comment_stmt(&mut self) -> ScanResult<AstNode> {
 
         /*
             COMMENT ON AGGREGATE aggregate_with_argtypes IS comment_text
@@ -31,7 +31,7 @@ impl Parser<'_> {
 }
 
 use crate::lexer::Keyword::{Comment, On};
-use crate::parser::result::ScanErrorKind;
 use crate::parser::AstNode;
 use crate::parser::Parser;
-use crate::parser::ScanResult;
+use crate::parser::result::ScanResult;
+use crate::parser::ScanResultTrait;

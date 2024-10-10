@@ -4,7 +4,7 @@ pub(super) struct StringParser<'p, 'src>(
 
 impl<'p, 'src> StringParser<'p, 'src> {
 
-    pub fn parse(&mut self) -> Result<String, ScanErrorKind> {
+    pub fn parse(&mut self) -> ScanResult<String> {
 
         let (kind, loc) = self.try_consume(false)?;
 
@@ -29,7 +29,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
         self.decode_string(kind, &string, loc)
     }
 
-    fn try_consume(&mut self, only_concatenable: bool) -> Result<Located<StringKind>, ScanErrorKind> {
+    fn try_consume(&mut self, only_concatenable: bool) -> ScanResult<Located<StringKind>> {
 
         let loc = self.0.buffer.current_location();
 
@@ -46,7 +46,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
         )
     }
 
-    fn decode_string(&mut self, kind: StringKind, slice: &str, loc: Location) -> Result<String, ScanErrorKind> {
+    fn decode_string(&mut self, kind: StringKind, slice: &str, loc: Location) -> ScanResult<String> {
 
         let result = match kind {
             BasicString { .. } | NationalString => {
@@ -167,7 +167,7 @@ mod tests {
 }
 
 use crate::lexer::{StringKind, StringKind::*};
-use crate::parser::result::{ScanErrorKind, ScanResult};
+use crate::parser::result::{ScanErrorKind, ScanResult, ScanResultTrait};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::{Parser, ParserErrorKind, ParserWarning};
 use crate::string_decoders::*;

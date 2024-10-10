@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn savepoint_stmt(&mut self) -> Result<TransactionStmt, ScanErrorKind> {
+    pub(in crate::parser) fn savepoint_stmt(&mut self) -> ScanResult<TransactionStmt> {
 
         /*
         TransactionStmt:
@@ -28,6 +28,6 @@ mod tests {
 
 use crate::lexer::Keyword::Savepoint;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::ScanErrorKind;
 use crate::parser::Parser;
-use crate::parser::ScanResult;
+use crate::parser::result::ScanResult;
+use crate::parser::ScanResultTrait;

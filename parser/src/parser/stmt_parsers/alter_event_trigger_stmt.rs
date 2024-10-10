@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn alter_event_trigger_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
+    pub(in crate::parser) fn alter_event_trigger_stmt(&mut self) -> ScanResult<AstNode> {
 
         /*
             ALTER EVENT TRIGGER ColId enable_trigger
@@ -158,7 +158,7 @@ mod tests {
 use crate::lexer::Keyword::{Always, Disable, Enable, Event, Owner, Rename, Replica, To, Trigger};
 use crate::lexer::KeywordDetails;
 use crate::parser::ast_node::{AlterEventTrigStmt, AlterOwnerStmt, AlterOwnerTarget, RenameStmt, RenameTarget};
-use crate::parser::result::{EofResult, ScanErrorKind, ScanResult};
+use crate::parser::result::{EofResultTrait, ScanResult, ScanResultTrait};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::EventTriggerState::{Disabled, FiresAlways, FiresOnOrigin, FiresOnReplica};
 use crate::parser::{AstNode, EventTriggerState, Parser, ParserErrorKind};

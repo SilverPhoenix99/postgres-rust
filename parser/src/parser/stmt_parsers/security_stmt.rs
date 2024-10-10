@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `SecLabelStmt`
-    pub(in crate::parser) fn security_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
+    pub(in crate::parser) fn security_stmt(&mut self) -> ScanResult<AstNode> {
 
         /*
             SECURITY LABEL opt_provider ON AGGREGATE aggregate_with_argtypes IS security_label
@@ -25,5 +25,5 @@ impl Parser<'_> {
 
 use crate::lexer::Keyword::{Label, Security};
 use crate::parser::ast_node::AstNode;
-use crate::parser::result::{ScanErrorKind, ScanResult};
+use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::Parser;

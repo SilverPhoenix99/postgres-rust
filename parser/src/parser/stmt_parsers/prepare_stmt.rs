@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn prepare_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
+    pub(in crate::parser) fn prepare_stmt(&mut self) -> ScanResult<AstNode> {
 
         /*
             PREPARE TRANSACTION SCONST
@@ -37,5 +37,5 @@ mod tests {
 
 use crate::lexer::Keyword::{Prepare, Transaction};
 use crate::parser::ast_node::AstNode::{self, PrepareTransaction};
-use crate::parser::result::{EofResult, ScanErrorKind, ScanResult};
+use crate::parser::result::{EofResultTrait, ScanResult, ScanResultTrait};
 use crate::parser::Parser;
