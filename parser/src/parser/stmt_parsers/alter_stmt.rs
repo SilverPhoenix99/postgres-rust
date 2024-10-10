@@ -1,18 +1,31 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn alter_stmt(&mut self) -> OptResult<AstNode> {
+    pub(in crate::parser) fn alter_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
 
-        if self.buffer.consume_kw_eq(Alter)?.is_none() {
-            return Ok(None)
+        macro_rules! alternatives {
+            ($($func:ident),* $(,)?) => {
+
+                if !self.buffer.eof() {
+                    $(if let Some(node) = self.$func().optional()? {
+                        return Ok(node)
+                    })*
+                }
+
+                return Err(ScanErrorKind::default())
+            }
         }
 
-        if let Some(node) = self.alter_group_stmt()? { return Ok(Some(node)) }
-        else if let Some(node) = self.alter_event_trigger_stmt()? { return Ok(Some(node)) }
-        else if let Some(node) = self.alter_collation_stmt()? { return Ok(Some(node)) }
-        else if let Some(node) = self.alter_conversion_stmt()? { return Ok(Some(node)) }
-        else if let Some(node) = self.alter_language_stmt()? { return Ok(Some(node)) }
-        else if let Some(node) = self.alter_large_object_stmt()? { return Ok(Some(node)) }
+        self.buffer.consume_kw_eq(Alter)?;
 
-        todo!()
+        // ALTER was consumed, so at least one of the following matches is required
+
+        alternatives!(
+            alter_group_stmt,
+            alter_event_trigger_stmt,
+            alter_collation_stmt,
+            alter_conversion_stmt,
+            alter_language_stmt,
+            alter_large_object_stmt,
+        );
     }
 }
 
@@ -38,7 +51,7 @@ mod tests {
 
             // This only quickly tests that statement types aren't missing.
             // More in-depth testing is within each statement's module.
-            assert_matches!(actual, Ok(Some(_)),
+            assert_matches!(actual, Ok(_),
                 r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
             );
         }
@@ -46,4 +59,5 @@ mod tests {
 }
 
 use crate::lexer::Keyword::Alter;
-use crate::parser::{AstNode, OptResult, Parser};
+use crate::parser::result::ScanErrorKind;
+use crate::parser::{AstNode, Parser, ScanResult};

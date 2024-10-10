@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `ReindexStmt`
-    pub(in crate::parser) fn reindex_stmt(&mut self) -> OptResult<AstNode> {
+    pub(in crate::parser) fn reindex_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
 
         /*
             REINDEX opt_reindex_option_list reindex_target_relation opt_concurrently qualified_name
@@ -8,13 +8,12 @@ impl Parser<'_> {
             REINDEX opt_reindex_option_list reindex_target_all opt_concurrently opt_single_name
         */
 
-        if self.buffer.consume_kw_eq(Reindex)?.is_none() {
-            return Ok(None)
-        }
+        self.buffer.consume_kw_eq(Reindex)?;
 
         todo!()
     }
 }
 
 use crate::lexer::Keyword::Reindex;
-use crate::parser::{AstNode, OptResult, Parser};
+use crate::parser::result::ScanErrorKind;
+use crate::parser::{AstNode, Parser};

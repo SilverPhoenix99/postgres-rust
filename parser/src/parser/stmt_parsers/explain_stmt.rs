@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `ExplainStmt`
-    pub(in crate::parser) fn explain_stmt(&mut self) -> OptResult<AstNode> {
+    pub(in crate::parser) fn explain_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
 
         /*
             EXPLAIN ExplainableStmt
@@ -9,15 +9,13 @@ impl Parser<'_> {
             EXPLAIN '(' utility_option_list ')' ExplainableStmt
         */
 
-        if self.buffer.consume_kw_eq(Explain)?.is_none() {
-            return Ok(None)
-        }
+        self.buffer.consume_kw_eq(Explain)?;
 
         todo!()
     }
 }
 
 use crate::lexer::Keyword::Explain;
+use crate::parser::result::ScanErrorKind;
 use crate::parser::AstNode;
-use crate::parser::OptResult;
 use crate::parser::Parser;

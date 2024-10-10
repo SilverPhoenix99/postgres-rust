@@ -1,26 +1,29 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn alter_language_stmt(&mut self) -> OptResult<AstNode> {
+    pub(in crate::parser) fn alter_language_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
 
         /*
             ALTER (PROCEDURAL)? LANGUAGE ColId OWNER TO RoleSpec # AlterOwnerStmt
             ALTER (PROCEDURAL)? LANGUAGE ColId RENAME TO ColId # RenameStmt
         */
 
-        if self.buffer.consume_kw_eq(Procedural)?.is_some() {
-            self.buffer.consume_kw_eq(Language).required()?;
+        let procedural = self.buffer.consume_kw_eq(Procedural).no_match_to_option()?.is_some();
+        let language = self.buffer.consume_kw_eq(Language);
+
+        if procedural {
+            language.required()?;
         }
-        else if self.buffer.consume_kw_eq(Language)?.is_none() {
-            return Ok(None)
+        else { 
+            language?;
         }
 
         let name = self.col_id().required()?;
 
-        let action = self.buffer.consume(|tok|
-            tok.keyword().map(KeywordDetails::keyword)
-                .filter(|kw|
-                    matches!(kw, Owner | Rename)
-                )
-        ).required()?;
+        let action = self.buffer
+            .consume(|tok|
+                tok.keyword().map(KeywordDetails::keyword)
+                    .filter(|kw| matches!(kw, Owner | Rename))
+            )
+            .required()?;
 
         self.buffer.consume_kw_eq(To).required()?;
 
@@ -39,7 +42,7 @@ impl Parser<'_> {
             ).into()
         };
 
-        Ok(Some(stmt))
+        Ok(stmt)
     }
 }
 
@@ -54,16 +57,12 @@ mod tests {
         let source = "procedural language some_language owner to public";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.alter_language_stmt();
-        assert_matches!(actual, Ok(Some(_)));
-        let actual = actual.unwrap().unwrap();
-
         let expected = AlterOwnerStmt::new(
             AlterOwnerTarget::Language("some_language".into()),
             Public
         );
 
-        assert_eq!(AstNode::AlterOwnerStmt(expected), actual);
+        assert_eq!(Ok(expected.into()), parser.alter_language_stmt());
     }
 
     #[test]
@@ -71,22 +70,18 @@ mod tests {
         let source = "language some_language rename to new_lang";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.alter_language_stmt();
-        assert_matches!(actual, Ok(Some(_)));
-        let actual = actual.unwrap().unwrap();
-
         let expected = RenameStmt::new(
             RenameTarget::Language("some_language".into()),
             "new_lang".into()
         );
 
-        assert_eq!(AstNode::RenameStmt(expected), actual);
+        assert_eq!(Ok(expected.into()), parser.alter_language_stmt());
     }
 }
 
 use crate::lexer::Keyword::{Language, Owner, Procedural, Rename, To};
 use crate::lexer::KeywordDetails;
 use crate::parser::ast_node::{AlterOwnerStmt, AlterOwnerTarget, AstNode, RenameStmt, RenameTarget};
-use crate::parser::result::{OptResult, OptionalResult};
+use crate::parser::result::{ScanErrorKind, ScanResult};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::Parser;

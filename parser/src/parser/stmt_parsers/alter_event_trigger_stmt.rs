@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn alter_event_trigger_stmt(&mut self) -> OptResult<AstNode> {
+    pub(in crate::parser) fn alter_event_trigger_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
 
         /*
             ALTER EVENT TRIGGER ColId enable_trigger
@@ -7,49 +7,57 @@ impl Parser<'_> {
             ALTER EVENT TRIGGER ColId RENAME TO ColId
         */
 
-        if self.buffer.consume_kw_eq(Event)?.is_none() {
-            return Ok(None)
-        }
-
+        self.buffer.consume_kw_eq(Event)?;
         self.buffer.consume_kw_eq(Trigger).required()?;
 
         let trigger = self.col_id().required()?;
 
-        let op = self.buffer.consume(|tok|
-            tok.keyword().map(KeywordDetails::keyword)
-                .filter(|kw| matches!(kw, Owner | Rename))
-        ).replace_eof(Err(Some(ParserErrorKind::default())))?;
+        let op = self.buffer
+            .consume(|tok|
+                tok.keyword().map(KeywordDetails::keyword)
+                    .filter(|kw| matches!(kw, Owner | Rename))
+            )
+            .no_match_to_option()
+            .required()?;
 
         let Some(op) = op else {
+            /*
+                ... enable_trigger
+            */
             let state = self.enable_trigger()?;
-            return Ok(Some(
-                AlterEventTrigStmt::new(trigger, state).into()
-            ))
+            let stmt = AlterEventTrigStmt::new(trigger, state);
+            return Ok(stmt.into())
         };
 
         self.buffer.consume_kw_eq(To).required()?;
 
-        if op == Owner {
+        let stmt = if op == Owner {
+            /*
+                ... OWNER TO RoleSpec
+            */
             let new_owner = self.role_spec().required()?;
-            Ok(Some(
-                AlterOwnerStmt::new(
-                    AlterOwnerTarget::EventTrigger(trigger),
-                    new_owner
-                ).into()
-            ))
+            let stmt = AlterOwnerStmt::new(
+                AlterOwnerTarget::EventTrigger(trigger),
+                new_owner
+            );
+            stmt.into()
         }
         else {
+            /*
+                ... RENAME TO ColId
+            */
             let new_name = self.col_id().required()?;
-            Ok(Some(
-                RenameStmt::new(
-                    RenameTarget::EventTrigger(trigger),
-                    new_name
-                ).into()
-            ))
-        }
+            let stmt = RenameStmt::new(
+                RenameTarget::EventTrigger(trigger),
+                new_name
+            );
+            stmt.into()
+        };
+
+        Ok(stmt)
     }
 
-    fn enable_trigger(&mut self) -> ReqResult<EventTriggerState> {
+    fn enable_trigger(&mut self) -> Result<EventTriggerState, ParserErrorKind> {
 
         /*
             ENABLE_P
@@ -58,27 +66,28 @@ impl Parser<'_> {
           | DISABLE_P
         */
 
-        let enable = self.buffer.consume(|tok|
-            tok.keyword().map(KeywordDetails::keyword)
-                .filter(|kw| matches!(kw, Enable | Disable))
-                .map(|kw| kw == Enable)
-        ).required()?;
+        let enable = self.buffer
+            .consume(|tok|
+                tok.keyword().map(KeywordDetails::keyword)
+                    .filter(|kw| matches!(kw, Enable | Disable))
+                    .map(|kw| kw == Enable)
+            )
+            .required()?;
 
         if !enable {
             return Ok(Disabled)
         }
 
-        let enable_option = self.buffer.consume(|tok|
-            tok.keyword().map(KeywordDetails::keyword)
-                .filter(|kw| matches!(kw, Replica | Always))
-        );
+        let enable_option = self.buffer
+            .consume(|tok| match tok.keyword().map(KeywordDetails::keyword)? {
+                Replica => Some(FiresOnReplica),
+                Always => Some(FiresAlways),
+                _ => None,
+            })
+            .optional()?
+            .unwrap_or(FiresOnOrigin);
 
-        match enable_option {
-            Err(Some(err)) => Err(Some(err)),
-            Ok(Some(Replica)) => Ok(FiresOnReplica),
-            Ok(Some(_)) => Ok(FiresAlways),
-            Ok(None) | Err(None) => Ok(FiresOnOrigin),
-        }
+        Ok(enable_option)
     }
 }
 
@@ -94,7 +103,7 @@ mod tests {
 
         let expected = AlterEventTrigStmt::new("trigger_name".into(), FiresOnOrigin);
 
-        assert_eq!(Ok(Some(expected.into())), parser.alter_event_trigger_stmt());
+        assert_eq!(Ok(expected.into()), parser.alter_event_trigger_stmt());
     }
 
     #[test]
@@ -106,7 +115,7 @@ mod tests {
             RoleSpec::Public,
         );
 
-        assert_eq!(Ok(Some(expected.into())), parser.alter_event_trigger_stmt());
+        assert_eq!(Ok(expected.into()), parser.alter_event_trigger_stmt());
     }
 
     #[test]
@@ -118,7 +127,7 @@ mod tests {
             "another_trigger".into()
         );
 
-        assert_eq!(Ok(Some(expected.into())), parser.alter_event_trigger_stmt());
+        assert_eq!(Ok(expected.into()), parser.alter_event_trigger_stmt());
     }
 
     #[test]
@@ -149,11 +158,7 @@ mod tests {
 use crate::lexer::Keyword::{Always, Disable, Enable, Event, Owner, Rename, Replica, To, Trigger};
 use crate::lexer::KeywordDetails;
 use crate::parser::ast_node::{AlterEventTrigStmt, AlterOwnerStmt, AlterOwnerTarget, RenameStmt, RenameTarget};
-use crate::parser::result::OptionalResult;
+use crate::parser::result::{EofResult, ScanErrorKind, ScanResult};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::EventTriggerState::{Disabled, FiresAlways, FiresOnOrigin, FiresOnReplica};
-use crate::parser::OptResult;
-use crate::parser::Parser;
-use crate::parser::ParserErrorKind;
-use crate::parser::ReqResult;
-use crate::parser::{AstNode, EventTriggerState};
+use crate::parser::{AstNode, EventTriggerState, Parser, ParserErrorKind};

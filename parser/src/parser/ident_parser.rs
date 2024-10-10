@@ -4,19 +4,10 @@ pub(super) struct IdentifierParser<'p, 'src>(
 
 impl<'p, 'src> IdentifierParser<'p, 'src> {
 
-    pub fn parse(&mut self) -> OptResult<String> {
+    pub fn parse(&mut self) -> Result<String, ScanErrorKind> {
 
         let loc = self.0.buffer.current_location();
-
-        let result = self.0.buffer.consume(|tok|
-            tok.identifier_kind()
-                .map(|tok| (tok, loc.clone()))
-        )?;
-
-        let Some((kind, loc)) = result else {
-            return Ok(None)
-        };
-
+        let kind = self.0.buffer.consume(TokenKind::identifier_kind)?;
         let slice = loc.slice(self.0.buffer.source());
 
         let ident = match kind {
@@ -40,7 +31,7 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
             },
         };
 
-        let mut ident = ident.map_err(Some)?;
+        let mut ident = ident.map_err(ScanErrorKind::from)?;
 
         if ident.len() > NAMEDATALEN {
             let len: usize = ident.chars()
@@ -52,7 +43,7 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
             }
         }
 
-        Ok(Some(ident))
+        Ok(ident)
     }
 }
 
@@ -67,7 +58,7 @@ mod tests {
         let mut parser = new_parser("sOmE_iDeNtIfIeR");
         let mut ident_parser = IdentifierParser(&mut parser);
 
-        assert_eq!(Ok(Some("some_identifier".into())), ident_parser.parse());
+        assert_eq!(Ok("some_identifier".into()), ident_parser.parse());
     }
 
     #[test]
@@ -75,7 +66,7 @@ mod tests {
         let mut parser = new_parser(r#""quoted""#);
         let mut ident_parser = IdentifierParser(&mut parser);
 
-        assert_eq!(Ok(Some("quoted".into())), ident_parser.parse());
+        assert_eq!(Ok("quoted".into()), ident_parser.parse());
     }
 
     #[test]
@@ -83,7 +74,7 @@ mod tests {
         let mut parser = new_parser(r#"u&"d\0061ta""#);
         let mut ident_parser = IdentifierParser(&mut parser);
 
-        assert_eq!(Ok(Some("data".into())), ident_parser.parse());
+        assert_eq!(Ok("data".into()), ident_parser.parse());
     }
 
     #[test]
@@ -91,7 +82,7 @@ mod tests {
         let mut parser = new_parser(r#"u&"d!0061ta" UESCAPE '!'"#);
         let mut ident_parser = IdentifierParser(&mut parser);
 
-        assert_eq!(Ok(Some("data".into())), ident_parser.parse());
+        assert_eq!(Ok("data".into()), ident_parser.parse());
     }
 
     fn new_parser(source: &str) -> Parser<'_> {
@@ -101,7 +92,9 @@ mod tests {
 }
 
 use crate::lexer::IdentifierKind::*;
+use crate::lexer::TokenKind;
+use crate::parser::result::ScanErrorKind;
 use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::{OptResult, Parser, ParserErrorKind};
+use crate::parser::{Parser, ParserErrorKind};
 use crate::string_decoders::{BasicStringDecoder, UnicodeStringDecoder};
 use postgres_basics::NAMEDATALEN;

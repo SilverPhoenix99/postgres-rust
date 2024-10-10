@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn release_savepoint_stmt(&mut self) -> OptResult<TransactionStmt> {
+    pub(in crate::parser) fn release_savepoint_stmt(&mut self) -> Result<TransactionStmt, ScanErrorKind> {
 
         /*
         TransactionStmt:
@@ -7,15 +7,13 @@ impl Parser<'_> {
             RELEASE ColId
         */
 
-        if self.buffer.consume_kw_eq(Release)?.is_none() {
-            return Ok(None)
-        }
+        self.buffer.consume_kw_eq(Release)?;
 
-        self.buffer.consume_kw_eq(Savepoint).replace_eof(Ok(None))?;
+        self.buffer.consume_kw_eq(Savepoint).optional()?;
 
         let name = self.col_id().required()?;
 
-        Ok(Some(TransactionStmt::Release(name)))
+        Ok(TransactionStmt::Release(name))
     }
 }
 
@@ -27,18 +25,17 @@ mod tests {
     #[test]
     fn test_release() {
         let mut parser = Parser::new("release test_ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some(TransactionStmt::Release("test_ident".into()))), parser.release_savepoint_stmt());
+        assert_eq!(Ok(TransactionStmt::Release("test_ident".into())), parser.release_savepoint_stmt());
     }
 
     #[test]
     fn test_release_savepoint() {
         let mut parser = Parser::new("release savepoint test_ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some(TransactionStmt::Release("test_ident".into()))), parser.release_savepoint_stmt());
+        assert_eq!(Ok(TransactionStmt::Release("test_ident".into())), parser.release_savepoint_stmt());
     }
 }
 
 use crate::lexer::Keyword::{Release, Savepoint};
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::OptionalResult;
-use crate::parser::OptResult;
+use crate::parser::result::{ScanErrorKind, ScanResult};
 use crate::parser::Parser;

@@ -4,33 +4,33 @@ pub(super) struct BitStringParser<'p, 'src>(
 
 impl<'p, 'src> BitStringParser<'p, 'src> {
 
-    pub fn parse(&mut self) -> OptResult<BitBox, BitStringError> {
+    pub fn parse(&mut self) -> Result<BitBox, ScanErrorKind> {
 
-        let Some((kind, loc)) = self.try_consume()? else { return Ok(None) };
+        let (kind, loc) = self.try_consume()?;
 
         let slice = loc.slice(self.0.buffer.source());
         let slice = &slice[2..(slice.len() - 1)]; // strip delimiters
         let mut string = slice.to_owned();
 
-        while let Ok(Some((suffix_kind, suffix_loc))) = self.try_consume_string() {
+        while let Ok((suffix_kind, suffix_loc)) = self.try_consume_string() {
             let suffix_slice = suffix_loc.slice(self.0.buffer.source());
             let suffix_slice = strip_delimiters(suffix_kind, suffix_slice);
             string.push_str(suffix_slice);
         }
 
-        self.decode(kind, &string)
+        let result = BitStringDecoder::new(slice, kind == HexString).decode();
+        todo!("map error")
     }
 
-    fn try_consume(&mut self) -> OptResult<Located<BitStringKind>, BitStringError> {
+    fn try_consume(&mut self) -> Result<Located<BitStringKind>, ScanErrorKind> {
         // let loc = self.0.buffer.current_location();
         // self.0.buffer.consume(|tok|
         //     tok.bit_string_kind()
-        //         .map(|kind| (kind, loc.clone()))
         // )
         todo!()
     }
 
-    fn try_consume_string(&mut self) -> OptResult<Located<StringKind>> {
+    fn try_consume_string(&mut self) -> Result<Located<StringKind>, ScanErrorKind> {
 
         let loc = self.0.buffer.current_location();
 
@@ -41,17 +41,6 @@ impl<'p, 'src> BitStringParser<'p, 'src> {
                 )
                 .map(|kind| (kind, loc.clone()))
         )
-    }
-
-    fn decode(&mut self, kind: BitStringKind, slice: &str) -> OptResult<BitBox, BitStringError> {
-
-        let result = BitStringDecoder::new(slice, kind == HexString)
-            .decode();
-
-        match result {
-            Ok(result) => Ok(Some(result)),
-            Err(err) => Err(Some(err))
-        }
     }
 }
 
@@ -110,12 +99,8 @@ use crate::lexer::{
     StringKind,
     StringKind::*,
 };
-use crate::parser::{
-    string_parser::strip_delimiters,
-    token_buffer::TokenConsumer,
-    OptResult,
-    Parser,
-};
-use crate::string_decoders::{BitStringDecoder, BitStringError};
+use crate::parser::result::ScanErrorKind;
+use crate::parser::{string_parser::strip_delimiters, token_buffer::TokenConsumer, Parser};
+use crate::string_decoders::BitStringDecoder;
 use bitvec::boxed::BitBox;
 use postgres_basics::Located;

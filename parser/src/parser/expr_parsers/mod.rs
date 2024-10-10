@@ -5,16 +5,16 @@ mod b_expr_prec;
 impl Parser<'_> {
 
     #[inline(always)]
-    pub(in crate::parser) fn a_expr(&mut self) -> OptResult<AstNode> {
+    pub(in crate::parser) fn a_expr(&mut self) -> Result<AstNode, ScanErrorKind> {
         self.a_expr_prec(0)
     }
 
     #[inline(always)]
-    pub(in crate::parser) fn b_expr(&mut self) -> OptResult<AstNode> {
+    pub(in crate::parser) fn b_expr(&mut self) -> Result<AstNode, ScanErrorKind> {
         self.b_expr_prec(0)
     }
 }
 
 use crate::parser::ast_node::AstNode;
-use crate::parser::result::OptResult;
+use crate::parser::result::ScanErrorKind;
 use crate::parser::Parser;

@@ -1,16 +1,14 @@
 impl Parser<'_> {
     /// Alias: `ListenStmt`
-    pub(in crate::parser) fn listen_stmt(&mut self) -> OptResult<Cow<'static, str>> {
+    pub(in crate::parser) fn listen_stmt(&mut self) -> Result<CowStr, ScanErrorKind> {
 
         /*
             LISTEN ColId
         */
 
-        if self.buffer.consume_kw_eq(Listen)?.is_none() {
-            return Ok(None)
-        }
+        self.buffer.consume_kw_eq(Listen)?;
 
-        Ok(Some(self.col_id().required()?))
+        Ok(self.col_id().required()?)
     }
 }
 
@@ -22,15 +20,13 @@ mod tests {
     #[test]
     fn test_listen_stmt() {
         let mut parser = Parser::new("listen abort", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some("abort".into())), parser.listen_stmt());
+        assert_eq!(Ok("abort".into()), parser.listen_stmt());
 
         let mut parser = Parser::new("listen ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some("ident".into())), parser.listen_stmt());
+        assert_eq!(Ok("ident".into()), parser.listen_stmt());
     }
 }
 
 use crate::lexer::Keyword::Listen;
-use crate::parser::result::OptionalResult;
-use crate::parser::OptResult;
-use crate::parser::Parser;
-use std::borrow::Cow;
+use crate::parser::result::{ScanErrorKind, ScanResult};
+use crate::parser::{CowStr, Parser};

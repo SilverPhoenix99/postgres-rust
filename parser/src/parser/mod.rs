@@ -19,33 +19,6 @@ pub use self::{
 type CowStr = Cow<'static, str>;
 type QnName = Vec<CowStr>;
 
-macro_rules! list_production {
-    (gather $production:block delim $separator:block) => {
-        list_production!(prefix $production gather $production delim $separator)
-    };
-    (prefix $prefix:block gather $production:block delim $separator:block) => {
-        (|| {
-            let mut elements = match $prefix? {
-                None => return Ok(None),
-                Some(element) => vec![element],
-            };
-
-            while {
-                match $separator {
-                    Ok(None) | Err(None) => false,
-                    Ok(Some(_)) => true,
-                    Err(err) => return Err(err),
-                }
-            } {
-                let element = $production.required()?;
-                elements.push(element)
-            }
-
-            Ok(Some(elements))
-        })()
-    };
-}
-
 pub struct ParserResult {
     pub result: Result<Vec<AstNode>, Located<ParserErrorKind>>,
     pub warnings: Vec<Located<ParserWarning>>,
@@ -107,28 +80,28 @@ impl<'src> Parser<'src> {
         //     ( stmt? (';' stmt?)* )?
 
         let mut stmts = match self.toplevel_stmt() {
-            Ok(Some(stmt)) => vec![stmt],
-            Ok(None) => {
-                // something went wrong with the 1st token already?!
-                return Err(ParserErrorKind::default())
-            }
-            Err(None) => { // eof
-                // The string didn't have anything useful: empty, whitespace or comments
+            Ok(stmt) => vec![stmt],
+            Err(Eof) => {
+                // The whole string is empty, or just contains whitespace and/or comments.
                 return Ok(Vec::new());
             },
-            Err(Some(err)) => return Err(err),
+            Err(NoMatch) => {
+                // Something went wrong with the 1st token already?!
+                return Err(ParserErrorKind::default())
+            }
+            Err(ParserErr(err)) => return Err(err),
         };
 
         while self.semicolons()? {
 
             let stmt = match self.toplevel_stmt() {
-                Ok(Some(stmt)) => stmt,
-                Ok(None) => {
+                Ok(stmt) => stmt,
+                Err(Eof) => break,
+                Err(NoMatch) => {
                     // No stmt matched
                     return Err(ParserErrorKind::default())
                 }
-                Err(Some(err)) => return Err(err),
-                Err(None) => break,
+                Err(ParserErr(err)) => return Err(err),
             };
 
             stmts.push(stmt);
@@ -148,138 +121,142 @@ impl<'src> Parser<'src> {
 
         // Production: (';')*
 
-        let mut saw_semicolon = false;
-        loop {
-            match self.buffer.consume_eq(Semicolon) {
-                Ok(Some(_)) => {
-                    saw_semicolon = true;
-                }
-                Ok(None) | Err(None) => {
-                    // not a semicolon
-                    break
-                },
-                Err(Some(err)) => return Err(err),
-            }
+        if self.buffer.consume_eq(Semicolon).optional()?.is_none() {
+            return Ok(false)
         }
 
-        Ok(saw_semicolon)
+        while self.buffer.consume_eq(Semicolon).optional()?.is_some() {}
+
+        Ok(true)
     }
 
-    fn toplevel_stmt(&mut self) -> OptResult<AstNode> {
+    fn toplevel_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
 
-        if let Some(node) = self.stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.begin_stmt()? { Ok(Some(node.into())) }
-        else if let Some(node) = self.end_stmt()? { Ok(Some(node.into())) }
-        else { Ok(None) }
+        if self.buffer.eof() { Err(Eof) }
+        else if let Some(node) = self.stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.begin_stmt().optional()? { Ok(node.into()) }
+        else if let Some(node) = self.end_stmt().optional()? { Ok(node.into()) }
+        else { Err(NoMatch) }
     }
 
-    fn stmt(&mut self) -> OptResult<AstNode> {
+    fn stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
 
-        if self.buffer.consume_kw_eq(Keyword::Checkpoint)?.is_some() {
-            return Ok(Some(AstNode::CheckPoint))
-        }
-
-        if let Some(node) = self.abort_stmt()? { Ok(Some(node.into())) }
-        else if let Some(node) = self.alter_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.analyze_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.call_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.close_stmt()? { Ok(Some(ClosePortalStmt(node))) }
-        else if let Some(node) = self.cluster_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.comment_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.commit_stmt()? { Ok(Some(node.into())) }
-        else if let Some(node) = self.copy_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.deallocate_stmt()? { Ok(Some(ClosePortalStmt(node))) }
-        else if let Some(node) = self.discard_stmt()? { Ok(Some(node.into())) }
-        else if let Some(node) = self.do_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.drop_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.explain_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.fetch_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.import_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.listen_stmt()? { Ok(Some(ListenStmt(node))) }
-        else if let Some(node) = self.load_stmt()? { Ok(Some(LoadStmt(node))) }
-        else if let Some(node) = self.lock_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.move_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.notify_stmt()? { Ok(Some(node.into())) }
-        else if let Some(node) = self.prepare_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.reassign_owned_stmt()? { Ok(Some(node.into())) }
-        else if let Some(node) = self.reindex_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.release_savepoint_stmt()? { Ok(Some(node.into())) }
-        else if let Some(node) = self.revoke_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.rollback_stmt()? { Ok(Some(node.into())) }
-        else if let Some(node) = self.savepoint_stmt()? { Ok(Some(node.into())) }
-        else if let Some(node) = self.security_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.set_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.show_stmt()? { Ok(Some(node.into())) }
-        else if let Some(node) = self.start_transaction_stmt()? { Ok(Some(node.into())) }
-        else if let Some(node) = self.truncate_stmt()? { Ok(Some(node)) }
-        else if let Some(node) = self.unlisten_stmt()? { Ok(Some(ClosePortalStmt(node))) }
-        else if let Some(node) = self.vacuum_stmt()? { Ok(Some(node)) }
-        else { Ok(None) }
+        if self.buffer.eof() { Err(Eof) }
+        else if self.buffer.consume_kw_eq(Keyword::Checkpoint).optional()?.is_some() { Ok(AstNode::CheckPoint) }
+        else if let Some(node) = self.abort_stmt().optional()? { Ok(node.into()) }
+        else if let Some(node) = self.alter_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.analyze_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.call_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.close_stmt().optional()? { Ok(ClosePortalStmt(node)) }
+        else if let Some(node) = self.cluster_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.comment_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.commit_stmt().optional()? { Ok(node.into()) }
+        else if let Some(node) = self.copy_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.deallocate_stmt().optional()? { Ok(ClosePortalStmt(node)) }
+        else if let Some(node) = self.discard_stmt().optional()? { Ok(node.into()) }
+        else if let Some(node) = self.do_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.drop_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.explain_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.fetch_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.import_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.listen_stmt().optional()? { Ok(ListenStmt(node)) }
+        else if let Some(node) = self.load_stmt().optional()? { Ok(LoadStmt(node)) }
+        else if let Some(node) = self.lock_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.move_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.notify_stmt().optional()? { Ok(node.into()) }
+        else if let Some(node) = self.prepare_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.reassign_owned_stmt().optional()? { Ok(node.into()) }
+        else if let Some(node) = self.reindex_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.release_savepoint_stmt().optional()? { Ok(node.into()) }
+        else if let Some(node) = self.revoke_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.rollback_stmt().optional()? { Ok(node.into()) }
+        else if let Some(node) = self.savepoint_stmt().optional()? { Ok(node.into()) }
+        else if let Some(node) = self.security_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.set_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.show_stmt().optional()? { Ok(node.into()) }
+        else if let Some(node) = self.start_transaction_stmt().optional()? { Ok(node.into()) }
+        else if let Some(node) = self.truncate_stmt().optional()? { Ok(node) }
+        else if let Some(node) = self.unlisten_stmt().optional()? { Ok(ClosePortalStmt(node)) }
+        else if let Some(node) = self.vacuum_stmt().optional()? { Ok(node) }
+        else { Err(NoMatch) }
     }
 
-    fn opt_transaction(&mut self) -> ReqResult<()> {
+    fn opt_transaction(&mut self) -> Result<(), ParserErrorKind> {
         use Keyword::{Transaction, Work};
 
         // Skips over WORK | TRANSACTION
-        self.buffer.consume(|tok|
-            matches!(tok.keyword().map(KeywordDetails::keyword), Some(Work | Transaction))
-        ).replace_eof(Ok(None))?;
+
+        self.buffer
+            .consume(|tok|
+                tok.keyword().map(KeywordDetails::keyword)
+                    .filter(|kw| matches!(kw, Work | Transaction))
+            )
+            .optional()?;
 
         Ok(())
     }
 
-    fn opt_transaction_chain(&mut self) -> ReqResult<bool> {
+    fn opt_transaction_chain(&mut self) -> Result<bool, ParserErrorKind> {
         use Keyword::{And, Chain, No};
 
-        if self.buffer.consume_kw_eq(And).replace_eof(Ok(None))?.is_none() {
+        if self.buffer.consume_kw_eq(And).optional()?.is_none() {
             return Ok(false)
         }
 
-        let result = self.buffer.consume_kw_eq(No).replace_eof(Ok(None))?.is_none();
+        let result = self.buffer.consume_kw_eq(No).optional()?.is_none();
 
         self.buffer.consume_kw_eq(Chain).required()?;
 
         Ok(result)
     }
 
-    /// Post-condition: if `Ok(Some(_))`, then Vec is **Not** empty
+    /// Post-condition: Vec is **Not** empty
+    ///
     /// Alias: `transaction_mode_list_or_empty`
-    fn opt_transaction_mode_list(&mut self) -> OptResult<Vec<TransactionMode>> {
+    fn transaction_mode_list(&mut self) -> Result<Vec<TransactionMode>, ScanErrorKind> {
 
-        let mut elements = match self.transaction_mode()? {
-            None => return Ok(None),
-            Some(element) => vec![element],
-        };
+        /*
+            transaction_mode ( (',')? transaction_mode )*
+        */
+
+        let element = self.transaction_mode()?;
+        let mut elements = vec![element];
 
         loop {
-            let comma = match self.buffer.consume_eq(Comma) {
-                Ok(comma) => comma.is_some(),
-                Err(None) => break,
-                Err(Some(err)) => return Err(Some(err)),
+            let element = match self.buffer.consume_eq(Comma) {
+                Ok(_) => {
+                    self.transaction_mode().required()?
+                }
+                Err(NoMatch) => {
+                    let mode = self.transaction_mode().optional();
+                    let Some(mode) = mode? else { break };
+                    mode
+                }
+                Err(Eof) => break,
+                Err(ParserErr(err)) => return Err(ParserErr(err)),
             };
 
-            match self.transaction_mode().replace_eof(Ok(None))? {
-                Some(element) => elements.push(element),
-                None => {
-                    if comma { return Err(Some(ParserErrorKind::default())) }
-                    break
-                },
-            }
+            elements.push(element);
+        }
+        
+        while self.buffer.consume_eq(Comma).optional()?.is_some() {
+            let element = self.transaction_mode().required()?;
+            elements.push(element);
         }
 
-        Ok(Some(elements))
+        Ok(elements)
     }
 
     /// Alias: `transaction_mode_item`
-    fn transaction_mode(&mut self) -> OptResult<TransactionMode> {
+    fn transaction_mode(&mut self) -> Result<TransactionMode, ScanErrorKind> {
         use Keyword::{Deferrable, Isolation, Level, Not, Only, Read, Write};
 
         /*
-            ISOLATION LEVEL iso_level
-            READ ONLY
-            READ WRITE
-            DEFERRABLE
-            NOT DEFERRABLE
+              ISOLATION LEVEL iso_level
+            | READ ONLY
+            | READ WRITE
+            | DEFERRABLE
+            | NOT DEFERRABLE
         */
 
         let result = self.buffer.consume(|tok|
@@ -287,34 +264,33 @@ impl<'src> Parser<'src> {
                 .filter(|kw| matches!(kw, Deferrable | Not | Isolation | Read))
         )?;
 
-        let Some(result) = result else { return Ok(None) };
-
         match result {
-            Deferrable => Ok(Some(TransactionMode::Deferrable)),
+            Deferrable => Ok(TransactionMode::Deferrable),
             Not => {
                 self.buffer.consume_kw_eq(Deferrable).required()?;
-                Ok(Some(TransactionMode::NotDeferrable))
+                Ok(TransactionMode::NotDeferrable)
             },
             Isolation => {
                 self.buffer.consume_kw_eq(Level).required()?;
-                let isolation_level = self.isolation_level()?;
-                Ok(Some(TransactionMode::IsolationLevel(isolation_level)))
+                let isolation_level = self.isolation_level().required()?;
+                Ok(TransactionMode::IsolationLevel(isolation_level))
             },
             Read => {
-                self.buffer.consume(|tok|
-                    match tok.keyword().map(KeywordDetails::keyword) {
+                self.buffer
+                    .consume(|tok| match tok.keyword().map(KeywordDetails::keyword) {
                         Some(Only) => Some(TransactionMode::ReadOnly),
                         Some(Write) => Some(TransactionMode::ReadWrite),
                         _ => None
-                    }
-                ).required().optional()
+                    })
+                    .required()
+                    .map_err(ScanErrorKind::from)
             },
-            _ => Ok(None)
+            _ => Err(NoMatch)
         }
     }
 
     /// Alias: `iso_level`
-    fn isolation_level(&mut self) -> ReqResult<IsolationLevel> {
+    fn isolation_level(&mut self) -> Result<IsolationLevel, ScanErrorKind> {
         use Keyword::{Committed, Read, Repeatable, Serializable, Uncommitted};
 
         /*
@@ -327,7 +303,7 @@ impl<'src> Parser<'src> {
         let result = self.buffer.consume(|tok|
             tok.keyword().map(KeywordDetails::keyword)
                 .filter(|kw| matches!(kw, Read | Repeatable | Serializable))
-        ).required()?;
+        )?;
 
         match result {
             Serializable => Ok(IsolationLevel::Serializable),
@@ -351,16 +327,26 @@ impl<'src> Parser<'src> {
         }
     }
 
-    fn var_name(&mut self) -> ReqResult<QnName> {
+    /// Post-condition: Vec is **not** empty
+    fn var_name(&mut self) -> Result<QnName, ScanErrorKind> {
 
-        list_production!(
-            gather { self.col_id() }
-            delim { self.buffer.consume_eq(Dot) }
-        ).required()
+        /*
+            col_id ( '.' col_id )*
+        */
+
+        let element = self.col_id()?;
+        let mut elements = vec![element];
+
+        while self.buffer.consume_eq(Dot).optional()?.is_some() {
+            let element = self.col_id().required()?;
+            elements.push(element);
+        }
+
+        Ok(elements)
     }
 
     /// Alias: `AexprConst`
-    fn a_expr_const(&mut self) -> OptResult<()> {
+    fn a_expr_const(&mut self) -> Result<(), ScanErrorKind> {
 
         /*
         AexprConst :
@@ -383,7 +369,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `ConstTypename`
-    fn const_typename(&mut self) -> OptResult<SystemType> {
+    fn const_typename(&mut self) -> Result<SystemType, ScanErrorKind> {
         use Keyword::{Bit, Varying};
 
         /*
@@ -396,25 +382,24 @@ impl<'src> Parser<'src> {
           | JSON
         */
 
-        if let Some(num) = self.numeric()? {
-            return Ok(Some(num))
+        if let Some(num) = self.numeric().no_match_to_option()? {
+            return Ok(num)
         }
 
-        if let Some(character) = self.character()? {
+        if let Some(character) = self.character().optional()? {
 
-            let len = self.i32_literal_paren().replace_eof(Ok(None))?;
+            let len = self.i32_literal_paren().optional()?;
             let character = match character {
                 CharacterSystemType::Varchar => { SystemType::Varchar(len) },
                 CharacterSystemType::Bpchar => SystemType::Bpchar(len),
             };
 
-            return Ok(Some(character))
+            return Ok(character)
         }
 
-        let bit = self.buffer.consume_kw_eq(Bit)?;
+        let bit = self.buffer.consume_kw_eq(Bit).optional()?;
         if bit.is_some() {
-            let varying = self.buffer.consume_kw_eq(Varying)
-                .replace_eof(Ok(None))?;
+            let varying = self.buffer.consume_kw_eq(Varying).optional()?;
             // TODO: self.expr_list()
         }
 
@@ -423,7 +408,7 @@ impl<'src> Parser<'src> {
 
     /// Alias: `Numeric`<p/>
     /// Inline: `opt_float`
-    fn numeric(&mut self) -> OptResult<SystemType> {
+    fn numeric(&mut self) -> Result<SystemType, ScanErrorKind> {
         use Keyword::{Bigint, Boolean, Dec, Decimal, Double, Float, Int, Integer, Numeric, Precision, Real, Smallint};
 
         /*
@@ -457,103 +442,126 @@ impl<'src> Parser<'src> {
             )
         )?;
 
-        let kw = match kw {
-            None => return Ok(None),
-            Some(Smallint) => return Ok(Some(Int2)),
-            Some(Int | Integer) => return Ok(Some(Int4)),
-            Some(Bigint) => return Ok(Some(Int8)),
-            Some(Real) => return Ok(Some(Float4)),
-            Some(Boolean) => return Ok(Some(Bool)),
-            Some(kw) => kw,
+        match kw {
+            Smallint => return Ok(Int2),
+            Int | Integer => return Ok(Int4),
+            Bigint => return Ok(Int8),
+            Real => return Ok(Float4),
+            Boolean => return Ok(Bool),
+            _ => {},
         };
 
         if kw == Double {
             self.buffer.consume_kw_eq(Precision).required()?;
-            return Ok(Some(Float8))
+            return Ok(Float8)
         }
 
         if kw == Float {
             // opt_float: '(' ICONST ')'
-            return match self.i32_literal_paren().replace_eof(Ok(None))? {
-                None => Ok(Some(Float8)),
-                Some(num @ ..=0) => Err(Some(FloatPrecisionUnderflow(num))),
-                Some(1..=24) => Ok(Some(Float4)),
-                Some(25..=53) => Ok(Some(Float8)),
-                Some(num @ 54..) => Err(Some(FloatPrecisionOverflow(num))),
+            return match self.i32_literal_paren().optional()? {
+                None => Ok(Float8),
+                Some(num @ ..=0) => Err(FloatPrecisionUnderflow(num).into()),
+                Some(1..=24) => Ok(Float4),
+                Some(25..=53) => Ok(Float8),
+                Some(num @ 54..) => Err(FloatPrecisionOverflow(num).into()),
             }
         }
 
         let type_mods = self.opt_type_modifiers()
-            .replace_eof(Ok(None))?
+            .optional()?
             .unwrap_or_else(Vec::new);
 
-        Ok(Some(SystemType::Numeric(type_mods)))
+        Ok(SystemType::Numeric(type_mods))
     }
 
-    fn opt_type_modifiers(&mut self) -> OptResult<Vec<AstNode>> {
+    /// Post-condition: Vec **can** be empty
+    fn opt_type_modifiers(&mut self) -> Result<Vec<AstNode>, ScanErrorKind> {
         use TokenKind::{CloseParenthesis, OpenParenthesis};
 
-        // '(' expr_list ')'
+        /*
+            '(' expr_list ')'
+        */
 
-        if self.buffer.consume_eq(OpenParenthesis)?.is_none() {
-            return Ok(None)
-        }
+        self.buffer.consume_eq(OpenParenthesis)?;
 
-        let exprs = self.expr_list()?;
+        let exprs = match self.expr_list() {
+            Ok(ok) => ok,
+            Err(NoMatch) => vec![],
+            Err(Eof) => return Err(ScanErrorKind::default()),
+            Err(err) => return Err(err),
+        };
 
         self.buffer.consume_eq(CloseParenthesis).required()?;
 
-        Ok(Some(exprs))
+        Ok(exprs)
     }
 
     /// Post-condition: Vec is **Not** empty
-    fn expr_list(&mut self) -> ReqResult<Vec<AstNode>> {
+    fn expr_list(&mut self) -> Result<Vec<AstNode>, ScanErrorKind> {
 
-        // a_expr ( ',' a_expr )*
+        /*
+            a_expr ( ',' a_expr )*
+        */
 
-        list_production!(
-            gather { self.a_expr() }
-            delim { self.buffer.consume_eq(Comma) }
-        ).required()
+        let expr = self.a_expr()?;
+        let mut exprs = vec![expr];
+
+        while self.buffer.consume_eq(Comma).optional()?.is_some() {
+            let expr = self.a_expr().required()?;
+            exprs.push(expr);
+        }
+
+        Ok(exprs)
     }
 
+    /// Post-condition: Vec is **Not** empty
+    ///
     /// Alias: `handler_name`
-    fn any_name(&mut self) -> OptResult<QnName> {
-        let Some(prefix) = self.col_id()? else { return Ok(None) };
+    fn any_name(&mut self) -> Result<QnName, ScanErrorKind> {
+
+        /*
+            col_id attrs
+        */
+
+        let prefix = self.col_id()?;
         self.attrs(prefix)
     }
 
-    fn attrs(&mut self, prefix: CowStr) -> OptResult<QnName> {
+    /// Post-condition: Vec is **Not** empty
+    fn attrs(&mut self, prefix: CowStr) -> Result<QnName, ScanErrorKind> {
 
-        // A prefix token is passed to prevent a right shift of the Vec later on.
+        // A prefix token is passed to prevent a right shift of the Vec later on,
+        // to insert the 1st element.
 
-        list_production!(
-            prefix { Ok::<Option<CowStr>, Option<ParserErrorKind>>(Some(prefix)) }
-            gather { self.col_label() }
-            delim { self.buffer.consume_eq(Dot) }
-        )
+        /*
+            prefix ( '.' col_label )*
+        */
+
+        let mut attrs = vec![prefix];
+
+        while self.buffer.consume_eq(Dot).optional()?.is_some() {
+            let attr = self.col_label().required()?;
+            attrs.push(attr);
+        }
+
+        Ok(attrs)
     }
 
     /// Production: `'(' ICONST ')'`
-    fn i32_literal_paren(&mut self) -> OptResult<i32> {
+    fn i32_literal_paren(&mut self) -> Result<i32, ScanErrorKind> {
         use TokenKind::{CloseParenthesis, OpenParenthesis};
 
-        if self.buffer.consume_eq(OpenParenthesis)?.is_none() {
-            return Ok(None)
-        }
-
+        self.buffer.consume_eq(OpenParenthesis)?;
         let num = self.i32_literal().required()?;
-
         self.buffer.consume_eq(CloseParenthesis).required()?;
 
-        Ok(Some(num))
+        Ok(num)
     }
 
-    fn character(&mut self) -> OptResult<CharacterSystemType> {
+    fn character(&mut self) -> Result<CharacterSystemType, ScanErrorKind> {
         use Keyword::{Char, Character, National, Nchar, Varchar};
 
         /*
-        character :
             VARCHAR
           | (CHARACTER | CHAR_P | NCHAR) (VARYING)?
           | NATIONAL ( CHARACTER | CHAR_P) (VARYING)?
@@ -566,12 +574,8 @@ impl<'src> Parser<'src> {
                 )
         )?;
 
-        let Some(char_type) = char_type else {
-            return Ok(None)
-        };
-
         if char_type == Varchar {
-            return Ok(Some(CharacterSystemType::Varchar))
+            return Ok(CharacterSystemType::Varchar)
         }
 
         if char_type == National {
@@ -586,8 +590,7 @@ impl<'src> Parser<'src> {
                 .required()?;
         }
 
-        let varying = self.buffer.consume_kw_eq(Keyword::Varying)
-            .replace_eof(Ok(None))?;
+        let varying = self.buffer.consume_kw_eq(Keyword::Varying).optional()?;
 
         let char_type = if varying.is_some() {
             CharacterSystemType::Varchar
@@ -596,21 +599,18 @@ impl<'src> Parser<'src> {
             CharacterSystemType::Bpchar
         };
 
-        Ok(Some(char_type))
+        Ok(char_type)
     }
 
     /// Alias: `NumericOnly`
-    fn signed_number(&mut self) -> OptResult<SignedNumber> {
+    fn signed_number(&mut self) -> Result<SignedNumber, ScanErrorKind> {
         use TokenKind::{Minus, Plus};
 
         // ('+' | '-')? (ICONST | FCONST)
 
-        let sign = self.buffer.consume(|tok|
-            match tok {
-                Minus | Plus => Some(*tok),
-                _ => None
-            }
-        )?;
+        let sign = self.buffer
+            .consume(|tok| matches!(tok, Minus | Plus))
+            .no_match_to_option()?;
 
         let number = self.unsigned_number();
 
@@ -618,8 +618,7 @@ impl<'src> Parser<'src> {
             number.required()?
         }
         else {
-            let Some(number) = number? else { return Ok(None) };
-            number
+            number?
         };
 
         let negative = sign.is_some_and(|s| s == Minus);
@@ -638,10 +637,10 @@ impl<'src> Parser<'src> {
             }
         };
 
-        Ok(Some(value))
+        Ok(value)
     }
 
-    fn unsigned_number(&mut self) -> OptResult<UnsignedNumber> {
+    fn unsigned_number(&mut self) -> Result<UnsignedNumber, ScanErrorKind> {
 
         // ICONST | FCONST
 
@@ -656,37 +655,31 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `SignedIconst`
-    fn signed_i32_literal(&mut self) -> OptResult<i32> {
+    fn signed_i32_literal(&mut self) -> Result<i32, ScanErrorKind> {
         use TokenKind::{Minus, Plus};
 
         // ('+' | '-')? ICONST
 
-        let sign = self.buffer.consume(|tok|
-            match tok {
-                Minus | Plus => Some(*tok),
-                _ => None
-            }
-        )?;
+        let sign = self.buffer
+            .consume(|tok| matches!(tok, Minus | Plus))
+            .no_match_to_option()?;
 
         let num = self.i32_literal();
 
-        // If sign is Some(_), then ICONST is required
+        let Some(sign) = sign else { return num };
 
-        match sign {
-            None => num,
-            Some(Minus) => {
-                num.map(|v| v.map(|v| -v))
-                    .required()
-                    .optional()
-            },
-            Some(_) => {
-                num.required().optional()
-            }
+        // If sign is Some(_), then ICONST is required
+        let mut num = num.required()?;
+
+        if sign == Minus {
+            num = -num;
         }
+
+        Ok(num)
     }
 
     /// Alias: `ICONST`
-    fn i32_literal(&mut self) -> OptResult<i32> {
+    fn i32_literal(&mut self) -> Result<i32, ScanErrorKind> {
 
         let loc = self.buffer.current_location();
         let source = self.buffer.source();
@@ -701,33 +694,37 @@ impl<'src> Parser<'src> {
         })
     }
 
-    fn role_list(&mut self) -> ReqResult<Vec<RoleSpec>> {
+    /// Post-condition: Vec is **not** empty
+    fn role_list(&mut self) -> Result<Vec<RoleSpec>, ScanErrorKind> {
 
-        list_production!(
-            gather { self.role_spec() }
-            delim  { self.buffer.consume_eq(Comma) }
-        ).required()
+        /*
+            role_spec ( ',' role_spec )*
+        */
+
+        let role = self.role_spec()?;
+        let mut roles = vec![role];
+
+        while self.buffer.consume_eq(Comma).optional()?.is_some() {
+            let role = self.role_spec().required()?;
+            roles.push(role);
+        }
+
+        Ok(roles)
     }
 
     /// Alias: `RoleId`
     #[inline]
-    fn role_id(&mut self) -> OptResult<CowStr> {
+    fn role_id(&mut self) -> Result<CowStr, ScanErrorKind> {
 
         // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
-        match self.role_spec()? {
-            None => Ok(None),
-            Some(role_spec) => {
-                match role_spec.into_role_id() {
-                    Ok(role) => Ok(Some(role)),
-                    Err(err) => Err(Some(err))
-                }
-            },
-        }
+        self.role_spec()?
+            .into_role_id()
+            .map_err(ScanErrorKind::from)
     }
 
     /// Alias: `RoleSpec`
-    fn role_spec(&mut self) -> OptResult<RoleSpec> {
+    fn role_spec(&mut self) -> Result<RoleSpec, ScanErrorKind> {
 
         /*
             role_spec :
@@ -739,12 +736,12 @@ impl<'src> Parser<'src> {
                 | non_reserved_word
         */
 
-        if let Some(ident) = self.identifier()? {
+        if let Some(ident) = self.identifier().no_match_to_option()? {
             return if ident == "public" {
-                Ok(Some(RoleSpec::Public))
+                Ok(RoleSpec::Public)
             }
             else {
-                Ok(Some(RoleSpec::Name(ident.into())))
+                Ok(RoleSpec::Name(ident.into()))
             }
         }
 
@@ -773,79 +770,72 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `qual_Op`
-    fn qual_op(&mut self) -> OptResult<QnOperator> {
+    fn qual_op(&mut self) -> Result<QnOperator, ScanErrorKind> {
 
-        if let Some(op) = self.operator()? {
+        /*
+            Operator | prefixed_operator
+        */
+
+        if let Some(op) = self.operator().no_match_to_option()? {
             let op = AllOp::Operator(op);
-            return Ok(Some(QnOperator(vec![], op)))
+            return Ok(QnOperator(vec![], op))
         }
 
         self.prefixed_operator()
     }
 
     /// Production: `OPERATOR '(' any_operator ')'`
-    fn prefixed_operator(&mut self) -> OptResult<QnOperator> {
+    fn prefixed_operator(&mut self) -> Result<QnOperator, ScanErrorKind> {
         use Keyword::Operator;
         use TokenKind::{CloseParenthesis, OpenParenthesis};
 
-        if self.buffer.consume_kw_eq(Operator)?.is_none() {
-            return Ok(None);
-        }
+        self.buffer.consume_kw_eq(Operator)?;
 
         self.buffer.consume_eq(OpenParenthesis).required()?;
         let op = self.any_operator().required()?;
         self.buffer.consume_eq(CloseParenthesis).required()?;
 
-        Ok(Some(op))
+        Ok(op)
     }
 
-    fn any_operator(&mut self) -> OptResult<QnOperator> {
+    fn any_operator(&mut self) -> Result<QnOperator, ScanErrorKind> {
+
+        /*
+            ( col_id '.' )* all_op
+        */
 
         let mut qn = Vec::new();
 
-        loop {
-            let id = self.col_id()
-                .map_eof(|| {
-                    let err = if qn.is_empty() { None } else { Some(ParserErrorKind::default()) };
-                    Err(err)
-                })?;
-
-            let Some(id) = id else { break };
+        while let Some(id) = self.col_id().optional()? {
             self.buffer.consume_eq(Dot).required()?;
-
             qn.push(id);
         }
 
         let op = self.all_op();
 
         let op = if qn.is_empty() {
-            let Some(op) = op? else { return Ok(None) };
-            op
+            op?
         }
         else {
             op.required()?
         };
 
         let op = QnOperator(qn, op);
-        Ok(Some(op))
+        Ok(op)
     }
 
     /// Alias: `all_Op`
-    fn all_op(&mut self) -> OptResult<AllOp> {
+    fn all_op(&mut self) -> Result<AllOp, ScanErrorKind> {
 
-        if let Some(op) = self.math_op()? {
-            return Ok(Some(AllOp::MathOp(op)))
+        if let Some(op) = self.math_op().no_match_to_option()? {
+            return Ok(AllOp::MathOp(op))
         }
 
-        if let Some(op) = self.operator()? {
-            return Ok(Some(AllOp::Operator(op)))
-        }
-
-        Ok(None)
+        self.operator().map(AllOp::Operator)
     }
 
     /// Returns the text of the `UserDefinedOperator`
-    fn operator(&mut self) -> OptResult<String> {
+    fn operator(&mut self) -> Result<String, ScanErrorKind> {
 
         let loc = self.buffer.current_location();
         let source = self.buffer.source();
@@ -859,7 +849,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `MathOp`
-    fn math_op(&mut self) -> OptResult<MathOp> {
+    fn math_op(&mut self) -> Result<MathOp, ScanErrorKind> {
         use MathOp::*;
         use TokenKind::{Circumflex, Div, Minus, Mul, Percent, Plus};
 
@@ -884,7 +874,7 @@ impl<'src> Parser<'src> {
     /// * `ColId`
     /// * `name`
     #[inline(always)]
-    fn col_id(&mut self) -> OptResult<CowStr> {
+    fn col_id(&mut self) -> Result<CowStr, ScanErrorKind> {
         self.ident_or_keyword(|kw|
                kw.unreserved().is_some()
             || kw.col_name().is_some()
@@ -892,7 +882,7 @@ impl<'src> Parser<'src> {
     }
 
     #[inline(always)]
-    fn type_function_name(&mut self) -> OptResult<CowStr> {
+    fn type_function_name(&mut self) -> Result<CowStr, ScanErrorKind> {
         self.ident_or_keyword(|kw|
                kw.unreserved().is_some()
             || kw.type_func_name().is_some()
@@ -901,7 +891,7 @@ impl<'src> Parser<'src> {
 
     /// Alias: `NonReservedWord`
     #[inline(always)]
-    fn non_reserved_word(&mut self) -> OptResult<CowStr> {
+    fn non_reserved_word(&mut self) -> Result<CowStr, ScanErrorKind> {
         self.ident_or_keyword(|kw|
                kw.unreserved().is_some()
             || kw.col_name().is_some()
@@ -913,22 +903,22 @@ impl<'src> Parser<'src> {
     /// * `ColLabel`
     /// * `attr_name`
     #[inline(always)]
-    fn col_label(&mut self) -> OptResult<CowStr> {
+    fn col_label(&mut self) -> Result<CowStr, ScanErrorKind> {
         self.ident_or_keyword(|_| true)
     }
 
     /// Alias: `BareColLabel`
     #[inline(always)]
-    fn bare_col_label(&mut self) -> OptResult<CowStr> {
+    fn bare_col_label(&mut self) -> Result<CowStr, ScanErrorKind> {
         self.ident_or_keyword(KeywordDetails::bare)
     }
 
-    fn ident_or_keyword<P>(&mut self, pred: P) -> OptResult<CowStr>
+    fn ident_or_keyword<P>(&mut self, pred: P) -> Result<CowStr, ScanErrorKind>
     where
         P: Fn(&KeywordDetails) -> bool
     {
-        if let Some(ident) = self.identifier()? {
-            return Ok(Some(ident.into()))
+        if let Some(ident) = self.identifier().no_match_to_option()? {
+            return Ok(ident.into())
         }
 
         self.buffer.consume(|tok| match tok.keyword() {
@@ -942,13 +932,13 @@ impl<'src> Parser<'src> {
     /// * `USCONST`
     /// * `file_name`
     #[inline(always)]
-    fn string(&mut self) -> OptResult<String> {
+    fn string(&mut self) -> Result<String, ScanErrorKind> {
         StringParser(self).parse()
     }
 
     /// Alias: `IDENT`
     #[inline(always)]
-    fn identifier(&mut self) -> OptResult<String> {
+    fn identifier(&mut self) -> Result<String, ScanErrorKind> {
         IdentifierParser(self).parse()
     }
 
@@ -959,18 +949,14 @@ impl<'src> Parser<'src> {
         // Try to consume UESCAPE + the string following it.
         // see [base_yylex](https://github.com/postgres/postgres/blob/1c61fd8b527954f0ec522e5e60a11ce82628b681/src/backend/parser/parser.c#L256)
 
-        let uescape = self.buffer.consume_kw_eq(Uescape);
-
-        match uescape {
-            Ok(None) | Err(None) => return Ok('\\'),
-            Err(Some(err)) => return Err(err),
-            Ok(Some(_)) => {/* it matched */}
-        }
+        if self.buffer.consume_kw_eq(Uescape).optional()?.is_none() {
+            return Ok('\\')
+        };
 
         let loc = self.buffer.current_location();
         let source = self.buffer.source();
 
-        let escape = self.buffer
+        let uescape = self.buffer
             .consume(|tok| match tok.string_kind() {
                 Some(_) => {
                     let slice = loc.slice(source);
@@ -982,12 +968,11 @@ impl<'src> Parser<'src> {
                 None => Err(UescapeDelimiterMissing)
             });
 
-        match escape {
-            Ok(Some(escape)) => Ok(escape),
-            Ok(None) => unreachable!("replaced with Err(UescapeDelimiterMissing)"),
-            Err(Some(err)) => Err(err),
-            Err(None) => Err(InvalidUescapeDelimiter)
-        }
+        uescape.map_err(|err| match err {
+            Eof => InvalidUescapeDelimiter,
+            NoMatch => ParserErrorKind::default(),
+            ParserErr(err) => err
+        })
     }
 }
 
@@ -1057,7 +1042,7 @@ mod tests {
 
             // This only quickly tests that statement types aren't missing.
             // More in-depth testing is within each statement's module.
-            assert_matches!(actual, Ok(Some(_)),
+            assert_matches!(actual, Ok(_),
                 r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
             )
         }
@@ -1093,7 +1078,7 @@ mod tests {
 
             // This only quickly tests that statement types aren't missing.
             // More in-depth testing is within each statement's module.
-            assert_matches!(actual, Ok(Some(_)),
+            assert_matches!(actual, Ok(_),
                 r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
             )
         }
@@ -1121,7 +1106,7 @@ mod tests {
     #[test]
     fn test_opt_transaction_mode_list() {
         let mut parser = Parser::new("no_match", DEFAULT_CONFIG);
-        assert_eq!(Ok(None), parser.opt_transaction_mode_list());
+        assert_eq!(Err(NoMatch), parser.transaction_mode_list());
 
         let mut parser = Parser::new(
             "read only , read write isolation level read committed",
@@ -1134,7 +1119,7 @@ mod tests {
             TransactionMode::IsolationLevel(IsolationLevel::ReadCommitted),
         ];
 
-        assert_eq!(Ok(Some(expected)), parser.opt_transaction_mode_list());
+        assert_eq!(Ok(expected), parser.transaction_mode_list());
     }
 
     #[test]
@@ -1166,7 +1151,7 @@ mod tests {
         ];
 
         for expected_mode in expected {
-            assert_eq!(Ok(Some(expected_mode)), parser.transaction_mode());
+            assert_eq!(Ok(expected_mode), parser.transaction_mode());
         }
     }
 
@@ -1212,26 +1197,23 @@ mod tests {
 
         let source = "boolean smallint int integer bigint real float float(17) float(44) double precision";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        let actual = parser.numeric().unwrap().unwrap();
-        assert_eq!(Bool, actual);
-        let actual = parser.numeric().unwrap().unwrap();
-        assert_eq!(Int2, actual);
-        let actual = parser.numeric().unwrap().unwrap();
-        assert_eq!(Int4, actual);
-        let actual = parser.numeric().unwrap().unwrap();
-        assert_eq!(Int4, actual);
-        let actual = parser.numeric().unwrap().unwrap();
-        assert_eq!(Int8, actual);
-        let actual = parser.numeric().unwrap().unwrap();
-        assert_eq!(Float4, actual);
-        let actual = parser.numeric().unwrap().unwrap();
-        assert_eq!(Float8, actual);
-        let actual = parser.numeric().unwrap().unwrap();
-        assert_eq!(Float4, actual);
-        let actual = parser.numeric().unwrap().unwrap();
-        assert_eq!(Float8, actual);
-        let actual = parser.numeric().unwrap().unwrap();
-        assert_eq!(Float8, actual);
+
+        let expected = [
+            Bool,
+            Int2,
+            Int4,
+            Int4,
+            Int8,
+            Float4,
+            Float8,
+            Float4,
+            Float8,
+            Float8,
+        ];
+
+        for e in expected {
+            assert_eq!(Ok(e), parser.numeric());
+        }
 
         // TODO: (DECIMAL | DEC | NUMERIC) opt_type_modifiers
     }
@@ -1257,16 +1239,13 @@ mod tests {
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
         let actual = parser.any_name();
 
-        assert_matches!(actual, Ok(Some(_)));
-        let actual = actual.unwrap().unwrap();
-
         let expected: QnName = vec![
             "some_".into(),
             "qualified_".into(),
             "name_".into()
         ];
 
-        assert_eq!(expected, actual);
+        assert_eq!(Ok(expected), actual);
     }
 
     #[test]
@@ -1275,50 +1254,43 @@ mod tests {
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
         let actual = parser.attrs("*some*".into());
 
-        assert_matches!(actual, Ok(Some(_)));
-        let actual = actual.unwrap().unwrap();
-
         let expected: QnName = vec![
             "*some*".into(),
             "qualified_".into(),
             "name_".into()
         ];
 
-        assert_eq!(expected, actual);
+        assert_eq!(Ok(expected), actual);
     }
 
     #[test]
     fn test_i32_literal_paren() {
         let mut parser = Parser::new(" (123 )", DEFAULT_CONFIG);
-        let actual = parser.i32_literal_paren().unwrap().unwrap();
-        assert_eq!(123, actual);
+        assert_eq!(Ok(123), parser.i32_literal_paren());
     }
 
     #[test]
     fn test_character() {
-        const EXPECTED_VARCHAR: OptResult<CharacterSystemType> = Ok(Some(CharacterSystemType::Varchar));
-        const EXPECTED_BPCHAR: OptResult<CharacterSystemType> = Ok(Some(CharacterSystemType::Bpchar));
+        use CharacterSystemType::{Bpchar, Varchar};
 
         let sources = [
-            (EXPECTED_VARCHAR, "varchar"),
-            (EXPECTED_VARCHAR, "char varying"),
-            (EXPECTED_VARCHAR, "character varying"),
-            (EXPECTED_VARCHAR, "nchar varying"),
-            (EXPECTED_VARCHAR, "national char varying"),
-            (EXPECTED_VARCHAR, "national character varying"),
-            (EXPECTED_BPCHAR, "char"),
-            (EXPECTED_BPCHAR, "character"),
-            (EXPECTED_BPCHAR, "nchar"),
-            (EXPECTED_BPCHAR, "national char"),
-            (EXPECTED_BPCHAR, "national character"),
+            (Varchar, "varchar"),
+            (Varchar, "char varying"),
+            (Varchar, "character varying"),
+            (Varchar, "nchar varying"),
+            (Varchar, "national char varying"),
+            (Varchar, "national character varying"),
+            (Bpchar, "char"),
+            (Bpchar, "character"),
+            (Bpchar, "nchar"),
+            (Bpchar, "national char"),
+            (Bpchar, "national character"),
         ];
 
         for (expected, source) in sources {
             let mut parser = Parser::new(source, DEFAULT_CONFIG);
             let actual = parser.character();
-            assert_eq!(
-                expected,
-                actual,
+            assert_eq!(Ok(expected), actual,
                 r"expected {expected:?} for source {source:?} but actually got {actual:?}",
             );
         }
@@ -1341,9 +1313,7 @@ mod tests {
 
         for e in expected {
             let actual = parser.signed_number();
-            assert_matches!(actual, Ok(Some(_)));
-            let actual = actual.unwrap().unwrap();
-            assert_eq!(e, actual);
+            assert_eq!(Ok(e), actual);
         }
     }
 
@@ -1354,30 +1324,23 @@ mod tests {
         let mut parser = Parser::new("1.1 11", DEFAULT_CONFIG);
 
         let actual = parser.unsigned_number();
-        assert_matches!(actual, Ok(Some(_)));
-        let actual = actual.unwrap().unwrap();
-        assert_eq!(Numeric { value: "1.1".into(), radix: 10 }, actual);
+        assert_eq!(Ok(Numeric { value: "1.1".into(), radix: 10 }), actual);
 
         let actual = parser.unsigned_number();
-        assert_matches!(actual, Ok(Some(_)));
-        let actual = actual.unwrap().unwrap();
-        assert_eq!(IConst(11), actual);
+        assert_eq!(Ok(IConst(11)), actual);
     }
 
     #[test]
     fn test_signed_i32_literal() {
         let mut parser = Parser::new("-123 +321", DEFAULT_CONFIG);
-        let actual = parser.signed_i32_literal().unwrap().unwrap();
-        assert_eq!(-123, actual);
-        let actual = parser.signed_i32_literal().unwrap().unwrap();
-        assert_eq!(321, actual);
+        assert_eq!(Ok(-123), parser.signed_i32_literal());
+        assert_eq!(Ok(321), parser.signed_i32_literal());
     }
 
     #[test]
     fn test_i32_literal() {
         let mut parser = Parser::new("123", DEFAULT_CONFIG);
-        let actual = parser.i32_literal().unwrap().unwrap();
-        assert_eq!(123, actual);
+        assert_eq!(Ok(123), parser.i32_literal());
     }
 
     #[test]
@@ -1403,30 +1366,23 @@ mod tests {
     fn test_role_id() {
 
         let mut parser = Parser::new("coalesce xxyyzz", DEFAULT_CONFIG);
-        let actual = parser.role_id().unwrap().unwrap();
-        assert_eq!("coalesce", actual);
-        let actual = parser.role_id().unwrap().unwrap();
-        assert_eq!("xxyyzz", actual);
+        assert_eq!(Ok("coalesce".into()), parser.role_id());
+        assert_eq!(Ok("xxyyzz".into()), parser.role_id());
 
         let mut parser = Parser::new("none", DEFAULT_CONFIG);
-        let actual = parser.role_id().unwrap_err().unwrap();
-        assert_eq!(ReservedRoleSpec("none"), actual);
+        assert_eq!(Err(ParserErr(ReservedRoleSpec("none"))), parser.role_id());
 
         let mut parser = Parser::new("public", DEFAULT_CONFIG);
-        let actual = parser.role_id().unwrap_err().unwrap();
-        assert_eq!(ReservedRoleSpec("public"), actual);
+        assert_eq!(Err(ParserErr(ReservedRoleSpec("public"))), parser.role_id());
 
         let mut parser = Parser::new("current_role", DEFAULT_CONFIG);
-        let actual = parser.role_id().unwrap_err().unwrap();
-        assert_eq!(ForbiddenRoleSpec("CURRENT_ROLE"), actual);
+        assert_eq!(Err(ParserErr(ForbiddenRoleSpec("CURRENT_ROLE"))), parser.role_id());
 
         let mut parser = Parser::new("current_user", DEFAULT_CONFIG);
-        let actual = parser.role_id().unwrap_err().unwrap();
-        assert_eq!(ForbiddenRoleSpec("CURRENT_USER"), actual);
+        assert_eq!(Err(ParserErr(ForbiddenRoleSpec("CURRENT_USER"))), parser.role_id());
 
         let mut parser = Parser::new("session_user", DEFAULT_CONFIG);
-        let actual = parser.role_id().unwrap_err().unwrap();
-        assert_eq!(ForbiddenRoleSpec("SESSION_USER"), actual);
+        assert_eq!(Err(ParserErr(ForbiddenRoleSpec("SESSION_USER"))), parser.role_id());
     }
 
     #[test]
@@ -1434,26 +1390,18 @@ mod tests {
         let source = "public CuRrEnT_rOlE CURRENT_USER session_user coalesce xxyyzz";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.role_spec().unwrap().unwrap();
-        assert_eq!(RoleSpec::Public, actual);
-        let actual = parser.role_spec().unwrap().unwrap();
-        assert_eq!(RoleSpec::CurrentRole, actual);
-        let actual = parser.role_spec().unwrap().unwrap();
-        assert_eq!(RoleSpec::CurrentUser, actual);
-        let actual = parser.role_spec().unwrap().unwrap();
-        assert_eq!(RoleSpec::SessionUser, actual);
-        let actual = parser.role_spec().unwrap().unwrap();
-        assert_eq!(RoleSpec::Name("coalesce".into()), actual);
-        let actual = parser.role_spec().unwrap().unwrap();
-        assert_eq!(RoleSpec::Name("xxyyzz".into()), actual);
+        assert_eq!(Ok(RoleSpec::Public), parser.role_spec());
+        assert_eq!(Ok(RoleSpec::CurrentRole), parser.role_spec());
+        assert_eq!(Ok(RoleSpec::CurrentUser), parser.role_spec());
+        assert_eq!(Ok(RoleSpec::SessionUser), parser.role_spec());
+        assert_eq!(Ok(RoleSpec::Name("coalesce".into())), parser.role_spec());
+        assert_eq!(Ok(RoleSpec::Name("xxyyzz".into())), parser.role_spec());
 
         let mut parser = Parser::new("collate", DEFAULT_CONFIG);
-        let actual = parser.role_spec();
-        assert_eq!(Ok(None), actual);
+        assert_eq!(Err(NoMatch), parser.role_spec());
 
         let mut parser = Parser::new("none", DEFAULT_CONFIG);
-        let actual = parser.role_spec().unwrap_err().unwrap();
-        assert_eq!(ReservedRoleSpec("none"), actual);
+        assert_eq!(Err(ParserErr(ReservedRoleSpec("none"))), parser.role_spec());
     }
 
     #[test]
@@ -1463,15 +1411,17 @@ mod tests {
         let source = "operator(|/) <@>";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.qual_op();
-        assert_matches!(actual, Ok(Some(_)));
-        let actual = actual.unwrap().unwrap();
-        assert_eq!(QnOperator(vec![], AllOp::Operator("|/".into())), actual);
+        let expected = QnOperator(
+            vec![],
+            AllOp::Operator("|/".into())
+        );
+        assert_eq!(Ok(expected), parser.qual_op());
 
-        let actual = parser.qual_op();
-        assert_matches!(actual, Ok(Some(_)));
-        let actual = actual.unwrap().unwrap();
-        assert_eq!(QnOperator(vec![], AllOp::Operator("<@>".into())), actual);
+        let expected = QnOperator(
+            vec![],
+            AllOp::Operator("<@>".into())
+        );
+        assert_eq!(Ok(expected), parser.qual_op());
     }
 
     #[test]
@@ -1482,10 +1432,11 @@ mod tests {
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.prefixed_operator();
-        assert_matches!(actual, Ok(Some(_)));
-        let actual = actual.unwrap().unwrap();
-
-        assert_eq!(QnOperator(vec!["some_qn".into()], AllOp::MathOp(MathOp::Multiplication)), actual);
+        let expected = QnOperator(
+            vec!["some_qn".into()],
+            AllOp::MathOp(MathOp::Multiplication)
+        );
+        assert_eq!(Ok(expected), actual);
     }
 
     #[test]
@@ -1495,20 +1446,23 @@ mod tests {
         let source = "@@ != qn_name.+";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.any_operator();
-        assert_matches!(actual, Ok(Some(_)));
-        let actual = actual.unwrap().unwrap();
-        assert_eq!(QnOperator(vec![], AllOp::Operator("@@".into())), actual);
+        let expected = QnOperator(
+            vec![],
+            AllOp::Operator("@@".into())
+        );
+        assert_eq!(Ok(expected), parser.any_operator());
 
-        let actual = parser.any_operator();
-        assert_matches!(actual, Ok(Some(_)));
-        let actual = actual.unwrap().unwrap();
-        assert_eq!(QnOperator(vec![], AllOp::MathOp(MathOp::NotEquals)), actual);
+        let expected = QnOperator(
+            vec![],
+            AllOp::MathOp(MathOp::NotEquals)
+        );
+        assert_eq!(Ok(expected), parser.any_operator());
 
-        let actual = parser.any_operator();
-        assert_matches!(actual, Ok(Some(_)));
-        let actual = actual.unwrap().unwrap();
-        assert_eq!(QnOperator(vec!["qn_name".into()], AllOp::MathOp(MathOp::Addition)), actual);
+        let expected = QnOperator(
+            vec!["qn_name".into()],
+            AllOp::MathOp(MathOp::Addition)
+        );
+        assert_eq!(Ok(expected), parser.any_operator());
     }
 
     #[test]
@@ -1519,8 +1473,8 @@ mod tests {
         let source = "~@ <>";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        assert_eq!(Ok(Some(Operator("~@".into()))), parser.all_op());
-        assert_eq!(Ok(Some(MathOp(NotEquals))), parser.all_op());
+        assert_eq!(Ok(Operator("~@".into())), parser.all_op());
+        assert_eq!(Ok(MathOp(NotEquals)), parser.all_op());
     }
 
     #[test]
@@ -1528,7 +1482,7 @@ mod tests {
         let source = "~@";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        assert_eq!(Ok(Some("~@".into())), parser.operator());
+        assert_eq!(Ok("~@".into()), parser.operator());
     }
 
     #[test]
@@ -1538,19 +1492,19 @@ mod tests {
         let source = "+ - * / % ^ < > = <= >= != <>";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        assert_eq!(Ok(Some(Addition)), parser.math_op());
-        assert_eq!(Ok(Some(Subtraction)), parser.math_op());
-        assert_eq!(Ok(Some(Multiplication)), parser.math_op());
-        assert_eq!(Ok(Some(Division)), parser.math_op());
-        assert_eq!(Ok(Some(Modulo)), parser.math_op());
-        assert_eq!(Ok(Some(Exponentiation)), parser.math_op());
-        assert_eq!(Ok(Some(Less)), parser.math_op());
-        assert_eq!(Ok(Some(Greater)), parser.math_op());
-        assert_eq!(Ok(Some(Equals)), parser.math_op());
-        assert_eq!(Ok(Some(LessEquals)), parser.math_op());
-        assert_eq!(Ok(Some(GreaterEquals)), parser.math_op());
-        assert_eq!(Ok(Some(NotEquals)), parser.math_op());
-        assert_eq!(Ok(Some(NotEquals)), parser.math_op());
+        assert_eq!(Ok(Addition), parser.math_op());
+        assert_eq!(Ok(Subtraction), parser.math_op());
+        assert_eq!(Ok(Multiplication), parser.math_op());
+        assert_eq!(Ok(Division), parser.math_op());
+        assert_eq!(Ok(Modulo), parser.math_op());
+        assert_eq!(Ok(Exponentiation), parser.math_op());
+        assert_eq!(Ok(Less), parser.math_op());
+        assert_eq!(Ok(Greater), parser.math_op());
+        assert_eq!(Ok(Equals), parser.math_op());
+        assert_eq!(Ok(LessEquals), parser.math_op());
+        assert_eq!(Ok(GreaterEquals), parser.math_op());
+        assert_eq!(Ok(NotEquals), parser.math_op());
+        assert_eq!(Ok(NotEquals), parser.math_op());
     }
 
     #[test]
@@ -1558,12 +1512,9 @@ mod tests {
         let source = "cascaded xxyyzz coalesce";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.col_id().unwrap().unwrap();
-        assert_eq!("cascaded", actual);
-        let actual = parser.col_id().unwrap().unwrap();
-        assert_eq!("xxyyzz", actual);
-        let actual = parser.col_id().unwrap().unwrap();
-        assert_eq!("coalesce", actual);
+        assert_eq!(Ok("cascaded".into()), parser.col_id());
+        assert_eq!(Ok("xxyyzz".into()), parser.col_id());
+        assert_eq!(Ok("coalesce".into()), parser.col_id());
     }
 
     #[test]
@@ -1571,12 +1522,9 @@ mod tests {
         let source = "before xxyyzz collation";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.type_function_name().unwrap().unwrap();
-        assert_eq!("before", actual);
-        let actual = parser.type_function_name().unwrap().unwrap();
-        assert_eq!("xxyyzz", actual);
-        let actual = parser.type_function_name().unwrap().unwrap();
-        assert_eq!("collation", actual);
+        assert_eq!(Ok("before".into()), parser.type_function_name());
+        assert_eq!(Ok("xxyyzz".into()), parser.type_function_name());
+        assert_eq!(Ok("collation".into()), parser.type_function_name());
     }
 
     #[test]
@@ -1584,14 +1532,10 @@ mod tests {
         let source = "breadth xxyyzz boolean authorization";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.non_reserved_word().unwrap().unwrap();
-        assert_eq!("breadth", actual);
-        let actual = parser.non_reserved_word().unwrap().unwrap();
-        assert_eq!("xxyyzz", actual);
-        let actual = parser.non_reserved_word().unwrap().unwrap();
-        assert_eq!("boolean", actual);
-        let actual = parser.non_reserved_word().unwrap().unwrap();
-        assert_eq!("authorization", actual);
+        assert_eq!(Ok("breadth".into()), parser.non_reserved_word());
+        assert_eq!(Ok("xxyyzz".into()), parser.non_reserved_word());
+        assert_eq!(Ok("boolean".into()), parser.non_reserved_word());
+        assert_eq!(Ok("authorization".into()), parser.non_reserved_word());
     }
 
     #[test]
@@ -1599,12 +1543,9 @@ mod tests {
         let source = "sequence xxyyzz character";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.col_label().unwrap().unwrap();
-        assert_eq!("sequence", actual);
-        let actual = parser.col_label().unwrap().unwrap();
-        assert_eq!("xxyyzz", actual);
-        let actual = parser.col_label().unwrap().unwrap();
-        assert_eq!("character", actual);
+        assert_eq!(Ok("sequence".into()), parser.col_label());
+        assert_eq!(Ok("xxyyzz".into()), parser.col_label());
+        assert_eq!(Ok("character".into()), parser.col_label());
     }
 
     #[test]
@@ -1612,10 +1553,8 @@ mod tests {
         let source = "sequence xxyyzz";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.bare_col_label().unwrap().unwrap();
-        assert_eq!("sequence", actual);
-        let actual = parser.bare_col_label().unwrap().unwrap();
-        assert_eq!("xxyyzz", actual);
+        assert_eq!(Ok("sequence".into()), parser.bare_col_label());
+        assert_eq!(Ok("xxyyzz".into()), parser.bare_col_label());
     }
 
     #[test]
@@ -1623,9 +1562,7 @@ mod tests {
         let source = "'test string'";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.string().unwrap().unwrap();
-
-        assert_eq!("test string", actual.as_str());
+        assert_eq!("test string", parser.string().unwrap());
     }
 
     #[test]
@@ -1633,9 +1570,7 @@ mod tests {
         let source = "tEsT_iDeNtIfIeR";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.identifier().unwrap().unwrap();
-
-        assert_eq!("test_identifier", actual);
+        assert_eq!("test_identifier", parser.identifier().unwrap());
     }
 
     #[test]
@@ -1656,12 +1591,11 @@ use self::ast_node::IsolationLevel;
 use self::ast_node::RoleSpec;
 use self::ast_node::SystemType::{self, Bool, Float4, Float8, Int2, Int4, Int8};
 use self::ast_node::TransactionMode;
+use self::ast_node::{AllOp, MathOp, QnOperator, SignedNumber, UnsignedNumber};
 use self::error::ParserErrorKind::*;
 use self::ident_parser::IdentifierParser;
-use self::result::OptResult;
-use self::result::OptionalResult;
-use self::result::ReqResult;
-use self::result::RequiredResult;
+use self::result::ScanErrorKind::{self, Eof, NoMatch};
+use self::result::ScanResult;
 use self::string_parser::StringParser;
 use self::token_buffer::TokenBuffer;
 use self::token_buffer::TokenConsumer;
@@ -1669,9 +1603,9 @@ use crate::lexer::Keyword;
 use crate::lexer::KeywordDetails;
 use crate::lexer::Lexer;
 use crate::lexer::TokenKind::{self, Comma, Dot, NumberLiteral};
-use crate::parser::ast_node::{AllOp, MathOp, QnOperator, SignedNumber, UnsignedNumber};
 use postgres_basics::ascii;
 use postgres_basics::Located;
 use postgres_basics::Location;
 use std::borrow::Cow;
 use std::mem;
+use ScanErrorKind::ParserErr;

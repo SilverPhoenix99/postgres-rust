@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `VariableShowStmt`
-    pub(in crate::parser) fn show_stmt(&mut self) -> OptResult<VariableShowStmt> {
+    pub(in crate::parser) fn show_stmt(&mut self) -> Result<VariableShowStmt, ScanErrorKind> {
 
         /*
             SHOW var_name
@@ -10,39 +10,39 @@ impl Parser<'_> {
             SHOW ALL
         */
 
-        if self.buffer.consume_kw_eq(Show)?.is_none() {
-            return Ok(None)
-        }
+        self.buffer.consume_kw_eq(Show)?;
 
-        let show_stmt = self.buffer.consume(|tok|
-            tok.keyword().and_then(|kw| match kw.keyword() {
-                All => Some(VariableShowStmt::All),
-                Session => Some(VariableShowStmt::SessionAuthorization),
-                Time => Some(VariableShowStmt::TimeZone),
-                Transaction => Some(VariableShowStmt::TransactionIsolation),
-                _ => None
-            })
-        ).replace_eof(Ok(None))?;
+        let show_stmt = self.buffer
+            .consume(|tok|
+                tok.keyword().and_then(|kw| match kw.keyword() {
+                    Keyword::All => Some(All),
+                    Keyword::Session => Some(SessionAuthorization),
+                    Keyword::Time => Some(TimeZone),
+                    Keyword::Transaction => Some(TransactionIsolation),
+                    _ => None
+                })
+            )
+            .optional()?;
 
         match show_stmt {
-            Some(VariableShowStmt::All) => Ok(Some(VariableShowStmt::All)),
-            Some(VariableShowStmt::SessionAuthorization) => {
+            Some(All) => Ok(All),
+            Some(SessionAuthorization) => {
                 self.buffer.consume_kw_eq(Authorization).required()?;
-                Ok(Some(VariableShowStmt::SessionAuthorization))
+                Ok(SessionAuthorization)
             },
-            Some(VariableShowStmt::TransactionIsolation) => {
+            Some(TransactionIsolation) => {
                 self.buffer.consume_kw_eq(Isolation).required()?;
                 self.buffer.consume_kw_eq(Level).required()?;
-                Ok(Some(VariableShowStmt::TransactionIsolation))
+                Ok(TransactionIsolation)
             }
-            Some(VariableShowStmt::TimeZone) => {
+            Some(TimeZone) => {
                 self.buffer.consume_kw_eq(Zone).required()?;
-                Ok(Some(VariableShowStmt::TimeZone))
+                Ok(TimeZone)
             }
-            Some(VariableShowStmt::Name(_)) => unreachable!(),
+            Some(Name(_)) => unreachable!(),
             None => {
-                let var_name = self.var_name()?;
-                Ok(Some(VariableShowStmt::Name(var_name)))
+                let var_name = self.var_name().required()?;
+                Ok(Name(var_name))
             }
         }
     }
@@ -51,30 +51,31 @@ impl Parser<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::ast_node::VariableShowStmt::{SessionAuthorization, TimeZone, TransactionIsolation};
     use crate::parser::tests::DEFAULT_CONFIG;
 
     #[test]
     fn test_show_stmt_all() {
         let mut parser = Parser::new("show all", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some(VariableShowStmt::All)), parser.show_stmt());
+        assert_eq!(Ok(All), parser.show_stmt());
     }
 
     #[test]
     fn test_show_stmt_session_authorization() {
         let mut parser = Parser::new("show session authorization", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some(VariableShowStmt::SessionAuthorization)), parser.show_stmt());
+        assert_eq!(Ok(SessionAuthorization), parser.show_stmt());
     }
 
     #[test]
     fn test_show_stmt_timezone() {
         let mut parser = Parser::new("show time zone", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some(VariableShowStmt::TimeZone)), parser.show_stmt());
+        assert_eq!(Ok(TimeZone), parser.show_stmt());
     }
 
     #[test]
     fn test_show_stmt_transaction_isolation() {
         let mut parser = Parser::new("show transaction isolation level", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some(VariableShowStmt::TransactionIsolation)), parser.show_stmt());
+        assert_eq!(Ok(TransactionIsolation), parser.show_stmt());
     }
 
     #[test]
@@ -83,13 +84,12 @@ mod tests {
 
         let expected = vec!["qualified".into(), "name".into()];
 
-        assert_eq!(Ok(Some(VariableShowStmt::Name(expected))), parser.show_stmt());
+        assert_eq!(Ok(Name(expected)), parser.show_stmt());
     }
 }
 
-use crate::lexer::Keyword::{All, Authorization, Isolation, Level, Session, Show, Time, Transaction, Zone};
-use crate::parser::ast_node::VariableShowStmt;
-use crate::parser::result::OptionalResult;
+use crate::lexer::Keyword::{self, Authorization, Isolation, Level, Show, Zone};
+use crate::parser::ast_node::VariableShowStmt::{self, *};
+use crate::parser::result::{ScanErrorKind, ScanResult};
 use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::OptResult;
 use crate::parser::Parser;

@@ -1,20 +1,18 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn abort_stmt(&mut self) -> OptResult<TransactionStmt> {
+    pub(in crate::parser) fn abort_stmt(&mut self) -> Result<TransactionStmt, ScanErrorKind> {
 
         /*
         TransactionStmt:
             ABORT_P opt_transaction opt_transaction_chain
         */
 
-        if self.buffer.consume_kw_eq(Abort)?.is_none() {
-            return Ok(None)
-        }
+        self.buffer.consume_kw_eq(Abort)?;
 
         self.opt_transaction()?;
 
         let chain = self.opt_transaction_chain()?;
 
-        Ok(Some(TransactionStmt::Rollback { chain }))
+        Ok(TransactionStmt::Rollback { chain })
     }
 }
 
@@ -27,41 +25,42 @@ mod tests {
     #[test]
     fn test_abort() {
         let mut parser = Parser::new("abort", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: false })), parser.abort_stmt());
+        assert_eq!(Ok(TransactionStmt::Rollback { chain: false }), parser.abort_stmt());
     }
 
     #[test]
     fn test_abort_chain() {
         let mut parser = Parser::new("abort and chain", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: true })), parser.abort_stmt());
+        assert_eq!(Ok(TransactionStmt::Rollback { chain: true }), parser.abort_stmt());
     }
 
     #[test]
     fn test_abort_no_chain() {
         let mut parser = Parser::new("abort and no chain", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: false })), parser.abort_stmt());
+        assert_eq!(Ok(TransactionStmt::Rollback { chain: false }), parser.abort_stmt());
     }
 
     #[test]
     fn test_abort_transaction() {
         let mut parser = Parser::new("abort transaction", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: false })), parser.abort_stmt());
+        assert_eq!(Ok(TransactionStmt::Rollback { chain: false }), parser.abort_stmt());
     }
 
     #[test]
     fn test_abort_transaction_chain() {
         let mut parser = Parser::new("abort transaction and chain", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: true })), parser.abort_stmt());
+        assert_eq!(Ok(TransactionStmt::Rollback { chain: true }), parser.abort_stmt());
     }
 
     #[test]
     fn test_abort_transaction_no_chain() {
         let mut parser = Parser::new("abort transaction and no chain", DEFAULT_CONFIG);
-        assert_eq!(Ok(Some(TransactionStmt::Rollback { chain: false })), parser.abort_stmt());
+        assert_eq!(Ok(TransactionStmt::Rollback { chain: false }), parser.abort_stmt());
     }
 }
 
 use crate::lexer::Keyword::Abort;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::OptResult;
+use crate::parser::result::ScanErrorKind;
 use crate::parser::Parser;
+

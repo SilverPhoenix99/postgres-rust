@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `ClusterStmt`
-    pub(in crate::parser) fn cluster_stmt(&mut self) -> OptResult<AstNode> {
+    pub(in crate::parser) fn cluster_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
 
         /*
             CLUSTER '(' utility_option_list ')'
@@ -10,15 +10,13 @@ impl Parser<'_> {
             CLUSTER opt_verbose qualified_name cluster_index_specification
         */
 
-        if self.buffer.consume_kw_eq(Cluster)?.is_none() {
-            return Ok(None)
-        }
+        self.buffer.consume_kw_eq(Cluster)?;
 
         todo!()
     }
 }
 
 use crate::lexer::Keyword::Cluster;
+use crate::parser::result::ScanErrorKind;
 use crate::parser::AstNode;
-use crate::parser::OptResult;
 use crate::parser::Parser;

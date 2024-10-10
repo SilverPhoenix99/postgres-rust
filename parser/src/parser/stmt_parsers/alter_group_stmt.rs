@@ -1,16 +1,14 @@
 impl Parser<'_> {
 
     /// Alias: `AlterGroupStmt`
-    pub(in crate::parser) fn alter_group_stmt(&mut self) -> OptResult<AstNode> {
+    pub(in crate::parser) fn alter_group_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
 
         /*
             ALTER GROUP role_id RENAME TO role_id
             ALTER GROUP role_spec (ADD | DROP) USER role_list
         */
 
-        if self.buffer.consume_kw_eq(Group)?.is_none() {
-            return Ok(None)
-        }
+        self.buffer.consume_kw_eq(Group)?;
 
         let role_loc = self.buffer.current_location();
         let role = self.role_spec().required()?;
@@ -21,33 +19,44 @@ impl Parser<'_> {
         ).required()?;
 
         if action == Rename {
-            let target = match role.into_role_id() {
-                Ok(role_id) => role_id,
-                Err(err) => {
-                    self.err_loc_override = Some(role_loc);
-                    return Err(Some(err))
-                }
-            };
-
-            self.buffer.consume_kw_eq(To)?;
-            let new_name = self.role_spec().required()?.into_role_id()?;
-
-            return Ok(Some(
-                RenameStmt::new(RenameTarget::Role(target), new_name).into()
-            ))
+            return self.rename_group(role, role_loc).map(AstNode::from)
         }
 
-        self.buffer.consume_kw_eq(User)?;
+        /*
+            ... (ADD | DROP) USER role_list
+        */
+
+        self.buffer.consume_kw_eq(User).required()?;
 
         let action = if action == Add { AlterRoleAction::Add } else { AlterRoleAction::Remove };
 
-        let roles = self.role_list()?;
+        let roles = self.role_list().required()?;
         let options = vec![RoleMembers(roles)];
 
-        Ok(Some(
-            AlterRoleStmt::new(role, action, options)
-                .into()
-        ))
+        let stmt = AlterRoleStmt::new(role, action, options);
+        Ok(stmt.into())
+    }
+
+    fn rename_group(&mut self, role: RoleSpec, role_loc: Location) -> Result<RenameStmt, ScanErrorKind> {
+
+        /*
+            role_id RENAME TO role_id
+        */
+
+        let target = match role.into_role_id() {
+            Ok(role_id) => role_id,
+            Err(err) => {
+                self.err_loc_override = Some(role_loc);
+                return Err(err.into())
+            }
+        };
+
+        self.buffer.consume_kw_eq(To).required()?;
+
+        let new_name = self.role_spec().required()?.into_role_id()?;
+
+        let stmt = RenameStmt::new(Role(target), new_name);
+        Ok(stmt)
     }
 }
 
@@ -62,11 +71,11 @@ mod tests {
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let expected = RenameStmt::new(
-            RenameTarget::Role("some_group".into()),
+            Role("some_group".into()),
             "new_group_name".into()
         );
 
-        assert_eq!(Ok(Some(expected.into())), parser.alter_group_stmt());
+        assert_eq!(Ok(expected.into()), parser.alter_group_stmt());
     }
 
     #[test]
@@ -83,7 +92,7 @@ mod tests {
             ])]
         );
 
-        assert_eq!(Ok(Some(expected.into())), parser.alter_group_stmt());
+        assert_eq!(Ok(expected.into()), parser.alter_group_stmt());
     }
 
     #[test]
@@ -100,14 +109,16 @@ mod tests {
             ])]
         );
 
-        assert_eq!(Ok(Some(expected.into())), parser.alter_group_stmt());
+        assert_eq!(Ok(expected.into()), parser.alter_group_stmt());
     }
 }
 
 use crate::lexer::Keyword::{Add, DropKw, Group, Rename, To, User};
 use crate::lexer::KeywordDetails;
 use crate::parser::ast_node::AlterRoleOption::RoleMembers;
-use crate::parser::ast_node::{AlterRoleAction, AlterRoleStmt, AstNode, RenameStmt, RenameTarget, RoleSpec};
-use crate::parser::result::{OptResult, OptionalResult};
+use crate::parser::ast_node::RenameTarget::Role;
+use crate::parser::ast_node::{AlterRoleAction, AlterRoleStmt, AstNode, RenameStmt, RoleSpec};
+use crate::parser::result::{ScanErrorKind, ScanResult};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::Parser;
+use postgres_basics::Location;
