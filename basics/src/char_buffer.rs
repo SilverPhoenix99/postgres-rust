@@ -289,7 +289,7 @@ impl LineBuffer {
 
         if
             self.lines.is_empty()
-            || line_start_index > *self.lines.last().unwrap()
+            || line_start_index > *self.lines.last().expect("lines should not be empty")
         {
             // fast path
             self.lines.push(line_start_index);
