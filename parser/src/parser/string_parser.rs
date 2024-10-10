@@ -87,7 +87,7 @@ pub(super) fn strip_delimiters(kind: StringKind, slice: &str) -> &str {
                 .skip(1)
                 .find(|(_, c)| *c == '$')
                 .map(|(i, _)| i + 1) // include the '$'
-                .unwrap();
+                .expect("$-string delimiter should exist");
 
             let str_end = slice.len() - delim_len;
             delim_len..str_end

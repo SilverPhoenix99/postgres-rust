@@ -79,8 +79,7 @@ impl<'src> Lexer<'src> {
 
     fn lex_token(&mut self, concatenable_string: bool) -> LexResult {
 
-        // eof has already been filtered
-        match self.buffer.consume_one().unwrap() {
+        match self.buffer.consume_one().expect("eof should have already been filtered out") {
             '(' => Ok(OpenParenthesis),
             ')' => Ok(CloseParenthesis),
             ',' => Ok(Comma),
@@ -220,13 +219,12 @@ impl<'src> Lexer<'src> {
             }
 
             // Consume all ops for now, and check for restrictions afterward
-            let c = self.buffer.consume_one().unwrap();
+            let c = self.buffer.consume_one()
+                .expect("consuming inside a scope with peek");
             pg_op |= is_pg_op(c)
         }
 
-        // Length is guaranteed to be at least 1,
-        // so it's safe to unwrap,
-        // even though there's a push_back.
+        // SAFETY: Length is guaranteed to be at least 1.
         let mut op = self.buffer.slice(start_index);
 
         match op {

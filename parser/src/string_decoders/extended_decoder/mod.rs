@@ -93,13 +93,11 @@ impl<'src> ExtendedStringDecoder<'src> {
                     // Any octal with 3 digits can go above 0xff, so we'll reproduce here discarding the high bit,
                     // like PG implicitly does by casting to `unsigned char`.
 
-                    // SAFETY: All digits are checked by `is_oct_digit()`, so it's safe to call `unwrap()`.
-
-                    let mut decoded = c.to_digit(8).unwrap();
+                    let mut decoded = c.to_digit(8).expect("should be octal char");
                     if let Some(c) = self.input.consume_if(is_oct_digit) {
-                        decoded = (decoded << 3) | c.to_digit(8).unwrap();
+                        decoded = (decoded << 3) | c.to_digit(8).expect("should be octal char");
                         if let Some(c) = self.input.consume_if(is_oct_digit) {
-                            decoded = (decoded << 3) | c.to_digit(8).unwrap();
+                            decoded = (decoded << 3) | c.to_digit(8).expect("should be octal char");
                         }
                     }
 
@@ -109,11 +107,10 @@ impl<'src> ExtendedStringDecoder<'src> {
                     out.push(decoded as u8)
                 },
                 'x' => { // hex escape
-                    // SAFETY: All digits are checked by `is_hex_digit()`, so it's safe to call `unwrap()`.
                     if let Some(c) = self.input.consume_if(is_hex_digit) {
-                        let mut decoded = c.to_digit(16).unwrap();
+                        let mut decoded = c.to_digit(16).expect("should be hex char");
                         if let Some(c) = self.input.consume_if(is_hex_digit) {
-                            let c = c.to_digit(16).unwrap();
+                            let c = c.to_digit(16).expect("should be hex char");
                             decoded = (decoded << 4) | c;
                         }
                         // SAFETY: The maximum value is 0xff.
