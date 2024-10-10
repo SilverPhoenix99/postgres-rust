@@ -12,7 +12,6 @@
   * Add method `Keyword::details(&self)`.
   * Change to `Map<Keyword, &;static KeywordDetails>` (instead of `&'static str` key)
 * Merge `Parser.move_stmt` into `Parser.fetch_stmt`
-* Add notes to `unreachable!`
 * Test `NumericSpec`.
 * Support encodings besides UTF-8: `include/mb/pg_wchar.h`, `common/wchar.c`, etc
   * For now:

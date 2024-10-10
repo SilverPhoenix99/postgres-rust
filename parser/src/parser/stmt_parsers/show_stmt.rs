@@ -23,28 +23,30 @@ impl Parser<'_> {
                 })
             )
             .optional()?;
+        
+        let Some(show_stmt) = show_stmt else {
+            /*
+                SHOW var_name
+            */
+            let var_name = self.var_name().required()?;
+            return Ok(Name(var_name))
+        };
 
         match show_stmt {
-            Some(All) => Ok(All),
-            Some(SessionAuthorization) => {
+            SessionAuthorization => {
                 self.buffer.consume_kw_eq(Authorization).required()?;
-                Ok(SessionAuthorization)
             },
-            Some(TransactionIsolation) => {
+            TransactionIsolation => {
                 self.buffer.consume_kw_eq(Isolation).required()?;
                 self.buffer.consume_kw_eq(Level).required()?;
-                Ok(TransactionIsolation)
             }
-            Some(TimeZone) => {
+            TimeZone => {
                 self.buffer.consume_kw_eq(Zone).required()?;
-                Ok(TimeZone)
             }
-            Some(Name(_)) => unreachable!(),
-            None => {
-                let var_name = self.var_name().required()?;
-                Ok(Name(var_name))
-            }
-        }
+            _ => {}
+        };
+
+        Ok(show_stmt)
     }
 }
 
