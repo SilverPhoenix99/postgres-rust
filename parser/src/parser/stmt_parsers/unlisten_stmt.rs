@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `UnlistenStmt`
-    pub(in crate::parser) fn unlisten_stmt(&mut self) -> Result<OneOrAll, ScanErrorKind> {
+    pub(in crate::parser) fn unlisten_stmt(&mut self) -> ScanResult<OneOrAll> {
 
         /*
             UNLISTEN '*'
@@ -39,6 +39,6 @@ mod tests {
 use crate::lexer::Keyword::Unlisten;
 use crate::lexer::TokenKind::Mul;
 use crate::parser::ast_node::OneOrAll;
-use crate::parser::result::ScanErrorKind;
 use crate::parser::Parser;
-use crate::parser::ScanResult;
+use crate::parser::result::ScanResult;
+use crate::parser::ScanResultTrait;

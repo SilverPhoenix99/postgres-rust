@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn alter_collation_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
+    pub(in crate::parser) fn alter_collation_stmt(&mut self) -> ScanResult<AstNode> {
 
         /*
             ALTER COLLATION any_name OWNER TO RoleSpec
@@ -132,6 +132,6 @@ use crate::parser::ast_node::{
     RenameStmt,
     RenameTarget
 };
-use crate::parser::result::{ScanErrorKind, ScanResult};
+use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::Parser;

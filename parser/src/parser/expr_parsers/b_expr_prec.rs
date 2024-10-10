@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(super) fn b_expr_prec(&mut self, prec: i16) -> Result<AstNode, ScanErrorKind> {
+    pub(super) fn b_expr_prec(&mut self, prec: i16) -> ScanResult<AstNode> {
 
         // Precedence climbing
 
@@ -88,7 +88,7 @@ impl Parser<'_> {
         Ok(expr)
     }
 
-    fn b_expr_primary(&self) -> Result<AstNode, ScanErrorKind> {
+    fn b_expr_primary(&self) -> ScanResult<AstNode> {
         todo!()
     }
 }
@@ -98,6 +98,6 @@ use crate::lexer::KeywordDetails;
 use crate::lexer::TokenKind::*;
 use crate::parser::ast_node::AstNode;
 use crate::parser::expr_parsers::associativity::Associativity;
-use crate::parser::result::{ScanErrorKind, ScanResult};
+use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::Parser;

@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `DiscardStmt`
-    pub(in crate::parser) fn discard_stmt(&mut self) -> Result<DiscardStmt, ScanErrorKind> {
+    pub(in crate::parser) fn discard_stmt(&mut self) -> ScanResult<DiscardStmt> {
 
         /*
             DISCARD (ALL | PLANS | SEQUENCES | TEMP | TEMPORARY)
@@ -58,6 +58,6 @@ mod tests {
 use crate::lexer::Keyword::{All, Discard, Plans, Sequences, Temp, Temporary};
 use crate::lexer::KeywordDetails;
 use crate::parser::ast_node::DiscardStmt;
-use crate::parser::result::{ScanErrorKind, ScanResult};
+use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::Parser;

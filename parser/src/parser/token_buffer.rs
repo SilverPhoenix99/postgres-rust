@@ -53,7 +53,7 @@ impl<'src> TokenBuffer<'src> {
     pub fn consume_any<T>(
         &mut self,
         mappers: &[&dyn Fn(&TokenKind) -> ConsumerResult<T>]
-    ) -> Result<T, ScanErrorKind>
+    ) -> ScanResult<T>
     {
         self.consume(|tok| {
 
@@ -70,12 +70,12 @@ impl<'src> TokenBuffer<'src> {
     }
 
     #[inline(always)]
-    pub fn consume_eq(&mut self, kind: TokenKind) -> Result<TokenKind, ScanErrorKind> {
+    pub fn consume_eq(&mut self, kind: TokenKind) -> ScanResult<TokenKind> {
         self.consume(|tok| kind.eq(tok))
     }
 
     #[inline(always)]
-    pub fn consume_kw_eq(&mut self, keyword: Keyword) -> Result<&'static KeywordDetails, ScanErrorKind> {
+    pub fn consume_kw_eq(&mut self, keyword: Keyword) -> ScanResult<&'static KeywordDetails> {
         self.consume(|tok|
             tok.keyword().filter(|details| details.keyword() == keyword)
         )
@@ -87,14 +87,14 @@ impl<'src> TokenBuffer<'src> {
 pub(super) type ConsumerResult<T> = Result<Option<T>, ParserErrorKind>;
 
 pub(super) trait TokenConsumer<TOut, FRes> {
-    fn consume<F>(&mut self, f: F) -> Result<TOut, ScanErrorKind>
+    fn consume<F>(&mut self, f: F) -> ScanResult<TOut>
     where
         F: Fn(&TokenKind) -> FRes;
 }
 
 impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenBuffer<'_> {
 
-    fn consume<F>(&mut self, mapper: F) -> Result<TOut, ScanErrorKind>
+    fn consume<F>(&mut self, mapper: F) -> ScanResult<TOut>
     where
         F: Fn(&TokenKind) -> ConsumerResult<TOut>
     {
@@ -137,7 +137,7 @@ where
     /// Similar to `consume() -> OptResult`, but maps `None` to `Ok(None)`.
     /// Use this method when the consumption doesn't require returning errors.
     #[inline(always)]
-    fn consume<F>(&mut self, mapper: F) -> Result<TOut, ScanErrorKind>
+    fn consume<F>(&mut self, mapper: F) -> ScanResult<TOut>
     where
         F: Fn(&TokenKind) -> Option<TOut>
     {
@@ -155,7 +155,7 @@ where
     T: TokenConsumer<TokenKind, ConsumerResult<TokenKind>>
 {
     #[inline(always)]
-    fn consume<P>(&mut self, pred: P) -> Result<TokenKind, ScanErrorKind>
+    fn consume<P>(&mut self, pred: P) -> ScanResult<TokenKind>
     where
         P: Fn(&TokenKind) -> bool
     {
@@ -174,6 +174,7 @@ where
 mod tests {
     use super::*;
     use crate::lexer::IdentifierKind::BasicIdentifier;
+    use crate::parser::result::ScanResult;
     use crate::parser::Lexer;
     use crate::parser::ParserErrorKind::Syntax;
     use TokenKind::Identifier;
@@ -223,7 +224,7 @@ mod tests {
         let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
-        let result: Result<TokenKind, ScanErrorKind> = buffer.consume(|_| Err(Syntax));
+        let result: ScanResult<TokenKind> = buffer.consume(|_| Err(Syntax));
         assert_eq!(Err(ParserErr(Syntax)), result);
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
     }
@@ -243,7 +244,7 @@ mod tests {
         let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
-        let result: Result<TokenKind, ScanErrorKind> = buffer.consume(|_| None);
+        let result: ScanResult<TokenKind> = buffer.consume(|_| None);
         assert_eq!(Err(NoMatch), result);
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
     }
@@ -282,5 +283,6 @@ mod tests {
 use crate::error::HasLocation;
 use crate::lexer::{Keyword, KeywordDetails, Lexer, LexerResult, TokenKind};
 use crate::parser::result::ScanErrorKind::{Eof, NoMatch, ParserErr};
-use crate::parser::{ParserErrorKind, ScanErrorKind};
+use crate::parser::result::ScanResult;
+use crate::parser::ParserErrorKind;
 use postgres_basics::Location;

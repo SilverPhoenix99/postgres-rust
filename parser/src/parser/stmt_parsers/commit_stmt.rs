@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn commit_stmt(&mut self) -> Result<TransactionStmt, ScanErrorKind> {
+    pub(in crate::parser) fn commit_stmt(&mut self) -> ScanResult<TransactionStmt> {
 
         /*
             COMMIT opt_transaction opt_transaction_chain
@@ -71,5 +71,5 @@ mod tests {
 
 use crate::lexer::Keyword::{Commit, Prepared};
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::{ScanErrorKind, ScanResult};
+use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::Parser;

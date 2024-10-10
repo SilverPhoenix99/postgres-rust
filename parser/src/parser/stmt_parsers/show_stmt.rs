@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `VariableShowStmt`
-    pub(in crate::parser) fn show_stmt(&mut self) -> Result<VariableShowStmt, ScanErrorKind> {
+    pub(in crate::parser) fn show_stmt(&mut self) -> ScanResult<VariableShowStmt> {
 
         /*
             SHOW var_name
@@ -90,6 +90,6 @@ mod tests {
 
 use crate::lexer::Keyword::{self, Authorization, Isolation, Level, Show, Zone};
 use crate::parser::ast_node::VariableShowStmt::{self, *};
-use crate::parser::result::{ScanErrorKind, ScanResult};
+use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::Parser;

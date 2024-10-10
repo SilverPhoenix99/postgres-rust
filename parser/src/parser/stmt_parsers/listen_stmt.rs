@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `ListenStmt`
-    pub(in crate::parser) fn listen_stmt(&mut self) -> Result<CowStr, ScanErrorKind> {
+    pub(in crate::parser) fn listen_stmt(&mut self) -> ScanResult<CowStr> {
 
         /*
             LISTEN ColId
@@ -28,5 +28,5 @@ mod tests {
 }
 
 use crate::lexer::Keyword::Listen;
-use crate::parser::result::{ScanErrorKind, ScanResult};
+use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::{CowStr, Parser};

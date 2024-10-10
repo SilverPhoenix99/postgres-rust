@@ -1,7 +1,7 @@
 impl Parser<'_> {
 
     /// Alias: `AlterGroupStmt`
-    pub(in crate::parser) fn alter_group_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
+    pub(in crate::parser) fn alter_group_stmt(&mut self) -> ScanResult<AstNode> {
 
         /*
             ALTER GROUP role_id RENAME TO role_id
@@ -37,7 +37,7 @@ impl Parser<'_> {
         Ok(stmt.into())
     }
 
-    fn rename_group(&mut self, role: RoleSpec, role_loc: Location) -> Result<RenameStmt, ScanErrorKind> {
+    fn rename_group(&mut self, role: RoleSpec, role_loc: Location) -> ScanResult<RenameStmt> {
 
         /*
             role_id RENAME TO role_id
@@ -118,7 +118,7 @@ use crate::lexer::KeywordDetails;
 use crate::parser::ast_node::AlterRoleOption::RoleMembers;
 use crate::parser::ast_node::RenameTarget::Role;
 use crate::parser::ast_node::{AlterRoleAction, AlterRoleStmt, AstNode, RenameStmt, RoleSpec};
-use crate::parser::result::{ScanErrorKind, ScanResult};
+use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::Parser;
 use postgres_basics::Location;

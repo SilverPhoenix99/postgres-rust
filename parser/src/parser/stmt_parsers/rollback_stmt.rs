@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn rollback_stmt(&mut self) -> Result<TransactionStmt, ScanErrorKind> {
+    pub(in crate::parser) fn rollback_stmt(&mut self) -> ScanResult<TransactionStmt> {
 
         /*
             ROLLBACK PREPARED SCONST
@@ -123,6 +123,6 @@ mod tests {
 
 use crate::lexer::Keyword::{Prepared, Rollback, Savepoint, To};
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::ScanErrorKind::{self, Eof, NoMatch, ParserErr};
-use crate::parser::result::ScanResult;
+use crate::parser::result::ScanErrorKind::{Eof, NoMatch, ParserErr};
+use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::Parser;

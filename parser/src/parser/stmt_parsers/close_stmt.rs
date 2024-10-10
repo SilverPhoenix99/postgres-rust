@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `ClosePortalStmt`
-    pub(in crate::parser) fn close_stmt(&mut self) -> Result<OneOrAll, ScanErrorKind> {
+    pub(in crate::parser) fn close_stmt(&mut self) -> ScanResult<OneOrAll> {
 
         /*
             CLOSE ALL
@@ -41,5 +41,5 @@ mod tests {
 
 use crate::lexer::Keyword::{All, Close};
 use crate::parser::ast_node::OneOrAll;
-use crate::parser::result::{EofResult, ScanErrorKind, ScanResult};
+use crate::parser::result::{EofResultTrait, ScanResult, ScanResultTrait};
 use crate::parser::Parser;

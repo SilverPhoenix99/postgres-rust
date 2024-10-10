@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn set_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
+    pub(in crate::parser) fn set_stmt(&mut self) -> ScanResult<AstNode> {
 
         // TODO Conflicts
 
@@ -11,5 +11,5 @@ impl Parser<'_> {
 
 use crate::lexer::Keyword::Set;
 use crate::parser::ast_node::AstNode;
-use crate::parser::result::ScanErrorKind;
 use crate::parser::Parser;
+use crate::parser::result::ScanResult;

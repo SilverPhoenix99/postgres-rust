@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `DeallocateStmt`
-    pub(in crate::parser) fn deallocate_stmt(&mut self) -> Result<OneOrAll, ScanErrorKind> {
+    pub(in crate::parser) fn deallocate_stmt(&mut self) -> ScanResult<OneOrAll> {
 
         /*
             DEALLOCATE (PREPARE)? ALL
@@ -41,5 +41,5 @@ mod tests {
 
 use crate::lexer::Keyword::{All, Deallocate, Prepare};
 use crate::parser::ast_node::OneOrAll;
-use crate::parser::result::{EofResult, ScanErrorKind, ScanResult};
+use crate::parser::result::{EofResultTrait, ScanResult, ScanResultTrait};
 use crate::parser::Parser;

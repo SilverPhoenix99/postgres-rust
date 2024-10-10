@@ -130,7 +130,7 @@ impl<'src> Parser<'src> {
         Ok(true)
     }
 
-    fn toplevel_stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
+    fn toplevel_stmt(&mut self) -> ScanResult<AstNode> {
 
         if self.buffer.eof() { Err(Eof) }
         else if let Some(node) = self.stmt().optional()? { Ok(node) }
@@ -139,7 +139,7 @@ impl<'src> Parser<'src> {
         else { Err(NoMatch) }
     }
 
-    fn stmt(&mut self) -> Result<AstNode, ScanErrorKind> {
+    fn stmt(&mut self) -> ScanResult<AstNode> {
 
         if self.buffer.eof() { Err(Eof) }
         else if self.buffer.consume_kw_eq(Keyword::Checkpoint).optional()?.is_some() { Ok(AstNode::CheckPoint) }
@@ -213,7 +213,7 @@ impl<'src> Parser<'src> {
     /// Post-condition: Vec is **Not** empty
     ///
     /// Alias: `transaction_mode_list_or_empty`
-    fn transaction_mode_list(&mut self) -> Result<Vec<TransactionMode>, ScanErrorKind> {
+    fn transaction_mode_list(&mut self) -> ScanResult<Vec<TransactionMode>> {
 
         /*
             transaction_mode ( (',')? transaction_mode )*
@@ -238,7 +238,7 @@ impl<'src> Parser<'src> {
 
             elements.push(element);
         }
-        
+
         while self.buffer.consume_eq(Comma).optional()?.is_some() {
             let element = self.transaction_mode().required()?;
             elements.push(element);
@@ -248,7 +248,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `transaction_mode_item`
-    fn transaction_mode(&mut self) -> Result<TransactionMode, ScanErrorKind> {
+    fn transaction_mode(&mut self) -> ScanResult<TransactionMode> {
         use Keyword::{Deferrable, Isolation, Level, Not, Only, Read, Write};
 
         /*
@@ -290,7 +290,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `iso_level`
-    fn isolation_level(&mut self) -> Result<IsolationLevel, ScanErrorKind> {
+    fn isolation_level(&mut self) -> ScanResult<IsolationLevel> {
         use Keyword::{Committed, Read, Repeatable, Serializable, Uncommitted};
 
         /*
@@ -328,7 +328,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec is **not** empty
-    fn var_name(&mut self) -> Result<QnName, ScanErrorKind> {
+    fn var_name(&mut self) -> ScanResult<QnName> {
 
         /*
             col_id ( '.' col_id )*
@@ -346,7 +346,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `AexprConst`
-    fn a_expr_const(&mut self) -> Result<(), ScanErrorKind> {
+    fn a_expr_const(&mut self) -> ScanResult<()> {
 
         /*
         AexprConst :
@@ -369,7 +369,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `ConstTypename`
-    fn const_typename(&mut self) -> Result<SystemType, ScanErrorKind> {
+    fn const_typename(&mut self) -> ScanResult<SystemType> {
         use Keyword::{Bit, Varying};
 
         /*
@@ -408,7 +408,7 @@ impl<'src> Parser<'src> {
 
     /// Alias: `Numeric`<p/>
     /// Inline: `opt_float`
-    fn numeric(&mut self) -> Result<SystemType, ScanErrorKind> {
+    fn numeric(&mut self) -> ScanResult<SystemType> {
         use Keyword::{Bigint, Boolean, Dec, Decimal, Double, Float, Int, Integer, Numeric, Precision, Real, Smallint};
 
         /*
@@ -475,7 +475,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec **can** be empty
-    fn opt_type_modifiers(&mut self) -> Result<Vec<AstNode>, ScanErrorKind> {
+    fn opt_type_modifiers(&mut self) -> ScanResult<Vec<AstNode>> {
         use TokenKind::{CloseParenthesis, OpenParenthesis};
 
         /*
@@ -484,12 +484,10 @@ impl<'src> Parser<'src> {
 
         self.buffer.consume_eq(OpenParenthesis)?;
 
-        let exprs = match self.expr_list() {
-            Ok(ok) => ok,
-            Err(NoMatch) => vec![],
-            Err(Eof) => return Err(ScanErrorKind::default()),
-            Err(err) => return Err(err),
-        };
+        let exprs = self.expr_list()
+            .no_match_to_option()
+            .required()?
+            .unwrap_or_else(Vec::new);
 
         self.buffer.consume_eq(CloseParenthesis).required()?;
 
@@ -497,7 +495,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec is **Not** empty
-    fn expr_list(&mut self) -> Result<Vec<AstNode>, ScanErrorKind> {
+    fn expr_list(&mut self) -> ScanResult<Vec<AstNode>> {
 
         /*
             a_expr ( ',' a_expr )*
@@ -517,7 +515,7 @@ impl<'src> Parser<'src> {
     /// Post-condition: Vec is **Not** empty
     ///
     /// Alias: `handler_name`
-    fn any_name(&mut self) -> Result<QnName, ScanErrorKind> {
+    fn any_name(&mut self) -> ScanResult<QnName> {
 
         /*
             col_id attrs
@@ -528,7 +526,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec is **Not** empty
-    fn attrs(&mut self, prefix: CowStr) -> Result<QnName, ScanErrorKind> {
+    fn attrs(&mut self, prefix: CowStr) -> ScanResult<QnName> {
 
         // A prefix token is passed to prevent a right shift of the Vec later on,
         // to insert the 1st element.
@@ -548,7 +546,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Production: `'(' ICONST ')'`
-    fn i32_literal_paren(&mut self) -> Result<i32, ScanErrorKind> {
+    fn i32_literal_paren(&mut self) -> ScanResult<i32> {
         use TokenKind::{CloseParenthesis, OpenParenthesis};
 
         self.buffer.consume_eq(OpenParenthesis)?;
@@ -558,7 +556,7 @@ impl<'src> Parser<'src> {
         Ok(num)
     }
 
-    fn character(&mut self) -> Result<CharacterSystemType, ScanErrorKind> {
+    fn character(&mut self) -> ScanResult<CharacterSystemType> {
         use Keyword::{Char, Character, National, Nchar, Varchar};
 
         /*
@@ -603,7 +601,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `NumericOnly`
-    fn signed_number(&mut self) -> Result<SignedNumber, ScanErrorKind> {
+    fn signed_number(&mut self) -> ScanResult<SignedNumber> {
         use TokenKind::{Minus, Plus};
 
         // ('+' | '-')? (ICONST | FCONST)
@@ -640,7 +638,7 @@ impl<'src> Parser<'src> {
         Ok(value)
     }
 
-    fn unsigned_number(&mut self) -> Result<UnsignedNumber, ScanErrorKind> {
+    fn unsigned_number(&mut self) -> ScanResult<UnsignedNumber> {
 
         // ICONST | FCONST
 
@@ -655,7 +653,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `SignedIconst`
-    fn signed_i32_literal(&mut self) -> Result<i32, ScanErrorKind> {
+    fn signed_i32_literal(&mut self) -> ScanResult<i32> {
         use TokenKind::{Minus, Plus};
 
         // ('+' | '-')? ICONST
@@ -679,7 +677,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `ICONST`
-    fn i32_literal(&mut self) -> Result<i32, ScanErrorKind> {
+    fn i32_literal(&mut self) -> ScanResult<i32> {
 
         let loc = self.buffer.current_location();
         let source = self.buffer.source();
@@ -695,7 +693,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec is **not** empty
-    fn role_list(&mut self) -> Result<Vec<RoleSpec>, ScanErrorKind> {
+    fn role_list(&mut self) -> ScanResult<Vec<RoleSpec>> {
 
         /*
             role_spec ( ',' role_spec )*
@@ -714,7 +712,7 @@ impl<'src> Parser<'src> {
 
     /// Alias: `RoleId`
     #[inline]
-    fn role_id(&mut self) -> Result<CowStr, ScanErrorKind> {
+    fn role_id(&mut self) -> ScanResult<CowStr> {
 
         // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
@@ -724,7 +722,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `RoleSpec`
-    fn role_spec(&mut self) -> Result<RoleSpec, ScanErrorKind> {
+    fn role_spec(&mut self) -> ScanResult<RoleSpec> {
 
         /*
             role_spec :
@@ -770,7 +768,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `qual_Op`
-    fn qual_op(&mut self) -> Result<QnOperator, ScanErrorKind> {
+    fn qual_op(&mut self) -> ScanResult<QnOperator> {
 
         /*
             Operator | prefixed_operator
@@ -785,7 +783,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Production: `OPERATOR '(' any_operator ')'`
-    fn prefixed_operator(&mut self) -> Result<QnOperator, ScanErrorKind> {
+    fn prefixed_operator(&mut self) -> ScanResult<QnOperator> {
         use Keyword::Operator;
         use TokenKind::{CloseParenthesis, OpenParenthesis};
 
@@ -798,7 +796,7 @@ impl<'src> Parser<'src> {
         Ok(op)
     }
 
-    fn any_operator(&mut self) -> Result<QnOperator, ScanErrorKind> {
+    fn any_operator(&mut self) -> ScanResult<QnOperator> {
 
         /*
             ( col_id '.' )* all_op
@@ -825,7 +823,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `all_Op`
-    fn all_op(&mut self) -> Result<AllOp, ScanErrorKind> {
+    fn all_op(&mut self) -> ScanResult<AllOp> {
 
         if let Some(op) = self.math_op().no_match_to_option()? {
             return Ok(AllOp::MathOp(op))
@@ -835,7 +833,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Returns the text of the `UserDefinedOperator`
-    fn operator(&mut self) -> Result<String, ScanErrorKind> {
+    fn operator(&mut self) -> ScanResult<String> {
 
         let loc = self.buffer.current_location();
         let source = self.buffer.source();
@@ -849,7 +847,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Alias: `MathOp`
-    fn math_op(&mut self) -> Result<MathOp, ScanErrorKind> {
+    fn math_op(&mut self) -> ScanResult<MathOp> {
         use MathOp::*;
         use TokenKind::{Circumflex, Div, Minus, Mul, Percent, Plus};
 
@@ -874,7 +872,7 @@ impl<'src> Parser<'src> {
     /// * `ColId`
     /// * `name`
     #[inline(always)]
-    fn col_id(&mut self) -> Result<CowStr, ScanErrorKind> {
+    fn col_id(&mut self) -> ScanResult<CowStr> {
         self.ident_or_keyword(|kw|
                kw.unreserved().is_some()
             || kw.col_name().is_some()
@@ -882,7 +880,7 @@ impl<'src> Parser<'src> {
     }
 
     #[inline(always)]
-    fn type_function_name(&mut self) -> Result<CowStr, ScanErrorKind> {
+    fn type_function_name(&mut self) -> ScanResult<CowStr> {
         self.ident_or_keyword(|kw|
                kw.unreserved().is_some()
             || kw.type_func_name().is_some()
@@ -891,7 +889,7 @@ impl<'src> Parser<'src> {
 
     /// Alias: `NonReservedWord`
     #[inline(always)]
-    fn non_reserved_word(&mut self) -> Result<CowStr, ScanErrorKind> {
+    fn non_reserved_word(&mut self) -> ScanResult<CowStr> {
         self.ident_or_keyword(|kw|
                kw.unreserved().is_some()
             || kw.col_name().is_some()
@@ -903,17 +901,17 @@ impl<'src> Parser<'src> {
     /// * `ColLabel`
     /// * `attr_name`
     #[inline(always)]
-    fn col_label(&mut self) -> Result<CowStr, ScanErrorKind> {
+    fn col_label(&mut self) -> ScanResult<CowStr> {
         self.ident_or_keyword(|_| true)
     }
 
     /// Alias: `BareColLabel`
     #[inline(always)]
-    fn bare_col_label(&mut self) -> Result<CowStr, ScanErrorKind> {
+    fn bare_col_label(&mut self) -> ScanResult<CowStr> {
         self.ident_or_keyword(KeywordDetails::bare)
     }
 
-    fn ident_or_keyword<P>(&mut self, pred: P) -> Result<CowStr, ScanErrorKind>
+    fn ident_or_keyword<P>(&mut self, pred: P) -> ScanResult<CowStr>
     where
         P: Fn(&KeywordDetails) -> bool
     {
@@ -932,13 +930,13 @@ impl<'src> Parser<'src> {
     /// * `USCONST`
     /// * `file_name`
     #[inline(always)]
-    fn string(&mut self) -> Result<String, ScanErrorKind> {
+    fn string(&mut self) -> ScanResult<String> {
         StringParser(self).parse()
     }
 
     /// Alias: `IDENT`
     #[inline(always)]
-    fn identifier(&mut self) -> Result<String, ScanErrorKind> {
+    fn identifier(&mut self) -> ScanResult<String> {
         IdentifierParser(self).parse()
     }
 
@@ -1594,8 +1592,8 @@ use self::ast_node::TransactionMode;
 use self::ast_node::{AllOp, MathOp, QnOperator, SignedNumber, UnsignedNumber};
 use self::error::ParserErrorKind::*;
 use self::ident_parser::IdentifierParser;
-use self::result::ScanErrorKind::{self, Eof, NoMatch};
-use self::result::ScanResult;
+use self::result::ScanErrorKind::{self, Eof, NoMatch, ParserErr};
+use self::result::ScanResultTrait;
 use self::string_parser::StringParser;
 use self::token_buffer::TokenBuffer;
 use self::token_buffer::TokenConsumer;
@@ -1603,9 +1601,9 @@ use crate::lexer::Keyword;
 use crate::lexer::KeywordDetails;
 use crate::lexer::Lexer;
 use crate::lexer::TokenKind::{self, Comma, Dot, NumberLiteral};
+use crate::parser::result::{EofResultTrait, ScanResult};
 use postgres_basics::ascii;
 use postgres_basics::Located;
 use postgres_basics::Location;
 use std::borrow::Cow;
 use std::mem;
-use ScanErrorKind::ParserErr;
