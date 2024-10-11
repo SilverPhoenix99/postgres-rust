@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `DropStmt`
-    pub(in crate::parser) fn drop_stmt(&mut self) -> ScanResult<AstNode> {
+    pub(in crate::parser) fn drop_stmt(&mut self) -> ScanResult<RawStmt> {
 
         /*
             DROP DOMAIN_P IF_P EXISTS type_name_list opt_drop_behavior
@@ -24,6 +24,6 @@ impl Parser<'_> {
 }
 
 use crate::lexer::Keyword::DropKw;
-use crate::parser::ast_node::AstNode;
-use crate::parser::Parser;
+use crate::parser::ast_node::RawStmt;
 use crate::parser::result::ScanResult;
+use crate::parser::Parser;

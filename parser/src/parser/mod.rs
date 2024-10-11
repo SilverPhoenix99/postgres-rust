@@ -20,7 +20,7 @@ type CowStr = Cow<'static, str>;
 type QnName = Vec<CowStr>;
 
 pub struct ParserResult {
-    pub result: Result<Vec<AstNode>, Located<ParserErrorKind>>,
+    pub result: Result<Vec<RawStmt>, Located<ParserErrorKind>>,
     pub warnings: Vec<Located<ParserWarning>>,
 }
 
@@ -70,7 +70,7 @@ impl<'src> Parser<'src> {
         }
     }
 
-    fn stmtmulti(&mut self) -> Result<Vec<AstNode>, ParserErrorKind> {
+    fn stmtmulti(&mut self) -> Result<Vec<RawStmt>, ParserErrorKind> {
 
         // This production is slightly cheating, not because it's more efficient,
         // but helps simplify capturing errors a bit.
@@ -130,7 +130,7 @@ impl<'src> Parser<'src> {
         Ok(true)
     }
 
-    fn toplevel_stmt(&mut self) -> ScanResult<AstNode> {
+    fn toplevel_stmt(&mut self) -> ScanResult<RawStmt> {
 
         if self.buffer.eof() { Err(Eof) }
         else if let Some(node) = self.stmt().optional()? { Ok(node) }
@@ -139,10 +139,10 @@ impl<'src> Parser<'src> {
         else { Err(NoMatch) }
     }
 
-    fn stmt(&mut self) -> ScanResult<AstNode> {
+    fn stmt(&mut self) -> ScanResult<RawStmt> {
 
         if self.buffer.eof() { Err(Eof) }
-        else if self.buffer.consume_kw_eq(Keyword::Checkpoint).optional()?.is_some() { Ok(AstNode::CheckPoint) }
+        else if self.buffer.consume_kw_eq(Keyword::Checkpoint).optional()?.is_some() { Ok(RawStmt::CheckPoint) }
         else if let Some(node) = self.abort_stmt().optional()? { Ok(node.into()) }
         else if let Some(node) = self.alter_stmt().optional()? { Ok(node) }
         else if let Some(node) = self.analyze_stmt().optional()? { Ok(node) }
@@ -152,7 +152,7 @@ impl<'src> Parser<'src> {
         else if let Some(node) = self.comment_stmt().optional()? { Ok(node) }
         else if let Some(node) = self.commit_stmt().optional()? { Ok(node.into()) }
         else if let Some(node) = self.copy_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.deallocate_stmt().optional()? { Ok(ClosePortalStmt(node)) }
+        else if let Some(node) = self.deallocate_stmt().optional()? { Ok(DeallocateStmt(node)) }
         else if let Some(node) = self.discard_stmt().optional()? { Ok(node.into()) }
         else if let Some(node) = self.do_stmt().optional()? { Ok(node) }
         else if let Some(node) = self.drop_stmt().optional()? { Ok(node) }
@@ -176,7 +176,7 @@ impl<'src> Parser<'src> {
         else if let Some(node) = self.show_stmt().optional()? { Ok(node.into()) }
         else if let Some(node) = self.start_transaction_stmt().optional()? { Ok(node.into()) }
         else if let Some(node) = self.truncate_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.unlisten_stmt().optional()? { Ok(ClosePortalStmt(node)) }
+        else if let Some(node) = self.unlisten_stmt().optional()? { Ok(UnlistenStmt(node)) }
         else if let Some(node) = self.vacuum_stmt().optional()? { Ok(node) }
         else { Err(NoMatch) }
     }
@@ -466,7 +466,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec **can** be empty
-    fn opt_type_modifiers(&mut self) -> ScanResult<Vec<AstNode>> {
+    fn opt_type_modifiers(&mut self) -> ScanResult<Vec<ExprNode>> {
         use TokenKind::{CloseParenthesis, OpenParenthesis};
 
         /*
@@ -486,7 +486,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec is **Not** empty
-    fn expr_list(&mut self) -> ScanResult<Vec<AstNode>> {
+    fn expr_list(&mut self) -> ScanResult<Vec<ExprNode>> {
 
         /*
             a_expr ( ',' a_expr )*
@@ -1564,9 +1564,9 @@ mod tests {
     }
 }
 
-use self::ast_node::AstNode::{self, ClosePortalStmt, ListenStmt, LoadStmt};
 use self::ast_node::CharacterSystemType;
 use self::ast_node::EventTriggerState;
+use self::ast_node::ExprNode;
 use self::ast_node::IsolationLevel;
 use self::ast_node::RoleSpec;
 use self::ast_node::SystemType::{self, Bool, Float4, Float8, Int2, Int4, Int8};
@@ -1582,6 +1582,7 @@ use self::token_buffer::TokenConsumer;
 use crate::lexer::Keyword;
 use crate::lexer::Lexer;
 use crate::lexer::TokenKind::{self, Comma, Dot, NumberLiteral};
+use crate::parser::ast_node::RawStmt::{self, ClosePortalStmt, DeallocateStmt, ListenStmt, LoadStmt, UnlistenStmt};
 use crate::parser::result::{EofResultTrait, ScanResult};
 use postgres_basics::ascii;
 use postgres_basics::Located;

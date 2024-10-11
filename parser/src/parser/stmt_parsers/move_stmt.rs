@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `FetchStmt`
-    pub(in crate::parser) fn move_stmt(&mut self) -> ScanResult<AstNode> {
+    pub(in crate::parser) fn move_stmt(&mut self) -> ScanResult<RawStmt> {
 
         /*
             FETCH fetch_args
@@ -14,6 +14,6 @@ impl Parser<'_> {
 }
 
 use crate::lexer::Keyword::Move;
-use crate::parser::AstNode;
-use crate::parser::Parser;
+use crate::parser::ast_node::RawStmt;
 use crate::parser::result::ScanResult;
+use crate::parser::Parser;

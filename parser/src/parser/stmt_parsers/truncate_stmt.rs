@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `TruncateStmt`
-    pub(in crate::parser) fn truncate_stmt(&mut self) -> ScanResult<AstNode> {
+    pub(in crate::parser) fn truncate_stmt(&mut self) -> ScanResult<RawStmt> {
 
         /*
             TRUNCATE opt_table relation_expr_list opt_restart_seqs opt_drop_behavior
@@ -13,6 +13,6 @@ impl Parser<'_> {
 }
 
 use crate::lexer::Keyword::Truncate;
-use crate::parser::AstNode;
-use crate::parser::Parser;
+use crate::parser::ast_node::RawStmt;
 use crate::parser::result::ScanResult;
+use crate::parser::Parser;

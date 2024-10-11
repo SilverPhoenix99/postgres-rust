@@ -14,8 +14,8 @@ pub enum SystemType {
     /// Blank-Padded Character string
     Bpchar(Option<i32>),
     // Bit string types:
-    Bit(Vec<AstNode>),
-    Varbit(Vec<AstNode>),
+    Bit(Vec<ExprNode>),
+    Varbit(Vec<ExprNode>),
     // Numeric types:
     Bool,
     Int2,
@@ -23,7 +23,7 @@ pub enum SystemType {
     Int8,
     Float4,
     Float8,
-    Numeric(Vec<AstNode>),
+    Numeric(Vec<ExprNode>),
 }
 
-use crate::parser::AstNode;
+use crate::parser::ExprNode;

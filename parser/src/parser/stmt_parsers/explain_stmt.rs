@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `ExplainStmt`
-    pub(in crate::parser) fn explain_stmt(&mut self) -> ScanResult<AstNode> {
+    pub(in crate::parser) fn explain_stmt(&mut self) -> ScanResult<RawStmt> {
 
         /*
             EXPLAIN ExplainableStmt
@@ -16,6 +16,6 @@ impl Parser<'_> {
 }
 
 use crate::lexer::Keyword::Explain;
-use crate::parser::AstNode;
-use crate::parser::Parser;
+use crate::parser::ast_node::RawStmt;
 use crate::parser::result::ScanResult;
+use crate::parser::Parser;

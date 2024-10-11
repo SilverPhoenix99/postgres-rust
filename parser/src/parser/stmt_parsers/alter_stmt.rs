@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn alter_stmt(&mut self) -> ScanResult<AstNode> {
+    pub(in crate::parser) fn alter_stmt(&mut self) -> ScanResult<RawStmt> {
 
         macro_rules! alternatives {
             ($($func:ident),* $(,)?) => {
@@ -59,5 +59,6 @@ mod tests {
 }
 
 use crate::lexer::Keyword::Alter;
+use crate::parser::ast_node::RawStmt;
 use crate::parser::result::{ScanErrorKind, ScanResult};
-use crate::parser::{AstNode, Parser, ScanResultTrait};
+use crate::parser::{Parser, ScanResultTrait};

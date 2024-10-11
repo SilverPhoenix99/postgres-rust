@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn alter_collation_stmt(&mut self) -> ScanResult<AstNode> {
+    pub(in crate::parser) fn alter_collation_stmt(&mut self) -> ScanResult<RawStmt> {
 
         /*
             ALTER COLLATION any_name OWNER TO RoleSpec
@@ -15,7 +15,7 @@ impl Parser<'_> {
         let op = self.buffer.consume_kws(|kw| matches!(kw, Owner | Refresh | Rename | Set))
             .required()?;
 
-        let stmt: AstNode = match op {
+        let stmt = match op {
             Owner => {
                 self.buffer.consume_kw_eq(To).required()?;
                 let role = self.role_spec().required()?;
@@ -117,13 +117,12 @@ mod tests {
 }
 
 use crate::lexer::Keyword::{Collation, Owner, Refresh, Rename, Schema, Set, To, Version};
-use crate::parser::ast_node::AstNode::RefreshCollationVersionStmt;
+use crate::parser::ast_node::RawStmt::{self, RefreshCollationVersionStmt};
 use crate::parser::ast_node::{
     AlterObjectSchemaStmt,
     AlterObjectSchemaTarget,
     AlterOwnerStmt,
     AlterOwnerTarget,
-    AstNode,
     RenameStmt,
     RenameTarget
 };

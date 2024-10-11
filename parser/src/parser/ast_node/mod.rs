@@ -283,7 +283,7 @@ impl AlterObjectSchemaStmt {
     }
 }
 
-pub type BinaryOperands = Box<(AstNode, AstNode)>;
+pub type BinaryOperands = Box<(ExprNode, ExprNode)>;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum XmlNodeKind {
@@ -314,13 +314,13 @@ pub enum XmlStandalone {
 #[derive(Debug, Clone, PartialEq)]
 pub struct XmlElement {
     name: CowStr,
-    attributes: Vec<AstNode>,
-    args: Vec<AstNode>,
+    attributes: Vec<ExprNode>,
+    args: Vec<ExprNode>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct XmlParse {
-    text: AstNode,
+    text: ExprNode,
     kind: XmlNodeKind,
     preserve_whitespace: bool
 }
@@ -328,14 +328,14 @@ pub struct XmlParse {
 #[derive(Debug, Clone, PartialEq)]
 pub struct XmlProcessingInstruction {
     name: CowStr,
-    args: Option<AstNode>,
+    args: Option<ExprNode>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct XmlRoot {
-    version: Option<AstNode>,
+    version: Option<ExprNode>,
     standalone: XmlStandalone,
-    xml: AstNode,
+    xml: ExprNode,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -346,13 +346,20 @@ pub enum Typename {
 #[derive(Debug, Clone, PartialEq)]
 pub struct XmlSerialize {
     kind: XmlNodeKind,
-    x: AstNode,
+    x: ExprNode,
     type_name: Typename,
     indent: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum AstNode {
+pub struct PrepareStmt {
+    name: CowStr,
+    arg_types: Vec<Typename>,
+    query: RawStmt,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum RawStmt {
     AlterEventTrigStmt(AlterEventTrigStmt),
     AlterObjectSchemaStmt(AlterObjectSchemaStmt),
     AlterOwnerStmt(AlterOwnerStmt),
@@ -362,25 +369,42 @@ pub enum AstNode {
     DeallocateStmt(OneOrAll),
     DiscardStmt(DiscardStmt),
     ListenStmt(CowStr),
-    Literal(AstLiteral),
     LoadStmt(String),
     NotifyStmt(NotifyStmt),
+    PrepareStmt(Box<PrepareStmt>),
+    PrepareTransactionStmt(String),
     ReassignOwnedStmt(ReassignOwnedStmt),
     RefreshCollationVersionStmt(QnName),
     RenameStmt(RenameStmt),
-    SystemType(SystemType),
     TransactionStmt(TransactionStmt),
-    Typecast((/* TODO */)),
     UnlistenStmt(OneOrAll),
     VariableShowStmt(VariableShowStmt),
-    PrepareTransaction(String),
+}
+
+impl_from!(AlterEventTrigStmt for RawStmt);
+impl_from!(AlterObjectSchemaStmt for RawStmt);
+impl_from!(AlterOwnerStmt for RawStmt);
+impl_from!(AlterRoleStmt for RawStmt);
+impl_from!(DiscardStmt for RawStmt);
+impl_from!(NotifyStmt for RawStmt);
+impl_from!(box PrepareStmt for RawStmt);
+impl_from!(ReassignOwnedStmt for RawStmt);
+impl_from!(RenameStmt for RawStmt);
+impl_from!(TransactionStmt for RawStmt);
+impl_from!(VariableShowStmt for RawStmt);
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ExprNode {
+    Literal(AstLiteral),
+    SystemType(SystemType),
+    Typecast((/* TODO */)),
 
     /* Math operations */
     Addition(BinaryOperands),
-    UnaryPlus(Box<AstNode>),
+    UnaryPlus(Box<ExprNode>),
     Subtraction(BinaryOperands),
     /// Aka `UnaryMinus`
-    Negation(Box<AstNode>),
+    Negation(Box<ExprNode>),
     Multiplication(BinaryOperands),
     Division(BinaryOperands),
     Modulo(BinaryOperands),
@@ -393,23 +417,23 @@ pub enum AstNode {
     GreaterEquals(BinaryOperands),
     LessEquals(BinaryOperands),
     NotEquals(BinaryOperands),
-    Not(Box<AstNode>),
+    Not(Box<ExprNode>),
     /// `IS DISTINCT FROM`
     Distinct(BinaryOperands),
     /// `IS NOT DISTINCT FROM`
     NotDistinct(BinaryOperands),
 
     /* Xml operations */
-    IsXmlDocument(Box<AstNode>),
-    XmlConcat(Vec<AstNode>),
+    IsXmlDocument(Box<ExprNode>),
+    XmlConcat(Vec<ExprNode>),
     XmlElement(XmlElement),
-    XmlForest(Vec<AstNode>),
+    XmlForest(Vec<ExprNode>),
     XmlParse(Box<XmlParse>),
     XmlProcessingInstruction(Box<XmlProcessingInstruction>),
     XmlRoot(Box<XmlRoot>),
 }
 
-impl AstNode {
+impl ExprNode {
     #[inline(always)]
     pub fn addition(left: Self, right: Self) -> Self {
         Self::Addition(Box::new((left, right)))
@@ -502,21 +526,11 @@ impl AstNode {
     }
 }
 
-impl_from!(box XmlParse for AstNode);
-impl_from!(box XmlProcessingInstruction for AstNode);
-impl_from!(box XmlRoot for AstNode);
-impl_from!(AlterEventTrigStmt for AstNode);
-impl_from!(AlterObjectSchemaStmt for AstNode);
-impl_from!(AlterOwnerStmt for AstNode);
-impl_from!(AlterRoleStmt for AstNode);
-impl_from!(AstLiteral for AstNode => Literal);
-impl_from!(DiscardStmt for AstNode);
-impl_from!(NotifyStmt for AstNode);
-impl_from!(ReassignOwnedStmt for AstNode);
-impl_from!(RenameStmt for AstNode);
-impl_from!(SystemType for AstNode);
-impl_from!(TransactionStmt for AstNode);
-impl_from!(VariableShowStmt for AstNode);
-impl_from!(XmlElement for AstNode);
+impl_from!(box XmlParse for ExprNode);
+impl_from!(box XmlProcessingInstruction for ExprNode);
+impl_from!(box XmlRoot for ExprNode);
+impl_from!(AstLiteral for ExprNode => Literal);
+impl_from!(SystemType for ExprNode);
+impl_from!(XmlElement for ExprNode);
 
 use crate::parser::CowStr;

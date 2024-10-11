@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `VacuumStmt`
-    pub(in crate::parser) fn vacuum_stmt(&mut self) -> ScanResult<AstNode> {
+    pub(in crate::parser) fn vacuum_stmt(&mut self) -> ScanResult<RawStmt> {
 
         /*
             VACUUM opt_full opt_freeze opt_verbose opt_analyze opt_vacuum_relation_list
@@ -14,6 +14,6 @@ impl Parser<'_> {
 }
 
 use crate::lexer::Keyword::Vacuum;
-use crate::parser::AstNode;
-use crate::parser::Parser;
+use crate::parser::ast_node::RawStmt;
 use crate::parser::result::ScanResult;
+use crate::parser::Parser;

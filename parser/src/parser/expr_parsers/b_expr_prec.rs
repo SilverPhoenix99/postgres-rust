@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(super) fn b_expr_prec(&mut self, prec: i16) -> ScanResult<AstNode> {
+    pub(super) fn b_expr_prec(&mut self, prec: i16) -> ScanResult<ExprNode> {
 
         // Precedence climbing
 
@@ -27,7 +27,7 @@ impl Parser<'_> {
 
             if op == Typecast {
                 // TODO: let typename = self.typename().required()?; // -> TypeName
-                expr = AstNode::Typecast((/* tree, typename */));
+                expr = ExprNode::Typecast((/* tree, typename */));
                 continue
             }
 
@@ -40,9 +40,9 @@ impl Parser<'_> {
                     .required()?;
 
                 expr = if kw == Document {
-                    let mut right = AstNode::is_xml_document(expr);
+                    let mut right = ExprNode::is_xml_document(expr);
                     if not_expr {
-                        right = AstNode::not(right)
+                        right = ExprNode::not(right)
                     }
                     right
                 }
@@ -52,10 +52,10 @@ impl Parser<'_> {
                     let right = self.b_expr_prec(assoc.right_prec()).required()?;
 
                     if not_expr {
-                        AstNode::not_distinct(expr, right)
+                        ExprNode::not_distinct(expr, right)
                     }
                     else {
-                        AstNode::distinct(expr, right)
+                        ExprNode::distinct(expr, right)
                     }
                 };
 
@@ -65,18 +65,18 @@ impl Parser<'_> {
             let right = self.b_expr_prec(assoc.right_prec()).required()?;
 
             expr = match op {
-                Circumflex => AstNode::exponentiation(expr, right),
-                Mul => AstNode::multiplication(expr, right),
-                Div => AstNode::division(expr, right),
-                Percent => AstNode::modulo(expr, right),
-                Plus => AstNode::addition(expr, right),
-                Minus => AstNode::subtraction(expr, right),
-                Less => AstNode::less(expr, right),
-                Greater => AstNode::greater(expr, right),
-                Equals => AstNode::equals(expr, right),
-                GreaterEquals => AstNode::greater_equals(expr, right),
-                LessEquals => AstNode::less_equals(expr, right),
-                NotEquals => AstNode::not_equals(expr, right),
+                Circumflex => ExprNode::exponentiation(expr, right),
+                Mul => ExprNode::multiplication(expr, right),
+                Div => ExprNode::division(expr, right),
+                Percent => ExprNode::modulo(expr, right),
+                Plus => ExprNode::addition(expr, right),
+                Minus => ExprNode::subtraction(expr, right),
+                Less => ExprNode::less(expr, right),
+                Greater => ExprNode::greater(expr, right),
+                Equals => ExprNode::equals(expr, right),
+                GreaterEquals => ExprNode::greater_equals(expr, right),
+                LessEquals => ExprNode::less_equals(expr, right),
+                NotEquals => ExprNode::not_equals(expr, right),
                 _ => panic!("unexpected operator {op:?}")
             };
         }
@@ -84,14 +84,14 @@ impl Parser<'_> {
         Ok(expr)
     }
 
-    fn b_expr_primary(&self) -> ScanResult<AstNode> {
+    fn b_expr_primary(&self) -> ScanResult<ExprNode> {
         todo!()
     }
 }
 
 use crate::lexer::Keyword::{Distinct, Document, From, Is, Not};
 use crate::lexer::TokenKind::*;
-use crate::parser::ast_node::AstNode;
+use crate::parser::ast_node::ExprNode;
 use crate::parser::expr_parsers::associativity::Associativity;
 use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::token_buffer::TokenConsumer;

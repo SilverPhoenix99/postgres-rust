@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `CallStmt`
-    pub(in crate::parser) fn call_stmt(&mut self) -> ScanResult<AstNode> {
+    pub(in crate::parser) fn call_stmt(&mut self) -> ScanResult<RawStmt> {
 
         /*
         CallStmt:
@@ -14,6 +14,6 @@ impl Parser<'_> {
 }
 
 use crate::lexer::Keyword::Call;
-use crate::parser::ast_node::AstNode;
-use crate::parser::Parser;
+use crate::parser::ast_node::RawStmt;
 use crate::parser::result::ScanResult;
+use crate::parser::Parser;

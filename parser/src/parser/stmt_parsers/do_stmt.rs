@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `DoStmt`
-    pub(in crate::parser) fn do_stmt(&mut self) -> ScanResult<AstNode> {
+    pub(in crate::parser) fn do_stmt(&mut self) -> ScanResult<RawStmt> {
 
         /*
             DO dostmt_opt_list
@@ -13,6 +13,6 @@ impl Parser<'_> {
 }
 
 use crate::lexer::Keyword::Do;
-use crate::parser::ast_node::AstNode;
-use crate::parser::Parser;
+use crate::parser::ast_node::RawStmt;
 use crate::parser::result::ScanResult;
+use crate::parser::Parser;

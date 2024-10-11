@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn alter_conversion_stmt(&mut self) -> ScanResult<AstNode> {
+    pub(in crate::parser) fn alter_conversion_stmt(&mut self) -> ScanResult<RawStmt> {
         /*
             ALTER CONVERSION any_name OWNER TO RoleSpec
             ALTER CONVERSION any_name RENAME TO ColId
@@ -106,7 +106,7 @@ use crate::parser::ast_node::{
     AlterObjectSchemaTarget,
     AlterOwnerStmt,
     AlterOwnerTarget,
-    AstNode,
+    RawStmt,
     RenameStmt,
     RenameTarget
 };

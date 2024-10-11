@@ -1,7 +1,7 @@
 impl Parser<'_> {
 
     /// Alias: `AlterGroupStmt`
-    pub(in crate::parser) fn alter_group_stmt(&mut self) -> ScanResult<AstNode> {
+    pub(in crate::parser) fn alter_group_stmt(&mut self) -> ScanResult<RawStmt> {
 
         /*
             ALTER GROUP role_id RENAME TO role_id
@@ -17,7 +17,7 @@ impl Parser<'_> {
             .required()?;
 
         if action == Rename {
-            return self.rename_group(role, role_loc).map(AstNode::from)
+            return self.rename_group(role, role_loc).map(RawStmt::from)
         }
 
         /*
@@ -114,7 +114,7 @@ mod tests {
 use crate::lexer::Keyword::{Add, DropKw, Group, Rename, To, User};
 use crate::parser::ast_node::AlterRoleOption::RoleMembers;
 use crate::parser::ast_node::RenameTarget::Role;
-use crate::parser::ast_node::{AlterRoleAction, AlterRoleStmt, AstNode, RenameStmt, RoleSpec};
+use crate::parser::ast_node::{AlterRoleAction, AlterRoleStmt, RawStmt, RenameStmt, RoleSpec};
 use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::Parser;
 use postgres_basics::Location;
