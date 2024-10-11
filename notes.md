@@ -5,12 +5,9 @@
   * `backend/utils/mb/stringinfo_mb.c` / `include/mb/stringinfo_mb.h`
 
 # TO DO
-* Refactor `AstNode` into finer grain types.
+* Split `AstNode` into finer grain types.
   * `Parser.parse()` shouldn't return a generic node.
   * E.g.: `AstStmt`
-* Refactor to `TokenKind::Keyword(Keyword)`.
-  * Add method `Keyword::details(&self)`.
-  * Change to `Map<Keyword, &;static KeywordDetails>` (instead of `&'static str` key)
 * Merge `Parser.move_stmt` into `Parser.fetch_stmt`
 * Test `NumericSpec`.
 * Support encodings besides UTF-8: `include/mb/pg_wchar.h`, `common/wchar.c`, etc

@@ -553,8 +553,7 @@ impl<'src> Lexer<'src> {
 
         self.buffer.consume_while(is_ident_cont);
 
-        let ident = self.buffer.slice(start_index)
-            .to_ascii_lowercase();
+        let ident = self.buffer.slice(start_index);
 
         if let Some(kw) = Keyword::find(&ident) {
             return Ok(Keyword(kw))

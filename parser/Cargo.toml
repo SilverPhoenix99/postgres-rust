@@ -8,6 +8,7 @@ bitflags.workspace = true
 bitvec.workspace = true
 phf.workspace = true
 thiserror.workspace = true
+unicase.workspace = true
 postgres-basics.workspace = true
 
 [dev-dependencies]
