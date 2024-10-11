@@ -3,6 +3,7 @@ mod keywords;
 
 pub use self::keyword_details::KeywordDetails;
 pub use self::keywords::Keyword;
+use unicase::UniCase;
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum KeywordCategory {
     Unreserved,
@@ -13,7 +14,7 @@ pub enum KeywordCategory {
 
 impl Keyword {
     pub fn find(text: &str) -> Option<Self> {
-        KEYWORDS.get(text).copied()
+        KEYWORDS.get(&UniCase::new(text)).copied()
     }
 
     pub fn details(&self) -> &'static KeywordDetails {

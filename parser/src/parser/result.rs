@@ -29,7 +29,7 @@ impl Default for ScanErrorKind {
 pub(crate) trait ScanResultTrait<T> {
 
     /// When both `Eof` and `NoMatch` are considered syntax errors.
-    /// 
+    ///
     /// Hoists both `Eof` and `NoMatch` to `ParserErrorKind::default()`.
     fn required(self) -> Result<T, ParserErrorKind>;
 
@@ -116,6 +116,8 @@ impl<T> EofResultTrait<T> for EofResult<T> {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    // TODO
+}
 
 use crate::parser::ParserErrorKind;

@@ -11,7 +11,7 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
         let slice = loc.slice(self.0.buffer.source());
 
         let ident = match kind {
-            BasicIdentifier => Ok(slice.to_string().to_lowercase()),
+            BasicIdentifier => Ok(slice.to_lowercase()),
             QuotedIdentifier => {
                 // Strip delimiters:
                 let slice = &slice[1..slice.len() - 1];

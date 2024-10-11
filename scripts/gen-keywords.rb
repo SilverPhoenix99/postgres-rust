@@ -60,6 +60,7 @@ class KeywordsGenerator
       '',
       'use super::KeywordCategory::*;',
       'use super::KeywordDetails;',
+      'use unicase::UniCase;',
       'use Keyword::*;',
       ''
     ].join("\n")
@@ -86,11 +87,11 @@ class KeywordsGenerator
       category = kw[:category]
       keyword = kw[:keyword]
       bare = kw[:bare]
-      "    #{text} => #{keyword},"
+      "    UniCase::ascii(#{text}) => #{keyword},"
     end
 
     [
-      "pub(super) static KEYWORDS: phf::Map<&'static str, Keyword> = phf::phf_map! {",
+      "pub(super) static KEYWORDS: phf::Map<UniCase<&'static str>, Keyword> = phf::phf_map! {",
       *kws,
       '};'
     ]
