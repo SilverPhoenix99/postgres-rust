@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `ImportForeignSchemaStmt`
-    pub(in crate::parser) fn import_stmt(&mut self) -> ScanResult<AstNode> {
+    pub(in crate::parser) fn import_stmt(&mut self) -> ScanResult<RawStmt> {
 
         /*
             IMPORT_P FOREIGN SCHEMA ColId import_qualification FROM SERVER ColId INTO ColId create_generic_options
@@ -16,6 +16,6 @@ impl Parser<'_> {
 }
 
 use crate::lexer::Keyword::{Foreign, Import, Schema};
-use crate::parser::ast_node::AstNode;
+use crate::parser::ast_node::RawStmt;
 use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::Parser;

@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `AnalyzeStmt`
-    pub(in crate::parser) fn analyze_stmt(&mut self) -> ScanResult<AstNode> {
+    pub(in crate::parser) fn analyze_stmt(&mut self) -> ScanResult<RawStmt> {
 
         /*
             (ANALYSE | ANALYZE) '(' utility_option_list ')' opt_vacuum_relation_list
@@ -14,6 +14,6 @@ impl Parser<'_> {
 }
 
 use crate::lexer::Keyword::{Analyse, Analyze};
-use crate::parser::ast_node::AstNode;
+use crate::parser::ast_node::RawStmt;
 use crate::parser::result::ScanResult;
 use crate::parser::Parser;

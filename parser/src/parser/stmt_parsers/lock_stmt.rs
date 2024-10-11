@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `LockStmt`
-    pub(in crate::parser) fn lock_stmt(&mut self) -> ScanResult<AstNode> {
+    pub(in crate::parser) fn lock_stmt(&mut self) -> ScanResult<RawStmt> {
 
         /*
             LOCK_P opt_table relation_expr_list opt_lock opt_nowait
@@ -13,6 +13,6 @@ impl Parser<'_> {
 }
 
 use crate::lexer::Keyword::Lock;
-use crate::parser::AstNode;
-use crate::parser::Parser;
+use crate::parser::ast_node::RawStmt;
 use crate::parser::result::ScanResult;
+use crate::parser::Parser;

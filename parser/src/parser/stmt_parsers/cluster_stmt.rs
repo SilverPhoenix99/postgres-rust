@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `ClusterStmt`
-    pub(in crate::parser) fn cluster_stmt(&mut self) -> ScanResult<AstNode> {
+    pub(in crate::parser) fn cluster_stmt(&mut self) -> ScanResult<RawStmt> {
 
         /*
             CLUSTER '(' utility_option_list ')'
@@ -17,6 +17,6 @@ impl Parser<'_> {
 }
 
 use crate::lexer::Keyword::Cluster;
-use crate::parser::AstNode;
-use crate::parser::Parser;
+use crate::parser::ast_node::RawStmt;
 use crate::parser::result::ScanResult;
+use crate::parser::Parser;

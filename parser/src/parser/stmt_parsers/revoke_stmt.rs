@@ -2,7 +2,7 @@ impl Parser<'_> {
     /// Aliases:
     /// * `RevokeStmt`
     /// * `RevokeRoleStmt`
-    pub(in crate::parser) fn revoke_stmt(&mut self) -> ScanResult<AstNode> {
+    pub(in crate::parser) fn revoke_stmt(&mut self) -> ScanResult<RawStmt> {
 
         /*
             REVOKE privileges ON privilege_target FROM grantee_list opt_granted_by opt_drop_behavior
@@ -18,6 +18,6 @@ impl Parser<'_> {
 }
 
 use crate::lexer::Keyword::Revoke;
-use crate::parser::ast_node::AstNode;
-use crate::parser::Parser;
+use crate::parser::ast_node::RawStmt;
 use crate::parser::result::ScanResult;
+use crate::parser::Parser;
