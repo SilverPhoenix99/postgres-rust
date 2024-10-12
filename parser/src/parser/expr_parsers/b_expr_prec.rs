@@ -1,3 +1,42 @@
+#[derive(Debug, Clone, Eq, PartialEq)]
+enum Op {
+    Typecast,
+    Exponentiation,
+    Multiplication,
+    Division,
+    Modulo,
+    Addition,
+    Subtraction,
+    Less,
+    Greater,
+    Equals,
+    GreaterEquals,
+    LessEquals,
+    NotEquals,
+    IsExpr,
+    QnOperator(QnOperator),
+}
+
+impl Op {
+    fn precedence(&self) -> i16 {
+        self.associativity().precedence()
+    }
+
+    fn associativity(&self) -> Associativity {
+        use Op::*;
+
+        match self {
+            Typecast => Left(6),
+            Exponentiation => Left(5),
+            Multiplication | Division | Modulo => Left(4),
+            Addition | Subtraction => Left(3),
+            QnOperator(_) => Left(2),
+            Less | Greater | Equals | GreaterEquals | LessEquals | NotEquals => Non(1),
+            IsExpr => Non(0),
+        }
+    }
+}
+
 impl Parser<'_> {
     pub(super) fn b_expr_prec(&mut self, prec: i16) -> ScanResult<ExprNode> {
 
@@ -7,76 +46,37 @@ impl Parser<'_> {
 
         let mut max_prec = 6;
         loop {
-            let range = prec..=max_prec;
-            let op = self.buffer.consume(|tok| match tok {
-                Typecast if range.contains(&6) => Some((Typecast, Associativity::Left(6))),
-                Circumflex if range.contains(&5) => Some((Circumflex, Associativity::Left(5))),
-                op @ (Mul | Div | Percent) if range.contains(&4) => Some((*op, Associativity::Left(4))),
-                op @ (Plus | Minus) if range.contains(&3) => Some((*op, Associativity::Left(3))),
-                // TODO: ( ?(p<=2) qual_Op b_expr(3) )*
-                op @ (Less | Greater | Equals | GreaterEquals | LessEquals | NotEquals) if range.contains(&1) => {
-                    Some((*op, Associativity::Non(1)))
-                },
-                Keyword(Is) if range.contains(&0) => Some((Keyword(Is), Associativity::Non(0))),
-                _ => None,
-            });
-
-            let Some((op, assoc)) = op.optional()? else { break };
+            let Some(op) = self.b_expr_op(prec, max_prec).optional()? else { break };
+            let assoc = op.associativity();
 
             max_prec = assoc.max_precedence();
 
-            if op == Typecast {
+            if op == Op::Typecast {
                 // TODO: let typename = self.typename().required()?; // -> TypeName
                 expr = ExprNode::Typecast((/* tree, typename */));
                 continue
             }
 
-            if matches!(op, Keyword(_)) { // `Is`
-                let not_expr = self.buffer.consume_kw_eq(Not)
-                    .optional()?
-                    .is_some();
-
-                let kw = self.buffer.consume_kws(|kw| matches!(kw, Document | Distinct))
-                    .required()?;
-
-                expr = if kw == Document {
-                    let mut right = ExprNode::is_xml_document(expr);
-                    if not_expr {
-                        right = ExprNode::not(right)
-                    }
-                    right
-                }
-                else {
-                    // Distinct
-                    self.buffer.consume_kw_eq(From).required()?;
-                    let right = self.b_expr_prec(assoc.right_prec()).required()?;
-
-                    if not_expr {
-                        ExprNode::not_distinct(expr, right)
-                    }
-                    else {
-                        ExprNode::distinct(expr, right)
-                    }
-                };
-
+            if op == Op::IsExpr {
+                expr = self.expr_is(expr)?;
                 continue
             }
 
-            let right = self.b_expr_prec(assoc.right_prec()).required()?;
+            let right = self.b_expr_prec(assoc.right_precedence()).required()?;
 
             expr = match op {
-                Circumflex => ExprNode::exponentiation(expr, right),
-                Mul => ExprNode::multiplication(expr, right),
-                Div => ExprNode::division(expr, right),
-                Percent => ExprNode::modulo(expr, right),
-                Plus => ExprNode::addition(expr, right),
-                Minus => ExprNode::subtraction(expr, right),
-                Less => ExprNode::less(expr, right),
-                Greater => ExprNode::greater(expr, right),
-                Equals => ExprNode::equals(expr, right),
-                GreaterEquals => ExprNode::greater_equals(expr, right),
-                LessEquals => ExprNode::less_equals(expr, right),
-                NotEquals => ExprNode::not_equals(expr, right),
+                Op::Exponentiation => ExprNode::exponentiation(expr, right),
+                Op::Multiplication => ExprNode::multiplication(expr, right),
+                Op::Division => ExprNode::division(expr, right),
+                Op::Modulo => ExprNode::modulo(expr, right),
+                Op::Addition => ExprNode::addition(expr, right),
+                Op::Subtraction => ExprNode::subtraction(expr, right),
+                Op::Less => ExprNode::less(expr, right),
+                Op::Greater => ExprNode::greater(expr, right),
+                Op::Equals => ExprNode::equals(expr, right),
+                Op::GreaterEquals => ExprNode::greater_equals(expr, right),
+                Op::LessEquals => ExprNode::less_equals(expr, right),
+                Op::NotEquals => ExprNode::not_equals(expr, right),
                 _ => panic!("unexpected operator {op:?}")
             };
         }
@@ -84,15 +84,124 @@ impl Parser<'_> {
         Ok(expr)
     }
 
-    fn b_expr_primary(&self) -> ScanResult<ExprNode> {
-        todo!()
+    fn b_expr_op(&mut self, min_prec: i16, max_prec: i16) -> ScanResult<Op> {
+
+        let range = min_prec..=max_prec;
+
+        if range.contains(&2) {
+            if let Some(op) = self.qual_op().no_match_to_option()? {
+                return Ok(Op::QnOperator(op))
+            };
+        }
+
+        self.buffer.consume(|tok| {
+            let op = match tok {
+                Typecast => Op::Typecast,
+                Circumflex => Op::Exponentiation,
+                Mul => Op::Multiplication,
+                Div => Op::Division,
+                Percent => Op::Modulo,
+                Plus => Op::Addition,
+                Minus => Op::Subtraction,
+                Less => Op::Less,
+                Greater => Op::Greater,
+                Equals => Op::Equals,
+                GreaterEquals => Op::GreaterEquals,
+                LessEquals => Op::LessEquals,
+                NotEquals => Op::NotEquals,
+                Keyword(Is) => Op::IsExpr,
+                _ => return None,
+            };
+
+            if range.contains(&op.associativity().precedence()) {
+                Some(op)
+            }
+            else {
+                None
+            }
+        })
+    }
+
+    fn expr_is(&mut self, left: ExprNode) -> ScanResult<ExprNode> {
+
+        /*
+            IS DISTINCT FROM b_expr
+            IS NOT DISTINCT FROM b_expr
+            IS DOCUMENT_P
+            IS NOT DOCUMENT_P
+        */
+
+        let not_expr = self.buffer.consume_kw_eq(Not)
+            .optional()?
+            .is_some();
+
+        let kw = self.buffer.consume_kws(|kw| matches!(kw, Document | Distinct))
+            .required()?;
+
+        if kw == Document {
+            let mut expr = ExprNode::is_xml_document(left);
+            if not_expr {
+                expr = ExprNode::not(expr)
+            }
+            return Ok(expr)
+        }
+
+        // Distinct
+        self.buffer.consume_kw_eq(From).required()?;
+
+        let assoc = Op::IsExpr.associativity();
+        let right = self.b_expr_prec(assoc.right_precedence()).required()?;
+
+        let expr = if not_expr {
+            ExprNode::not_distinct(left, right)
+        }
+        else {
+            ExprNode::distinct(left, right)
+        };
+
+        Ok(expr)
+    }
+
+    fn b_expr_primary(&mut self) -> ScanResult<ExprNode> {
+
+        /*
+            '-' b_expr(6)
+            '+' b_expr(6)
+            qual_Op b_expr(3)
+            c_expr
+        */
+
+        if let Some(op) = self.qual_op().no_match_to_option()? {
+            let prec = Left(2).right_precedence();
+            let right = self.b_expr_prec(prec).required()?;
+            let expr = UnaryExpr::new(op, right);
+            return Ok(expr.into())
+        };
+
+        // TODO: c_expr()
+
+        let op = self.buffer.consume(|tok| matches!(tok, Plus | Minus)).optional()?;
+        let Some(op) = op else { return Err(NoMatch) };
+
+        let prec = Right(6).right_precedence();
+        let right = self.b_expr_prec(prec).required()?;
+
+        let expr = if op == Plus {
+            UnaryExpr::unary_plus(right)
+        }
+        else {
+            UnaryExpr::negation(right)
+        };
+
+        Ok(expr.into())
     }
 }
 
 use crate::lexer::Keyword::{Distinct, Document, From, Is, Not};
 use crate::lexer::TokenKind::*;
-use crate::parser::ast_node::ExprNode;
-use crate::parser::expr_parsers::associativity::Associativity;
+use crate::parser::ast_node::{ExprNode, QnOperator, UnaryExpr};
+use crate::parser::expr_parsers::associativity::Associativity::{self, Left, Non, Right};
+use crate::parser::result::ScanErrorKind::NoMatch;
 use crate::parser::result::{ScanResult, ScanResultTrait};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::Parser;

@@ -5,9 +5,6 @@
   * `backend/utils/mb/stringinfo_mb.c` / `include/mb/stringinfo_mb.h`
 
 # TO DO
-* Split `AstNode` into finer grain types.
-  * `Parser.parse()` shouldn't return a generic node.
-  * E.g.: `AstStmt`
 * Merge `Parser.move_stmt` into `Parser.fetch_stmt`
 * Test `NumericSpec`.
 * Support encodings besides UTF-8: `include/mb/pg_wchar.h`, `common/wchar.c`, etc
