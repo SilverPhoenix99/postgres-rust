@@ -16,7 +16,7 @@ impl Associativity {
     }
 
     #[inline(always)]
-    pub fn right_prec(&self) -> i16 {
+    pub fn right_precedence(&self) -> i16 {
         match self {
             Self::Right(prec) => *prec,
             Self::Left(prec) | Self::Non(prec) => *prec + 1,
