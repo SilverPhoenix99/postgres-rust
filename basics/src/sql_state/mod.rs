@@ -1,5 +1,5 @@
 mod enums;
-mod variant_sets;
+mod variants;
 
 pub use self::enums::{ErrorSqlState, SuccessSqlState, WarningSqlState};
 
@@ -41,16 +41,15 @@ impl TryFrom<u32> for SqlState {
         if value == 0 {
             Ok(Self::Success(SuccessfulCompletion))
         }
-        else if value > 0x2aaaaaaa /* `ZZZZZ` */ {
-            Err(UnknownSqlState)
-        }
-        else if value >= 0x000c0000 /* `03000` */ && ERROR_VARIANTS.contains(&value) {
-            let code = unsafe { mem::transmute::<u32, ErrorSqlState>(value) };
-            Ok(Self::Error(code))
-        }
-        else if WARNING_VARIANTS.contains(&value) {
-            let code = unsafe { mem::transmute::<u32, WarningSqlState>(value) };
-            Ok(Self::Warning(code))
+        else if VARIANTS.binary_search(&value).is_ok() {
+            if value >= 0x000c0000 /* `03000` */ {
+                let code = unsafe { mem::transmute::<u32, ErrorSqlState>(value) };
+                Ok(Self::Error(code))
+            }
+            else {
+                let code = unsafe { mem::transmute::<u32, WarningSqlState>(value) };
+                Ok(Self::Warning(code))
+            }
         }
         else {
             Err(UnknownSqlState)
@@ -149,7 +148,7 @@ mod tests {
         assert_eq!(Ok(Warning(WarningSqlState::Warning)), SqlState::try_from(0x40000));
         assert_eq!(Ok(Error(SyntaxError)), SqlState::try_from(0x4086001));
     }
-    
+
     #[test]
     fn test_to_string() {
         assert_eq!("00000", Success(SuccessfulCompletion).to_string());
@@ -159,7 +158,7 @@ mod tests {
 }
 
 use self::{
-    variant_sets::{ERROR_VARIANTS, WARNING_VARIANTS},
+    variants::VARIANTS,
     SuccessSqlState::SuccessfulCompletion,
 };
 use core::fmt;
