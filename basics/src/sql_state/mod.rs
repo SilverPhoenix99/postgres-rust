@@ -42,6 +42,7 @@ impl TryFrom<u32> for SqlState {
             Ok(Self::Success(SuccessfulCompletion))
         }
         else if VARIANTS.binary_search(&value).is_ok() {
+            // SAFETY: the above check guarantees that the value is a known SQL State
             if value >= 0x000c0000 /* `03000` */ {
                 let code = unsafe { mem::transmute::<u32, ErrorSqlState>(value) };
                 Ok(Self::Error(code))
