@@ -30,7 +30,7 @@ err_codes_input = PG_ROOT / 'src/backend/utils/errcodes.txt'
 err_codes_root = RUST_PROJECT_ROOT / 'basics/src/sql_state'
 err_codes_outputs = [
   err_codes_root / 'enums.rs',
-  err_codes_root / 'variant_sets.rs'
+  err_codes_root / 'variants.rs'
 ]
 
 CLEAN.push(*err_codes_outputs)
