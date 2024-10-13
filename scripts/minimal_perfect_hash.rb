@@ -1,5 +1,6 @@
 require_relative 'fnv'
 
+# Based on the "Hash, displace, and compress" white paper.
 class MinimalPerfectHash
   include FNV
 
