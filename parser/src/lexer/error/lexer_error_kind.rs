@@ -53,7 +53,7 @@ pub enum LexerErrorKind {
 impl HasSqlState for LexerErrorKind {
     #[inline(always)]
     fn sql_state(&self) -> SqlState {
-        SqlState::Error(SyntaxError)
+        SyntaxError
     }
 }
 
@@ -73,8 +73,8 @@ impl ErrorReport for LexerErrorKind {
 
 use postgres_basics::{
     elog::{ErrorReport, HasSqlState},
-    sql_state::ErrorSqlState::SyntaxError,
     sql_state::SqlState,
+    sql_state::SqlState::SyntaxError,
 };
 use std::borrow::Cow;
 use LexerErrorKind::UnsafeUnicodeString;

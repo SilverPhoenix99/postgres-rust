@@ -21,10 +21,10 @@ class ErrCodesGenerator
     init_codes_hash
 
     enums = render_enums
-    @enums_file.write(enums)
+    @enums_file.binwrite(enums)
 
     variants = render_variants
-    @variants_file.write(variants)
+    @variants_file.binwrite(variants)
 
     nil
   end
@@ -46,15 +46,9 @@ class ErrCodesGenerator
   end
 
   def render_enums
-    enums = errcodes.flat_map do |category, sections|
+    variants = errcodes.values.flat_map do |sections|
 
-      category = case category
-        when 'S' then 'Success'
-        when 'W' then 'Warning'
-        else 'Error'
-      end
-
-      sections = sections.flat_map do |section, codes|
+      sections.flat_map do |section, codes|
 
         section = "/* #{section} */"
 
@@ -83,15 +77,6 @@ class ErrCodesGenerator
         end
           .prepend('')
       end
-
-      [
-        '#[repr(u32)]',
-        '#[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]',
-        "pub enum #{category}SqlState {",
-        *sections,
-        '}',
-        ''
-      ]
     end
 
     lines = [
@@ -100,7 +85,12 @@ class ErrCodesGenerator
       '// DO NOT EDIT MANUALLY !!!',
       '//',
       '',
-      *enums
+      '#[repr(u32)]',
+      '#[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]',
+      "pub enum SqlState {",
+      *variants,
+      '}',
+      ''
     ]
 
     lines.join("\n")

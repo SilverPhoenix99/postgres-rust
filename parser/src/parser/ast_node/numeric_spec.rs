@@ -9,7 +9,7 @@ pub enum NewNumericSpecError {
 
 impl NewNumericSpecError {
     pub fn sqlstate(&self) -> SqlState {
-        SqlState::Error(InvalidParameterValue)
+        InvalidParameterValue
     }
 }
 
@@ -138,8 +138,8 @@ mod tests {
     }
 }
 
-use postgres_basics::sql_state::ErrorSqlState::InvalidParameterValue;
 use postgres_basics::sql_state::SqlState;
+use postgres_basics::sql_state::SqlState::InvalidParameterValue;
 use std::num::NonZero;
 use std::ops::RangeInclusive;
 use NewNumericSpecError::{PrecisionOutOfRange, ScaleOutOfRange};
