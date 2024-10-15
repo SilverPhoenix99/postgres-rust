@@ -17,7 +17,7 @@ CLEAN << keywords_output
 
 file keywords_output => [keywords_input, 'gen-keywords.rb'] do
   require_relative 'gen-keywords.rb'
-  KeywordsGenerator.run!(keywords_input, keywords_output)
+  KeywordsGenerator.run! keywords_input, keywords_output
 end
 
 task build: keywords_output
@@ -28,22 +28,16 @@ task build: keywords_output
 ###############################################################################
 err_codes_input = PG_ROOT / 'src/backend/utils/errcodes.txt'
 err_codes_root = RUST_PROJECT_ROOT / 'basics/src/sql_state'
-err_codes_outputs = [
-  err_codes_root / 'enums.rs',
-  err_codes_root / 'variants.rs'
-]
+err_codes_output = RUST_PROJECT_ROOT / 'basics/src/sql_state/sql_states.rs'
 
-CLEAN.push(*err_codes_outputs)
+CLEAN << err_codes_output
 
-err_codes_outputs.each do |output|
-  file output => [err_codes_input, 'gen-errcodes.rb'] do
-    require_relative 'gen-errcodes.rb'
-    ErrCodesGenerator.run!(err_codes_input, err_codes_root)
-  end
+file err_codes_output => [err_codes_input, 'gen-errcodes.rb'] do
+  require_relative 'gen-errcodes.rb'
+  ErrCodesGenerator.run! err_codes_input, err_codes_output
 end
 
-task build_err_codes: err_codes_outputs
-task build: :build_err_codes
+task build: err_codes_output
 
 
 ###############################################################################
