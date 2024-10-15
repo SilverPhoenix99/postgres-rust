@@ -1,7 +1,6 @@
-mod enums;
-mod variants;
+mod sql_states;
 
-pub use self::enums::SqlState;
+pub use self::sql_states::SqlState;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum SqlStateCategory {
@@ -48,7 +47,7 @@ impl Display for SqlState {
 
     #[inline(always)]
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        
+
         let code = *self as u32;
 
         (0..5).rev()
@@ -66,8 +65,8 @@ impl Display for SqlState {
 
 #[cfg(test)]
 mod tests {
+    use super::SqlState::{SuccessfulCompletion, SyntaxError};
     use super::*;
-    use crate::sql_state::SqlState::{SuccessfulCompletion, SyntaxError};
 
     #[test]
     fn test_try_from() {
@@ -84,7 +83,7 @@ mod tests {
     }
 }
 
-use crate::sql_state::variants::MAP;
+use crate::sql_state::sql_states::MAP;
 use core::fmt;
 use core::fmt::{Display, Formatter, Write};
 use std::mem;
