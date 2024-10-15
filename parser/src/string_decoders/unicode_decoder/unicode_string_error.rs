@@ -11,16 +11,12 @@ pub enum UnicodeStringError {
 
     /// When the format of the escape doesn't match \XXXX or \+XXXXXX.
     #[error("invalid Unicode escape")]
-    InvalidUnicodeEscape(usize), 
+    InvalidUnicodeEscape(usize),
 }
 
 impl HasSqlState for UnicodeStringError {
     fn sql_state(&self) -> SqlState {
-        match self {
-            InvalidUnicodeValue(_) => Error(SyntaxError),
-            InvalidUnicodeSurrogatePair(_) => Error(SyntaxError),
-            InvalidUnicodeEscape(_) => Error(SyntaxError),
-        }
+        SyntaxError
     }
 }
 
@@ -35,9 +31,8 @@ impl ErrorReport for UnicodeStringError {
 
 use postgres_basics::{
     elog::{ErrorReport, HasSqlState},
-    sql_state::ErrorSqlState::SyntaxError,
     sql_state::SqlState,
-    sql_state::SqlState::Error,
+    sql_state::SqlState::SyntaxError,
 };
 use std::borrow::Cow;
 use UnicodeStringError::*;

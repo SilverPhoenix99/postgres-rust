@@ -27,11 +27,11 @@ pub enum ExtendedStringError {
 impl HasSqlState for ExtendedStringError {
     fn sql_state(&self) -> SqlState {
         match self {
-            Utf8(_) => Error(CharacterNotInRepertoire),
-            InvalidUnicodeValue(_) => Error(SyntaxError),
-            InvalidUnicodeSurrogatePair(_) => Error(SyntaxError),
-            NonstandardUseOfBackslashQuote => Error(NonstandardUseOfEscapeCharacter),
-            InvalidUnicodeEscape(_) => Error(InvalidEscapeSequence),
+            Utf8(_) => CharacterNotInRepertoire,
+            InvalidUnicodeValue(_) => SyntaxError,
+            InvalidUnicodeSurrogatePair(_) => SyntaxError,
+            NonstandardUseOfBackslashQuote => NonstandardUseOfEscapeCharacter,
+            InvalidUnicodeEscape(_) => InvalidEscapeSequence,
         }
     }
 }
@@ -50,14 +50,13 @@ impl ErrorReport for ExtendedStringError {
 
 use postgres_basics::{
     elog::{ErrorReport, HasSqlState},
-    sql_state::ErrorSqlState::{
+    sql_state::SqlState::{
+        self,
         CharacterNotInRepertoire,
         InvalidEscapeSequence,
         NonstandardUseOfEscapeCharacter,
-        SyntaxError
+        SyntaxError,
     },
-    sql_state::SqlState,
-    sql_state::SqlState::Error
 };
 use std::borrow::Cow;
 use std::str::Utf8Error;

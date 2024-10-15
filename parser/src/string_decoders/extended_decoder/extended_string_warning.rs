@@ -9,7 +9,7 @@ impl ExtendedStringWarning {
 
     #[inline(always)]
     pub fn sqlstate(self) -> SqlState {
-        SqlState::Error(ErrorSqlState::NonstandardUseOfEscapeCharacter)
+        SqlState::NonstandardUseOfEscapeCharacter
     }
 
     #[inline]
@@ -31,5 +31,5 @@ impl ExtendedStringWarning {
     }
 }
 
-use postgres_basics::sql_state::{ErrorSqlState, SqlState};
+use postgres_basics::sql_state::SqlState;
 use ExtendedStringWarning::*;

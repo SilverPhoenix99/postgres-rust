@@ -52,17 +52,17 @@ impl HasSqlState for ParserErrorKind {
     fn sql_state(&self) -> SqlState {
         match self {
             ExtendedString(err) => err.sql_state(),
-            FloatPrecisionOverflow(_) => SqlState::Error(InvalidParameterValue),
-            FloatPrecisionUnderflow(_) => SqlState::Error(InvalidParameterValue),
-            ForbiddenRoleSpec(_) => SqlState::Error(ReservedName),
-            InvalidUescapeDelimiter => SqlState::Error(SyntaxError),
+            FloatPrecisionOverflow(_) => InvalidParameterValue,
+            FloatPrecisionUnderflow(_) => InvalidParameterValue,
+            ForbiddenRoleSpec(_) => ReservedName,
+            InvalidUescapeDelimiter => SyntaxError,
             Lexer(err) => err.sql_state(),
-            ReservedRoleSpec(_) => SqlState::Error(ReservedName),
-            Syntax => SqlState::Error(SyntaxError),
-            UescapeDelimiterMissing => SqlState::Error(SyntaxError),
-            UnencryptedPassword => SqlState::Error(FeatureNotSupported),
+            ReservedRoleSpec(_) => ReservedName,
+            Syntax => SyntaxError,
+            UescapeDelimiterMissing => SyntaxError,
+            UnencryptedPassword => FeatureNotSupported,
             UnicodeString(err) => err.sql_state(),
-            UnrecognizedRoleOption(_) => SqlState::Error(SyntaxError),
+            UnrecognizedRoleOption(_) => SyntaxError,
         }
     }
 }
@@ -127,13 +127,13 @@ use crate::string_decoders::{
 };
 use postgres_basics::{
     elog::{ErrorReport, HasSqlState},
-    sql_state::ErrorSqlState::{
+    sql_state::SqlState::{
+        self,
         FeatureNotSupported,
         InvalidParameterValue,
         ReservedName,
         SyntaxError,
     },
-    sql_state::SqlState,
 };
 use std::borrow::Cow;
 use ParserErrorKind::*;

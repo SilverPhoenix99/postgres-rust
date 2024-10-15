@@ -1,6 +1,3 @@
-use crate::string_decoders::ExtendedStringWarning;
-use postgres_basics::sql_state::{SqlState, WarningSqlState};
-
 pub enum ParserWarning {
     DeprecatedGlobalTemporaryTable,
     NonstandardEscape(ExtendedStringWarning),
@@ -10,7 +7,7 @@ impl ParserWarning {
 
     pub fn sqlstate(self) -> SqlState {
         match self {
-            Self::DeprecatedGlobalTemporaryTable => SqlState::Warning(WarningSqlState::Warning),
+            Self::DeprecatedGlobalTemporaryTable => SqlState::Warning,
             Self::NonstandardEscape(warn) => warn.sqlstate(),
         }
     }
@@ -29,3 +26,6 @@ impl ParserWarning {
         }
     }
 }
+
+use crate::string_decoders::ExtendedStringWarning;
+use postgres_basics::sql_state::SqlState;

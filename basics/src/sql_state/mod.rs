@@ -1,31 +1,23 @@
 mod enums;
 mod variants;
 
-pub use self::enums::{ErrorSqlState, SuccessSqlState, WarningSqlState};
+pub use self::enums::SqlState;
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum SqlState {
-    Success(SuccessSqlState),
-    Warning(WarningSqlState),
-    Error(ErrorSqlState)
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum SqlStateCategory {
+    Success,
+    Warning,
+    Error,
 }
 
 impl SqlState {
-    pub fn sqlstate(&self) -> u32 {
-        match self {
-            Self::Success(code) => u32::from(*code),
-            Self::Warning(code) => u32::from(*code),
-            Self::Error(code) => u32::from(*code),
-        }
-    }
-}
-
-impl Display for SqlState {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Success(code) => code.fmt(f),
-            Self::Warning(code) => code.fmt(f),
-            Self::Error(code) => code.fmt(f),
+    pub fn category(&self) -> SqlStateCategory {
+        match *self as u32 {
+            0 => SqlStateCategory::Success,
+            /* [`01000`, `08000`) */
+            0x40000..0x200000 => SqlStateCategory::Warning,
+            /* [`08000`.. */
+            _ => SqlStateCategory::Error,
         }
     }
 }
@@ -39,132 +31,59 @@ impl TryFrom<u32> for SqlState {
     fn try_from(value: u32) -> Result<Self, UnknownSqlState> {
 
         if value == 0 {
-            return Ok(Self::Success(SuccessfulCompletion))
+            return Ok(Self::SuccessfulCompletion)
         }
 
-        if MAP.get(&value).is_some() {
-
-            // SAFETY: value is in VARIANTS_MAP => known SQL States
-            let sqlstate = if value >= 0x000c0000 /* `03000` */ {
-                // SAFETY: all codes >= 0x000c0000 are Error
-                let code = unsafe { mem::transmute::<u32, ErrorSqlState>(value) };
-                Self::Error(code)
-            }
-            else {
-                // SAFETY: All codes < 0x000c0000 are Warning.
-                //         Zero has already been taken care of at the top of the method.
-                let code = unsafe { mem::transmute::<u32, WarningSqlState>(value) };
-                Self::Warning(code)
-            };
-
-            return Ok(sqlstate);
-        };
-
-        Err(UnknownSqlState)
-    }
-}
-
-impl From<SqlState> for u32 {
-    fn from(value: SqlState) -> Self {
-        match value {
-            SqlState::Success(code) => code.into(),
-            SqlState::Warning(code) => code.into(),
-            SqlState::Error(code) => code.into(),
+        if MAP.get(&value).is_none() {
+            return Err(UnknownSqlState)
         }
+
+        // SAFETY: value is in MAP => known SQL States
+        let code = unsafe { mem::transmute::<u32, SqlState>(value) };
+        Ok(code)
     }
 }
 
-fn fmt(code: u32, formatter: &mut Formatter<'_>) -> fmt::Result {
-
-    (0..5).rev()
-        .map(|i| {
-            // get the corresponding 6 bits
-            let mut c = (code >> (6 * i)) as u8;
-            c &= 0x3f;
-            // convert to char
-            c += b'0';
-            c as char
-        })
-        .try_fold((), |_, c| formatter.write_char(c))
-}
-
-impl From<SuccessSqlState> for u32 {
-
-    #[inline(always)]
-    fn from(value: SuccessSqlState) -> Self {
-        value as u32
-    }
-}
-
-impl Display for SuccessSqlState {
+impl Display for SqlState {
 
     #[inline(always)]
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        fmt(u32::from(*self), f)
-    }
-}
+        
+        let code = *self as u32;
 
-impl From<WarningSqlState> for u32 {
-
-    #[inline(always)]
-    fn from(value: WarningSqlState) -> Self {
-        value as u32
-    }
-}
-
-impl Display for WarningSqlState {
-
-    #[inline(always)]
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        fmt(u32::from(*self), f)
-    }
-}
-
-impl From<ErrorSqlState> for u32 {
-
-    #[inline(always)]
-    fn from(value: ErrorSqlState) -> Self {
-        value as u32
-    }
-}
-
-impl Display for ErrorSqlState {
-
-    #[inline(always)]
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        fmt(u32::from(*self), f)
+        (0..5).rev()
+            .map(|i| {
+                // get the corresponding 6 bits
+                let mut c = (code >> (6 * i)) as u8;
+                c &= 0x3f;
+                // convert to char
+                c += b'0';
+                c as char
+            })
+            .try_for_each(|c| f.write_char(c))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::ErrorSqlState::SyntaxError;
-    use super::SqlState::*;
     use super::*;
-
-    #[test]
-    fn test_from() {
-        assert_eq!(0, u32::from(Success(SuccessfulCompletion)));
-        assert_eq!(0x40000, u32::from(Warning(WarningSqlState::Warning)));
-        assert_eq!(0x4086001, u32::from(Error(SyntaxError)));
-    }
+    use crate::sql_state::SqlState::{SuccessfulCompletion, SyntaxError};
 
     #[test]
     fn test_try_from() {
-        assert_eq!(Ok(Success(SuccessfulCompletion)), SqlState::try_from(0));
-        assert_eq!(Ok(Warning(WarningSqlState::Warning)), SqlState::try_from(0x40000));
-        assert_eq!(Ok(Error(SyntaxError)), SqlState::try_from(0x4086001));
+        assert_eq!(Ok(SuccessfulCompletion), SqlState::try_from(0));
+        assert_eq!(Ok(SqlState::Warning), SqlState::try_from(0x40000));
+        assert_eq!(Ok(SyntaxError), SqlState::try_from(0x4086001));
     }
 
     #[test]
     fn test_to_string() {
-        assert_eq!("00000", Success(SuccessfulCompletion).to_string());
-        assert_eq!("01000", Warning(WarningSqlState::Warning).to_string());
-        assert_eq!("42601", Error(SyntaxError).to_string());
+        assert_eq!("00000", SuccessfulCompletion.to_string());
+        assert_eq!("01000", SqlState::Warning.to_string());
+        assert_eq!("42601", SyntaxError.to_string());
     }
 }
 
-use self::SuccessSqlState::SuccessfulCompletion;
 use crate::sql_state::variants::MAP;
 use core::fmt;
 use core::fmt::{Display, Formatter, Write};

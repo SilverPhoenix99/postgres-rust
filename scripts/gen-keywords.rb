@@ -45,7 +45,7 @@ class KeywordsGenerator
   def run!
     init_keywords_hash
     rendered = render
-    @output.write(rendered)
+    @output.binwrite(rendered)
   end
 
   def init_keywords_hash
