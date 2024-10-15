@@ -22,12 +22,8 @@ class ErrCodesGenerator
   def init_codes_hash
     return if @table
 
-    @codes = errcodes
-      .reject { |category, _| category == 'S' }
-      .values
-      .map(&:values)
-      .flatten
-      .reject { |code| aliases.dig(code[:sqlstate], code[:name]) }
+    @codes = errcodes.values.flatten
+      .reject { |code| code[:category] == :Success || aliases.dig(code[:sqlstate], code[:name]) }
       .to_h { |code| [code[:repr], code] }
 
     @table = MinimalPerfectHash.generate!(@codes.keys)
@@ -56,37 +52,31 @@ class ErrCodesGenerator
   end
 
   def render_enum
-    variants = errcodes.values.flat_map do |sections|
+    variants = errcodes.flat_map do |section, codes|
 
-      sections.flat_map do |section, codes|
+      section = "/* #{section} */"
 
-        section = "/* #{section} */"
+      codes = codes
+        .reject { |code| aliases.dig(code[:sqlstate], code[:name]) }
+        .flat_map do |code|
+          sqlstate = code[:sqlstate]
+          repr = code[:repr]
+          name = code[:name]
 
-        codes = codes
-          .reject { |code| aliases.dig(code[:sqlstate], code[:name]) }
-          .flat_map do |code|
-            sqlstate = code[:sqlstate]
-            repr = code[:repr]
-            name = code[:name]
-
-            akas = if aliases.dig(sqlstate, :base_code) == name
-              aliases[sqlstate]
-                .keys
-                .reject { |k| k == :base_code }
-                .map { |a| "/// Alias: `#{a}`<p/>" }
-            end
-
-            [
-              *akas,
-              "/** SQLSTATE: `#{sqlstate}` */ #{name} = 0x#{repr.to_s(16)},"
-            ]
+          akas = if aliases.dig(sqlstate, :base_code) == name
+            aliases[sqlstate]
+              .keys
+              .reject { |k| k == :base_code }
+              .map { |a| "/// Alias: `#{a}`<p/>" }
           end
 
-        [section, *codes].map do |line|
-          "    #{line}"
+          [
+            *akas,
+            "/** SQLSTATE: `#{sqlstate}` */ #{name} = 0x#{repr.to_s(16)},"
+          ]
         end
-          .prepend('')
-      end
+
+      [section, *codes].map { |line| "    #{line}" }.prepend('')
     end
 
     lines = [
@@ -137,10 +127,7 @@ class ErrCodesGenerator
   end
 
   def aliases
-    @aliases ||= errcodes
-      .values
-      .map(&:values)
-      .flatten
+    @aliases ||= errcodes.values.flatten
       .group_by { |code| code[:sqlstate] }
       .select { |_, codes| codes.count > 1 }
       .transform_values do |codes|
@@ -156,30 +143,30 @@ class ErrCodesGenerator
 
   def errcodes
     @errcodes ||= lines
-      .chunk_while { !_2.match(/^\s*Section:/) }
-      .with_object(Hash.new { |h, k| h[k] = Hash.new }) do |(section, *codes), h|
-
-        codes = codes
-          .map(&:split)
+      .chunk_while { |_, after| !after.match(/^\s*Section:/) }
+      .each_with_object({}) do |(section, *codes), h|
+        h[section] = codes.map(&:split)
           .map do |sqlstate, category, macro_name, spec_name|
             repr = sqlstate.bytes
               .map { |b| b - '0'.ord }
               .reduce { |acc, b| (acc << 6) | b }
 
+            category = case category
+              when 'E' then :Error
+              when 'W' then :Warning
+              else :Success
+            end
+
             name = macro_name[8..-1] # remove 'ERRCODE_'
             name = name.downcase.gsub(/(?:^|_)(.)/) { |m| m[-1].upcase }
             { sqlstate:, category:, name:, spec_name:, repr: }
           end
-
-        category = codes.first[:category]
-
-        h[category][section] = codes
       end
   end
 
   def lines
     @lines ||= @input.readlines.tap do |f|
-      f.reject! { _1.match?(/^\s*(#|$)/) }
+      f.reject! { |line| line.match?(/^\s*(#|$)/) }
     end.map!(&:chomp!);
   end
 
