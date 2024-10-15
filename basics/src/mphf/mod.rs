@@ -1,4 +1,3 @@
-
 pub struct Map<K, V>
 where
     K: 'static,
@@ -83,17 +82,16 @@ pub struct Fnv1a {
 }
 
 impl Fnv1a {
+
     fn new(salt: u64, table_size: u64) -> Self {
         Self {
             salt: Wrapping(salt),
             table_size,
         }
     }
-}
 
-impl MphfHasher for Fnv1a {
     /// Modified version of FNV-1a, with an extra salt mixed in
-    fn hash_bytes_iter(&self, bytes: impl Iterator<Item = u8>) -> usize {
+    pub fn hash_bytes_iter(&self, bytes: impl Iterator<Item = u8>) -> usize {
 
         let hash = bytes.map(|b| Wrapping(b as u64))
             .fold(FNV_OFFSET_BASIS, |acc, b| {
@@ -102,40 +100,44 @@ impl MphfHasher for Fnv1a {
 
         (hash.0 % self.table_size) as usize
     }
+
+    pub fn hash_bytes(&self, bytes: &[u8]) -> usize {
+        self.hash_bytes_iter(bytes.iter().copied())
+    }
 }
 
 pub trait MphfHash {
-    fn mphf_hash(&self, hasher: &impl MphfHasher) -> usize;
+    fn mphf_hash(&self, hasher: &Fnv1a) -> usize;
 }
 
 impl MphfHash for u64 {
-    fn mphf_hash(&self, hasher: &impl MphfHasher) -> usize {
+    fn mphf_hash(&self, hasher: &Fnv1a) -> usize {
         let bytes = (*self).to_le_bytes();
         hasher.hash_bytes(&bytes)
     }
 }
 
 impl MphfHash for u32 {
-    fn mphf_hash(&self, hasher: &impl MphfHasher) -> usize {
+    fn mphf_hash(&self, hasher: &Fnv1a) -> usize {
         let bytes = (*self).to_le_bytes();
         hasher.hash_bytes(&bytes)
     }
 }
 
 impl MphfHash for str {
-    fn mphf_hash(&self, hasher: &impl MphfHasher) -> usize {
+    fn mphf_hash(&self, hasher: &Fnv1a) -> usize {
         hasher.hash_bytes((*self).as_bytes())
     }
 }
 
 impl MphfHash for &str {
-    fn mphf_hash(&self, hasher: &impl MphfHasher) -> usize {
+    fn mphf_hash(&self, hasher: &Fnv1a) -> usize {
         (*self).mphf_hash(hasher)
     }
 }
 
 impl MphfHash for String {
-    fn mphf_hash(&self, hasher: &impl MphfHasher) -> usize {
+    fn mphf_hash(&self, hasher: &Fnv1a) -> usize {
         self.as_str().mphf_hash(hasher)
     }
 }
