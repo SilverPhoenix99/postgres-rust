@@ -70,43 +70,30 @@ impl Display for KeywordDetails {
 
 #[cfg(test)]
 mod tests {
-    use crate::lexer::keyword::keywords::KEYWORD_DETAILS;
     use crate::lexer::Keyword::{Abort, Analyze, Authorization, Between};
 
     #[test]
     fn test_unreserved() {
-        let kw = KEYWORD_DETAILS.get(Abort as usize).unwrap();
-        assert_eq!(Some(Abort), kw.unreserved());
-
-        let kw = KEYWORD_DETAILS.get(Between as usize).unwrap();
-        assert_eq!(None, kw.unreserved());
+        assert_eq!(Some(Abort), Abort.details().unreserved());
+        assert_eq!(None, Between.details().unreserved());
     }
 
     #[test]
     fn test_col_name() {
-        let kw = KEYWORD_DETAILS.get(Between as usize).unwrap();
-        assert_eq!(Some(Between), kw.col_name());
-
-        let kw = KEYWORD_DETAILS.get(Authorization as usize).unwrap();
-        assert_eq!(None, kw.col_name());
+        assert_eq!(Some(Between), Between.details().col_name());
+        assert_eq!(None, Authorization.details().col_name());
     }
 
     #[test]
     fn test_type_func_name() {
-        let kw = KEYWORD_DETAILS.get(Authorization as usize).unwrap();
-        assert_eq!(Some(Authorization), kw.type_func_name());
-
-        let kw = KEYWORD_DETAILS.get(Analyze as usize).unwrap();
-        assert_eq!(None, kw.type_func_name());
+        assert_eq!(Some(Authorization), Authorization.details().type_func_name());
+        assert_eq!(None, Analyze.details().type_func_name());
     }
 
     #[test]
     fn test_reserved() {
-        let kw = KEYWORD_DETAILS.get(Analyze as usize).unwrap();
-        assert_eq!(Some(Analyze), kw.reserved());
-
-        let kw = KEYWORD_DETAILS.get(Abort as usize).unwrap();
-        assert_eq!(None, kw.reserved());
+        assert_eq!(Some(Analyze), Analyze.details().reserved());
+        assert_eq!(None, Abort.details().reserved());
     }
 }
 

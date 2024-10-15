@@ -17,15 +17,16 @@ macro_rules! fn_info {
 }
 
 pub mod ascii;
-mod char_buffer;
-mod concealable;
 pub mod elog;
-mod fn_info;
 pub mod guc;
-mod location;
-mod named;
+pub mod mphf;
 pub mod sql_state;
 pub mod wchar;
+mod char_buffer;
+mod concealable;
+mod fn_info;
+mod location;
+mod named;
 
 pub use self::{
     char_buffer::{CharBuffer, Position, UnicodeChar, UnicodeCharError},

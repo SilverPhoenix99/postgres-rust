@@ -39,22 +39,28 @@ impl TryFrom<u32> for SqlState {
     fn try_from(value: u32) -> Result<Self, UnknownSqlState> {
 
         if value == 0 {
-            Ok(Self::Success(SuccessfulCompletion))
+            return Ok(Self::Success(SuccessfulCompletion))
         }
-        else if VARIANTS.binary_search(&value).is_ok() {
-            // SAFETY: the above check guarantees that the value is a known SQL State
-            if value >= 0x000c0000 /* `03000` */ {
+
+        if MAP.get(&value).is_some() {
+
+            // SAFETY: value is in VARIANTS_MAP => known SQL States
+            let sqlstate = if value >= 0x000c0000 /* `03000` */ {
+                // SAFETY: all codes >= 0x000c0000 are Error
                 let code = unsafe { mem::transmute::<u32, ErrorSqlState>(value) };
-                Ok(Self::Error(code))
+                Self::Error(code)
             }
             else {
+                // SAFETY: All codes < 0x000c0000 are Warning.
+                //         Zero has already been taken care of at the top of the method.
                 let code = unsafe { mem::transmute::<u32, WarningSqlState>(value) };
-                Ok(Self::Warning(code))
-            }
-        }
-        else {
-            Err(UnknownSqlState)
-        }
+                Self::Warning(code)
+            };
+
+            return Ok(sqlstate);
+        };
+
+        Err(UnknownSqlState)
     }
 }
 
@@ -158,10 +164,8 @@ mod tests {
     }
 }
 
-use self::{
-    variants::VARIANTS,
-    SuccessSqlState::SuccessfulCompletion,
-};
+use self::SuccessSqlState::SuccessfulCompletion;
+use crate::sql_state::variants::MAP;
 use core::fmt;
 use core::fmt::{Display, Formatter, Write};
 use std::mem;
