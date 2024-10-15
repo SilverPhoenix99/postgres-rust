@@ -52,7 +52,7 @@ where
         else {
             // 1 was added to ensure it wasn't confused with the empty slot (0),
             // so now it needs to subtract again.
-            let salt = (salt - 1) as u64;
+            let salt = (salt - 1) as u32;
             let hasher = self.hasher(salt);
             key.mphf_hash(&hasher)
         };
@@ -60,30 +60,19 @@ where
         Some(index)
     }
 
-    fn hasher(&self, salt: u64) -> Fnv1a {
-        Fnv1a::new(salt, self.salts.len() as u64)
-    }
-}
-
-const FNV_PRIME: Wrapping<u64> = Wrapping(0x0100_0000_01b3);
-const FNV_OFFSET_BASIS: Wrapping<u64> = Wrapping(0xcbf2_9ce4_8422_2325);
-
-pub trait MphfHasher {
-    fn hash_bytes_iter(&self, bytes: impl Iterator<Item = u8>) -> usize;
-
-    fn hash_bytes(&self, bytes: &[u8]) -> usize {
-        self.hash_bytes_iter(bytes.iter().copied())
+    fn hasher(&self, salt: u32) -> Fnv1a {
+        Fnv1a::new(salt, self.salts.len() as u32)
     }
 }
 
 pub struct Fnv1a {
-    salt: Wrapping<u64>,
-    table_size: u64,
+    salt: Wrapping<u32>,
+    table_size: u32,
 }
 
 impl Fnv1a {
 
-    fn new(salt: u64, table_size: u64) -> Self {
+    fn new(salt: u32, table_size: u32) -> Self {
         Self {
             salt: Wrapping(salt),
             table_size,
@@ -93,12 +82,27 @@ impl Fnv1a {
     /// Modified version of FNV-1a, with an extra salt mixed in
     pub fn hash_bytes_iter(&self, bytes: impl Iterator<Item = u8>) -> usize {
 
-        let hash = bytes.map(|b| Wrapping(b as u64))
+        const FNV_PRIME: Wrapping<u32> = Wrapping(0x0100_0193);
+        const FNV_OFFSET_BASIS: Wrapping<u32> = Wrapping(0x811c_9dc5);
+
+        let mut hash = bytes.map(|b| Wrapping(b as u32))
             .fold(FNV_OFFSET_BASIS, |acc, b| {
                 (b ^ (acc + self.salt)) * FNV_PRIME
-            });
+            })
+            .0;
 
-        (hash.0 % self.table_size) as usize
+        // xor-shift excess bits
+        let nbits = u32::BITS - self.table_size.leading_zeros();
+        let mut n = u32::BITS >> 1;
+        let mut mask = (1u32 << n) - 1;
+        while n > nbits {
+            hash = (hash >> n) ^ (hash & mask);
+            n >>= 1;
+            mask >>= n;
+        }
+
+        // lazy mod
+        (hash % self.table_size) as usize
     }
 
     pub fn hash_bytes(&self, bytes: &[u8]) -> usize {

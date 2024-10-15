@@ -1,9 +1,9 @@
 
 module FNV
 
-  FNV_PRIME = 0x0100_0000_01b3
-  FNV_OFFSET_BASIS = 0xcbf2_9ce4_8422_2325
-  FNV_MASK = (1 << 64) - 1
+  FNV_PRIME = 0x0100_0193
+  FNV_OFFSET_BASIS = 0x811c_9dc5
+  FNV_MASK = (1 << 32) - 1
 
   def fnv_hash_str(salt, key, table_size)
     fnv_hash_bytes(salt, key.bytes, table_size)
@@ -24,6 +24,18 @@ module FNV
     hash = key.reduce(FNV_OFFSET_BASIS) do |acc, b|
       ((b ^ (acc + salt)) * FNV_PRIME) & FNV_MASK
     end
+
+    # xor-shift excess bits
+    nbits = table_size.bit_length
+    n = 16
+    mask = 0xffff
+    while n > nbits
+      hash = (hash >> n) ^ (hash & mask)
+      n >>= 1
+      mask >>= n
+    end
+
+    # lazy mod
     hash % table_size
   end
 
