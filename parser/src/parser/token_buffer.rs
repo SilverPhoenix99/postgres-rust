@@ -117,12 +117,7 @@ where
     where
         F: Fn(&TokenKind) -> Option<TOut>
     {
-        self.consume(|tok| {
-            match mapper(tok) {
-                Some(result) => Ok(Some(result)),
-                None => Ok(None),
-            }
-        })
+        self.consume(|tok| Ok(mapper(tok)))
     }
 }
 
@@ -135,14 +130,7 @@ where
     where
         P: Fn(&TokenKind) -> bool
     {
-        self.consume(|tok|
-            if pred(tok) {
-                Ok(Some(*tok))
-            }
-            else {
-                Ok(None)
-            }
-        )
+        self.consume(|tok| Ok(pred(tok).then_some(*tok)))
     }
 }
 
