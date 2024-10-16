@@ -327,10 +327,30 @@ impl<'src> Parser<'src> {
             col_id ( '.' col_id )*
         */
 
+        self.col_id_list(Dot)
+    }
+
+    /// Post-condition: Vec is **not** empty
+    fn name_list(&mut self) -> ScanResult<QnName> {
+
+        /*
+            col_id ( '.' col_id )*
+        */
+
+        self.col_id_list(Comma)
+    }
+
+    /// Post-condition: Vec is **not** empty
+    fn col_id_list(&mut self, separator: TokenKind) -> ScanResult<QnName> {
+
+        /*
+            col_id ( <separator> col_id )*
+        */
+
         let element = self.col_id()?;
         let mut elements = vec![element];
 
-        while self.buffer.consume_eq(Dot).optional()?.is_some() {
+        while self.buffer.consume_eq(separator).optional()?.is_some() {
             let element = self.col_id().required()?;
             elements.push(element);
         }
@@ -1158,7 +1178,10 @@ mod tests {
     }
 
     #[test]
-    fn test_var_name() {
+    /// All these methods are similar, so no point in repeating tests:
+    /// * test_var_name
+    /// * test_name_list
+    fn test_col_id_list() {
         let mut parser = Parser::new("test.qualified.name", DEFAULT_CONFIG);
         let expected = vec![
             "test".into(),
@@ -1166,7 +1189,7 @@ mod tests {
             "name".into()
         ];
 
-        assert_eq!(Ok(expected), parser.var_name());
+        assert_eq!(Ok(expected), parser.col_id_list(Dot));
     }
 
     #[test]
