@@ -41,34 +41,6 @@ impl<'src> TokenBuffer<'src> {
         self.peeked.get_or_insert_with(|| self.lexer.next())
     }
 
-    /// Similar to `consume`, but tries to match one of many `mappers`.
-    ///
-    /// The `mappers` are executed in order, until the first that returns `Ok(Some(T))`.
-    ///
-    /// Iteration stops when a mapper returns either `Ok(Some(T))` or `Err(_)`.
-    ///
-    /// When a mapper doesn't match anything, then it should return `Ok(None)`,
-    /// to signal that iteration should continue to the next mapper.
-    #[inline]
-    pub fn consume_any<T>(
-        &mut self,
-        mappers: &[&dyn Fn(&TokenKind) -> ConsumerResult<T>]
-    ) -> ScanResult<T>
-    {
-        self.consume(|tok| {
-
-            for mapper in mappers {
-                match mapper(tok) {
-                    Ok(None) => {/* none matched, so try the next one */},
-                    result => return result,
-                }
-            }
-
-            // No mapper matched
-            Ok(None)
-        })
-    }
-
     #[inline(always)]
     pub fn consume_eq(&mut self, kind: TokenKind) -> ScanResult<TokenKind> {
         self.consume(|tok| kind.eq(tok))
