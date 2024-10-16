@@ -405,6 +405,7 @@ class Grammar
     Grammar.new(recursive)
   end
 
+  # bubbles up __empty rules from all productions, until it only exists in the starting rule
   def remove_opt_rules
     productions = @productions
     for i in 1..100 do
@@ -543,4 +544,4 @@ Clipboard.copy grammar2.to_bison
 grammar2.save_bison './tmp/grammar2.bison.rb'
 
 
-grammar = Grammar.load_bison('./tmp/grammar2.bison.rb');
+grammar = Grammar.load_bison('./tmp/grammar2.bison.rb.bk');

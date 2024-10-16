@@ -90,6 +90,12 @@ impl Default for EofErrorKind {
     }
 }
 
+impl From<ParserErrorKind> for EofErrorKind {
+    fn from(value: ParserErrorKind) -> Self {
+        Self::ParserErr(value)
+    }
+}
+
 impl From<EofErrorKind> for ParserErrorKind {
     /// Hoists `Eof` to `ParserErrorKind::default()`.
     fn from(value: EofErrorKind) -> Self {

@@ -73,42 +73,29 @@ impl<'src> Parser<'src> {
     fn stmtmulti(&mut self) -> Result<Vec<RawStmt>, ParserErrorKind> {
 
         // This production is slightly cheating, not because it's more efficient,
-        // but helps simplify capturing errors a bit.
+        // but helps simplify capturing errors.
         // Production:
-        //     ( stmt? ((';')+ stmt?)* )?
+        //     (';')* ( toplevel_stmt ( (';')+ toplevel_stmt? )* )?
         // Original production:
-        //     ( stmt? (';' stmt?)* )?
+        //     toplevel_stmt? ( ';' toplevel_stmt? )*
 
-        let mut stmts = match self.toplevel_stmt() {
-            Ok(stmt) => vec![stmt],
-            Err(Eof) => {
-                // The whole string is empty, or just contains whitespace and/or comments.
-                return Ok(Vec::new());
-            },
-            Err(NoMatch) => {
-                // Something went wrong with the 1st token already?!
-                return Err(ParserErrorKind::default())
-            }
-            Err(ParserErr(err)) => return Err(err),
-        };
+        self.semicolons()?;
+        if self.buffer.eof() {
+            // The whole string is empty, or just contains semicolons, whitespace, or comments.
+            return Ok(Vec::new())
+        }
 
-        while self.semicolons()? {
+        // If the string wasn't considered "empty", then it has at least 1 token, that *must* match some statement.
+        let stmt = self.toplevel_stmt().required()?;
+        let mut stmts = vec![stmt];
 
-            let stmt = match self.toplevel_stmt() {
-                Ok(stmt) => stmt,
-                Err(Eof) => break,
-                Err(NoMatch) => {
-                    // No stmt matched
-                    return Err(ParserErrorKind::default())
-                }
-                Err(ParserErr(err)) => return Err(err),
-            };
-
+        while self.semicolons()? && !self.buffer.eof() {
+            let stmt = self.toplevel_stmt().required()?;
             stmts.push(stmt);
         }
 
         // if it's not Eof, then something didn't match properly
-        if self.buffer.peek().is_some() {
+        if !self.buffer.eof() {
             return Err(ParserErrorKind::default())
         }
 
