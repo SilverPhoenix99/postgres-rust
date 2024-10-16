@@ -5,8 +5,6 @@ require 'rake/clean'
 RUST_PROJECT_ROOT = Pathname(__dir__).parent.expand_path
 PG_ROOT = RUST_PROJECT_ROOT.parent / 'postgres'
 
-task default: :build
-
 ###############################################################################
 # Keywords
 ###############################################################################
@@ -37,17 +35,39 @@ file err_codes_output => [err_codes_input, 'gen-errcodes.rb'] do
   ErrCodesGenerator.run! err_codes_input, err_codes_output
 end
 
-task build: err_codes_output
-
-
 ###############################################################################
 # uncache - Removes cargo's compiled caches, except from dependencies
 ###############################################################################
 
-task :uncache do
+desc "Deletes assets of the project packages, without touching dependencies."
+task :uncache do |_, args|
   require 'json'
   metadata = `cargo metadata --format-version=1 --no-deps`
   metadata = JSON.parse(metadata)
-  packages = metadata['packages'].flat_map { |package| ['--package', package['name']] }
+
+  packages = metadata['packages'].map { |package| package['name'] }
+
+  package_filter = args.extras
+  if package_filter.any?
+    packages &= package_filter
+    if packages.empty?
+      packages = metadata['packages'].map { |package| package['name'] }.join(', ')
+      puts "No packages selected to clean. Existing packages: #{packages}"
+      next
+    end
+  end
+
+  packages = packages.flat_map { |package| ['--package', package] }
   system 'cargo', 'clean', *packages
 end
+
+###############################################################################
+# Top-level tasks
+###############################################################################
+
+desc "Generates all source files"
+task generate: [keywords_output, err_codes_output]
+
+desc "Main task - runs everything"
+task build: :generate
+task default: :build
