@@ -728,19 +728,20 @@ impl<'src> Parser<'src> {
             use Keyword::{CurrentRole, CurrentUser, NoneKw, SessionUser};
 
             let Some(kw) = tok.keyword() else { return Ok(None) };
+            let details = kw.details();
 
-            match kw.details().keyword() {
+            match details.keyword() {
                 NoneKw => Err(ReservedRoleSpec("none")),
                 CurrentRole => Ok(Some(RoleSpec::CurrentRole)),
                 CurrentUser => Ok(Some(RoleSpec::CurrentUser)),
                 SessionUser => Ok(Some(RoleSpec::SessionUser)),
                 _ => {
-                    if kw.details().reserved().is_some() {
+                    if details.category() == Reserved {
                         Ok(None)
                     }
                     else {
                         Ok(Some(
-                            RoleSpec::Name(kw.details().text().into())
+                            RoleSpec::Name(details.text().into())
                         ))
                     }
                 },
@@ -855,27 +856,23 @@ impl<'src> Parser<'src> {
     #[inline(always)]
     fn col_id(&mut self) -> ScanResult<CowStr> {
         self.ident_or_keyword(|kw|
-               kw.details().unreserved().is_some()
-            || kw.details().col_name().is_some()
+            matches!(kw.details().category(), Unreserved | ColumnName)
         )
     }
 
     #[inline(always)]
     fn type_function_name(&mut self) -> ScanResult<CowStr> {
         self.ident_or_keyword(|kw|
-               kw.details().unreserved().is_some()
-            || kw.details().type_func_name().is_some()
+            matches!(kw.details().category(), Unreserved | TypeFuncName)
         )
     }
 
     /// Alias: `NonReservedWord`
     #[inline(always)]
     fn non_reserved_word(&mut self) -> ScanResult<CowStr> {
-        self.ident_or_keyword(|kw| {
-               kw.details().unreserved().is_some()
-            || kw.details().col_name().is_some()
-            || kw.details().type_func_name().is_some()
-        })
+        self.ident_or_keyword(|kw|
+            matches!(kw.details().category(), Unreserved | ColumnName | TypeFuncName)
+        )
     }
 
     /// Aliases:
@@ -1580,6 +1577,7 @@ use self::string_parser::StringParser;
 use self::token_buffer::TokenBuffer;
 use self::token_buffer::TokenConsumer;
 use crate::lexer::Keyword;
+use crate::lexer::KeywordCategory::*;
 use crate::lexer::Lexer;
 use crate::lexer::TokenKind::{self, Comma, Dot, NumberLiteral};
 use crate::parser::ast_node::RawStmt::{self, ClosePortalStmt, DeallocateStmt, ListenStmt, LoadStmt, UnlistenStmt};

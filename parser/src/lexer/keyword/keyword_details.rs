@@ -29,6 +29,11 @@ impl KeywordDetails {
     }
 
     #[inline(always)]
+    pub fn category(&self) -> KeywordCategory {
+        self.category
+    }
+    
+    #[inline(always)]
     pub fn unreserved(&self) -> Option<Keyword> {
         if self.category == Unreserved {
             return Some(self.keyword)
