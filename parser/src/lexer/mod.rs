@@ -4,7 +4,7 @@ mod token_kind;
 
 pub use self::{
     error::{LexerError, LexerErrorKind},
-    keyword::{Keyword, KeywordDetails},
+    keyword::{Keyword, KeywordCategory, KeywordDetails},
     token_kind::{BitStringKind, IdentifierKind, StringKind, TokenKind},
 };
 

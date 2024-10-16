@@ -121,22 +121,22 @@ impl TokenKind {
 
     #[inline(always)]
     pub fn unreserved_keyword(&self) -> Option<Keyword> {
-        self.keyword().filter(|kw| kw.details().unreserved().is_some())
+        self.keyword().and_then(|kw| kw.details().unreserved())
     }
 
     #[inline(always)]
     pub fn col_name_keyword(&self) -> Option<Keyword> {
-        self.keyword().filter(|kw| kw.details().col_name().is_some())
+        self.keyword().and_then(|kw| kw.details().col_name())
     }
 
     #[inline(always)]
     pub fn type_func_name_keyword(&self) -> Option<Keyword> {
-        self.keyword().filter(|kw| kw.details().type_func_name().is_some())
+        self.keyword().and_then(|kw| kw.details().type_func_name())
     }
 
     #[inline(always)]
     pub fn reserved_keyword(&self) -> Option<Keyword> {
-        self.keyword().filter(|kw| kw.details().reserved().is_some())
+        self.keyword().and_then(|kw| kw.details().reserved())
     }
 
     #[inline(always)]
