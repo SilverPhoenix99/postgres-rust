@@ -1,8 +1,10 @@
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SimpleErrorReport<T> {
     source: T,
     fn_info: FnInfo,
 }
+
+impl<T: Eq> Eq for SimpleErrorReport<T> {}
 
 impl<T> SimpleErrorReport<T> {
     #[inline(always)]

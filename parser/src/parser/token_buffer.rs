@@ -1,6 +1,6 @@
 pub(super) struct TokenBuffer<'src> {
     lexer: Lexer<'src>,
-    peeked: Option<Option<LexerResult>>
+    peeked: Option<EofResult<Located<TokenKind>>>
 }
 
 impl<'src> TokenBuffer<'src> {
@@ -24,10 +24,15 @@ impl<'src> TokenBuffer<'src> {
     /// or an empty-length location if in the Eof state.
     #[inline(always)]
     pub fn current_location(&mut self) -> Location {
+        use EofErrorKind::*;
+
         match self.peek() {
-            Some(Ok((_, loc))) => loc.clone(),
-            Some(Err(err)) => err.location().clone(),
-            None => self.lexer.current_location(),
+            Ok((_, loc)) => loc.clone(),
+            Err(Eof) => self.lexer.current_location(),
+            Err(ParserErr(ParserErrorKind::Lexer(lex_err))) => lex_err.location().clone(),
+            Err(ParserErr(err)) => {
+                panic!("peek() should only return `LexerError`, but actually returned {err}")
+            }
         }
     }
 
@@ -37,8 +42,16 @@ impl<'src> TokenBuffer<'src> {
     }
 
     #[inline(always)]
-    pub fn peek(&mut self) -> &Option<LexerResult> {
-        self.peeked.get_or_insert_with(|| self.lexer.next())
+    pub fn peek(&mut self) -> &EofResult<Located<TokenKind>> {
+        use EofErrorKind::*;
+
+        self.peeked.get_or_insert_with(||
+            match self.lexer.next() {
+                None => Err(Eof),
+                Some(Ok(tok)) => Ok(tok),
+                Some(Err(lex_err)) => Err(ParserErr(lex_err.into())),
+            }
+        )
     }
 
     #[inline(always)]
@@ -74,34 +87,29 @@ impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenBuffer<'_> {
     where
         F: Fn(&TokenKind) -> ConsumerResult<TOut>
     {
-        match self.peek() {
-
-            // Eof never matches
-            None => Err(Eof),
-
-            Some(Ok((tok, _))) => {
-                match mapper(tok) {
-
-                    // The mapper matched the token.
-                    // Consume it from the Lexer.
-                    Ok(Some(result)) => {
-                        self.next();
-                        Ok(result)
-                    }
-
-                    // The mapper didn't match.
-                    // Keep the token in the Lexer.
-                    Ok(None) => Err(NoMatch),
-
-                    // Some error is present
-                    Err(err) => Err(err.into()),
-                }
-            },
-
-            Some(Err(lex_err)) => {
-                let err = lex_err.clone();
-                Err(ParserErr(err.into()))
+        let tok = match self.peek() {
+            Ok((tok, _)) => tok,
+            Err(err) => {
+                let err = err.clone();
+                return Err(err.into())
             }
+        };
+
+        match mapper(tok) {
+
+            // The mapper matched the token.
+            // Consume it from the Lexer.
+            Ok(Some(result)) => {
+                self.next();
+                Ok(result)
+            }
+
+            // The mapper didn't match.
+            // Keep the token in the Lexer.
+            Ok(None) => Err(NoMatch),
+
+            // Some error is present
+            Err(err) => Err(err.into()),
         }
     }
 }
@@ -154,17 +162,17 @@ mod tests {
         let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
-        assert_matches!(buffer.peek(), Some(Ok((_, _))));
+        assert_matches!(buffer.peek(), Ok((_, _)));
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
 
         buffer.next();
 
-        assert_matches!(buffer.peek(), Some(Ok((_, _))));
+        assert_matches!(buffer.peek(), Ok((_, _)));
         assert_eq!(Location::new(4..15, 1, 5), buffer.current_location());
 
         buffer.next();
 
-        assert_matches!(buffer.peek(), None);
+        assert_matches!(buffer.peek(), Err(EofErrorKind::Eof));
         assert_eq!(Location::new(15..15, 1, 16), buffer.current_location());
     }
 
@@ -187,7 +195,7 @@ mod tests {
         let mut buffer =  TokenBuffer::new(lexer);
 
         let result: ScanResult<TokenKind> = buffer.consume(|_| Err(Syntax));
-        assert_eq!(Err(ParserErr(Syntax)), result);
+        assert_eq!(Err(ScanErrorKind::ParserErr(Syntax)), result);
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
     }
 
@@ -242,9 +250,17 @@ mod tests {
     }
 }
 
-use crate::error::HasLocation;
-use crate::lexer::{Keyword, Lexer, LexerResult, TokenKind};
-use crate::parser::result::ScanErrorKind::{Eof, NoMatch, ParserErr};
-use crate::parser::result::ScanResult;
-use crate::parser::ParserErrorKind;
-use postgres_basics::Location;
+use crate::{
+    error::HasLocation,
+    lexer::{Keyword, Lexer, TokenKind},
+    parser::{
+        result::{
+            EofErrorKind,
+            EofResult,
+            ScanErrorKind::{self, NoMatch},
+            ScanResult
+        },
+        ParserErrorKind
+    }
+};
+use postgres_basics::{Located, Location};
