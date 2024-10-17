@@ -1,12 +1,10 @@
 impl Parser<'_> {
     /// Alias: `ReassignOwnedStmt`
-    pub(in crate::parser) fn reassign_owned_stmt(&mut self) -> ScanResult<ReassignOwnedStmt> {
+    pub(in crate::parser) fn reassign_owned_stmt(&mut self) -> ParseResult<ReassignOwnedStmt> {
 
         /*
             REASSIGN OWNED BY role_list TO RoleSpec
         */
-
-        self.buffer.consume_kw_eq(Reassign)?;
 
         self.buffer.consume_kw_eq(OwnedKw).required()?;
         self.buffer.consume_kw_eq(By).required()?;
@@ -30,7 +28,7 @@ mod tests {
 
     #[test]
     fn test_reassign_owner_stmt() {
-        let mut parser = Parser::new("reassign owned by public, test_role to target_role", DEFAULT_CONFIG);
+        let mut parser = Parser::new("owned by public, test_role to target_role", DEFAULT_CONFIG);
 
         let expected = ReassignOwnedStmt::new(
             vec![RoleSpec::Public, RoleSpec::Name("test_role".into())],
@@ -41,7 +39,7 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{By, OwnedKw, Reassign, To};
+use crate::lexer::Keyword::{By, OwnedKw, To};
 use crate::parser::ast_node::ReassignOwnedStmt;
-use crate::parser::result::{ScanResult, ScanResultTrait};
-use crate::parser::Parser;
+use crate::parser::result::ScanResultTrait;
+use crate::parser::{ParseResult, Parser};

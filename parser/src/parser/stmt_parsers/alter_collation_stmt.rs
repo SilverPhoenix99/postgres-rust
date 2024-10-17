@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn alter_collation_stmt(&mut self) -> ScanResult<RawStmt> {
+    pub(in crate::parser) fn alter_collation_stmt(&mut self) -> ParseResult<RawStmt> {
 
         /*
             ALTER COLLATION any_name OWNER TO RoleSpec
@@ -7,8 +7,6 @@ impl Parser<'_> {
             ALTER COLLATION any_name RENAME TO ColId
             ALTER COLLATION any_name SET SCHEMA ColId
         */
-
-        self.buffer.consume_kw_eq(Collation)?;
 
         let name = self.any_name().required()?;
 
@@ -62,7 +60,7 @@ mod tests {
 
     #[test]
     fn test_collation_owner() {
-        let source = "collation collation_name owner to current_user";
+        let source = "collation_name owner to current_user";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.alter_collation_stmt();
@@ -77,7 +75,7 @@ mod tests {
 
     #[test]
     fn test_collation_refresh_version() {
-        let source = "collation collation_name refresh version";
+        let source = "collation_name refresh version";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.alter_collation_stmt();
@@ -87,7 +85,7 @@ mod tests {
 
     #[test]
     fn test_collation_rename() {
-        let source = "collation collation_name rename to something_else";
+        let source = "collation_name rename to something_else";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.alter_collation_stmt();
@@ -102,7 +100,7 @@ mod tests {
 
     #[test]
     fn test_collation_set_schema() {
-        let source = "collation collation_name set schema some_schema";
+        let source = "collation_name set schema some_schema";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.alter_collation_stmt();
@@ -116,7 +114,7 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Collation, Owner, Refresh, Rename, Schema, Set, To, Version};
+use crate::lexer::Keyword::{Owner, Refresh, Rename, Schema, Set, To, Version};
 use crate::parser::ast_node::RawStmt::{self, RefreshCollationVersionStmt};
 use crate::parser::ast_node::{
     AlterObjectSchemaStmt,
@@ -126,5 +124,5 @@ use crate::parser::ast_node::{
     RenameStmt,
     RenameTarget
 };
-use crate::parser::result::{ScanResult, ScanResultTrait};
-use crate::parser::Parser;
+use crate::parser::result::ScanResultTrait;
+use crate::parser::{ParseResult, Parser};

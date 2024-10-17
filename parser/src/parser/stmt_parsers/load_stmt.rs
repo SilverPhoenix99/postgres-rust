@@ -1,14 +1,12 @@
 impl Parser<'_> {
     /// Alias: `LoadStmt`
-    pub(in crate::parser) fn load_stmt(&mut self) -> ScanResult<String> {
+    pub(in crate::parser) fn load_stmt(&mut self) -> ParseResult<String> {
 
         /*
             LOAD SCONST
         */
 
-        self.buffer.consume_kw_eq(Load)?;
-
-        self.string()
+        self.string().required()
     }
 }
 
@@ -19,11 +17,10 @@ mod tests {
 
     #[test]
     fn test_load_stmt() {
-        let mut parser = Parser::new("load 'test string'", DEFAULT_CONFIG);
+        let mut parser = Parser::new("'test string'", DEFAULT_CONFIG);
         assert_eq!(Ok("test string".into()), parser.load_stmt());
     }
 }
 
-use crate::lexer::Keyword::Load;
-use crate::parser::Parser;
-use crate::parser::result::ScanResult;
+use crate::parser::result::ScanResultTrait;
+use crate::parser::{ParseResult, Parser};

@@ -1,12 +1,10 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn commit_stmt(&mut self) -> ScanResult<TransactionStmt> {
+    pub(in crate::parser) fn commit_stmt(&mut self) -> ParseResult<TransactionStmt> {
 
         /*
             COMMIT opt_transaction opt_transaction_chain
             COMMIT PREPARED SCONST
         */
-
-        self.buffer.consume_kw_eq(Commit)?;
 
         if self.buffer.consume_kw_eq(Prepared).optional()?.is_some() {
             let string = self.string().required()?;
@@ -28,48 +26,48 @@ mod tests {
 
     #[test]
     fn test_commit() {
-        let mut parser = Parser::new("commit", DEFAULT_CONFIG);
+        let mut parser = Parser::new("", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::Commit { chain: false }), parser.commit_stmt());
     }
 
     #[test]
     fn test_commit_chain() {
-        let mut parser = Parser::new("commit and chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("and chain", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::Commit { chain: true }), parser.commit_stmt());
     }
 
     #[test]
     fn test_commit_no_chain() {
-        let mut parser = Parser::new("commit and no chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("and no chain", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::Commit { chain: false }), parser.commit_stmt());
     }
 
     #[test]
     fn test_commit_transaction() {
-        let mut parser = Parser::new("commit transaction", DEFAULT_CONFIG);
+        let mut parser = Parser::new("transaction", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::Commit { chain: false }), parser.commit_stmt());
     }
 
     #[test]
     fn test_commit_transaction_chain() {
-        let mut parser = Parser::new("commit transaction and chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("transaction and chain", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::Commit { chain: true }), parser.commit_stmt());
     }
 
     #[test]
     fn test_commit_transaction_no_chain() {
-        let mut parser = Parser::new("commit transaction and no chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("transaction and no chain", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::Commit { chain: false }), parser.commit_stmt());
     }
 
     #[test]
     fn test_commit_prepared() {
-        let mut parser = Parser::new("commit prepared 'test-name'", DEFAULT_CONFIG);
+        let mut parser = Parser::new("prepared 'test-name'", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::CommitPrepared("test-name".into())), parser.commit_stmt());
     }
 }
 
-use crate::lexer::Keyword::{Commit, Prepared};
+use crate::lexer::Keyword::Prepared;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::{ScanResult, ScanResultTrait};
-use crate::parser::Parser;
+use crate::parser::result::ScanResultTrait;
+use crate::parser::{ParseResult, Parser};

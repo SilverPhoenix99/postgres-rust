@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `CommentStmt`
-    pub(in crate::parser) fn comment_stmt(&mut self) -> ScanResult<RawStmt> {
+    pub(in crate::parser) fn comment_stmt(&mut self) -> ParseResult<RawStmt> {
 
         /*
             COMMENT ON AGGREGATE aggregate_with_argtypes IS comment_text
@@ -23,15 +23,13 @@ impl Parser<'_> {
             COMMENT ON TYPE_P Typename IS comment_text
         */
 
-        self.buffer.consume_kw_eq(Comment)?;
         self.buffer.consume_kw_eq(On).required()?;
 
         todo!()
     }
 }
 
-use crate::lexer::Keyword::{Comment, On};
+use crate::lexer::Keyword::On;
 use crate::parser::ast_node::RawStmt;
-use crate::parser::result::ScanResult;
-use crate::parser::Parser;
 use crate::parser::ScanResultTrait;
+use crate::parser::{ParseResult, Parser};

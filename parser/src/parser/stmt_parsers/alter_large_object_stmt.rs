@@ -1,11 +1,9 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn alter_large_object_stmt(&mut self) -> ScanResult<RawStmt> {
+    pub(in crate::parser) fn alter_large_object_stmt(&mut self) -> ParseResult<RawStmt> {
 
         /*
             ALTER LARGE_P OBJECT_P NumericOnly OWNER TO RoleSpec
         */
-
-        self.buffer.consume_kw_eq(Large)?;
 
         self.buffer.consume_kw_eq(Object).required()?;
 
@@ -33,7 +31,7 @@ mod tests {
 
     #[test]
     fn test_alter_large_object() {
-        let source = "large object +654987 owner to some_user";
+        let source = "object +654987 owner to some_user";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let expected = AlterOwnerStmt::new(
@@ -45,7 +43,7 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Large, Object, Owner, To};
+use crate::lexer::Keyword::{Object, Owner, To};
 use crate::parser::ast_node::{AlterOwnerStmt, AlterOwnerTarget, RawStmt};
-use crate::parser::result::{ScanResult, ScanResultTrait};
-use crate::parser::Parser;
+use crate::parser::result::ScanResultTrait;
+use crate::parser::{ParseResult, Parser};

@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn rollback_stmt(&mut self) -> ScanResult<TransactionStmt> {
+    pub(in crate::parser) fn rollback_stmt(&mut self) -> ParseResult<TransactionStmt> {
 
         /*
             ROLLBACK PREPARED SCONST
@@ -7,8 +7,6 @@ impl Parser<'_> {
             ROLLBACK opt_transaction TO SAVEPOINT ColId
             ROLLBACK opt_transaction TO ColId
         */
-
-        self.buffer.consume_kw_eq(Rollback)?;
 
         if self.buffer.consume_kw_eq(Prepared).optional()?.is_some() {
             /*
@@ -36,7 +34,7 @@ impl Parser<'_> {
                 */
                 Ok(TransactionStmt::Rollback { chain: false })
             },
-            Err(ParserErr(err)) => Err(ParserErr(err)),
+            Err(ParserErr(err)) => Err(err),
             Err(NoMatch) => {
                 /*
                     ROLLBACK opt_transaction opt_transaction_chain
@@ -52,77 +50,76 @@ impl Parser<'_> {
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
-    use crate::parser::Parser;
 
     #[test]
     fn test_rollback() {
-        let mut parser = Parser::new("rollback", DEFAULT_CONFIG);
+        let mut parser = Parser::new("", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::Rollback { chain: false }), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_chain() {
-        let mut parser = Parser::new("rollback and chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("and chain", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::Rollback { chain: true }), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_no_chain() {
-        let mut parser = Parser::new("rollback and no chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("and no chain", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::Rollback { chain: false }), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_to() {
-        let mut parser = Parser::new("rollback to test_ident", DEFAULT_CONFIG);
+        let mut parser = Parser::new("to test_ident", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::RollbackTo("test_ident".into())), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_to_savepoint() {
-        let mut parser = Parser::new("rollback to savepoint test_ident", DEFAULT_CONFIG);
+        let mut parser = Parser::new("to savepoint test_ident", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::RollbackTo("test_ident".into())), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_transaction() {
-        let mut parser = Parser::new("rollback transaction", DEFAULT_CONFIG);
+        let mut parser = Parser::new("transaction", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::Rollback { chain: false }), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_transaction_chain() {
-        let mut parser = Parser::new("rollback transaction and chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("transaction and chain", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::Rollback { chain: true }), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_transaction_no_chain() {
-        let mut parser = Parser::new("rollback transaction and no chain", DEFAULT_CONFIG);
+        let mut parser = Parser::new("transaction and no chain", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::Rollback { chain: false }), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_transaction_to() {
-        let mut parser = Parser::new("rollback transaction to test_ident", DEFAULT_CONFIG);
+        let mut parser = Parser::new("transaction to test_ident", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::RollbackTo("test_ident".into())), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_transaction_to_savepoint() {
-        let mut parser = Parser::new("rollback transaction to savepoint test_ident", DEFAULT_CONFIG);
+        let mut parser = Parser::new("transaction to savepoint test_ident", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::RollbackTo("test_ident".into())), parser.rollback_stmt());
     }
 
     #[test]
     fn test_rollback_prepared() {
-        let mut parser = Parser::new("rollback prepared 'test-string'", DEFAULT_CONFIG);
+        let mut parser = Parser::new("prepared 'test-string'", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionStmt::RollbackPrepared("test-string".into())), parser.rollback_stmt());
     }
 }
 
-use crate::lexer::Keyword::{Prepared, Rollback, Savepoint, To};
+use crate::lexer::Keyword::{Prepared, Savepoint, To};
 use crate::parser::ast_node::TransactionStmt;
 use crate::parser::result::ScanErrorKind::{Eof, NoMatch, ParserErr};
-use crate::parser::result::{ScanResult, ScanResultTrait};
-use crate::parser::Parser;
+use crate::parser::result::ScanResultTrait;
+use crate::parser::{ParseResult, Parser};

@@ -1,20 +1,10 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn alter_language_stmt(&mut self) -> ScanResult<RawStmt> {
+    pub(in crate::parser) fn alter_language_stmt(&mut self) -> ParseResult<RawStmt> {
 
         /*
             ALTER (PROCEDURAL)? LANGUAGE ColId OWNER TO RoleSpec # AlterOwnerStmt
             ALTER (PROCEDURAL)? LANGUAGE ColId RENAME TO ColId # RenameStmt
         */
-
-        let procedural = self.buffer.consume_kw_eq(Procedural).no_match_to_option()?.is_some();
-        let language = self.buffer.consume_kw_eq(Language);
-
-        if procedural {
-            language.required()?;
-        }
-        else {
-            language?;
-        }
 
         let name = self.col_id().required()?;
 
@@ -50,7 +40,7 @@ mod tests {
 
     #[test]
     fn test_alter_owner() {
-        let source = "procedural language some_language owner to public";
+        let source = "some_language owner to public";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let expected = AlterOwnerStmt::new(
@@ -63,7 +53,7 @@ mod tests {
 
     #[test]
     fn test_rename() {
-        let source = "language some_language rename to new_lang";
+        let source = "some_language rename to new_lang";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let expected = RenameStmt::new(
@@ -75,7 +65,7 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Language, Owner, Procedural, Rename, To};
+use crate::lexer::Keyword::{Owner, Rename, To};
 use crate::parser::ast_node::{AlterOwnerStmt, AlterOwnerTarget, RawStmt, RenameStmt, RenameTarget};
-use crate::parser::result::{ScanResult, ScanResultTrait};
-use crate::parser::Parser;
+use crate::parser::result::ScanResultTrait;
+use crate::parser::{ParseResult, Parser};

@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn alter_event_trigger_stmt(&mut self) -> ScanResult<RawStmt> {
+    pub(in crate::parser) fn alter_event_trigger_stmt(&mut self) -> ParseResult<RawStmt> {
 
         /*
             ALTER EVENT TRIGGER ColId enable_trigger
@@ -7,7 +7,6 @@ impl Parser<'_> {
             ALTER EVENT TRIGGER ColId RENAME TO ColId
         */
 
-        self.buffer.consume_kw_eq(Event)?;
         self.buffer.consume_kw_eq(Trigger).required()?;
 
         let trigger = self.col_id().required()?;
@@ -53,7 +52,7 @@ impl Parser<'_> {
         Ok(stmt)
     }
 
-    fn enable_trigger(&mut self) -> Result<EventTriggerState, ParserErrorKind> {
+    fn enable_trigger(&mut self) -> ParseResult<EventTriggerState> {
 
         /*
             ENABLE_P
@@ -95,7 +94,7 @@ mod tests {
 
     #[test]
     fn test_alter_enable() {
-        let mut parser = Parser::new("event trigger trigger_name enable", DEFAULT_CONFIG);
+        let mut parser = Parser::new("trigger trigger_name enable", DEFAULT_CONFIG);
 
         let expected = AlterEventTrigStmt::new("trigger_name".into(), FiresOnOrigin);
 
@@ -104,7 +103,7 @@ mod tests {
 
     #[test]
     fn test_alter_owner() {
-        let mut parser = Parser::new("event trigger trigger_name owner to public", DEFAULT_CONFIG);
+        let mut parser = Parser::new("trigger trigger_name owner to public", DEFAULT_CONFIG);
 
         let expected = AlterOwnerStmt::new(
             AlterOwnerTarget::EventTrigger("trigger_name".into()),
@@ -116,7 +115,7 @@ mod tests {
 
     #[test]
     fn test_alter_rename() {
-        let mut parser = Parser::new("event trigger trigger_name rename to another_trigger", DEFAULT_CONFIG);
+        let mut parser = Parser::new("trigger trigger_name rename to another_trigger", DEFAULT_CONFIG);
 
         let expected = RenameStmt::new(
             RenameTarget::EventTrigger("trigger_name".into()),
@@ -151,9 +150,9 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Always, Disable, Enable, Event, Owner, Rename, Replica, To, Trigger};
+use crate::lexer::Keyword::{Always, Disable, Enable, Owner, Rename, Replica, To, Trigger};
 use crate::parser::ast_node::{AlterEventTrigStmt, AlterOwnerStmt, AlterOwnerTarget, RawStmt, RenameStmt, RenameTarget};
-use crate::parser::result::{EofResultTrait, ScanResult, ScanResultTrait};
+use crate::parser::result::{EofResultTrait, ScanResultTrait};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::EventTriggerState::{Disabled, FiresAlways, FiresOnOrigin, FiresOnReplica};
-use crate::parser::{EventTriggerState, Parser, ParserErrorKind};
+use crate::parser::{EventTriggerState, ParseResult, Parser};

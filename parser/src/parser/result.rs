@@ -31,12 +31,12 @@ pub(crate) trait ScanResultTrait<T> {
     /// When both `Eof` and `NoMatch` are considered syntax errors.
     ///
     /// Hoists both `Eof` and `NoMatch` to `ParserErrorKind::default()`.
-    fn required(self) -> Result<T, ParserErrorKind>;
+    fn required(self) -> ParseResult<T>;
 
     /// When it's fine if the token doesn't match or is missing.
     ///
     /// Hoists both `Eof` and `NoMatch` to `Ok(None)`.
-    fn optional(self) -> Result<Option<T>, ParserErrorKind>;
+    fn optional(self) -> ParseResult<Option<T>>;
 
     /// Hoists `NoMatch` to `Ok(None)`.
     ///
@@ -50,14 +50,14 @@ pub(crate) type ScanResult<T> = Result<T, ScanErrorKind>;
 
 impl<T> ScanResultTrait<T> for ScanResult<T> {
 
-    fn required(self) -> Result<T, ParserErrorKind> {
+    fn required(self) -> ParseResult<T> {
         self.map_err(|err| match err {
             ScanErrorKind::ParserErr(err) => err,
             _ => ParserErrorKind::default()
         })
     }
 
-    fn optional(self) -> Result<Option<T>, ParserErrorKind> {
+    fn optional(self) -> ParseResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
             Err(ScanErrorKind::Eof | ScanErrorKind::NoMatch) => Ok(None),
@@ -110,13 +110,13 @@ pub(crate) trait EofResultTrait<T> {
     /// When `Eof` is considered a `Syntax` error.
     ///
     /// Hoists `Eof` to `ParserErrorKind::default()`.
-    fn required(self) -> Result<T, ParserErrorKind>;
+    fn required(self) -> ParseResult<T>;
 }
 
 pub(crate) type EofResult<T> = Result<T, EofErrorKind>;
 
 impl<T> EofResultTrait<T> for EofResult<T> {
-    fn required(self) -> Result<T, ParserErrorKind> {
+    fn required(self) -> ParseResult<T> {
         self.map_err(ParserErrorKind::from)
     }
 }
@@ -126,4 +126,4 @@ mod tests {
     // TODO
 }
 
-use crate::parser::ParserErrorKind;
+use crate::parser::{ParseResult, ParserErrorKind};
