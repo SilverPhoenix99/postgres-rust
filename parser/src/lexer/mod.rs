@@ -707,7 +707,7 @@ impl<'src> Lexer<'src> {
 mod tests {
     use super::*;
     use crate::error::HasLocation;
-    use crate::lexer::Keyword::{From, Not, Select, StringKw};
+    use crate::lexer::Keyword::{FromKw, Not, Select, StringKw};
     use std::ops::Range;
 
     #[test]
@@ -972,7 +972,7 @@ mod tests {
         let source = "SeLeCt FrOm";
         let mut lex = Lexer::new(source, true);
         assert_kw(Select, lex.next());
-        assert_kw(From, lex.next());
+        assert_kw(FromKw, lex.next());
         assert_eq!(None, lex.next());
     }
 

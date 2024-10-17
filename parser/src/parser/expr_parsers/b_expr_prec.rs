@@ -147,7 +147,7 @@ impl Parser<'_> {
         }
 
         // Distinct
-        self.buffer.consume_kw_eq(From).required()?;
+        self.buffer.consume_kw_eq(FromKw).required()?;
 
         let assoc = Op::IsExpr.associativity();
         let right = self.b_expr_prec(assoc.right_precedence()).required()?;
@@ -197,7 +197,7 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::{Distinct, Document, From, Is, Not};
+use crate::lexer::Keyword::{Distinct, Document, FromKw, Is, Not};
 use crate::lexer::TokenKind::*;
 use crate::parser::ast_node::{ExprNode, QnOperator, UnaryExpr};
 use crate::parser::expr_parsers::associativity::Associativity::{self, Left, Non, Right};

@@ -19,6 +19,7 @@ class KeywordsGenerator
     Default
     Drop
     Error
+    From
     Location
     None
     Option
