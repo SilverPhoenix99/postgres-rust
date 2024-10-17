@@ -1,14 +1,12 @@
 impl Parser<'_> {
 
     /// Alias: `AlterGroupStmt`
-    pub(in crate::parser) fn alter_group_stmt(&mut self) -> ScanResult<RawStmt> {
+    pub(in crate::parser) fn alter_group_stmt(&mut self) -> ParseResult<RawStmt> {
 
         /*
             ALTER GROUP role_id RENAME TO role_id
             ALTER GROUP role_spec (ADD | DROP) USER role_list
         */
-
-        self.buffer.consume_kw_eq(Group)?;
 
         let role_loc = self.buffer.current_location();
         let role = self.role_spec().required()?;
@@ -17,7 +15,7 @@ impl Parser<'_> {
             .required()?;
 
         if action == Rename {
-            return self.rename_group(role, role_loc).map(RawStmt::from)
+            return self.rename_group(role, role_loc).map(From::from);
         }
 
         /*
@@ -35,7 +33,7 @@ impl Parser<'_> {
         Ok(stmt.into())
     }
 
-    fn rename_group(&mut self, role: RoleSpec, role_loc: Location) -> ScanResult<RenameStmt> {
+    fn rename_group(&mut self, role: RoleSpec, role_loc: Location) -> ParseResult<RenameStmt> {
 
         /*
             role_id RENAME TO role_id
@@ -45,13 +43,15 @@ impl Parser<'_> {
             Ok(role_id) => role_id,
             Err(err) => {
                 self.err_loc_override = Some(role_loc);
-                return Err(err.into())
+                return Err(err)
             }
         };
 
         self.buffer.consume_kw_eq(To).required()?;
 
-        let new_name = self.role_spec().required()?.into_role_id()?;
+        let new_name = self.role_spec()
+            .required()?
+            .into_role_id()?;
 
         let stmt = RenameStmt::new(Role(target), new_name);
         Ok(stmt)
@@ -65,7 +65,7 @@ mod tests {
 
     #[test]
     fn test_group_rename() {
-        let source = "group some_group rename to new_group_name";
+        let source = "some_group rename to new_group_name";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let expected = RenameStmt::new(
@@ -78,7 +78,7 @@ mod tests {
 
     #[test]
     fn test_add_role_to_group() {
-        let source = "group some_group add user current_role, new_user";
+        let source = "some_group add user current_role, new_user";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let expected = AlterRoleStmt::new(
@@ -95,7 +95,7 @@ mod tests {
 
     #[test]
     fn test_drop_role_from_group() {
-        let source = "group some_group drop user session_user, public";
+        let source = "some_group drop user session_user, public";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let expected = AlterRoleStmt::new(
@@ -111,10 +111,10 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Add, DropKw, Group, Rename, To, User};
+use crate::lexer::Keyword::{Add, DropKw, Rename, To, User};
 use crate::parser::ast_node::AlterRoleOption::RoleMembers;
 use crate::parser::ast_node::RenameTarget::Role;
 use crate::parser::ast_node::{AlterRoleAction, AlterRoleStmt, RawStmt, RenameStmt, RoleSpec};
-use crate::parser::result::{ScanResult, ScanResultTrait};
-use crate::parser::Parser;
+use crate::parser::result::ScanResultTrait;
+use crate::parser::{ParseResult, Parser};
 use postgres_basics::Location;

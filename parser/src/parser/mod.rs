@@ -4,7 +4,9 @@ mod config;
 mod error;
 mod expr_parsers;
 mod ident_parser;
+mod op_parsers;
 mod result;
+mod role_parsers;
 mod stmt_parsers;
 mod string_parser;
 mod token_buffer;
@@ -16,8 +18,58 @@ pub use self::{
     warning::ParserWarning,
 };
 
+macro_rules! consume {
+
+    (
+        $self:ident
+        default => $default:expr,
+        $($pattern:pat $(if $guard:expr)? => $body:expr),+
+        $(,)?
+    ) => {
+        match $self.buffer.peek() {
+            Ok((tok, _)) => match tok {
+                $(
+                    $pattern $(if $guard)? => {
+                        $self.buffer.next();
+                        $body
+                    }
+                )+
+                _ => $default,
+            },
+            Err(err) => Err(err.clone().into()),
+        }
+    };
+
+    (
+        $self:ident
+        default,
+        $($pattern:pat $(if $guard:expr)? => $body:expr),+
+        $(,)?
+    ) => {
+        consume!{$self
+            default => Err(Default::default()),
+            $($pattern $(if $guard)? => $body),+
+        }
+    };
+
+    (
+        $self:ident
+        $($pattern:pat $(if $guard:expr)? => $body:expr),+
+        $(,)?
+    ) => {
+        consume!{$self
+            default => Err(ScanErrorKind::NoMatch.into()),
+            $($pattern $(if $guard)? => $body),+
+        }
+    };
+}
+
+use consume;
+
 type CowStr = Cow<'static, str>;
 type QnName = Vec<CowStr>;
+
+pub(crate) type ParseResult<T> = Result<T, ParserErrorKind>;
 
 pub struct ParserResult {
     pub result: Result<Vec<RawStmt>, Located<ParserErrorKind>>,
@@ -70,7 +122,7 @@ impl<'src> Parser<'src> {
         }
     }
 
-    fn stmtmulti(&mut self) -> Result<Vec<RawStmt>, ParserErrorKind> {
+    fn stmtmulti(&mut self) -> ParseResult<Vec<RawStmt>> {
 
         // This production is slightly cheating, not because it's more efficient,
         // but helps simplify capturing errors.
@@ -86,24 +138,24 @@ impl<'src> Parser<'src> {
         }
 
         // If the string wasn't considered "empty", then it has at least 1 token, that *must* match some statement.
-        let stmt = self.toplevel_stmt().required()?;
+        let stmt = self.toplevel_stmt()?;
         let mut stmts = vec![stmt];
 
         while self.semicolons()? && !self.buffer.eof() {
-            let stmt = self.toplevel_stmt().required()?;
+            let stmt = self.toplevel_stmt()?;
             stmts.push(stmt);
         }
 
         // if it's not Eof, then something didn't match properly
         if !self.buffer.eof() {
-            return Err(ParserErrorKind::default())
+            return Err(Default::default())
         }
 
         Ok(stmts)
     }
 
     /// Returns `true` if it consumed at least 1 `;` (semicolon)
-    fn semicolons(&mut self) -> Result<bool, ParserErrorKind> {
+    fn semicolons(&mut self) -> ParseResult<bool> {
         use TokenKind::Semicolon;
 
         // Production: (';')*
@@ -117,58 +169,57 @@ impl<'src> Parser<'src> {
         Ok(true)
     }
 
-    fn toplevel_stmt(&mut self) -> ScanResult<RawStmt> {
-
-        if self.buffer.eof() { Err(Eof) }
-        else if let Some(node) = self.stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.begin_stmt().optional()? { Ok(node.into()) }
-        else if let Some(node) = self.end_stmt().optional()? { Ok(node.into()) }
-        else { Err(NoMatch) }
+    fn toplevel_stmt(&mut self) -> ParseResult<RawStmt> {
+        self.stmt(true)
     }
 
-    fn stmt(&mut self) -> ScanResult<RawStmt> {
+    fn stmt(&mut self, allow_tx_legacy_stmts: bool) -> ParseResult<RawStmt> {
+        use TokenKind::Keyword as Kw;
+        use Keyword::*;
 
-        if self.buffer.eof() { Err(Eof) }
-        else if self.buffer.consume_kw_eq(Keyword::Checkpoint).optional()?.is_some() { Ok(RawStmt::CheckPoint) }
-        else if let Some(node) = self.abort_stmt().optional()? { Ok(node.into()) }
-        else if let Some(node) = self.alter_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.analyze_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.call_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.close_stmt().optional()? { Ok(ClosePortalStmt(node)) }
-        else if let Some(node) = self.cluster_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.comment_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.commit_stmt().optional()? { Ok(node.into()) }
-        else if let Some(node) = self.copy_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.deallocate_stmt().optional()? { Ok(DeallocateStmt(node)) }
-        else if let Some(node) = self.discard_stmt().optional()? { Ok(node.into()) }
-        else if let Some(node) = self.do_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.drop_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.explain_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.fetch_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.import_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.listen_stmt().optional()? { Ok(ListenStmt(node)) }
-        else if let Some(node) = self.load_stmt().optional()? { Ok(LoadStmt(node)) }
-        else if let Some(node) = self.lock_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.move_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.notify_stmt().optional()? { Ok(node.into()) }
-        else if let Some(node) = self.prepare_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.reassign_owned_stmt().optional()? { Ok(node.into()) }
-        else if let Some(node) = self.reindex_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.release_savepoint_stmt().optional()? { Ok(node.into()) }
-        else if let Some(node) = self.revoke_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.rollback_stmt().optional()? { Ok(node.into()) }
-        else if let Some(node) = self.savepoint_stmt().optional()? { Ok(node.into()) }
-        else if let Some(node) = self.security_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.set_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.show_stmt().optional()? { Ok(node.into()) }
-        else if let Some(node) = self.start_transaction_stmt().optional()? { Ok(node.into()) }
-        else if let Some(node) = self.truncate_stmt().optional()? { Ok(node) }
-        else if let Some(node) = self.unlisten_stmt().optional()? { Ok(UnlistenStmt(node)) }
-        else if let Some(node) = self.vacuum_stmt().optional()? { Ok(node) }
-        else { Err(NoMatch) }
+        consume!{self default,
+            Kw(Begin) if allow_tx_legacy_stmts => self.begin_stmt().map(From::from),
+            Kw(End) if allow_tx_legacy_stmts => self.end_stmt().map(From::from),
+            Kw(Checkpoint) => Ok(RawStmt::CheckPoint),
+            Kw(Abort) => self.abort_stmt().map(From::from),
+            Kw(Alter) => self.alter_stmt(),
+            Kw(Analyse | Analyze) => self.analyze_stmt(),
+            Kw(Call) => self.call_stmt(),
+            Kw(Close) => self.close_stmt().map(ClosePortalStmt),
+            Kw(Cluster) => self.cluster_stmt(),
+            Kw(Comment) => self.comment_stmt(),
+            Kw(Commit) => self.commit_stmt().map(From::from),
+            Kw(CopyKw) => self.copy_stmt(),
+            Kw(Deallocate) => self.deallocate_stmt().map(DeallocateStmt),
+            Kw(Discard) => self.discard_stmt().map(From::from),
+            Kw(Do) => self.do_stmt(),
+            Kw(DropKw) => self.drop_stmt(),
+            Kw(Explain) => self.explain_stmt(),
+            Kw(Fetch) => self.fetch_stmt(),
+            Kw(Import) => self.import_stmt(),
+            Kw(Listen) => self.listen_stmt().map(ListenStmt),
+            Kw(Load) => self.load_stmt().map(LoadStmt),
+            Kw(Lock) => self.lock_stmt(),
+            Kw(Move) => self.move_stmt(),
+            Kw(Notify) => self.notify_stmt().map(From::from),
+            Kw(Prepare) => self.prepare_stmt(),
+            Kw(Reassign) => self.reassign_owned_stmt().map(From::from),
+            Kw(Reindex) => self.reindex_stmt(),
+            Kw(Release) => self.release_savepoint_stmt().map(From::from),
+            Kw(Revoke) => self.revoke_stmt(),
+            Kw(Rollback) => self.rollback_stmt().map(From::from),
+            Kw(Savepoint) => self.savepoint_stmt().map(From::from),
+            Kw(Security) => self.security_stmt(),
+            Kw(Set) => self.set_stmt(),
+            Kw(Show) => self.show_stmt().map(From::from),
+            Kw(Start) => self.start_transaction_stmt().map(From::from),
+            Kw(Truncate) => self.truncate_stmt(),
+            Kw(Unlisten) => self.unlisten_stmt().map(UnlistenStmt),
+            Kw(Vacuum) => self.vacuum_stmt(),
+        }
     }
 
-    fn opt_transaction(&mut self) -> Result<(), ParserErrorKind> {
+    fn opt_transaction(&mut self) -> ParseResult<()> {
         use Keyword::{Transaction, Work};
 
         // Skips over WORK | TRANSACTION
@@ -179,7 +230,7 @@ impl<'src> Parser<'src> {
         Ok(())
     }
 
-    fn opt_transaction_chain(&mut self) -> Result<bool, ParserErrorKind> {
+    fn opt_transaction_chain(&mut self) -> ParseResult<bool> {
         use Keyword::{And, Chain, No};
 
         if self.buffer.consume_kw_eq(And).optional()?.is_none() {
@@ -680,183 +731,6 @@ impl<'src> Parser<'src> {
         })
     }
 
-    /// Post-condition: Vec is **not** empty
-    fn role_list(&mut self) -> ScanResult<Vec<RoleSpec>> {
-
-        /*
-            role_spec ( ',' role_spec )*
-        */
-
-        let role = self.role_spec()?;
-        let mut roles = vec![role];
-
-        while self.buffer.consume_eq(Comma).optional()?.is_some() {
-            let role = self.role_spec().required()?;
-            roles.push(role);
-        }
-
-        Ok(roles)
-    }
-
-    /// Alias: `RoleId`
-    #[inline]
-    fn role_id(&mut self) -> ScanResult<CowStr> {
-
-        // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
-
-        self.role_spec()?
-            .into_role_id()
-            .map_err(ScanErrorKind::from)
-    }
-
-    /// Alias: `RoleSpec`
-    fn role_spec(&mut self) -> ScanResult<RoleSpec> {
-
-        /*
-            role_spec :
-                  NONE => Err(ReservedRoleSpec)
-                | CURRENT_ROLE
-                | CURRENT_USER
-                | SESSION_USER
-                | "public"
-                | non_reserved_word
-        */
-
-        if let Some(ident) = self.identifier().no_match_to_option()? {
-            return if ident == "public" {
-                Ok(RoleSpec::Public)
-            }
-            else {
-                Ok(RoleSpec::Name(ident.into()))
-            }
-        }
-
-        self.buffer.consume(|tok| {
-            use Keyword::{CurrentRole, CurrentUser, NoneKw, SessionUser};
-
-            let Some(kw) = tok.keyword() else { return Ok(None) };
-            let details = kw.details();
-
-            match details.keyword() {
-                NoneKw => Err(ReservedRoleSpec("none")),
-                CurrentRole => Ok(Some(RoleSpec::CurrentRole)),
-                CurrentUser => Ok(Some(RoleSpec::CurrentUser)),
-                SessionUser => Ok(Some(RoleSpec::SessionUser)),
-                _ => {
-                    if details.category() == Reserved {
-                        Ok(None)
-                    }
-                    else {
-                        Ok(Some(
-                            RoleSpec::Name(details.text().into())
-                        ))
-                    }
-                },
-            }
-        })
-    }
-
-    /// Alias: `qual_Op`
-    fn qual_op(&mut self) -> ScanResult<QnOperator> {
-
-        /*
-            Operator | prefixed_operator
-        */
-
-        if let Some(op) = self.operator().no_match_to_option()? {
-            let op = AllOp::Operator(op);
-            return Ok(QnOperator(vec![], op))
-        }
-
-        self.prefixed_operator()
-    }
-
-    /// Production: `OPERATOR '(' any_operator ')'`
-    fn prefixed_operator(&mut self) -> ScanResult<QnOperator> {
-        use Keyword::Operator;
-        use TokenKind::{CloseParenthesis, OpenParenthesis};
-
-        self.buffer.consume_kw_eq(Operator)?;
-
-        self.buffer.consume_eq(OpenParenthesis).required()?;
-        let op = self.any_operator().required()?;
-        self.buffer.consume_eq(CloseParenthesis).required()?;
-
-        Ok(op)
-    }
-
-    fn any_operator(&mut self) -> ScanResult<QnOperator> {
-
-        /*
-            ( col_id '.' )* all_op
-        */
-
-        let mut qn = Vec::new();
-
-        while let Some(id) = self.col_id().optional()? {
-            self.buffer.consume_eq(Dot).required()?;
-            qn.push(id);
-        }
-
-        let op = self.all_op();
-
-        let op = if qn.is_empty() {
-            op?
-        }
-        else {
-            op.required()?
-        };
-
-        let op = QnOperator(qn, op);
-        Ok(op)
-    }
-
-    /// Alias: `all_Op`
-    fn all_op(&mut self) -> ScanResult<AllOp> {
-
-        if let Some(op) = self.math_op().no_match_to_option()? {
-            return Ok(AllOp::MathOp(op))
-        }
-
-        self.operator().map(AllOp::Operator)
-    }
-
-    /// Returns the text of the `UserDefinedOperator`
-    fn operator(&mut self) -> ScanResult<String> {
-
-        let loc = self.buffer.current_location();
-        let source = self.buffer.source();
-        self.buffer.consume(|tok| match tok {
-            TokenKind::UserDefinedOperator => {
-                let op = loc.slice(source).to_owned();
-                Some(op)
-            },
-            _ => None
-        })
-    }
-
-    /// Alias: `MathOp`
-    fn math_op(&mut self) -> ScanResult<MathOp> {
-        use MathOp::*;
-        use TokenKind::{Circumflex, Div, Minus, Mul, Percent, Plus};
-
-        self.buffer.consume(|tok| match tok {
-            Plus => Some(Addition),
-            Minus => Some(Subtraction),
-            Mul => Some(Multiplication),
-            Div => Some(Division),
-            Percent => Some(Modulo),
-            Circumflex => Some(Exponentiation),
-            TokenKind::Less => Some(Less),
-            TokenKind::Greater => Some(Greater),
-            TokenKind::Equals => Some(Equals),
-            TokenKind::LessEquals => Some(LessEquals),
-            TokenKind::GreaterEquals => Some(GreaterEquals),
-            TokenKind::NotEquals => Some(NotEquals),
-            _ => None
-        })
-    }
-
     /// Aliases:
     /// * `ColId`
     /// * `name`
@@ -927,7 +801,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Production: `UESCAPE SCONST`
-    fn uescape(&mut self) -> Result<char, ParserErrorKind> {
+    fn uescape(&mut self) -> ParseResult<char> {
         use Keyword::Uescape;
 
         // Try to consume UESCAPE + the string following it.
@@ -1058,7 +932,7 @@ mod tests {
 
         for source in sources {
             let mut parser = Parser::new(source, DEFAULT_CONFIG);
-            let actual = parser.stmt();
+            let actual = parser.stmt(true);
 
             // This only quickly tests that statement types aren't missing.
             // More in-depth testing is within each statement's module.
@@ -1331,170 +1205,6 @@ mod tests {
     }
 
     #[test]
-    fn test_role_list() {
-        let source = "public , CuRrEnT_rOlE,CURRENT_USER, session_user ,coalesce,xxYYzz none";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        let actual = parser.role_list().unwrap();
-
-        let expected = [
-            RoleSpec::Public,
-            RoleSpec::CurrentRole,
-            RoleSpec::CurrentUser,
-            RoleSpec::SessionUser,
-            RoleSpec::Name("coalesce".into()),
-            RoleSpec::Name("xxyyzz".into()),
-        ];
-
-        assert_eq!(expected, actual.as_slice());
-    }
-
-    #[test]
-    fn test_role_id() {
-
-        let mut parser = Parser::new("coalesce xxyyzz", DEFAULT_CONFIG);
-        assert_eq!(Ok("coalesce".into()), parser.role_id());
-        assert_eq!(Ok("xxyyzz".into()), parser.role_id());
-
-        let mut parser = Parser::new("none", DEFAULT_CONFIG);
-        assert_eq!(Err(ParserErr(ReservedRoleSpec("none"))), parser.role_id());
-
-        let mut parser = Parser::new("public", DEFAULT_CONFIG);
-        assert_eq!(Err(ParserErr(ReservedRoleSpec("public"))), parser.role_id());
-
-        let mut parser = Parser::new("current_role", DEFAULT_CONFIG);
-        assert_eq!(Err(ParserErr(ForbiddenRoleSpec("CURRENT_ROLE"))), parser.role_id());
-
-        let mut parser = Parser::new("current_user", DEFAULT_CONFIG);
-        assert_eq!(Err(ParserErr(ForbiddenRoleSpec("CURRENT_USER"))), parser.role_id());
-
-        let mut parser = Parser::new("session_user", DEFAULT_CONFIG);
-        assert_eq!(Err(ParserErr(ForbiddenRoleSpec("SESSION_USER"))), parser.role_id());
-    }
-
-    #[test]
-    fn test_role_spec() {
-        let source = "public CuRrEnT_rOlE CURRENT_USER session_user coalesce xxyyzz";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        assert_eq!(Ok(RoleSpec::Public), parser.role_spec());
-        assert_eq!(Ok(RoleSpec::CurrentRole), parser.role_spec());
-        assert_eq!(Ok(RoleSpec::CurrentUser), parser.role_spec());
-        assert_eq!(Ok(RoleSpec::SessionUser), parser.role_spec());
-        assert_eq!(Ok(RoleSpec::Name("coalesce".into())), parser.role_spec());
-        assert_eq!(Ok(RoleSpec::Name("xxyyzz".into())), parser.role_spec());
-
-        let mut parser = Parser::new("collate", DEFAULT_CONFIG);
-        assert_eq!(Err(NoMatch), parser.role_spec());
-
-        let mut parser = Parser::new("none", DEFAULT_CONFIG);
-        assert_eq!(Err(ParserErr(ReservedRoleSpec("none"))), parser.role_spec());
-    }
-
-    #[test]
-    fn test_qual_op() {
-        use ast_node::{AllOp, QnOperator};
-
-        let source = "operator(|/) <@>";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        let expected = QnOperator(
-            vec![],
-            AllOp::Operator("|/".into())
-        );
-        assert_eq!(Ok(expected), parser.qual_op());
-
-        let expected = QnOperator(
-            vec![],
-            AllOp::Operator("<@>".into())
-        );
-        assert_eq!(Ok(expected), parser.qual_op());
-    }
-
-    #[test]
-    fn test_prefixed_operator() {
-        use ast_node::{AllOp, MathOp, QnOperator};
-
-        let source = "operator(some_qn.*)";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        let actual = parser.prefixed_operator();
-        let expected = QnOperator(
-            vec!["some_qn".into()],
-            AllOp::MathOp(MathOp::Multiplication)
-        );
-        assert_eq!(Ok(expected), actual);
-    }
-
-    #[test]
-    fn test_any_operator() {
-        use ast_node::{AllOp, MathOp, QnOperator};
-
-        let source = "@@ != qn_name.+";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        let expected = QnOperator(
-            vec![],
-            AllOp::Operator("@@".into())
-        );
-        assert_eq!(Ok(expected), parser.any_operator());
-
-        let expected = QnOperator(
-            vec![],
-            AllOp::MathOp(MathOp::NotEquals)
-        );
-        assert_eq!(Ok(expected), parser.any_operator());
-
-        let expected = QnOperator(
-            vec!["qn_name".into()],
-            AllOp::MathOp(MathOp::Addition)
-        );
-        assert_eq!(Ok(expected), parser.any_operator());
-    }
-
-    #[test]
-    fn test_all_op() {
-        use AllOp::*;
-        use ast_node::MathOp::NotEquals;
-
-        let source = "~@ <>";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        assert_eq!(Ok(Operator("~@".into())), parser.all_op());
-        assert_eq!(Ok(MathOp(NotEquals)), parser.all_op());
-    }
-
-    #[test]
-    fn test_operator() {
-        let source = "~@";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        assert_eq!(Ok("~@".into()), parser.operator());
-    }
-
-    #[test]
-    fn test_math_op() {
-        use MathOp::*;
-
-        let source = "+ - * / % ^ < > = <= >= != <>";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        assert_eq!(Ok(Addition), parser.math_op());
-        assert_eq!(Ok(Subtraction), parser.math_op());
-        assert_eq!(Ok(Multiplication), parser.math_op());
-        assert_eq!(Ok(Division), parser.math_op());
-        assert_eq!(Ok(Modulo), parser.math_op());
-        assert_eq!(Ok(Exponentiation), parser.math_op());
-        assert_eq!(Ok(Less), parser.math_op());
-        assert_eq!(Ok(Greater), parser.math_op());
-        assert_eq!(Ok(Equals), parser.math_op());
-        assert_eq!(Ok(LessEquals), parser.math_op());
-        assert_eq!(Ok(GreaterEquals), parser.math_op());
-        assert_eq!(Ok(NotEquals), parser.math_op());
-        assert_eq!(Ok(NotEquals), parser.math_op());
-    }
-
-    #[test]
     fn test_col_id() {
         let source = "cascaded xxyyzz coalesce";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
@@ -1571,29 +1281,38 @@ mod tests {
     }
 }
 
-use self::ast_node::CharacterSystemType;
-use self::ast_node::EventTriggerState;
-use self::ast_node::ExprNode;
-use self::ast_node::IsolationLevel;
-use self::ast_node::RoleSpec;
-use self::ast_node::SystemType::{self, Bool, Float4, Float8, Int2, Int4, Int8};
-use self::ast_node::TransactionMode;
-use self::ast_node::{AllOp, MathOp, QnOperator, SignedNumber, UnsignedNumber};
-use self::error::ParserErrorKind::*;
-use self::ident_parser::IdentifierParser;
-use self::result::ScanErrorKind::{self, Eof, NoMatch, ParserErr};
-use self::result::ScanResultTrait;
-use self::string_parser::StringParser;
-use self::token_buffer::TokenBuffer;
-use self::token_buffer::TokenConsumer;
-use crate::lexer::Keyword;
-use crate::lexer::KeywordCategory::*;
-use crate::lexer::Lexer;
-use crate::lexer::TokenKind::{self, Comma, Dot, NumberLiteral};
-use crate::parser::ast_node::RawStmt::{self, ClosePortalStmt, DeallocateStmt, ListenStmt, LoadStmt, UnlistenStmt};
-use crate::parser::result::{EofResultTrait, ScanResult};
-use postgres_basics::ascii;
-use postgres_basics::Located;
-use postgres_basics::Location;
+use self::{
+    ast_node::{
+        CharacterSystemType,
+        EventTriggerState,
+        ExprNode,
+        IsolationLevel,
+        RawStmt::{self, ClosePortalStmt, DeallocateStmt, ListenStmt, LoadStmt, UnlistenStmt},
+        RoleSpec,
+        SignedNumber,
+        SystemType::{self, Bool, Float4, Float8, Int2, Int4, Int8},
+        TransactionMode,
+        UnsignedNumber
+    },
+    error::ParserErrorKind::*,
+    ident_parser::IdentifierParser,
+    result::{
+        EofResultTrait,
+        ScanErrorKind::{self, Eof, NoMatch, ParserErr},
+        ScanResult,
+        ScanResultTrait
+    },
+    string_parser::StringParser,
+    token_buffer::{TokenBuffer, TokenConsumer}
+};
+use crate::lexer::Keyword::{Close, Cluster, CopyKw, Deallocate, Discard, Do, DropKw, Explain, Fetch, Import, Listen, Load, Lock, Move, Notify, Prepare, Reassign, Reindex, Release, Revoke, Rollback, Savepoint, Security, Set, Show, Start, Truncate, Unlisten, Vacuum};
+use crate::lexer::{
+    Keyword,
+    KeywordCategory::*,
+    Lexer,
+    TokenKind::{self, Comma, Dot, NumberLiteral}
+};
+use postgres_basics::{ascii, Located, Location};
 use std::borrow::Cow;
+use std::convert::Into;
 use std::mem;

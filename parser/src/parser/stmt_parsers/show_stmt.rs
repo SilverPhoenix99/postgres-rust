@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `VariableShowStmt`
-    pub(in crate::parser) fn show_stmt(&mut self) -> ScanResult<VariableShowStmt> {
+    pub(in crate::parser) fn show_stmt(&mut self) -> ParseResult<VariableShowStmt> {
 
         /*
             SHOW var_name
@@ -9,8 +9,6 @@ impl Parser<'_> {
             SHOW SESSION AUTHORIZATION
             SHOW ALL
         */
-
-        self.buffer.consume_kw_eq(Show)?;
 
         let show_stmt = self.buffer
             .consume(|tok| match tok.keyword() {
@@ -56,31 +54,31 @@ mod tests {
 
     #[test]
     fn test_show_stmt_all() {
-        let mut parser = Parser::new("show all", DEFAULT_CONFIG);
+        let mut parser = Parser::new("all", DEFAULT_CONFIG);
         assert_eq!(Ok(All), parser.show_stmt());
     }
 
     #[test]
     fn test_show_stmt_session_authorization() {
-        let mut parser = Parser::new("show session authorization", DEFAULT_CONFIG);
+        let mut parser = Parser::new("session authorization", DEFAULT_CONFIG);
         assert_eq!(Ok(SessionAuthorization), parser.show_stmt());
     }
 
     #[test]
     fn test_show_stmt_timezone() {
-        let mut parser = Parser::new("show time zone", DEFAULT_CONFIG);
+        let mut parser = Parser::new("time zone", DEFAULT_CONFIG);
         assert_eq!(Ok(TimeZone), parser.show_stmt());
     }
 
     #[test]
     fn test_show_stmt_transaction_isolation() {
-        let mut parser = Parser::new("show transaction isolation level", DEFAULT_CONFIG);
+        let mut parser = Parser::new("transaction isolation level", DEFAULT_CONFIG);
         assert_eq!(Ok(TransactionIsolation), parser.show_stmt());
     }
 
     #[test]
     fn test_show_stmt_var_name() {
-        let mut parser = Parser::new("show qualified.name", DEFAULT_CONFIG);
+        let mut parser = Parser::new("qualified.name", DEFAULT_CONFIG);
 
         let expected = vec!["qualified".into(), "name".into()];
 
@@ -88,8 +86,8 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{self, Authorization, Isolation, Level, Show, Zone};
+use crate::lexer::Keyword::{self, Authorization, Isolation, Level, Zone};
 use crate::parser::ast_node::VariableShowStmt::{self, *};
-use crate::parser::result::{ScanResult, ScanResultTrait};
+use crate::parser::result::ScanResultTrait;
 use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::Parser;
+use crate::parser::{ParseResult, Parser};

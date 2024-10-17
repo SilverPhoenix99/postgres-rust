@@ -73,7 +73,7 @@ impl<'src> TokenBuffer<'src> {
 
 /// Consumers are not allowed to return `Err(None)` (Eof),
 /// which is an internal error that's only returned by the `TokenBuffer` directly.
-pub(super) type ConsumerResult<T> = Result<Option<T>, ParserErrorKind>;
+pub(super) type ConsumerResult<T> = ParseResult<Option<T>>;
 
 pub(super) trait TokenConsumer<TOut, FRes> {
     fn consume<F>(&mut self, f: F) -> ScanResult<TOut>
@@ -146,6 +146,7 @@ where
 mod tests {
     use super::*;
     use crate::lexer::IdentifierKind::BasicIdentifier;
+    use crate::parser::result::ScanErrorKind;
     use crate::parser::ParserErrorKind::Syntax;
     use TokenKind::Identifier;
 
@@ -257,10 +258,11 @@ use crate::{
         result::{
             EofErrorKind,
             EofResult,
-            ScanErrorKind::{self, NoMatch},
+            ScanErrorKind::NoMatch,
             ScanResult
         },
-        ParserErrorKind
+        ParseResult,
+        ParserErrorKind,
     }
 };
 use postgres_basics::{Located, Location};

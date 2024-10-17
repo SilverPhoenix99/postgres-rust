@@ -1,12 +1,11 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn alter_conversion_stmt(&mut self) -> ScanResult<RawStmt> {
+    pub(in crate::parser) fn alter_conversion_stmt(&mut self) -> ParseResult<RawStmt> {
+
         /*
             ALTER CONVERSION any_name OWNER TO RoleSpec
             ALTER CONVERSION any_name RENAME TO ColId
             ALTER CONVERSION any_name SET SCHEMA ColId
         */
-
-        self.buffer.consume_kw_eq(Conversion)?;
 
         let conversion = self.any_name().required()?;
 
@@ -56,7 +55,7 @@ mod tests {
 
     #[test]
     fn test_alter_conversion_owner() {
-        let source = "conversion conversion_name owner to session_user";
+        let source = "conversion_name owner to session_user";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.alter_conversion_stmt();
@@ -71,7 +70,7 @@ mod tests {
 
     #[test]
     fn test_alter_conversion_rename() {
-        let source = "conversion conversion_name rename to other_conversion";
+        let source = "conversion_name rename to other_conversion";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.alter_conversion_stmt();
@@ -86,7 +85,7 @@ mod tests {
 
     #[test]
     fn test_alter_conversion_schema() {
-        let source = "conversion conversion_name set schema some_schema";
+        let source = "conversion_name set schema some_schema";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.alter_conversion_stmt();
@@ -100,7 +99,7 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Conversion, Owner, Rename, Schema, Set, To};
+use crate::lexer::Keyword::{Owner, Rename, Schema, Set, To};
 use crate::parser::ast_node::{
     AlterObjectSchemaStmt,
     AlterObjectSchemaTarget,
@@ -110,5 +109,5 @@ use crate::parser::ast_node::{
     RenameStmt,
     RenameTarget
 };
-use crate::parser::result::{ScanResult, ScanResultTrait};
-use crate::parser::Parser;
+use crate::parser::result::ScanResultTrait;
+use crate::parser::{ParseResult, Parser};

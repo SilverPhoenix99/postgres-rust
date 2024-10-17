@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `DropStmt`
-    pub(in crate::parser) fn drop_stmt(&mut self) -> ScanResult<RawStmt> {
+    pub(in crate::parser) fn drop_stmt(&mut self) -> ParseResult<RawStmt> {
 
         /*
             DROP DOMAIN_P IF_P EXISTS type_name_list opt_drop_behavior
@@ -17,13 +17,9 @@ impl Parser<'_> {
             DROP TYPE_P type_name_list opt_drop_behavior
         */
 
-        self.buffer.consume_kw_eq(DropKw)?;
-
         todo!()
     }
 }
 
-use crate::lexer::Keyword::DropKw;
 use crate::parser::ast_node::RawStmt;
-use crate::parser::result::ScanResult;
-use crate::parser::Parser;
+use crate::parser::{ParseResult, Parser};

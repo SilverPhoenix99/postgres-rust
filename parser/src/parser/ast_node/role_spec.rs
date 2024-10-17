@@ -8,7 +8,7 @@ pub enum RoleSpec {
 }
 
 impl RoleSpec {
-    pub fn into_role_id(self) -> Result<CowStr, ParserErrorKind> {
+    pub fn into_role_id(self) -> ParseResult<CowStr> {
         match self {
             Self::Name(role) => Ok(role),
             Self::Public => Err(ReservedRoleSpec("public")),
@@ -20,5 +20,5 @@ impl RoleSpec {
 }
 
 use crate::parser::ast_node::CowStr;
-use crate::parser::ParserErrorKind;
 use crate::parser::ParserErrorKind::{ForbiddenRoleSpec, ReservedRoleSpec};
+use crate::parser::ParseResult;
