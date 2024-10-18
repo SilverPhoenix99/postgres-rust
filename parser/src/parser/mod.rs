@@ -11,60 +11,13 @@ mod stmt_parsers;
 mod string_parser;
 mod token_buffer;
 mod warning;
+mod consume_macro;
 
 pub use self::{
     config::ParserConfig,
     error::ParserErrorKind,
     warning::ParserWarning,
 };
-
-macro_rules! consume {
-
-    (
-        $self:ident
-        default => $default:expr,
-        $($pattern:pat $(if $guard:expr)? => $body:expr),+
-        $(,)?
-    ) => {
-        match $self.buffer.peek() {
-            Ok((tok, _)) => match tok {
-                $(
-                    $pattern $(if $guard)? => {
-                        $self.buffer.next();
-                        $body
-                    }
-                )+
-                _ => $default,
-            },
-            Err(err) => Err(err.clone().into()),
-        }
-    };
-
-    (
-        $self:ident
-        default,
-        $($pattern:pat $(if $guard:expr)? => $body:expr),+
-        $(,)?
-    ) => {
-        consume!{$self
-            default => Err(Default::default()),
-            $($pattern $(if $guard)? => $body),+
-        }
-    };
-
-    (
-        $self:ident
-        $($pattern:pat $(if $guard:expr)? => $body:expr),+
-        $(,)?
-    ) => {
-        consume!{$self
-            default => Err(ScanErrorKind::NoMatch.into()),
-            $($pattern $(if $guard)? => $body),+
-        }
-    };
-}
-
-use consume;
 
 type CowStr = Cow<'static, str>;
 type QnName = Vec<CowStr>;
@@ -1294,6 +1247,7 @@ use self::{
         TransactionMode,
         UnsignedNumber
     },
+    consume_macro::consume,
     error::ParserErrorKind::*,
     ident_parser::IdentifierParser,
     result::{
@@ -1305,7 +1259,6 @@ use self::{
     string_parser::StringParser,
     token_buffer::{TokenBuffer, TokenConsumer}
 };
-use crate::lexer::Keyword::{Close, Cluster, CopyKw, Deallocate, Discard, Do, DropKw, Explain, Fetch, Import, Listen, Load, Lock, Move, Notify, Prepare, Reassign, Reindex, Release, Revoke, Rollback, Savepoint, Security, Set, Show, Start, Truncate, Unlisten, Vacuum};
 use crate::lexer::{
     Keyword,
     KeywordCategory::*,
