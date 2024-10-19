@@ -41,10 +41,10 @@ impl Iterator for Lexer<'_> {
 
         match token {
             Ok(kind) => Some(Ok((kind, location))),
-            Err((err_code, fninfo)) => {
-                let report = LexerError::new(err_code, fninfo, location);
+            Err((err_code, fn_info)) => {
+                let report = LexerError::new(err_code, fn_info, location);
                 Some(Err(report))
-            },
+            }
         }
     }
 }
