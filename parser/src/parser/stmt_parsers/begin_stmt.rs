@@ -64,5 +64,5 @@ mod tests {
 }
 
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::ScanResultTrait;
+use crate::parser::result::Optional;
 use crate::parser::{ParseResult, Parser};

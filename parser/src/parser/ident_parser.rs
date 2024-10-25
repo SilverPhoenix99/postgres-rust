@@ -7,7 +7,7 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
     pub fn parse(&mut self) -> ScanResult<String> {
 
         let loc = self.0.buffer.current_location();
-        let kind = self.0.buffer.consume(TokenKind::identifier_kind)?;
+        let kind = self.0.buffer.consume(|tok| tok.identifier_kind())?;
         let slice = loc.slice(self.0.buffer.source());
 
         let ident = match kind {
@@ -31,7 +31,7 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
             },
         };
 
-        let mut ident = ident.map_err(ScanErrorKind::from)?;
+        let mut ident = ident?;
 
         if ident.len() > NAMEDATALEN {
             let len: usize = ident.chars()
@@ -91,10 +91,14 @@ mod tests {
     }
 }
 
-use crate::lexer::IdentifierKind::*;
-use crate::lexer::TokenKind;
-use crate::parser::result::{ScanErrorKind, ScanResult};
-use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::{Parser, ParserErrorKind};
-use crate::string_decoders::{BasicStringDecoder, UnicodeStringDecoder};
+use crate::{
+    lexer::IdentifierKind::*,
+    parser::{
+        result::ScanResult,
+        token_buffer::TokenConsumer,
+        Parser,
+        ParserErrorKind
+    },
+    string_decoders::{BasicStringDecoder, UnicodeStringDecoder}
+};
 use postgres_basics::NAMEDATALEN;

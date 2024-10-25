@@ -69,5 +69,5 @@ mod tests {
 
 use crate::lexer::Keyword::Prepared;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::ScanResultTrait;
+use crate::parser::result::{Optional, Required};
 use crate::parser::{ParseResult, Parser};

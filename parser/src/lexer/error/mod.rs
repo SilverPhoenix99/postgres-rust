@@ -11,7 +11,7 @@ pub struct LexerError {
 impl LexerError {
 
     #[inline(always)]
-    pub fn new(source: LexerErrorKind, fn_info: FnInfo, location: Location) -> Self {
+    pub fn new(source: LexerErrorKind, fn_info: &'static FnInfo, location: Location) -> Self {
         Self { 
             report: SimpleErrorReport::new(source, fn_info),
             location
@@ -49,7 +49,7 @@ impl HasSqlState for LexerError {
 }
 
 impl HasFnInfo for LexerError {
-    fn fn_info(&self) -> &FnInfo {
+    fn fn_info(&self) -> &'static FnInfo {
         self.report.fn_info()
     }
 }

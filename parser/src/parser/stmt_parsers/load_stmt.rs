@@ -22,5 +22,5 @@ mod tests {
     }
 }
 
-use crate::parser::result::ScanResultTrait;
+use crate::parser::result::Required;
 use crate::parser::{ParseResult, Parser};

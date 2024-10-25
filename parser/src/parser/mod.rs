@@ -175,7 +175,7 @@ impl<'src> Parser<'src> {
                     mode
                 }
                 Err(Eof) => break,
-                Err(ParserErr(err)) => return Err(ParserErr(err)),
+                Err(ScanErr(err)) => return Err(ScanErr(err)),
             };
 
             elements.push(element);
@@ -441,9 +441,12 @@ impl<'src> Parser<'src> {
 
         self.buffer.consume_eq(OpenParenthesis)?;
 
+        if self.buffer.eof() {
+            return Err(Default::default())
+        }
+
         let exprs = self.expr_list()
-            .no_match_to_option()
-            .required()?
+            .optional()?
             .unwrap_or_else(Vec::new);
 
         self.buffer.consume_eq(CloseParenthesis).required()?;
@@ -595,7 +598,7 @@ impl<'src> Parser<'src> {
         self.buffer.consume(|tok| {
             let NumberLiteral { radix } = tok else { return None };
             let value = loc.slice(source);
-            parse_number(value, *radix)
+            parse_number(value, radix)
         })
     }
 
@@ -633,7 +636,7 @@ impl<'src> Parser<'src> {
             let NumberLiteral { radix } = tok else { return None };
 
             let value = loc.slice(source);
-            let Some(UnsignedNumber::IConst(int)) = parse_number(value, *radix) else { return None };
+            let Some(UnsignedNumber::IConst(int)) = parse_number(value, radix) else { return None };
             // SAFETY: `0 <= int <= i32::MAX`
             Some(int as i32)
         })
@@ -737,7 +740,7 @@ impl<'src> Parser<'src> {
         uescape.map_err(|err| match err {
             Eof => InvalidUescapeDelimiter,
             NoMatch => ParserErrorKind::default(),
-            ParserErr(err) => err
+            ScanErr(err) => err
         })
     }
 }
@@ -1159,7 +1162,7 @@ use self::{
         EventTriggerState,
         ExprNode,
         IsolationLevel,
-        RawStmt::{self},
+        RawStmt,
         RoleSpec,
         SignedNumber,
         SystemType::{self, Bool, Float4, Float8, Int2, Int4, Int8},
@@ -1170,8 +1173,9 @@ use self::{
     error::ParserErrorKind::*,
     ident_parser::IdentifierParser,
     result::{
-        EofResultTrait,
-        ScanErrorKind::{self, Eof, NoMatch, ParserErr},
+        Optional,
+        Required,
+        ScanErrorKind::{self, Eof, NoMatch, ScanErr},
         ScanResult,
         ScanResultTrait
     },
@@ -1185,6 +1189,7 @@ use crate::lexer::{
     TokenKind::{self, Comma, Dot, NumberLiteral}
 };
 use postgres_basics::{ascii, Located, Location};
-use std::borrow::Cow;
-use std::convert::Into;
-use std::mem;
+use std::{
+    borrow::Cow,
+    mem
+};

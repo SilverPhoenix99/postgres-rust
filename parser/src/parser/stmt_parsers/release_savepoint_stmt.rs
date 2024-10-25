@@ -35,5 +35,5 @@ mod tests {
 
 use crate::lexer::Keyword::Savepoint;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::ScanResultTrait;
+use crate::parser::result::{Optional, Required};
 use crate::parser::{ParseResult, Parser};

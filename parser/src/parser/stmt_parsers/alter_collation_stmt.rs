@@ -114,15 +114,20 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Owner, Refresh, Rename, Schema, Set, To, Version};
-use crate::parser::ast_node::RawStmt::{self, RefreshCollationVersionStmt};
-use crate::parser::ast_node::{
-    AlterObjectSchemaStmt,
-    AlterObjectSchemaTarget,
-    AlterOwnerStmt,
-    AlterOwnerTarget,
-    RenameStmt,
-    RenameTarget
+use crate::{
+    lexer::Keyword::{Owner, Refresh, Rename, Schema, Set, To, Version},
+    parser::{
+        ast_node::{
+            AlterObjectSchemaStmt,
+            AlterObjectSchemaTarget,
+            AlterOwnerStmt,
+            AlterOwnerTarget,
+            RawStmt::{self, RefreshCollationVersionStmt},
+            RenameStmt,
+            RenameTarget
+        },
+        result::Required,
+        ParseResult,
+        Parser,
+    },
 };
-use crate::parser::result::ScanResultTrait;
-use crate::parser::{ParseResult, Parser};

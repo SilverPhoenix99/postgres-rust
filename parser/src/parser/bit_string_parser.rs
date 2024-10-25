@@ -93,14 +93,15 @@ mod tests {
 }
 */
 
-use crate::lexer::{
-    BitStringKind,
-    BitStringKind::HexString,
-    StringKind,
-    StringKind::*,
+use crate::{
+    lexer::{BitStringKind, BitStringKind::HexString, StringKind, StringKind::*},
+    parser::{
+        result::ScanResult,
+        string_parser::strip_delimiters,
+        token_buffer::TokenConsumer,
+        Parser
+    },
+    string_decoders::BitStringDecoder,
 };
-use crate::parser::{string_parser::strip_delimiters, token_buffer::TokenConsumer, Parser};
-use crate::string_decoders::BitStringDecoder;
 use bitvec::boxed::BitBox;
 use postgres_basics::Located;
-use crate::parser::result::ScanResult;

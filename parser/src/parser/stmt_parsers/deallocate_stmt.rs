@@ -9,7 +9,11 @@ impl Parser<'_> {
 
         self.buffer.consume_kw_eq(Prepare).optional()?;
 
-        if self.buffer.consume_kw_eq(All).no_match_to_option().required()?.is_some() {
+        if self.buffer.eof() {
+            return Err(Default::default())
+        }
+
+        if self.buffer.consume_kw_eq(All).optional()?.is_some() {
             return Ok(OneOrAll::All)
         }
 
@@ -38,7 +42,13 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{All, Prepare};
-use crate::parser::ast_node::OneOrAll;
-use crate::parser::result::{EofResultTrait, ScanResultTrait};
-use crate::parser::{ParseResult, Parser};
+use crate::parser::result::Required;
+use crate::{
+    lexer::Keyword::{All, Prepare},
+    parser::{
+        ast_node::OneOrAll,
+        result::Optional,
+        ParseResult,
+        Parser
+    },
+};

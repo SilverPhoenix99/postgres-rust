@@ -55,6 +55,6 @@ mod tests {
 
 use crate::lexer::Keyword::{All, Plans, Sequences, Temp, Temporary};
 use crate::parser::ast_node::DiscardStmt;
-use crate::parser::result::ScanResultTrait;
+use crate::parser::result::Required;
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::{ParseResult, Parser};

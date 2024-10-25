@@ -11,3 +11,4 @@ postgres-basics.workspace = true
 
 [dev-dependencies]
 assert_matches.workspace = true
+test-case.workspace = true

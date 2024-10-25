@@ -202,6 +202,6 @@ use crate::lexer::TokenKind::*;
 use crate::parser::ast_node::{ExprNode, QnOperator, UnaryExpr};
 use crate::parser::expr_parsers::associativity::Associativity::{self, Left, Non, Right};
 use crate::parser::result::ScanErrorKind::NoMatch;
-use crate::parser::result::{ScanResult, ScanResultTrait};
+use crate::parser::result::{Optional, Required, ScanResult, ScanResultTrait};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::Parser;

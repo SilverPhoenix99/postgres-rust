@@ -7,7 +7,11 @@ impl Parser<'_> {
             CLOSE ColId
         */
 
-        if self.buffer.consume_kw_eq(All).no_match_to_option().required()?.is_some() {
+        if self.buffer.eof() {
+            return Err(Default::default())
+        }
+
+        if self.buffer.consume_kw_eq(All).optional()?.is_some() {
             return Ok(OneOrAll::All)
         }
 
@@ -39,5 +43,5 @@ mod tests {
 
 use crate::lexer::Keyword::All;
 use crate::parser::ast_node::OneOrAll;
-use crate::parser::result::{EofResultTrait, ScanResultTrait};
+use crate::parser::result::{Optional, Required};
 use crate::parser::{ParseResult, Parser};
