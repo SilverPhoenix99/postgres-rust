@@ -34,7 +34,7 @@ impl Parser<'_> {
                 */
                 Ok(TransactionStmt::Rollback { chain: false })
             },
-            Err(ParserErr(err)) => Err(err),
+            Err(ScanErr(err)) => Err(err.into()),
             Err(NoMatch) => {
                 /*
                     ROLLBACK opt_transaction opt_transaction_chain
@@ -120,6 +120,6 @@ mod tests {
 
 use crate::lexer::Keyword::{Prepared, Savepoint, To};
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::ScanErrorKind::{Eof, NoMatch, ParserErr};
-use crate::parser::result::ScanResultTrait;
+use crate::parser::result::ScanErrorKind::{Eof, NoMatch, ScanErr};
+use crate::parser::result::{Optional, Required};
 use crate::parser::{ParseResult, Parser};

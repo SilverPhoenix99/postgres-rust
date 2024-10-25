@@ -1,43 +1,123 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub(crate) enum ScanErrorKind {
     /// When an unrecoverable error occurs.
-    ParserErr(ParserErrorKind),
+    ScanErr(ParserErrorKind),
     /// When there are no more tokens.
     Eof,
     /// When the token didn't match.
     NoMatch,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub(crate) enum EofErrorKind {
-    ParserErr(ParserErrorKind),
-    Eof,
+impl Default for ScanErrorKind {
+    fn default() -> Self {
+        ScanErr(Default::default())
+    }
+}
+
+impl From<LexerError> for ScanErrorKind {
+    fn from(value: LexerError) -> Self {
+        ScanErr(value.into())
+    }
 }
 
 impl From<ParserErrorKind> for ScanErrorKind {
     fn from(value: ParserErrorKind) -> Self {
-        Self::ParserErr(value)
+        ScanErr(value)
     }
 }
 
-impl Default for ScanErrorKind {
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum EofErrorKind {
+    NotEof(ParserErrorKind),
+    Eof,
+}
+
+impl Default for EofErrorKind {
     fn default() -> Self {
-        Self::ParserErr(ParserErrorKind::default())
+        NotEof(Default::default())
     }
 }
 
-pub(crate) trait ScanResultTrait<T> {
+impl From<LexerError> for EofErrorKind {
+    fn from(value: LexerError) -> Self {
+        NotEof(value.into())
+    }
+}
 
-    /// When both `Eof` and `NoMatch` are considered syntax errors.
-    ///
-    /// Hoists both `Eof` and `NoMatch` to `ParserErrorKind::default()`.
+impl From<ParserErrorKind> for EofErrorKind {
+    fn from(value: ParserErrorKind) -> Self {
+        NotEof(value)
+    }
+}
+
+impl From<EofErrorKind> for ParserErrorKind {
+    fn from(value: EofErrorKind) -> Self {
+        match value {
+            NotEof(err) => err,
+            _ => Default::default()
+        }
+    }
+}
+
+impl From<EofErrorKind> for ScanErrorKind {
+    fn from(value: EofErrorKind) -> Self {
+        match value {
+            NotEof(err) => ScanErr(err),
+            EofErrorKind::Eof => Self::Eof
+        }
+    }
+}
+
+pub(super) type ScanResult<T> = Result<T, ScanErrorKind>;
+pub(super) type EofResult<T> = Result<T, EofErrorKind>;
+
+pub(super) trait Required<T> {
     fn required(self) -> ParseResult<T>;
+}
 
-    /// When it's fine if the token doesn't match or is missing.
-    ///
-    /// Hoists both `Eof` and `NoMatch` to `Ok(None)`.
+impl<T> Required<T> for ScanResult<T> {
+    fn required(self) -> ParseResult<T> {
+        self.map_err(|err| match err {
+            ScanErr(err) => err,
+            _ => Default::default()
+        })
+    }
+}
+
+impl<T> Required<T> for EofResult<T> {
+    fn required(self) -> ParseResult<T> {
+        self.map_err(|err| match err {
+            NotEof(err) => err,
+            _ => Default::default()
+        })
+    }
+}
+
+pub(super) trait Optional<T> {
     fn optional(self) -> ParseResult<Option<T>>;
+}
 
+impl<T> Optional<T> for ScanResult<T> {
+    fn optional(self) -> ParseResult<Option<T>> {
+        match self {
+            Ok(ok) => Ok(Some(ok)),
+            Err(NoMatch | ScanErrorKind::Eof) => Ok(None),
+            Err(ScanErr(err)) => Err(err),
+        }
+    }
+}
+
+impl<T> Optional<T> for EofResult<T> {
+    fn optional(self) -> ParseResult<Option<T>> {
+        match self {
+            Ok(ok) => Ok(Some(ok)),
+            Err(EofErrorKind::Eof) => Ok(None),
+            Err(NotEof(err)) => Err(err),
+        }
+    }
+}
+
+pub(super) trait ScanResultTrait<T> {
     /// Hoists `NoMatch` to `Ok(None)`.
     ///
     /// Usually used when the 1st token is optional,
@@ -46,78 +126,14 @@ pub(crate) trait ScanResultTrait<T> {
     fn no_match_to_option(self) -> EofResult<Option<T>>;
 }
 
-pub(crate) type ScanResult<T> = Result<T, ScanErrorKind>;
-
 impl<T> ScanResultTrait<T> for ScanResult<T> {
-
-    fn required(self) -> ParseResult<T> {
-        self.map_err(|err| match err {
-            ScanErrorKind::ParserErr(err) => err,
-            _ => ParserErrorKind::default()
-        })
-    }
-
-    fn optional(self) -> ParseResult<Option<T>> {
-        match self {
-            Ok(ok) => Ok(Some(ok)),
-            Err(ScanErrorKind::Eof | ScanErrorKind::NoMatch) => Ok(None),
-            Err(ScanErrorKind::ParserErr(err)) => Err(err),
-        }
-    }
-
     fn no_match_to_option(self) -> EofResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
-            Err(ScanErrorKind::NoMatch) => Ok(None),
+            Err(NoMatch) => Ok(None),
             Err(ScanErrorKind::Eof) => Err(EofErrorKind::Eof),
-            Err(ScanErrorKind::ParserErr(err)) => Err(EofErrorKind::ParserErr(err)),
+            Err(ScanErr(err)) => Err(NotEof(err)),
         }
-    }
-}
-
-impl From<EofErrorKind> for ScanErrorKind {
-    fn from(value: EofErrorKind) -> Self {
-        match value {
-            EofErrorKind::Eof => Self::Eof,
-            EofErrorKind::ParserErr(err) => Self::ParserErr(err),
-        }
-    }
-}
-
-impl Default for EofErrorKind {
-    fn default() -> Self {
-        Self::ParserErr(ParserErrorKind::default())
-    }
-}
-
-impl From<ParserErrorKind> for EofErrorKind {
-    fn from(value: ParserErrorKind) -> Self {
-        Self::ParserErr(value)
-    }
-}
-
-impl From<EofErrorKind> for ParserErrorKind {
-    /// Hoists `Eof` to `ParserErrorKind::default()`.
-    fn from(value: EofErrorKind) -> Self {
-        match value {
-            EofErrorKind::ParserErr(err) => err,
-            _ => ParserErrorKind::default()
-        }
-    }
-}
-
-pub(crate) trait EofResultTrait<T> {
-    /// When `Eof` is considered a `Syntax` error.
-    ///
-    /// Hoists `Eof` to `ParserErrorKind::default()`.
-    fn required(self) -> ParseResult<T>;
-}
-
-pub(crate) type EofResult<T> = Result<T, EofErrorKind>;
-
-impl<T> EofResultTrait<T> for EofResult<T> {
-    fn required(self) -> ParseResult<T> {
-        self.map_err(ParserErrorKind::from)
     }
 }
 
@@ -126,4 +142,14 @@ mod tests {
     // TODO
 }
 
-use crate::parser::{ParseResult, ParserErrorKind};
+use crate::{
+    lexer::LexerError,
+    parser::{
+        result::{
+            EofErrorKind::NotEof,
+            ScanErrorKind::{NoMatch, ScanErr}
+        },
+        ParseResult,
+        ParserErrorKind
+    }
+};

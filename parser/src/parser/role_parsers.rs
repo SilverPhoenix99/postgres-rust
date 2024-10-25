@@ -26,11 +26,12 @@ impl Parser<'_> {
 
         self.role_spec()?
             .into_role_id()
-            .map_err(ScanErrorKind::from)
+            .map_err(ScanErr)
     }
 
     /// Alias: `RoleSpec`
     pub(super) fn role_spec(&mut self) -> ScanResult<RoleSpec> {
+        use crate::lexer::TokenKind::Keyword as Kw;
 
         /*
             role_spec :
@@ -51,39 +52,27 @@ impl Parser<'_> {
             }
         }
 
-        self.buffer.consume(|tok| {
-            use crate::lexer::Keyword::{CurrentRole, CurrentUser, NoneKw, SessionUser};
-
-            let Some(kw) = tok.keyword() else { return Ok(None) };
-            let details = kw.details();
-
-            match details.keyword() {
-                NoneKw => Err(ReservedRoleSpec("none")),
-                CurrentRole => Ok(Some(RoleSpec::CurrentRole)),
-                CurrentUser => Ok(Some(RoleSpec::CurrentUser)),
-                SessionUser => Ok(Some(RoleSpec::SessionUser)),
-                _ => {
-                    if details.category() == Reserved {
-                        Ok(None)
-                    }
-                    else {
-                        Ok(Some(
-                            RoleSpec::Name(details.text().into())
-                        ))
-                    }
-                },
+        consume! {self
+            ok {
+                Ok(Kw(CurrentRole)) => Ok(RoleSpec::CurrentRole),
+                Ok(Kw(CurrentUser)) => Ok(RoleSpec::CurrentUser),
+                Ok(Kw(SessionUser)) => Ok(RoleSpec::SessionUser),
+                Ok(Kw(kw)) if kw != NoneKw && kw.details().category() != Reserved => Ok(RoleSpec::Name(kw.details().text().into())),
             }
-        })
+            err {
+                Ok(Kw(NoneKw)) => Err(ScanErr(ReservedRoleSpec("none"))),
+                Ok(_) => Err(NoMatch),
+                Err(e) => Err(e.into()),
+            }
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::result::ScanErrorKind::{NoMatch, ParserErr};
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::ParserErrorKind::ForbiddenRoleSpec;
-
 
     #[test]
     fn test_role_list() {
@@ -112,19 +101,19 @@ mod tests {
         assert_eq!(Ok("xxyyzz".into()), parser.role_id());
 
         let mut parser = Parser::new("none", DEFAULT_CONFIG);
-        assert_eq!(Err(ParserErr(ReservedRoleSpec("none"))), parser.role_id());
+        assert_eq!(Err(ScanErr(ReservedRoleSpec("none"))), parser.role_id());
 
         let mut parser = Parser::new("public", DEFAULT_CONFIG);
-        assert_eq!(Err(ParserErr(ReservedRoleSpec("public"))), parser.role_id());
+        assert_eq!(Err(ScanErr(ReservedRoleSpec("public"))), parser.role_id());
 
         let mut parser = Parser::new("current_role", DEFAULT_CONFIG);
-        assert_eq!(Err(ParserErr(ForbiddenRoleSpec("CURRENT_ROLE"))), parser.role_id());
+        assert_eq!(Err(ScanErr(ForbiddenRoleSpec("CURRENT_ROLE"))), parser.role_id());
 
         let mut parser = Parser::new("current_user", DEFAULT_CONFIG);
-        assert_eq!(Err(ParserErr(ForbiddenRoleSpec("CURRENT_USER"))), parser.role_id());
+        assert_eq!(Err(ScanErr(ForbiddenRoleSpec("CURRENT_USER"))), parser.role_id());
 
         let mut parser = Parser::new("session_user", DEFAULT_CONFIG);
-        assert_eq!(Err(ParserErr(ForbiddenRoleSpec("SESSION_USER"))), parser.role_id());
+        assert_eq!(Err(ScanErr(ForbiddenRoleSpec("SESSION_USER"))), parser.role_id());
     }
 
     #[test]
@@ -143,14 +132,28 @@ mod tests {
         assert_eq!(Err(NoMatch), parser.role_spec());
 
         let mut parser = Parser::new("none", DEFAULT_CONFIG);
-        assert_eq!(Err(ParserErr(ReservedRoleSpec("none"))), parser.role_spec());
+        assert_eq!(Err(ScanErr(ReservedRoleSpec("none"))), parser.role_spec());
     }
 }
 
-use crate::lexer::KeywordCategory::Reserved;
-use crate::lexer::TokenKind::Comma;
-use crate::parser::ast_node::RoleSpec;
-use crate::parser::result::{ScanErrorKind, ScanResult, ScanResultTrait};
-use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::ParserErrorKind::ReservedRoleSpec;
-use crate::parser::{CowStr, Parser};
+use crate::{
+    lexer::{
+        Keyword::{CurrentRole, CurrentUser, NoneKw, SessionUser},
+        KeywordCategory::Reserved,
+        TokenKind::Comma
+    },
+    parser::{
+        ast_node::RoleSpec,
+        consume_macro::consume,
+        result::{
+            Optional,
+            Required,
+            ScanErrorKind::{NoMatch, ScanErr},
+            ScanResult,
+            ScanResultTrait,
+        },
+        CowStr,
+        Parser,
+        ParserErrorKind::ReservedRoleSpec,
+    },
+};

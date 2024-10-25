@@ -212,9 +212,12 @@ mod tests {
     }
 }
 
-use crate::lexer::TokenKind;
-use crate::lexer::TokenKind::Dot;
-use crate::parser::ast_node::{AllOp, MathOp, QnOperator};
-use crate::parser::result::{ScanResult, ScanResultTrait};
-use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::Parser;
+use crate::{
+    lexer::TokenKind::{self, Dot},
+    parser::{
+        ast_node::{AllOp, MathOp, QnOperator},
+        result::{Optional, Required, ScanResult, ScanResultTrait},
+        token_buffer::TokenConsumer,
+        Parser
+    }
+};

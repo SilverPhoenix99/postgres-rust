@@ -45,5 +45,5 @@ mod tests {
 
 use crate::lexer::Keyword::{Object, Owner, To};
 use crate::parser::ast_node::{AlterOwnerStmt, AlterOwnerTarget, RawStmt};
-use crate::parser::result::ScanResultTrait;
+use crate::parser::result::Required;
 use crate::parser::{ParseResult, Parser};

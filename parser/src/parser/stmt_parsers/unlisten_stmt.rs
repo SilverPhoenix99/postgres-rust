@@ -36,5 +36,6 @@ mod tests {
 
 use crate::lexer::TokenKind::Mul;
 use crate::parser::ast_node::OneOrAll;
+use crate::parser::result::{Optional, Required};
 use crate::parser::ScanResultTrait;
 use crate::parser::{ParseResult, Parser};

@@ -31,5 +31,5 @@ impl Parser<'_> {
 
 use crate::lexer::Keyword::On;
 use crate::parser::ast_node::RawStmt;
-use crate::parser::ScanResultTrait;
+use crate::parser::result::Required;
 use crate::parser::{ParseResult, Parser};

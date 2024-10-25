@@ -25,6 +25,11 @@ macro_rules! qn_fn_name {
 #[macro_export]
 macro_rules! fn_info {
     () => { $crate::FnInfo::new(file!(), line!(), $crate::qn_fn_name!()) };
+
+    ($fn_name:expr) => {{
+        const FN_INFO: FnInfo = $crate::FnInfo::new(file!(), line!(), $fn_name);
+        &FN_INFO
+    }};
 }
 
 pub mod ascii;

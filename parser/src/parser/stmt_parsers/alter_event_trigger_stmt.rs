@@ -11,9 +11,12 @@ impl Parser<'_> {
 
         let trigger = self.col_id().required()?;
 
+        if self.buffer.eof() {
+            return Err(Default::default())
+        }
+
         let op = self.buffer.consume_kws(|kw| matches!(kw, Owner | Rename))
-            .no_match_to_option()
-            .required()?;
+            .optional()?;
 
         let Some(op) = op else {
             /*
@@ -150,9 +153,14 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Always, Disable, Enable, Owner, Rename, Replica, To, Trigger};
-use crate::parser::ast_node::{AlterEventTrigStmt, AlterOwnerStmt, AlterOwnerTarget, RawStmt, RenameStmt, RenameTarget};
-use crate::parser::result::{EofResultTrait, ScanResultTrait};
-use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::EventTriggerState::{Disabled, FiresAlways, FiresOnOrigin, FiresOnReplica};
-use crate::parser::{EventTriggerState, ParseResult, Parser};
+use crate::{
+    lexer::Keyword::{Always, Disable, Enable, Owner, Rename, Replica, To, Trigger},
+    parser::{
+        ast_node::{AlterEventTrigStmt, AlterOwnerStmt, AlterOwnerTarget, RawStmt, RenameStmt, RenameTarget},
+        result::{Optional, Required},
+        token_buffer::TokenConsumer,
+        EventTriggerState::{self, Disabled, FiresAlways, FiresOnOrigin, FiresOnReplica},
+        ParseResult,
+        Parser
+    },
+};

@@ -25,5 +25,5 @@ mod tests {
 }
 
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::ScanResultTrait;
+use crate::parser::result::Required;
 use crate::parser::{ParseResult, Parser};

@@ -1,14 +1,14 @@
 #[derive(Debug, Clone, PartialEq)]
 pub struct SimpleErrorReport<T> {
     source: T,
-    fn_info: FnInfo,
+    fn_info: &'static FnInfo,
 }
 
 impl<T: Eq> Eq for SimpleErrorReport<T> {}
 
 impl<T> SimpleErrorReport<T> {
     #[inline(always)]
-    pub fn new(source: T, fn_info: FnInfo) -> Self {
+    pub fn new(source: T, fn_info: &'static FnInfo) -> Self {
         Self { source, fn_info }
     }
 
@@ -16,17 +16,12 @@ impl<T> SimpleErrorReport<T> {
     pub fn source(&self) -> &T {
         &self.source
     }
-
-    #[inline(always)]
-    pub fn fn_info(&self) -> &FnInfo {
-        &self.fn_info
-    }
 }
 
 impl<T> HasFnInfo for SimpleErrorReport<T> {
     #[inline(always)]
-    fn fn_info(&self) -> &FnInfo {
-        &self.fn_info
+    fn fn_info(&self) -> &'static FnInfo {
+        self.fn_info
     }
 }
 

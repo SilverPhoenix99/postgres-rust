@@ -166,9 +166,15 @@ mod tests {
     }
 }
 
-use crate::lexer::{StringKind, StringKind::*};
-use crate::parser::result::{ScanErrorKind, ScanResult, ScanResultTrait};
-use crate::parser::token_buffer::TokenConsumer;
-use crate::parser::{Parser, ParserErrorKind, ParserWarning};
-use crate::string_decoders::*;
+use crate::{
+    lexer::StringKind::{self, *},
+    parser::{
+        result::{Optional, ScanErrorKind, ScanResult},
+        token_buffer::TokenConsumer,
+        Parser,
+        ParserErrorKind,
+        ParserWarning
+    },
+    string_decoders::*
+};
 use postgres_basics::{Located, Location};

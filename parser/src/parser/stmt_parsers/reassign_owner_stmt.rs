@@ -41,5 +41,5 @@ mod tests {
 
 use crate::lexer::Keyword::{By, OwnedKw, To};
 use crate::parser::ast_node::ReassignOwnedStmt;
-use crate::parser::result::ScanResultTrait;
+use crate::parser::result::Required;
 use crate::parser::{ParseResult, Parser};

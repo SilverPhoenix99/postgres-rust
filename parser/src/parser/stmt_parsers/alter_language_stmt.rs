@@ -67,5 +67,5 @@ mod tests {
 
 use crate::lexer::Keyword::{Owner, Rename, To};
 use crate::parser::ast_node::{AlterOwnerStmt, AlterOwnerTarget, RawStmt, RenameStmt, RenameTarget};
-use crate::parser::result::ScanResultTrait;
+use crate::parser::result::Required;
 use crate::parser::{ParseResult, Parser};

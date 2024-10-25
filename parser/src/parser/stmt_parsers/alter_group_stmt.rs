@@ -115,6 +115,6 @@ use crate::lexer::Keyword::{Add, DropKw, Rename, To, User};
 use crate::parser::ast_node::AlterRoleOption::RoleMembers;
 use crate::parser::ast_node::RenameTarget::Role;
 use crate::parser::ast_node::{AlterRoleAction, AlterRoleStmt, RawStmt, RenameStmt, RoleSpec};
-use crate::parser::result::ScanResultTrait;
+use crate::parser::result::Required;
 use crate::parser::{ParseResult, Parser};
 use postgres_basics::Location;
