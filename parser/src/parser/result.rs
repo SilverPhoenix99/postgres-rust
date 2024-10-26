@@ -1,17 +1,11 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub(crate) enum ScanErrorKind {
     /// When an unrecoverable error occurs.
-    ScanErr(ParserErrorKind),
+    ScanErr(PartialParserError),
     /// When there are no more tokens.
     Eof,
     /// When the token didn't match.
     NoMatch,
-}
-
-impl Default for ScanErrorKind {
-    fn default() -> Self {
-        ScanErr(Default::default())
-    }
 }
 
 impl From<LexerError> for ScanErrorKind {
@@ -20,22 +14,16 @@ impl From<LexerError> for ScanErrorKind {
     }
 }
 
-impl From<ParserErrorKind> for ScanErrorKind {
-    fn from(value: ParserErrorKind) -> Self {
+impl From<PartialParserError> for ScanErrorKind {
+    fn from(value: PartialParserError) -> Self {
         ScanErr(value)
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum EofErrorKind {
-    NotEof(ParserErrorKind),
+    NotEof(PartialParserError),
     Eof,
-}
-
-impl Default for EofErrorKind {
-    fn default() -> Self {
-        NotEof(Default::default())
-    }
 }
 
 impl From<LexerError> for EofErrorKind {
@@ -44,18 +32,9 @@ impl From<LexerError> for EofErrorKind {
     }
 }
 
-impl From<ParserErrorKind> for EofErrorKind {
-    fn from(value: ParserErrorKind) -> Self {
+impl From<PartialParserError> for EofErrorKind {
+    fn from(value: PartialParserError) -> Self {
         NotEof(value)
-    }
-}
-
-impl From<EofErrorKind> for ParserErrorKind {
-    fn from(value: EofErrorKind) -> Self {
-        match value {
-            NotEof(err) => err,
-            _ => Default::default()
-        }
     }
 }
 
@@ -72,47 +51,47 @@ pub(super) type ScanResult<T> = Result<T, ScanErrorKind>;
 pub(super) type EofResult<T> = Result<T, EofErrorKind>;
 
 pub(super) trait Required<T> {
-    fn required(self) -> ParseResult<T>;
+    fn required(self, fn_info: &'static FnInfo) -> ParseResult<T>;
 }
 
 impl<T> Required<T> for ScanResult<T> {
-    fn required(self) -> ParseResult<T> {
+    fn required(self, fn_info: &'static FnInfo) -> ParseResult<T> {
         self.map_err(|err| match err {
             ScanErr(err) => err,
-            _ => Default::default()
+            _ => PartialParserError::syntax(fn_info)
         })
     }
 }
 
 impl<T> Required<T> for EofResult<T> {
-    fn required(self) -> ParseResult<T> {
+    fn required(self, fn_info: &'static FnInfo) -> ParseResult<T> {
         self.map_err(|err| match err {
             NotEof(err) => err,
-            _ => Default::default()
+            _ => PartialParserError::syntax(fn_info)
         })
     }
 }
 
 pub(super) trait TryMatch<T> {
-    fn try_match(self) -> ParseResult<Option<T>>;
+    fn try_match(self, fn_info: &'static FnInfo) -> ParseResult<Option<T>>;
 }
 
 impl<T> TryMatch<T> for ScanResult<T> {
-    fn try_match(self) -> ParseResult<Option<T>> {
+    fn try_match(self, fn_info: &'static FnInfo) -> ParseResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
             Err(NoMatch) => Ok(None),
-            Err(ScanErrorKind::Eof) => Err(Default::default()),
+            Err(ScanErrorKind::Eof) => Err(PartialParserError::syntax(fn_info)),
             Err(ScanErr(err)) => Err(err),
         }
     }
 }
 
 impl<T> TryMatch<T> for EofResult<T> {
-    fn try_match(self) -> ParseResult<Option<T>> {
+    fn try_match(self, fn_info: &'static FnInfo) -> ParseResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
-            Err(EofErrorKind::Eof) => Err(Default::default()),
+            Err(EofErrorKind::Eof) => Err(PartialParserError::syntax(fn_info)),
             Err(NotEof(err)) => Err(err),
         }
     }
@@ -167,6 +146,7 @@ mod tests {
     // TODO
 }
 
+use crate::parser::error::PartialParserError;
 use crate::{
     lexer::LexerError,
     parser::{
@@ -174,7 +154,7 @@ use crate::{
             EofErrorKind::NotEof,
             ScanErrorKind::{NoMatch, ScanErr}
         },
-        ParseResult,
-        ParserErrorKind
+        ParseResult
     }
 };
+use postgres_basics::FnInfo;

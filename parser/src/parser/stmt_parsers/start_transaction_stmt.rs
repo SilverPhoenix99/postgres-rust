@@ -1,12 +1,13 @@
 impl Parser<'_> {
     pub(in crate::parser) fn start_transaction_stmt(&mut self) -> ParseResult<TransactionStmt> {
-
+        const FN_NAME: &str = "postgres_parser::parser::Parser::start_transaction_stmt";
+        
         /*
         TransactionStmt:
             START TRANSACTION transaction_mode_list_or_empty
         */
 
-        self.buffer.consume_kw_eq(Transaction).required()?;
+        self.buffer.consume_kw_eq(Transaction).required(fn_info!(FN_NAME))?;
 
         let modes = self.transaction_mode_list()
             .optional()?
@@ -36,7 +37,13 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::Transaction;
-use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::{Optional, Required};
-use crate::parser::{ParseResult, Parser};
+use crate::{
+    lexer::Keyword::Transaction,
+    parser::{
+        ast_node::TransactionStmt,
+        result::{Optional, Required},
+        ParseResult,
+        Parser,
+    }
+};
+use postgres_basics::fn_info;

@@ -1,6 +1,7 @@
 impl Parser<'_> {
     pub(in crate::parser) fn alter_stmt(&mut self) -> ParseResult<RawStmt> {
         use TokenKind::Keyword as Kw;
+        const FN_NAME: &str = "postgres_parser::parser::Parser::alter_stmt";
 
         // ALTER was consumed, so at least one of the following matches is required
 
@@ -16,13 +17,13 @@ impl Parser<'_> {
                 Ok(Kw(Conversion)) => self.alter_conversion_stmt(),
                 Ok(Kw(Language)) => self.alter_language_stmt(),
                 Ok(Kw(Procedural)) => {
-                    self.buffer.consume_kw_eq(Language).required()?;
+                    self.buffer.consume_kw_eq(Language).required(fn_info!(FN_NAME))?;
                     self.alter_language_stmt()
                 },
                 Ok(Kw(Large)) => self.alter_large_object_stmt(),
             }
             err {
-                Ok(_) | Err(EofErrorKind::Eof) => Err(Default::default()),
+                Ok(_) | Err(EofErrorKind::Eof) => Err(PartialParserError::syntax(fn_info!(FN_NAME))),
                 Err(NotEof(err)) => Err(err.clone()),
             }
         }
@@ -62,6 +63,7 @@ use crate::{
     parser::{
         ast_node::RawStmt,
         consume,
+        error::PartialParserError,
         result::{
             EofErrorKind::{self, NotEof},
             Required
@@ -70,3 +72,4 @@ use crate::{
         Parser
     }
 };
+use postgres_basics::fn_info;

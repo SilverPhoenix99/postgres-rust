@@ -19,17 +19,19 @@ impl<'src> Parser<'src> {
     pub(super) fn prefixed_operator(&mut self) -> ScanResult<QnOperator> {
         use crate::lexer::Keyword::Operator;
         use crate::lexer::TokenKind::{CloseParenthesis, OpenParenthesis};
+        const FN_NAME: &str = "postgres_parser::parser::Parser::prefixed_operator";
 
         self.buffer.consume_kw_eq(Operator)?;
 
-        self.buffer.consume_eq(OpenParenthesis).required()?;
-        let op = self.any_operator().required()?;
-        self.buffer.consume_eq(CloseParenthesis).required()?;
+        self.buffer.consume_eq(OpenParenthesis).required(fn_info!(FN_NAME))?;
+        let op = self.any_operator().required(fn_info!(FN_NAME))?;
+        self.buffer.consume_eq(CloseParenthesis).required(fn_info!(FN_NAME))?;
 
         Ok(op)
     }
 
     pub(super) fn any_operator(&mut self) -> ScanResult<QnOperator> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::any_operator";
 
         /*
             ( col_id '.' )* all_op
@@ -38,7 +40,7 @@ impl<'src> Parser<'src> {
         let mut qn = Vec::new();
 
         while let Some(id) = self.col_id().optional()? {
-            self.buffer.consume_eq(Dot).required()?;
+            self.buffer.consume_eq(Dot).required(fn_info!(FN_NAME))?;
             qn.push(id);
         }
 
@@ -48,7 +50,7 @@ impl<'src> Parser<'src> {
             op?
         }
         else {
-            op.required()?
+            op.required(fn_info!(FN_NAME))?
         };
 
         let op = QnOperator(qn, op);
@@ -221,3 +223,4 @@ use crate::{
         Parser
     }
 };
+use postgres_basics::fn_info;

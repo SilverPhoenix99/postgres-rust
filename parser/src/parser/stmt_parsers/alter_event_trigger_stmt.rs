@@ -1,18 +1,19 @@
 impl Parser<'_> {
     pub(in crate::parser) fn alter_event_trigger_stmt(&mut self) -> ParseResult<RawStmt> {
-
+        const FN_NAME: &str = "postgres_parser::parser::Parser::alter_event_trigger_stmt";
+        
         /*
             ALTER EVENT TRIGGER ColId enable_trigger
             ALTER EVENT TRIGGER ColId OWNER TO RoleSpec
             ALTER EVENT TRIGGER ColId RENAME TO ColId
         */
 
-        self.buffer.consume_kw_eq(Trigger).required()?;
+        self.buffer.consume_kw_eq(Trigger).required(fn_info!(FN_NAME))?;
 
-        let trigger = self.col_id().required()?;
+        let trigger = self.col_id().required(fn_info!(FN_NAME))?;
 
         let op = self.buffer.consume_kws(|kw| matches!(kw, Owner | Rename))
-            .try_match()?;
+            .try_match(fn_info!(FN_NAME))?;
 
         let Some(op) = op else {
             /*
@@ -23,13 +24,13 @@ impl Parser<'_> {
             return Ok(stmt.into())
         };
 
-        self.buffer.consume_kw_eq(To).required()?;
+        self.buffer.consume_kw_eq(To).required(fn_info!(FN_NAME))?;
 
         let stmt = if op == Owner {
             /*
                 ... OWNER TO RoleSpec
             */
-            let new_owner = self.role_spec().required()?;
+            let new_owner = self.role_spec().required(fn_info!(FN_NAME))?;
             let stmt = AlterOwnerStmt::new(
                 AlterOwnerTarget::EventTrigger(trigger),
                 new_owner
@@ -40,7 +41,7 @@ impl Parser<'_> {
             /*
                 ... RENAME TO ColId
             */
-            let new_name = self.col_id().required()?;
+            let new_name = self.col_id().required(fn_info!(FN_NAME))?;
             let stmt = RenameStmt::new(
                 RenameTarget::EventTrigger(trigger),
                 new_name
@@ -52,7 +53,8 @@ impl Parser<'_> {
     }
 
     fn enable_trigger(&mut self) -> ParseResult<EventTriggerState> {
-
+        const FN_NAME: &str = "postgres_parser::parser::Parser::enable_trigger";
+        
         /*
             ENABLE_P
           | ENABLE_P REPLICA
@@ -66,7 +68,7 @@ impl Parser<'_> {
                     .filter(|kw| matches!(kw, Enable | Disable))
                     .map(|kw| kw == Enable)
             )
-            .required()?;
+            .required(fn_info!(FN_NAME))?;
 
         if !enable {
             return Ok(Disabled)
@@ -160,3 +162,4 @@ use crate::{
         Parser
     },
 };
+use postgres_basics::fn_info;

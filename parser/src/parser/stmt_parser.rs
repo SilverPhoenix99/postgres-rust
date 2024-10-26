@@ -3,6 +3,7 @@ impl Parser<'_> {
     pub(super) fn stmt(&mut self, allow_tx_legacy_stmts: bool) -> ParseResult<RawStmt> {
         use TokenKind::Keyword as Kw;
         use Keyword::*;
+        const FN_NAME: &str = "postgres_parser::parser::Parser::stmt";
 
         consume! {self
             ok {
@@ -46,7 +47,7 @@ impl Parser<'_> {
                 Ok(Kw(Vacuum)) => self.vacuum_stmt(),
             }
             err {
-                Ok(_) | Err(EofErrorKind::Eof) => Err(Default::default()),
+                Ok(_) | Err(EofErrorKind::Eof) => Err(PartialParserError::syntax(fn_info!(FN_NAME))),
                 Err(NotEof(err)) => Err(err),
             }
         }
@@ -94,8 +95,10 @@ use crate::{
     parser::{
         ast_node::RawStmt::{self, ClosePortalStmt, DeallocateStmt, ListenStmt, LoadStmt, UnlistenStmt},
         consume_macro::consume,
+        error::PartialParserError,
         result::EofErrorKind::{self, NotEof},
         ParseResult,
         Parser
     }
 };
+use postgres_basics::fn_info;

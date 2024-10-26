@@ -1,9 +1,9 @@
-pub enum ParserWarning {
+pub enum ParserWarningKind {
     DeprecatedGlobalTemporaryTable,
     NonstandardEscape(ExtendedStringWarning),
 }
 
-impl ParserWarning {
+impl ParserWarningKind {
 
     pub fn sqlstate(self) -> SqlState {
         match self {

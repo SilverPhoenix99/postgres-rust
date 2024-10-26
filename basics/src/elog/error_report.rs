@@ -1,4 +1,4 @@
-pub trait ErrorReport: Error {
+pub trait ErrorReport {
 
     #[inline(always)]
     fn hint(&self) -> Option<Cow<'static, str>> {
@@ -17,4 +17,3 @@ pub trait ErrorReport: Error {
 }
 
 use std::borrow::Cow;
-use std::error::Error;

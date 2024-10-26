@@ -47,6 +47,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
     }
 
     fn decode_string(&mut self, kind: StringKind, slice: &str, loc: Location) -> ScanResult<String> {
+        const FN_NAME: &str = "postgres_parser::parser::string_parser::StringParser::decode_string";
 
         let result = match kind {
             BasicString { .. } | NationalString => {
@@ -58,11 +59,13 @@ impl<'p, 'src> StringParser<'p, 'src> {
                 let ExtendedStringResult { result, warning } = decoder.decode();
 
                 if let Some(warning) = warning {
-                    let warning = ParserWarning::NonstandardEscape(warning);
+                    let warning = ParserWarningKind::NonstandardEscape(warning);
                     self.0.warnings.push((warning, loc));
                 }
 
-                result.map_err(ParserErrorKind::ExtendedString)
+                result.map_err(|err|
+                    PartialParserError::new(ParserErrorKind::ExtendedString(err), fn_info!(FN_NAME))
+                )
             },
             UnicodeString => {
 
@@ -70,7 +73,9 @@ impl<'p, 'src> StringParser<'p, 'src> {
 
                 UnicodeStringDecoder::new(slice, false, escape)
                     .decode()
-                    .map_err(ParserErrorKind::UnicodeString)
+                    .map_err(|err|
+                        PartialParserError::new(ParserErrorKind::UnicodeString(err), fn_info!(FN_NAME))
+                    )
             }
             DollarString => unreachable!("`$` strings don't have any escapes"),
         };
@@ -169,12 +174,13 @@ mod tests {
 use crate::{
     lexer::StringKind::{self, *},
     parser::{
+        error::PartialParserError,
         result::{Optional, ScanErrorKind, ScanResult},
         token_buffer::TokenConsumer,
         Parser,
         ParserErrorKind,
-        ParserWarning
+        ParserWarningKind
     },
     string_decoders::*
 };
-use postgres_basics::{Located, Location};
+use postgres_basics::{fn_info, Located, Location};

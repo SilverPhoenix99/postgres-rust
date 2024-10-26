@@ -1,5 +1,6 @@
 impl Parser<'_> {
     pub(in crate::parser) fn alter_conversion_stmt(&mut self) -> ParseResult<RawStmt> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::alter_conversion_stmt";
 
         /*
             ALTER CONVERSION any_name OWNER TO RoleSpec
@@ -7,15 +8,15 @@ impl Parser<'_> {
             ALTER CONVERSION any_name SET SCHEMA ColId
         */
 
-        let conversion = self.any_name().required()?;
+        let conversion = self.any_name().required(fn_info!(FN_NAME))?;
 
         let op = self.buffer.consume_kws(|kw| matches!(kw, Owner | Rename | Set))
-            .required()?;
+            .required(fn_info!(FN_NAME))?;
 
         let stmt = match op {
             Owner => {
-                self.buffer.consume_kw_eq(To).required()?;
-                let new_owner = self.role_spec().required()?;
+                self.buffer.consume_kw_eq(To).required(fn_info!(FN_NAME))?;
+                let new_owner = self.role_spec().required(fn_info!(FN_NAME))?;
 
                 AlterOwnerStmt::new(
                     AlterOwnerTarget::Conversion(conversion),
@@ -23,8 +24,8 @@ impl Parser<'_> {
                 ).into()
             },
             Rename => {
-                self.buffer.consume_kw_eq(To).required()?;
-                let new_name = self.col_id().required()?;
+                self.buffer.consume_kw_eq(To).required(fn_info!(FN_NAME))?;
+                let new_name = self.col_id().required(fn_info!(FN_NAME))?;
 
                 RenameStmt::new(
                     RenameTarget::Conversion(conversion),
@@ -32,8 +33,8 @@ impl Parser<'_> {
                 ).into()
             },
             Set => {
-                self.buffer.consume_kw_eq(Schema).required()?;
-                let new_schema = self.col_id().required()?;
+                self.buffer.consume_kw_eq(Schema).required(fn_info!(FN_NAME))?;
+                let new_schema = self.col_id().required(fn_info!(FN_NAME))?;
 
                 AlterObjectSchemaStmt::new(
                     AlterObjectSchemaTarget::Conversion(conversion),
@@ -116,3 +117,4 @@ use crate::{
         Parser
     }
 };
+use postgres_basics::fn_info;

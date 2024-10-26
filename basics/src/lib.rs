@@ -27,7 +27,7 @@ macro_rules! fn_info {
     () => { $crate::FnInfo::new(file!(), line!(), $crate::qn_fn_name!()) };
 
     ($fn_name:expr) => {{
-        const FN_INFO: FnInfo = $crate::FnInfo::new(file!(), line!(), $fn_name);
+        const FN_INFO: $crate::FnInfo = $crate::FnInfo::new(file!(), line!(), $fn_name);
         &FN_INFO
     }};
 }
