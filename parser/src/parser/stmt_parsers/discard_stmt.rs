@@ -1,6 +1,7 @@
 impl Parser<'_> {
     /// Alias: `DiscardStmt`
     pub(in crate::parser) fn discard_stmt(&mut self) -> ParseResult<DiscardStmt> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::discard_stmt";
 
         /*
             DISCARD (ALL | PLANS | SEQUENCES | TEMP | TEMPORARY)
@@ -14,7 +15,7 @@ impl Parser<'_> {
                 Some(Temp | Temporary) => Some(DiscardStmt::Temporary),
                 _ => None,
             })
-            .required()?;
+            .required(fn_info!(FN_NAME))?;
 
         Ok(stmt)
     }
@@ -58,3 +59,4 @@ use crate::parser::ast_node::DiscardStmt;
 use crate::parser::result::Required;
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::{ParseResult, Parser};
+use postgres_basics::fn_info;

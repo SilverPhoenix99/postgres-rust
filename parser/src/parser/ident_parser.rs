@@ -5,6 +5,7 @@ pub(super) struct IdentifierParser<'p, 'src>(
 impl<'p, 'src> IdentifierParser<'p, 'src> {
 
     pub fn parse(&mut self) -> ScanResult<String> {
+        const FN_NAME: &str = "postgres_parser::parser::ident_parser::IdentifierParser::parse";
 
         let loc = self.0.buffer.current_location();
         let kind = self.0.buffer.consume(|tok| tok.identifier_kind())?;
@@ -27,7 +28,9 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
 
                 UnicodeStringDecoder::new(slice, true, escape)
                     .decode()
-                    .map_err(ParserErrorKind::UnicodeString)
+                    .map_err(|err|
+                        PartialParserError::new(UnicodeString(err), fn_info!(FN_NAME))
+                    )
             },
         };
 
@@ -94,11 +97,12 @@ mod tests {
 use crate::{
     lexer::IdentifierKind::*,
     parser::{
+        error::PartialParserError,
         result::ScanResult,
         token_buffer::TokenConsumer,
         Parser,
-        ParserErrorKind
+        ParserErrorKind::UnicodeString
     },
     string_decoders::{BasicStringDecoder, UnicodeStringDecoder}
 };
-use postgres_basics::NAMEDATALEN;
+use postgres_basics::{fn_info, NAMEDATALEN};

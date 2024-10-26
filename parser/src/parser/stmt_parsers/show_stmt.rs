@@ -1,6 +1,7 @@
 impl Parser<'_> {
     /// Alias: `VariableShowStmt`
     pub(in crate::parser) fn show_stmt(&mut self) -> ParseResult<VariableShowStmt> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::show_stmt";
 
         /*
             SHOW var_name
@@ -24,20 +25,20 @@ impl Parser<'_> {
             /*
                 SHOW var_name
             */
-            let var_name = self.var_name().required()?;
+            let var_name = self.var_name().required(fn_info!(FN_NAME))?;
             return Ok(Name(var_name))
         };
 
         match show_stmt {
             SessionAuthorization => {
-                self.buffer.consume_kw_eq(Authorization).required()?;
+                self.buffer.consume_kw_eq(Authorization).required(fn_info!(FN_NAME))?;
             },
             TransactionIsolation => {
-                self.buffer.consume_kw_eq(Isolation).required()?;
-                self.buffer.consume_kw_eq(Level).required()?;
+                self.buffer.consume_kw_eq(Isolation).required(fn_info!(FN_NAME))?;
+                self.buffer.consume_kw_eq(Level).required(fn_info!(FN_NAME))?;
             }
             TimeZone => {
-                self.buffer.consume_kw_eq(Zone).required()?;
+                self.buffer.consume_kw_eq(Zone).required(fn_info!(FN_NAME))?;
             }
             _ => {}
         };
@@ -91,3 +92,4 @@ use crate::parser::ast_node::VariableShowStmt::{self, *};
 use crate::parser::result::{Optional, Required};
 use crate::parser::token_buffer::TokenConsumer;
 use crate::parser::{ParseResult, Parser};
+use postgres_basics::fn_info;

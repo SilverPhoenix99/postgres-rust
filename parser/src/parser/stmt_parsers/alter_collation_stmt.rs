@@ -1,5 +1,6 @@
 impl Parser<'_> {
     pub(in crate::parser) fn alter_collation_stmt(&mut self) -> ParseResult<RawStmt> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::alter_collation_stmt";
 
         /*
             ALTER COLLATION any_name OWNER TO RoleSpec
@@ -8,15 +9,15 @@ impl Parser<'_> {
             ALTER COLLATION any_name SET SCHEMA ColId
         */
 
-        let name = self.any_name().required()?;
+        let name = self.any_name().required(fn_info!(FN_NAME))?;
 
         let op = self.buffer.consume_kws(|kw| matches!(kw, Owner | Refresh | Rename | Set))
-            .required()?;
+            .required(fn_info!(FN_NAME))?;
 
         let stmt = match op {
             Owner => {
-                self.buffer.consume_kw_eq(To).required()?;
-                let role = self.role_spec().required()?;
+                self.buffer.consume_kw_eq(To).required(fn_info!(FN_NAME))?;
+                let role = self.role_spec().required(fn_info!(FN_NAME))?;
 
                 AlterOwnerStmt::new(
                     AlterOwnerTarget::Collation(name),
@@ -24,12 +25,12 @@ impl Parser<'_> {
                 ).into()
             },
             Refresh => {
-                self.buffer.consume_kw_eq(Version).required()?;
+                self.buffer.consume_kw_eq(Version).required(fn_info!(FN_NAME))?;
                 RefreshCollationVersionStmt(name)
             },
             Rename => {
-                self.buffer.consume_kw_eq(To).required()?;
-                let new_name = self.col_id().required()?;
+                self.buffer.consume_kw_eq(To).required(fn_info!(FN_NAME))?;
+                let new_name = self.col_id().required(fn_info!(FN_NAME))?;
 
                 RenameStmt::new(
                     RenameTarget::Collation(name),
@@ -37,8 +38,8 @@ impl Parser<'_> {
                 ).into()
             },
             Set => {
-                self.buffer.consume_kw_eq(Schema).required()?;
-                let new_schema = self.col_id().required()?;
+                self.buffer.consume_kw_eq(Schema).required(fn_info!(FN_NAME))?;
+                let new_schema = self.col_id().required(fn_info!(FN_NAME))?;
 
                 AlterObjectSchemaStmt::new(
                     AlterObjectSchemaTarget::Collation(name),
@@ -131,3 +132,4 @@ use crate::{
         Parser,
     },
 };
+use postgres_basics::fn_info;

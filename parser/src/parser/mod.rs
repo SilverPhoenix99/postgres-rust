@@ -16,29 +16,25 @@ mod warning;
 
 pub use self::{
     config::ParserConfig,
-    error::ParserErrorKind,
-    warning::ParserWarning,
+    error::{ParserError, ParserErrorKind},
+    warning::ParserWarningKind,
 };
 
 type CowStr = Cow<'static, str>;
 type QnName = Vec<CowStr>;
 
-pub(crate) type ParseResult<T> = Result<T, ParserErrorKind>;
+pub(crate) type ParseResult<T> = Result<T, PartialParserError>;
 
 pub struct ParserResult {
-    pub result: Result<Vec<RawStmt>, Located<ParserErrorKind>>,
-    pub warnings: Vec<Located<ParserWarning>>,
+    pub result: Result<Vec<RawStmt>, ParserError>,
+    pub warnings: Vec<Located<ParserWarningKind>>,
 }
 
 pub struct Parser<'src> {
     buffer: TokenBuffer<'src>,
     config: ParserConfig,
     /// All the warnings that have been collected while parsing.
-    warnings: Vec<Located<ParserWarning>>,
-    /// Overrides the default error location.
-    /// Useful when lookahead is needed,
-    /// or when the error happens somewhere inside the token.
-    err_loc_override: Option<Location>,
+    warnings: Vec<Located<ParserWarningKind>>,
 }
 
 impl<'src> Parser<'src> {
@@ -54,7 +50,6 @@ impl<'src> Parser<'src> {
             buffer: TokenBuffer::new(lexer),
             config,
             warnings: Vec::new(),
-            err_loc_override: None
         }
     }
 
@@ -64,9 +59,9 @@ impl<'src> Parser<'src> {
         let result = match self.stmtmulti() {
             Ok(stmts) => Ok(stmts),
             Err(err) => {
-                let loc = self.err_loc_override.take()
-                    .unwrap_or_else(|| self.buffer.current_location());
-                Err((err, loc))
+                let default_loc = self.buffer.current_location();
+                let err = err.into_parser_err(default_loc);
+                Err(err)
             }
         };
 
@@ -77,6 +72,7 @@ impl<'src> Parser<'src> {
     }
 
     fn stmtmulti(&mut self) -> ParseResult<Vec<RawStmt>> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::stmtmulti";
 
         // This production is slightly cheating, not because it's more efficient,
         // but helps simplify capturing errors.
@@ -102,7 +98,7 @@ impl<'src> Parser<'src> {
 
         // if it's not Eof, then something didn't match properly
         if !self.buffer.eof() {
-            return Err(Default::default())
+            return Err(PartialParserError::syntax(fn_info!(FN_NAME)))
         }
 
         Ok(stmts)
@@ -140,6 +136,7 @@ impl<'src> Parser<'src> {
 
     fn opt_transaction_chain(&mut self) -> ParseResult<bool> {
         use Keyword::{And, Chain, No};
+        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_transaction_chain";
 
         if self.buffer.consume_kw_eq(And).optional()?.is_none() {
             return Ok(false)
@@ -147,7 +144,7 @@ impl<'src> Parser<'src> {
 
         let result = self.buffer.consume_kw_eq(No).optional()?.is_none();
 
-        self.buffer.consume_kw_eq(Chain).required()?;
+        self.buffer.consume_kw_eq(Chain).required(fn_info!(FN_NAME))?;
 
         Ok(result)
     }
@@ -156,6 +153,7 @@ impl<'src> Parser<'src> {
     ///
     /// Alias: `transaction_mode_list_or_empty`
     fn transaction_mode_list(&mut self) -> ScanResult<Vec<TransactionMode>> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::transaction_mode_list";
 
         /*
             transaction_mode ( (',')? transaction_mode )*
@@ -167,7 +165,7 @@ impl<'src> Parser<'src> {
         loop {
             let element = match self.buffer.consume_eq(Comma) {
                 Ok(_) => {
-                    self.transaction_mode().required()?
+                    self.transaction_mode().required(fn_info!(FN_NAME))?
                 }
                 Err(NoMatch) => {
                     let mode = self.transaction_mode().optional();
@@ -182,7 +180,7 @@ impl<'src> Parser<'src> {
         }
 
         while self.buffer.consume_eq(Comma).optional()?.is_some() {
-            let element = self.transaction_mode().required()?;
+            let element = self.transaction_mode().required(fn_info!(FN_NAME))?;
             elements.push(element);
         }
 
@@ -192,6 +190,7 @@ impl<'src> Parser<'src> {
     /// Alias: `transaction_mode_item`
     fn transaction_mode(&mut self) -> ScanResult<TransactionMode> {
         use Keyword::{Deferrable, Isolation, Level, Not, Only, Read, Write};
+        const FN_NAME: &str = "postgres_parser::parser::Parser::transaction_mode";
 
         /*
               ISOLATION LEVEL iso_level
@@ -208,12 +207,12 @@ impl<'src> Parser<'src> {
         match result {
             Deferrable => Ok(TransactionMode::Deferrable),
             Not => {
-                self.buffer.consume_kw_eq(Deferrable).required()?;
+                self.buffer.consume_kw_eq(Deferrable).required(fn_info!(FN_NAME))?;
                 Ok(TransactionMode::NotDeferrable)
             },
             Isolation => {
-                self.buffer.consume_kw_eq(Level).required()?;
-                let isolation_level = self.isolation_level().required()?;
+                self.buffer.consume_kw_eq(Level).required(fn_info!(FN_NAME))?;
+                let isolation_level = self.isolation_level().required(fn_info!(FN_NAME))?;
                 Ok(TransactionMode::IsolationLevel(isolation_level))
             },
             Read => {
@@ -223,7 +222,7 @@ impl<'src> Parser<'src> {
                         Some(Write) => Some(TransactionMode::ReadWrite),
                         _ => None
                     })
-                    .required()
+                    .required(fn_info!(FN_NAME))
                     .map_err(ScanErrorKind::from)
             },
             _ => Err(NoMatch)
@@ -233,6 +232,7 @@ impl<'src> Parser<'src> {
     /// Alias: `iso_level`
     fn isolation_level(&mut self) -> ScanResult<IsolationLevel> {
         use Keyword::{Committed, Read, Repeatable, Serializable, Uncommitted};
+        const FN_NAME: &str = "postgres_parser::parser::Parser::isolation_level";
 
         /*
             READ UNCOMMITTED
@@ -248,7 +248,7 @@ impl<'src> Parser<'src> {
         match kw {
             Serializable => Ok(IsolationLevel::Serializable),
             Repeatable => {
-                self.buffer.consume_kw_eq(Read).required()?;
+                self.buffer.consume_kw_eq(Read).required(fn_info!(FN_NAME))?;
                 Ok(IsolationLevel::RepeatableRead)
             },
             Read => {
@@ -258,7 +258,7 @@ impl<'src> Parser<'src> {
                         Some(Uncommitted) => Some(IsolationLevel::ReadUncommitted),
                         _ => None
                     })
-                    .required()?;
+                    .required(fn_info!(FN_NAME))?;
 
                 Ok(level)
             },
@@ -288,6 +288,7 @@ impl<'src> Parser<'src> {
 
     /// Post-condition: Vec is **not** empty
     fn col_id_list(&mut self, separator: TokenKind) -> ScanResult<QnName> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::col_id_list";
 
         /*
             col_id ( <separator> col_id )*
@@ -297,7 +298,7 @@ impl<'src> Parser<'src> {
         let mut elements = vec![element];
 
         while self.buffer.consume_eq(separator).optional()?.is_some() {
-            let element = self.col_id().required()?;
+            let element = self.col_id().required(fn_info!(FN_NAME))?;
             elements.push(element);
         }
 
@@ -369,6 +370,7 @@ impl<'src> Parser<'src> {
     /// Inline: `opt_float`
     fn numeric(&mut self) -> ScanResult<SystemType> {
         use Keyword::{Bigint, Boolean, Dec, Decimal, Double, Float, Int, Integer, Numeric, Precision, Real, Smallint};
+        const FN_NAME: &str = "postgres_parser::parser::Parser::numeric";
 
         /*
         Numeric :
@@ -409,7 +411,7 @@ impl<'src> Parser<'src> {
         };
 
         if kw == Double {
-            self.buffer.consume_kw_eq(Precision).required()?;
+            self.buffer.consume_kw_eq(Precision).required(fn_info!(FN_NAME))?;
             return Ok(Float8)
         }
 
@@ -417,10 +419,14 @@ impl<'src> Parser<'src> {
             // opt_float: '(' ICONST ')'
             return match self.i32_literal_paren().optional()? {
                 None => Ok(Float8),
-                Some(num @ ..=0) => Err(FloatPrecisionUnderflow(num).into()),
+                Some(num @ ..=0) => Err(ScanErr(
+                    PartialParserError::new(FloatPrecisionUnderflow(num), fn_info!(FN_NAME))
+                )),
                 Some(1..=24) => Ok(Float4),
                 Some(25..=53) => Ok(Float8),
-                Some(num @ 54..) => Err(FloatPrecisionOverflow(num).into()),
+                Some(num @ 54..) => Err(ScanErr(
+                    PartialParserError::new(FloatPrecisionOverflow(num), fn_info!(FN_NAME))
+                )),
             }
         }
 
@@ -434,6 +440,7 @@ impl<'src> Parser<'src> {
     /// Post-condition: Vec **can** be empty
     fn opt_type_modifiers(&mut self) -> ScanResult<Vec<ExprNode>> {
         use TokenKind::{CloseParenthesis, OpenParenthesis};
+        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_type_modifiers";
 
         /*
             '(' expr_list ')'
@@ -442,16 +449,17 @@ impl<'src> Parser<'src> {
         self.buffer.consume_eq(OpenParenthesis)?;
 
         let exprs = self.expr_list()
-            .try_match()?
+            .try_match(fn_info!(FN_NAME))?
             .unwrap_or_else(Vec::new);
 
-        self.buffer.consume_eq(CloseParenthesis).required()?;
+        self.buffer.consume_eq(CloseParenthesis).required(fn_info!(FN_NAME))?;
 
         Ok(exprs)
     }
 
     /// Post-condition: Vec is **Not** empty
     fn expr_list(&mut self) -> ScanResult<Vec<ExprNode>> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::expr_list";
 
         /*
             a_expr ( ',' a_expr )*
@@ -461,7 +469,7 @@ impl<'src> Parser<'src> {
         let mut exprs = vec![expr];
 
         while self.buffer.consume_eq(Comma).optional()?.is_some() {
-            let expr = self.a_expr().required()?;
+            let expr = self.a_expr().required(fn_info!(FN_NAME))?;
             exprs.push(expr);
         }
 
@@ -483,6 +491,7 @@ impl<'src> Parser<'src> {
 
     /// Post-condition: Vec is **Not** empty
     fn attrs(&mut self, prefix: CowStr) -> ScanResult<QnName> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::attrs";
 
         // A prefix token is passed to prevent a right shift of the Vec later on,
         // to insert the 1st element.
@@ -494,7 +503,7 @@ impl<'src> Parser<'src> {
         let mut attrs = vec![prefix];
 
         while self.buffer.consume_eq(Dot).optional()?.is_some() {
-            let attr = self.col_label().required()?;
+            let attr = self.col_label().required(fn_info!(FN_NAME))?;
             attrs.push(attr);
         }
 
@@ -504,16 +513,18 @@ impl<'src> Parser<'src> {
     /// Production: `'(' ICONST ')'`
     fn i32_literal_paren(&mut self) -> ScanResult<i32> {
         use TokenKind::{CloseParenthesis, OpenParenthesis};
+        const FN_NAME: &str = "postgres_parser::parser::Parser::i32_literal_paren";
 
         self.buffer.consume_eq(OpenParenthesis)?;
-        let num = self.i32_literal().required()?;
-        self.buffer.consume_eq(CloseParenthesis).required()?;
+        let num = self.i32_literal().required(fn_info!(FN_NAME))?;
+        self.buffer.consume_eq(CloseParenthesis).required(fn_info!(FN_NAME))?;
 
         Ok(num)
     }
 
     fn character(&mut self) -> ScanResult<CharacterSystemType> {
         use Keyword::{Char, Character, National, Nchar, Varchar};
+        const FN_NAME: &str = "postgres_parser::parser::Parser::character";
 
         /*
             VARCHAR
@@ -531,7 +542,7 @@ impl<'src> Parser<'src> {
 
         if char_type == National {
             self.buffer.consume_kws(|kw| matches!(kw, Character | Char))
-                .required()?;
+                .required(fn_info!(FN_NAME))?;
         }
 
         let varying = self.buffer.consume_kw_eq(Keyword::Varying).optional()?;
@@ -549,6 +560,7 @@ impl<'src> Parser<'src> {
     /// Alias: `NumericOnly`
     fn signed_number(&mut self) -> ScanResult<SignedNumber> {
         use TokenKind::{Minus, Plus};
+        const FN_NAME: &str = "postgres_parser::parser::Parser::signed_number";
 
         // ('+' | '-')? (ICONST | FCONST)
 
@@ -559,7 +571,7 @@ impl<'src> Parser<'src> {
         let number = self.unsigned_number();
 
         let number = if sign.is_some() {
-            number.required()?
+            number.required(fn_info!(FN_NAME))?
         }
         else {
             number?
@@ -601,6 +613,7 @@ impl<'src> Parser<'src> {
     /// Alias: `SignedIconst`
     fn signed_i32_literal(&mut self) -> ScanResult<i32> {
         use TokenKind::{Minus, Plus};
+        const FN_NAME: &str = "postgres_parser::parser::Parser::signed_i32_literal";
 
         // ('+' | '-')? ICONST
 
@@ -613,7 +626,7 @@ impl<'src> Parser<'src> {
         let Some(sign) = sign else { return num };
 
         // If sign is Some(_), then ICONST is required
-        let mut num = num.required()?;
+        let mut num = num.required(fn_info!(FN_NAME))?;
 
         if sign == Minus {
             num = -num;
@@ -710,6 +723,7 @@ impl<'src> Parser<'src> {
     /// Production: `UESCAPE SCONST`
     fn uescape(&mut self) -> ParseResult<char> {
         use Keyword::Uescape;
+        const FN_NAME: &str = "postgres_parser::parser::Parser::uescape";
 
         // Try to consume UESCAPE + the string following it.
         // see [base_yylex](https://github.com/postgres/postgres/blob/1c61fd8b527954f0ec522e5e60a11ce82628b681/src/backend/parser/parser.c#L256)
@@ -727,15 +741,15 @@ impl<'src> Parser<'src> {
                     let slice = loc.slice(source);
                     match uescape_escape(slice) {
                         Some(escape) => Ok(Some(escape)),
-                        None => Err(InvalidUescapeDelimiter),
+                        None => Err(PartialParserError::new(InvalidUescapeDelimiter, fn_info!(FN_NAME))),
                     }
                 },
-                None => Err(UescapeDelimiterMissing)
+                None => Err(PartialParserError::new(UescapeDelimiterMissing, fn_info!(FN_NAME)))
             });
 
         uescape.map_err(|err| match err {
-            Eof => InvalidUescapeDelimiter,
-            NoMatch => ParserErrorKind::default(),
+            Eof => PartialParserError::new(InvalidUescapeDelimiter, fn_info!(FN_NAME)),
+            NoMatch => PartialParserError::syntax(fn_info!(FN_NAME)),
             ScanErr(err) => err
         })
     }
@@ -1166,7 +1180,7 @@ use self::{
         UnsignedNumber
     },
     consume_macro::consume,
-    error::ParserErrorKind::*,
+    error::{ParserErrorKind::*, PartialParserError},
     ident_parser::IdentifierParser,
     result::{
         Optional,
@@ -1185,5 +1199,5 @@ use crate::lexer::{
     Lexer,
     TokenKind::{self, Comma, Dot, NumberLiteral}
 };
-use postgres_basics::{ascii, Located, Location};
+use postgres_basics::{ascii, fn_info, Located};
 use std::{borrow::Cow, mem};

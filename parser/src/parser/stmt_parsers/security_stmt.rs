@@ -1,6 +1,7 @@
 impl Parser<'_> {
     /// Alias: `SecLabelStmt`
     pub(in crate::parser) fn security_stmt(&mut self) -> ParseResult<RawStmt> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::security_stmt";
 
         /*
             SECURITY LABEL opt_provider ON AGGREGATE aggregate_with_argtypes IS security_label
@@ -15,7 +16,7 @@ impl Parser<'_> {
             SECURITY LABEL opt_provider ON TYPE_P Typename IS security_label
         */
 
-        self.buffer.consume_kw_eq(Label).required()?;
+        self.buffer.consume_kw_eq(Label).required(fn_info!(FN_NAME))?;
 
         todo!()
     }
@@ -25,3 +26,4 @@ use crate::lexer::Keyword::Label;
 use crate::parser::ast_node::RawStmt;
 use crate::parser::result::Required;
 use crate::parser::{ParseResult, Parser};
+use postgres_basics::fn_info;

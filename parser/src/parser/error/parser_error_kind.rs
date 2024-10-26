@@ -7,7 +7,7 @@ pub enum ParserErrorKind {
 
     /// Still a syntax error, but thrown by the lexer
     #[error("{0}")]
-    Lexer(#[from] LexerError),
+    Lexer(#[from] LexerErrorKind),
 
     /// When UESCAPE isn't followed by a simple 1 char string.
     #[error("UESCAPE must be followed by a simple string literal")]
@@ -120,7 +120,7 @@ impl ErrorReport for ParserErrorKind {
     }
 }
 
-use crate::lexer::LexerError;
+use crate::lexer::LexerErrorKind;
 use crate::string_decoders::{
     ExtendedStringError,
     UnicodeStringError,

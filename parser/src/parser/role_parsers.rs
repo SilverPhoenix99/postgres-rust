@@ -2,6 +2,7 @@ impl Parser<'_> {
 
     /// Post-condition: Vec is **not** empty
     pub(super) fn role_list(&mut self) -> ScanResult<Vec<RoleSpec>> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::role_list";
 
         /*
             role_spec ( ',' role_spec )*
@@ -11,7 +12,7 @@ impl Parser<'_> {
         let mut roles = vec![role];
 
         while self.buffer.consume_eq(Comma).optional()?.is_some() {
-            let role = self.role_spec().required()?;
+            let role = self.role_spec().required(fn_info!(FN_NAME))?;
             roles.push(role);
         }
 
@@ -32,6 +33,7 @@ impl Parser<'_> {
     /// Alias: `RoleSpec`
     pub(super) fn role_spec(&mut self) -> ScanResult<RoleSpec> {
         use crate::lexer::TokenKind::Keyword as Kw;
+        const FN_NAME: &str = "postgres_parser::parser::Parser::role_spec";
 
         /*
             role_spec :
@@ -57,10 +59,14 @@ impl Parser<'_> {
                 Ok(Kw(CurrentRole)) => Ok(RoleSpec::CurrentRole),
                 Ok(Kw(CurrentUser)) => Ok(RoleSpec::CurrentUser),
                 Ok(Kw(SessionUser)) => Ok(RoleSpec::SessionUser),
-                Ok(Kw(kw)) if kw != NoneKw && kw.details().category() != Reserved => Ok(RoleSpec::Name(kw.details().text().into())),
+                Ok(Kw(kw)) if kw != NoneKw && kw.details().category() != Reserved => {
+                    Ok(RoleSpec::Name(kw.details().text().into()))
+                }
             }
             err {
-                Ok(Kw(NoneKw)) => Err(ScanErr(ReservedRoleSpec("none"))),
+                Ok(Kw(NoneKw)) => Err(ScanErr(
+                    PartialParserError::new(ReservedRoleSpec("none"), fn_info!(FN_NAME))
+                )),
                 Ok(_) => Err(NoMatch),
                 Err(e) => Err(e.into()),
             }
@@ -72,7 +78,9 @@ impl Parser<'_> {
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::ParserErrorKind;
     use crate::parser::ParserErrorKind::ForbiddenRoleSpec;
+    use std::fmt::Debug;
 
     #[test]
     fn test_role_list() {
@@ -101,19 +109,19 @@ mod tests {
         assert_eq!(Ok("xxyyzz".into()), parser.role_id());
 
         let mut parser = Parser::new("none", DEFAULT_CONFIG);
-        assert_eq!(Err(ScanErr(ReservedRoleSpec("none"))), parser.role_id());
+        assert_err(ReservedRoleSpec("none"), parser.role_id());
 
         let mut parser = Parser::new("public", DEFAULT_CONFIG);
-        assert_eq!(Err(ScanErr(ReservedRoleSpec("public"))), parser.role_id());
+        assert_err(ReservedRoleSpec("public"), parser.role_id());
 
         let mut parser = Parser::new("current_role", DEFAULT_CONFIG);
-        assert_eq!(Err(ScanErr(ForbiddenRoleSpec("CURRENT_ROLE"))), parser.role_id());
+        assert_err(ForbiddenRoleSpec("CURRENT_ROLE"), parser.role_id());
 
         let mut parser = Parser::new("current_user", DEFAULT_CONFIG);
-        assert_eq!(Err(ScanErr(ForbiddenRoleSpec("CURRENT_USER"))), parser.role_id());
+        assert_err(ForbiddenRoleSpec("CURRENT_USER"), parser.role_id());
 
         let mut parser = Parser::new("session_user", DEFAULT_CONFIG);
-        assert_eq!(Err(ScanErr(ForbiddenRoleSpec("SESSION_USER"))), parser.role_id());
+        assert_err(ForbiddenRoleSpec("SESSION_USER"), parser.role_id());
     }
 
     #[test]
@@ -132,10 +140,20 @@ mod tests {
         assert_eq!(Err(NoMatch), parser.role_spec());
 
         let mut parser = Parser::new("none", DEFAULT_CONFIG);
-        assert_eq!(Err(ScanErr(ReservedRoleSpec("none"))), parser.role_spec());
+        assert_err(ReservedRoleSpec("none"), parser.role_spec());
+    }
+
+    fn assert_err<T: Debug>(expected: ParserErrorKind, actual: ScanResult<T>) {
+        assert_matches!(actual, Err(ScanErr(_)));
+        let ScanErr(actual) = actual.unwrap_err() else {
+            unreachable!("already checked for Err(ScanErr(_))");
+        };
+
+        assert_eq!(&expected, actual.report().source());
     }
 }
 
+use crate::parser::error::PartialParserError;
 use crate::{
     lexer::{
         Keyword::{CurrentRole, CurrentUser, NoneKw, SessionUser},
@@ -157,3 +175,4 @@ use crate::{
         ParserErrorKind::ReservedRoleSpec,
     },
 };
+use postgres_basics::fn_info;

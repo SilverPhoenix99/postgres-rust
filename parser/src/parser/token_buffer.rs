@@ -91,7 +91,7 @@ impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenBuffer<'_> {
         let tok = match self.peek() {
             Ok(tok) => tok,
             Err(EofErrorKind::Eof) => return Err(ScanErrorKind::Eof),
-            Err(NotEof(err)) => return Err(ScanErr(err.clone())),
+            Err(NotEof(err)) => return Err(ScanErr(err)),
         };
 
         let Some(result) = mapper(tok).map_err(ScanErr)? else {
@@ -130,8 +130,10 @@ impl TokenConsumer<TokenKind, bool> for TokenBuffer<'_> {
 mod tests {
     use super::*;
     use crate::lexer::IdentifierKind::BasicIdentifier;
+    use crate::parser::error::PartialParserError;
     use crate::parser::result::ScanErrorKind::NoMatch;
     use crate::parser::ParserErrorKind::Syntax;
+    use postgres_basics::fn_info;
     use TokenKind::Identifier;
 
     #[test]
@@ -179,8 +181,16 @@ mod tests {
         let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
-        let result: ScanResult<()> = buffer.consume(|_| Err(Syntax));
-        assert_eq!(Err(ScanErr(Syntax)), result);
+        let actual: ScanResult<()> = buffer.consume(|_| Err(
+            PartialParserError::syntax(fn_info!(""))
+        ));
+
+        assert_matches!(actual, Err(ScanErr(_)));
+        let ScanErr(actual) = actual.unwrap_err() else {
+            unreachable!("already checked for Err(ScanErr(_))")
+        };
+
+        assert_eq!(&Syntax, actual.report().source());
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
     }
 
@@ -209,7 +219,7 @@ mod tests {
         let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
-        let result = buffer.consume(|tok| Some(tok));
+        let result = buffer.consume(Some);
         assert_eq!(Ok(Identifier(BasicIdentifier)), result);
         assert_eq!(Location::new(4..15, 1, 5), buffer.current_location());
     }

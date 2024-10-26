@@ -12,7 +12,7 @@ impl LexerError {
 
     #[inline(always)]
     pub fn new(source: LexerErrorKind, fn_info: &'static FnInfo, location: Location) -> Self {
-        Self { 
+        Self {
             report: SimpleErrorReport::new(source, fn_info),
             location
         }
@@ -21,23 +21,6 @@ impl LexerError {
     #[inline(always)]
     pub fn source(&self) -> LexerErrorKind {
         *self.report.source()
-    }
-}
-
-impl Error for LexerError {
-    #[inline(always)]
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        Error::source(&self.report)
-    }
-}
-
-impl Display for LexerError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let sql_state= self.sql_state();
-        let source = self.source();
-        let position = self.location.range().start + 1;
-        writeln!(f, "[{sql_state}] ERROR: {source}")?;
-        write!(f, "Position: {position}")
     }
 }
 
@@ -87,5 +70,3 @@ use postgres_basics::elog::{ErrorReport, HasFnInfo, HasSqlState, SimpleErrorRepo
 use postgres_basics::sql_state::SqlState;
 use postgres_basics::{FnInfo, Location};
 use std::borrow::Cow;
-use std::error::Error;
-use std::fmt::{Display, Formatter};

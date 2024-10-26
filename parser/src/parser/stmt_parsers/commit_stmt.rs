@@ -1,5 +1,6 @@
 impl Parser<'_> {
     pub(in crate::parser) fn commit_stmt(&mut self) -> ParseResult<TransactionStmt> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::commit_stmt";
 
         /*
             COMMIT opt_transaction opt_transaction_chain
@@ -7,7 +8,7 @@ impl Parser<'_> {
         */
 
         if self.buffer.consume_kw_eq(Prepared).optional()?.is_some() {
-            let string = self.string().required()?;
+            let string = self.string().required(fn_info!(FN_NAME))?;
             return Ok(TransactionStmt::CommitPrepared(string))
         }
 
@@ -71,3 +72,4 @@ use crate::lexer::Keyword::Prepared;
 use crate::parser::ast_node::TransactionStmt;
 use crate::parser::result::{Optional, Required};
 use crate::parser::{ParseResult, Parser};
+use postgres_basics::fn_info;

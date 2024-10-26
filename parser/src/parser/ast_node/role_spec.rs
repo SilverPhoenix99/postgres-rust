@@ -9,16 +9,21 @@ pub enum RoleSpec {
 
 impl RoleSpec {
     pub fn into_role_id(self) -> ParseResult<CowStr> {
+        const FN_NAME: &str = "postgres_parser::parser::ast_node::RoleSpec::into_role_id";
         match self {
             Self::Name(role) => Ok(role),
-            Self::Public => Err(ReservedRoleSpec("public")),
-            Self::CurrentRole => Err(ForbiddenRoleSpec("CURRENT_ROLE")),
-            Self::CurrentUser => Err(ForbiddenRoleSpec("CURRENT_USER")),
-            Self::SessionUser => Err(ForbiddenRoleSpec("SESSION_USER")),
+            Self::Public => Err(PartialParserError::new(ReservedRoleSpec("public"), fn_info!(FN_NAME))),
+            Self::CurrentRole => Err(PartialParserError::new(ForbiddenRoleSpec("CURRENT_ROLE"), fn_info!(FN_NAME))),
+            Self::CurrentUser => Err(PartialParserError::new(ForbiddenRoleSpec("CURRENT_USER"), fn_info!(FN_NAME))),
+            Self::SessionUser => Err(PartialParserError::new(ForbiddenRoleSpec("SESSION_USER"), fn_info!(FN_NAME))),
         }
     }
 }
 
-use crate::parser::ast_node::CowStr;
-use crate::parser::ParserErrorKind::{ForbiddenRoleSpec, ReservedRoleSpec};
-use crate::parser::ParseResult;
+use crate::parser::{
+    ast_node::CowStr,
+    error::PartialParserError,
+    ParseResult,
+    ParserErrorKind::{ForbiddenRoleSpec, ReservedRoleSpec}
+};
+use postgres_basics::fn_info;

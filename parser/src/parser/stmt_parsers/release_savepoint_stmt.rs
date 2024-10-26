@@ -1,5 +1,6 @@
 impl Parser<'_> {
     pub(in crate::parser) fn release_savepoint_stmt(&mut self) -> ParseResult<TransactionStmt> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::release_savepoint_stmt";
 
         /*
         TransactionStmt:
@@ -9,7 +10,7 @@ impl Parser<'_> {
 
         self.buffer.consume_kw_eq(Savepoint).optional()?;
 
-        let name = self.col_id().required()?;
+        let name = self.col_id().required(fn_info!(FN_NAME))?;
 
         Ok(TransactionStmt::Release(name))
     }
@@ -37,3 +38,4 @@ use crate::lexer::Keyword::Savepoint;
 use crate::parser::ast_node::TransactionStmt;
 use crate::parser::result::{Optional, Required};
 use crate::parser::{ParseResult, Parser};
+use postgres_basics::fn_info;

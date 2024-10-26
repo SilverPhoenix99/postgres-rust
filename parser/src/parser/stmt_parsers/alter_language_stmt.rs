@@ -1,27 +1,28 @@
 impl Parser<'_> {
     pub(in crate::parser) fn alter_language_stmt(&mut self) -> ParseResult<RawStmt> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::alter_language_stmt";
 
         /*
             ALTER (PROCEDURAL)? LANGUAGE ColId OWNER TO RoleSpec # AlterOwnerStmt
             ALTER (PROCEDURAL)? LANGUAGE ColId RENAME TO ColId # RenameStmt
         */
 
-        let name = self.col_id().required()?;
+        let name = self.col_id().required(fn_info!(FN_NAME))?;
 
         let action = self.buffer.consume_kws(|kw| matches!(kw, Owner | Rename))
-            .required()?;
+            .required(fn_info!(FN_NAME))?;
 
-        self.buffer.consume_kw_eq(To).required()?;
+        self.buffer.consume_kw_eq(To).required(fn_info!(FN_NAME))?;
 
         let stmt = if action == Owner {
-            let role = self.role_spec().required()?;
+            let role = self.role_spec().required(fn_info!(FN_NAME))?;
             AlterOwnerStmt::new(
                 AlterOwnerTarget::Language(name),
                 role
             ).into()
         }
         else {
-            let new_name = self.col_id().required()?;
+            let new_name = self.col_id().required(fn_info!(FN_NAME))?;
             RenameStmt::new(
                 RenameTarget::Language(name),
                 new_name
@@ -69,3 +70,4 @@ use crate::lexer::Keyword::{Owner, Rename, To};
 use crate::parser::ast_node::{AlterOwnerStmt, AlterOwnerTarget, RawStmt, RenameStmt, RenameTarget};
 use crate::parser::result::Required;
 use crate::parser::{ParseResult, Parser};
+use postgres_basics::fn_info;

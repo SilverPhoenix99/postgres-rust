@@ -1,12 +1,13 @@
 impl Parser<'_> {
     /// Alias: `NotifyStmt`
     pub(in crate::parser) fn notify_stmt(&mut self) -> ParseResult<NotifyStmt> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::notify_stmt";
 
         /*
             NOTIFY ColId (',' SCONST)?
         */
 
-        let condition_name = self.col_id().required()?;
+        let condition_name = self.col_id().required(fn_info!(FN_NAME))?;
 
         if self.buffer.consume_eq(Comma).optional()?.is_none() {
             /*
@@ -15,7 +16,7 @@ impl Parser<'_> {
             return Ok(NotifyStmt::new(condition_name))
         }
 
-        let payload = self.string().required()?;
+        let payload = self.string().required(fn_info!(FN_NAME))?;
 
         Ok(NotifyStmt::with_payload(condition_name, payload))
     }
@@ -44,3 +45,4 @@ use crate::lexer::TokenKind::Comma;
 use crate::parser::ast_node::NotifyStmt;
 use crate::parser::result::{Optional, Required};
 use crate::parser::{ParseResult, Parser};
+use postgres_basics::fn_info;
