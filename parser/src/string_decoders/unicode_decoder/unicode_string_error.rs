@@ -3,15 +3,15 @@ pub enum UnicodeStringError {
 
     /// When the result of parsing the `\XXXX`|`\+XXXXXX` escape gives back invalid UTF-16/UTF-32.
     #[error("invalid Unicode escape value")]
-    InvalidUnicodeValue(usize),
+    InvalidUnicodeValue(u32),
 
     /// When
     #[error("invalid Unicode surrogate pair")]
-    InvalidUnicodeSurrogatePair(usize),
+    InvalidUnicodeSurrogatePair(u32),
 
     /// When the format of the escape doesn't match \XXXX or \+XXXXXX.
     #[error("invalid Unicode escape")]
-    InvalidUnicodeEscape(usize),
+    InvalidUnicodeEscape(u32),
 }
 
 impl HasSqlState for UnicodeStringError {
