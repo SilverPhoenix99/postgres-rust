@@ -130,13 +130,8 @@ impl TokenConsumer<TokenKind, bool> for TokenBuffer<'_> {
 mod tests {
     use super::*;
     use crate::lexer::IdentifierKind::BasicIdentifier;
-    use crate::lexer::{LexerError, LexerErrorKind};
     use crate::parser::result::ScanErrorKind::NoMatch;
-    use crate::parser::ParserErrorKind;
     use crate::parser::ParserErrorKind::Syntax;
-    use crate::string_decoders::{ExtendedStringError, UnicodeStringError};
-    use postgres_basics::elog::SimpleErrorReport;
-    use postgres_basics::FnInfo;
     use TokenKind::Identifier;
 
     #[test]

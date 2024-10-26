@@ -152,7 +152,7 @@ impl<'src> ExtendedStringDecoder<'src> {
         ExtendedStringResult { result, warning }
     }
 
-    fn consume_unicode(&mut self, unicode_len: usize) -> Result<char, ExtendedStringError> {
+    fn consume_unicode(&mut self, unicode_len: u32) -> Result<char, ExtendedStringError> {
 
         let start_index = self.input.current_index() - 2; // include `\u`
 

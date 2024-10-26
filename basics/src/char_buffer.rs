@@ -1,5 +1,5 @@
 /// A tuple of `(line, column)`.
-pub type Position = (usize, usize);
+pub type Position = (u32, u32);
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum UnicodeChar {
@@ -20,13 +20,14 @@ pub enum UnicodeCharError {
 
 #[derive(Debug, Clone)]
 struct LineBuffer {
-    lines: Vec<usize> // where each line begins, in bytes (i.e., col 1)
+    lines: Vec<u32> // where each line begins, in bytes (i.e., col 1)
 }
 
 #[derive(Debug, Clone)]
 pub struct CharBuffer<'src> {
     source: &'src str,
-    current_index: usize, // in bytes
+    // The limit for stmt strings is 1gb
+    current_index: u32, // in bytes
     lines: LineBuffer
 }
 
@@ -48,11 +49,11 @@ impl<'src> CharBuffer<'src> {
 
     #[inline(always)]
     pub fn remainder(&self) -> &'src str {
-        &self.source[self.current_index..]
+        &self.source[self.current_index as usize..]
     }
 
     #[inline(always)]
-    pub fn current_index(&self) -> usize {
+    pub fn current_index(&self) -> u32 {
         self.current_index
     }
 
@@ -62,7 +63,7 @@ impl<'src> CharBuffer<'src> {
     }
 
     #[inline(always)]
-    pub fn position_at(&self, index: usize) -> Position {
+    pub fn position_at(&self, index: u32) -> Position {
         self.lines.position(index)
     }
 
@@ -74,7 +75,7 @@ impl<'src> CharBuffer<'src> {
 
     /// Panics when `start_index > self.current_index()`.
     #[inline]
-    pub fn location_starting_at(&self, start_index: usize) -> Location {
+    pub fn location_starting_at(&self, start_index: u32) -> Location {
         assert!(start_index <= self.current_index, "start_index shouldn't be past current_index");
         let (line, col) = self.lines.position(start_index);
         Location::new(start_index..self.current_index, line, col)
@@ -82,10 +83,10 @@ impl<'src> CharBuffer<'src> {
 
     /// Panics if `start_index > self.current_index()`, or `start_index` is not at a start of a char.
     #[inline]
-    pub fn slice(&self, start_index: usize) -> &'src str {
+    pub fn slice(&self, start_index: u32) -> &'src str {
         assert!(start_index <= self.current_index, "start_index shouldn't be past current_index");
-        assert!(self.source.is_char_boundary(start_index), "start_index must be at the 1st byte of a UTF-8 char");
-        &self.source[start_index..self.current_index]
+        assert!(self.source.is_char_boundary(start_index as usize), "start_index must be at the 1st byte of a UTF-8 char");
+        &self.source[start_index as usize..self.current_index as usize]
     }
 
     pub fn peek(&self) -> Option<char> {
@@ -99,7 +100,7 @@ impl<'src> CharBuffer<'src> {
 
     #[inline(always)]
     pub fn eof(&self) -> bool {
-        self.current_index == self.source.len()
+        self.current_index as usize == self.source.len()
     }
 
     /// Consumes a char if it matches `expected`.
@@ -120,7 +121,7 @@ impl<'src> CharBuffer<'src> {
 
     /// Consumes chars while they're available and `pred` returns `true`.
     /// Returns the number of **bytes** (not chars) successfully consumed.
-    pub fn consume_while(&mut self, pred: impl Fn(char) -> bool) -> usize {
+    pub fn consume_while(&mut self, pred: impl Fn(char) -> bool) -> u32 {
 
         let start_index = self.current_index;
         let chars = self.remainder()
@@ -128,7 +129,7 @@ impl<'src> CharBuffer<'src> {
             .take_while(|c| pred(*c));
         for c in chars {
             self.buffer_new_line();
-            self.current_index += c.len_utf8();
+            self.current_index += c.len_utf8() as u32;
         }
 
         self.current_index - start_index
@@ -139,25 +140,25 @@ impl<'src> CharBuffer<'src> {
 
         self.buffer_new_line();
         let c = self.peek()?;
-        self.current_index += c.len_utf8();
+        self.current_index += c.len_utf8() as u32;
 
         Some(c)
     }
 
     /// Consumes as many chars as there are available, up to `num_chars`.
-    pub fn consume_many(&mut self, num_chars: usize) -> &'src str {
+    pub fn consume_many(&mut self, num_chars: u32) -> &'src str {
 
         let start_index = self.current_index;
         let remainder = self.remainder();
         let chars = remainder.chars()
-            .take(num_chars);
+            .take(num_chars as usize);
         for c in chars {
             self.buffer_new_line();
-            self.current_index += c.len_utf8();
+            self.current_index += c.len_utf8() as u32;
         }
 
         let len = self.current_index - start_index;
-        &remainder[..len]
+        &remainder[..len as usize]
     }
 
     fn buffer_new_line(&mut self) {
@@ -180,7 +181,7 @@ impl<'src> CharBuffer<'src> {
         if c != '\n' {
             // Old Mac style CR
             // Push only if not followed by a \n.
-            self.lines.push(self.current_index + 1 + c.len_utf8())  // '\r' => len 1
+            self.lines.push(self.current_index + 1 + c.len_utf8() as u32)  // '\r' => len 1
         }
 
         // Windows style CRLF
@@ -194,18 +195,18 @@ impl<'src> CharBuffer<'src> {
             return
         }
 
-        let lead = &self.source[0..self.current_index];
+        let lead = &self.source[0..self.current_index as usize];
         let Some(c) = lead.chars().next_back() else { return };
 
-        self.current_index -= c.len_utf8();
+        self.current_index -= c.len_utf8() as u32;
     }
 
     #[inline]
     /// Use sparingly!
     ///
     /// Panics if `index` is not at a char boundary (i.e., 1st byte of a char)
-    pub fn seek(&mut self, index: usize) {
-        let index = min(index, self.source.len());
+    pub fn seek(&mut self, index: u32) {
+        let index = min(index, self.source.len() as u32);
         self.current_index = index;
     }
 
@@ -213,7 +214,7 @@ impl<'src> CharBuffer<'src> {
     pub fn consume_string(&mut self, expected: &str) -> bool {
 
         if self.remainder().starts_with(expected) {
-            self.current_index += expected.len();
+            self.current_index += expected.len() as u32;
             return true
         }
         false
@@ -223,16 +224,16 @@ impl<'src> CharBuffer<'src> {
     /// represented in either in UTF-16 or UTF-32.
     ///
     /// E.g.: `"0061"` outputs `Utf8('a')`
-    pub fn consume_unicode_char(&mut self, unicode_len: usize) -> Result<UnicodeChar, UnicodeCharError> {
+    pub fn consume_unicode_char(&mut self, unicode_len: u32) -> Result<UnicodeChar, UnicodeCharError> {
 
         debug_assert!(unicode_len <= 8, "unicode encoded chars should be <= 8 chars");
 
         let slice = self.remainder();
-        if slice.len() < unicode_len {
+        if slice.len() < unicode_len as usize {
             return Err(LenTooShort)
         }
 
-        let slice = &slice[..unicode_len];
+        let slice = &slice[..unicode_len as usize];
 
         let Ok(c) = u32::from_str_radix(slice, 16) else { return Err(LenTooShort) };
 
@@ -285,7 +286,7 @@ impl LineBuffer {
 
     /// Saves the index where a line begins.
     /// This means that the index matches where column 1 is on that line.
-    pub fn push(&mut self, line_start_index: usize) {
+    pub fn push(&mut self, line_start_index: u32) {
 
         if
             self.lines.is_empty()
@@ -302,13 +303,13 @@ impl LineBuffer {
     }
 
     /// Calculates the line and column from a given index.
-    pub fn position(&self, index: usize) -> Position {
+    pub fn position(&self, index: u32) -> Position {
 
         match self.lines.binary_search(&index) {
-            Ok(index) => (index + 1, 1),
+            Ok(index) => ((index + 1) as u32, 1),
             Err(line) => {
                 let line_start = self.lines[line - 1];
-                (line, index - line_start + 1)
+                (line as u32, index - line_start + 1)
             }
         }
     }

@@ -8,12 +8,12 @@ pub enum ExtendedStringError {
 
     /// When the result of parsing the `\uXXXX`|`\UXXXXXXXX` escape gives back invalid UTF-16/UTF-32.
     #[error("invalid Unicode escape value")]
-    InvalidUnicodeValue(usize),
+    InvalidUnicodeValue(u32),
 
     /// Invalid UTF-16 surrogate pair.
     // TODO: yyerror, aka scanner_yyerror
     #[error("invalid Unicode surrogate pair")]
-    InvalidUnicodeSurrogatePair(usize),
+    InvalidUnicodeSurrogatePair(u32),
 
     /// When the string uses the unsafe `\'` escape
     #[error(r"unsafe use of \' in a string literal")]
@@ -21,7 +21,7 @@ pub enum ExtendedStringError {
 
     /// When the format of the escape doesn't match \uXXXX or \UXXXXXXXX.
     #[error("invalid Unicode escape")]
-    InvalidUnicodeEscape(usize),
+    InvalidUnicodeEscape(u32),
 }
 
 impl HasSqlState for ExtendedStringError {

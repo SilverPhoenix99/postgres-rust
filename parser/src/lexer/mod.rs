@@ -258,7 +258,7 @@ impl<'src> Lexer<'src> {
                         .take_while(|c| **c == b'+' || **c == b'-')
                         .count();
                     // SAFETY: only returns ASCII chars ('+' and '-')
-                    self.buffer.seek(self.buffer.current_index() - num);
+                    self.buffer.seek(self.buffer.current_index() - num as u32);
 
                     let len = op.len() - num;
                     op = &op[..len];
@@ -434,7 +434,7 @@ impl<'src> Lexer<'src> {
         let start_index = self.buffer.current_index();
 
         // /(_?{digit}+)*/
-        let mut consumed = usize::MAX;
+        let mut consumed = u32::MAX;
         while consumed > 0 {
             self.buffer.consume_char('_');
             consumed = self.buffer.consume_while(&is_digit);
@@ -1004,9 +1004,9 @@ mod tests {
 
     fn assert_tok(
         expected_kind: TokenKind,
-        range: Range<usize>,
-        line: usize,
-        col: usize,
+        range: Range<u32>,
+        line: u32,
+        col: u32,
         actual: Option<LexerResult>
     ) {
         let expected_loc = Location::new(range, line, col);
@@ -1021,9 +1021,9 @@ mod tests {
 
     fn assert_err(
         expected_err: LexerErrorKind,
-        range: Range<usize>,
-        line: usize,
-        col: usize,
+        range: Range<u32>,
+        line: u32,
+        col: u32,
         actual: Option<LexerResult>
     ) {
         let expected_loc = Location::new(range, line, col);
