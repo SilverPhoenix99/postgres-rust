@@ -11,12 +11,8 @@ impl Parser<'_> {
 
         let trigger = self.col_id().required()?;
 
-        if self.buffer.eof() {
-            return Err(Default::default())
-        }
-
         let op = self.buffer.consume_kws(|kw| matches!(kw, Owner | Rename))
-            .optional()?;
+            .try_match()?;
 
         let Some(op) = op else {
             /*
@@ -157,7 +153,7 @@ use crate::{
     lexer::Keyword::{Always, Disable, Enable, Owner, Rename, Replica, To, Trigger},
     parser::{
         ast_node::{AlterEventTrigStmt, AlterOwnerStmt, AlterOwnerTarget, RawStmt, RenameStmt, RenameTarget},
-        result::{Optional, Required},
+        result::{Optional, Required, TryMatch},
         token_buffer::TokenConsumer,
         EventTriggerState::{self, Disabled, FiresAlways, FiresOnOrigin, FiresOnReplica},
         ParseResult,

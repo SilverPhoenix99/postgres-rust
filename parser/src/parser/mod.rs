@@ -441,12 +441,8 @@ impl<'src> Parser<'src> {
 
         self.buffer.consume_eq(OpenParenthesis)?;
 
-        if self.buffer.eof() {
-            return Err(Default::default())
-        }
-
         let exprs = self.expr_list()
-            .optional()?
+            .try_match()?
             .unwrap_or_else(Vec::new);
 
         self.buffer.consume_eq(CloseParenthesis).required()?;
@@ -1177,7 +1173,8 @@ use self::{
         Required,
         ScanErrorKind::{self, Eof, NoMatch, ScanErr},
         ScanResult,
-        ScanResultTrait
+        ScanResultTrait,
+        TryMatch,
     },
     string_parser::StringParser,
     token_buffer::{TokenBuffer, TokenConsumer}
@@ -1189,7 +1186,4 @@ use crate::lexer::{
     TokenKind::{self, Comma, Dot, NumberLiteral}
 };
 use postgres_basics::{ascii, Located, Location};
-use std::{
-    borrow::Cow,
-    mem
-};
+use std::{borrow::Cow, mem};

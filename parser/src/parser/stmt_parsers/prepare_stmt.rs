@@ -6,11 +6,7 @@ impl Parser<'_> {
             PREPARE ColId ( '(' type_list ')' )? AS PreparableStmt
         */
 
-        if self.buffer.eof() {
-            return Err(Default::default())
-        }
-
-        let tx = self.buffer.consume_kw_eq(Transaction).optional()?;
+        let tx = self.buffer.consume_kw_eq(Transaction).try_match()?;
 
         if tx.is_some() {
             let tx_id = self.string().required()?;
@@ -35,7 +31,12 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::Transaction;
-use crate::parser::ast_node::RawStmt::{self, PrepareTransactionStmt};
-use crate::parser::result::{Optional, Required};
-use crate::parser::{ParseResult, Parser};
+use crate::{
+    lexer::Keyword::Transaction,
+    parser::{
+        ast_node::RawStmt::{self, PrepareTransactionStmt},
+        result::{Required, TryMatch},
+        ParseResult,
+        Parser
+    },
+};
