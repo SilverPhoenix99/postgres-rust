@@ -93,6 +93,31 @@ impl<T> Required<T> for EofResult<T> {
     }
 }
 
+pub(super) trait TryMatch<T> {
+    fn try_match(self) -> ParseResult<Option<T>>;
+}
+
+impl<T> TryMatch<T> for ScanResult<T> {
+    fn try_match(self) -> ParseResult<Option<T>> {
+        match self {
+            Ok(ok) => Ok(Some(ok)),
+            Err(NoMatch) => Ok(None),
+            Err(ScanErrorKind::Eof) => Err(Default::default()),
+            Err(ScanErr(err)) => Err(err),
+        }
+    }
+}
+
+impl<T> TryMatch<T> for EofResult<T> {
+    fn try_match(self) -> ParseResult<Option<T>> {
+        match self {
+            Ok(ok) => Ok(Some(ok)),
+            Err(EofErrorKind::Eof) => Err(Default::default()),
+            Err(NotEof(err)) => Err(err),
+        }
+    }
+}
+
 pub(super) trait Optional<T> {
     fn optional(self) -> ParseResult<Option<T>>;
 }

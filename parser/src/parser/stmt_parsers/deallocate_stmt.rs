@@ -9,11 +9,7 @@ impl Parser<'_> {
 
         self.buffer.consume_kw_eq(Prepare).optional()?;
 
-        if self.buffer.eof() {
-            return Err(Default::default())
-        }
-
-        if self.buffer.consume_kw_eq(All).optional()?.is_some() {
+        if self.buffer.consume_kw_eq(All).try_match()?.is_some() {
             return Ok(OneOrAll::All)
         }
 
@@ -42,12 +38,11 @@ mod tests {
     }
 }
 
-use crate::parser::result::Required;
 use crate::{
     lexer::Keyword::{All, Prepare},
     parser::{
         ast_node::OneOrAll,
-        result::Optional,
+        result::{Optional, Required, TryMatch},
         ParseResult,
         Parser
     },
