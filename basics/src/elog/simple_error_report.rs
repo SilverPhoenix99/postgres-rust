@@ -1,10 +1,8 @@
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct SimpleErrorReport<T> {
     source: T,
     fn_info: &'static FnInfo,
 }
-
-impl<T: Eq> Eq for SimpleErrorReport<T> {}
 
 impl<T> SimpleErrorReport<T> {
     #[inline(always)]
@@ -39,9 +37,7 @@ impl<T: Error> Display for SimpleErrorReport<T> {
     }
 }
 
-impl<T: Error + 'static> ErrorReport for SimpleErrorReport<T> {}
-
-use crate::elog::{ErrorReport, HasFnInfo};
+use crate::elog::HasFnInfo;
 use crate::FnInfo;
 use std::error::Error;
 use std::fmt::{Display, Formatter};

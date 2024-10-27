@@ -149,7 +149,7 @@ mod tests {
             unreachable!("already checked for Err(ScanErr(_))");
         };
 
-        assert_eq!(&expected, actual.report().source());
+        assert_eq!(&expected, actual.source());
     }
 }
 

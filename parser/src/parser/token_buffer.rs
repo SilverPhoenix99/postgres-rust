@@ -190,7 +190,7 @@ mod tests {
             unreachable!("already checked for Err(ScanErr(_))")
         };
 
-        assert_eq!(&Syntax, actual.report().source());
+        assert_eq!(&Syntax, actual.source());
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
     }
 
