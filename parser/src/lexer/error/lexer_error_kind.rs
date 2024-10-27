@@ -1,7 +1,7 @@
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
 pub enum LexerErrorKind {
 
-    #[error("Unexpected character {0:?}", *(.unknown) as char)]
+    #[error("Unexpected character {0:?}", *(.unknown))]
     UnexpectedChar { unknown: char },
 
     #[error("unterminated /* comment")]
