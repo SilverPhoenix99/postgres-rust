@@ -4,6 +4,7 @@ mod config;
 mod consume_macro;
 mod error;
 mod expr_parsers;
+mod func_name;
 mod ident_parser;
 mod op_parsers;
 mod result;
@@ -486,11 +487,11 @@ impl<'src> Parser<'src> {
         */
 
         let prefix = self.col_id()?;
-        self.attrs(prefix)
+        self.attrs(prefix).map_err(From::from)
     }
 
     /// Post-condition: Vec is **Not** empty
-    fn attrs(&mut self, prefix: CowStr) -> ScanResult<QnName> {
+    fn attrs(&mut self, prefix: CowStr) -> ParseResult<QnName> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::attrs";
 
         // A prefix token is passed to prevent a right shift of the Vec later on,
