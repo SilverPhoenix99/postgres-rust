@@ -73,6 +73,9 @@ impl<T> Required<T> for EofResult<T> {
 }
 
 pub(super) trait TryMatch<T> {
+    /// `Eof` becomes `Err(Syntax)`
+    ///
+    /// `NoMatch` becomes `Ok(None)`
     fn try_match(self, fn_info: &'static FnInfo) -> ParseResult<Option<T>>;
 }
 

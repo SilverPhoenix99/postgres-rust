@@ -59,6 +59,11 @@ impl SqlReport for ParserError {}
 
 impl ParseReport for ParserError {}
 
+macro_rules! syntax_err {
+    ($fn_name:expr) => { $crate::parser::error::PartialParserError::syntax(fn_info!($fn_name)).into() };
+}
+pub(super) use syntax_err;
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub(crate) struct PartialParserError {
     source: ParserErrorKind,
