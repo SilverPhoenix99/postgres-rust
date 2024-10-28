@@ -651,6 +651,23 @@ impl<'src> Parser<'src> {
         })
     }
 
+    fn opt_unique_null_treatment(&mut self) -> ScanResult<bool> {
+        use Keyword::{Distinct, Not, Nulls};
+        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_unique_null_treatment";
+
+        if self.buffer.consume_kw_eq(Nulls).optional()?.is_none() {
+            return Ok(true)
+        }
+
+        let result = self.buffer.consume_kw_eq(Not)
+            .try_match(fn_info!(FN_NAME))?
+            .is_none();
+
+        self.buffer.consume_kw_eq(Distinct).required(fn_info!(FN_NAME))?;
+
+        Ok(result)
+    }
+
     /// Aliases:
     /// * `ColId`
     /// * `name`
@@ -1150,6 +1167,15 @@ mod tests {
         let actual = parser.uescape().unwrap();
 
         assert_eq!('!', actual);
+    }
+
+    #[test_case("", true)]
+    #[test_case("nulls distinct", true)]
+    #[test_case("nulls not distinct", false)]
+    fn test_opt_unique_null_treatment(source: &str, expected: bool) {
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        assert_eq!(Ok(expected), parser.opt_unique_null_treatment());
     }
 }
 
