@@ -108,11 +108,21 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Add, DropKw, Rename, To, User};
-use crate::parser::ast_node::AlterRoleOption::RoleMembers;
-use crate::parser::ast_node::RenameTarget::Role;
-use crate::parser::ast_node::{AlterRoleAction, AlterRoleStmt, RawStmt, RenameStmt, RoleSpec};
-use crate::parser::result::Required;
-use crate::parser::{ParseResult, Parser};
+use crate::{
+    lexer::Keyword::{Add, DropKw, Rename, To, User},
+    parser::{
+        ast_node::{
+            AlterRoleAction,
+            AlterRoleOption::RoleMembers,
+            AlterRoleStmt,
+            RawStmt,
+            RenameStmt,
+            RenameTarget::Role,
+            RoleSpec
+        },
+        result::Required,
+        ParseResult,
+        Parser
+    }
+};
 use postgres_basics::{fn_info, Location};
-use crate::parser::error::PartialParserError;

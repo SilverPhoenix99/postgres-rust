@@ -8,7 +8,7 @@ pub enum RoleSpec {
 }
 
 impl RoleSpec {
-    pub fn into_role_id(self) -> ParseResult<CowStr> {
+    pub(in crate::parser) fn into_role_id(self) -> ParseResult<CowStr> {
         const FN_NAME: &str = "postgres_parser::parser::ast_node::RoleSpec::into_role_id";
         match self {
             Self::Name(role) => Ok(role),
