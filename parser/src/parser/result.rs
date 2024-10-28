@@ -51,6 +51,7 @@ pub(super) type ScanResult<T> = Result<T, ScanErrorKind>;
 pub(super) type EofResult<T> = Result<T, EofErrorKind>;
 
 pub(super) trait Required<T> {
+    /// `Eof` and `NoMatch` become `Err(Syntax)`
     fn required(self, fn_info: &'static FnInfo) -> ParseResult<T>;
 }
 
@@ -101,6 +102,7 @@ impl<T> TryMatch<T> for EofResult<T> {
 }
 
 pub(super) trait Optional<T> {
+    /// `Eof` and `NoMatch` become `Ok(None)`
     fn optional(self) -> ParseResult<Option<T>>;
 }
 
