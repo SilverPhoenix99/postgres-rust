@@ -804,27 +804,22 @@ fn parse_number(value: &str, radix: u32) -> Option<UnsignedNumber> {
 mod tests {
     use super::*;
     use postgres_basics::guc::BackslashQuote;
+    use test_case::test_case;
 
     pub(in crate::parser) const DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding);
 
-    #[test]
-    fn test_toplevel_stmt() {
-        let sources = [
-            "begin transaction",
-            "start transaction",
-            "end transaction",
-        ];
+    #[test_case("begin transaction")]
+    #[test_case("start transaction")]
+    #[test_case("end transaction")]
+    fn test_toplevel_stmt(source: &str) {
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let actual = parser.toplevel_stmt();
 
-        for source in sources {
-            let mut parser = Parser::new(source, DEFAULT_CONFIG);
-            let actual = parser.toplevel_stmt();
-
-            // This only quickly tests that statement types aren't missing.
-            // More in-depth testing is within each statement's module.
-            assert_matches!(actual, Ok(_),
-                r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
-            )
-        }
+        // This only quickly tests that statement types aren't missing.
+        // More in-depth testing is within each statement's module.
+        assert_matches!(actual, Ok(_),
+            r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
+        )
     }
 
     #[test]
@@ -1015,31 +1010,23 @@ mod tests {
         assert_eq!(Ok(123), parser.i32_literal_paren());
     }
 
-    #[test]
-    fn test_character() {
-        use CharacterSystemType::{Bpchar, Varchar};
-
-        let sources = [
-            (Varchar, "varchar"),
-            (Varchar, "char varying"),
-            (Varchar, "character varying"),
-            (Varchar, "nchar varying"),
-            (Varchar, "national char varying"),
-            (Varchar, "national character varying"),
-            (Bpchar, "char"),
-            (Bpchar, "character"),
-            (Bpchar, "nchar"),
-            (Bpchar, "national char"),
-            (Bpchar, "national character"),
-        ];
-
-        for (expected, source) in sources {
-            let mut parser = Parser::new(source, DEFAULT_CONFIG);
-            let actual = parser.character();
-            assert_eq!(Ok(expected), actual,
-                r"expected {expected:?} for source {source:?} but actually got {actual:?}",
-            );
-        }
+    #[test_case("varchar", CharacterSystemType::Varchar)]
+    #[test_case("char varying", CharacterSystemType::Varchar)]
+    #[test_case("character varying", CharacterSystemType::Varchar)]
+    #[test_case("nchar varying", CharacterSystemType::Varchar)]
+    #[test_case("national char varying", CharacterSystemType::Varchar)]
+    #[test_case("national character varying", CharacterSystemType::Varchar)]
+    #[test_case("char", CharacterSystemType::Bpchar)]
+    #[test_case("character", CharacterSystemType::Bpchar)]
+    #[test_case("nchar", CharacterSystemType::Bpchar)]
+    #[test_case("national char", CharacterSystemType::Bpchar)]
+    #[test_case("national character", CharacterSystemType::Bpchar)]
+    fn test_character(source: &str, expected: CharacterSystemType) {
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let actual = parser.character();
+        assert_eq!(Ok(expected), actual,
+            r"expected {expected:?} for source {source:?} but actually got {actual:?}",
+        )
     }
 
     #[test]
