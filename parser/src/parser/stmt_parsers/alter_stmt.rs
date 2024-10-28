@@ -23,7 +23,7 @@ impl Parser<'_> {
                 Ok(Kw(Large)) => self.alter_large_object_stmt(),
             }
             err {
-                Ok(_) | Err(EofErrorKind::Eof) => Err(PartialParserError::syntax(fn_info!(FN_NAME))),
+                Ok(_) | Err(EofErrorKind::Eof) => Err(syntax_err!(FN_NAME)),
                 Err(NotEof(err)) => Err(err.clone()),
             }
         }
@@ -63,7 +63,7 @@ use crate::{
     parser::{
         ast_node::RawStmt,
         consume,
-        error::PartialParserError,
+        error::syntax_err,
         result::{
             EofErrorKind::{self, NotEof},
             Required

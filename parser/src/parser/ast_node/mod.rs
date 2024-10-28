@@ -547,10 +547,30 @@ impl BoolExpr {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum Indirection {
+    /// `.*`
+    All,
+    /// `.ColLabel`
+    Property(CowStr),
+    /// `[expr]`
+    Index(ExprNode),
+    /// `[:]`
+    FullSlice,
+    /// `[ expr : ]`
+    SliceFrom(ExprNode),
+    /// `[ : expr ]`
+    SliceTo(ExprNode),
+    /// `[ expr : expr ]`
+    Slice(ExprNode, ExprNode),
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum ExprNode {
+    SetToDefault,
     Literal(AstLiteral),
     SystemType(SystemType),
     Typecast((/* TODO */)),
+    Indirection(Vec<Indirection>),
 
     BinaryExpr(Box<BinaryExpr>),
     UnaryExpr(Box<UnaryExpr>),

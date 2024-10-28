@@ -92,7 +92,7 @@ impl Parser<'_> {
         if range.contains(&2) {
             if let Some(op) = self.qual_op().no_match_to_option()? {
                 return Ok(Op::QnOperator(op))
-            };
+            }
         }
 
         self.buffer.consume(|tok| {
@@ -179,7 +179,7 @@ impl Parser<'_> {
             let right = self.b_expr_prec(prec).required(fn_info!(FN_NAME))?;
             let expr = UnaryExpr::new(op, right);
             return Ok(expr.into())
-        };
+        }
 
         // TODO: c_expr()
 

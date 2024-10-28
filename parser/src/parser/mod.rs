@@ -98,7 +98,7 @@ impl<'src> Parser<'src> {
 
         // if it's not Eof, then something didn't match properly
         if !self.buffer.eof() {
-            return Err(PartialParserError::syntax(fn_info!(FN_NAME)))
+            return Err(syntax_err!(FN_NAME))
         }
 
         Ok(stmts)
@@ -749,7 +749,7 @@ impl<'src> Parser<'src> {
 
         uescape.map_err(|err| match err {
             Eof => PartialParserError::new(InvalidUescapeDelimiter, fn_info!(FN_NAME)),
-            NoMatch => PartialParserError::syntax(fn_info!(FN_NAME)),
+            NoMatch => syntax_err!(FN_NAME),
             ScanErr(err) => err
         })
     }
@@ -1180,7 +1180,7 @@ use self::{
         UnsignedNumber
     },
     consume_macro::consume,
-    error::{ParserErrorKind::*, PartialParserError},
+    error::{syntax_err, ParserErrorKind::*, PartialParserError},
     ident_parser::IdentifierParser,
     result::{
         Optional,

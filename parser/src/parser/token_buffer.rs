@@ -130,7 +130,7 @@ impl TokenConsumer<TokenKind, bool> for TokenBuffer<'_> {
 mod tests {
     use super::*;
     use crate::lexer::IdentifierKind::BasicIdentifier;
-    use crate::parser::error::PartialParserError;
+    use crate::parser::error::syntax_err;
     use crate::parser::result::ScanErrorKind::NoMatch;
     use crate::parser::ParserErrorKind::Syntax;
     use postgres_basics::fn_info;
@@ -181,9 +181,7 @@ mod tests {
         let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
-        let actual: ScanResult<()> = buffer.consume(|_| Err(
-            PartialParserError::syntax(fn_info!(""))
-        ));
+        let actual: ScanResult<()> = buffer.consume(|_| Err(syntax_err!("")));
 
         assert_matches!(actual, Err(ScanErr(_)));
         let ScanErr(actual) = actual.unwrap_err() else {

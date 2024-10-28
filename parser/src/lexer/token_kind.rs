@@ -59,30 +59,52 @@ pub enum BitStringKind {
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum TokenKind {
+    /// `(`
     OpenParenthesis,
+    /// `)`
     CloseParenthesis,
+    /// `,`
     Comma,
+    /// `;`
     Semicolon,
+    /// `[`
     OpenBracket,
+    /// `]`
     CloseBracket,
+    /// `.`
     Dot,
     DotDot,
+    /// `:`
     Colon,
     /// The cast operator `::`
     Typecast,
+    /// `:=`
     ColonEquals,
+    /// `%`
     Percent,
+    /// `*`, aka `Star`
     Mul,
+    /// `+`
     Plus,
+    /// `-`
     Minus,
+    /// `/`
     Div,
+    /// `<`
     Less,
+    /// `=`
     Equals,
+    /// `>`
     Greater,
+    /// `^`
     Circumflex,
+    /// `=>`
     EqualsGreater,
+    /// `<=`
     LessEquals,
+    /// `>=`
     GreaterEquals,
+    /// `<>` or `!=`
     NotEquals,
     UserDefinedOperator,
     Param { index: i32 },
