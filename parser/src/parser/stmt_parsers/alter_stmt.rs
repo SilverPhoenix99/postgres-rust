@@ -5,10 +5,6 @@ impl Parser<'_> {
 
         // ALTER was consumed, so at least one of the following matches is required
 
-        // alternatives!(
-        //     alter_large_object_stmt,
-        // );
-
         consume! {self
             ok {
                 Ok(Kw(Group)) => self.alter_group_stmt(),
@@ -37,11 +33,11 @@ mod tests {
     use test_case::test_case;
 
     #[test_case("group some_group rename to new_group_name")]
-    // #[test_case("event trigger some_trigger owner to current_user")]
-    // #[test_case("collation some_name refresh version")]
-    // #[test_case("conversion some_conversion rename to new_conversion")]
-    // #[test_case("language lang owner to session_user")]
-    // #[test_case("large object -127 owner to public")]
+    #[test_case("event trigger some_trigger owner to current_user")]
+    #[test_case("collation some_name refresh version")]
+    #[test_case("conversion some_conversion rename to new_conversion")]
+    #[test_case("language lang owner to session_user")]
+    #[test_case("large object -127 owner to public")]
     fn test_alter(source: &str) {
 
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
