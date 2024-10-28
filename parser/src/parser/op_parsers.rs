@@ -6,6 +6,7 @@ bitflags! {
     const Boolean        = 1 << 3;
     const Explicit       = 1 << 4;
     const UserDefined    = 1 << 5;
+    const Like           = 1 << 6;
 
     const Math = Self::Additive.bits()
                | Self::Multiplicative.bits()
@@ -15,6 +16,7 @@ bitflags! {
     const Qualified = Self::UserDefined.bits() | Self::Explicit.bits();
     const Unqualified = Self::UserDefined.bits() | Self::Math.bits();
     const All = Self::Unqualified.bits() | Self::Qualified.bits();
+    const Subquery = Self::All.bits() | Self::Like.bits();
   }
 }
 
@@ -37,9 +39,14 @@ impl<'src> Parser<'src> {
         self.operator(OperatorKind::All)
     }
 
+    /// Alias: `subquery_Op`
+    pub(super) fn subquery_op(&mut self) -> ScanResult<QnOperator> {
+        self.operator(OperatorKind::Subquery)
+    }
+
     pub(super) fn operator(&mut self, kind: OperatorKind) -> ScanResult<QnOperator> {
-        use TokenKind::{Equals, Greater, GreaterEquals, Keyword as Kw, Less, LessEquals, NotEquals, };
-        use crate::lexer::Keyword::Operator as OperatorKw;
+        use TokenKind::{Equals, Greater, GreaterEquals, Keyword as Kw, Less, LessEquals, NotEquals};
+        use crate::lexer::Keyword::{Ilike, Like, Operator as OperatorKw};
 
         const FN_NAME: &str = "postgres_parser::parser::Parser::operator";
 
@@ -59,6 +66,8 @@ impl<'src> Parser<'src> {
                 Ok(LessEquals) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::LessEquals.into()),
                 Ok(GreaterEquals) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::GreaterEquals.into()),
                 Ok(NotEquals) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::NotEquals.into()),
+                Ok(Kw(Like)) if kind.intersects(OperatorKind::Like) => Ok(Operator::Like.into()),
+                Ok(Kw(Ilike)) if kind.intersects(OperatorKind::Like) => Ok(ILike.into()),
                 Ok(UserDefinedOperator) if kind.intersects(OperatorKind::UserDefined) => {
                     let source = self.buffer.source();
                     let op = loc.slice(source).to_owned();
@@ -118,7 +127,7 @@ mod tests {
     use crate::parser::tests::DEFAULT_CONFIG;
 
     #[test]
-    fn test_qual_op() {
+    fn test_user_defined_op() {
 
         let source = "operator(|/) <@>";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
@@ -131,7 +140,7 @@ mod tests {
     }
 
     #[test]
-    fn test_qualified_operator() {
+    fn test_qualified_op() {
         let source = "operator(some_qn.*)";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
@@ -195,6 +204,15 @@ mod tests {
         assert_eq!(Ok(GreaterEquals), parser.all_op());
         assert_eq!(Ok(NotEquals), parser.all_op());
         assert_eq!(Ok(NotEquals), parser.all_op());
+    }
+    
+    #[test]
+    fn test_subquery_op() {
+        let source = "like ilike";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        assert_eq!(Ok(Like.into()), parser.subquery_op());
+        assert_eq!(Ok(ILike.into()), parser.subquery_op());
     }
 }
 

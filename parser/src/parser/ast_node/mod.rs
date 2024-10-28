@@ -71,6 +71,10 @@ pub enum Operator {
     LessEquals,
     GreaterEquals,
     NotEquals,
+    Like,
+    NotLike,
+    ILike,
+    NotILike,
     UserDefined(String),
 }
 
