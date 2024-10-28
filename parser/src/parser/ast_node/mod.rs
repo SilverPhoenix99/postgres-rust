@@ -57,8 +57,8 @@ pub enum OneOrAll {
     Name(CowStr),
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum MathOp {
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum Operator {
     Addition,
     Subtraction,
     Multiplication,
@@ -71,64 +71,15 @@ pub enum MathOp {
     LessEquals,
     GreaterEquals,
     NotEquals,
+    UserDefined(String),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum AllOp {
-    MathOp(MathOp),
-    Operator(String),
-}
+pub struct QnOperator(pub Vec<CowStr>, pub Operator);
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct QnOperator(pub Vec<CowStr>, pub AllOp);
-
-impl QnOperator {
-    pub fn addition() -> Self {
-        QnOperator(vec![], AllOp::MathOp(MathOp::Addition))
-    }
-
-    pub fn subtraction() -> Self {
-        QnOperator(vec![], AllOp::MathOp(MathOp::Subtraction))
-    }
-
-    pub fn multiplication() -> Self {
-        QnOperator(vec![], AllOp::MathOp(MathOp::Multiplication))
-    }
-
-    pub fn division() -> Self {
-        QnOperator(vec![], AllOp::MathOp(MathOp::Division))
-    }
-
-    pub fn modulo() -> Self {
-        QnOperator(vec![], AllOp::MathOp(MathOp::Modulo))
-    }
-
-    pub fn exponentiation() -> Self {
-        QnOperator(vec![], AllOp::MathOp(MathOp::Exponentiation))
-    }
-
-    pub fn less() -> Self {
-        QnOperator(vec![], AllOp::MathOp(MathOp::Less))
-    }
-
-    pub fn greater() -> Self {
-        QnOperator(vec![], AllOp::MathOp(MathOp::Greater))
-    }
-
-    pub fn equals() -> Self {
-        QnOperator(vec![], AllOp::MathOp(MathOp::Equals))
-    }
-
-    pub fn less_equals() -> Self {
-        QnOperator(vec![], AllOp::MathOp(MathOp::LessEquals))
-    }
-
-    pub fn greater_equals() -> Self {
-        QnOperator(vec![], AllOp::MathOp(MathOp::GreaterEquals))
-    }
-
-    pub fn not_equals() -> Self {
-        QnOperator(vec![], AllOp::MathOp(MathOp::NotEquals))
+impl From<Operator> for QnOperator {
+    fn from(value: Operator) -> Self {
+        Self(vec![], value)
     }
 }
 
@@ -348,51 +299,51 @@ impl BinaryExpr {
     }
 
     pub fn addition(left_operand: ExprNode, right_operand: ExprNode) -> Self {
-        Self::new(QnOperator::addition(), left_operand, right_operand)
+        Self::new(Operator::Addition.into(), left_operand, right_operand)
     }
 
     pub fn subtraction(left_operand: ExprNode, right_operand: ExprNode) -> Self {
-        Self::new(QnOperator::subtraction(), left_operand, right_operand)
+        Self::new(Operator::Subtraction.into(), left_operand, right_operand)
     }
 
     pub fn multiplication(left_operand: ExprNode, right_operand: ExprNode) -> Self {
-        Self::new(QnOperator::multiplication(), left_operand, right_operand)
+        Self::new(Operator::Multiplication.into(), left_operand, right_operand)
     }
 
     pub fn division(left_operand: ExprNode, right_operand: ExprNode) -> Self {
-        Self::new(QnOperator::division(), left_operand, right_operand)
+        Self::new(Operator::Division.into(), left_operand, right_operand)
     }
 
     pub fn modulo(left_operand: ExprNode, right_operand: ExprNode) -> Self {
-        Self::new(QnOperator::modulo(), left_operand, right_operand)
+        Self::new(Operator::Modulo.into(), left_operand, right_operand)
     }
 
     pub fn exponentiation(left_operand: ExprNode, right_operand: ExprNode) -> Self {
-        Self::new(QnOperator::exponentiation(), left_operand, right_operand)
+        Self::new(Operator::Exponentiation.into(), left_operand, right_operand)
     }
 
     pub fn less(left_operand: ExprNode, right_operand: ExprNode) -> Self {
-        Self::new(QnOperator::less(), left_operand, right_operand)
+        Self::new(Operator::Less.into(), left_operand, right_operand)
     }
 
     pub fn greater(left_operand: ExprNode, right_operand: ExprNode) -> Self {
-        Self::new(QnOperator::greater(), left_operand, right_operand)
+        Self::new(Operator::Greater.into(), left_operand, right_operand)
     }
 
     pub fn equals(left_operand: ExprNode, right_operand: ExprNode) -> Self {
-        Self::new(QnOperator::equals(), left_operand, right_operand)
+        Self::new(Operator::Equals.into(), left_operand, right_operand)
     }
 
     pub fn less_equals(left_operand: ExprNode, right_operand: ExprNode) -> Self {
-        Self::new(QnOperator::less_equals(), left_operand, right_operand)
+        Self::new(Operator::LessEquals.into(), left_operand, right_operand)
     }
 
     pub fn greater_equals(left_operand: ExprNode, right_operand: ExprNode) -> Self {
-        Self::new(QnOperator::greater_equals(), left_operand, right_operand)
+        Self::new(Operator::GreaterEquals.into(), left_operand, right_operand)
     }
 
     pub fn not_equals(left_operand: ExprNode, right_operand: ExprNode) -> Self {
-        Self::new(QnOperator::not_equals(), left_operand, right_operand)
+        Self::new(Operator::NotEquals.into(), left_operand, right_operand)
     }
 }
 
@@ -408,12 +359,12 @@ impl UnaryExpr {
     }
 
     pub fn unary_plus(operand: ExprNode) -> Self {
-        Self::new(QnOperator::addition(), operand)
+        Self::new(Operator::Addition.into(), operand)
     }
 
     /// Aka `unary_minus`
     pub fn negation(operand: ExprNode) -> Self {
-        Self::new(QnOperator::subtraction(), operand)
+        Self::new(Operator::Subtraction.into(), operand)
     }
 }
 
@@ -598,7 +549,7 @@ impl ExprNode {
 
     #[inline(always)]
     pub fn unary_plus(operand: Self) -> Self {
-        UnaryExpr::new(QnOperator::addition(), operand).into()
+        UnaryExpr::new(Operator::Addition.into(), operand).into()
     }
 
     #[inline(always)]
@@ -609,7 +560,7 @@ impl ExprNode {
     /// Aka `unary_minus`
     #[inline(always)]
     pub fn negation(operand: Self) -> Self {
-        UnaryExpr::new(QnOperator::subtraction(), operand).into()
+        UnaryExpr::new(Operator::Subtraction.into(), operand).into()
     }
 
     #[inline(always)]
