@@ -40,7 +40,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AclTarget;
 use crate::{
     lexer::{
         Keyword::{
@@ -54,6 +53,7 @@ use crate::{
         TokenKind::Keyword as Kw
     },
     parser::{
+        ast_node::AclTarget,
         consume_macro::consume,
         result::{ScanErrorKind::NoMatch, ScanResult},
         Parser

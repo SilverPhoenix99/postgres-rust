@@ -452,13 +452,18 @@ pub enum AclOption {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum AccessPrivilege {
+pub enum SpecificAccessPrivilege {
     AlterSystem,
-    All(Option<Vec<CowStr>>),
     Create(Option<Vec<CowStr>>),
     References(Option<Vec<CowStr>>),
     Select(Option<Vec<CowStr>>),
     Named(CowStr, Option<Vec<CowStr>>),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum AccessPrivilege {
+    All(Option<Vec<CowStr>>),
+    Specific(Vec<SpecificAccessPrivilege>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -473,7 +478,7 @@ pub enum AclTarget {
 #[derive(Debug, Clone, PartialEq)]
 pub struct GrantStmt {
     is_grant: bool,
-    privileges: Vec<AccessPrivilege>,
+    privileges: Vec<SpecificAccessPrivilege>,
 }
 
 #[derive(Debug, Clone, PartialEq)]

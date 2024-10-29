@@ -1,7 +1,24 @@
 impl Parser<'_> {
 
+    pub(in crate::parser) fn privileges(&mut self) -> ScanResult<AccessPrivilege> {
+
+        /*
+              ALL ( PRIVILEGES )? opt_column_list
+            | privilege_list
+        */
+
+        if self.buffer.consume_kw_eq(All).no_match_to_option()?.is_some() {
+            self.buffer.consume_kw_eq(Privileges).optional()?;
+            let columns = self.opt_column_list().optional()?;
+            return Ok(AccessPrivilege::All(columns))
+        }
+
+        let privileges = self.privilege_list()?;
+        Ok(AccessPrivilege::Specific(privileges))
+    }
+
     /// Post-condition: Vec is **Not** empty
-    pub(in crate::parser) fn privilege_list(&mut self) -> ScanResult<Vec<AccessPrivilege>> {
+    pub(in crate::parser) fn privilege_list(&mut self) -> ScanResult<Vec<SpecificAccessPrivilege>> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::privilege_list";
 
         /*
@@ -19,7 +36,7 @@ impl Parser<'_> {
         Ok(elements)
     }
 
-    fn privilege(&mut self) -> ScanResult<AccessPrivilege> {
+    fn privilege(&mut self) -> ScanResult<SpecificAccessPrivilege> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::privilege";
 
         /*
@@ -70,6 +87,33 @@ impl Parser<'_> {
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use test_case::test_case;
+
+    #[test_case("all")]
+    #[test_case("all privileges")]
+    fn test_all_privileges(source: &str) {
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(AccessPrivilege::All(None)), parser.privileges());
+    }
+
+    #[test]
+    fn test_all_privileges_with_columns() {
+        let source = "all (column_name)";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let expected = vec!["column_name".into()];
+        assert_eq!(Ok(AccessPrivilege::All(Some(expected))), parser.privileges());
+    }
+
+    #[test]
+    fn test_specific_privileges() {
+        let source = "select, references";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let expected = vec![
+            Select(None),
+            References(None),
+        ];
+        assert_eq!(Ok(AccessPrivilege::Specific(expected)), parser.privileges());
+    }
 
     #[test]
     fn test_name_privilege() {
@@ -145,8 +189,10 @@ mod tests {
 use crate::{
     lexer::{
         Keyword::{
+            All,
             Alter,
             Create as CreateKw,
+            Privileges,
             References as ReferencesKw,
             Select as SelectKw,
             SystemKw
@@ -154,7 +200,10 @@ use crate::{
         TokenKind::{Comma, Keyword as Kw}
     },
     parser::{
-        ast_node::AccessPrivilege::{self, *},
+        ast_node::{
+            AccessPrivilege,
+            SpecificAccessPrivilege::{self, *},
+        },
         consume_macro::consume,
         result::{
             Optional,
