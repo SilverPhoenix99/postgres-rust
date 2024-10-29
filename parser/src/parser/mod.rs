@@ -268,7 +268,7 @@ impl<'src> Parser<'src> {
         }
     }
 
-    /// Post-condition: Vec is **not** empty
+    /// Post-condition: Vec is **Not** empty
     fn var_name(&mut self) -> ScanResult<QnName> {
 
         /*
@@ -278,7 +278,7 @@ impl<'src> Parser<'src> {
         self.col_id_list(Dot)
     }
 
-    /// Post-condition: Vec is **not** empty
+    /// Post-condition: Vec is **Not** empty
     ///
     /// Alias `columnList`
     fn name_list(&mut self) -> ScanResult<Vec<CowStr>> {
@@ -290,7 +290,22 @@ impl<'src> Parser<'src> {
         self.col_id_list(Comma)
     }
 
-    /// Post-condition: Vec is **not** empty
+    /// Post-condition: Vec is **Not** empty
+    fn opt_column_list(&mut self) -> ScanResult<Vec<CowStr>> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_col_list";
+        
+        /*
+            '(' columnList ')'
+        */
+
+        self.buffer.consume_eq(OpenParenthesis)?;
+        let names = self.name_list().required(fn_info!(FN_NAME))?;
+        self.buffer.consume_eq(CloseParenthesis).required(fn_info!(FN_NAME))?;
+
+        Ok(names)
+    }
+
+    /// Post-condition: Vec is **Not** empty
     fn col_id_list(&mut self, separator: TokenKind) -> ScanResult<QnName> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::col_id_list";
 
@@ -441,9 +456,8 @@ impl<'src> Parser<'src> {
         Ok(SystemType::Numeric(type_mods))
     }
 
-    /// Post-condition: Vec **can** be empty
+    /// Post-condition: Vec is **Not** empty
     fn opt_type_modifiers(&mut self) -> ScanResult<Vec<ExprNode>> {
-        use TokenKind::{CloseParenthesis, OpenParenthesis};
         const FN_NAME: &str = "postgres_parser::parser::Parser::opt_type_modifiers";
 
         /*
@@ -451,11 +465,7 @@ impl<'src> Parser<'src> {
         */
 
         self.buffer.consume_eq(OpenParenthesis)?;
-
-        let exprs = self.expr_list()
-            .try_match(fn_info!(FN_NAME))?
-            .unwrap_or_else(Vec::new);
-
+        let exprs = self.expr_list().required(fn_info!(FN_NAME))?;
         self.buffer.consume_eq(CloseParenthesis).required(fn_info!(FN_NAME))?;
 
         Ok(exprs)
@@ -564,7 +574,6 @@ impl<'src> Parser<'src> {
 
     /// Production: `'(' ICONST ')'`
     fn i32_literal_paren(&mut self) -> ScanResult<i32> {
-        use TokenKind::{CloseParenthesis, OpenParenthesis};
         const FN_NAME: &str = "postgres_parser::parser::Parser::i32_literal_paren";
 
         self.buffer.consume_eq(OpenParenthesis)?;
@@ -1292,7 +1301,7 @@ use crate::lexer::{
     Keyword,
     KeywordCategory::*,
     Lexer,
-    TokenKind::{self, Comma, Dot, NumberLiteral}
+    TokenKind::{self, CloseParenthesis, Comma, Dot, NumberLiteral, OpenParenthesis}
 };
 use postgres_basics::{ascii, fn_info, Located};
 use std::{borrow::Cow, mem};
