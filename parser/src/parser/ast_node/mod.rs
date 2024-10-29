@@ -551,7 +551,28 @@ impl GrantStmt {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct AlterDefaultPrivilegesStmt {
+    options: Vec<AclOption>,
+    action: GrantStmt,
+}
+
+impl AlterDefaultPrivilegesStmt {
+    pub fn new(options: Vec<AclOption>, action: GrantStmt) -> Self {
+        Self { options, action }
+    }
+
+    pub fn options(&self) -> &Vec<AclOption> {
+        &self.options
+    }
+
+    pub fn action(&self) -> &GrantStmt {
+        &self.action
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum RawStmt {
+    AlterDefaultPrivilegesStmt(Box<AlterDefaultPrivilegesStmt>),
     AlterEventTrigStmt(AlterEventTrigStmt),
     AlterObjectSchemaStmt(AlterObjectSchemaStmt),
     AlterOwnerStmt(AlterOwnerStmt),
@@ -573,6 +594,7 @@ pub enum RawStmt {
     VariableShowStmt(VariableShowStmt),
 }
 
+impl_from!(box AlterDefaultPrivilegesStmt for RawStmt);
 impl_from!(AlterEventTrigStmt for RawStmt);
 impl_from!(AlterObjectSchemaStmt for RawStmt);
 impl_from!(AlterOwnerStmt for RawStmt);

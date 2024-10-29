@@ -7,10 +7,14 @@ impl Parser<'_> {
 
         consume! {self
             Ok {
-                Kw(Group) => self.alter_group_stmt(),
-                Kw(Event) => self.alter_event_trigger_stmt(),
                 Kw(Collation) => self.alter_collation_stmt(),
                 Kw(Conversion) => self.alter_conversion_stmt(),
+                Kw(DefaultKw) => {
+                    self.buffer.consume_kw_eq(Privileges).required(fn_info!(FN_NAME))?;
+                    self.alter_default_privileges_stmt().map(From::from)
+                },
+                Kw(Event) => self.alter_event_trigger_stmt(),
+                Kw(Group) => self.alter_group_stmt(),
                 Kw(Language) => self.alter_language_stmt(),
                 Kw(Procedural) => {
                     self.buffer.consume_kw_eq(Language).required(fn_info!(FN_NAME))?;
@@ -32,10 +36,11 @@ mod tests {
     use crate::parser::tests::DEFAULT_CONFIG;
     use test_case::test_case;
 
-    #[test_case("group some_group rename to new_group_name")]
-    #[test_case("event trigger some_trigger owner to current_user")]
     #[test_case("collation some_name refresh version")]
     #[test_case("conversion some_conversion rename to new_conversion")]
+    #[test_case("default privileges in schema some_schema grant all on tables to public")]
+    #[test_case("event trigger some_trigger owner to current_user")]
+    #[test_case("group some_group rename to new_group_name")]
     #[test_case("language lang owner to session_user")]
     #[test_case("large object -127 owner to public")]
     fn test_alter(source: &str) {
@@ -51,9 +56,10 @@ mod tests {
     }
 }
 
+use crate::lexer::Keyword::Privileges;
 use crate::{
     lexer::{
-        Keyword::{Collation, Conversion, Event, Group, Language, Large, Procedural},
+        Keyword::{Collation, Conversion, DefaultKw, Event, Group, Language, Large, Procedural},
         TokenKind
     },
     parser::{

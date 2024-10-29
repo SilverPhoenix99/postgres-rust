@@ -1,5 +1,20 @@
 impl Parser<'_> {
 
+    /// Alias `AlterDefaultPrivilegesStmt`
+    pub(super) fn alter_default_privileges_stmt(&mut self) -> ParseResult<AlterDefaultPrivilegesStmt> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::alter_default_privileges_stmt";
+
+        /*
+            ALTER DEFAULT PRIVILEGES DefACLOptionList DefACLAction
+        */
+
+        let options = self.def_acl_option_list().required(fn_info!(FN_NAME))?;
+        let action = self.def_acl_action().required(fn_info!(FN_NAME))?;
+
+        let stmt = AlterDefaultPrivilegesStmt::new(options, action);
+        Ok(stmt)
+    }
+
     /// Post-condition: Vec is **Not** empty
     ///
     /// Alias `DefACLOptionList`
@@ -119,6 +134,24 @@ mod tests {
     use test_case::test_case;
 
     #[test]
+    fn test_alter_default_privileges_stmt() {
+        let source = "in schema some_schema grant all on tables to public";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let expected = AlterDefaultPrivilegesStmt::new(
+            vec![AclOption::Schemas(vec!["some_schema".into()])],
+            GrantStmt::grant(
+                AccessPrivilege::All(None),
+                AclTarget::Table,
+                vec![Public],
+                false
+            )
+        );
+
+        assert_eq!(Ok(expected), parser.alter_default_privileges_stmt());
+    }
+
+    #[test]
     fn test_acl_option_list() {
         let source = "in schema my_schema for role public for user current_user";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
@@ -158,7 +191,7 @@ mod tests {
 
     #[test]
     fn test_grant_def_acl_action() {
-        let source = "grant all privileges on tables to public";
+        let source = "grant all on tables to public";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.def_acl_action();
@@ -238,29 +271,40 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{
-    For,
-    FromKw,
-    Functions,
-    Grant,
-    In,
-    On,
-    OptionKw,
-    Revoke,
-    Role,
-    Routines,
-    Schema,
-    Schemas,
-    Sequences,
-    Tables,
-    To,
-    Types,
-    User,
+use crate::{
+    lexer::{
+        Keyword::{
+            For,
+            FromKw,
+            Functions,
+            Grant,
+            In,
+            On,
+            OptionKw,
+            Revoke,
+            Role,
+            Routines,
+            Schema,
+            Schemas,
+            Sequences,
+            Tables,
+            To,
+            Types,
+            User,
+        },
+        TokenKind::Keyword as Kw
+    },
+    parser::{
+        ast_node::{AclOption, AclTarget, AlterDefaultPrivilegesStmt, GrantStmt},
+        consume_macro::consume,
+        result::{
+            Optional,
+            Required,
+            ScanErrorKind::NoMatch,
+            ScanResult
+        },
+        ParseResult,
+        Parser
+    }
 };
-use crate::lexer::TokenKind::Keyword as Kw;
-use crate::parser::ast_node::{AclOption, AclTarget, GrantStmt};
-use crate::parser::consume_macro::consume;
-use crate::parser::result::ScanErrorKind::NoMatch;
-use crate::parser::result::{Optional, Required, ScanResult};
-use crate::parser::Parser;
 use postgres_basics::fn_info;
