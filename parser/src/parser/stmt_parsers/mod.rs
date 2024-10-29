@@ -1,6 +1,7 @@
 mod abort_stmt;
 mod alter_collation_stmt;
 mod alter_conversion_stmt;
+mod alter_default_privileges_stmt;
 mod alter_event_trigger_stmt;
 mod alter_group_stmt;
 mod alter_language_stmt;
