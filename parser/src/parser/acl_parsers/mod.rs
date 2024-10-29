@@ -61,6 +61,10 @@ impl Parser<'_> {
     pub(in crate::parser) fn opt_drop_behavior(&mut self) -> EofResult<DropBehavior> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::opt_drop_behavior";
 
+        /*
+            ( CASCADE | RESTRICT )?
+        */
+
         if self.buffer.consume_kw_eq(Cascade).optional()?.is_some() {
             return Ok(DropBehavior::Cascade)
         }
@@ -90,6 +94,10 @@ impl Parser<'_> {
 
     pub(in crate::parser) fn opt_granted_by(&mut self) -> ScanResult<RoleSpec> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::opt_granted_by";
+
+        /*
+            GRANTED BY role_spec
+        */
 
         self.buffer.consume_kw_eq(Granted)?;
         self.buffer.consume_kw_eq(By).required(fn_info!(FN_NAME))?;
