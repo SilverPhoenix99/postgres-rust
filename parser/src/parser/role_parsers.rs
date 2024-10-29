@@ -1,6 +1,6 @@
 impl Parser<'_> {
 
-    /// Post-condition: Vec is **not** empty
+    /// Post-condition: Vec is **Not** empty
     pub(super) fn role_list(&mut self) -> ScanResult<Vec<RoleSpec>> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::role_list";
 

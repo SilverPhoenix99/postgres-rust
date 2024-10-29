@@ -446,6 +446,28 @@ pub struct PrepareStmt {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum AclAction {
+    Schemas(Vec<CowStr>),
+    Roles(Vec<RoleSpec>),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum AccessPrivilege {
+    AlterSystem,
+    All(Option<Vec<CowStr>>),
+    Create(Option<Vec<CowStr>>),
+    References(Option<Vec<CowStr>>),
+    Select(Option<Vec<CowStr>>),
+    Named(CowStr, Option<Vec<CowStr>>),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct GrantStmt {
+    is_grant: bool,
+    privileges: Vec<AccessPrivilege>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum RawStmt {
     AlterEventTrigStmt(AlterEventTrigStmt),
     AlterObjectSchemaStmt(AlterObjectSchemaStmt),
@@ -623,12 +645,6 @@ impl RangeVar {
     pub fn persistance(&self) -> RelationPersistence {
         self.persistance
     }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum AclAction {
-    Schemas(Vec<CowStr>),
-    Roles(Vec<RoleSpec>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
