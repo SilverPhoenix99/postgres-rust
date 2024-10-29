@@ -8,6 +8,7 @@ mod expr_parsers;
 mod func_name;
 mod ident_parser;
 mod op_parsers;
+mod privilege_parsers;
 mod result;
 mod role_parsers;
 mod stmt_parser;
@@ -293,7 +294,7 @@ impl<'src> Parser<'src> {
     /// Post-condition: Vec is **Not** empty
     fn opt_column_list(&mut self) -> ScanResult<Vec<CowStr>> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::opt_col_list";
-        
+
         /*
             '(' columnList ')'
         */

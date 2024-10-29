@@ -1,6 +1,6 @@
 impl Parser<'_> {
 
-    pub(in crate::parser) fn privileges(&mut self) -> ScanResult<AccessPrivilege> {
+    pub(super) fn privileges(&mut self) -> ScanResult<AccessPrivilege> {
 
         /*
               ALL ( PRIVILEGES )? opt_column_list
@@ -18,7 +18,7 @@ impl Parser<'_> {
     }
 
     /// Post-condition: Vec is **Not** empty
-    pub(in crate::parser) fn privilege_list(&mut self) -> ScanResult<Vec<SpecificAccessPrivilege>> {
+    pub(super) fn privilege_list(&mut self) -> ScanResult<Vec<SpecificAccessPrivilege>> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::privilege_list";
 
         /*
