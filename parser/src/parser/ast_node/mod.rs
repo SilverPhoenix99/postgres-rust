@@ -564,6 +564,67 @@ impl CaseExpr {
     }
 }
 
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum RelationPersistence {
+    /// regular table
+    Permanent = b'p',
+    /// unlogged permanent table
+    Unlogged  = b'u',
+    /// temporary table
+    Temp      = b't',
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct RangeVar {
+    catalog: Option<CowStr>,
+    schema: Option<CowStr>,
+    relation: CowStr,
+    persistance: RelationPersistence,
+}
+
+impl RangeVar {
+    pub fn new(relation: CowStr) -> Self {
+        Self {
+            catalog: None,
+            schema: None,
+            relation,
+            persistance: RelationPersistence::Permanent,
+        }
+    }
+
+    pub fn with_schema(mut self, schema: CowStr) -> Self {
+        self.schema = Some(schema);
+        self
+    }
+
+    pub fn with_catalog(mut self, catalog: CowStr) -> Self {
+        self.catalog = Some(catalog);
+        self
+    }
+
+    pub fn with_persistance(mut self, persistance: RelationPersistence) -> Self {
+        self.persistance = persistance;
+        self
+    }
+
+    pub fn relation(&self) -> &CowStr {
+        &self.relation
+    }
+
+    pub fn catalog(&self) -> &Option<CowStr> {
+        &self.catalog
+    }
+
+    pub fn schema(&self) -> &Option<CowStr> {
+        &self.schema
+    }
+
+    pub fn persistance(&self) -> RelationPersistence {
+        self.persistance
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExprNode {
     SetToDefault,

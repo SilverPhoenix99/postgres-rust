@@ -46,6 +46,18 @@ pub enum ParserErrorKind {
     /// When "UNENCRYPTED PASSWORD" is used as a role option
     #[error("UNENCRYPTED PASSWORD is no longer supported")]
     UnencryptedPassword,
+
+    #[error("improper qualified name (too many dotted names): {0}")]
+    ImproperQualifiedName(NameList),
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct NameList(pub QnName);
+
+impl Display for NameList {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0.join("."))
+    }
 }
 
 impl HasSqlState for ParserErrorKind {
@@ -63,6 +75,7 @@ impl HasSqlState for ParserErrorKind {
             UnencryptedPassword => FeatureNotSupported,
             UnicodeString(err) => err.sql_state(),
             UnrecognizedRoleOption(_) => SyntaxError,
+            ImproperQualifiedName(_) => SyntaxError,
         }
     }
 }
@@ -82,6 +95,7 @@ impl ErrorReport for ParserErrorKind {
             UnencryptedPassword => Some("Remove UNENCRYPTED to store the password in encrypted form instead.".into()),
             UnicodeString(err) => err.hint(),
             UnrecognizedRoleOption(_) => None,
+            ImproperQualifiedName(_) => None,
         }
     }
 
@@ -99,6 +113,7 @@ impl ErrorReport for ParserErrorKind {
             UnencryptedPassword => None,
             UnicodeString(err) => err.detail(),
             UnrecognizedRoleOption(_) => None,
+            ImproperQualifiedName(_) => None,
         }
     }
 
@@ -116,11 +131,13 @@ impl ErrorReport for ParserErrorKind {
             UnencryptedPassword => None,
             UnicodeString(err) => err.detail_log(),
             UnrecognizedRoleOption(_) => None,
+            ImproperQualifiedName(_) => None,
         }
     }
 }
 
 use crate::lexer::LexerErrorKind;
+use crate::parser::QnName;
 use crate::string_decoders::{
     ExtendedStringError,
     UnicodeStringError,
@@ -136,4 +153,5 @@ use postgres_basics::{
     },
 };
 use std::borrow::Cow;
+use std::fmt::{Display, Formatter};
 use ParserErrorKind::*;
