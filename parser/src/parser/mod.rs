@@ -1,4 +1,5 @@
 pub mod ast_node;
+mod acl_parsers;
 mod bit_string_parser;
 mod config;
 mod consume_macro;
@@ -278,10 +279,12 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec is **not** empty
-    fn name_list(&mut self) -> ScanResult<QnName> {
+    ///
+    /// Alias `columnList`
+    fn name_list(&mut self) -> ScanResult<Vec<CowStr>> {
 
         /*
-            col_id ( '.' col_id )*
+            col_id ( ',' col_id )*
         */
 
         self.col_id_list(Comma)
