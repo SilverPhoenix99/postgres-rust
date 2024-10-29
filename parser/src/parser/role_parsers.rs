@@ -55,20 +55,20 @@ impl Parser<'_> {
         }
 
         consume! {self
-            ok {
-                Ok(Kw(CurrentRole)) => Ok(RoleSpec::CurrentRole),
-                Ok(Kw(CurrentUser)) => Ok(RoleSpec::CurrentUser),
-                Ok(Kw(SessionUser)) => Ok(RoleSpec::SessionUser),
-                Ok(Kw(kw)) if kw != NoneKw && kw.details().category() != Reserved => {
+            Ok {
+                Kw(CurrentRole) => Ok(RoleSpec::CurrentRole),
+                Kw(CurrentUser) => Ok(RoleSpec::CurrentUser),
+                Kw(SessionUser) => Ok(RoleSpec::SessionUser),
+                Kw(kw) if kw != NoneKw && kw.details().category() != Reserved => {
                     Ok(RoleSpec::Name(kw.details().text().into()))
                 }
             }
-            err {
-                Ok(Kw(NoneKw)) => Err(ScanErr(
+            Err {
+                Ok(Kw(NoneKw)) => ScanErr(
                     PartialParserError::new(ReservedRoleSpec("none"), fn_info!(FN_NAME))
-                )),
-                Ok(_) => Err(NoMatch),
-                Err(e) => Err(e.into()),
+                ),
+                Ok(_) => NoMatch,
+                Err(err) => err.into(),
             }
         }
     }
