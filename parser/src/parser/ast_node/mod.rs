@@ -446,7 +446,7 @@ pub struct PrepareStmt {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum AclAction {
+pub enum AclOption {
     Schemas(Vec<CowStr>),
     Roles(Vec<RoleSpec>),
 }
@@ -459,6 +459,15 @@ pub enum AccessPrivilege {
     References(Option<Vec<CowStr>>),
     Select(Option<Vec<CowStr>>),
     Named(CowStr, Option<Vec<CowStr>>),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum AclTarget {
+    Table,
+    Function,
+    Sequence,
+    Type,
+    Schema,
 }
 
 #[derive(Debug, Clone, PartialEq)]
