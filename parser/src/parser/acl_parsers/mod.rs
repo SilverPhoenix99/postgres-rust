@@ -40,6 +40,24 @@ impl Parser<'_> {
         }
     }
 
+    /// Alias `opt_grant_grant_option`
+    pub(in crate::parser) fn opt_grant_option(&mut self) -> EofResult<bool> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_grant_grant_option";
+
+        /*
+            ( WITH GRANT OPTION )?
+        */
+
+        if self.buffer.consume_kw_eq(With).optional()?.is_none() {
+            return Ok(false)
+        }
+
+        self.buffer.consume_kw_eq(Grant).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(OptionKw).required(fn_info!(FN_NAME))?;
+
+        Ok(true)
+    }
+
     /// Alias `defacl_privilege_target`
     pub(in crate::parser) fn def_acl_privilege_target(&mut self) -> ScanResult<AclTarget> {
 
@@ -97,18 +115,28 @@ mod tests {
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
         assert_eq!(Ok(expected), parser.def_acl_privilege_target());
     }
+
+    #[test]
+    fn test_opt_grant_option() {
+        let mut parser = Parser::new("with grant option", DEFAULT_CONFIG);
+        assert_eq!(Ok(true), parser.opt_grant_option());
+        assert_eq!(Ok(false), parser.opt_grant_option());
+    }
 }
 
 use crate::{
     lexer::{
         Keyword::{
             Functions,
+            Grant,
             Group,
+            OptionKw,
             Routines,
             Schemas,
             Sequences,
             Tables,
             Types,
+            With,
         },
         TokenKind::{
             Comma,
@@ -118,7 +146,7 @@ use crate::{
     parser::{
         ast_node::{AclTarget, RoleSpec},
         consume_macro::consume,
-        result::{Optional, Required, ScanErrorKind::NoMatch, ScanResult, ScanResultTrait},
+        result::{EofResult, Optional, Required, ScanErrorKind::NoMatch, ScanResult, ScanResultTrait},
         Parser
     }
 };
