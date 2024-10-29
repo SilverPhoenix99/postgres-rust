@@ -478,6 +478,54 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec is **Not** empty
+    fn qualified_name_list(&mut self) -> ScanResult<Vec<RangeVar>> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::qualified_name_list";
+
+        let mut elements = vec![self.qualified_name()?];
+
+        while self.buffer.consume_eq(Comma).optional()?.is_some() {
+            let element = self.qualified_name().required(fn_info!(FN_NAME))?;
+            elements.push(element);
+        }
+
+        Ok(elements)
+    }
+
+    fn qualified_name(&mut self) -> ScanResult<RangeVar> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::qualified_name";
+
+        /*
+            col_id attrs{0,2}
+        */
+
+        let qn_name = self.any_name()?;
+
+        if !(1..=3).contains(&qn_name.len()) {
+            let err = ImproperQualifiedName(NameList(qn_name));
+            let err = PartialParserError::new(err, fn_info!(FN_NAME));
+            return Err(err.into())
+        }
+
+        let mut it = qn_name.into_iter();
+
+        let range_var = match (it.next(), it.next(), it.next()) {
+            (Some(relation), None, None) => RangeVar::new(relation),
+            (Some(schema), Some(relation), None) => {
+                RangeVar::new(relation)
+                    .with_schema(schema)
+            },
+            (Some(catalog), Some(schema), Some(relation)) => {
+                RangeVar::new(relation)
+                    .with_schema(schema)
+                    .with_catalog(catalog)
+            },
+            _ => unreachable!("length was already checked to be between 1..=3")
+        };
+
+        Ok(range_var)
+    }
+
+    /// Post-condition: Vec is **Not** empty
     ///
     /// Alias: `handler_name`
     fn any_name(&mut self) -> ScanResult<QnName> {
@@ -1008,6 +1056,35 @@ mod tests {
     }
 
     #[test]
+    fn test_qualified_name() {
+        let source = "some_catalog.some_schema.some_relation";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let expected = RangeVar::new("some_relation".into())
+            .with_schema("some_schema".into())
+            .with_catalog("some_catalog".into());
+
+        assert_eq!(Ok(expected), parser.qualified_name());
+    }
+
+    #[test]
+    fn test_qualified_name_list() {
+        let source = "relation_,schema_.relation_, catalog_.schema_.relation_";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let expected = vec![
+            RangeVar::new("relation_".into()),
+            RangeVar::new("relation_".into())
+                .with_schema("schema_".into()),
+            RangeVar::new("relation_".into())
+                .with_schema("schema_".into())
+                .with_catalog("catalog_".into())
+        ];
+
+        assert_eq!(Ok(expected), parser.qualified_name_list());
+    }
+
+    #[test]
     fn test_attrs() {
         let source = ".qualified_.name_";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
@@ -1186,15 +1263,16 @@ use self::{
         EventTriggerState,
         ExprNode,
         IsolationLevel,
+        RangeVar,
         RawStmt,
         RoleSpec,
         SignedNumber,
         SystemType::{self, Bool, Float4, Float8, Int2, Int4, Int8},
         TransactionMode,
-        UnsignedNumber
+        UnsignedNumber,
     },
     consume_macro::consume,
-    error::{syntax_err, ParserErrorKind::*, PartialParserError},
+    error::{syntax_err, NameList, ParserErrorKind::*, PartialParserError},
     ident_parser::IdentifierParser,
     result::{
         Optional,

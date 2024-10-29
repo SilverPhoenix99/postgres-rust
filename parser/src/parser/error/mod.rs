@@ -1,6 +1,6 @@
 mod parser_error_kind;
 
-pub use parser_error_kind::ParserErrorKind;
+pub use parser_error_kind::{NameList, ParserErrorKind};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ParserError(
