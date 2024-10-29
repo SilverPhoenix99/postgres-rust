@@ -53,27 +53,27 @@ impl<'src> Parser<'src> {
         let loc = self.buffer.current_location();
 
         consume! {self
-            ok {
-                Ok(Plus) if kind.intersects(OperatorKind::Additive) => Ok(Addition.into()),
-                Ok(Minus) if kind.intersects(OperatorKind::Additive) => Ok(Subtraction.into()),
-                Ok(Mul) if kind.intersects(OperatorKind::Multiplicative) => Ok(Multiplication.into()),
-                Ok(Div) if kind.intersects(OperatorKind::Multiplicative) => Ok(Division.into()),
-                Ok(Percent) if kind.intersects(OperatorKind::Multiplicative) => Ok(Modulo.into()),
-                Ok(Circumflex) if kind.intersects(OperatorKind::Exponentiation) => Ok(Exponentiation.into()),
-                Ok(Less) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::Less.into()),
-                Ok(Equals) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::Equals.into()),
-                Ok(Greater) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::Greater.into()),
-                Ok(LessEquals) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::LessEquals.into()),
-                Ok(GreaterEquals) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::GreaterEquals.into()),
-                Ok(NotEquals) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::NotEquals.into()),
-                Ok(Kw(Like)) if kind.intersects(OperatorKind::Like) => Ok(Operator::Like.into()),
-                Ok(Kw(Ilike)) if kind.intersects(OperatorKind::Like) => Ok(ILike.into()),
-                Ok(UserDefinedOperator) if kind.intersects(OperatorKind::UserDefined) => {
+            Ok {
+                Plus if kind.intersects(OperatorKind::Additive) => Ok(Addition.into()),
+                Minus if kind.intersects(OperatorKind::Additive) => Ok(Subtraction.into()),
+                Mul if kind.intersects(OperatorKind::Multiplicative) => Ok(Multiplication.into()),
+                Div if kind.intersects(OperatorKind::Multiplicative) => Ok(Division.into()),
+                Percent if kind.intersects(OperatorKind::Multiplicative) => Ok(Modulo.into()),
+                Circumflex if kind.intersects(OperatorKind::Exponentiation) => Ok(Exponentiation.into()),
+                Less if kind.intersects(OperatorKind::Boolean) => Ok(Operator::Less.into()),
+                Equals if kind.intersects(OperatorKind::Boolean) => Ok(Operator::Equals.into()),
+                Greater if kind.intersects(OperatorKind::Boolean) => Ok(Operator::Greater.into()),
+                LessEquals if kind.intersects(OperatorKind::Boolean) => Ok(Operator::LessEquals.into()),
+                GreaterEquals if kind.intersects(OperatorKind::Boolean) => Ok(Operator::GreaterEquals.into()),
+                NotEquals if kind.intersects(OperatorKind::Boolean) => Ok(Operator::NotEquals.into()),
+                Kw(Like) if kind.intersects(OperatorKind::Like) => Ok(Operator::Like.into()),
+                Kw(Ilike) if kind.intersects(OperatorKind::Like) => Ok(ILike.into()),
+                UserDefinedOperator if kind.intersects(OperatorKind::UserDefined) => {
                     let source = self.buffer.source();
                     let op = loc.slice(source).to_owned();
                     Ok(UserDefined(op).into())
                 },
-                Ok(Kw(OperatorKw)) if kind.intersects(OperatorKind::Explicit) => {
+                Kw(OperatorKw) if kind.intersects(OperatorKind::Explicit) => {
 
                     /*
                         `OPERATOR '(' any_operator ')'`
@@ -86,9 +86,9 @@ impl<'src> Parser<'src> {
                     Ok(op)
                 },
             }
-            err {
-                Ok(_) => Err(NoMatch),
-                Err(err) => Err(err.into()),
+            Err {
+                Ok(_) => NoMatch,
+                Err(err) => err.into(),
             }
         }
     }

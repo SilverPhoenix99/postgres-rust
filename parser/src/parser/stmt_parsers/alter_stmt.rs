@@ -6,21 +6,21 @@ impl Parser<'_> {
         // ALTER was consumed, so at least one of the following matches is required
 
         consume! {self
-            ok {
-                Ok(Kw(Group)) => self.alter_group_stmt(),
-                Ok(Kw(Event)) => self.alter_event_trigger_stmt(),
-                Ok(Kw(Collation)) => self.alter_collation_stmt(),
-                Ok(Kw(Conversion)) => self.alter_conversion_stmt(),
-                Ok(Kw(Language)) => self.alter_language_stmt(),
-                Ok(Kw(Procedural)) => {
+            Ok {
+                Kw(Group) => self.alter_group_stmt(),
+                Kw(Event) => self.alter_event_trigger_stmt(),
+                Kw(Collation) => self.alter_collation_stmt(),
+                Kw(Conversion) => self.alter_conversion_stmt(),
+                Kw(Language) => self.alter_language_stmt(),
+                Kw(Procedural) => {
                     self.buffer.consume_kw_eq(Language).required(fn_info!(FN_NAME))?;
                     self.alter_language_stmt()
                 },
-                Ok(Kw(Large)) => self.alter_large_object_stmt(),
+                Kw(Large) => self.alter_large_object_stmt(),
             }
-            err {
-                Ok(_) | Err(EofErrorKind::Eof) => Err(syntax_err!(FN_NAME)),
-                Err(NotEof(err)) => Err(err.clone()),
+            Err {
+                Ok(_) | Err(EofErrorKind::Eof) => syntax_err!(FN_NAME),
+                Err(NotEof(err)) => err.clone(),
             }
         }
     }
