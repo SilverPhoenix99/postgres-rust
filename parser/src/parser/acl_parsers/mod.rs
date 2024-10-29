@@ -3,8 +3,45 @@ mod privilege_parsers;
 
 impl Parser<'_> {
 
+    /// Post-condition: Vec is **Not** empty
+    pub(in crate::parser) fn grantee_list(&mut self) -> ScanResult<Vec<RoleSpec>> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::grantee_list";
+
+        /*
+            grantee ( ',' grantee )*
+        */
+
+        let element = self.grantee()?;
+        let mut elements = vec![element];
+
+        while self.buffer.consume_eq(Comma).optional()?.is_some() {
+            let element = self.grantee().required(fn_info!(FN_NAME))?;
+            elements.push(element);
+        }
+
+        Ok(elements)
+    }
+
+    pub(in crate::parser) fn grantee(&mut self) -> ScanResult<RoleSpec> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::grantee";
+
+        /*
+              role_spec
+            | GROUP role_spec
+        */
+
+        let is_required = self.buffer.consume_kw_eq(Group).no_match_to_option()?.is_some();
+        let role = self.role_spec();
+        if is_required {
+            role.required(fn_info!(FN_NAME)).map_err(From::from)
+        }
+        else {
+            role
+        }
+    }
+
     /// Alias `defacl_privilege_target`
-    fn def_acl_privilege_target(&mut self) -> ScanResult<AclTarget> {
+    pub(in crate::parser) fn def_acl_privilege_target(&mut self) -> ScanResult<AclTarget> {
 
         consume!{self
             Ok {
@@ -25,8 +62,30 @@ impl Parser<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::ast_node::RoleSpec;
     use crate::parser::tests::DEFAULT_CONFIG;
     use test_case::test_case;
+
+    #[test]
+    fn test_grantee_list() {
+        let source = "group session_user, current_role";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let expected = vec![
+            RoleSpec::SessionUser,
+            RoleSpec::CurrentRole
+        ];
+
+        assert_eq!(Ok(expected), parser.grantee_list());
+    }
+
+    #[test]
+    fn test_grantee() {
+        let source = "current_user group public";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(RoleSpec::CurrentUser), parser.grantee());
+        assert_eq!(Ok(RoleSpec::Public), parser.grantee());
+    }
 
     #[test_case("tables", AclTarget::Table)]
     #[test_case("functions", AclTarget::Function)]
@@ -44,18 +103,23 @@ use crate::{
     lexer::{
         Keyword::{
             Functions,
+            Group,
             Routines,
             Schemas,
             Sequences,
             Tables,
             Types,
         },
-        TokenKind::Keyword as Kw
+        TokenKind::{
+            Comma,
+            Keyword as Kw
+        }
     },
     parser::{
-        ast_node::AclTarget,
+        ast_node::{AclTarget, RoleSpec},
         consume_macro::consume,
-        result::{ScanErrorKind::NoMatch, ScanResult},
+        result::{Optional, Required, ScanErrorKind::NoMatch, ScanResult, ScanResultTrait},
         Parser
     }
 };
+use postgres_basics::fn_info;
