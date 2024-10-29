@@ -626,6 +626,12 @@ impl RangeVar {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum AclAction {
+    Schemas(Vec<CowStr>),
+    Roles(Vec<RoleSpec>),
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum ExprNode {
     SetToDefault,
     Literal(AstLiteral),
