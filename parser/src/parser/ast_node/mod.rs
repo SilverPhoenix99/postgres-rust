@@ -622,7 +622,7 @@ pub struct RangeVar {
     catalog: Option<CowStr>,
     schema: Option<CowStr>,
     relation: CowStr,
-    persistance: RelationPersistence,
+    persistence: RelationPersistence,
 }
 
 impl RangeVar {
@@ -631,7 +631,7 @@ impl RangeVar {
             catalog: None,
             schema: None,
             relation,
-            persistance: RelationPersistence::Permanent,
+            persistence: RelationPersistence::Permanent,
         }
     }
 
@@ -645,8 +645,8 @@ impl RangeVar {
         self
     }
 
-    pub fn with_persistance(mut self, persistance: RelationPersistence) -> Self {
-        self.persistance = persistance;
+    pub fn with_persistence(mut self, persistence: RelationPersistence) -> Self {
+        self.persistence = persistence;
         self
     }
 
@@ -662,8 +662,8 @@ impl RangeVar {
         &self.schema
     }
 
-    pub fn persistance(&self) -> RelationPersistence {
-        self.persistance
+    pub fn persistence(&self) -> RelationPersistence {
+        self.persistence
     }
 }
 
