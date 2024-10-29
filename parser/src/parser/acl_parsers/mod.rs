@@ -87,6 +87,15 @@ impl Parser<'_> {
             }
         }
     }
+
+    pub(in crate::parser) fn opt_granted_by(&mut self) -> ScanResult<RoleSpec> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_granted_by";
+
+        self.buffer.consume_kw_eq(Granted)?;
+        self.buffer.consume_kw_eq(By).required(fn_info!(FN_NAME))?;
+
+        self.role_spec().required(fn_info!(FN_NAME)).map_err(From::from)
+    }
 }
 
 #[cfg(test)]
@@ -142,14 +151,22 @@ mod tests {
         assert_eq!(Ok(DropBehavior::Cascade), parser.opt_drop_behavior());
         assert_eq!(Ok(DropBehavior::Restrict), parser.opt_drop_behavior());
     }
+
+    #[test]
+    fn test_opt_granted_by() {
+        let mut parser = Parser::new("granted by public", DEFAULT_CONFIG);
+        assert_eq!(Ok(RoleSpec::Public), parser.opt_granted_by());
+    }
 }
 
 use crate::{
     lexer::{
         Keyword::{
+            By,
             Cascade,
             Functions,
             Grant,
+            Granted,
             Group,
             OptionKw,
             Restrict,
