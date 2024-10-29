@@ -62,10 +62,12 @@ mod tests {
 
     #[test_case("abort transaction")]
     #[test_case("alter group some_group add user public")]
+    #[test_case("begin transaction read only")]
     #[test_case("close all")]
     #[test_case("commit and no chain")]
     #[test_case("deallocate all")]
     #[test_case("discard all")]
+    #[test_case("end transaction")]
     #[test_case("listen ident")]
     #[test_case("load 'test string'")]
     #[test_case("notify test_ident, 'test-payload'")]
