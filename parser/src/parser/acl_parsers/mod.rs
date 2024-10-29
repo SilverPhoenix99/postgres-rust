@@ -58,6 +58,18 @@ impl Parser<'_> {
         Ok(true)
     }
 
+    pub(in crate::parser) fn opt_drop_behavior(&mut self) -> EofResult<DropBehavior> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_drop_behavior";
+
+        if self.buffer.consume_kw_eq(Cascade).optional()?.is_some() {
+            return Ok(DropBehavior::Cascade)
+        }
+
+        self.buffer.consume_kw_eq(Restrict).optional()?;
+
+        Ok(DropBehavior::Restrict)
+    }
+
     /// Alias `defacl_privilege_target`
     pub(in crate::parser) fn def_acl_privilege_target(&mut self) -> ScanResult<AclTarget> {
 
@@ -122,15 +134,25 @@ mod tests {
         assert_eq!(Ok(true), parser.opt_grant_option());
         assert_eq!(Ok(false), parser.opt_grant_option());
     }
+
+    #[test]
+    fn test_opt_drop_behavior() {
+        let mut parser = Parser::new("restrict cascade", DEFAULT_CONFIG);
+        assert_eq!(Ok(DropBehavior::Restrict), parser.opt_drop_behavior());
+        assert_eq!(Ok(DropBehavior::Cascade), parser.opt_drop_behavior());
+        assert_eq!(Ok(DropBehavior::Restrict), parser.opt_drop_behavior());
+    }
 }
 
 use crate::{
     lexer::{
         Keyword::{
+            Cascade,
             Functions,
             Grant,
             Group,
             OptionKw,
+            Restrict,
             Routines,
             Schemas,
             Sequences,
@@ -144,7 +166,7 @@ use crate::{
         }
     },
     parser::{
-        ast_node::{AclTarget, RoleSpec},
+        ast_node::{AclTarget, DropBehavior, RoleSpec},
         consume_macro::consume,
         result::{EofResult, Optional, Required, ScanErrorKind::NoMatch, ScanResult, ScanResultTrait},
         Parser

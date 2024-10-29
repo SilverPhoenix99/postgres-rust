@@ -466,13 +466,19 @@ pub enum AccessPrivilege {
     Specific(Vec<SpecificAccessPrivilege>),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum AclTarget {
     Table,
     Function,
     Sequence,
     Type,
     Schema,
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum DropBehavior {
+    Cascade,
+    Restrict
 }
 
 #[derive(Debug, Clone, PartialEq)]
