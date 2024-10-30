@@ -5,7 +5,7 @@ mod config;
 mod consume_macro;
 mod error;
 mod expr_parsers;
-mod func_name;
+mod func_name_parser;
 mod ident_parser;
 mod op_parsers;
 mod privilege_parsers;
@@ -270,6 +270,25 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec is **Not** empty
+    fn var_list(&mut self) -> ScanResult<Vec<QnName>> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::var_list";
+
+        /*
+            var_name ( ',' var_name )*
+        */
+
+        let element = self.var_name()?;
+        let mut elements = vec![element];
+
+        while self.buffer.consume_eq(Comma).optional()?.is_some() {
+            let element = self.var_name().required(fn_info!(FN_NAME))?;
+            elements.push(element);
+        }
+
+        Ok(elements)
+    }
+
+    /// Post-condition: Vec is **Not** empty
     fn var_name(&mut self) -> ScanResult<QnName> {
 
         /*
@@ -281,7 +300,7 @@ impl<'src> Parser<'src> {
 
     /// Post-condition: Vec is **Not** empty
     ///
-    /// Alias `columnList`
+    /// Alias: `columnList`
     fn name_list(&mut self) -> ScanResult<Vec<CowStr>> {
 
         /*
@@ -292,11 +311,13 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec is **Not** empty
-    fn opt_column_list(&mut self) -> ScanResult<Vec<CowStr>> {
+    ///
+    /// Alias: `opt_column_list`
+    fn opt_name_list(&mut self) -> ScanResult<Vec<CowStr>> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::opt_col_list";
 
         /*
-            '(' columnList ')'
+            '(' name_list ')'
         */
 
         self.buffer.consume_eq(OpenParenthesis)?;
@@ -537,6 +558,25 @@ impl<'src> Parser<'src> {
         };
 
         Ok(range_var)
+    }
+
+    /// Post-condition: Vec is **Not** empty
+    fn any_name_list(&mut self) -> ScanResult<Vec<QnName>> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::any_name_list";
+
+        /*
+            any_name ( ',' any_name )*
+        */
+
+        let element = self.any_name()?;
+        let mut elements = vec![element];
+
+        while self.buffer.consume_eq(Comma).optional()?.is_some() {
+            let element = self.any_name().required(fn_info!(FN_NAME))?;
+            elements.push(element);
+        }
+
+        Ok(elements)
     }
 
     /// Post-condition: Vec is **Not** empty
@@ -998,6 +1038,17 @@ mod tests {
     }
 
     #[test]
+    fn test_var_list() {
+        let mut parser = Parser::new("qual.name , second.qualified", DEFAULT_CONFIG);
+        let expected = vec![
+            vec!["qual".into(), "name".into()],
+            vec!["second".into(), "qualified".into()]
+        ];
+
+        assert_eq!(Ok(expected), parser.var_list());
+    }
+
+    #[test]
     /// All these methods are similar, so no point in repeating tests:
     /// * test_var_name
     /// * test_name_list
@@ -1051,6 +1102,19 @@ mod tests {
     #[test] #[ignore]
     fn test_a_expr() {
         todo!()
+    }
+
+    #[test]
+    fn test_any_name_list() {
+        let source = "qual.name_, second.qualif";
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+
+        let expected = vec![
+            vec!["qual".into(), "name_".into()],
+            vec!["second".into(), "qualif".into()]
+        ];
+
+        assert_eq!(Ok(expected), parser.any_name_list());
     }
 
     #[test]

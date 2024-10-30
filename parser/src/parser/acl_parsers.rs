@@ -37,7 +37,7 @@ impl Parser<'_> {
         }
     }
 
-    /// Alias `opt_grant_grant_option`
+    /// Alias: `opt_grant_grant_option`
     pub(super) fn opt_grant_option(&mut self) -> EofResult<bool> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::opt_grant_grant_option";
 

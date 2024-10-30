@@ -9,7 +9,7 @@ impl Parser<'_> {
 
         if self.buffer.consume_kw_eq(All).no_match_to_option()?.is_some() {
             self.buffer.consume_kw_eq(Privileges).optional()?;
-            let columns = self.opt_column_list().optional()?;
+            let columns = self.opt_name_list().optional()?;
             return Ok(AccessPrivilege::All(columns))
         }
 
@@ -54,15 +54,15 @@ impl Parser<'_> {
                     Ok(AlterSystem)
                 },
                 Kw(CreateKw) => {
-                    let columns = self.opt_column_list().optional()?;
+                    let columns = self.opt_name_list().optional()?;
                     Ok(Create(columns))
                 },
                 Kw(ReferencesKw) => {
-                    let columns = self.opt_column_list().optional()?;
+                    let columns = self.opt_name_list().optional()?;
                     Ok(References(columns))
                 },
                 Kw(SelectKw) => {
-                    let columns = self.opt_column_list().optional()?;
+                    let columns = self.opt_name_list().optional()?;
                     Ok(Select(columns))
                 },
             }
@@ -77,7 +77,7 @@ impl Parser<'_> {
         }
 
         let name = self.col_id()?;
-        let columns = self.opt_column_list().optional()?;
+        let columns = self.opt_name_list().optional()?;
 
         Ok(Named(name, columns))
     }
