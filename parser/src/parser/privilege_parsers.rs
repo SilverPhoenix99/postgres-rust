@@ -47,12 +47,9 @@ impl Parser<'_> {
             | col_id opt_column_list
         */
 
-        let privilege = consume!{self
+        let privilege = consume!{self FN_NAME
             Ok {
-                Kw(Alter) => {
-                    self.buffer.consume_kw_eq(SystemKw).required(fn_info!(FN_NAME))?;
-                    Ok(AlterSystem)
-                },
+                Kw(Alter), Kw(SystemKw) => Ok(AlterSystem),
                 Kw(CreateKw) => {
                     let columns = self.opt_name_list().optional()?;
                     Ok(Create(columns))

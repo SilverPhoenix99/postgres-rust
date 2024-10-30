@@ -1,25 +1,18 @@
 impl Parser<'_> {
     pub(in crate::parser) fn alter_stmt(&mut self) -> ParseResult<RawStmt> {
-        use TokenKind::Keyword as Kw;
         const FN_NAME: &str = "postgres_parser::parser::Parser::alter_stmt";
 
         // ALTER was consumed, so at least one of the following matches is required
 
-        consume! {self
+        consume! {self FN_NAME
             Ok {
                 Kw(Collation) => self.alter_collation_stmt(),
                 Kw(Conversion) => self.alter_conversion_stmt(),
-                Kw(DefaultKw) => {
-                    self.buffer.consume_kw_eq(Privileges).required(fn_info!(FN_NAME))?;
-                    self.alter_default_privileges_stmt().map(From::from)
-                },
+                Kw(DefaultKw), Kw(Privileges) => self.alter_default_privileges_stmt().map(From::from),
                 Kw(Event) => self.alter_event_trigger_stmt(),
                 Kw(Group) => self.alter_group_stmt(),
                 Kw(Language) => self.alter_language_stmt(),
-                Kw(Procedural) => {
-                    self.buffer.consume_kw_eq(Language).required(fn_info!(FN_NAME))?;
-                    self.alter_language_stmt()
-                },
+                Kw(Procedural), Kw(Language) => self.alter_language_stmt(),
                 Kw(Large) => self.alter_large_object_stmt(),
             }
             Err {
@@ -60,7 +53,7 @@ use crate::lexer::Keyword::Privileges;
 use crate::{
     lexer::{
         Keyword::{Collation, Conversion, DefaultKw, Event, Group, Language, Large, Procedural},
-        TokenKind
+        TokenKind::Keyword as Kw,
     },
     parser::{
         ast_node::RawStmt,
