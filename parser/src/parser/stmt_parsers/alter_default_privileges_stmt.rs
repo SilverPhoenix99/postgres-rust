@@ -34,15 +34,13 @@ impl Parser<'_> {
     fn def_acl_option(&mut self) -> ScanResult<AclOption> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::def_acl_option";
 
-        consume!{self
+        consume!{self FN_NAME
             Ok {
-                Kw(In) => {
-                    self.buffer.consume_kw_eq(Schema).required(fn_info!(FN_NAME))?;
+                Kw(In), Kw(Schema) => {
                     let schemas = self.name_list().required(fn_info!(FN_NAME))?;
                     Ok(AclOption::Schemas(schemas))
                 },
-                Kw(For) => {
-                    self.buffer.consume_kws(|kw| matches!(kw, Role | User)).required(fn_info!(FN_NAME))?;
+                Kw(For), Kw(Role | User) => {
                     let roles = self.role_list().required(fn_info!(FN_NAME))?;
                     Ok(AclOption::Roles(roles))
                 }
