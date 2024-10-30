@@ -1,6 +1,6 @@
 impl Parser<'_> {
 
-    /// Alias `AlterDefaultPrivilegesStmt`
+    /// Alias: `AlterDefaultPrivilegesStmt`
     pub(super) fn alter_default_privileges_stmt(&mut self) -> ParseResult<AlterDefaultPrivilegesStmt> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::alter_default_privileges_stmt";
 
@@ -17,7 +17,7 @@ impl Parser<'_> {
 
     /// Post-condition: Vec is **Not** empty
     ///
-    /// Alias `DefACLOptionList`
+    /// Alias: `DefACLOptionList`
     fn def_acl_option_list(&mut self) -> ScanResult<Vec<AclOption>> {
 
         let element = self.def_acl_option()?;
@@ -30,7 +30,7 @@ impl Parser<'_> {
         Ok(elements)
     }
 
-    /// Alias `DefACLOption`
+    /// Alias: `DefACLOption`
     fn def_acl_option(&mut self) -> ScanResult<AclOption> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::def_acl_option";
 
@@ -54,7 +54,7 @@ impl Parser<'_> {
         }
     }
 
-    /// Alias `DefACLAction`
+    /// Alias: `DefACLAction`
     fn def_acl_action(&mut self) -> ScanResult<GrantStmt> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::def_acl_action";
 
@@ -107,7 +107,7 @@ impl Parser<'_> {
         }
     }
 
-    /// Alias `defacl_privilege_target`
+    /// Alias: `defacl_privilege_target`
     fn def_acl_privilege_target(&mut self) -> ScanResult<AclTarget> {
 
         consume!{self
