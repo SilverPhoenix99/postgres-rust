@@ -5,11 +5,28 @@ require_relative 'minimal_perfect_hash'
 
 class KeywordsGenerator
 
+  class Keyword
+
+    attr_reader :text,
+                :keyword,
+                :category,
+                :bare
+
+    attr_accessor :slot
+
+    def initialize(text:, keyword:, category:, bare:)
+      @text = text
+      @category = category
+      @bare = bare
+      @keyword = keyword
+    end
+  end
+
   CATEGORIES = {
-    'UNRESERVED_KEYWORD' => 'Unreserved',
-    'COL_NAME_KEYWORD' => 'ColumnName',
-    'TYPE_FUNC_NAME_KEYWORD' => 'TypeFuncName',
-    'RESERVED_KEYWORD' => 'Reserved',
+    'UNRESERVED_KEYWORD' => :Unreserved,
+    'COL_NAME_KEYWORD' => :ColumnName,
+    'TYPE_FUNC_NAME_KEYWORD' => :TypeFuncName,
+    'RESERVED_KEYWORD' => :Reserved,
   }
 
   # Keywords that clash with Rust classes.
@@ -52,11 +69,11 @@ class KeywordsGenerator
   def init_keywords_hash
     return if @table
 
-    keys = keywords.map { |kw| kw[:text] }
+    keys = keywords.map(&:text)
     @table = MinimalPerfectHash.generate!(keys)
 
     keywords.each do |kw|
-      kw[:slot] = @table.slots[kw[:text]]
+      kw.slot = @table.slots[kw.text]
     end
 
     nil
@@ -90,8 +107,8 @@ class KeywordsGenerator
   def render_keyword_enum
 
     kws = keywords
-      .sort_by { |kw| kw[:keyword] }
-      .map { |kw| "    #{kw[:keyword]} = #{kw[:slot]}," }
+      .sort_by(&:keyword)
+      .map { |kw| "    #{kw.keyword} = #{kw.slot}," }
 
     [
       '#[derive(Debug, Clone, Copy, Eq, PartialEq)]',
@@ -103,14 +120,14 @@ class KeywordsGenerator
 
   def render_keyword_details
 
-    kw_details = keywords.sort_by { |kw| kw[:slot] }
+    kw_details = keywords.sort_by(&:slot)
       .map do |kw|
 
-        keyword = kw[:keyword]
-        text = kw[:text].inspect
-        category = kw[:category]
-        bare = kw[:bare]
-        slot = kw[:slot]
+        keyword = kw.keyword
+        text = kw.text.inspect
+        category = kw.category
+        bare = kw.bare
+        slot = kw.slot
 
         kw_detail = "KeywordDetails::new(#{keyword}, #{text}, #{category}, #{bare})"
 
@@ -125,7 +142,7 @@ class KeywordsGenerator
   end
 
   def render_max_length
-    max_len = keywords.map { |kw| kw[:text].size }.max
+    max_len = keywords.map { |kw| kw.text.size }.max
     "pub(super) const MAX_KEYWORD_LENGTH: usize = #{max_len};"
   end
 
@@ -145,22 +162,24 @@ class KeywordsGenerator
   end
 
   def keywords
-    @keywords ||= read_file
+    @keywords ||= lines
       .filter_map { |line| line.match(/^PG_KEYWORD\(\K([^)]+)/) }
       .map do |match|
         text, keyword, category, bare = match[0].split(/\s*,\s*/)
+
         keyword = keyword.sub(/_P$/, '').split('_').map(&:capitalize).join
         keyword += 'Kw' if CLASHES.include?(keyword)
-        {
+
+        Keyword.new(
           text: text[1..-2], # remove quotes
           keyword:,
           category: CATEGORIES[category],
           bare: bare == 'BARE_LABEL'
-        }
+        )
       end
   end
 
-  def read_file
+  def lines
     @lines ||= @input.readlines
   end
 
