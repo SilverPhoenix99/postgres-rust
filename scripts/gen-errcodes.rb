@@ -4,6 +4,37 @@ require_relative 'minimal_perfect_hash'
 
 class ErrCodesGenerator
 
+  class ErrCode
+
+    attr_reader :sqlstate,
+                :category,
+                :name,
+                :spec_name,
+                :repr
+
+    attr_accessor :slot
+
+    def initialize(sqlstate:, category:, macro_name:, spec_name:)
+      @sqlstate = sqlstate
+      @spec_name = spec_name
+
+      name = macro_name[8..-1] # remove 'ERRCODE_'
+      @name = name.downcase.gsub(/(?:^|_)(.)/) { |m| m[-1].upcase }
+
+      @category = case category
+        when 'E' then :Error
+        when 'W' then :Warning
+        else :Success
+      end
+
+      @repr = sqlstate.bytes
+        .map { |b| b - '0'.ord }
+        .reduce { |acc, b| (acc << 6) | b }
+    end
+
+    def success? = @category == :Success
+  end
+
   def self.run!(input, output)
     new(input, output).run!
   end
@@ -23,8 +54,8 @@ class ErrCodesGenerator
     return if @table
 
     @codes = errcodes.values.flatten
-      .reject { |code| code[:category] == :Success || aliases.dig(code[:sqlstate], code[:name]) }
-      .to_h { |code| [code[:repr], code] }
+      .reject { |code| code.success? || aliases.dig(code.sqlstate, code.name) }
+      .to_h { |code| [code.repr, code] }
 
     @table = MinimalPerfectHash.generate!(@codes.keys)
 
@@ -57,22 +88,21 @@ class ErrCodesGenerator
       section = "/* #{section} */"
 
       codes = codes
-        .reject { |code| aliases.dig(code[:sqlstate], code[:name]) }
+        .reject { |code| aliases.dig(code.sqlstate, code.name) }
         .flat_map do |code|
-          sqlstate = code[:sqlstate]
-          repr = code[:repr]
-          name = code[:name]
 
-          akas = if aliases.dig(sqlstate, :base_code) == name
-            aliases[sqlstate]
+          akas = if aliases.dig(code.sqlstate, :base_code) == code.name
+            aliases[code.sqlstate]
               .keys
               .reject { |k| k == :base_code }
               .map { |a| "/// Alias: `#{a}`<p/>" }
           end
 
+          repr = code.repr.to_s(16)
+
           [
             *akas,
-            "/** SQLSTATE: `#{sqlstate}` */ #{name} = 0x#{repr.to_s(16)},"
+            "/** SQLSTATE: `#{code.sqlstate}` */ #{code.name} = 0x#{repr},"
           ]
         end
 
@@ -94,14 +124,12 @@ class ErrCodesGenerator
 
     variants = @table.slots
       .map do |code, slot|
-        @codes[code].tap { |c| c[:slot] = slot }
+        @codes[code].tap { |c| c.slot = slot }
       end
-      .sort_by { |code| code[:slot] }
+      .sort_by(&:slot)
       .map do |code|
-        repr = '%08x' % code[:repr]
-        sqlstate = code[:sqlstate]
-        name = code[:name]
-        "    (0x#{repr}, ()), // #{sqlstate} #{name}"
+        repr = '%08x' % code.repr
+        "    (0x#{repr}, ()), // #{code.sqlstate} #{code.name}"
       end
 
     [
@@ -128,14 +156,14 @@ class ErrCodesGenerator
 
   def aliases
     @aliases ||= errcodes.values.flatten
-      .group_by { |code| code[:sqlstate] }
+      .group_by(&:sqlstate)
       .select { |_, codes| codes.count > 1 }
       .transform_values do |codes|
         codes.each_with_object({}) do |code, h|
-          if code[:spec_name].nil?
-            h[code[:name]] = :alias
+          if code.spec_name.nil?
+            h[code.name] = :alias
           else
-            h[:base_code] = code[:name]
+            h[:base_code] = code.name
           end
         end
       end
@@ -147,19 +175,7 @@ class ErrCodesGenerator
       .each_with_object({}) do |(section, *codes), h|
         h[section] = codes.map(&:split)
           .map do |sqlstate, category, macro_name, spec_name|
-            repr = sqlstate.bytes
-              .map { |b| b - '0'.ord }
-              .reduce { |acc, b| (acc << 6) | b }
-
-            category = case category
-              when 'E' then :Error
-              when 'W' then :Warning
-              else :Success
-            end
-
-            name = macro_name[8..-1] # remove 'ERRCODE_'
-            name = name.downcase.gsub(/(?:^|_)(.)/) { |m| m[-1].upcase }
-            { sqlstate:, category:, name:, spec_name:, repr: }
+            ErrCode.new(sqlstate:, category:, macro_name:, spec_name:)
           end
       end
   end
