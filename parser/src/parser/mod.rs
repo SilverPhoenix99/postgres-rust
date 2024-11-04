@@ -24,7 +24,6 @@ pub use self::{
 };
 
 type CowStr = Cow<'static, str>;
-type QnName = Vec<CowStr>;
 
 pub(crate) type ParseResult<T> = Result<T, PartialParserError>;
 
@@ -270,7 +269,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec is **Not** empty
-    fn var_list(&mut self) -> ScanResult<Vec<QnName>> {
+    fn var_list(&mut self) -> ScanResult<Vec<QualifiedName>> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::var_list";
 
         /*
@@ -289,7 +288,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec is **Not** empty
-    fn var_name(&mut self) -> ScanResult<QnName> {
+    fn var_name(&mut self) -> ScanResult<QualifiedName> {
 
         /*
             col_id ( '.' col_id )*
@@ -328,7 +327,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec is **Not** empty
-    fn col_id_list(&mut self, separator: TokenKind) -> ScanResult<QnName> {
+    fn col_id_list(&mut self, separator: TokenKind) -> ScanResult<QualifiedName> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::col_id_list";
 
         /*
@@ -533,15 +532,15 @@ impl<'src> Parser<'src> {
             col_id attrs{0,2}
         */
 
-        let qn_name = self.any_name()?;
+        let qn = self.any_name()?;
 
-        if !(1..=3).contains(&qn_name.len()) {
-            let err = ImproperQualifiedName(NameList(qn_name));
+        if !(1..=3).contains(&qn.len()) {
+            let err = ImproperQualifiedName(NameList(qn));
             let err = PartialParserError::new(err, fn_info!(FN_NAME));
             return Err(err.into())
         }
 
-        let mut it = qn_name.into_iter();
+        let mut it = qn.into_iter();
 
         let range_var = match (it.next(), it.next(), it.next()) {
             (Some(relation), None, None) => RangeVar::new(relation),
@@ -561,7 +560,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec is **Not** empty
-    fn any_name_list(&mut self) -> ScanResult<Vec<QnName>> {
+    fn any_name_list(&mut self) -> ScanResult<Vec<QualifiedName>> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::any_name_list";
 
         /*
@@ -582,7 +581,7 @@ impl<'src> Parser<'src> {
     /// Post-condition: Vec is **Not** empty
     ///
     /// Alias: `handler_name`
-    fn any_name(&mut self) -> ScanResult<QnName> {
+    fn any_name(&mut self) -> ScanResult<QualifiedName> {
 
         /*
             col_id attrs
@@ -593,7 +592,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec is **Not** empty
-    fn attrs(&mut self, prefix: CowStr) -> ParseResult<QnName> {
+    fn attrs(&mut self, prefix: CowStr) -> ParseResult<QualifiedName> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::attrs";
 
         // A prefix token is passed to prevent a right shift of the Vec later on,
@@ -922,6 +921,7 @@ fn parse_number(value: &str, radix: u32) -> Option<UnsignedNumber> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::ast_node::QualifiedName;
     use postgres_basics::guc::BackslashQuote;
     use test_case::test_case;
 
@@ -1123,7 +1123,7 @@ mod tests {
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
         let actual = parser.any_name();
 
-        let expected: QnName = vec![
+        let expected: QualifiedName = vec![
             "some_".into(),
             "qualified_".into(),
             "name_".into()
@@ -1167,7 +1167,7 @@ mod tests {
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
         let actual = parser.attrs("*some*".into());
 
-        let expected: QnName = vec![
+        let expected: QualifiedName = vec![
             "*some*".into(),
             "qualified_".into(),
             "name_".into()
@@ -1340,6 +1340,7 @@ use self::{
         EventTriggerState,
         ExprNode,
         IsolationLevel,
+        QualifiedName,
         RangeVar,
         RawStmt,
         RoleSpec,

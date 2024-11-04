@@ -52,7 +52,7 @@ pub enum ParserErrorKind {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct NameList(pub QnName);
+pub struct NameList(pub QualifiedName);
 
 impl Display for NameList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -137,7 +137,7 @@ impl ErrorReport for ParserErrorKind {
 }
 
 use crate::lexer::LexerErrorKind;
-use crate::parser::QnName;
+use crate::parser::QualifiedName;
 use crate::string_decoders::{
     ExtendedStringError,
     UnicodeStringError,

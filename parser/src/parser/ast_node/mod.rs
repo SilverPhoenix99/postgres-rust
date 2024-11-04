@@ -79,15 +79,15 @@ pub enum Operator {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct QnOperator(pub Vec<CowStr>, pub Operator);
+pub struct QualifiedOperator(pub Vec<CowStr>, pub Operator);
 
-impl From<Operator> for QnOperator {
+impl From<Operator> for QualifiedOperator {
     fn from(value: Operator) -> Self {
         Self(vec![], value)
     }
 }
 
-type QnName = Vec<CowStr>;
+pub(super) type QualifiedName = Vec<CowStr>;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct AggregateWithArgtypes {
@@ -112,24 +112,24 @@ pub struct RelationExpr {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RenameTarget {
     Aggregate(AggregateWithArgtypes),
-    Collation(QnName),
-    Conversion(QnName),
+    Collation(QualifiedName),
+    Conversion(QualifiedName),
     Database(CowStr),
-    Domain(QnName),
-    DomainConstraint { domain: QnName, constraint: CowStr },
+    Domain(QualifiedName),
+    DomainConstraint { domain: QualifiedName, constraint: CowStr },
     EventTrigger(CowStr),
     ForeignDataWrapper(CowStr),
     ForeignServer(CowStr),
     ForeignTable { target: RelationExpr, missing_ok: bool },
     ForeignTableColumn { table: RelationExpr, column: CowStr, missing_ok: bool },
     Function(FunctionWithArgtypes),
-    Index { target: QnName, missing_ok: bool },
+    Index { target: QualifiedName, missing_ok: bool },
     Language(CowStr),
-    MaterializedView { target: QnName, missing_ok: bool },
-    MaterializedViewColumn { view: QnName, column: QnName, missing_ok: bool },
-    OperatorClass(QnName),
-    OperatorFamily(QnName),
-    Policy { table: QnName, policy: CowStr, missing_ok: bool },
+    MaterializedView { target: QualifiedName, missing_ok: bool },
+    MaterializedViewColumn { view: QualifiedName, column: QualifiedName, missing_ok: bool },
+    OperatorClass(QualifiedName),
+    OperatorFamily(QualifiedName),
+    Policy { table: QualifiedName, policy: CowStr, missing_ok: bool },
     Procedure(FunctionWithArgtypes),
     Publication(CowStr),
     /// Aliases:
@@ -137,24 +137,24 @@ pub enum RenameTarget {
     /// * `User`
     Role(CowStr),
     Routine(FunctionWithArgtypes),
-    Rule { relation: QnName, rule: CowStr },
+    Rule { relation: QualifiedName, rule: CowStr },
     Schema(CowStr),
-    Sequence { target: QnName, missing_ok: bool },
-    Statistic(QnName),
+    Sequence { target: QualifiedName, missing_ok: bool },
+    Statistic(QualifiedName),
     Subscription(CowStr),
     Table { target: RelationExpr, missing_ok: bool },
     TableColumn { table: RelationExpr, column: CowStr, missing_ok: bool },
     TableConstraint { table: RelationExpr, constraint: CowStr, missing_ok: bool },
     Tablespace(CowStr),
-    TextSearchConfiguration(QnName),
-    TextSearchDictionary(QnName),
-    TextSearchParser(QnName),
-    TextSearchTemplate(QnName),
-    Trigger { table: QnName, trigger: CowStr },
-    Type(QnName),
-    TypeAttribute { typ: QnName, attribute: CowStr },
-    View { target: QnName, missing_ok: bool },
-    ViewColumn { view: QnName, column: CowStr, missing_ok: bool },
+    TextSearchConfiguration(QualifiedName),
+    TextSearchDictionary(QualifiedName),
+    TextSearchParser(QualifiedName),
+    TextSearchTemplate(QualifiedName),
+    Trigger { table: QualifiedName, trigger: CowStr },
+    Type(QualifiedName),
+    TypeAttribute { typ: QualifiedName, attribute: CowStr },
+    View { target: QualifiedName, missing_ok: bool },
+    ViewColumn { view: QualifiedName, column: CowStr, missing_ok: bool },
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -193,10 +193,10 @@ pub enum SignedNumber {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AlterOwnerTarget {
     Aggregate(AggregateWithArgtypes),
-    Collation(QnName),
-    Conversion(QnName),
+    Collation(QualifiedName),
+    Conversion(QualifiedName),
     Database(CowStr),
-    Domain(QnName),
+    Domain(QualifiedName),
     EventTrigger(CowStr),
     ForeignDataWrapper(CowStr),
     ForeignServer(CowStr),
@@ -204,18 +204,18 @@ pub enum AlterOwnerTarget {
     Language(CowStr),
     LargeObject(SignedNumber),
     Operator(OperatorWithArgtypes),
-    OperatorClass(QnName),
-    OperatorFamily(QnName),
+    OperatorClass(QualifiedName),
+    OperatorFamily(QualifiedName),
     Procedure(FunctionWithArgtypes),
     Publication(CowStr),
     Routine(FunctionWithArgtypes),
     Schema(CowStr),
-    Statistic(QnName),
+    Statistic(QualifiedName),
     Subscription(CowStr),
     Tablespace(CowStr),
-    TextSearchConfiguration(QnName),
-    TextSearchDictionary(QnName),
-    Type(QnName),
+    TextSearchConfiguration(QualifiedName),
+    TextSearchDictionary(QualifiedName),
+    Type(QualifiedName),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -244,27 +244,27 @@ impl AlterOwnerStmt {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AlterObjectSchemaTarget {
     Aggregate(AggregateWithArgtypes),
-    Collation(QnName),
-    Conversion(QnName),
-    Domain(QnName),
+    Collation(QualifiedName),
+    Conversion(QualifiedName),
+    Domain(QualifiedName),
     Extension(CowStr),
     ForeignTable { target: RelationExpr, missing_ok: bool },
     Function(FunctionWithArgtypes),
-    MaterializedView { target: QnName, missing_ok: bool },
+    MaterializedView { target: QualifiedName, missing_ok: bool },
     Operator(OperatorWithArgtypes),
-    OperatorClass(QnName),
-    OperatorFamily(QnName),
+    OperatorClass(QualifiedName),
+    OperatorFamily(QualifiedName),
     Procedure(FunctionWithArgtypes),
     Routine(FunctionWithArgtypes),
-    Sequence { target: QnName, missing_ok: bool },
-    Statistic(QnName),
+    Sequence { target: QualifiedName, missing_ok: bool },
+    Statistic(QualifiedName),
     Table { target: RelationExpr, missing_ok: bool },
-    TextSearchConfiguration(QnName),
-    TextSearchDictionary(QnName),
-    TextSearchParser(QnName),
-    TextSearchTemplate(QnName),
-    Type(QnName),
-    View { target: QnName, missing_ok: bool },
+    TextSearchConfiguration(QualifiedName),
+    TextSearchDictionary(QualifiedName),
+    TextSearchParser(QualifiedName),
+    TextSearchTemplate(QualifiedName),
+    Type(QualifiedName),
+    View { target: QualifiedName, missing_ok: bool },
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -292,13 +292,13 @@ pub type BinaryOperands = Box<(ExprNode, ExprNode)>;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct BinaryExpr {
-    operator: QnOperator,
+    operator: QualifiedOperator,
     left_operand: ExprNode,
     right_operand: ExprNode,
 }
 
 impl BinaryExpr {
-    pub fn new(operator: QnOperator, left_operand: ExprNode, right_operand: ExprNode) -> Self {
+    pub fn new(operator: QualifiedOperator, left_operand: ExprNode, right_operand: ExprNode) -> Self {
         Self { operator, left_operand, right_operand, }
     }
 
@@ -353,12 +353,12 @@ impl BinaryExpr {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct UnaryExpr {
-    operator: QnOperator,
+    operator: QualifiedOperator,
     operand: ExprNode,
 }
 
 impl UnaryExpr {
-    pub fn new(operator: QnOperator, operand: ExprNode) -> Self {
+    pub fn new(operator: QualifiedOperator, operand: ExprNode) -> Self {
         Self { operator, operand }
     }
 
@@ -587,7 +587,7 @@ pub enum RawStmt {
     PrepareStmt(Box<PrepareStmt>),
     PrepareTransactionStmt(String),
     ReassignOwnedStmt(ReassignOwnedStmt),
-    RefreshCollationVersionStmt(QnName),
+    RefreshCollationVersionStmt(QualifiedName),
     RenameStmt(RenameStmt),
     TransactionStmt(TransactionStmt),
     UnlistenStmt(OneOrAll),
