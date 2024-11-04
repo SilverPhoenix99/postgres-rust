@@ -1,5 +1,5 @@
 impl Parser<'_> {
-    pub(in crate::parser) fn func_name(&mut self) -> ScanResult<QnName> {
+    pub(in crate::parser) fn func_name(&mut self) -> ScanResult<QualifiedName> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::func_name";
 
         /*
@@ -73,7 +73,7 @@ mod tests {
 }
 
 use crate::parser::error::syntax_err;
-use crate::parser::QnName;
+use crate::parser::QualifiedName;
 use crate::{
     lexer::KeywordCategory::{ColumnName, Reserved, TypeFuncName, Unreserved},
     parser::{

@@ -18,13 +18,13 @@ pub const fn clean_fn_name(fn_name: &'static str) -> &'static str {
 
 /// Qualified function name
 #[macro_export]
-macro_rules! qn_fn_name {
+macro_rules! qual_fn_name {
     () => { $crate::clean_fn_name(std::any::type_name_of_val(&||{})) };
 }
 
 #[macro_export]
 macro_rules! fn_info {
-    () => { $crate::FnInfo::new(file!(), line!(), $crate::qn_fn_name!()) };
+    () => { $crate::FnInfo::new(file!(), line!(), $crate::qual_fn_name!()) };
 
     ($fn_name:expr) => {{
         const FN_INFO: $crate::FnInfo = $crate::FnInfo::new(file!(), line!(), $fn_name);
@@ -61,9 +61,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_qn_fn_name() {
-        let fn_name = module_path!().to_owned() + "::test_qn_fn_name";
-        assert_eq!(fn_name, qn_fn_name!());
+    fn test_qual_fn_name() {
+        let fn_name = module_path!().to_owned() + "::test_qual_fn_name";
+        assert_eq!(fn_name, qual_fn_name!());
     }
 
     #[test]

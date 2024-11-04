@@ -14,7 +14,7 @@ enum Op {
     LessEquals,
     NotEquals,
     IsExpr,
-    QnOperator(QnOperator),
+    QualifiedOperator(QualifiedOperator),
 }
 
 impl Op {
@@ -30,7 +30,7 @@ impl Op {
             Exponentiation => Left(5),
             Multiplication | Division | Modulo => Left(4),
             Addition | Subtraction => Left(3),
-            QnOperator(_) => Left(2),
+            QualifiedOperator(_) => Left(2),
             Less | Greater | Equals | GreaterEquals | LessEquals | NotEquals => Non(1),
             IsExpr => Non(0),
         }
@@ -91,7 +91,7 @@ impl Parser<'_> {
 
         if range.contains(&2) {
             if let Some(op) = self.qual_op().no_match_to_option()? {
-                return Ok(Op::QnOperator(op))
+                return Ok(Op::QualifiedOperator(op))
             }
         }
 
@@ -206,7 +206,7 @@ use crate::{
         TokenKind::*
     },
     parser::{
-        ast_node::{ExprNode, QnOperator, UnaryExpr},
+        ast_node::{ExprNode, QualifiedOperator, UnaryExpr},
         expr_parsers::associativity::Associativity::{self, Left, Non, Right},
         result::{
             Optional,

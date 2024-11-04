@@ -23,28 +23,28 @@ bitflags! {
 impl<'src> Parser<'src> {
 
     /// Alias: `qual_Op`
-    pub(super) fn qual_op(&mut self) -> ScanResult<QnOperator> {
+    pub(super) fn qual_op(&mut self) -> ScanResult<QualifiedOperator> {
         self.operator(OperatorKind::Qualified)
     }
 
     /// Alias: `all_Op`
     pub(super) fn all_op(&mut self) -> ScanResult<Operator> {
-        let QnOperator(_qn, op) = self.operator(OperatorKind::Unqualified)?;
-        debug_assert!(_qn.is_empty());
+        let QualifiedOperator(_qo, op) = self.operator(OperatorKind::Unqualified)?;
+        debug_assert!(_qo.is_empty());
         Ok(op)
     }
 
     /// Alias: `qual_all_Op`
-    pub(super) fn qual_all_op(&mut self) -> ScanResult<QnOperator> {
+    pub(super) fn qual_all_op(&mut self) -> ScanResult<QualifiedOperator> {
         self.operator(OperatorKind::All)
     }
 
     /// Alias: `subquery_Op`
-    pub(super) fn subquery_op(&mut self) -> ScanResult<QnOperator> {
+    pub(super) fn subquery_op(&mut self) -> ScanResult<QualifiedOperator> {
         self.operator(OperatorKind::Subquery)
     }
 
-    pub(super) fn operator(&mut self, kind: OperatorKind) -> ScanResult<QnOperator> {
+    pub(super) fn operator(&mut self, kind: OperatorKind) -> ScanResult<QualifiedOperator> {
         use TokenKind::{Equals, Greater, GreaterEquals, Keyword as Kw, Less, LessEquals, NotEquals};
         use crate::lexer::Keyword::{Ilike, Like, Operator as OperatorKw};
 
@@ -93,7 +93,7 @@ impl<'src> Parser<'src> {
         }
     }
 
-    pub(super) fn any_operator(&mut self) -> ScanResult<QnOperator> {
+    pub(super) fn any_operator(&mut self) -> ScanResult<QualifiedOperator> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::any_operator";
 
         /*
@@ -116,7 +116,7 @@ impl<'src> Parser<'src> {
             op.required(fn_info!(FN_NAME))?
         };
 
-        let op = QnOperator(qn, op);
+        let op = QualifiedOperator(qn, op);
         Ok(op)
     }
 }
@@ -132,10 +132,10 @@ mod tests {
         let source = "operator(|/) <@>";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        let expected = QnOperator(vec![], UserDefined("|/".into()));
+        let expected = QualifiedOperator(vec![], UserDefined("|/".into()));
         assert_eq!(Ok(expected), parser.qual_op());
 
-        let expected = QnOperator(vec![], UserDefined("<@>".into()));
+        let expected = QualifiedOperator(vec![], UserDefined("<@>".into()));
         assert_eq!(Ok(expected), parser.qual_op());
     }
 
@@ -145,7 +145,7 @@ mod tests {
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.qual_op();
-        let expected = QnOperator(
+        let expected = QualifiedOperator(
             vec!["some_qn".into()],
             Multiplication
         );
@@ -154,23 +154,23 @@ mod tests {
 
     #[test]
     fn test_any_operator() {
-        let source = "@@ != qn_name.+";
+        let source = "@@ != q_name.+";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        let expected = QnOperator(
+        let expected = QualifiedOperator(
             vec![],
             UserDefined("@@".into())
         );
         assert_eq!(Ok(expected), parser.any_operator());
 
-        let expected = QnOperator(
+        let expected = QualifiedOperator(
             vec![],
             NotEquals
         );
         assert_eq!(Ok(expected), parser.any_operator());
 
-        let expected = QnOperator(
-            vec!["qn_name".into()],
+        let expected = QualifiedOperator(
+            vec!["q_name".into()],
             Addition
         );
         assert_eq!(Ok(expected), parser.any_operator());
@@ -231,7 +231,7 @@ use crate::{
         UserDefinedOperator,
     },
     parser::{
-        ast_node::{Operator::{self, *}, QnOperator},
+        ast_node::{Operator::{self, *}, QualifiedOperator},
         consume_macro::consume,
         result::{Optional, Required, ScanErrorKind::NoMatch, ScanResult},
         Parser
