@@ -390,11 +390,11 @@ impl<'src> Parser<'src> {
 
             let len = self.i32_literal_paren().optional()?;
             let character = match character {
-                CharacterSystemType::Varchar => { SystemType::Varchar(len) },
-                CharacterSystemType::Bpchar => SystemType::Bpchar(len),
+                CharacterSystemType::Varchar => { TypeName::Varchar { max_length: len } },
+                CharacterSystemType::Bpchar => TypeName::Bpchar { length: len },
             };
 
-            return Ok(character)
+            return Ok(character.into())
         }
 
         let bit = self.buffer.consume_kw_eq(Bit).optional()?;
@@ -442,39 +442,39 @@ impl<'src> Parser<'src> {
         )?;
 
         match kw {
-            Smallint => return Ok(Int2),
-            Int | Integer => return Ok(Int4),
-            Bigint => return Ok(Int8),
-            Real => return Ok(Float4),
-            Boolean => return Ok(Bool),
+            Smallint => return Ok(Int2.into()),
+            Int | Integer => return Ok(Int4.into()),
+            Bigint => return Ok(Int8.into()),
+            Real => return Ok(Float4.into()),
+            Boolean => return Ok(Bool.into()),
             _ => {},
         };
 
         if kw == Double {
             self.buffer.consume_kw_eq(Precision).required(fn_info!(FN_NAME))?;
-            return Ok(Float8)
+            return Ok(Float8.into())
         }
 
         if kw == Float {
             // opt_float: '(' ICONST ')'
             return match self.i32_literal_paren().optional()? {
-                None => Ok(Float8),
+                None => Ok(Float8.into()),
                 Some(num @ ..=0) => Err(ScanErr(
                     PartialParserError::new(FloatPrecisionUnderflow(num), fn_info!(FN_NAME))
                 )),
-                Some(1..=24) => Ok(Float4),
-                Some(25..=53) => Ok(Float8),
+                Some(1..=24) => Ok(Float4.into()),
+                Some(25..=53) => Ok(Float8.into()),
                 Some(num @ 54..) => Err(ScanErr(
                     PartialParserError::new(FloatPrecisionOverflow(num), fn_info!(FN_NAME))
                 )),
             }
         }
 
-        let type_mods = self.opt_type_modifiers()
+        let type_modifiers = self.opt_type_modifiers()
             .optional()?
             .unwrap_or_else(Vec::new);
 
-        Ok(SystemType::Numeric(type_mods))
+        Ok(TypeName::Numeric { type_modifiers }.into())
     }
 
     /// Post-condition: Vec is **Not** empty
@@ -922,6 +922,7 @@ fn parse_number(value: &str, radix: u32) -> Option<UnsignedNumber> {
 mod tests {
     use super::*;
     use crate::parser::ast_node::QualifiedName;
+    use crate::parser::ast_node::TypeName::{Bool, Float4, Float8, Int2, Int4, Int8};
     use postgres_basics::guc::BackslashQuote;
     use test_case::test_case;
 
@@ -1083,7 +1084,7 @@ mod tests {
         ];
 
         for e in expected {
-            assert_eq!(Ok(e), parser.numeric());
+            assert_eq!(Ok(e.into()), parser.numeric());
         }
 
         // TODO: (DECIMAL | DEC | NUMERIC) opt_type_modifiers
@@ -1345,8 +1346,9 @@ use self::{
         RawStmt,
         RoleSpec,
         SignedNumber,
-        SystemType::{self, Bool, Float4, Float8, Int2, Int4, Int8},
+        SystemType,
         TransactionMode,
+        TypeName::{self, Bool, Float4, Float8, Int2, Int4, Int8},
         UnsignedNumber,
     },
     consume_macro::consume,

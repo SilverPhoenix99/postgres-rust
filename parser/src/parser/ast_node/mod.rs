@@ -20,7 +20,7 @@ pub use self::{
     numeric_spec::NumericSpec,
     reassign_owned_stmt::ReassignOwnedStmt,
     role_spec::RoleSpec,
-    system_type::SystemType,
+    system_type::{IntervalRange, SystemType, TypeName},
     transaction_stmt::{IsolationLevel, TransactionMode, TransactionStmt},
     variable_show_stmt::VariableShowStmt,
 };
@@ -426,22 +426,17 @@ pub struct XmlRoot {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Typename {
-    // TODO
-}
-
-#[derive(Debug, Clone, PartialEq)]
 pub struct XmlSerialize {
     kind: XmlNodeKind,
     x: ExprNode,
-    type_name: Typename,
+    type_name: SystemType,
     indent: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PrepareStmt {
     name: CowStr,
-    arg_types: Vec<Typename>,
+    arg_types: Vec<SystemType>,
     query: RawStmt,
 }
 
