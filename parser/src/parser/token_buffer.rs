@@ -1,13 +1,16 @@
 pub(super) struct TokenBuffer<'src> {
     lexer: Lexer<'src>,
-    peeked: Option<Located<EofResult<TokenKind>>>
+    buf: VecDeque<Located<EofResult<TokenKind>>>,
 }
 
 impl<'src> TokenBuffer<'src> {
 
     #[inline(always)]
     pub fn new(lexer: Lexer<'src>) -> Self {
-        Self { lexer, peeked: None }
+        Self {
+            lexer,
+            buf: VecDeque::with_capacity(2)
+        }
     }
 
     #[inline(always)]
@@ -29,7 +32,7 @@ impl<'src> TokenBuffer<'src> {
 
     #[inline(always)]
     pub fn next(&mut self) {
-        self.peeked = None;
+        self.buf.pop_front();
     }
 
     #[inline(always)]
@@ -37,23 +40,49 @@ impl<'src> TokenBuffer<'src> {
         self.peeked().0.clone()
     }
 
+    pub fn peek2(&mut self) -> (EofResult<TokenKind>, EofResult<TokenKind>) {
+
+        self.fill_buf();
+
+        // SAFETY: `fill_buf()` always adds 2 elements to `self.buf`,
+        //         even when the lexer is in Eof
+        let (first, _) = self.buf.front().unwrap();
+        let (second, _) = self.buf.get(1).unwrap();
+
+        (first.clone(), second.clone())
+    }
+
     fn peeked(&mut self) -> &Located<EofResult<TokenKind>> {
+
+        self.fill_buf();
+
+        // SAFETY: `fill_buf()` always adds 2 elements to `self.buf`,
+        //         even when the lexer is done
+        self.buf.front().unwrap()
+    }
+
+    fn fill_buf(&mut self) {
+        while self.buf.len() < 2 {
+            let result = self.lex_next();
+            self.buf.push_back(result);
+        }
+    }
+
+    fn lex_next(&mut self) -> Located<EofResult<TokenKind>> {
         use EofErrorKind::*;
 
-        self.peeked.get_or_insert_with(||
-            match self.lexer.next() {
-                None => {
-                    let loc = self.lexer.current_location();
-                    (Err(Eof), loc)
-                },
-                Some(Ok((tok, loc))) => (Ok(tok), loc),
-                Some(Err(lex_err)) => {
-                    let loc = lex_err.location().clone();
-                    let err = lex_err.into();
-                    (Err(NotEof(err)), loc)
-                },
-            }
-        )
+        match self.lexer.next() {
+            Some(Ok((tok, loc))) => (Ok(tok), loc),
+            Some(Err(lex_err)) => {
+                let loc = lex_err.location().clone();
+                let err = lex_err.into();
+                (Err(NotEof(err)), loc)
+            },
+            None => {
+                let loc = self.lexer.current_location();
+                (Err(Eof), loc)
+            },
+        }
     }
 
     #[inline(always)]
@@ -241,6 +270,31 @@ mod tests {
         assert_eq!(Ok(Identifier(BasicIdentifier)), result);
         assert_eq!(Location::new(4..15, 1, 5), buffer.current_location());
     }
+
+    #[test]
+    fn test_peek2() {
+        let lexer = Lexer::new("three identifiers innit", true);
+        let mut buffer =  TokenBuffer::new(lexer);
+
+        let result = buffer.peek2();
+        assert_eq!((Ok(Identifier(BasicIdentifier)), Ok(Identifier(BasicIdentifier))), result);
+        assert_eq!(Location::new(0..5, 1, 1), buffer.current_location());
+
+        buffer.next();
+        let result = buffer.peek2();
+        assert_eq!((Ok(Identifier(BasicIdentifier)), Ok(Identifier(BasicIdentifier))), result);
+        assert_eq!(Location::new(6..17, 1, 7), buffer.current_location());
+
+        buffer.next();
+        let result = buffer.peek2();
+        assert_eq!((Ok(Identifier(BasicIdentifier)), Err(EofErrorKind::Eof)), result);
+        assert_eq!(Location::new(18..23, 1, 19), buffer.current_location());
+
+        buffer.next();
+        let result = buffer.peek2();
+        assert_eq!((Err(EofErrorKind::Eof), Err(EofErrorKind::Eof)), result);
+        assert_eq!(Location::new(23..23, 1, 24), buffer.current_location());
+    }
 }
 
 use crate::{
@@ -257,3 +311,4 @@ use crate::{
     },
 };
 use postgres_basics::{Located, Location};
+use std::collections::VecDeque;
