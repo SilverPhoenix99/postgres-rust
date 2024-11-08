@@ -64,7 +64,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
                 }
 
                 result.map_err(|err|
-                    PartialParserError::new(ParserErrorKind::ExtendedString(err), fn_info!(FN_NAME))
+                    ParserErrorKind::ExtendedString(err).with_fn_info(fn_info!(FN_NAME))
                 )
             },
             UnicodeString => {
@@ -74,7 +74,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
                 UnicodeStringDecoder::new(slice, false, escape)
                     .decode()
                     .map_err(|err|
-                        PartialParserError::new(ParserErrorKind::UnicodeString(err), fn_info!(FN_NAME))
+                        PartialParserError::new(err, fn_info!(FN_NAME))
                     )
             }
             DollarString => unreachable!("`$` strings don't have any escapes"),

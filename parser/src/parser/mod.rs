@@ -460,12 +460,12 @@ impl<'src> Parser<'src> {
             return match self.i32_literal_paren().optional()? {
                 None => Ok(Float8.into()),
                 Some(num @ ..=0) => Err(ScanErr(
-                    PartialParserError::new(FloatPrecisionUnderflow(num), fn_info!(FN_NAME))
+                    FloatPrecisionUnderflow(num).with_fn_info(fn_info!(FN_NAME))
                 )),
                 Some(1..=24) => Ok(Float4.into()),
                 Some(25..=53) => Ok(Float8.into()),
                 Some(num @ 54..) => Err(ScanErr(
-                    PartialParserError::new(FloatPrecisionOverflow(num), fn_info!(FN_NAME))
+                    FloatPrecisionOverflow(num).with_fn_info(fn_info!(FN_NAME))
                 )),
             }
         }
@@ -535,9 +535,10 @@ impl<'src> Parser<'src> {
         let qn = self.any_name()?;
 
         if !(1..=3).contains(&qn.len()) {
-            let err = ImproperQualifiedName(NameList(qn));
-            let err = PartialParserError::new(err, fn_info!(FN_NAME));
-            return Err(err.into())
+            let err = ImproperQualifiedName(NameList(qn))
+                .with_fn_info(fn_info!(FN_NAME))
+                .into();
+            return Err(err)
         }
 
         let mut it = qn.into_iter();
@@ -859,14 +860,16 @@ impl<'src> Parser<'src> {
                     let slice = loc.slice(source);
                     match uescape_escape(slice) {
                         Some(escape) => Ok(Some(escape)),
-                        None => Err(PartialParserError::new(InvalidUescapeDelimiter, fn_info!(FN_NAME))),
+                        None => Err(
+                            InvalidUescapeDelimiter.with_fn_info(fn_info!(FN_NAME))
+                        ),
                     }
                 },
-                None => Err(PartialParserError::new(UescapeDelimiterMissing, fn_info!(FN_NAME)))
+                None => Err(UescapeDelimiterMissing.with_fn_info(fn_info!(FN_NAME)))
             });
 
         uescape.map_err(|err| match err {
-            Eof => PartialParserError::new(InvalidUescapeDelimiter, fn_info!(FN_NAME)),
+            Eof => InvalidUescapeDelimiter.with_fn_info(fn_info!(FN_NAME)),
             NoMatch => syntax_err!(FN_NAME),
             ScanErr(err) => err
         })

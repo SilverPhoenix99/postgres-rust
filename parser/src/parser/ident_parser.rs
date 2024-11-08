@@ -29,7 +29,7 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
                 UnicodeStringDecoder::new(slice, true, escape)
                     .decode()
                     .map_err(|err|
-                        PartialParserError::new(UnicodeString(err), fn_info!(FN_NAME))
+                        UnicodeString(err).with_fn_info(fn_info!(FN_NAME))
                     )
             },
         };
