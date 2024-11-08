@@ -12,17 +12,16 @@ impl RoleSpec {
         const FN_NAME: &str = "postgres_parser::parser::ast_node::RoleSpec::into_role_id";
         match self {
             Self::Name(role) => Ok(role),
-            Self::Public => Err(PartialParserError::new(ReservedRoleSpec("public"), fn_info!(FN_NAME))),
-            Self::CurrentRole => Err(PartialParserError::new(ForbiddenRoleSpec("CURRENT_ROLE"), fn_info!(FN_NAME))),
-            Self::CurrentUser => Err(PartialParserError::new(ForbiddenRoleSpec("CURRENT_USER"), fn_info!(FN_NAME))),
-            Self::SessionUser => Err(PartialParserError::new(ForbiddenRoleSpec("SESSION_USER"), fn_info!(FN_NAME))),
+            Self::Public => Err(ReservedRoleSpec("public").with_fn_info(fn_info!(FN_NAME))),
+            Self::CurrentRole => Err(ForbiddenRoleSpec("CURRENT_ROLE").with_fn_info( fn_info!(FN_NAME))),
+            Self::CurrentUser => Err(ForbiddenRoleSpec("CURRENT_USER").with_fn_info( fn_info!(FN_NAME))),
+            Self::SessionUser => Err(ForbiddenRoleSpec("SESSION_USER").with_fn_info( fn_info!(FN_NAME))),
         }
     }
 }
 
 use crate::parser::{
     ast_node::CowStr,
-    error::PartialParserError,
     ParseResult,
     ParserErrorKind::{ForbiddenRoleSpec, ReservedRoleSpec}
 };

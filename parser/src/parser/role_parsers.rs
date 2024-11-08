@@ -65,7 +65,7 @@ impl Parser<'_> {
             }
             Err {
                 Ok(Kw(NoneKw)) => ScanErr(
-                    PartialParserError::new(ReservedRoleSpec("none"), fn_info!(FN_NAME))
+                    ReservedRoleSpec("none").with_fn_info(fn_info!(FN_NAME))
                 ),
                 Ok(_) => NoMatch,
                 Err(err) => err.into(),

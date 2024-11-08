@@ -68,9 +68,12 @@ pub(crate) struct PartialParserError {
 }
 
 impl PartialParserError {
-    pub fn new(source: ParserErrorKind, fn_info: &'static FnInfo) -> Self {
+    pub fn new<S>(source: S, fn_info: &'static FnInfo) -> Self
+    where
+        S: Into<ParserErrorKind>,
+    {
         Self {
-            source,
+            source: source.into(),
             fn_info,
             location: None
         }
@@ -84,7 +87,7 @@ impl PartialParserError {
     }
 
     pub fn syntax(fn_info: &'static FnInfo) -> Self {
-        Self::new(Default::default(), fn_info)
+        Self::new(ParserErrorKind::default(), fn_info)
     }
 
     pub fn source(&self) -> &ParserErrorKind {
@@ -115,6 +118,12 @@ impl From<LexerError> for PartialParserError {
             fn_info: value.fn_info(),
             location: Some(value.location().clone())
         }
+    }
+}
+
+impl ParserErrorKind {
+    pub(crate) fn with_fn_info(self, fn_info: &'static FnInfo) -> PartialParserError {
+        PartialParserError::new(self, fn_info)
     }
 }
 
