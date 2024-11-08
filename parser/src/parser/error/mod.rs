@@ -55,10 +55,6 @@ impl HasLocation for ParserError {
     }
 }
 
-impl SqlReport for ParserError {}
-
-impl ParseReport for ParserError {}
-
 macro_rules! syntax_err {
     ($fn_name:expr) => { $crate::parser::error::PartialParserError::syntax(fn_info!($fn_name)).into() };
 }
@@ -82,9 +78,8 @@ impl PartialParserError {
 
     pub fn with_location(self, location: Location) -> Self {
         Self {
-            source: self.source,
-            fn_info: self.fn_info,
-            location: Some(location)
+            location: Some(location),
+            ..self
         }
     }
 
@@ -124,13 +119,17 @@ impl From<LexerError> for PartialParserError {
 }
 
 use crate::{
-    error::{HasLocation, LocatedErrorReport, ParseReport},
+    error::{HasLocation, LocatedErrorReport},
     lexer::LexerError
 };
 use postgres_basics::{
-    elog::{ErrorReport, HasFnInfo, HasSqlState, SqlReport},
-    sql_state::SqlState, FnInfo, Location
+    elog::{ErrorReport, HasFnInfo, HasSqlState},
+    sql_state::SqlState,
+    FnInfo,
+    Location
 };
-use std::borrow::Cow;
-use std::error::Error;
-use std::fmt::{Debug, Display, Formatter};
+use std::{
+    borrow::Cow,
+    error::Error,
+    fmt::{Debug, Display, Formatter}
+};
