@@ -17,7 +17,7 @@ bitflags = "2"
 bitvec = "1"
 lazy_static = "1"
 test-case = "3"
-thiserror = "1"
+thiserror = "2"
 
 postgres-basics = { path = "basics" }
 postgres-guc = { path = "guc" }
