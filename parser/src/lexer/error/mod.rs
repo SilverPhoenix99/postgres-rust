@@ -58,12 +58,11 @@ impl ErrorReport for LexerError {
     }
 }
 
-impl SqlReport for LexerError {}
-
-impl ParseReport for LexerError {}
-
-use crate::error::{HasLocation, LocatedErrorReport, ParseReport};
-use postgres_basics::elog::{ErrorReport, HasFnInfo, HasSqlState, SqlReport};
-use postgres_basics::sql_state::SqlState;
-use postgres_basics::{FnInfo, Location};
+use crate::error::{HasLocation, LocatedErrorReport};
+use postgres_basics::{
+    elog::{ErrorReport, HasFnInfo, HasSqlState},
+    sql_state::SqlState,
+    FnInfo,
+    Location,
+};
 use std::borrow::Cow;

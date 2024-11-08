@@ -10,7 +10,7 @@ impl Parser<'_> {
 
         let modes = self.transaction_mode_list()
             .optional()?
-            .unwrap_or_else(Vec::new);
+            .unwrap_or_default();
 
         Ok(TransactionStmt::Start(modes))
     }

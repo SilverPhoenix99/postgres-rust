@@ -472,7 +472,7 @@ impl<'src> Parser<'src> {
 
         let type_modifiers = self.opt_type_modifiers()
             .optional()?
-            .unwrap_or_else(Vec::new);
+            .unwrap_or_default();
 
         Ok(TypeName::Numeric { type_modifiers }.into())
     }
