@@ -77,7 +77,7 @@ use crate::parser::QualifiedName;
 use crate::{
     lexer::KeywordCategory::{ColumnName, Reserved, TypeFuncName, Unreserved},
     parser::{
-        result::{Required, ScanResult, ScanResultTrait},
+        result::{ScanResult, ScanResultTrait},
         CowStr,
         Parser,
     }

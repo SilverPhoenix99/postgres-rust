@@ -87,11 +87,11 @@ impl<'src> ExtendedStringDecoder<'src> {
                 },
                 '0'..='7' => { // octal escape
 
-                    // PG doc: It is your responsibility that the byte sequences you create,
-                    //         especially when using the octal or hexadecimal escapes,
-                    //         compose valid characters in the server character set encoding.
+                    // C-PG doc: It is your responsibility that the byte sequences you create,
+                    //           especially when using the octal or hexadecimal escapes,
+                    //           compose valid characters in the server character set encoding.
                     // Any octal with 3 digits can go above 0xff, so we'll reproduce here discarding the high bit,
-                    // like PG implicitly does by casting to `unsigned char`.
+                    // like C-PG implicitly does by casting to `unsigned char`.
 
                     let mut decoded = c.to_digit(8).expect("should be octal char");
                     if let Some(c) = self.input.consume_if(is_oct_digit) {

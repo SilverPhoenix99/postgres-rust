@@ -10,7 +10,6 @@ mod system_type;
 mod transaction_stmt;
 mod variable_show_stmt;
 
-pub(super) use self::system_type::CharacterSystemType;
 pub use self::{
     alter_event_trig_stmt::{AlterEventTrigStmt, EventTriggerState},
     alter_role_stmt::{AlterRoleAction, AlterRoleOption, AlterRoleStmt},
@@ -20,7 +19,17 @@ pub use self::{
     numeric_spec::NumericSpec,
     reassign_owned_stmt::ReassignOwnedStmt,
     role_spec::RoleSpec,
-    system_type::{IntervalRange, SystemType, TypeName},
+    system_type::{
+        FuncArgClass,
+        FuncType,
+        GenericTypeName,
+        IntervalRange,
+        SetOf,
+        SystemType,
+        TypeModifiers,
+        TypeName,
+        TypeOf,
+    },
     transaction_stmt::{IsolationLevel, TransactionMode, TransactionStmt},
     variable_show_stmt::VariableShowStmt,
 };
@@ -888,3 +897,4 @@ impl_from!(SystemType for ExprNode);
 impl_from!(XmlElement for ExprNode);
 
 use crate::parser::CowStr;
+use impl_from;
