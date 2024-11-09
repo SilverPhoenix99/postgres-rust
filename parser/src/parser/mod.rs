@@ -536,12 +536,11 @@ impl<'src> Parser<'src> {
 
         // ICONST | FCONST
 
-        let loc = self.buffer.current_location();
-        let source = self.buffer.source();
+        let value = self.buffer.slice();
 
         self.buffer.consume(|tok| {
             let NumberLiteral { radix } = tok else { return None };
-            let value = loc.slice(source);
+            let value = value.expect("slice is valid due to previous match");
             parse_number(value, radix)
         })
     }
@@ -574,13 +573,12 @@ impl<'src> Parser<'src> {
     /// Alias: `ICONST`
     fn i32_literal(&mut self) -> ScanResult<i32> {
 
-        let loc = self.buffer.current_location();
-        let source = self.buffer.source();
+        let value = self.buffer.slice();
 
         self.buffer.consume(|tok| {
             let NumberLiteral { radix } = tok else { return None };
+            let value = value.expect("slice is valid due to previous match");
 
-            let value = loc.slice(source);
             let Some(UnsignedNumber::IConst(int)) = parse_number(value, radix) else { return None };
             // SAFETY: `0 <= int <= i32::MAX`
             Some(int as i32)
@@ -685,22 +683,20 @@ impl<'src> Parser<'src> {
             return Ok('\\')
         };
 
-        let loc = self.buffer.current_location();
-        let source = self.buffer.source();
+        let slice = self.buffer.slice();
 
-        let uescape = self.buffer
-            .consume(|tok| match tok.string_kind() {
-                Some(_) => {
-                    let slice = loc.slice(source);
-                    match uescape_escape(slice) {
-                        Some(escape) => Ok(Some(escape)),
-                        None => Err(
-                            InvalidUescapeDelimiter.with_fn_info(fn_info!(FN_NAME))
-                        ),
-                    }
-                },
-                None => Err(UescapeDelimiterMissing.with_fn_info(fn_info!(FN_NAME)))
-            });
+        let uescape = self.buffer.consume(|tok| match tok.string_kind() {
+            Some(_) => {
+                let slice = slice.expect("slice is valid due to previous match");
+                match uescape_escape(slice) {
+                    Some(escape) => Ok(Some(escape)),
+                    None => Err(
+                        InvalidUescapeDelimiter.with_fn_info(fn_info!(FN_NAME))
+                    ),
+                }
+            },
+            None => Err(UescapeDelimiterMissing.with_fn_info(fn_info!(FN_NAME)))
+        });
 
         uescape.map_err(|err| match err {
             Eof => InvalidUescapeDelimiter.with_fn_info(fn_info!(FN_NAME)),

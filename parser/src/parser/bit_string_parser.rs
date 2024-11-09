@@ -6,14 +6,12 @@ impl<'p, 'src> BitStringParser<'p, 'src> {
 
     pub fn parse(&mut self) -> ScanResult<BitBox> {
 
-        let (kind, loc) = self.try_consume()?;
+        let (kind, slice) = self.try_consume()?;
 
-        let slice = loc.slice(self.0.buffer.source());
         let slice = &slice[2..(slice.len() - 1)]; // strip delimiters
         let mut string = slice.to_owned();
 
-        while let Ok((suffix_kind, suffix_loc)) = self.try_consume_string() {
-            let suffix_slice = suffix_loc.slice(self.0.buffer.source());
+        while let Ok((suffix_kind, suffix_slice)) = self.try_consume_string() {
             let suffix_slice = strip_delimiters(suffix_kind, suffix_slice);
             string.push_str(suffix_slice);
         }
@@ -22,7 +20,7 @@ impl<'p, 'src> BitStringParser<'p, 'src> {
         todo!("map error")
     }
 
-    fn try_consume(&mut self) -> ScanResult<Located<BitStringKind>> {
+    fn try_consume(&mut self) -> ScanResult<(BitStringKind, &'src str)> {
         // let loc = self.0.buffer.current_location();
         // self.0.buffer.consume(|tok|
         //     tok.bit_string_kind()
@@ -30,16 +28,18 @@ impl<'p, 'src> BitStringParser<'p, 'src> {
         todo!()
     }
 
-    fn try_consume_string(&mut self) -> ScanResult<Located<StringKind>> {
+    fn try_consume_string(&mut self) -> ScanResult<(StringKind, &'src str)> {
 
-        let loc = self.0.buffer.current_location();
+        let slice = self.0.buffer.slice();
 
         self.0.buffer.consume(|tok|
             tok.string_kind()
                 .filter(|kind|
                     matches!(kind, BasicString { concatenable: true } | ExtendedString { concatenable: true })
                 )
-                .map(|kind| (kind, loc.clone()))
+                .map(|kind|
+                    (kind, slice.expect("slice is valid due to previous filter"))
+                )
         )
     }
 }
@@ -104,4 +104,3 @@ use crate::{
     string_decoders::BitStringDecoder,
 };
 use bitvec::boxed::BitBox;
-use postgres_basics::Located;

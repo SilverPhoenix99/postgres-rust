@@ -30,6 +30,18 @@ impl<'src> TokenBuffer<'src> {
         self.peeked().1.clone()
     }
 
+    pub fn slice(&mut self) -> Option<&'src str> {
+
+        let source = self.source();
+
+        let (Ok(_), loc) = self.peeked() else {
+            return None
+        };
+
+        let slice = loc.slice(source);
+        Some(slice)
+    }
+
     #[inline(always)]
     pub fn next(&mut self) {
         self.buf.pop_front();
