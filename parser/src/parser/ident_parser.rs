@@ -97,7 +97,6 @@ mod tests {
 use crate::{
     lexer::IdentifierKind::*,
     parser::{
-        error::PartialParserError,
         result::ScanResult,
         token_buffer::TokenConsumer,
         Parser,

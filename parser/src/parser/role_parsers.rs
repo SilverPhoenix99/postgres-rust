@@ -153,7 +153,6 @@ mod tests {
     }
 }
 
-use crate::parser::error::PartialParserError;
 use crate::{
     lexer::{
         Keyword::{CurrentRole, CurrentUser, NoneKw, SessionUser},

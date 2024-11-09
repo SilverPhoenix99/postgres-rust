@@ -56,7 +56,6 @@ impl Parser<'_> {
     }
 
     pub(super) fn opt_drop_behavior(&mut self) -> EofResult<DropBehavior> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_drop_behavior";
 
         /*
             ( CASCADE | RESTRICT )?

@@ -59,10 +59,7 @@ use crate::{
         ast_node::RawStmt,
         consume,
         error::syntax_err,
-        result::{
-            EofErrorKind::{self, NotEof},
-            Required
-        },
+        result::EofErrorKind::{self, NotEof},
         ParseResult,
         Parser
     }

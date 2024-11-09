@@ -302,7 +302,7 @@ impl<'src> Lexer<'src> {
             return Err((ParameterNumberTooLarge, fn_info!(FN_NAME)))
         }
 
-        // i32 is used to match original PG's expectation that it won't be > i32::MAX
+        // i32 is used to match original C-PG's expectation that it won't be > i32::MAX
         slice.iter()
             .map(|d| (d - b'0') as i32)
             .try_fold(0i32, |acc, n|

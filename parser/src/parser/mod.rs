@@ -16,6 +16,7 @@ mod stmt_parsers;
 mod string_parser;
 mod token_buffer;
 mod warning;
+mod type_parsers;
 
 pub use self::{
     config::ParserConfig,
@@ -345,140 +346,8 @@ impl<'src> Parser<'src> {
         Ok(elements)
     }
 
-    /// Alias: `AexprConst`
-    fn a_expr_const(&mut self) -> ScanResult<()> {
-
-        /*
-        AexprConst :
-            ICONST
-          | FCONST
-          | SCONST
-          | BCONST
-          | XCONST
-          | func_name SCONST
-          | func_name '(' func_arg_list opt_sort_clause ')' SCONST
-          | ConstTypename SCONST
-          | INTERVAL SCONST opt_interval
-          | INTERVAL '(' ICONST ')' SCONST
-          | TRUE_P
-          | FALSE_P
-          | NULL_P
-        */
-
-        todo!()
-    }
-
-    /// Alias: `ConstTypename`
-    fn const_typename(&mut self) -> ScanResult<SystemType> {
-        use Keyword::{Bit, Varying};
-
-        /*
-        ConstTypename :
-            numeric // Numeric
-          | character ( '(' ICONST ')' )? // ConstCharacter
-          | BIT (VARYING)? ( '(' expr_list ')' )? // ConstBit
-          | TIMESTAMP ( '(' ICONST ')' )? ( (WITH_LA | WITHOUT_LA) TIME ZONE )? // ConstDatetime
-          | TIME ( '(' ICONST ')' )? ( (WITH_LA | WITHOUT_LA) TIME ZONE )?      // ConstDatetime
-          | JSON
-        */
-
-        if let Some(num) = self.numeric().no_match_to_option()? {
-            return Ok(num)
-        }
-
-        if let Some(character) = self.character().optional()? {
-
-            let len = self.i32_literal_paren().optional()?;
-            let character = match character {
-                CharacterSystemType::Varchar => { TypeName::Varchar { max_length: len } },
-                CharacterSystemType::Bpchar => TypeName::Bpchar { length: len },
-            };
-
-            return Ok(character.into())
-        }
-
-        let bit = self.buffer.consume_kw_eq(Bit).optional()?;
-        if bit.is_some() {
-            let varying = self.buffer.consume_kw_eq(Varying).optional()?;
-            // TODO: self.expr_list()
-        }
-
-        todo!()
-    }
-
-    /// Alias: `Numeric`<p/>
-    /// Inline: `opt_float`
-    fn numeric(&mut self) -> ScanResult<SystemType> {
-        use Keyword::{Bigint, Boolean, Dec, Decimal, Double, Float, Int, Integer, Numeric, Precision, Real, Smallint};
-        const FN_NAME: &str = "postgres_parser::parser::Parser::numeric";
-
-        /*
-        Numeric :
-            BOOLEAN
-          | INT_P
-          | INTEGER
-          | SMALLINT
-          | BIGINT
-          | REAL
-          | FLOAT ( '(' ICONST ')' )?
-          | DOUBLE PRECISION
-          | (DECIMAL | DEC | NUMERIC) opt_type_modifiers
-        */
-
-        let kw = self.buffer.consume_kws(|kw|
-            matches!(kw,
-                  Smallint
-                | Int
-                | Integer
-                | Bigint
-                | Real
-                | Boolean
-                | Double
-                | Float
-                | Decimal
-                | Dec
-                | Numeric
-            )
-        )?;
-
-        match kw {
-            Smallint => return Ok(Int2.into()),
-            Int | Integer => return Ok(Int4.into()),
-            Bigint => return Ok(Int8.into()),
-            Real => return Ok(Float4.into()),
-            Boolean => return Ok(Bool.into()),
-            _ => {},
-        };
-
-        if kw == Double {
-            self.buffer.consume_kw_eq(Precision).required(fn_info!(FN_NAME))?;
-            return Ok(Float8.into())
-        }
-
-        if kw == Float {
-            // opt_float: '(' ICONST ')'
-            return match self.i32_literal_paren().optional()? {
-                None => Ok(Float8.into()),
-                Some(num @ ..=0) => Err(ScanErr(
-                    FloatPrecisionUnderflow(num).with_fn_info(fn_info!(FN_NAME))
-                )),
-                Some(1..=24) => Ok(Float4.into()),
-                Some(25..=53) => Ok(Float8.into()),
-                Some(num @ 54..) => Err(ScanErr(
-                    FloatPrecisionOverflow(num).with_fn_info(fn_info!(FN_NAME))
-                )),
-            }
-        }
-
-        let type_modifiers = self.opt_type_modifiers()
-            .optional()?
-            .unwrap_or_default();
-
-        Ok(TypeName::Numeric { type_modifiers }.into())
-    }
-
     /// Post-condition: Vec is **Not** empty
-    fn opt_type_modifiers(&mut self) -> ScanResult<Vec<ExprNode>> {
+    fn expr_list_paren(&mut self) -> ScanResult<Vec<ExprNode>> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::opt_type_modifiers";
 
         /*
@@ -622,41 +491,6 @@ impl<'src> Parser<'src> {
         self.buffer.consume_eq(CloseParenthesis).required(fn_info!(FN_NAME))?;
 
         Ok(num)
-    }
-
-    fn character(&mut self) -> ScanResult<CharacterSystemType> {
-        use Keyword::{Char, Character, National, Nchar, Varchar};
-        const FN_NAME: &str = "postgres_parser::parser::Parser::character";
-
-        /*
-            VARCHAR
-          | (CHARACTER | CHAR_P | NCHAR) (VARYING)?
-          | NATIONAL ( CHARACTER | CHAR_P) (VARYING)?
-        */
-
-        let char_type = self.buffer.consume_kws(|kw|
-            matches!(kw, Varchar | Character | Char | National | Nchar)
-        )?;
-
-        if char_type == Varchar {
-            return Ok(CharacterSystemType::Varchar)
-        }
-
-        if char_type == National {
-            self.buffer.consume_kws(|kw| matches!(kw, Character | Char))
-                .required(fn_info!(FN_NAME))?;
-        }
-
-        let varying = self.buffer.consume_kw_eq(Keyword::Varying).optional()?;
-
-        let char_type = if varying.is_some() {
-            CharacterSystemType::Varchar
-        }
-        else {
-            CharacterSystemType::Bpchar
-        };
-
-        Ok(char_type)
     }
 
     /// Alias: `NumericOnly`
@@ -925,7 +759,6 @@ fn parse_number(value: &str, radix: u32) -> Option<UnsignedNumber> {
 mod tests {
     use super::*;
     use crate::parser::ast_node::QualifiedName;
-    use crate::parser::ast_node::TypeName::{Bool, Float4, Float8, Int2, Int4, Int8};
     use postgres_basics::guc::BackslashQuote;
     use test_case::test_case;
 
@@ -1067,37 +900,6 @@ mod tests {
         assert_eq!(Ok(expected), parser.col_id_list(Dot));
     }
 
-    #[test]
-    fn test_numeric() {
-
-        let source = "boolean smallint int integer bigint real float float(17) float(44) double precision";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        let expected = [
-            Bool,
-            Int2,
-            Int4,
-            Int4,
-            Int8,
-            Float4,
-            Float8,
-            Float4,
-            Float8,
-            Float8,
-        ];
-
-        for e in expected {
-            assert_eq!(Ok(e.into()), parser.numeric());
-        }
-
-        // TODO: (DECIMAL | DEC | NUMERIC) opt_type_modifiers
-    }
-
-    #[test] #[ignore]
-    fn test_opt_type_modifiers() {
-        todo!()
-    }
-
     #[test] #[ignore]
     fn test_expr_list() {
         todo!()
@@ -1184,25 +986,6 @@ mod tests {
     fn test_i32_literal_paren() {
         let mut parser = Parser::new(" (123 )", DEFAULT_CONFIG);
         assert_eq!(Ok(123), parser.i32_literal_paren());
-    }
-
-    #[test_case("varchar", CharacterSystemType::Varchar)]
-    #[test_case("char varying", CharacterSystemType::Varchar)]
-    #[test_case("character varying", CharacterSystemType::Varchar)]
-    #[test_case("nchar varying", CharacterSystemType::Varchar)]
-    #[test_case("national char varying", CharacterSystemType::Varchar)]
-    #[test_case("national character varying", CharacterSystemType::Varchar)]
-    #[test_case("char", CharacterSystemType::Bpchar)]
-    #[test_case("character", CharacterSystemType::Bpchar)]
-    #[test_case("nchar", CharacterSystemType::Bpchar)]
-    #[test_case("national char", CharacterSystemType::Bpchar)]
-    #[test_case("national character", CharacterSystemType::Bpchar)]
-    fn test_character(source: &str, expected: CharacterSystemType) {
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        let actual = parser.character();
-        assert_eq!(Ok(expected), actual,
-            r"expected {expected:?} for source {source:?} but actually got {actual:?}",
-        )
     }
 
     #[test]
@@ -1340,7 +1123,6 @@ mod tests {
 
 use self::{
     ast_node::{
-        CharacterSystemType,
         EventTriggerState,
         ExprNode,
         IsolationLevel,
@@ -1349,9 +1131,7 @@ use self::{
         RawStmt,
         RoleSpec,
         SignedNumber,
-        SystemType,
         TransactionMode,
-        TypeName::{self, Bool, Float4, Float8, Int2, Int4, Int8},
         UnsignedNumber,
     },
     consume_macro::consume,

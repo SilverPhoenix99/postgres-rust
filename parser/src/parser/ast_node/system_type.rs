@@ -1,10 +1,3 @@
-/// Redundant enum, to avoid using `unreachable!()`.
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub(in crate::parser) enum CharacterSystemType {
-    Varchar,
-    Bpchar
-}
-
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum IntervalRange {
     Full { precision: Option<i32> },
@@ -17,10 +10,38 @@ pub enum IntervalRange {
     DayToSecond { precision: Option<i32> },
     Hour,
     HourToMinute,
-    HourToToSecond { precision: Option<i32> },
+    HourToSecond { precision: Option<i32> },
     Minute,
     MinuteToSecond { precision: Option<i32> },
     Second { precision: Option<i32> },
+}
+
+impl Default for IntervalRange {
+    fn default() -> Self {
+        Self::Full { precision: None }
+    }
+}
+
+pub type TypeModifiers = Vec<ExprNode>;
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct GenericTypeName {
+    name: QualifiedName,
+    type_modifiers: TypeModifiers
+}
+
+impl GenericTypeName {
+    pub fn new(name: QualifiedName, type_modifiers: TypeModifiers) -> Self {
+        Self { name, type_modifiers }
+    }
+
+    pub fn name(&self) -> &QualifiedName {
+        &self.name
+    }
+
+    pub fn type_modifiers(&self) -> &Vec<ExprNode> {
+        &self.type_modifiers
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -32,9 +53,7 @@ pub enum TypeName {
     Int8,
     Float4,
     Float8,
-    Numeric {
-        type_modifiers: Vec<ExprNode>
-    },
+    Numeric(TypeModifiers),
     /// Blank-Padded Character string
     Bpchar {
         length: Option<i32>
@@ -44,12 +63,8 @@ pub enum TypeName {
         /// If limited, the maximum is 10MB == 10,485,760.
         max_length: Option<i32>
     },
-    Bit {
-        type_modifiers: Vec<ExprNode>
-    },
-    Varbit {
-        type_modifiers: Vec<ExprNode>
-    },
+    Bit(TypeModifiers),
+    Varbit(TypeModifiers),
     Time {
         precision: Option<i32>
     },
@@ -62,71 +77,107 @@ pub enum TypeName {
     TimestampTz {
         precision: Option<i32>
     },
-    Interval {
-        range: IntervalRange
-    },
-    /// Non-builtin types
-    Generic {
-        name: QualifiedName,
-        type_modifiers: Vec<ExprNode>
-    },
-    /// When the type is specified with `%TYPE`.
-    TypeOf {
-        field: QualifiedName
-    },
+    Interval(IntervalRange),
     Oid(Oid),
+    /// Non-builtin types
+    Generic(GenericTypeName),
 }
 
+impl_from!(IntervalRange for TypeName => Interval);
+impl_from!(GenericTypeName for TypeName => Generic);
+
 impl TypeName {
-    pub fn with_array_bounds(self, array_bounds: Vec<i32>) -> SystemType {
+    pub fn with_array_bounds(self, array_bounds: Vec<Option<i32>>) -> SystemType {
         SystemType::from(self).with_array_bounds(array_bounds)
     }
 
-    pub fn into_set(self) -> SystemType {
-        SystemType::from(self).into_set()
+    pub fn returning_table(self) -> SystemType {
+        SystemType::from(self).returning_table()
     }
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum SetOf {
+    Scalar,
+    Table,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct SystemType {
     name: TypeName,
-    array_bounds: Vec<i32>,
+    array_bounds: Vec<Option<i32>>,
     /// If the type is a table (i.e., set) of records
-    set_of: bool
+    mult: SetOf
 }
 
 impl SystemType {
-    pub fn new(name: TypeName, array_bounds: Vec<i32>, set_of: bool) -> Self {
-        Self { name, array_bounds, set_of }
+    pub fn new(name: TypeName, array_bounds: Vec<Option<i32>>, mult: SetOf) -> Self {
+        Self { name, array_bounds, mult }
     }
 
-    pub fn with_array_bounds(self, array_bounds: Vec<i32>) -> Self {
-        Self::new(self.name, array_bounds, self.set_of)
+    pub fn with_array_bounds(self, array_bounds: Vec<Option<i32>>) -> Self {
+        Self::new(self.name, array_bounds, self.mult)
     }
 
-    pub fn into_set(self) -> SystemType {
-        Self::new(self.name, self.array_bounds, true)
+    pub fn returning_table(self) -> SystemType {
+        Self::new(self.name, self.array_bounds, SetOf::Table)
     }
 
     pub fn name(&self) -> &TypeName {
         &self.name
     }
 
-    pub fn array_bounds(&self) -> &Vec<i32> {
+    pub fn array_bounds(&self) -> &Vec<Option<i32>> {
         &self.array_bounds
     }
 
-    pub fn set_of(&self) -> bool {
-        self.set_of
+    pub fn mult(&self) -> SetOf {
+        self.mult
     }
 }
 
 impl From<TypeName> for SystemType {
     fn from(value: TypeName) -> Self {
-        SystemType::new(value, Vec::new(), false)
+        SystemType::new(value, Vec::new(), SetOf::Scalar)
     }
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum FuncArgClass {
+    In,
+    Out,
+    InOut,
+    Variadic
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct TypeOf {
+    field: QualifiedName,
+    mult: SetOf
+}
+
+impl TypeOf {
+    pub fn new(field: QualifiedName, mult: SetOf) -> Self {
+        Self { field, mult }
+    }
+
+    pub fn field(&self) -> &QualifiedName {
+        &self.field
+    }
+
+    pub fn mult(&self) -> SetOf {
+        self.mult
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum FuncType {
+    System(SystemType),
+    /// When the type is specified with `%TYPE`.
+    TypeOf(TypeOf),
+}
+
+use crate::parser::ast_node::impl_from;
 use crate::parser::{
     ast_node::QualifiedName,
     ExprNode
