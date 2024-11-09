@@ -1,6 +1,6 @@
 mod alter_event_trig_stmt;
 mod alter_role_stmt;
-mod ast_literal;
+mod const_expr;
 mod discard_stmt;
 mod notify_stmt;
 mod numeric_spec;
@@ -13,7 +13,7 @@ mod variable_show_stmt;
 pub use self::{
     alter_event_trig_stmt::{AlterEventTrigStmt, EventTriggerState},
     alter_role_stmt::{AlterRoleAction, AlterRoleOption, AlterRoleStmt},
-    ast_literal::AstLiteral,
+    const_expr::ConstExpr,
     discard_stmt::DiscardStmt,
     notify_stmt::NotifyStmt,
     numeric_spec::NumericSpec,
@@ -189,8 +189,8 @@ impl RenameStmt {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum UnsignedNumber {
-    IConst(u32),
-    Numeric { value: String, radix: u32 },
+    IntegerConst(u32),
+    NumericConst { radix: u32, value: String },
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -759,7 +759,7 @@ impl RangeVar {
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExprNode {
     SetToDefault,
-    Literal(AstLiteral),
+    Const(ConstExpr),
     SystemType(SystemType),
     Typecast((/* TODO */)),
     Indirection(Vec<Indirection>),
@@ -891,7 +891,7 @@ impl_from!(box UnaryExpr for ExprNode);
 impl_from!(box XmlParse for ExprNode);
 impl_from!(box XmlProcessingInstruction for ExprNode);
 impl_from!(box XmlRoot for ExprNode);
-impl_from!(AstLiteral for ExprNode => Literal);
+impl_from!(ConstExpr for ExprNode => Const);
 impl_from!(BoolExpr for ExprNode);
 impl_from!(SystemType for ExprNode);
 impl_from!(XmlElement for ExprNode);

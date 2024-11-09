@@ -215,7 +215,7 @@ impl Parser<'_> {
                     }
                     else {
                         if modifiers.is_empty() && kind == Simple {
-                            modifiers = vec![IntegerLiteral(1).into()];
+                            modifiers = vec![IntegerConst(1).into()];
                         }
                         Ok(Bit(modifiers))
                     }
@@ -561,7 +561,7 @@ mod tests {
     #[test_case("national char varying(5)",       Simple, Varchar { max_length: Some(5) })]
     #[test_case("national character varying",     Simple, Varchar { max_length: None })]
     #[test_case("national character varying(3)",  Simple, Varchar { max_length: Some(3) })]
-    #[test_case("bit",                            Simple, Bit(vec![IntegerLiteral(1).into()]))]
+    #[test_case("bit",                            Simple, Bit(vec![IntegerConst(1).into()]))]
     // TODO: #[test_case("bit(modif)",            Simple, Bit(vec![...]))]
     #[test_case("char",                           Simple, Bpchar { length: Some(1) })]
     #[test_case("char",                           Const,  Bpchar { length: None })]
@@ -680,7 +680,7 @@ use crate::{
     },
     parser::{
         ast_node::{
-            AstLiteral::IntegerLiteral,
+            ConstExpr::IntegerConst,
             GenericTypeName,
             IntervalRange,
             SystemType,
