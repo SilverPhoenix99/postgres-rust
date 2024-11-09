@@ -4,6 +4,7 @@ mod bit_string_parser;
 mod config;
 mod consume_macro;
 mod error;
+mod expr_const_parser;
 mod expr_parsers;
 mod func_name_parser;
 mod ident_parser;
