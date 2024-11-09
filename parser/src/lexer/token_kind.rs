@@ -15,7 +15,7 @@ pub enum IdentifierKind {
 pub enum StringKind {
 
     /// E.g.: `'str'`
-    BasicString {
+    Basic {
         /// If this literal can be automatically concatenated
         /// with the previous StringLiteral.
         /// E.g.:
@@ -31,7 +31,7 @@ pub enum StringKind {
     /// When `standard_conforming_strings` is `false`:
     ///   * `[eE]` prefix can be omitted;
     ///   * or it can be a National string (`[nN]` prefix).
-    ExtendedString {
+    Extended {
         /// See `BasicString.concatenable`.
         ///
         /// Only applies when this string doesn't have a prefix
@@ -39,22 +39,22 @@ pub enum StringKind {
     },
 
     /// E.g.: `n'str'`
-    NationalString,
+    National,
 
     /// E.g.: `u&'str'`
-    UnicodeString,
+    Unicode,
 
     /// E.g.: `$foo$str$foo$`
-    DollarString,
+    Dollar,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum BitStringKind {
     /// E.g.: `b'010'`
-    BinaryString,
+    Binary,
 
     /// E.g.: `x'1af'`
-    HexString,
+    Hex,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -191,13 +191,13 @@ mod tests {
 
     #[test]
     fn test_string_kind() {
-        assert_eq!(Some(UnicodeString), StringLiteral(UnicodeString).string_kind());
+        assert_eq!(Some(Unicode), StringLiteral(Unicode).string_kind());
         assert_eq!(None, CloseParenthesis.string_kind())
     }
 
     #[test]
     fn test_bit_string_kind() {
-        assert_eq!(Some(HexString), BitStringLiteral(HexString).bit_string_kind());
+        assert_eq!(Some(Hex), BitStringLiteral(Hex).bit_string_kind());
         assert_eq!(None, CloseParenthesis.bit_string_kind())
     }
 

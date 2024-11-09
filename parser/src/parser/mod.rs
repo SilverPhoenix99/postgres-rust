@@ -516,7 +516,7 @@ impl<'src> Parser<'src> {
         let negative = sign.is_some_and(|s| s == Minus);
 
         let value = match number {
-            UnsignedNumber::IConst(int) => {
+            UnsignedNumber::IntegerConst(int) => {
                 // SAFETY: `0 <= int <= i32::MAX`
                 let mut int = int as i32;
                 if negative {
@@ -524,7 +524,7 @@ impl<'src> Parser<'src> {
                 }
                 SignedNumber::SignedIConst(int)
             },
-            UnsignedNumber::Numeric { value, radix } => {
+            UnsignedNumber::NumericConst { value, radix } => {
                 SignedNumber::Numeric { value, radix, negative }
             }
         };
@@ -579,7 +579,7 @@ impl<'src> Parser<'src> {
             let NumberLiteral { radix } = tok else { return None };
             let value = value.expect("slice is valid due to previous match");
 
-            let Some(UnsignedNumber::IConst(int)) = parse_number(value, radix) else { return None };
+            let Some(UnsignedNumber::IntegerConst(int)) = parse_number(value, radix) else { return None };
             // SAFETY: `0 <= int <= i32::MAX`
             Some(int as i32)
         })
@@ -671,6 +671,18 @@ impl<'src> Parser<'src> {
         IdentifierParser(self).parse()
     }
 
+    fn bit_string(&mut self) -> ScanResult<(BitStringKind, String)> {
+
+        let slice = self.buffer.slice();
+        let kind = self.buffer.consume(|tok| tok.bit_string_kind())?;
+        let slice = slice.expect("slice is valid due to previous consume");
+
+        // strip delimiters
+        let slice = &slice[2..(slice.len() - 1)];
+
+        Ok((kind, slice.to_string()))
+    }
+
     /// Production: `UESCAPE SCONST`
     fn uescape(&mut self) -> ParseResult<char> {
         use Keyword::Uescape;
@@ -737,17 +749,16 @@ fn uescape_escape(source: &str) -> Option<char> {
 }
 
 fn parse_number(value: &str, radix: u32) -> Option<UnsignedNumber> {
+    use UnsignedNumber::*;
 
     let value = value.replace("_", "");
 
-    match i32::from_str_radix(&value, radix) {
-        Ok(int) => {
-            // SAFETY: `0 <= int <= i32::MAX`
-            Some(UnsignedNumber::IConst(int as u32))
-        },
-        Err(_) => {
-            Some(UnsignedNumber::Numeric { value, radix })
-        }
+    if let Ok(int) = i32::from_str_radix(&value, radix) {
+        // SAFETY: `0 <= int <= i32::MAX`
+        Some(IntegerConst(int as u32))
+    }
+    else {
+        Some(NumericConst { radix, value })
     }
 }
 
@@ -1007,15 +1018,15 @@ mod tests {
 
     #[test]
     fn test_unsigned_number() {
-        use UnsignedNumber::{IConst, Numeric};
+        use UnsignedNumber::{IntegerConst, NumericConst};
 
         let mut parser = Parser::new("1.1 11", DEFAULT_CONFIG);
 
         let actual = parser.unsigned_number();
-        assert_eq!(Ok(Numeric { value: "1.1".into(), radix: 10 }), actual);
+        assert_eq!(Ok(NumericConst { value: "1.1".into(), radix: 10 }), actual);
 
         let actual = parser.unsigned_number();
-        assert_eq!(Ok(IConst(11)), actual);
+        assert_eq!(Ok(IntegerConst(11)), actual);
     }
 
     #[test]
@@ -1097,6 +1108,14 @@ mod tests {
         assert_eq!("test_identifier", parser.identifier().unwrap());
     }
 
+    #[test_case("b'0101'", BitStringKind::Binary, "0101")]
+    #[test_case("x'19af'", BitStringKind::Hex, "19af")]
+    fn test_bit_string(source: &str, expected_kind: BitStringKind, expected_value: &str) {
+        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let actual = parser.bit_string();
+        assert_eq!(Ok((expected_kind, expected_value.to_string())), actual);
+    }
+
     #[test]
     fn test_uescape() {
         let source = "UESCAPE '!'";
@@ -1145,6 +1164,7 @@ use self::{
     token_buffer::{TokenBuffer, TokenConsumer}
 };
 use crate::lexer::{
+    BitStringKind,
     Keyword,
     KeywordCategory::*,
     Lexer,

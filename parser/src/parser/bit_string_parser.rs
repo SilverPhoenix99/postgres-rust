@@ -16,7 +16,7 @@ impl<'p, 'src> BitStringParser<'p, 'src> {
             string.push_str(suffix_slice);
         }
 
-        let result = BitStringDecoder::new(slice, kind == HexString).decode();
+        let result = BitStringDecoder::new(slice, kind == Hex).decode();
         todo!("map error")
     }
 
@@ -35,7 +35,7 @@ impl<'p, 'src> BitStringParser<'p, 'src> {
         self.0.buffer.consume(|tok|
             tok.string_kind()
                 .filter(|kind|
-                    matches!(kind, BasicString { concatenable: true } | ExtendedString { concatenable: true })
+                    matches!(kind, Basic { concatenable: true } | Extended { concatenable: true })
                 )
                 .map(|kind|
                     (kind, slice.expect("slice is valid due to previous filter"))
@@ -94,7 +94,7 @@ mod tests {
 */
 
 use crate::{
-    lexer::{BitStringKind, BitStringKind::HexString, StringKind, StringKind::*},
+    lexer::{BitStringKind, BitStringKind::Hex, StringKind, StringKind::*},
     parser::{
         result::ScanResult,
         string_parser::strip_delimiters,

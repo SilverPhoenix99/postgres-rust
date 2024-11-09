@@ -10,7 +10,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
 
         let mut string = strip_delimiters(kind, slice).to_owned();
 
-        if kind == DollarString {
+        if kind == Dollar {
             // Not concatenable, and no escapes to deal with.
             return Ok(string);
         }
@@ -36,8 +36,8 @@ impl<'p, 'src> StringParser<'p, 'src> {
             tok.string_kind()
                 .filter(|kind| {
                     !only_concatenable || match kind {
-                        BasicString { concatenable }
-                        | ExtendedString { concatenable } => *concatenable,
+                        Basic { concatenable }
+                        | Extended { concatenable } => *concatenable,
                         _ => false
                     }
                 })
@@ -51,11 +51,11 @@ impl<'p, 'src> StringParser<'p, 'src> {
         const FN_NAME: &str = "postgres_parser::parser::string_parser::StringParser::decode_string";
 
         let result = match kind {
-            BasicString { .. } | NationalString => {
+            Basic { .. } | National => {
                 let string = BasicStringDecoder::new(slice, false).decode();
                 Ok(string)
             },
-            ExtendedString { .. } => {
+            Extended { .. } => {
                 let mut decoder = ExtendedStringDecoder::new(slice, self.0.config.backslash_quote());
                 let ExtendedStringResult { result, warning } = decoder.decode();
 
@@ -68,7 +68,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
                     ParserErrorKind::ExtendedString(err).with_fn_info(fn_info!(FN_NAME))
                 )
             },
-            UnicodeString => {
+            Unicode => {
 
                 let escape = self.0.uescape()?;
 
@@ -78,7 +78,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
                         PartialParserError::new(err, fn_info!(FN_NAME))
                     )
             }
-            DollarString => unreachable!("`$` strings don't have any escapes"),
+            Dollar => unreachable!("`$` strings don't have any escapes"),
         };
 
         result.map_err(ScanErrorKind::from)
@@ -87,7 +87,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
 
 pub(super) fn strip_delimiters(kind: StringKind, slice: &str) -> &str {
     let range = match kind {
-        DollarString => {
+        Dollar => {
             let delim_len = slice.chars()
                 .enumerate()
                 .skip(1)
@@ -98,14 +98,14 @@ pub(super) fn strip_delimiters(kind: StringKind, slice: &str) -> &str {
             let str_end = slice.len() - delim_len;
             delim_len..str_end
         }
-        BasicString { .. } => 1..(slice.len() - 1),
-        ExtendedString { .. } => {
+        Basic { .. } => 1..(slice.len() - 1),
+        Extended { .. } => {
             // `e'`, `n'`, or `'`
             let delim_len = if slice.starts_with('\'') { 1 } else { 2 };
             delim_len..(slice.len() - 1)
         }
-        NationalString => 2..(slice.len() - 1),
-        UnicodeString => 3..(slice.len() - 1),
+        National => 2..(slice.len() - 1),
+        Unicode => 3..(slice.len() - 1),
     };
 
     &slice[range]
