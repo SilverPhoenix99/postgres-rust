@@ -6,9 +6,8 @@ impl<'p, 'src> StringParser<'p, 'src> {
 
     pub fn parse(&mut self) -> ScanResult<String> {
 
-        let (kind, loc) = self.try_consume(false)?;
+        let (kind, loc, slice) = self.try_consume(false)?;
 
-        let slice = loc.slice(self.0.buffer.source());
         let mut string = strip_delimiters(kind, slice).to_owned();
 
         if kind == DollarString {
@@ -17,8 +16,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
         }
 
         let mut end_index = loc.range().end;
-        while let Some((suffix_kind, suffix_loc)) = self.try_consume(true).optional()? {
-            let suffix_slice = suffix_loc.slice(self.0.buffer.source());
+        while let Some((suffix_kind, suffix_loc, suffix_slice)) = self.try_consume(true).optional()? {
             let suffix_slice = strip_delimiters(suffix_kind, suffix_slice);
             string.push_str(suffix_slice);
             end_index = suffix_loc.range().end;
@@ -29,9 +27,10 @@ impl<'p, 'src> StringParser<'p, 'src> {
         self.decode_string(kind, &string, loc)
     }
 
-    fn try_consume(&mut self, only_concatenable: bool) -> ScanResult<Located<StringKind>> {
+    fn try_consume(&mut self, only_concatenable: bool) -> ScanResult<(StringKind, Location, &'src str)> {
 
         let loc = self.0.buffer.current_location();
+        let slice = self.0.buffer.slice();
 
         self.0.buffer.consume(|tok|
             tok.string_kind()
@@ -42,7 +41,9 @@ impl<'p, 'src> StringParser<'p, 'src> {
                         _ => false
                     }
                 })
-                .map(|kind| (kind, loc.clone()))
+                .map(|kind|
+                    (kind, loc.clone(), slice.expect("slice is valid due to previous filter"))
+                )
         )
     }
 

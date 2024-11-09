@@ -7,9 +7,9 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
     pub fn parse(&mut self) -> ScanResult<String> {
         const FN_NAME: &str = "postgres_parser::parser::ident_parser::IdentifierParser::parse";
 
-        let loc = self.0.buffer.current_location();
+        let slice = self.0.buffer.slice();
         let kind = self.0.buffer.consume(|tok| tok.identifier_kind())?;
-        let slice = loc.slice(self.0.buffer.source());
+        let slice = slice.expect("slice is valid due to previous consume");
 
         let ident = match kind {
             BasicIdentifier => Ok(slice.to_lowercase()),
