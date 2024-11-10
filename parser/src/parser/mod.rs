@@ -2,6 +2,8 @@ pub mod ast_node;
 mod acl_parsers;
 mod bit_string_parser;
 mod config;
+mod const_numeric_parsers;
+mod const_string_parsers;
 mod consume_macro;
 mod error;
 mod expr_const_parser;
@@ -494,98 +496,6 @@ impl<'src> Parser<'src> {
         Ok(num)
     }
 
-    /// Alias: `NumericOnly`
-    fn signed_number(&mut self) -> ScanResult<SignedNumber> {
-        use TokenKind::{Minus, Plus};
-        const FN_NAME: &str = "postgres_parser::parser::Parser::signed_number";
-
-        // ('+' | '-')? (ICONST | FCONST)
-
-        let sign = self.buffer
-            .consume(|tok| matches!(tok, Minus | Plus))
-            .no_match_to_option()?;
-
-        let number = self.unsigned_number();
-
-        let number = if sign.is_some() {
-            number.required(fn_info!(FN_NAME))?
-        }
-        else {
-            number?
-        };
-
-        let negative = sign.is_some_and(|s| s == Minus);
-
-        let value = match number {
-            UnsignedNumber::IntegerConst(int) => {
-                // SAFETY: `0 <= int <= i32::MAX`
-                let mut int = int as i32;
-                if negative {
-                    int = -int;
-                }
-                SignedNumber::IntegerConst(int)
-            },
-            UnsignedNumber::NumericConst { value, radix } => {
-                SignedNumber::NumericConst { value, radix, negative }
-            }
-        };
-
-        Ok(value)
-    }
-
-    fn unsigned_number(&mut self) -> ScanResult<UnsignedNumber> {
-
-        // ICONST | FCONST
-
-        let value = self.buffer.slice();
-
-        self.buffer.consume(|tok| {
-            let NumberLiteral { radix } = tok else { return None };
-            let value = value.expect("slice is valid due to previous match");
-            parse_number(value, radix)
-        })
-    }
-
-    /// Alias: `SignedIconst`
-    fn signed_i32_literal(&mut self) -> ScanResult<i32> {
-        use TokenKind::{Minus, Plus};
-        const FN_NAME: &str = "postgres_parser::parser::Parser::signed_i32_literal";
-
-        // ('+' | '-')? ICONST
-
-        let sign = self.buffer
-            .consume(|tok| matches!(tok, Minus | Plus))
-            .no_match_to_option()?;
-
-        let num = self.i32_literal();
-
-        let Some(sign) = sign else { return num };
-
-        // If sign is Some(_), then ICONST is required
-        let mut num = num.required(fn_info!(FN_NAME))?;
-
-        if sign == Minus {
-            num = -num;
-        }
-
-        Ok(num)
-    }
-
-    /// Alias: `ICONST`
-    fn i32_literal(&mut self) -> ScanResult<i32> {
-
-        let value = self.buffer.slice();
-
-        self.buffer.consume(|tok| {
-            let NumberLiteral { radix } = tok else { return None };
-            let value = value.expect("slice is valid due to previous match");
-
-            let Some(UnsignedNumber::IntegerConst(int)) = parse_number(value, radix) else { return None };
-            // SAFETY: `0 <= int <= i32::MAX`
-            Some(int as i32)
-        })
-    }
-
     fn opt_unique_null_treatment(&mut self) -> ScanResult<bool> {
         use Keyword::{Distinct, Not, Nulls};
         const FN_NAME: &str = "postgres_parser::parser::Parser::opt_unique_null_treatment";
@@ -657,31 +567,10 @@ impl<'src> Parser<'src> {
         )
     }
 
-    /// Aliases:
-    /// * `SCONST`
-    /// * `USCONST`
-    /// * `file_name`
-    #[inline(always)]
-    fn string(&mut self) -> ScanResult<String> {
-        StringParser(self).parse()
-    }
-
     /// Alias: `IDENT`
     #[inline(always)]
     fn identifier(&mut self) -> ScanResult<String> {
         IdentifierParser(self).parse()
-    }
-
-    fn bit_string(&mut self) -> ScanResult<(BitStringKind, String)> {
-
-        let slice = self.buffer.slice();
-        let kind = self.buffer.consume(|tok| tok.bit_string_kind())?;
-        let slice = slice.expect("slice is valid due to previous consume");
-
-        // strip delimiters
-        let slice = &slice[2..(slice.len() - 1)];
-
-        Ok((kind, slice.to_string()))
     }
 
     /// Production: `UESCAPE SCONST`
@@ -746,20 +635,6 @@ fn uescape_escape(source: &str) -> Option<char> {
     match chars.next() {
         Some('\'') => Some(escape),
         _ => None
-    }
-}
-
-fn parse_number(value: &str, radix: u32) -> Option<UnsignedNumber> {
-    use UnsignedNumber::*;
-
-    let value = value.replace("_", "");
-
-    if let Ok(int) = i32::from_str_radix(&value, radix) {
-        // SAFETY: `0 <= int <= i32::MAX`
-        Some(IntegerConst(int as u32))
-    }
-    else {
-        Some(NumericConst { radix, value })
     }
 }
 
@@ -997,53 +872,6 @@ mod tests {
     }
 
     #[test]
-    fn test_signed_number() {
-        use SignedNumber::{IntegerConst, NumericConst};
-
-        let mut parser = Parser::new("1.01 +2.02 -3.03 101 +202 -303", DEFAULT_CONFIG);
-
-        let expected = vec![
-            NumericConst { value: "1.01".into(), radix: 10, negative: false },
-            NumericConst { value: "2.02".into(), radix: 10, negative: false },
-            NumericConst { value: "3.03".into(), radix: 10, negative: true },
-            IntegerConst(101),
-            IntegerConst(202),
-            IntegerConst(-303),
-        ];
-
-        for e in expected {
-            let actual = parser.signed_number();
-            assert_eq!(Ok(e), actual);
-        }
-    }
-
-    #[test]
-    fn test_unsigned_number() {
-        use UnsignedNumber::{IntegerConst, NumericConst};
-
-        let mut parser = Parser::new("1.1 11", DEFAULT_CONFIG);
-
-        let actual = parser.unsigned_number();
-        assert_eq!(Ok(NumericConst { value: "1.1".into(), radix: 10 }), actual);
-
-        let actual = parser.unsigned_number();
-        assert_eq!(Ok(IntegerConst(11)), actual);
-    }
-
-    #[test]
-    fn test_signed_i32_literal() {
-        let mut parser = Parser::new("-123 +321", DEFAULT_CONFIG);
-        assert_eq!(Ok(-123), parser.signed_i32_literal());
-        assert_eq!(Ok(321), parser.signed_i32_literal());
-    }
-
-    #[test]
-    fn test_i32_literal() {
-        let mut parser = Parser::new("123", DEFAULT_CONFIG);
-        assert_eq!(Ok(123), parser.i32_literal());
-    }
-
-    #[test]
     fn test_col_id() {
         let source = "cascaded xxyyzz coalesce";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
@@ -1094,27 +922,11 @@ mod tests {
     }
 
     #[test]
-    fn test_string() {
-        let source = "'test string'";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        assert_eq!("test string", parser.string().unwrap());
-    }
-
-    #[test]
     fn test_identifier() {
         let source = "tEsT_iDeNtIfIeR";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         assert_eq!("test_identifier", parser.identifier().unwrap());
-    }
-
-    #[test_case("b'0101'", BitStringKind::Binary, "0101")]
-    #[test_case("x'19af'", BitStringKind::Hex, "19af")]
-    fn test_bit_string(source: &str, expected_kind: BitStringKind, expected_value: &str) {
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        let actual = parser.bit_string();
-        assert_eq!(Ok((expected_kind, expected_value.to_string())), actual);
     }
 
     #[test]
@@ -1146,9 +958,7 @@ use self::{
         RangeVar,
         RawStmt,
         RoleSpec,
-        SignedNumber,
         TransactionMode,
-        UnsignedNumber,
     },
     consume_macro::consume,
     error::{syntax_err, NameList, ParserErrorKind::*, PartialParserError},
@@ -1161,15 +971,13 @@ use self::{
         ScanResultTrait,
         TryMatch,
     },
-    string_parser::StringParser,
     token_buffer::{TokenBuffer, TokenConsumer}
 };
 use crate::lexer::{
-    BitStringKind,
     Keyword,
     KeywordCategory::*,
     Lexer,
-    TokenKind::{self, CloseParenthesis, Comma, Dot, NumberLiteral, OpenParenthesis}
+    TokenKind::{self, CloseParenthesis, Comma, Dot, OpenParenthesis}
 };
 use postgres_basics::{ascii, fn_info, Located};
 use std::{borrow::Cow, mem};
