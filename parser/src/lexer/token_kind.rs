@@ -2,13 +2,13 @@
 pub enum IdentifierKind {
 
     /// E.g.: `ident`
-    BasicIdentifier,
+    Basic,
 
     /// E.g.: `"ident"`
-    QuotedIdentifier,
+    Quoted,
 
     /// E.g.: `u&"ident"`
-    UnicodeIdentifier,
+    Unicode,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -179,19 +179,17 @@ impl TokenKind {
 mod tests {
     use super::*;
     use BitStringKind::*;
-    use IdentifierKind::*;
-    use StringKind::*;
     use TokenKind::*;
 
     #[test]
     fn test_identifier_kind() {
-        assert_eq!(Some(BasicIdentifier), Identifier(BasicIdentifier).identifier_kind());
+        assert_eq!(Some(IdentifierKind::Basic), Identifier(IdentifierKind::Basic).identifier_kind());
         assert_eq!(None, CloseParenthesis.identifier_kind())
     }
 
     #[test]
     fn test_string_kind() {
-        assert_eq!(Some(Unicode), StringLiteral(Unicode).string_kind());
+        assert_eq!(Some(StringKind::Unicode), StringLiteral(StringKind::Unicode).string_kind());
         assert_eq!(None, CloseParenthesis.string_kind())
     }
 

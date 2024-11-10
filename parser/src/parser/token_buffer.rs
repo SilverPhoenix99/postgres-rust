@@ -170,7 +170,7 @@ impl TokenConsumer<TokenKind, bool> for TokenBuffer<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lexer::IdentifierKind::BasicIdentifier;
+    use crate::lexer::IdentifierKind::Basic;
     use crate::parser::error::syntax_err;
     use crate::parser::result::ScanErrorKind::NoMatch;
     use crate::parser::ParserErrorKind::Syntax;
@@ -212,8 +212,8 @@ mod tests {
         assert_eq!(Err(NoMatch), buffer.consume_eq(TokenKind::Comma));
 
         assert_eq!(
-            Ok(Identifier(BasicIdentifier)),
-            buffer.consume_eq(Identifier(BasicIdentifier))
+            Ok(Identifier(Basic)),
+            buffer.consume_eq(Identifier(Basic))
         );
     }
 
@@ -239,7 +239,7 @@ mod tests {
         let mut buffer =  TokenBuffer::new(lexer);
 
         let result = buffer.consume(|tok| Ok(Some(tok)));
-        assert_eq!(Ok(Identifier(BasicIdentifier)), result);
+        assert_eq!(Ok(Identifier(Basic)), result);
         assert_eq!(Location::new(4..15, 1, 5), buffer.current_location());
     }
 
@@ -259,7 +259,7 @@ mod tests {
         let mut buffer =  TokenBuffer::new(lexer);
 
         let result = buffer.consume(Some);
-        assert_eq!(Ok(Identifier(BasicIdentifier)), result);
+        assert_eq!(Ok(Identifier(Basic)), result);
         assert_eq!(Location::new(4..15, 1, 5), buffer.current_location());
     }
 
@@ -279,7 +279,7 @@ mod tests {
         let mut buffer =  TokenBuffer::new(lexer);
 
         let result = buffer.consume(|_| true);
-        assert_eq!(Ok(Identifier(BasicIdentifier)), result);
+        assert_eq!(Ok(Identifier(Basic)), result);
         assert_eq!(Location::new(4..15, 1, 5), buffer.current_location());
     }
 
@@ -289,17 +289,17 @@ mod tests {
         let mut buffer =  TokenBuffer::new(lexer);
 
         let result = buffer.peek2();
-        assert_eq!((Ok(Identifier(BasicIdentifier)), Ok(Identifier(BasicIdentifier))), result);
+        assert_eq!((Ok(Identifier(Basic)), Ok(Identifier(Basic))), result);
         assert_eq!(Location::new(0..5, 1, 1), buffer.current_location());
 
         buffer.next();
         let result = buffer.peek2();
-        assert_eq!((Ok(Identifier(BasicIdentifier)), Ok(Identifier(BasicIdentifier))), result);
+        assert_eq!((Ok(Identifier(Basic)), Ok(Identifier(Basic))), result);
         assert_eq!(Location::new(6..17, 1, 7), buffer.current_location());
 
         buffer.next();
         let result = buffer.peek2();
-        assert_eq!((Ok(Identifier(BasicIdentifier)), Err(EofErrorKind::Eof)), result);
+        assert_eq!((Ok(Identifier(Basic)), Err(EofErrorKind::Eof)), result);
         assert_eq!(Location::new(18..23, 1, 19), buffer.current_location());
 
         buffer.next();

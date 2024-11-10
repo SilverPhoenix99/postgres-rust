@@ -12,14 +12,14 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
         let slice = slice.expect("slice is valid due to previous consume");
 
         let ident = match kind {
-            BasicIdentifier => Ok(slice.to_lowercase()),
-            QuotedIdentifier => {
+            Basic => Ok(slice.to_lowercase()),
+            Quoted => {
                 // Strip delimiters:
                 let slice = &slice[1..slice.len() - 1];
                 let ident = BasicStringDecoder::new(slice, true).decode();
                 Ok(ident)
-            },
-            UnicodeIdentifier => {
+            }
+            Unicode => {
 
                 let escape = self.0.uescape()?;
 
