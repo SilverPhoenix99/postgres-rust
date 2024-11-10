@@ -44,8 +44,13 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Object, Owner, To};
-use crate::parser::ast_node::{AlterOwnerStmt, AlterOwnerTarget, RawStmt};
-use crate::parser::result::Required;
-use crate::parser::{ParseResult, Parser};
+use crate::{
+    lexer::Keyword::{Object, Owner, To},
+    parser::{
+        ast_node::{AlterOwnerStmt, AlterOwnerTarget, RawStmt},
+        result::Required,
+        ParseResult,
+        Parser
+    }
+};
 use postgres_basics::fn_info;

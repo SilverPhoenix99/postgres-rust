@@ -49,10 +49,9 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::Privileges;
 use crate::{
     lexer::{
-        Keyword::{Collation, Conversion, DefaultKw, Event, Group, Language, Large, Procedural},
+        Keyword::{Collation, Conversion, DefaultKw, Event, Group, Language, Large, Privileges, Procedural},
         TokenKind::Keyword as Kw,
     },
     parser::{

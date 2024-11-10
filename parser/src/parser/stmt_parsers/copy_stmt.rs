@@ -11,5 +11,8 @@ impl Parser<'_> {
     }
 }
 
-use crate::parser::ast_node::RawStmt;
-use crate::parser::{ParseResult, Parser};
+use crate::parser::{
+    ast_node::RawStmt,
+    ParseResult,
+    Parser
+};

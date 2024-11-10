@@ -1,3 +1,39 @@
+pub type TypeModifiers = Vec<ExprNode>;
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct SystemType {
+    name: TypeName,
+    array_bounds: Vec<Option<i32>>,
+    /// If the type is a table (i.e., set) of records
+    mult: SetOf
+}
+
+impl SystemType {
+    pub fn new(name: TypeName, array_bounds: Vec<Option<i32>>, mult: SetOf) -> Self {
+        Self { name, array_bounds, mult }
+    }
+
+    pub fn with_array_bounds(self, array_bounds: Vec<Option<i32>>) -> Self {
+        Self::new(self.name, array_bounds, self.mult)
+    }
+
+    pub fn returning_table(self) -> SystemType {
+        Self::new(self.name, self.array_bounds, SetOf::Table)
+    }
+
+    pub fn name(&self) -> &TypeName {
+        &self.name
+    }
+
+    pub fn array_bounds(&self) -> &Vec<Option<i32>> {
+        &self.array_bounds
+    }
+
+    pub fn mult(&self) -> SetOf {
+        self.mult
+    }
+}
+
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum IntervalRange {
     Full { precision: Option<i32> },
@@ -22,8 +58,6 @@ impl Default for IntervalRange {
     }
 }
 
-pub type TypeModifiers = Vec<ExprNode>;
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct GenericTypeName {
     name: QualifiedName,
@@ -43,7 +77,6 @@ impl GenericTypeName {
         &self.type_modifiers
     }
 }
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum TypeName {
     Json,
@@ -102,40 +135,6 @@ pub enum SetOf {
     Table,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct SystemType {
-    name: TypeName,
-    array_bounds: Vec<Option<i32>>,
-    /// If the type is a table (i.e., set) of records
-    mult: SetOf
-}
-
-impl SystemType {
-    pub fn new(name: TypeName, array_bounds: Vec<Option<i32>>, mult: SetOf) -> Self {
-        Self { name, array_bounds, mult }
-    }
-
-    pub fn with_array_bounds(self, array_bounds: Vec<Option<i32>>) -> Self {
-        Self::new(self.name, array_bounds, self.mult)
-    }
-
-    pub fn returning_table(self) -> SystemType {
-        Self::new(self.name, self.array_bounds, SetOf::Table)
-    }
-
-    pub fn name(&self) -> &TypeName {
-        &self.name
-    }
-
-    pub fn array_bounds(&self) -> &Vec<Option<i32>> {
-        &self.array_bounds
-    }
-
-    pub fn mult(&self) -> SetOf {
-        self.mult
-    }
-}
-
 impl From<TypeName> for SystemType {
     fn from(value: TypeName) -> Self {
         SystemType::new(value, Vec::new(), SetOf::Scalar)
@@ -177,9 +176,8 @@ pub enum FuncType {
     TypeOf(TypeOf),
 }
 
-use crate::parser::ast_node::impl_from;
 use crate::parser::{
-    ast_node::QualifiedName,
+    ast_node::{impl_from, QualifiedName},
     ExprNode
 };
 use postgres_basics::Oid;

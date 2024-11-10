@@ -200,14 +200,13 @@ impl Parser<'_> {
     }
 }
 
-use crate::parser::ast_node::TypecastExpr;
 use crate::{
     lexer::{
         Keyword::{Distinct, Document, FromKw, Is, Not},
         TokenKind::*
     },
     parser::{
-        ast_node::{ExprNode, QualifiedOperator, UnaryExpr},
+        ast_node::{ExprNode, QualifiedOperator, TypecastExpr, UnaryExpr},
         expr_parsers::associativity::Associativity::{self, Left, Non, Right},
         result::{
             Optional,

@@ -1,7 +1,7 @@
 impl Parser<'_> {
     pub(in crate::parser) fn alter_event_trigger_stmt(&mut self) -> ParseResult<RawStmt> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::alter_event_trigger_stmt";
-        
+
         /*
             ALTER EVENT TRIGGER ColId enable_trigger
             ALTER EVENT TRIGGER ColId OWNER TO RoleSpec
@@ -54,7 +54,7 @@ impl Parser<'_> {
 
     fn enable_trigger(&mut self) -> ParseResult<EventTriggerState> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::enable_trigger";
-        
+
         /*
             ENABLE_P
           | ENABLE_P REPLICA

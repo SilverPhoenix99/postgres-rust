@@ -151,10 +151,10 @@ mod tests {
     // TODO
 }
 
-use crate::parser::error::PartialParserError;
 use crate::{
     lexer::LexerError,
     parser::{
+        error::PartialParserError,
         result::{
             EofErrorKind::NotEof,
             ScanErrorKind::{NoMatch, ScanErr}
