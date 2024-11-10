@@ -204,7 +204,7 @@ mod tests {
         assert_eq!(Ok(NotEquals), parser.all_op());
         assert_eq!(Ok(NotEquals), parser.all_op());
     }
-    
+
     #[test]
     fn test_subquery_op() {
         let source = "like ilike";
@@ -230,7 +230,10 @@ use crate::{
         UserDefinedOperator,
     },
     parser::{
-        ast_node::{Operator::{self, *}, QualifiedOperator},
+        ast_node::{
+            Operator::{self, *},
+            QualifiedOperator
+        },
         consume_macro::consume,
         result::{Optional, Required, ScanErrorKind::NoMatch, ScanResult},
         Parser

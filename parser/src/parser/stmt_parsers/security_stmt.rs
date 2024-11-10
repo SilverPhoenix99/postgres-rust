@@ -22,8 +22,13 @@ impl Parser<'_> {
     }
 }
 
-use crate::lexer::Keyword::Label;
-use crate::parser::ast_node::RawStmt;
-use crate::parser::result::Required;
-use crate::parser::{ParseResult, Parser};
+use crate::{
+    lexer::Keyword::Label,
+    parser::{
+        ast_node::RawStmt,
+        result::Required,
+        ParseResult,
+        Parser
+    }
+};
 use postgres_basics::fn_info;

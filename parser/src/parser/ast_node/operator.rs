@@ -1,0 +1,20 @@
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum Operator {
+    Addition,
+    Subtraction,
+    Multiplication,
+    Division,
+    Modulo,
+    Exponentiation,
+    Less,
+    Greater,
+    Equals,
+    LessEquals,
+    GreaterEquals,
+    NotEquals,
+    Like,
+    NotLike,
+    ILike,
+    NotILike,
+    UserDefined(String),
+}
