@@ -36,7 +36,7 @@ mod tests {
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let expected = AlterOwnerStmt::new(
-            AlterOwnerTarget::LargeObject(SignedNumber::SignedIConst(654987)),
+            AlterOwnerTarget::LargeObject(SignedNumber::IntegerConst(654987)),
             RoleSpec::Name("some_user".into())
         );
 
