@@ -680,7 +680,7 @@ use crate::{
     },
     parser::{
         ast_node::{
-            ConstExpr::IntegerConst,
+            ExprNode::IntegerConst,
             GenericTypeName,
             IntervalRange,
             SystemType,

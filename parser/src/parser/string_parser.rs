@@ -184,4 +184,4 @@ use crate::{
     },
     string_decoders::*
 };
-use postgres_basics::{fn_info, Located, Location};
+use postgres_basics::{fn_info, Location};

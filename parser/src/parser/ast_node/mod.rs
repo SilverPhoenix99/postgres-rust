@@ -1,6 +1,5 @@
 mod alter_event_trig_stmt;
 mod alter_role_stmt;
-mod const_expr;
 mod discard_stmt;
 mod notify_stmt;
 mod numeric_spec;
@@ -13,7 +12,6 @@ mod variable_show_stmt;
 pub use self::{
     alter_event_trig_stmt::{AlterEventTrigStmt, EventTriggerState},
     alter_role_stmt::{AlterRoleAction, AlterRoleOption, AlterRoleStmt},
-    const_expr::ConstExpr,
     discard_stmt::DiscardStmt,
     notify_stmt::NotifyStmt,
     numeric_spec::NumericSpec,
@@ -757,12 +755,38 @@ impl RangeVar {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct TypecastExpr {
+    type_name: SystemType,
+    value: ExprNode,
+}
+
+impl TypecastExpr {
+    pub fn new(type_name: SystemType, value: ExprNode) -> Self {
+        Self { type_name, value }
+    }
+
+    pub fn type_name(&self) -> &SystemType {
+        &self.type_name
+    }
+
+    pub fn value(&self) -> &ExprNode {
+        &self.value
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum ExprNode {
+    /* Constants */
+    NullConst,
+    StringConst(String),
+    BinaryStringConst(String),
+    HexStringConst(String),
+    IntegerConst(i32),
+    NumericConst { radix: u32, value: String },
+    BooleanConst(bool),
+
     SetToDefault,
-    Const(ConstExpr),
-    SystemType(SystemType),
-    Typecast((/* TODO */)),
-    Indirection(Vec<Indirection>),
+    Typecast(Box<TypecastExpr>),
     CaseExpr(Box<CaseExpr>),
 
     BinaryExpr(Box<BinaryExpr>),
@@ -784,14 +808,24 @@ pub enum ExprNode {
 }
 
 impl_from!(box BinaryExpr for ExprNode);
+impl_from!(box TypecastExpr for ExprNode => Typecast);
 impl_from!(box UnaryExpr for ExprNode);
 impl_from!(box XmlParse for ExprNode);
 impl_from!(box XmlProcessingInstruction for ExprNode);
 impl_from!(box XmlRoot for ExprNode);
-impl_from!(ConstExpr for ExprNode => Const);
 impl_from!(BoolExpr for ExprNode);
-impl_from!(SystemType for ExprNode);
 impl_from!(XmlElement for ExprNode);
+
+impl From<UnsignedNumber> for ExprNode {
+    fn from(value: UnsignedNumber) -> Self {
+        use UnsignedNumber::*;
+        match value {
+            // SAFETY: `int` is originally parsed by `i32::from_str_radix()`, so `0 <= int <= i32::MAX`
+            IntegerConst(int) => Self::IntegerConst(int as i32),
+            NumericConst { value, radix } => Self::NumericConst { radix, value }
+        }
+    }
+}
 
 impl ExprNode {
     #[inline(always)]
