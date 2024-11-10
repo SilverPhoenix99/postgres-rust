@@ -523,10 +523,10 @@ impl<'src> Parser<'src> {
                 if negative {
                     int = -int;
                 }
-                SignedNumber::SignedIConst(int)
+                SignedNumber::IntegerConst(int)
             },
             UnsignedNumber::NumericConst { value, radix } => {
-                SignedNumber::Numeric { value, radix, negative }
+                SignedNumber::NumericConst { value, radix, negative }
             }
         };
 
@@ -998,17 +998,17 @@ mod tests {
 
     #[test]
     fn test_signed_number() {
-        use SignedNumber::{Numeric, SignedIConst};
+        use SignedNumber::{IntegerConst, NumericConst};
 
         let mut parser = Parser::new("1.01 +2.02 -3.03 101 +202 -303", DEFAULT_CONFIG);
 
         let expected = vec![
-            Numeric { value: "1.01".into(), radix: 10, negative: false },
-            Numeric { value: "2.02".into(), radix: 10, negative: false },
-            Numeric { value: "3.03".into(), radix: 10, negative: true },
-            SignedIConst(101),
-            SignedIConst(202),
-            SignedIConst(-303),
+            NumericConst { value: "1.01".into(), radix: 10, negative: false },
+            NumericConst { value: "2.02".into(), radix: 10, negative: false },
+            NumericConst { value: "3.03".into(), radix: 10, negative: true },
+            IntegerConst(101),
+            IntegerConst(202),
+            IntegerConst(-303),
         ];
 
         for e in expected {

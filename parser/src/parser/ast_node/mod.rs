@@ -195,8 +195,8 @@ pub enum UnsignedNumber {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum SignedNumber {
-    SignedIConst(i32),
-    Numeric { value: String, radix: u32, negative: bool },
+    IntegerConst(i32),
+    NumericConst { value: String, radix: u32, negative: bool },
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
