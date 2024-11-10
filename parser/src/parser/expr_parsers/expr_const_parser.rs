@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `AexprConst`
-    pub(in crate::parser) fn expr_const(&mut self) -> ScanResult<ConstExpr> {
+    pub(in crate::parser) fn expr_const(&mut self) -> ScanResult<ExprNode> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::expr_const";
 
         /*
@@ -45,7 +45,8 @@ impl Parser<'_> {
                 type_name = Interval(range)
             }
 
-            return Ok(TypecastConst(type_name, value))
+            let typecast = TypecastExpr::new(type_name.into(), StringConst(value));
+            return Ok(typecast.into())
         }
 
         consume!{self
@@ -65,20 +66,20 @@ impl Parser<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::ConstExpr;
+    use crate::parser::ast_node::ExprNode;
     use crate::parser::tests::DEFAULT_CONFIG;
     use test_case::test_case;
 
-    #[test_case("123", IntegerConst(123))]
-    #[test_case("123.45", NumericConst { radix: 10, value: "123.45".into() })]
+    #[test_case("123", ExprNode::IntegerConst(123))]
+    #[test_case("123.45", ExprNode::NumericConst { radix: 10, value: "123.45".into() })]
     #[test_case("true", BooleanConst(true))]
     #[test_case("false", BooleanConst(false))]
     #[test_case("null", NullConst)]
     #[test_case("b'0101'", BinaryStringConst("0101".into()))]
     #[test_case("x'19af'", HexStringConst("19af".into()))]
     #[test_case("'string literal'", StringConst("string literal".into()))]
-    #[test_case("interval '1' day", TypecastConst(Interval(IntervalRange::Day), "1".into()))]
-    fn test_expr_const(source: &str, expected: ConstExpr) {
+    #[test_case("interval '1' day", TypecastExpr::new(Interval(IntervalRange::Day).into(), StringConst("1".into())).into())]
+    fn test_expr_const(source: &str, expected: ExprNode) {
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         let actual = parser.expr_const();
@@ -94,9 +95,10 @@ use crate::{
     },
     parser::{
         ast_node::{
-            ConstExpr::{self, *},
+            ExprNode::{self, BinaryStringConst, BooleanConst, HexStringConst, NullConst, StringConst},
             IntervalRange,
-            TypeName::Interval
+            TypeName::Interval,
+            TypecastExpr
         },
         consume_macro::consume,
         result::{
@@ -106,7 +108,7 @@ use crate::{
             ScanResult,
             ScanResultTrait
         },
-        Parser
+        Parser,
     }
 };
 use postgres_basics::fn_info;

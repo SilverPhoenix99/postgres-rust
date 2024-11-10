@@ -53,8 +53,8 @@ impl Parser<'_> {
             max_prec = assoc.max_precedence();
 
             if op == Op::Typecast {
-                // TODO: let typename = self.typename().required()?; // -> TypeName
-                expr = ExprNode::Typecast((/* tree, typename */));
+                let type_name = self.type_name().required(fn_info!(FN_NAME))?;
+                expr = TypecastExpr::new(type_name, expr).into();
                 continue
             }
 
@@ -200,6 +200,7 @@ impl Parser<'_> {
     }
 }
 
+use crate::parser::ast_node::TypecastExpr;
 use crate::{
     lexer::{
         Keyword::{Distinct, Document, FromKw, Is, Not},
