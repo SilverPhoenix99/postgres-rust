@@ -783,6 +783,16 @@ pub enum ExprNode {
     XmlRoot(Box<XmlRoot>),
 }
 
+impl_from!(box BinaryExpr for ExprNode);
+impl_from!(box UnaryExpr for ExprNode);
+impl_from!(box XmlParse for ExprNode);
+impl_from!(box XmlProcessingInstruction for ExprNode);
+impl_from!(box XmlRoot for ExprNode);
+impl_from!(ConstExpr for ExprNode => Const);
+impl_from!(BoolExpr for ExprNode);
+impl_from!(SystemType for ExprNode);
+impl_from!(XmlElement for ExprNode);
+
 impl ExprNode {
     #[inline(always)]
     pub fn addition(left: Self, right: Self) -> Self {
@@ -885,16 +895,6 @@ impl ExprNode {
         BoolExpr::and(left, right).into()
     }
 }
-
-impl_from!(box BinaryExpr for ExprNode);
-impl_from!(box UnaryExpr for ExprNode);
-impl_from!(box XmlParse for ExprNode);
-impl_from!(box XmlProcessingInstruction for ExprNode);
-impl_from!(box XmlRoot for ExprNode);
-impl_from!(ConstExpr for ExprNode => Const);
-impl_from!(BoolExpr for ExprNode);
-impl_from!(SystemType for ExprNode);
-impl_from!(XmlElement for ExprNode);
 
 use crate::parser::CowStr;
 use impl_from;
