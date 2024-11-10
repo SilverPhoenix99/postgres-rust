@@ -2,6 +2,7 @@ pub(super) mod indirection;
 mod associativity;
 mod a_expr_prec;
 mod b_expr_prec;
+mod expr_const_parser;
 mod case_expr;
 
 impl Parser<'_> {
