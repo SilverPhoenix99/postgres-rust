@@ -38,9 +38,6 @@ pub enum StringKind {
         concatenable: bool
     },
 
-    /// E.g.: `n'str'`
-    National,
-
     /// E.g.: `u&'str'`
     Unicode,
 
