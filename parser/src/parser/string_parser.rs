@@ -51,7 +51,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
         const FN_NAME: &str = "postgres_parser::parser::string_parser::StringParser::decode_string";
 
         let result = match kind {
-            Basic { .. } | National => {
+            Basic { .. } => {
                 let string = BasicStringDecoder::new(slice, false).decode();
                 Ok(string)
             },
@@ -104,7 +104,6 @@ pub(super) fn strip_delimiters(kind: StringKind, slice: &str) -> &str {
             let delim_len = if slice.starts_with('\'') { 1 } else { 2 };
             delim_len..(slice.len() - 1)
         }
-        National => 2..(slice.len() - 1),
         Unicode => 3..(slice.len() - 1),
     };
 

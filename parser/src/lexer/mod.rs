@@ -145,14 +145,9 @@ impl<'src> Lexer<'src> {
             'n' | 'N' => {
                 // TODO: is there a need to check for nchar availability?
                 // https://github.com/postgres/postgres/blob/1d80d6b50e6401828fc445151375f9bde3f99ac6/src/backend/parser/scan.l#L539
-                if self.buffer.consume_char('\'') {
-                    let tok = if self.standard_conforming_strings {
-                        self.lex_quote_string(National)
-                    }
-                    else {
-                        self.lex_extended_string(false)
-                    };
-                    return tok
+
+                if let Some('\'') = self.buffer.peek() {
+                    return Ok(Keyword(Nchar))
                 }
                 self.lex_identifier()
             }
@@ -920,7 +915,8 @@ mod tests {
         assert_tok(StringLiteral(StringKind::Basic { concatenable: false }), 0..2, 1, 1, lex.next());
         assert_tok(StringLiteral(StringKind::Basic { concatenable: true }), 3..17, 2, 1, lex.next());
         assert_tok(StringLiteral(StringKind::Basic { concatenable: false }), 18..23, 2, 16, lex.next());
-        assert_tok(StringLiteral(National), 24..35, 3, 1, lex.next());
+        assert_tok(Keyword(Nchar), 24..25, 3, 1, lex.next());
+        assert_tok(StringLiteral(StringKind::Basic { concatenable: false }), 25..35, 3, 2, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -935,7 +931,8 @@ mod tests {
 
         assert_tok(StringLiteral(Extended { concatenable: false }), 0..12, 1, 1, lex.next());
         assert_tok(StringLiteral(Extended { concatenable: false }), 13..26, 2, 1, lex.next());
-        assert_tok(StringLiteral(Extended { concatenable: false }), 27..38, 3, 1, lex.next());
+        assert_tok(Keyword(Nchar), 27..28, 3, 1, lex.next());
+        assert_tok(StringLiteral(Extended { concatenable: false }), 28..38, 3, 2, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -1044,6 +1041,7 @@ mod tests {
 use self::{
     error::LexerErrorKind::*,
     token_kind::{BitStringKind::*, IdentifierKind::*, StringKind::*, TokenKind::*},
+    Keyword::Nchar
 };
 use postgres_basics::{
     ascii::*,
