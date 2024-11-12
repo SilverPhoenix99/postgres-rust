@@ -70,6 +70,7 @@ pub enum TokenKind {
     CloseBracket,
     /// `.`
     Dot,
+    /// `..`
     DotDot,
     /// `:`
     Colon,
