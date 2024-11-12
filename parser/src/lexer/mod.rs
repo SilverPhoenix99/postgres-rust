@@ -13,8 +13,9 @@ type LexResult<T = TokenKind> = Result<T, (LexerErrorKind, &'static FnInfo)>;
 
 #[derive(Debug)]
 pub struct Lexer<'src> {
+    standard_conforming_strings: bool,
     buffer: CharBuffer<'src>,
-    standard_conforming_strings: bool
+    peeked: Option<Option<LexerResult>>,
 }
 
 impl Iterator for Lexer<'_> {
@@ -23,6 +24,58 @@ impl Iterator for Lexer<'_> {
     /// The token is always a full match,
     /// never a substring that's more interesting than the whole match.
     fn next(&mut self) -> Option<Self::Item> {
+        let result = self.peek();
+        if result.is_none() {
+            // Don't update `self.peeked` anymore,
+            // if in the `Eof` state.
+            return result
+        }
+        self.peeked = None;
+        result
+    }
+}
+
+impl FusedIterator for Lexer<'_> {}
+
+impl<'src> Lexer<'src> {
+
+    #[inline]
+    pub fn new(source: &'src str, standard_conforming_strings: bool) -> Self {
+        Self {
+            standard_conforming_strings,
+            buffer: CharBuffer::new(source),
+            peeked: None
+        }
+    }
+
+    #[inline(always)]
+    pub fn source(&self) -> &'src str {
+        self.buffer.source()
+    }
+
+    /// Zero-length `range`.
+    #[inline(always)]
+    pub fn current_location(&self) -> Location {
+        self.buffer.current_location()
+    }
+
+    #[inline(always)]
+    pub fn eof(&self) -> bool {
+        self.buffer.eof()
+    }
+
+    pub fn peek(&mut self) -> Option<LexerResult> {
+
+        if let Some(result) = self.peeked.as_ref() {
+            return result.clone()
+        }
+
+        let result = self.advance();
+        self.peeked = Some(result.clone());
+        result
+    }
+
+    fn advance(&mut self) -> Option<LexerResult> {
 
         let concatenable_whitespace = match self.skip_trivia() {
             Ok(concatenable_whitespace) => concatenable_whitespace,
@@ -46,35 +99,6 @@ impl Iterator for Lexer<'_> {
                 Some(Err(report))
             }
         }
-    }
-}
-
-impl FusedIterator for Lexer<'_> {}
-
-impl<'src> Lexer<'src> {
-
-    #[inline]
-    pub fn new(source: &'src str, standard_conforming_strings: bool) -> Self {
-        Self {
-            buffer: CharBuffer::new(source),
-            standard_conforming_strings
-        }
-    }
-
-    #[inline(always)]
-    pub fn source(&self) -> &'src str {
-        self.buffer.source()
-    }
-
-    /// Zero-length `range`.
-    #[inline(always)]
-    pub fn current_location(&self) -> Location {
-        self.buffer.current_location()
-    }
-
-    #[inline(always)]
-    pub fn eof(&self) -> bool {
-        self.buffer.eof()
     }
 
     fn lex_token(&mut self, concatenable_string: bool) -> LexResult {
@@ -559,11 +583,11 @@ impl<'src> Lexer<'src> {
 
         let ident = self.buffer.slice(start_index);
 
-        if let Some(kw) = Keyword::find(&ident) {
+        if let Some(kw) = Keyword::find(ident) {
             return Ok(Keyword(kw))
         }
 
-        Ok(Identifier(Basic))
+        Ok(Identifier(IdentifierKind::Basic))
     }
 
     fn lex_dollar_string(&mut self) -> LexResult {
@@ -898,7 +922,7 @@ mod tests {
 
         assert_err(UnexpectedChar { unknown: '$' }, 0..1, 1, 1, lex.next());
         assert_kw(Not, lex.next());
-        assert_tok(Identifier(Basic), 5..6, 1, 6, lex.next());
+        assert_tok(Identifier(IdentifierKind::Basic), 5..6, 1, 6, lex.next());
         assert_kw(StringKw, lex.next());
         assert_eq!(None, lex.next());
     }
@@ -963,15 +987,15 @@ mod tests {
     fn test_identifier() {
         let source = "bar xyz efg nun ube foo u&x";
         let mut lex = Lexer::new(source, true);
-        assert_tok(Identifier(Basic), 0..3, 1, 1, lex.next());
-        assert_tok(Identifier(Basic), 4..7, 1, 5, lex.next());
-        assert_tok(Identifier(Basic), 8..11, 1, 9, lex.next());
-        assert_tok(Identifier(Basic), 12..15, 1, 13, lex.next());
-        assert_tok(Identifier(Basic), 16..19, 1, 17, lex.next());
-        assert_tok(Identifier(Basic), 20..23, 1, 21, lex.next());
-        assert_tok(Identifier(Basic), 24..25, 1, 25, lex.next());
+        assert_tok(Identifier(IdentifierKind::Basic), 0..3, 1, 1, lex.next());
+        assert_tok(Identifier(IdentifierKind::Basic), 4..7, 1, 5, lex.next());
+        assert_tok(Identifier(IdentifierKind::Basic), 8..11, 1, 9, lex.next());
+        assert_tok(Identifier(IdentifierKind::Basic), 12..15, 1, 13, lex.next());
+        assert_tok(Identifier(IdentifierKind::Basic), 16..19, 1, 17, lex.next());
+        assert_tok(Identifier(IdentifierKind::Basic), 20..23, 1, 21, lex.next());
+        assert_tok(Identifier(IdentifierKind::Basic), 24..25, 1, 25, lex.next());
         assert_tok(UserDefinedOperator, 25..26, 1, 26, lex.next());
-        assert_tok(Identifier(Basic), 26..27, 1, 27, lex.next());
+        assert_tok(Identifier(IdentifierKind::Basic), 26..27, 1, 27, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -995,7 +1019,22 @@ mod tests {
 
         assert_err(EmptyDelimitedIdentifier, 0..2, 1, 1, lex.next());
         assert_tok(Identifier(Quoted), 3..14, 2, 1, lex.next());
-        assert_tok(Identifier(Unicode), 15..28, 3, 1, lex.next());
+        assert_tok(Identifier(IdentifierKind::Unicode), 15..28, 3, 1, lex.next());
+        assert_eq!(None, lex.next());
+    }
+
+    #[test]
+    fn test_peek() {
+        let source = "two identifiers";
+        let mut lex = Lexer::new(source, true);
+
+        assert_tok(Identifier(IdentifierKind::Basic), 0..3, 1, 1, lex.peek());
+        assert_tok(Identifier(IdentifierKind::Basic), 0..3, 1, 1, lex.next());
+
+        assert_tok(Identifier(IdentifierKind::Basic), 4..15, 1, 5, lex.peek());
+        assert_tok(Identifier(IdentifierKind::Basic), 4..15, 1, 5, lex.next());
+
+        assert_eq!(None, lex.peek());
         assert_eq!(None, lex.next());
     }
 
