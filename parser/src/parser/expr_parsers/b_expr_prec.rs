@@ -137,7 +137,7 @@ impl Parser<'_> {
             .optional()?
             .is_some();
 
-        let kw = self.buffer.consume_kws(|kw| matches!(kw, Document | Distinct))
+        let kw = self.buffer.consume_kw(|kw| matches!(kw, Document | Distinct))
             .required(fn_info!(FN_NAME))?;
 
         if kw == Document {

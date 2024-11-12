@@ -20,7 +20,7 @@ impl<'src> TokenBuffer<'src> {
 
     #[inline(always)]
     pub fn eof(&mut self) -> bool {
-        matches!(self.peeked().0, Err(EofErrorKind::Eof))
+        matches!(self.peeked().0, Err(Eof))
     }
 
     /// Returns the location of the current token,
@@ -81,7 +81,6 @@ impl<'src> TokenBuffer<'src> {
     }
 
     fn lex_next(&mut self) -> Located<EofResult<TokenKind>> {
-        use EofErrorKind::*;
 
         match self.lexer.next() {
             Some(Ok((tok, loc))) => (Ok(tok), loc),
@@ -104,10 +103,10 @@ impl<'src> TokenBuffer<'src> {
 
     #[inline(always)]
     pub fn consume_kw_eq(&mut self, keyword: Keyword) -> ScanResult<Keyword> {
-        self.consume_kws(|kw| keyword == kw)
+        self.consume_kw(|kw| keyword == kw)
     }
 
-    pub fn consume_kws(&mut self, pred: impl Fn(Keyword) -> bool) -> ScanResult<Keyword> {
+    pub fn consume_kw(&mut self, pred: impl Fn(Keyword) -> bool) -> ScanResult<Keyword> {
         self.consume(|tok|
             tok.keyword().filter(|kw| pred(*kw))
         )
@@ -131,7 +130,7 @@ impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenBuffer<'_> {
     {
         let tok = match self.peek() {
             Ok(tok) => tok,
-            Err(EofErrorKind::Eof) => return Err(ScanErrorKind::Eof),
+            Err(Eof) => return Err(ScanEof),
             Err(NotEof(err)) => return Err(ScanErr(err)),
         };
 
@@ -172,7 +171,6 @@ mod tests {
     use super::*;
     use crate::lexer::IdentifierKind::Basic;
     use crate::parser::error::syntax_err;
-    use crate::parser::result::ScanErrorKind::NoMatch;
     use crate::parser::ParserErrorKind::Syntax;
     use postgres_basics::fn_info;
     use TokenKind::Identifier;
@@ -200,7 +198,7 @@ mod tests {
 
         buffer.next();
 
-        assert_matches!(buffer.peek(), Err(EofErrorKind::Eof));
+        assert_matches!(buffer.peek(), Err(Eof));
         assert_eq!(Location::new(15..15, 1, 16), buffer.current_location());
     }
 
@@ -299,12 +297,12 @@ mod tests {
 
         buffer.next();
         let result = buffer.peek2();
-        assert_eq!((Ok(Identifier(Basic)), Err(EofErrorKind::Eof)), result);
+        assert_eq!((Ok(Identifier(Basic)), Err(Eof)), result);
         assert_eq!(Location::new(18..23, 1, 19), buffer.current_location());
 
         buffer.next();
         let result = buffer.peek2();
-        assert_eq!((Err(EofErrorKind::Eof), Err(EofErrorKind::Eof)), result);
+        assert_eq!((Err(Eof), Err(Eof)), result);
         assert_eq!(Location::new(23..23, 1, 24), buffer.current_location());
     }
 }
@@ -314,9 +312,9 @@ use crate::{
     lexer::{Keyword, Lexer, TokenKind},
     parser::{
         result::{
-            EofErrorKind::{self, NotEof},
+            EofErrorKind::{Eof, NotEof},
             EofResult,
-            ScanErrorKind::{self, NoMatch, ScanErr},
+            ScanErrorKind::{Eof as ScanEof, NoMatch, ScanErr},
             ScanResult,
         },
         ParseResult,

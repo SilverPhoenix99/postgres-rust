@@ -9,7 +9,7 @@ impl Parser<'_> {
             | IDENT ( attrs )?
         */
 
-        let kw = self.buffer.consume_kws(|kw|
+        let kw = self.buffer.consume_kw(|kw|
             matches!(kw.details().category(), Unreserved | ColumnName | TypeFuncName)
         ).no_match_to_option()?;
 

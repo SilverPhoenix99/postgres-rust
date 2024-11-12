@@ -12,7 +12,7 @@ impl Parser<'_> {
 
         let trigger = self.col_id().required(fn_info!(FN_NAME))?;
 
-        let op = self.buffer.consume_kws(|kw| matches!(kw, Owner | Rename))
+        let op = self.buffer.consume_kw(|kw| matches!(kw, Owner | Rename))
             .try_match(fn_info!(FN_NAME))?;
 
         let Some(op) = op else {

@@ -133,7 +133,7 @@ impl<'src> Parser<'src> {
 
         // Skips over WORK | TRANSACTION
 
-        self.buffer.consume_kws(|kw| matches!(kw, Work | Transaction))
+        self.buffer.consume_kw(|kw| matches!(kw, Work | Transaction))
             .optional()?;
 
         Ok(())
@@ -205,7 +205,7 @@ impl<'src> Parser<'src> {
             | NOT DEFERRABLE
         */
 
-        let result = self.buffer.consume_kws(|kw|
+        let result = self.buffer.consume_kw(|kw|
             matches!(kw, Deferrable | Not | Isolation | Read)
         )?;
 
@@ -246,7 +246,7 @@ impl<'src> Parser<'src> {
             SERIALIZABLE
         */
 
-        let kw = self.buffer.consume_kws(|kw|
+        let kw = self.buffer.consume_kw(|kw|
             matches!(kw, Read | Repeatable | Serializable)
         )?;
 
