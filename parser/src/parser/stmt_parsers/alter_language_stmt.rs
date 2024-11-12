@@ -9,7 +9,7 @@ impl Parser<'_> {
 
         let name = self.col_id().required(fn_info!(FN_NAME))?;
 
-        let action = self.buffer.consume_kws(|kw| matches!(kw, Owner | Rename))
+        let action = self.buffer.consume_kw(|kw| matches!(kw, Owner | Rename))
             .required(fn_info!(FN_NAME))?;
 
         self.buffer.consume_kw_eq(To).required(fn_info!(FN_NAME))?;

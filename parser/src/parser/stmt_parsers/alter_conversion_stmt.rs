@@ -10,7 +10,7 @@ impl Parser<'_> {
 
         let conversion = self.any_name().required(fn_info!(FN_NAME))?;
 
-        let op = self.buffer.consume_kws(|kw| matches!(kw, Owner | Rename | Set))
+        let op = self.buffer.consume_kw(|kw| matches!(kw, Owner | Rename | Set))
             .required(fn_info!(FN_NAME))?;
 
         let stmt = match op {

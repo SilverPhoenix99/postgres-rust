@@ -12,7 +12,7 @@ impl Parser<'_> {
         let role_loc = self.buffer.current_location();
         let role = self.role_spec().required(fn_info!(FN_NAME))?;
 
-        let action = self.buffer.consume_kws(|kw| matches!(kw, Add | DropKw | Rename))
+        let action = self.buffer.consume_kw(|kw| matches!(kw, Add | DropKw | Rename))
             .required(fn_info!(FN_NAME))?;
 
         if action == Rename {

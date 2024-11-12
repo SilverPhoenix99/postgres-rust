@@ -60,8 +60,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
                 let ExtendedStringResult { result, warning } = decoder.decode();
 
                 if let Some(warning) = warning {
-                    let warning = ParserWarningKind::NonstandardEscape(warning);
-                    self.0.warnings.push((warning, loc));
+                    self.0.warnings.push((warning.into(), loc));
                 }
 
                 result.map_err(|err|
@@ -179,7 +178,6 @@ use crate::{
         token_buffer::TokenConsumer,
         Parser,
         ParserErrorKind,
-        ParserWarningKind
     },
     string_decoders::*
 };

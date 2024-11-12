@@ -11,7 +11,7 @@ impl Parser<'_> {
 
         let name = self.any_name().required(fn_info!(FN_NAME))?;
 
-        let op = self.buffer.consume_kws(|kw| matches!(kw, Owner | Refresh | Rename | Set))
+        let op = self.buffer.consume_kw(|kw| matches!(kw, Owner | Refresh | Rename | Set))
             .required(fn_info!(FN_NAME))?;
 
         let stmt = match op {
