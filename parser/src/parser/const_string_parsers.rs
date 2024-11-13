@@ -11,14 +11,17 @@ impl Parser<'_> {
 
     pub(in crate::parser) fn bit_string(&mut self) -> ScanResult<(BitStringKind, String)> {
 
-        let slice = self.buffer.slice();
-        let kind = self.buffer.consume(|tok| tok.bit_string_kind())?;
-        let slice = slice.expect("slice is valid due to previous consume");
+        let (kind, slice) = self.buffer.consume_with_slice(|(tok, slice, _)|
+            tok.bit_string_kind()
+                .map(|kind|
+                    (
+                        kind,
+                        slice[2..(slice.len() - 1)].to_string() // strip delimiters
+                    )
+                )
+        )?;
 
-        // strip delimiters
-        let slice = &slice[2..(slice.len() - 1)];
-
-        Ok((kind, slice.to_string()))
+        Ok((kind, slice))
     }
 }
 
@@ -50,7 +53,7 @@ use crate::{
     parser::{
         result::ScanResult,
         string_parser::StringParser,
-        token_buffer::TokenConsumer,
+        token_buffer::SlicedTokenConsumer,
         Parser
     }
 };

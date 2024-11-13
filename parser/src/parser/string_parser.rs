@@ -6,7 +6,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
 
     pub fn parse(&mut self) -> ScanResult<String> {
 
-        let (kind, loc, slice) = self.try_consume(false)?;
+        let (kind, slice, loc) = self.try_consume(false)?;
 
         let mut string = strip_delimiters(kind, slice).to_owned();
 
@@ -16,7 +16,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
         }
 
         let mut end_index = loc.range().end;
-        while let Some((suffix_kind, suffix_loc, suffix_slice)) = self.try_consume(true).optional()? {
+        while let Some((suffix_kind, suffix_slice, suffix_loc)) = self.try_consume(true).optional()? {
             let suffix_slice = strip_delimiters(suffix_kind, suffix_slice);
             string.push_str(suffix_slice);
             end_index = suffix_loc.range().end;
@@ -27,12 +27,9 @@ impl<'p, 'src> StringParser<'p, 'src> {
         self.decode_string(kind, &string, loc)
     }
 
-    fn try_consume(&mut self, only_concatenable: bool) -> ScanResult<(StringKind, Location, &'src str)> {
+    fn try_consume(&mut self, only_concatenable: bool) -> ScanResult<(StringKind, &'src str, Location)> {
 
-        let loc = self.0.buffer.current_location();
-        let slice = self.0.buffer.slice();
-
-        self.0.buffer.consume(|tok|
+        self.0.buffer.consume_with_slice(|(tok, slice, loc)|
             tok.string_kind()
                 .filter(|kind| {
                     !only_concatenable || match kind {
@@ -41,9 +38,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
                         _ => false
                     }
                 })
-                .map(|kind|
-                    (kind, loc.clone(), slice.expect("slice is valid due to previous filter"))
-                )
+                .map(|kind| (kind, slice, loc))
         )
     }
 
@@ -175,9 +170,9 @@ use crate::{
     parser::{
         error::PartialParserError,
         result::{Optional, ScanErrorKind, ScanResult},
-        token_buffer::TokenConsumer,
+        token_buffer::SlicedTokenConsumer,
         Parser,
-        ParserErrorKind,
+        ParserErrorKind
     },
     string_decoders::*
 };

@@ -586,11 +586,8 @@ impl<'src> Parser<'src> {
             return Ok('\\')
         };
 
-        let slice = self.buffer.slice();
-
-        let uescape = self.buffer.consume(|tok| match tok.string_kind() {
+        let uescape = self.buffer.consume_with_slice(|(tok, slice, _)| match tok.string_kind() {
             Some(_) => {
-                let slice = slice.expect("slice is valid due to previous match");
                 match uescape_escape(slice) {
                     Some(escape) => Ok(Some(escape)),
                     None => Err(
@@ -942,7 +939,7 @@ use self::{
         ScanResultTrait,
         TryMatch,
     },
-    token_buffer::{TokenBuffer, TokenConsumer},
+    token_buffer::{SlicedTokenConsumer, TokenBuffer, TokenConsumer},
     uescape_escape::uescape_escape
 };
 use crate::lexer::{
