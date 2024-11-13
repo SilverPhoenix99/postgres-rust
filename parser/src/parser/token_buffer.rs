@@ -52,6 +52,17 @@ impl<'src> TokenBuffer<'src> {
         self.peeked().0.clone()
     }
 
+    pub fn peek_with_slice(&mut self) -> EofResult<(TokenKind, &'src str)> {
+        let source = self.lexer.source();
+        match self.peeked() {
+            (Ok(tok), loc) => {
+                let slice = loc.slice(source);
+                Ok((*tok, slice))
+            },
+            (Err(err), _) => Err(err.clone()),
+        }
+    }
+
     pub fn peek2(&mut self) -> (EofResult<TokenKind>, EofResult<TokenKind>) {
 
         self.fill_buf();
@@ -113,6 +124,14 @@ impl<'src> TokenBuffer<'src> {
     }
 }
 
+pub(super) type SlicedToken<'src> = (TokenKind, &'src str, Location);
+
+pub(super) trait SlicedTokenConsumer<'src, TOut, FRes> {
+    fn consume_with_slice<F>(&mut self, f: F) -> ScanResult<TOut>
+    where
+        F: Fn(SlicedToken<'src>) -> FRes;
+}
+
 pub(super) trait TokenConsumer<TOut, FRes> {
     fn consume<F>(&mut self, f: F) -> ScanResult<TOut>
     where
@@ -123,15 +142,16 @@ pub(super) trait TokenConsumer<TOut, FRes> {
 /// which is an internal error that's only returned by the `TokenBuffer` directly.
 pub(super) type ConsumerResult<T> = ParseResult<Option<T>>;
 
-impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenBuffer<'_> {
-    fn consume<F>(&mut self, mapper: F) -> ScanResult<TOut>
+impl<'src, TOut> SlicedTokenConsumer<'src, TOut, ConsumerResult<TOut>> for TokenBuffer<'src> {
+    fn consume_with_slice<F>(&mut self, mapper: F) -> ScanResult<TOut>
     where
-        F: Fn(TokenKind) -> ConsumerResult<TOut>
+        F: Fn(SlicedToken<'src>) -> ConsumerResult<TOut>
     {
-        let tok = match self.peek() {
-            Ok(tok) => tok,
-            Err(Eof) => return Err(ScanEof),
-            Err(NotEof(err)) => return Err(ScanErr(err)),
+        let source = self.lexer.source();
+        let tok = match self.peeked() {
+            (Ok(tok), loc) => (*tok, loc.slice(source), loc.clone()),
+            (Err(Eof), _) => return Err(ScanEof),
+            (Err(NotEof(err)), _) => return Err(ScanErr(err.clone())),
         };
 
         let Some(result) = mapper(tok).map_err(ScanErr)? else {
@@ -143,6 +163,36 @@ impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenBuffer<'_> {
         self.next();
 
         Ok(result)
+    }
+}
+
+impl<'src, TOut> SlicedTokenConsumer<'src, TOut, Option<TOut>> for TokenBuffer<'src> {
+    #[inline(always)]
+    fn consume_with_slice<F>(&mut self, mapper: F) -> ScanResult<TOut>
+    where
+        F: Fn(SlicedToken<'src>) -> Option<TOut>
+    {
+        self.consume_with_slice(|tok| Ok(mapper(tok)))
+    }
+}
+
+impl<'src> SlicedTokenConsumer<'src, SlicedToken<'src>, bool> for TokenBuffer<'src> {
+    #[inline(always)]
+    fn consume_with_slice<P>(&mut self, pred: P) -> ScanResult<SlicedToken<'src>>
+    where
+        P: Fn(SlicedToken<'src>) -> bool
+    {
+        self.consume_with_slice(|tok| pred(tok.clone()).then_some(tok))
+    }
+}
+
+impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenBuffer<'_> {
+    #[inline(always)]
+    fn consume<F>(&mut self, mapper: F) -> ScanResult<TOut>
+    where
+        F: Fn(TokenKind) -> ConsumerResult<TOut>
+    {
+        self.consume_with_slice(|(tok, _, _)| mapper(tok))
     }
 }
 
@@ -266,7 +316,7 @@ mod tests {
         let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
-        let result = buffer.consume(|_| false);
+        let result: ScanResult<TokenKind> = buffer.consume(|_| false);
         assert_eq!(Err(NoMatch), result);
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
     }

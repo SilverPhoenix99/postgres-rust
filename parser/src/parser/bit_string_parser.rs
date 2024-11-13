@@ -30,16 +30,12 @@ impl<'p, 'src> BitStringParser<'p, 'src> {
 
     fn try_consume_string(&mut self) -> ScanResult<(StringKind, &'src str)> {
 
-        let slice = self.0.buffer.slice();
-
-        self.0.buffer.consume(|tok|
+        self.0.buffer.consume_with_slice(|(tok, slice, _)|
             tok.string_kind()
                 .filter(|kind|
                     matches!(kind, Basic { concatenable: true } | Extended { concatenable: true })
                 )
-                .map(|kind|
-                    (kind, slice.expect("slice is valid due to previous filter"))
-                )
+                .map(|kind| (kind, slice))
         )
     }
 }
@@ -98,7 +94,7 @@ use crate::{
     parser::{
         result::ScanResult,
         string_parser::strip_delimiters,
-        token_buffer::TokenConsumer,
+        token_buffer::SlicedTokenConsumer,
         Parser
     },
     string_decoders::BitStringDecoder,

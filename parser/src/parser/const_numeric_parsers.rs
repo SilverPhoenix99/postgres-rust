@@ -42,25 +42,18 @@ impl Parser<'_> {
 
         // ICONST | FCONST
 
-        let value = self.buffer.slice();
-
-        self.buffer.consume(|tok| {
+        self.buffer.consume_with_slice(|(tok, slice, _)| {
             let NumberLiteral { radix } = tok else { return None };
-            let value = value.expect("slice is valid due to previous match");
-            parse_number(value, radix)
+            parse_number(slice, radix)
         })
     }
 
     /// Alias: `ICONST`
     pub(in crate::parser) fn i32_literal(&mut self) -> ScanResult<i32> {
 
-        let value = self.buffer.slice();
-
-        self.buffer.consume(|tok| {
+        self.buffer.consume_with_slice(|(tok, slice, _)| {
             let NumberLiteral { radix } = tok else { return None };
-            let value = value.expect("slice is valid due to previous match");
-
-            let Some(UnsignedNumber::IntegerConst(int)) = parse_number(value, radix) else { return None };
+            let Some(UnsignedNumber::IntegerConst(int)) = parse_number(slice, radix) else { return None };
             Some(int.into())
         })
     }
@@ -151,8 +144,9 @@ use crate::{
     parser::{
         ast_node::{SignedNumber, UnsignedNumber},
         result::{Required, ScanResult, ScanResultTrait},
-        token_buffer::TokenConsumer,
+        token_buffer::{SlicedTokenConsumer, TokenConsumer},
         Parser
     }
 };
 use postgres_basics::fn_info;
+

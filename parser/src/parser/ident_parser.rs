@@ -7,9 +7,10 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
     pub fn parse(&mut self) -> ScanResult<String> {
         const FN_NAME: &str = "postgres_parser::parser::ident_parser::IdentifierParser::parse";
 
-        let slice = self.0.buffer.slice();
-        let kind = self.0.buffer.consume(|tok| tok.identifier_kind())?;
-        let slice = slice.expect("slice is valid due to previous consume");
+        let (kind, slice) = self.0.buffer.consume_with_slice(|(tok, slice, _)|
+            tok.identifier_kind()
+                .map(|kind| (kind, slice))
+        )?;
 
         let ident = match kind {
             Basic => Ok(slice.to_lowercase()),
@@ -98,7 +99,7 @@ use crate::{
     lexer::IdentifierKind::*,
     parser::{
         result::ScanResult,
-        token_buffer::TokenConsumer,
+        token_buffer::SlicedTokenConsumer,
         Parser,
         ParserErrorKind::UnicodeString
     },
