@@ -10,6 +10,7 @@ mod expr_parsers;
 mod func_name_parser;
 mod ident_parser;
 mod op_parsers;
+mod parse_number;
 mod privilege_parsers;
 mod result;
 mod role_parsers;
@@ -17,8 +18,9 @@ mod stmt_parser;
 mod stmt_parsers;
 mod string_parser;
 mod token_buffer;
-mod warning;
 mod type_parsers;
+mod uescape_escape;
+mod warning;
 
 pub use self::{
     config::ParserConfig,
@@ -607,36 +609,6 @@ impl<'src> Parser<'src> {
     }
 }
 
-/// Returns UESCAPE's escape char if the string is valid.
-#[inline] // Only called from a single place
-fn uescape_escape(source: &str) -> Option<char> {
-
-    if source.len() != 3 {
-        // Only (some) ASCII chars are acceptable as the escape char
-        return None
-    }
-
-    let mut chars = source.chars();
-    if !chars.next().is_some_and(|c| c == '\'') {
-        return None
-    }
-
-    let escape = chars.next()?;
-    if ascii::is_hex_digit(escape)
-        || ascii::is_whitespace(escape)
-        || escape == '+'
-        || escape == '\''
-        || escape == '"'
-    {
-        return None
-    }
-
-    match chars.next() {
-        Some('\'') => Some(escape),
-        _ => None
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -970,7 +942,8 @@ use self::{
         ScanResultTrait,
         TryMatch,
     },
-    token_buffer::{TokenBuffer, TokenConsumer}
+    token_buffer::{TokenBuffer, TokenConsumer},
+    uescape_escape::uescape_escape
 };
 use crate::lexer::{
     Keyword,
@@ -978,5 +951,5 @@ use crate::lexer::{
     Lexer,
     TokenKind::{self, CloseParenthesis, Comma, Dot, OpenParenthesis}
 };
-use postgres_basics::{ascii, fn_info, Located};
+use postgres_basics::{fn_info, Located};
 use std::{borrow::Cow, mem};

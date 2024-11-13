@@ -43,6 +43,7 @@ mod concealable;
 mod fn_info;
 mod location;
 mod named;
+mod non_negative;
 
 pub use self::{
     char_buffer::{CharBuffer, Position, UnicodeChar, UnicodeCharError},
@@ -50,6 +51,7 @@ pub use self::{
     fn_info::FnInfo,
     location::{Located, Location},
     named::Named,
+    non_negative::NonNegative,
 };
 
 pub type Oid = u32;
