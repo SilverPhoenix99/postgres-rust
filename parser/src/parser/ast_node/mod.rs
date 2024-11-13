@@ -121,7 +121,7 @@ pub struct RelationExpr {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum UnsignedNumber {
-    IntegerConst(u32),
+    IntegerConst(NonNegative),
     NumericConst { radix: u32, value: String },
 }
 
@@ -208,7 +208,7 @@ impl From<UnsignedNumber> for ExprNode {
         use UnsignedNumber::*;
         match value {
             // SAFETY: `int` is originally parsed by `i32::from_str_radix()`, so `0 <= int <= i32::MAX`
-            IntegerConst(int) => Self::IntegerConst(int as i32),
+            IntegerConst(int) => Self::IntegerConst(int.into()),
             NumericConst { value, radix } => Self::NumericConst { radix, value }
         }
     }
@@ -319,3 +319,4 @@ impl ExprNode {
 
 use crate::parser::CowStr;
 use impl_from;
+use postgres_basics::NonNegative;

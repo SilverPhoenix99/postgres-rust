@@ -24,8 +24,7 @@ impl Parser<'_> {
 
         let value = match number {
             UnsignedNumber::IntegerConst(int) => {
-                // SAFETY: `0 <= int <= i32::MAX`
-                let mut int = int as i32;
+                let mut int: i32 = int.into();
                 if negative {
                     int = -int;
                 }
@@ -62,8 +61,7 @@ impl Parser<'_> {
             let value = value.expect("slice is valid due to previous match");
 
             let Some(UnsignedNumber::IntegerConst(int)) = parse_number(value, radix) else { return None };
-            // SAFETY: `0 <= int <= i32::MAX`
-            Some(int as i32)
+            Some(int.into())
         })
     }
 
@@ -100,7 +98,7 @@ fn parse_number(value: &str, radix: u32) -> Option<UnsignedNumber> {
 
     if let Ok(int) = i32::from_str_radix(&value, radix) {
         // SAFETY: `0 <= int <= i32::MAX`
-        Some(IntegerConst(int as u32))
+        Some(IntegerConst(int.into()))
     }
     else {
         Some(NumericConst { radix, value })
@@ -126,7 +124,7 @@ mod tests {
     }
 
     #[test_case("1.1", UnsignedNumber::NumericConst { value: "1.1".into(), radix: 10 })]
-    #[test_case("11",  UnsignedNumber::IntegerConst(11))]
+    #[test_case("11",  UnsignedNumber::IntegerConst(11.into()))]
     fn test_unsigned_number(source: &str, expected: UnsignedNumber) {
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
         let actual = parser.unsigned_number();
