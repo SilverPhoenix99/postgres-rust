@@ -109,7 +109,7 @@ mod tests {
 }
 
 use crate::{
-    lexer::TokenKind::{CloseBracket, Colon, Dot, Mul, OpenBracket},
+    lexer::RawTokenKind::{CloseBracket, Colon, Dot, Mul, OpenBracket},
     parser::{
         ast_node::Indirection,
         result::{Optional, Required, ScanResult, ScanResultTrait, TryMatch},

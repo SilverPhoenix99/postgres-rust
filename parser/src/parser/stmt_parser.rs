@@ -1,7 +1,7 @@
 impl Parser<'_> {
 
     pub(super) fn stmt(&mut self, allow_tx_legacy_stmts: bool) -> ParseResult<RawStmt> {
-        use TokenKind::Keyword as Kw;
+        use RawTokenKind::Keyword as Kw;
         use Keyword::*;
         const FN_NAME: &str = "postgres_parser::parser::Parser::stmt";
 
@@ -97,7 +97,7 @@ mod tests {
 }
 
 use crate::{
-    lexer::{Keyword, TokenKind},
+    lexer::{Keyword, RawTokenKind},
     parser::{
         ast_node::RawStmt::{self, ClosePortalStmt, DeallocateStmt, ListenStmt, LoadStmt, UnlistenStmt},
         consume_macro::consume,

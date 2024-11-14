@@ -1,6 +1,6 @@
 pub(super) struct TokenBuffer<'src> {
     lexer: Lexer<'src>,
-    buf: VecDeque<EofResult<Located<TokenKind>>>,
+    buf: VecDeque<EofResult<Located<RawTokenKind>>>,
 }
 
 impl<'src> TokenBuffer<'src> {
@@ -51,14 +51,14 @@ impl<'src> TokenBuffer<'src> {
     }
 
     #[inline(always)]
-    pub fn peek(&mut self) -> EofResult<TokenKind> {
+    pub fn peek(&mut self) -> EofResult<RawTokenKind> {
         match self.peeked() {
             Ok((tok, _)) => Ok(*tok),
             Err(err) => Err(err.clone()),
         }
     }
 
-    pub fn peek_with_slice(&mut self) -> EofResult<(TokenKind, &'src str)> {
+    pub fn peek_with_slice(&mut self) -> EofResult<(RawTokenKind, &'src str)> {
         let source = self.lexer.source();
         match self.peeked() {
             Ok((tok, loc)) => {
@@ -69,7 +69,7 @@ impl<'src> TokenBuffer<'src> {
         }
     }
 
-    pub fn peek2(&mut self) -> (EofResult<TokenKind>, EofResult<TokenKind>) {
+    pub fn peek2(&mut self) -> (EofResult<RawTokenKind>, EofResult<RawTokenKind>) {
 
         self.fill_buf();
 
@@ -93,7 +93,7 @@ impl<'src> TokenBuffer<'src> {
         (first, second)
     }
 
-    fn peeked(&mut self) -> &EofResult<Located<TokenKind>> {
+    fn peeked(&mut self) -> &EofResult<Located<RawTokenKind>> {
 
         self.fill_buf();
 
@@ -109,7 +109,7 @@ impl<'src> TokenBuffer<'src> {
         }
     }
 
-    fn lex_next(&mut self) -> EofResult<Located<TokenKind>> {
+    fn lex_next(&mut self) -> EofResult<Located<RawTokenKind>> {
 
         match self.lexer.next() {
             Some(Ok(tok)) => Ok(tok),
@@ -122,7 +122,7 @@ impl<'src> TokenBuffer<'src> {
     }
 
     #[inline(always)]
-    pub fn consume_eq(&mut self, kind: TokenKind) -> ScanResult<TokenKind> {
+    pub fn consume_eq(&mut self, kind: RawTokenKind) -> ScanResult<RawTokenKind> {
         self.consume(|tok| kind == tok)
     }
 
@@ -138,7 +138,7 @@ impl<'src> TokenBuffer<'src> {
     }
 }
 
-pub(super) type SlicedToken<'src> = (TokenKind, &'src str, Location);
+pub(super) type SlicedToken<'src> = (RawTokenKind, &'src str, Location);
 
 pub(super) trait SlicedTokenConsumer<'src, TOut, FRes> {
     fn consume_with_slice<F>(&mut self, f: F) -> ScanResult<TOut>
@@ -149,7 +149,7 @@ pub(super) trait SlicedTokenConsumer<'src, TOut, FRes> {
 pub(super) trait TokenConsumer<TOut, FRes> {
     fn consume<F>(&mut self, f: F) -> ScanResult<TOut>
     where
-        F: Fn(TokenKind) -> FRes;
+        F: Fn(RawTokenKind) -> FRes;
 }
 
 /// Consumers are not allowed to return `Err(None)` (Eof),
@@ -204,7 +204,7 @@ impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenBuffer<'_> {
     #[inline(always)]
     fn consume<F>(&mut self, mapper: F) -> ScanResult<TOut>
     where
-        F: Fn(TokenKind) -> ConsumerResult<TOut>
+        F: Fn(RawTokenKind) -> ConsumerResult<TOut>
     {
         self.consume_with_slice(|(tok, _, _)| mapper(tok))
     }
@@ -214,17 +214,17 @@ impl<TOut> TokenConsumer<TOut, Option<TOut>> for TokenBuffer<'_> {
     #[inline(always)]
     fn consume<F>(&mut self, mapper: F) -> ScanResult<TOut>
     where
-        F: Fn(TokenKind) -> Option<TOut>
+        F: Fn(RawTokenKind) -> Option<TOut>
     {
         self.consume(|tok| Ok(mapper(tok)))
     }
 }
 
-impl TokenConsumer<TokenKind, bool> for TokenBuffer<'_> {
+impl TokenConsumer<RawTokenKind, bool> for TokenBuffer<'_> {
     #[inline(always)]
-    fn consume<P>(&mut self, pred: P) -> ScanResult<TokenKind>
+    fn consume<P>(&mut self, pred: P) -> ScanResult<RawTokenKind>
     where
-        P: Fn(TokenKind) -> bool
+        P: Fn(RawTokenKind) -> bool
     {
         self.consume(|tok| pred(tok).then_some(tok))
     }
@@ -234,11 +234,10 @@ impl TokenConsumer<TokenKind, bool> for TokenBuffer<'_> {
 mod tests {
     use super::*;
     use crate::lexer::IdentifierKind::Basic;
-    use crate::parser::result::ScanErrorKind;
     use crate::parser::ParserError;
     use crate::parser::ParserErrorKind::Syntax;
     use postgres_basics::fn_info;
-    use TokenKind::Identifier;
+    use RawTokenKind::Identifier;
 
     #[test]
     fn test_eof() {
@@ -272,7 +271,7 @@ mod tests {
         let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
-        assert_matches!(buffer.consume_eq(TokenKind::Comma), Err(NoMatch(_)));
+        assert_matches!(buffer.consume_eq(RawTokenKind::Comma), Err(NoMatch(_)));
 
         assert_eq!(
             Ok(Identifier(Basic)),
@@ -334,7 +333,7 @@ mod tests {
         let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
-        let result: ScanResult<TokenKind> = buffer.consume(|_| false);
+        let result: ScanResult<RawTokenKind> = buffer.consume(|_| false);
         assert_matches!(result, Err(NoMatch(_)));
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
     }
@@ -377,7 +376,7 @@ mod tests {
 
 use crate::{
     error::HasLocation,
-    lexer::{Keyword, Lexer, TokenKind},
+    lexer::{Keyword, Lexer, RawTokenKind},
     parser::{
         result::{
             EofErrorKind::{Eof, NotEof},

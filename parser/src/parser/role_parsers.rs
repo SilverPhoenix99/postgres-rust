@@ -33,7 +33,7 @@ impl Parser<'_> {
 
     /// Alias: `RoleSpec`
     pub(super) fn role_spec(&mut self) -> ScanResult<RoleSpec> {
-        use crate::lexer::TokenKind::Keyword as Kw;
+        use crate::lexer::RawTokenKind::Keyword as Kw;
         const FN_NAME: &str = "postgres_parser::parser::Parser::role_spec";
 
         /*
@@ -164,7 +164,7 @@ use crate::{
     lexer::{
         Keyword::{CurrentRole, CurrentUser, NoneKw, SessionUser},
         KeywordCategory::Reserved,
-        TokenKind::Comma
+        RawTokenKind::Comma
     },
     parser::{
         ast_node::RoleSpec,

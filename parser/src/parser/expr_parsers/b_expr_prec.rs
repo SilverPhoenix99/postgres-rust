@@ -202,7 +202,7 @@ impl Parser<'_> {
 use crate::{
     lexer::{
         Keyword::{Distinct, Document, FromKw, Is, Not},
-        TokenKind::*
+        RawTokenKind::*
     },
     parser::{
         ast_node::{ExprNode, QualifiedOperator, TypecastExpr, UnaryExpr},
