@@ -7,6 +7,27 @@ pub struct ParserError(
     LocatedErrorReport<ParserErrorKind>
 );
 
+impl ParserError {
+    pub fn new(source: ParserErrorKind, fn_info: &'static FnInfo, location: Location) -> Self {
+        Self(LocatedErrorReport::new(source, fn_info, location))
+    }
+
+    pub fn syntax(fn_info: &'static FnInfo, location: Location) -> Self {
+        Self::new(Syntax, fn_info, location)
+    }
+
+    pub fn source(&self) -> &ParserErrorKind {
+        self.0.source()
+    }
+}
+
+impl From<LexerError> for ParserError {
+    fn from(value: LexerError) -> Self {
+        let source = value.source().into();
+        Self::new(source, value.fn_info(), value.location().clone())
+    }
+}
+
 impl Error for ParserError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         Error::source(&self.0)
@@ -55,81 +76,14 @@ impl HasLocation for ParserError {
     }
 }
 
-macro_rules! syntax_err {
-    ($fn_name:expr) => { $crate::parser::error::PartialParserError::syntax(fn_info!($fn_name)).into() };
-}
-pub(super) use syntax_err;
-
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub(crate) struct PartialParserError {
-    source: ParserErrorKind,
-    fn_info: &'static FnInfo,
-    location: Option<Location>,
-}
-
-impl PartialParserError {
-    pub fn new<S>(source: S, fn_info: &'static FnInfo) -> Self
-    where
-        S: Into<ParserErrorKind>,
-    {
-        Self {
-            source: source.into(),
-            fn_info,
-            location: None
-        }
-    }
-
-    pub fn with_location(self, location: Location) -> Self {
-        Self {
-            location: Some(location),
-            ..self
-        }
-    }
-
-    pub fn syntax(fn_info: &'static FnInfo) -> Self {
-        Self::new(ParserErrorKind::default(), fn_info)
-    }
-
-    pub fn source(&self) -> &ParserErrorKind {
-        &self.source
-    }
-
-    pub fn location(&self) -> &Option<Location> {
-        &self.location
-    }
-
-    pub(super) fn into_parser_err(self, default_location: Location) -> ParserError {
-        let location = self.location.unwrap_or(default_location);
-        let report = LocatedErrorReport::new(self.source, self.fn_info, location);
-        ParserError(report)
-    }
-}
-
-impl HasFnInfo for PartialParserError {
-    fn fn_info(&self) -> &'static FnInfo {
-        self.fn_info
-    }
-}
-
-impl From<LexerError> for PartialParserError {
-    fn from(value: LexerError) -> Self {
-        Self {
-            source: value.source().into(),
-            fn_info: value.fn_info(),
-            location: Some(value.location().clone())
-        }
-    }
-}
-
-impl ParserErrorKind {
-    pub(crate) fn with_fn_info(self, fn_info: &'static FnInfo) -> PartialParserError {
-        PartialParserError::new(self, fn_info)
-    }
+pub(super) fn syntax_err(fn_info: &'static FnInfo, location: Location) -> ParserError {
+    ParserError::syntax(fn_info, location)
 }
 
 use crate::{
     error::{HasLocation, LocatedErrorReport},
-    lexer::LexerError
+    lexer::LexerError,
+    parser::ParserErrorKind::Syntax
 };
 use postgres_basics::{
     elog::{ErrorReport, HasFnInfo, HasSqlState},

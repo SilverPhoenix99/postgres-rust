@@ -3,6 +3,9 @@ name = "postgres-guc"
 edition.workspace = true
 version.workspace = true
 
+[lints]
+workspace = true
+
 [dependencies]
 bitflags.workspace = true
 lazy_static.workspace = true

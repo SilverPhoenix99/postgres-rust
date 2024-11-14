@@ -41,14 +41,13 @@ impl Parser<'_> {
             role_id RENAME TO role_id
         */
 
-        let target = role.into_role_id()
-            .map_err(|err| err.with_location(role_loc))?;
+        let target = role.into_role_id(role_loc.clone())?;
 
         self.buffer.consume_kw_eq(To).required(fn_info!(FN_NAME))?;
 
         let new_name = self.role_spec()
             .required(fn_info!(FN_NAME))?
-            .into_role_id()?;
+            .into_role_id(role_loc)?;
 
         let stmt = RenameStmt::new(Role(target), new_name);
         Ok(stmt)

@@ -30,7 +30,7 @@ pub use self::{
 
 type CowStr = Cow<'static, str>;
 
-pub(crate) type ParseResult<T> = Result<T, PartialParserError>;
+pub(crate) type ParseResult<T> = Result<T, ParserError>;
 
 pub struct ParserResult {
     pub result: Result<Vec<RawStmt>, ParserError>,
@@ -63,14 +63,7 @@ impl<'src> Parser<'src> {
     /// Not reentrant!
     pub fn parse(&mut self) -> ParserResult {
 
-        let result = match self.stmtmulti() {
-            Ok(stmts) => Ok(stmts),
-            Err(err) => {
-                let default_loc = self.buffer.current_location();
-                let err = err.into_parser_err(default_loc);
-                Err(err)
-            }
-        };
+        let result = self.stmtmulti();
 
         ParserResult {
             result,
@@ -105,7 +98,8 @@ impl<'src> Parser<'src> {
 
         // if it's not Eof, then something didn't match properly
         if !self.buffer.eof() {
-            return Err(syntax_err!(FN_NAME))
+            let loc = self.buffer.current_location();
+            return Err(syntax_err(fn_info!(FN_NAME), loc))
         }
 
         Ok(stmts)
@@ -174,12 +168,12 @@ impl<'src> Parser<'src> {
                 Ok(_) => {
                     self.transaction_mode().required(fn_info!(FN_NAME))?
                 }
-                Err(NoMatch) => {
+                Err(NoMatch(_)) => {
                     let mode = self.transaction_mode().optional();
                     let Some(mode) = mode? else { break };
                     mode
                 }
-                Err(Eof) => break,
+                Err(Eof(_)) => break,
                 Err(ScanErr(err)) => return Err(ScanErr(err)),
             };
 
@@ -232,7 +226,7 @@ impl<'src> Parser<'src> {
                     .required(fn_info!(FN_NAME))
                     .map_err(ScanErrorKind::from)
             },
-            _ => Err(NoMatch)
+            _ => unreachable!("it was already filtered by consume_kw()")
         }
     }
 
@@ -405,13 +399,12 @@ impl<'src> Parser<'src> {
             col_id attrs{0,2}
         */
 
+        let loc = self.buffer.current_location();
         let qn = self.any_name()?;
 
         if !(1..=3).contains(&qn.len()) {
-            let err = ImproperQualifiedName(NameList(qn))
-                .with_fn_info(fn_info!(FN_NAME))
-                .into();
-            return Err(err)
+            let err = ParserError::new(ImproperQualifiedName(NameList(qn)), fn_info!(FN_NAME), loc);
+            return Err(err.into())
         }
 
         let mut it = qn.into_iter();
@@ -586,21 +579,25 @@ impl<'src> Parser<'src> {
             return Ok('\\')
         };
 
-        let uescape = self.buffer.consume_with_slice(|(tok, slice, _)| match tok.string_kind() {
-            Some(_) => {
-                match uescape_escape(slice) {
-                    Some(escape) => Ok(Some(escape)),
-                    None => Err(
-                        InvalidUescapeDelimiter.with_fn_info(fn_info!(FN_NAME))
-                    ),
-                }
-            },
-            None => Err(UescapeDelimiterMissing.with_fn_info(fn_info!(FN_NAME)))
+        let uescape = self.buffer.consume_with_slice(|(tok, slice, loc)| {
+            
+            let TokenKind::StringLiteral(_) = tok else {
+                return Err(
+                    ParserError::new(UescapeDelimiterMissing, fn_info!(FN_NAME), loc)
+                )
+            };
+
+            match uescape_escape(slice) {
+                Some(escape) => Ok(Some(escape)),
+                None => Err(
+                    ParserError::new(InvalidUescapeDelimiter, fn_info!(FN_NAME), loc)
+                ),
+            }
         });
 
         uescape.map_err(|err| match err {
-            Eof => InvalidUescapeDelimiter.with_fn_info(fn_info!(FN_NAME)),
-            NoMatch => syntax_err!(FN_NAME),
+            Eof(loc) => ParserError::new(InvalidUescapeDelimiter, fn_info!(FN_NAME), loc),
+            NoMatch(loc) => syntax_err(fn_info!(FN_NAME), loc),
             ScanErr(err) => err
         })
     }
@@ -651,7 +648,7 @@ mod tests {
     #[test]
     fn test_opt_transaction_mode_list() {
         let mut parser = Parser::new("no_match", DEFAULT_CONFIG);
-        assert_eq!(Err(NoMatch), parser.transaction_mode_list());
+        assert_matches!(parser.transaction_mode_list(), Err(NoMatch(_)));
 
         let mut parser = Parser::new(
             "read only , read write isolation level read committed",
@@ -929,7 +926,7 @@ use self::{
         TransactionMode,
     },
     consume_macro::consume,
-    error::{syntax_err, NameList, ParserErrorKind::*, PartialParserError},
+    error::{syntax_err, NameList, ParserErrorKind::*},
     ident_parser::IdentifierParser,
     result::{
         Optional,

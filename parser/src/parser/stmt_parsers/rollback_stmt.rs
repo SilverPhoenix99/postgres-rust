@@ -1,7 +1,7 @@
 impl Parser<'_> {
     pub(in crate::parser) fn rollback_stmt(&mut self) -> ParseResult<TransactionStmt> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::rollback_stmt";
-        
+
         /*
             ROLLBACK PREPARED SCONST
             ROLLBACK opt_transaction opt_transaction_chain
@@ -29,14 +29,14 @@ impl Parser<'_> {
                 let name = self.col_id().required(fn_info!(FN_NAME))?;
                 Ok(TransactionStmt::RollbackTo(name))
             },
-            Err(Eof) => {
+            Err(Eof(_)) => {
                 /*
                     ROLLBACK opt_transaction
                 */
                 Ok(TransactionStmt::Rollback { chain: false })
             },
-            Err(ScanErr(err)) => Err(err.into()),
-            Err(NoMatch) => {
+            Err(ScanErr(err)) => Err(err),
+            Err(NoMatch(_)) => {
                 /*
                     ROLLBACK opt_transaction opt_transaction_chain
                 */

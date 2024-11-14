@@ -55,11 +55,11 @@ impl<'p, 'src> StringParser<'p, 'src> {
                 let ExtendedStringResult { result, warning } = decoder.decode();
 
                 if let Some(warning) = warning {
-                    self.0.warnings.push((warning.into(), loc));
+                    self.0.warnings.push((warning.into(), loc.clone()));
                 }
 
                 result.map_err(|err|
-                    ParserErrorKind::ExtendedString(err).with_fn_info(fn_info!(FN_NAME))
+                    ParserError::new(ExtendedString(err), fn_info!(FN_NAME), loc)
                 )
             },
             Unicode => {
@@ -69,7 +69,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
                 UnicodeStringDecoder::new(slice, false, escape)
                     .decode()
                     .map_err(|err|
-                        PartialParserError::new(err, fn_info!(FN_NAME))
+                        ParserError::new(UnicodeString(err), fn_info!(FN_NAME), loc)
                     )
             }
             Dollar => unreachable!("`$` strings don't have any escapes"),
@@ -168,11 +168,11 @@ mod tests {
 use crate::{
     lexer::StringKind::{self, *},
     parser::{
-        error::PartialParserError,
         result::{Optional, ScanErrorKind, ScanResult},
         token_buffer::SlicedTokenConsumer,
         Parser,
-        ParserErrorKind
+        ParserError,
+        ParserErrorKind::{ExtendedString, UnicodeString}
     },
     string_decoders::*
 };

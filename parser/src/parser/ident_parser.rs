@@ -7,9 +7,9 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
     pub fn parse(&mut self) -> ScanResult<String> {
         const FN_NAME: &str = "postgres_parser::parser::ident_parser::IdentifierParser::parse";
 
-        let (kind, slice) = self.0.buffer.consume_with_slice(|(tok, slice, _)|
+        let (kind, slice, loc) = self.0.buffer.consume_with_slice(|(tok, slice, loc)|
             tok.identifier_kind()
-                .map(|kind| (kind, slice))
+                .map(|kind| (kind, slice, loc))
         )?;
 
         let ident = match kind {
@@ -30,7 +30,7 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
                 UnicodeStringDecoder::new(slice, true, escape)
                     .decode()
                     .map_err(|err|
-                        UnicodeString(err).with_fn_info(fn_info!(FN_NAME))
+                        ParserError::new(UnicodeString(err), fn_info!(FN_NAME), loc)
                     )
             },
         };
@@ -95,6 +95,7 @@ mod tests {
     }
 }
 
+use crate::parser::ParserError;
 use crate::{
     lexer::IdentifierKind::*,
     parser::{

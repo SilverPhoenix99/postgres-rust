@@ -66,7 +66,7 @@ impl<'src> UnicodeStringDecoder<'src> {
             Ok(SurrogateFirst(first)) => Ok(first),
             Ok(SurrogateSecond(_)) => Err(InvalidUnicodeSurrogatePair(start_index)),
             Err(LenTooShort) => Err(InvalidUnicodeEscape(start_index)),
-            Err(UnicodeCharError::InvalidUnicodeValue) => Err(InvalidUnicodeValue(start_index))
+            Err(UnicodeCharError::InvalidUnicodeValue) => Err(InvalidUnicodeValue(start_index)),
         }?;
 
         let start_index = self.input.current_index();

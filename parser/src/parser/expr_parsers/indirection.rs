@@ -3,76 +3,84 @@ impl Parser<'_> {
     pub(in crate::parser) fn indirection(&mut self) -> ScanResult<Vec<Indirection>> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::indirection";
 
-        let mut elements = Vec::new();
+        /*
+            ( indirection_el )+
+        */
 
-        while !self.buffer.eof() {
+        let mut elements = vec![self.indirection_el()?];
 
-            if self.buffer.consume_eq(Dot).optional()?.is_some() {
-
-                if self.buffer.consume_eq(Mul).try_match(fn_info!(FN_NAME))?.is_some() {
-                    // `.*`
-                    elements.push(Indirection::All);
-                    continue
-                }
-
-                if let Some(property) = self.col_label().try_match(fn_info!(FN_NAME))? {
-                    // `.ColLabel`
-                    elements.push(Indirection::Property(property));
-                    continue
-                }
-
-                return Err(syntax_err!(FN_NAME))
-            }
-
-            if self.buffer.consume_eq(OpenBracket).optional()?.is_some() {
-
-                if self.buffer.consume_eq(Colon).try_match(fn_info!(FN_NAME))?.is_some() {
-
-                    if self.buffer.consume_eq(CloseBracket).try_match(fn_info!(FN_NAME))?.is_some() {
-                        // `[ : ]`
-                        elements.push(Indirection::FullSlice);
-                        continue
-                    }
-
-                    // `[ : expr ]`
-                    let expr = self.a_expr().required(fn_info!(FN_NAME))?;
-                    elements.push(Indirection::SliceTo(expr));
-                    continue
-                }
-
-                let left = self.a_expr().required(fn_info!(FN_NAME))?;
-
-                if self.buffer.consume_eq(CloseBracket).try_match(fn_info!(FN_NAME))?.is_some() {
-                    // `[ expr ]`
-                    elements.push(Indirection::Index(left));
-                    continue
-                }
-
-                if self.buffer.consume_eq(Colon).try_match(fn_info!(FN_NAME))?.is_some() {
-
-                    if self.buffer.consume_eq(CloseBracket).try_match(fn_info!(FN_NAME))?.is_some() {
-                        // `[ expr : ]`
-                        elements.push(Indirection::SliceFrom(left));
-                        continue
-                    }
-
-                    // `[ expr : expr ]`
-                    let right = self.a_expr().required(fn_info!(FN_NAME))?;
-                    elements.push(Indirection::Slice(left, right));
-                    continue
-                }
-
-                return Err(syntax_err!(FN_NAME))
-            }
-
-            break
-        }
-
-        if elements.is_empty() {
-            return Err(NoMatch)
+        while let Some(element) = self.indirection_el().optional()? {
+            elements.push(element);
         }
 
         Ok(elements)
+    }
+
+    fn indirection_el(&mut self) -> ScanResult<Indirection> {
+        const FN_NAME: &str = "postgres_parser::parser::Parser::indirection_el";
+
+        /*
+              '.' '*'
+            | '.' ColLabel
+            | '[' ':' ']'
+            | '[' ':' a_expr ']'
+            | '[' a_expr ']'
+            | '[' a_expr ':' ']'
+            | '[' a_expr ':' a_expr ']'
+        */
+
+        if self.buffer.consume_eq(Dot).no_match_to_option()?.is_some() {
+            // `.`
+
+            if self.buffer.consume_eq(Mul).try_match(fn_info!(FN_NAME))?.is_some() {
+                // `.*`
+                return Ok(Indirection::All)
+            }
+
+            let property = self.col_label().required(fn_info!(FN_NAME))?;
+            // `.ColLabel`
+            return Ok(Indirection::Property(property))
+        }
+
+        // `[`
+        self.buffer.consume_eq(OpenBracket)?;
+
+        if self.buffer.consume_eq(Colon).try_match(fn_info!(FN_NAME))?.is_some() {
+            // `[ :`
+
+            if self.buffer.consume_eq(CloseBracket).try_match(fn_info!(FN_NAME))?.is_some() {
+                // `[ : ]`
+                return Ok(Indirection::FullSlice)
+            }
+
+            // `[ : a_expr ]`
+            let expr = self.a_expr().required(fn_info!(FN_NAME))?;
+            self.buffer.consume_eq(CloseBracket).required(fn_info!(FN_NAME))?;
+
+            return Ok(Indirection::SliceTo(expr))
+        }
+
+        // `[ a_expr`
+        let left = self.a_expr().required(fn_info!(FN_NAME))?;
+
+        if self.buffer.consume_eq(CloseBracket).try_match(fn_info!(FN_NAME))?.is_some() {
+            // `[ a_expr ]`
+            return Ok(Indirection::Index(left))
+        }
+
+        // `[ a_expr :`
+        self.buffer.consume_eq(Colon).required(fn_info!(FN_NAME))?;
+
+        if self.buffer.consume_eq(CloseBracket).try_match(fn_info!(FN_NAME))?.is_some() {
+            // `[ a_expr : ]`
+            return Ok(Indirection::SliceFrom(left))
+        }
+
+        // `[ expr : expr ]`
+        let right = self.a_expr().required(fn_info!(FN_NAME))?;
+        self.buffer.consume_eq(CloseBracket).required(fn_info!(FN_NAME))?;
+
+        Ok(Indirection::Slice(left, right))
     }
 }
 
@@ -104,10 +112,8 @@ use crate::{
     lexer::TokenKind::{CloseBracket, Colon, Dot, Mul, OpenBracket},
     parser::{
         ast_node::Indirection,
-        error::syntax_err,
-        result::ScanErrorKind::NoMatch,
-        result::{Optional, Required, ScanResult, TryMatch},
-        Parser,
-    }
+        result::{Optional, Required, ScanResult, ScanResultTrait, TryMatch},
+        Parser
+    },
 };
 use postgres_basics::fn_info;

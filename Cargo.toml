@@ -11,6 +11,10 @@ members = [
 edition = "2021"
 version = "18.0.0-devel"
 
+[workspace.lints.clippy]
+useless_conversion = "deny"
+items_after_test_module = "allow"
+
 [workspace.dependencies]
 assert_matches = "1"
 bitflags = "2"

@@ -82,7 +82,8 @@ impl Parser<'_> {
         }
 
         if elements.is_empty() {
-            return Err(NoMatch)
+            let loc = self.buffer.current_location();
+            return Err(NoMatch(loc))
         }
 
         Ok(elements)
@@ -202,8 +203,16 @@ impl Parser<'_> {
                     match self.i32_literal_paren().optional()? {
                         None | Some(25..=53) => Ok(Float8),
                         Some(1..=24) => Ok(Float4),
-                        Some(num @ ..=0) => Err(FloatPrecisionUnderflow(num).with_fn_info(fn_info!(FN_NAME)).into()),
-                        Some(num @ 54..) => Err(FloatPrecisionOverflow(num).with_fn_info(fn_info!(FN_NAME)).into()),
+                        Some(num @ ..=0) => {
+                            let loc = self.buffer.current_location();
+                            let err = ParserError::new(FloatPrecisionUnderflow(num), fn_info!(FN_NAME), loc);
+                            Err(err.into())
+                        },
+                        Some(num @ 54..) => {
+                            let loc = self.buffer.current_location();
+                            let err = ParserError::new(FloatPrecisionOverflow(num), fn_info!(FN_NAME), loc);
+                            Err(err.into())
+                        },
                     }
                 },
                 Kw(BitKw) => {
@@ -215,7 +224,7 @@ impl Parser<'_> {
                     }
                     else {
                         if modifiers.is_empty() && kind == Simple {
-                            modifiers = vec![IntegerConst(1).into()];
+                            modifiers = vec![IntegerConst(1)];
                         }
                         Ok(Bit(modifiers))
                     }
@@ -287,7 +296,10 @@ impl Parser<'_> {
                 },
             }
             Err {
-                Ok(_) => NoMatch,
+                Ok(_) => {
+                    let loc = self.buffer.current_location();
+                    NoMatch(loc)
+                },
                 Err(err) => err.into(),
             }
         }
@@ -390,6 +402,7 @@ impl Parser<'_> {
             | SECOND ( '(' ICONST ')' )?
         */
 
+
         let result = consume!{self
             Ok {
                 Kw(SecondKw) => {
@@ -417,8 +430,12 @@ impl Parser<'_> {
                                 },
                             }
                             Err {
+                                Ok(_) => {
+                                    let loc = self.buffer.current_location();
+                                    syntax_err(fn_info!(FN_NAME), loc)
+                                },
+                                Err(Eof(loc)) => syntax_err(fn_info!(FN_NAME), loc),
                                 Err(NotEof(err)) => err,
-                                _ => PartialParserError::syntax(fn_info!(FN_NAME)),
                             }
                         };
                         result.map_err(NotEof)
@@ -439,8 +456,12 @@ impl Parser<'_> {
                                 },
                             }
                             Err {
+                                Ok(_) => {
+                                    let loc = self.buffer.current_location();
+                                    syntax_err(fn_info!(FN_NAME), loc)
+                                },
+                                Err(Eof(loc)) => syntax_err(fn_info!(FN_NAME), loc),
                                 Err(NotEof(err)) => err,
-                                _ => PartialParserError::syntax(fn_info!(FN_NAME)),
                             }
                         };
                         result.map_err(NotEof)
@@ -465,7 +486,6 @@ impl Parser<'_> {
                 Err(err) => err,
             }
         };
-
         let result = result.optional()?.unwrap_or_default();
         Ok(result)
     }
@@ -561,7 +581,7 @@ mod tests {
     #[test_case("national char varying(5)",       Simple, Varchar { max_length: Some(5) })]
     #[test_case("national character varying",     Simple, Varchar { max_length: None })]
     #[test_case("national character varying(3)",  Simple, Varchar { max_length: Some(3) })]
-    #[test_case("bit",                            Simple, Bit(vec![IntegerConst(1).into()]))]
+    #[test_case("bit",                            Simple, Bit(vec![IntegerConst(1)]))]
     // TODO: #[test_case("bit(modif)",            Simple, Bit(vec![...]))]
     #[test_case("char",                           Simple, Bpchar { length: Some(1) })]
     #[test_case("char",                           Const,  Bpchar { length: None })]
@@ -636,6 +656,9 @@ mod tests {
     }
 }
 
+use crate::parser::error::syntax_err;
+use crate::parser::result::EofErrorKind::Eof;
+use crate::parser::ParserError;
 use crate::{
     lexer::{
         Keyword::{
@@ -688,7 +711,6 @@ use crate::{
             TypeName::{self, *},
         },
         consume_macro::consume,
-        error::PartialParserError,
         result::{
             EofErrorKind::NotEof,
             Optional,
