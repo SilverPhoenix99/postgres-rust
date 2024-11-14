@@ -44,6 +44,7 @@ mod fn_info;
 mod location;
 mod named;
 mod non_negative;
+mod str;
 
 pub use self::{
     char_buffer::{CharBuffer, Position, UnicodeChar, UnicodeCharError},
@@ -52,6 +53,7 @@ pub use self::{
     location::{Located, Location},
     named::Named,
     non_negative::NonNegative,
+    str::Str,
 };
 
 pub type Oid = u32;

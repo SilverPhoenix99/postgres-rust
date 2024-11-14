@@ -5,18 +5,18 @@ impl Parser<'_> {
     /// * `USCONST`
     /// * `file_name`
     #[inline(always)]
-    pub(in crate::parser) fn string(&mut self) -> ScanResult<String> {
+    pub(in crate::parser) fn string(&mut self) -> ScanResult<Box<str>> {
         StringParser(self).parse()
     }
 
-    pub(in crate::parser) fn bit_string(&mut self) -> ScanResult<(BitStringKind, String)> {
+    pub(in crate::parser) fn bit_string(&mut self) -> ScanResult<(BitStringKind, Box<str>)> {
 
         let (kind, slice) = self.buffer.consume_with_slice(|(tok, slice, _)|
             tok.bit_string()
                 .map(|kind|
                     (
                         kind,
-                        slice[2..(slice.len() - 1)].to_string() // strip delimiters
+                        slice[2..(slice.len() - 1)].into() // strip delimiters
                     )
                 )
         )?;
@@ -36,7 +36,7 @@ mod tests {
         let source = "'test string'";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        assert_eq!("test string", parser.string().unwrap());
+        assert_eq!("test string", parser.string().unwrap().as_ref());
     }
 
     #[test_case("b'0101'", BitStringKind::Binary, "0101")]
@@ -44,7 +44,7 @@ mod tests {
     fn test_bit_string(source: &str, expected_kind: BitStringKind, expected_value: &str) {
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
         let actual = parser.bit_string();
-        assert_eq!(Ok((expected_kind, expected_value.to_string())), actual);
+        assert_eq!(Ok((expected_kind, expected_value.into())), actual);
     }
 }
 

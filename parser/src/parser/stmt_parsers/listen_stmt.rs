@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `ListenStmt`
-    pub(in crate::parser) fn listen_stmt(&mut self) -> ParseResult<CowStr> {
+    pub(in crate::parser) fn listen_stmt(&mut self) -> ParseResult<Str> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::listen_stmt";
 
         /*
@@ -27,5 +27,5 @@ mod tests {
 }
 
 use crate::parser::result::Required;
-use crate::parser::{CowStr, ParseResult, Parser};
-use postgres_basics::fn_info;
+use crate::parser::{ParseResult, Parser};
+use postgres_basics::{fn_info, Str};

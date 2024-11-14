@@ -1,5 +1,3 @@
-use crate::parser::RoleSpec;
-
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum AlterRoleAction {
     Add,
@@ -9,10 +7,10 @@ pub enum AlterRoleAction {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AlterRoleOption {
     RoleMembers(Vec<RoleSpec>),
-    Password(Option<String>),
+    Password(Option<Box<str>>),
     Inherit(bool),
     ConnectionLimit(i32),
-    ValidUntil(String),
+    ValidUntil(Box<str>),
     SuperUser(bool),
     CreateRole(bool),
     Replication(bool),
@@ -59,3 +57,5 @@ impl AlterRoleStmt {
         self.action == AlterRoleAction::Remove
     }
 }
+
+use crate::parser::RoleSpec;

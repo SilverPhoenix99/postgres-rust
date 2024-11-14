@@ -4,7 +4,7 @@ pub(super) struct IdentifierParser<'p, 'src>(
 
 impl<'p, 'src> IdentifierParser<'p, 'src> {
 
-    pub fn parse(&mut self) -> ScanResult<String> {
+    pub fn parse(&mut self) -> ScanResult<Box<str>> {
         const FN_NAME: &str = "postgres_parser::parser::ident_parser::IdentifierParser::parse";
 
         let (kind, slice, loc) = self.0.buffer.consume_with_slice(|(tok, slice, loc)|
@@ -18,7 +18,7 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
                 // Strip delimiters:
                 let slice = &slice[1..slice.len() - 1];
                 let ident = BasicStringDecoder::new(slice, true).decode();
-                Ok(ident)
+                Ok(ident.into_string())
             }
             Unicode => {
 
@@ -29,6 +29,7 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
 
                 UnicodeStringDecoder::new(slice, true, escape)
                     .decode()
+                    .map(str::into_string)
                     .map_err(|err|
                         ParserError::new(UnicodeString(err), fn_info!(FN_NAME), loc)
                     )
@@ -47,7 +48,7 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
             }
         }
 
-        Ok(ident)
+        Ok(ident.into_boxed_str())
     }
 }
 

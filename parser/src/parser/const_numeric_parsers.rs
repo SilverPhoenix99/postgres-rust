@@ -88,7 +88,10 @@ fn parse_number(value: &str, radix: u32) -> Option<UnsignedNumber> {
         Some(IntegerConst(int.into()))
     }
     else {
-        Some(NumericConst { radix, value })
+        Some(NumericConst {
+            radix,
+            value: value.into_boxed_str()
+        })
     }
 }
 

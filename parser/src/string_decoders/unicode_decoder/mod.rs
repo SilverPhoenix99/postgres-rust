@@ -16,7 +16,7 @@ impl<'src> UnicodeStringDecoder<'src> {
         Self { input, quote, escape: uescape }
     }
 
-    pub fn decode(&mut self) -> Result<String, UnicodeStringError> {
+    pub fn decode(&mut self) -> Result<Box<str>, UnicodeStringError> {
 
         // see [str_udeescape](https://github.com/postgres/postgres/blob/1c61fd8b527954f0ec522e5e60a11ce82628b681/src/backend/parser/parser.c#L372)
 
@@ -53,7 +53,7 @@ impl<'src> UnicodeStringDecoder<'src> {
             out.push(c);
         }
 
-        Ok(out)
+        Ok(out.into_boxed_str())
     }
 
     fn consume_unicode(&mut self) -> Result<char, UnicodeStringError> {
@@ -94,7 +94,7 @@ mod tests {
     fn test_unicode_string() {
         let source = r"''d!0061t\+000061 a!!b \";
         let mut decoder = UnicodeStringDecoder::new(source, false, '!');
-        assert_eq!(r"'dat\+000061 a!b \", decoder.decode().unwrap())
+        assert_eq!(r"'dat\+000061 a!b \", decoder.decode().unwrap().as_ref())
     }
 }
 

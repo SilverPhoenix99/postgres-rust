@@ -28,8 +28,6 @@ pub use self::{
     warning::ParserWarningKind,
 };
 
-type CowStr = Cow<'static, str>;
-
 pub(crate) type ParseResult<T> = Result<T, ParserError>;
 
 pub struct ParserResult {
@@ -293,7 +291,7 @@ impl<'src> Parser<'src> {
     /// Post-condition: Vec is **Not** empty
     ///
     /// Alias: `columnList`
-    fn name_list(&mut self) -> ScanResult<Vec<CowStr>> {
+    fn name_list(&mut self) -> ScanResult<Vec<Str>> {
 
         /*
             col_id ( ',' col_id )*
@@ -305,7 +303,7 @@ impl<'src> Parser<'src> {
     /// Post-condition: Vec is **Not** empty
     ///
     /// Alias: `opt_column_list`
-    fn opt_name_list(&mut self) -> ScanResult<Vec<CowStr>> {
+    fn opt_name_list(&mut self) -> ScanResult<Vec<Str>> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::opt_col_list";
 
         /*
@@ -453,7 +451,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec is **Not** empty
-    fn attrs(&mut self, prefix: CowStr) -> ParseResult<QualifiedName> {
+    fn attrs(&mut self, prefix: Str) -> ParseResult<QualifiedName> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::attrs";
 
         // A prefix token is passed to prevent a right shift of the Vec later on,
@@ -505,14 +503,14 @@ impl<'src> Parser<'src> {
     /// * `ColId`
     /// * `name`
     #[inline(always)]
-    fn col_id(&mut self) -> ScanResult<CowStr> {
+    fn col_id(&mut self) -> ScanResult<Str> {
         self.ident_or_keyword(|kw|
             matches!(kw.details().category(), Unreserved | ColumnName)
         )
     }
 
     #[inline(always)]
-    fn type_function_name(&mut self) -> ScanResult<CowStr> {
+    fn type_function_name(&mut self) -> ScanResult<Str> {
         self.ident_or_keyword(|kw|
             matches!(kw.details().category(), Unreserved | TypeFuncName)
         )
@@ -520,7 +518,7 @@ impl<'src> Parser<'src> {
 
     /// Alias: `NonReservedWord`
     #[inline(always)]
-    fn non_reserved_word(&mut self) -> ScanResult<CowStr> {
+    fn non_reserved_word(&mut self) -> ScanResult<Str> {
         self.ident_or_keyword(|kw|
             matches!(kw.details().category(), Unreserved | ColumnName | TypeFuncName)
         )
@@ -530,17 +528,17 @@ impl<'src> Parser<'src> {
     /// * `ColLabel`
     /// * `attr_name`
     #[inline(always)]
-    fn col_label(&mut self) -> ScanResult<CowStr> {
+    fn col_label(&mut self) -> ScanResult<Str> {
         self.ident_or_keyword(|_| true)
     }
 
     /// Alias: `BareColLabel`
     #[inline(always)]
-    fn bare_col_label(&mut self) -> ScanResult<CowStr> {
+    fn bare_col_label(&mut self) -> ScanResult<Str> {
         self.ident_or_keyword(|kw| kw.details().bare())
     }
 
-    fn ident_or_keyword<P>(&mut self, pred: P) -> ScanResult<CowStr>
+    fn ident_or_keyword<P>(&mut self, pred: P) -> ScanResult<Str>
     where
         P: Fn(Keyword) -> bool
     {
@@ -557,7 +555,7 @@ impl<'src> Parser<'src> {
 
     /// Alias: `IDENT`
     #[inline(always)]
-    fn identifier(&mut self) -> ScanResult<String> {
+    fn identifier(&mut self) -> ScanResult<Box<str>> {
         IdentifierParser(self).parse()
     }
 
@@ -895,7 +893,7 @@ mod tests {
         let source = "tEsT_iDeNtIfIeR";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        assert_eq!("test_identifier", parser.identifier().unwrap());
+        assert_eq!("test_identifier", parser.identifier().unwrap().as_ref());
     }
 
     #[test]
@@ -950,5 +948,5 @@ use crate::lexer::{
     OperatorKind::{self, CloseParenthesis, Comma, Dot, OpenParenthesis, Semicolon},
     RawTokenKind
 };
-use postgres_basics::{fn_info, Located};
+use postgres_basics::{fn_info, Located, Str};
 use std::{borrow::Cow, mem};

@@ -12,7 +12,7 @@ pub struct ExtendedStringDecoder<'src> {
 }
 
 pub struct ExtendedStringResult {
-    pub result: Result<String, ExtendedStringError>,
+    pub result: Result<Box<str>, ExtendedStringError>,
     pub warning: Option<ExtendedStringWarning>,
 }
 
@@ -143,6 +143,7 @@ impl<'src> ExtendedStringDecoder<'src> {
         }
 
         let result = String::from_utf8(out)
+            .map(String::into_boxed_str)
             .map_err(|err| {
                 // pg_verifymbstr -> pg_verify_mbstr -> report_invalid_encoding
                 // see [report_invalid_encoding](https://github.com/postgres/postgres/blob/d5622acb32b3c11a27b323138fbee9c715742b38/src/backend/utils/mb/mbutils.c#L1698-L1721)
@@ -218,7 +219,7 @@ mod tests {
             r"\x64\u0061\164\U00000061\'\\''\b\f\n\r\t\v x\y",
             BackslashQuote::On
         );
-        assert_eq!("data'\\'\x08\x0c\n\r\t\x0b xy", decoder.decode().result.unwrap())
+        assert_eq!("data'\\'\x08\x0c\n\r\t\x0b xy", decoder.decode().result.unwrap().as_ref())
     }
 }
 

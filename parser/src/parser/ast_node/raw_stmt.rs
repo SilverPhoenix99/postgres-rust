@@ -9,11 +9,11 @@ pub enum RawStmt {
     ClosePortalStmt(OneOrAll),
     DeallocateStmt(OneOrAll),
     DiscardStmt(DiscardStmt),
-    ListenStmt(CowStr),
-    LoadStmt(String),
+    ListenStmt(Str),
+    LoadStmt(Box<str>),
     NotifyStmt(NotifyStmt),
     PrepareStmt(Box<PrepareStmt>),
-    PrepareTransactionStmt(String),
+    PrepareTransactionStmt(Box<str>),
     ReassignOwnedStmt(ReassignOwnedStmt),
     RefreshCollationVersionStmt(QualifiedName),
     RenameStmt(RenameStmt),
@@ -35,23 +35,21 @@ impl_from!(RenameStmt for RawStmt);
 impl_from!(TransactionStmt for RawStmt);
 impl_from!(VariableShowStmt for RawStmt);
 
-use crate::parser::{
-    ast_node::{
-        impl_from,
-        AlterDefaultPrivilegesStmt,
-        AlterEventTrigStmt,
-        AlterObjectSchemaStmt,
-        AlterOwnerStmt,
-        AlterRoleStmt,
-        DiscardStmt,
-        NotifyStmt,
-        OneOrAll,
-        PrepareStmt,
-        QualifiedName,
-        ReassignOwnedStmt,
-        RenameStmt,
-        TransactionStmt,
-        VariableShowStmt
-    },
-    CowStr
+use crate::parser::ast_node::{
+    impl_from,
+    AlterDefaultPrivilegesStmt,
+    AlterEventTrigStmt,
+    AlterObjectSchemaStmt,
+    AlterOwnerStmt,
+    AlterRoleStmt,
+    DiscardStmt,
+    NotifyStmt,
+    OneOrAll,
+    PrepareStmt,
+    QualifiedName,
+    ReassignOwnedStmt,
+    RenameStmt,
+    TransactionStmt,
+    VariableShowStmt
 };
+use postgres_basics::Str;

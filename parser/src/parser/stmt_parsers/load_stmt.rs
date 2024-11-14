@@ -1,6 +1,6 @@
 impl Parser<'_> {
     /// Alias: `LoadStmt`
-    pub(in crate::parser) fn load_stmt(&mut self) -> ParseResult<String> {
+    pub(in crate::parser) fn load_stmt(&mut self) -> ParseResult<Box<str>> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::load_stmt";
 
         /*

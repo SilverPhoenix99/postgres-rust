@@ -8,7 +8,10 @@ pub(in crate::parser) fn parse_number(value: &str, radix: u32) -> UnsignedNumber
         IntegerConst(int.into())
     }
     else {
-        NumericConst { radix, value }
+        NumericConst {
+            radix,
+            value: value.into_boxed_str()
+        }
     }
 }
 

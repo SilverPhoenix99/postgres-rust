@@ -27,7 +27,7 @@ mod tests {
     #[test]
     fn test_prepare_transaction() {
         let mut parser = Parser::new("transaction 'some prepared tx'", DEFAULT_CONFIG);
-        let expected = PrepareTransactionStmt("some prepared tx".to_string());
+        let expected = PrepareTransactionStmt("some prepared tx".into());
         assert_eq!(Ok(expected), parser.prepare_stmt());
     }
 }

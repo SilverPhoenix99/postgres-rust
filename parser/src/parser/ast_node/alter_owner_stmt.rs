@@ -26,37 +26,35 @@ pub enum AlterOwnerTarget {
     Aggregate(AggregateWithArgtypes),
     Collation(QualifiedName),
     Conversion(QualifiedName),
-    Database(CowStr),
+    Database(Str),
     Domain(QualifiedName),
-    EventTrigger(CowStr),
-    ForeignDataWrapper(CowStr),
-    ForeignServer(CowStr),
+    EventTrigger(Str),
+    ForeignDataWrapper(Str),
+    ForeignServer(Str),
     Function(FunctionWithArgtypes),
-    Language(CowStr),
+    Language(Str),
     LargeObject(SignedNumber),
     Operator(OperatorWithArgtypes),
     OperatorClass(QualifiedName),
     OperatorFamily(QualifiedName),
     Procedure(FunctionWithArgtypes),
-    Publication(CowStr),
+    Publication(Str),
     Routine(FunctionWithArgtypes),
-    Schema(CowStr),
+    Schema(Str),
     Statistic(QualifiedName),
-    Subscription(CowStr),
-    Tablespace(CowStr),
+    Subscription(Str),
+    Tablespace(Str),
     TextSearchConfiguration(QualifiedName),
     TextSearchDictionary(QualifiedName),
     Type(QualifiedName),
 }
 
-use crate::parser::{
-    ast_node::{
-        AggregateWithArgtypes,
-        FunctionWithArgtypes,
-        OperatorWithArgtypes,
-        QualifiedName,
-        RoleSpec,
-        SignedNumber
-    },
-    CowStr
+use crate::parser::ast_node::{
+    AggregateWithArgtypes,
+    FunctionWithArgtypes,
+    OperatorWithArgtypes,
+    QualifiedName,
+    RoleSpec,
+    SignedNumber
 };
+use postgres_basics::Str;

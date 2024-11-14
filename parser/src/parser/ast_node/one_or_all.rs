@@ -1,7 +1,7 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum OneOrAll {
     All,
-    Name(CowStr),
+    Name(Str),
 }
 
-use crate::parser::CowStr;
+use postgres_basics::Str;

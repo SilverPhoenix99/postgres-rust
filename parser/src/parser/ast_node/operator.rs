@@ -16,5 +16,5 @@ pub enum Operator {
     NotLike,
     ILike,
     NotILike,
-    UserDefined(String),
+    UserDefined(Box<str>),
 }
