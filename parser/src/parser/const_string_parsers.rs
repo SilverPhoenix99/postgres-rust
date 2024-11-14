@@ -53,7 +53,7 @@ use crate::{
     parser::{
         result::ScanResult,
         string_parser::StringParser,
-        token_buffer::SlicedTokenConsumer,
+        token_stream::SlicedTokenConsumer,
         Parser
     }
 };

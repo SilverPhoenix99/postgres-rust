@@ -90,6 +90,6 @@ mod tests {
 use crate::lexer::Keyword::{self, Authorization, Isolation, Level, Zone};
 use crate::parser::ast_node::VariableShowStmt::{self, *};
 use crate::parser::result::{Optional, Required};
-use crate::parser::token_buffer::TokenConsumer;
+use crate::parser::token_stream::TokenConsumer;
 use crate::parser::{ParseResult, Parser};
 use postgres_basics::fn_info;

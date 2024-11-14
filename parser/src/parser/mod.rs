@@ -17,7 +17,7 @@ mod role_parsers;
 mod stmt_parser;
 mod stmt_parsers;
 mod string_parser;
-mod token_buffer;
+mod token_stream;
 mod type_parsers;
 mod uescape_escape;
 mod warning;
@@ -38,7 +38,7 @@ pub struct ParserResult {
 }
 
 pub struct Parser<'src> {
-    buffer: TokenBuffer<'src>,
+    buffer: TokenStream<'src>,
     config: ParserConfig,
     /// All the warnings that have been collected while parsing.
     warnings: Vec<Located<ParserWarningKind>>,
@@ -49,7 +49,7 @@ impl<'src> Parser<'src> {
     pub fn new(source: &'src str, config: ParserConfig) -> Self {
         let lexer = Lexer::new(source, config.standard_conforming_strings());
         Self {
-            buffer: TokenBuffer::new(lexer),
+            buffer: TokenStream::new(lexer),
             config,
             warnings: Vec::new(),
         }
@@ -940,7 +940,7 @@ use self::{
         ScanResultTrait,
         TryMatch,
     },
-    token_buffer::{SlicedTokenConsumer, TokenBuffer, TokenConsumer},
+    token_stream::{SlicedTokenConsumer, TokenConsumer, TokenStream},
     uescape_escape::uescape_escape
 };
 use crate::lexer::{

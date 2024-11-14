@@ -100,7 +100,7 @@ use crate::{
     lexer::IdentifierKind::*,
     parser::{
         result::ScanResult,
-        token_buffer::SlicedTokenConsumer,
+        token_stream::SlicedTokenConsumer,
         Parser,
         ParserErrorKind::UnicodeString
     },

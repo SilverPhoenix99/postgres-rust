@@ -141,7 +141,7 @@ use crate::{
     parser::{
         ast_node::{SignedNumber, UnsignedNumber},
         result::{EofResult, Required, ScanResult, ScanResultTrait},
-        token_buffer::{SlicedTokenConsumer, TokenConsumer},
+        token_stream::{SlicedTokenConsumer, TokenConsumer},
         Parser
     }
 };

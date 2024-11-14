@@ -156,7 +156,7 @@ use crate::{
     parser::{
         ast_node::{AlterEventTrigStmt, AlterOwnerStmt, AlterOwnerTarget, RawStmt, RenameStmt, RenameTarget},
         result::{Optional, Required, TryMatch},
-        token_buffer::TokenConsumer,
+        token_stream::TokenConsumer,
         EventTriggerState::{self, Disabled, FiresAlways, FiresOnOrigin, FiresOnReplica},
         ParseResult,
         Parser
