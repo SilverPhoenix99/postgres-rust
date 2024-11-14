@@ -6,7 +6,7 @@ pub use self::error::LexerErrorKind;
 pub(crate) use self::{
     error::LexerError,
     keyword::{Keyword, KeywordCategory},
-    token_kind::{BitStringKind, IdentifierKind, RawTokenKind, StringKind},
+    token_kind::{BitStringKind, IdentifierKind, OperatorKind, RawTokenKind, StringKind},
 };
 
 pub(crate) type LexerResult = Result<Located<RawTokenKind>, LexerError>;
@@ -106,32 +106,32 @@ impl<'src> Lexer<'src> {
         const FN_NAME: &str = "postgres_parser::lexer::Lexer::lex_token";
 
         match self.buffer.consume_one().expect("eof should have already been filtered out") {
-            '(' => Ok(OpenParenthesis),
-            ')' => Ok(CloseParenthesis),
-            ',' => Ok(Comma),
-            ';' => Ok(Semicolon),
-            '[' => Ok(OpenBracket),
-            ']' => Ok(CloseBracket),
+            '(' => Ok(Operator(OpenParenthesis)),
+            ')' => Ok(Operator(CloseParenthesis)),
+            ',' => Ok(Operator(Comma)),
+            ';' => Ok(Operator(Semicolon)),
+            '[' => Ok(Operator(OpenBracket)),
+            ']' => Ok(Operator(CloseBracket)),
             '.' => {
                 if self.buffer.consume_char('.') {
-                    Ok(DotDot)
+                    Ok(Operator(DotDot))
                 }
                 else if self.buffer.peek().is_some_and(is_decimal_digit) {
                     self.lex_dec_float()
                 }
                 else {
-                    Ok(Dot)
+                    Ok(Operator(Dot))
                 }
             }
             ':' => {
                 if self.buffer.consume_char(':') {
-                    Ok(Typecast)
+                    Ok(Operator(Typecast))
                 }
                 else if self.buffer.consume_char('=') {
-                    Ok(ColonEquals)
+                    Ok(Operator(ColonEquals))
                 }
                 else {
-                    Ok(Colon)
+                    Ok(Operator(Colon))
                 }
             }
             '$' => match self.buffer.peek() {
@@ -250,20 +250,20 @@ impl<'src> Lexer<'src> {
         let mut op = self.buffer.slice(start_index);
 
         match op {
-            "%"  => Ok(Percent),
-            "*"  => Ok(Mul),
-            "+"  => Ok(Plus),
-            "-"  => Ok(Minus),
-            "/"  => Ok(Div),
-            "<"  => Ok(Less),
-            "="  => Ok(Equals),
-            ">"  => Ok(Greater),
-            "^"  => Ok(Circumflex),
-            "=>" => Ok(EqualsGreater),
-            "<=" => Ok(LessEquals),
-            ">=" => Ok(GreaterEquals),
-            "!=" => Ok(NotEquals),
-            "<>" => Ok(NotEquals),
+            "%"  => Ok(Operator(Percent)),
+            "*"  => Ok(Operator(Mul)),
+            "+"  => Ok(Operator(Plus)),
+            "-"  => Ok(Operator(Minus)),
+            "/"  => Ok(Operator(Div)),
+            "<"  => Ok(Operator(Less)),
+            "="  => Ok(Operator(Equals)),
+            ">"  => Ok(Operator(Greater)),
+            "^"  => Ok(Operator(Circumflex)),
+            "=>" => Ok(Operator(EqualsGreater)),
+            "<=" => Ok(Operator(LessEquals)),
+            ">=" => Ok(Operator(GreaterEquals)),
+            "!=" => Ok(Operator(NotEquals)),
+            "<>" => Ok(Operator(NotEquals)),
             _ => {
                 // Custom operator with PG op chars can have '+' or '-' as suffixes.
                 // E.g., '?-' is a valid operator.
@@ -740,6 +740,7 @@ mod tests {
     use crate::error::HasLocation;
     use crate::lexer::token_kind::RawTokenKind;
     use crate::lexer::Keyword::{FromKw, Not, Select, StringKw};
+    use crate::lexer::OperatorKind::{Circumflex, CloseBracket, CloseParenthesis, ColonEquals, Div, Dot, DotDot, EqualsGreater, Mul, OpenBracket, OpenParenthesis, Percent, Plus};
     use std::ops::Range;
 
     #[test]
@@ -772,31 +773,31 @@ mod tests {
         let source = ". .. ( ) , ; [ ] : :: := % * + - / < = > ^ => <= >= != <>";
         let mut lex = Lexer::new(source, true);
 
-        assert_tok(Dot, 0..1, 1, 1, lex.next());
-        assert_tok(DotDot, 2..4, 1, 3, lex.next());
-        assert_tok(OpenParenthesis, 5..6, 1, 6, lex.next());
-        assert_tok(CloseParenthesis, 7..8, 1, 8, lex.next());
-        assert_tok(Comma, 9..10, 1, 10, lex.next());
-        assert_tok(Semicolon, 11..12, 1, 12, lex.next());
-        assert_tok(OpenBracket, 13..14, 1, 14, lex.next());
-        assert_tok(CloseBracket, 15..16, 1, 16, lex.next());
-        assert_tok(Colon, 17..18, 1, 18, lex.next());
-        assert_tok(Typecast, 19..21, 1, 20, lex.next());
-        assert_tok(ColonEquals, 22..24, 1, 23, lex.next());
-        assert_tok(Percent, 25..26, 1, 26, lex.next());
-        assert_tok(Mul, 27..28, 1, 28, lex.next());
-        assert_tok(Plus, 29..30, 1, 30, lex.next());
-        assert_tok(Minus, 31..32, 1, 32, lex.next());
-        assert_tok(Div, 33..34, 1, 34, lex.next());
-        assert_tok(Less, 35..36, 1, 36, lex.next());
-        assert_tok(Equals, 37..38, 1, 38, lex.next());
-        assert_tok(Greater, 39..40, 1, 40, lex.next());
-        assert_tok(Circumflex, 41..42, 1, 42, lex.next());
-        assert_tok(EqualsGreater, 43..45, 1, 44, lex.next());
-        assert_tok(LessEquals, 46..48, 1, 47, lex.next());
-        assert_tok(GreaterEquals, 49..51, 1, 50, lex.next());
-        assert_tok(NotEquals, 52..54, 1, 53, lex.next());
-        assert_tok(NotEquals, 55..57, 1, 56, lex.next());
+        assert_tok(Operator(Dot), 0..1, 1, 1, lex.next());
+        assert_tok(Operator(DotDot), 2..4, 1, 3, lex.next());
+        assert_tok(Operator(OpenParenthesis), 5..6, 1, 6, lex.next());
+        assert_tok(Operator(CloseParenthesis), 7..8, 1, 8, lex.next());
+        assert_tok(Operator(Comma), 9..10, 1, 10, lex.next());
+        assert_tok(Operator(Semicolon), 11..12, 1, 12, lex.next());
+        assert_tok(Operator(OpenBracket), 13..14, 1, 14, lex.next());
+        assert_tok(Operator(CloseBracket), 15..16, 1, 16, lex.next());
+        assert_tok(Operator(Colon), 17..18, 1, 18, lex.next());
+        assert_tok(Operator(Typecast), 19..21, 1, 20, lex.next());
+        assert_tok(Operator(ColonEquals), 22..24, 1, 23, lex.next());
+        assert_tok(Operator(Percent), 25..26, 1, 26, lex.next());
+        assert_tok(Operator(Mul), 27..28, 1, 28, lex.next());
+        assert_tok(Operator(Plus), 29..30, 1, 30, lex.next());
+        assert_tok(Operator(Minus), 31..32, 1, 32, lex.next());
+        assert_tok(Operator(Div), 33..34, 1, 34, lex.next());
+        assert_tok(Operator(Less), 35..36, 1, 36, lex.next());
+        assert_tok(Operator(Equals), 37..38, 1, 38, lex.next());
+        assert_tok(Operator(Greater), 39..40, 1, 40, lex.next());
+        assert_tok(Operator(Circumflex), 41..42, 1, 42, lex.next());
+        assert_tok(Operator(EqualsGreater), 43..45, 1, 44, lex.next());
+        assert_tok(Operator(LessEquals), 46..48, 1, 47, lex.next());
+        assert_tok(Operator(GreaterEquals), 49..51, 1, 50, lex.next());
+        assert_tok(Operator(NotEquals), 52..54, 1, 53, lex.next());
+        assert_tok(Operator(NotEquals), 55..57, 1, 56, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -809,7 +810,7 @@ mod tests {
         let mut lex = Lexer::new(source, true);
 
         assert_tok(UserDefinedOperator, 0..3, 1, 1, lex.next());
-        assert_tok(Minus, 3..4, 1, 4, lex.next());
+        assert_tok(Operator(Minus), 3..4, 1, 4, lex.next());
         assert_tok(UserDefinedOperator, 5..8, 2, 1, lex.next());
         assert_eq!(None, lex.next());
     }
@@ -871,7 +872,7 @@ mod tests {
         let mut lex = Lexer::new(source, true);
 
         assert_tok(NumberLiteral { radix: 10 }, 0..3, 1, 1, lex.next());
-        assert_tok(DotDot, 3..5, 1, 4, lex.next());
+        assert_tok(Operator(DotDot), 3..5, 1, 4, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -1081,7 +1082,13 @@ mod tests {
 
 use self::{
     error::LexerErrorKind::*,
-    token_kind::{BitStringKind::*, IdentifierKind::*, RawTokenKind::*, StringKind::*},
+    token_kind::{
+        BitStringKind::*,
+        IdentifierKind::*,
+        OperatorKind::*,
+        RawTokenKind::*,
+        StringKind::*
+    },
     Keyword::Nchar
 };
 use postgres_basics::{

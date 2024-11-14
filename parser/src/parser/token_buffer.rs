@@ -126,6 +126,13 @@ impl<'src> TokenBuffer<'src> {
         self.consume(|tok| kind == tok)
     }
 
+    pub fn consume_op(&mut self, kind: OperatorKind) -> ScanResult<OperatorKind> {
+        self.consume(|tok|
+            tok.operator()
+                .filter(|op| *op == kind)
+        )
+    }
+
     #[inline(always)]
     pub fn consume_kw_eq(&mut self, keyword: Keyword) -> ScanResult<Keyword> {
         self.consume_kw(|kw| keyword == kw)
@@ -271,7 +278,7 @@ mod tests {
         let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
-        assert_matches!(buffer.consume_eq(RawTokenKind::Comma), Err(NoMatch(_)));
+        assert_matches!(buffer.consume_eq(RawTokenKind::Operator(OperatorKind::Comma)), Err(NoMatch(_)));
 
         assert_eq!(
             Ok(Identifier(Basic)),
@@ -374,6 +381,7 @@ mod tests {
     }
 }
 
+use crate::lexer::OperatorKind;
 use crate::{
     error::HasLocation,
     lexer::{Keyword, Lexer, RawTokenKind},

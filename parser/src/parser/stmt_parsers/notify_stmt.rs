@@ -9,7 +9,7 @@ impl Parser<'_> {
 
         let condition_name = self.col_id().required(fn_info!(FN_NAME))?;
 
-        if self.buffer.consume_eq(Comma).optional()?.is_none() {
+        if self.buffer.consume_op(Comma).optional()?.is_none() {
             /*
                 NOTIFY ColId
             */
@@ -41,7 +41,7 @@ mod tests {
     }
 }
 
-use crate::lexer::RawTokenKind::Comma;
+use crate::lexer::OperatorKind::Comma;
 use crate::parser::ast_node::NotifyStmt;
 use crate::parser::result::{Optional, Required};
 use crate::parser::{ParseResult, Parser};

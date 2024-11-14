@@ -8,7 +8,7 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
         const FN_NAME: &str = "postgres_parser::parser::ident_parser::IdentifierParser::parse";
 
         let (kind, slice, loc) = self.0.buffer.consume_with_slice(|(tok, slice, loc)|
-            tok.identifier_kind()
+            tok.identifier()
                 .map(|kind| (kind, slice, loc))
         )?;
 

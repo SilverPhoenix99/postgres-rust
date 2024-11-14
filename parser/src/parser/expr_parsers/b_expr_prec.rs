@@ -97,19 +97,19 @@ impl Parser<'_> {
 
         self.buffer.consume(|tok| {
             let op = match tok {
-                Typecast => Op::Typecast,
-                Circumflex => Op::Exponentiation,
-                Mul => Op::Multiplication,
-                Div => Op::Division,
-                Percent => Op::Modulo,
-                Plus => Op::Addition,
-                Minus => Op::Subtraction,
-                Less => Op::Less,
-                Greater => Op::Greater,
-                Equals => Op::Equals,
-                GreaterEquals => Op::GreaterEquals,
-                LessEquals => Op::LessEquals,
-                NotEquals => Op::NotEquals,
+                Operator(Typecast) => Op::Typecast,
+                Operator(Circumflex) => Op::Exponentiation,
+                Operator(Mul) => Op::Multiplication,
+                Operator(Div) => Op::Division,
+                Operator(Percent) => Op::Modulo,
+                Operator(Plus) => Op::Addition,
+                Operator(Minus) => Op::Subtraction,
+                Operator(Less) => Op::Less,
+                Operator(Greater) => Op::Greater,
+                Operator(Equals) => Op::Equals,
+                Operator(GreaterEquals) => Op::GreaterEquals,
+                Operator(LessEquals) => Op::LessEquals,
+                Operator(NotEquals) => Op::NotEquals,
                 Keyword(Is) => Op::IsExpr,
                 _ => return None,
             };
@@ -183,7 +183,7 @@ impl Parser<'_> {
 
         // TODO: c_expr()
 
-        let op = self.buffer.consume(|tok| matches!(tok, Plus | Minus))?;
+        let op = self.sign()?;
 
         let prec = Right(6).right_precedence();
         let right = self.b_expr_prec(prec).required(fn_info!(FN_NAME))?;
@@ -202,7 +202,8 @@ impl Parser<'_> {
 use crate::{
     lexer::{
         Keyword::{Distinct, Document, FromKw, Is, Not},
-        RawTokenKind::*
+        OperatorKind::*,
+        RawTokenKind::{Keyword, Operator}
     },
     parser::{
         ast_node::{ExprNode, QualifiedOperator, TypecastExpr, UnaryExpr},

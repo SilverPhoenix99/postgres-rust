@@ -30,7 +30,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
     fn try_consume(&mut self, only_concatenable: bool) -> ScanResult<(StringKind, &'src str, Location)> {
 
         self.0.buffer.consume_with_slice(|(tok, slice, loc)|
-            tok.string_kind()
+            tok.string()
                 .filter(|kind| {
                     !only_concatenable || match kind {
                         Basic { concatenable }

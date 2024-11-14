@@ -28,7 +28,7 @@ impl Parser<'_> {
         let element = self.privilege()?;
         let mut elements = vec![element];
 
-        while self.buffer.consume_eq(Comma).optional()?.is_some() {
+        while self.buffer.consume_op(Comma).optional()?.is_some() {
             let element = self.privilege().required(fn_info!(FN_NAME))?;
             elements.push(element);
         }
@@ -197,7 +197,8 @@ use crate::{
             Select as SelectKw,
             SystemKw
         },
-        RawTokenKind::{Comma, Keyword as Kw}
+        OperatorKind::Comma,
+        RawTokenKind::Keyword as Kw,
     },
     parser::{
         ast_node::{

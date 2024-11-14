@@ -45,27 +45,24 @@ impl<'src> Parser<'src> {
     }
 
     pub(super) fn operator(&mut self, kind: OperatorKind) -> ScanResult<QualifiedOperator> {
-        use RawTokenKind::{Equals, Greater, GreaterEquals, Keyword as Kw, Less, LessEquals, NotEquals};
-        use crate::lexer::Keyword::{Ilike, Like, Operator as OperatorKw};
-
         const FN_NAME: &str = "postgres_parser::parser::Parser::operator";
 
         let slice = self.buffer.slice();
 
         consume! {self
             Ok {
-                Plus if kind.intersects(OperatorKind::Additive) => Ok(Addition.into()),
-                Minus if kind.intersects(OperatorKind::Additive) => Ok(Subtraction.into()),
-                Mul if kind.intersects(OperatorKind::Multiplicative) => Ok(Multiplication.into()),
-                Div if kind.intersects(OperatorKind::Multiplicative) => Ok(Division.into()),
-                Percent if kind.intersects(OperatorKind::Multiplicative) => Ok(Modulo.into()),
-                Circumflex if kind.intersects(OperatorKind::Exponentiation) => Ok(Exponentiation.into()),
-                Less if kind.intersects(OperatorKind::Boolean) => Ok(Operator::Less.into()),
-                Equals if kind.intersects(OperatorKind::Boolean) => Ok(Operator::Equals.into()),
-                Greater if kind.intersects(OperatorKind::Boolean) => Ok(Operator::Greater.into()),
-                LessEquals if kind.intersects(OperatorKind::Boolean) => Ok(Operator::LessEquals.into()),
-                GreaterEquals if kind.intersects(OperatorKind::Boolean) => Ok(Operator::GreaterEquals.into()),
-                NotEquals if kind.intersects(OperatorKind::Boolean) => Ok(Operator::NotEquals.into()),
+                Op(Plus) if kind.intersects(OperatorKind::Additive) => Ok(Addition.into()),
+                Op(Minus) if kind.intersects(OperatorKind::Additive) => Ok(Subtraction.into()),
+                Op(Mul) if kind.intersects(OperatorKind::Multiplicative) => Ok(Multiplication.into()),
+                Op(Div) if kind.intersects(OperatorKind::Multiplicative) => Ok(Division.into()),
+                Op(Percent) if kind.intersects(OperatorKind::Multiplicative) => Ok(Modulo.into()),
+                Op(Circumflex) if kind.intersects(OperatorKind::Exponentiation) => Ok(Exponentiation.into()),
+                Op(Less) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::Less.into()),
+                Op(Equals) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::Equals.into()),
+                Op(Greater) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::Greater.into()),
+                Op(LessEquals) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::LessEquals.into()),
+                Op(GreaterEquals) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::GreaterEquals.into()),
+                Op(NotEquals) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::NotEquals.into()),
                 Kw(Like) if kind.intersects(OperatorKind::Like) => Ok(Operator::Like.into()),
                 Kw(Ilike) if kind.intersects(OperatorKind::Like) => Ok(ILike.into()),
                 UserDefinedOperator if kind.intersects(OperatorKind::UserDefined) => {
@@ -78,9 +75,9 @@ impl<'src> Parser<'src> {
                         `OPERATOR '(' any_operator ')'`
                     */
 
-                    self.buffer.consume_eq(OpenParenthesis).required(fn_info!(FN_NAME))?;
+                    self.buffer.consume_op(OpenParenthesis).required(fn_info!(FN_NAME))?;
                     let op = self.any_operator().required(fn_info!(FN_NAME))?;
-                    self.buffer.consume_eq(CloseParenthesis).required(fn_info!(FN_NAME))?;
+                    self.buffer.consume_op(CloseParenthesis).required(fn_info!(FN_NAME))?;
 
                     Ok(op)
                 },
@@ -105,7 +102,7 @@ impl<'src> Parser<'src> {
         let mut qn = Vec::new();
 
         while let Some(id) = self.col_id().optional()? {
-            self.buffer.consume_eq(Dot).required(fn_info!(FN_NAME))?;
+            self.buffer.consume_op(Dot).required(fn_info!(FN_NAME))?;
             qn.push(id);
         }
 
@@ -167,7 +164,7 @@ mod tests {
 
         let expected = QualifiedOperator(
             vec![],
-            NotEquals
+            Operator::NotEquals
         );
         assert_eq!(Ok(expected), parser.any_operator());
 
@@ -184,7 +181,7 @@ mod tests {
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
         assert_eq!(Ok(UserDefined("~@".into())), parser.all_op());
-        assert_eq!(Ok(NotEquals), parser.all_op());
+        assert_eq!(Ok(Operator::NotEquals), parser.all_op());
     }
 
     #[test]
@@ -199,13 +196,13 @@ mod tests {
         assert_eq!(Ok(Division), parser.all_op());
         assert_eq!(Ok(Modulo), parser.all_op());
         assert_eq!(Ok(Exponentiation), parser.all_op());
-        assert_eq!(Ok(Less), parser.all_op());
-        assert_eq!(Ok(Greater), parser.all_op());
-        assert_eq!(Ok(Equals), parser.all_op());
-        assert_eq!(Ok(LessEquals), parser.all_op());
-        assert_eq!(Ok(GreaterEquals), parser.all_op());
-        assert_eq!(Ok(NotEquals), parser.all_op());
-        assert_eq!(Ok(NotEquals), parser.all_op());
+        assert_eq!(Ok(Operator::Less), parser.all_op());
+        assert_eq!(Ok(Operator::Greater), parser.all_op());
+        assert_eq!(Ok(Operator::Equals), parser.all_op());
+        assert_eq!(Ok(Operator::LessEquals), parser.all_op());
+        assert_eq!(Ok(Operator::GreaterEquals), parser.all_op());
+        assert_eq!(Ok(Operator::NotEquals), parser.all_op());
+        assert_eq!(Ok(Operator::NotEquals), parser.all_op());
     }
 
     #[test]
@@ -213,24 +210,36 @@ mod tests {
         let source = "like ilike";
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
 
-        assert_eq!(Ok(Like.into()), parser.subquery_op());
+        assert_eq!(Ok(Operator::Like.into()), parser.subquery_op());
         assert_eq!(Ok(ILike.into()), parser.subquery_op());
     }
 }
 
 use crate::{
-    lexer::RawTokenKind::{
-        self,
-        Circumflex,
-        CloseParenthesis,
-        Div,
-        Dot,
-        Minus,
-        Mul,
-        OpenParenthesis,
-        Percent,
-        Plus,
-        UserDefinedOperator,
+    lexer::{
+        Keyword::{Ilike, Like, Operator as OperatorKw},
+        OperatorKind::{
+            Circumflex,
+            CloseParenthesis,
+            Div,
+            Dot,
+            Equals,
+            Greater,
+            GreaterEquals,
+            Less,
+            LessEquals,
+            Minus,
+            Mul,
+            NotEquals,
+            OpenParenthesis,
+            Percent,
+            Plus,
+        },
+        RawTokenKind::{
+            Keyword as Kw,
+            Operator as Op,
+            UserDefinedOperator,
+        }
     },
     parser::{
         ast_node::{

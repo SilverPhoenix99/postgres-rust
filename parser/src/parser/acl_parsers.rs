@@ -11,7 +11,7 @@ impl Parser<'_> {
         let element = self.grantee()?;
         let mut elements = vec![element];
 
-        while self.buffer.consume_eq(Comma).optional()?.is_some() {
+        while self.buffer.consume_op(Comma).optional()?.is_some() {
             let element = self.grantee().required(fn_info!(FN_NAME))?;
             elements.push(element);
         }
@@ -136,7 +136,7 @@ mod tests {
 use crate::{
     lexer::{
         Keyword::{By, Cascade, Grant, Granted, Group, OptionKw, Restrict, With},
-        RawTokenKind::Comma
+        OperatorKind::Comma
     },
     parser::{
         ast_node::{DropBehavior, RoleSpec},
