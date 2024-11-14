@@ -51,7 +51,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
                 Ok(string)
             },
             Extended { .. } => {
-                let mut decoder = ExtendedStringDecoder::new(slice, self.0.config.backslash_quote());
+                let mut decoder = ExtendedStringDecoder::new(slice, self.0.buffer.backslash_quote());
                 let ExtendedStringResult { result, warning } = decoder.decode();
 
                 if let Some(warning) = warning {

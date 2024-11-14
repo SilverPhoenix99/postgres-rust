@@ -37,7 +37,6 @@ pub struct ParserResult {
 
 pub struct Parser<'src> {
     buffer: TokenStream<'src>,
-    config: ParserConfig,
     /// All the warnings that have been collected while parsing.
     warnings: Vec<Located<ParserWarningKind>>,
 }
@@ -47,8 +46,7 @@ impl<'src> Parser<'src> {
     pub fn new(source: &'src str, config: ParserConfig) -> Self {
         let lexer = Lexer::new(source, config.standard_conforming_strings());
         Self {
-            buffer: TokenStream::new(lexer),
-            config,
+            buffer: TokenStream::new(lexer, config.backslash_quote()),
             warnings: Vec::new(),
         }
     }
