@@ -3,6 +3,9 @@ name = "postgres-parser"
 edition.workspace = true
 version.workspace = true
 
+[lints]
+workspace = true
+
 [dependencies]
 bitflags.workspace = true
 bitvec.workspace = true

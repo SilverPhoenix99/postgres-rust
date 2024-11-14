@@ -26,10 +26,11 @@ impl Parser<'_> {
             (self.identifier()?.into(), false)
         };
 
+        let loc = self.buffer.current_location();
         let name = self.attrs(ident)?;
 
         if required_indirection && name.len() == 1 {
-            return Err(syntax_err!(FN_NAME))
+            return Err(syntax_err(fn_info!(FN_NAME), loc).into());
         }
 
         Ok(name)

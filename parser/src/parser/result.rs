@@ -1,11 +1,11 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub(crate) enum ScanErrorKind {
     /// When an unrecoverable error occurs.
-    ScanErr(PartialParserError),
+    ScanErr(ParserError),
     /// When there are no more tokens.
-    Eof,
+    Eof(Location),
     /// When the token didn't match.
-    NoMatch,
+    NoMatch(Location),
 }
 
 impl From<LexerError> for ScanErrorKind {
@@ -14,26 +14,26 @@ impl From<LexerError> for ScanErrorKind {
     }
 }
 
-impl From<PartialParserError> for ScanErrorKind {
-    fn from(value: PartialParserError) -> Self {
+impl From<ParserError> for ScanErrorKind {
+    fn from(value: ParserError) -> Self {
         ScanErr(value)
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum EofErrorKind {
-    NotEof(PartialParserError),
-    Eof,
+    NotEof(ParserError),
+    Eof(Location),
 }
 
 impl From<LexerError> for EofErrorKind {
     fn from(value: LexerError) -> Self {
-        NotEof(value.into())
+        NotEof(ParserError::from(value))
     }
 }
 
-impl From<PartialParserError> for EofErrorKind {
-    fn from(value: PartialParserError) -> Self {
+impl From<ParserError> for EofErrorKind {
+    fn from(value: ParserError) -> Self {
         NotEof(value)
     }
 }
@@ -42,7 +42,7 @@ impl From<EofErrorKind> for ScanErrorKind {
     fn from(value: EofErrorKind) -> Self {
         match value {
             NotEof(err) => ScanErr(err),
-            EofErrorKind::Eof => Self::Eof
+            Eof(loc) => Self::Eof(loc)
         }
     }
 }
@@ -59,7 +59,7 @@ impl<T> Required<T> for ScanResult<T> {
     fn required(self, fn_info: &'static FnInfo) -> ParseResult<T> {
         self.map_err(|err| match err {
             ScanErr(err) => err,
-            _ => PartialParserError::syntax(fn_info)
+            NoMatch(loc) | ScanEof(loc) => syntax_err(fn_info, loc)
         })
     }
 }
@@ -68,7 +68,7 @@ impl<T> Required<T> for EofResult<T> {
     fn required(self, fn_info: &'static FnInfo) -> ParseResult<T> {
         self.map_err(|err| match err {
             NotEof(err) => err,
-            _ => PartialParserError::syntax(fn_info)
+            Eof(loc) => syntax_err(fn_info, loc)
         })
     }
 }
@@ -84,8 +84,8 @@ impl<T> TryMatch<T> for ScanResult<T> {
     fn try_match(self, fn_info: &'static FnInfo) -> ParseResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
-            Err(NoMatch) => Ok(None),
-            Err(ScanErrorKind::Eof) => Err(PartialParserError::syntax(fn_info)),
+            Err(NoMatch(_)) => Ok(None),
+            Err(ScanEof(loc)) => Err(ParserError::syntax(fn_info, loc)),
             Err(ScanErr(err)) => Err(err),
         }
     }
@@ -95,7 +95,7 @@ impl<T> TryMatch<T> for EofResult<T> {
     fn try_match(self, fn_info: &'static FnInfo) -> ParseResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
-            Err(EofErrorKind::Eof) => Err(PartialParserError::syntax(fn_info)),
+            Err(Eof(loc)) => Err(ParserError::syntax(fn_info, loc)),
             Err(NotEof(err)) => Err(err),
         }
     }
@@ -110,7 +110,7 @@ impl<T> Optional<T> for ScanResult<T> {
     fn optional(self) -> ParseResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
-            Err(NoMatch | ScanErrorKind::Eof) => Ok(None),
+            Err(NoMatch(_) | ScanEof(_)) => Ok(None),
             Err(ScanErr(err)) => Err(err),
         }
     }
@@ -120,7 +120,7 @@ impl<T> Optional<T> for EofResult<T> {
     fn optional(self) -> ParseResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
-            Err(EofErrorKind::Eof) => Ok(None),
+            Err(Eof(_)) => Ok(None),
             Err(NotEof(err)) => Err(err),
         }
     }
@@ -139,8 +139,8 @@ impl<T> ScanResultTrait<T> for ScanResult<T> {
     fn no_match_to_option(self) -> EofResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
-            Err(NoMatch) => Ok(None),
-            Err(ScanErrorKind::Eof) => Err(EofErrorKind::Eof),
+            Err(NoMatch(_)) => Ok(None),
+            Err(ScanEof(loc)) => Err(Eof(loc)),
             Err(ScanErr(err)) => Err(NotEof(err)),
         }
     }
@@ -154,12 +154,13 @@ mod tests {
 use crate::{
     lexer::LexerError,
     parser::{
-        error::PartialParserError,
+        error::syntax_err,
         result::{
-            EofErrorKind::NotEof,
-            ScanErrorKind::{NoMatch, ScanErr}
+            EofErrorKind::{Eof, NotEof},
+            ScanErrorKind::{Eof as ScanEof, NoMatch, ScanErr}
         },
-        ParseResult
+        ParseResult,
+        ParserError
     }
 };
-use postgres_basics::FnInfo;
+use postgres_basics::{FnInfo, Location};

@@ -57,7 +57,10 @@ impl Parser<'_> {
             }
             Err {
                 Err(err) => err.into(),
-                _ => NoMatch,
+                _ => {
+                    let loc = self.buffer.current_location();
+                    NoMatch(loc)
+                },
             }
         }
     }

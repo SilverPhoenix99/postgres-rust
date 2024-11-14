@@ -25,8 +25,9 @@ impl Parser<'_> {
 
         // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
+        let loc = self.buffer.current_location();
         self.role_spec()?
-            .into_role_id()
+            .into_role_id(loc)
             .map_err(ScanErr)
     }
 
@@ -64,10 +65,16 @@ impl Parser<'_> {
                 }
             }
             Err {
-                Ok(Kw(NoneKw)) => ScanErr(
-                    ReservedRoleSpec("none").with_fn_info(fn_info!(FN_NAME))
-                ),
-                Ok(_) => NoMatch,
+                Ok(Kw(NoneKw)) => {
+                    let loc = self.buffer.current_location();
+                    ScanErr(
+                        ParserError::new(ReservedRoleSpec("none"), fn_info!(FN_NAME), loc)
+                    )
+                },
+                Ok(_) => {
+                    let loc = self.buffer.current_location();
+                    NoMatch(loc)
+                },
                 Err(err) => err.into(),
             }
         }
@@ -137,7 +144,7 @@ mod tests {
         assert_eq!(Ok(RoleSpec::Name("xxyyzz".into())), parser.role_spec());
 
         let mut parser = Parser::new("collate", DEFAULT_CONFIG);
-        assert_eq!(Err(NoMatch), parser.role_spec());
+        assert_matches!(parser.role_spec(), Err(NoMatch(_)));
 
         let mut parser = Parser::new("none", DEFAULT_CONFIG);
         assert_err(ReservedRoleSpec("none"), parser.role_spec());
@@ -171,7 +178,8 @@ use crate::{
         },
         CowStr,
         Parser,
-        ParserErrorKind::ReservedRoleSpec,
+        ParserError,
+        ParserErrorKind::ReservedRoleSpec
     },
 };
 use postgres_basics::fn_info;

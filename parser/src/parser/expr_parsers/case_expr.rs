@@ -26,7 +26,8 @@ impl Parser<'_> {
         }
 
         if when_clauses.is_empty() {
-            return Err(syntax_err!(FN_NAME))
+            let loc = self.buffer.current_location();
+            return Err(syntax_err(fn_info!(FN_NAME), loc).into());
         }
 
         let default = if self.buffer.consume_kw_eq(Else).try_match(fn_info!(FN_NAME))?.is_some() {

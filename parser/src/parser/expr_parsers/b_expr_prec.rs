@@ -168,10 +168,10 @@ impl Parser<'_> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::b_expr_primary";
 
         /*
-            '-' b_expr(6)
-            '+' b_expr(6)
             qual_Op b_expr(3)
             c_expr
+            '-' b_expr(6)
+            '+' b_expr(6)
         */
 
         if let Some(op) = self.qual_op().no_match_to_option()? {
@@ -183,8 +183,7 @@ impl Parser<'_> {
 
         // TODO: c_expr()
 
-        let op = self.buffer.consume(|tok| matches!(tok, Plus | Minus)).optional()?;
-        let Some(op) = op else { return Err(NoMatch) };
+        let op = self.buffer.consume(|tok| matches!(tok, Plus | Minus))?;
 
         let prec = Right(6).right_precedence();
         let right = self.b_expr_prec(prec).required(fn_info!(FN_NAME))?;
@@ -211,7 +210,6 @@ use crate::{
         result::{
             Optional,
             Required,
-            ScanErrorKind::NoMatch,
             ScanResult,
             ScanResultTrait
         },

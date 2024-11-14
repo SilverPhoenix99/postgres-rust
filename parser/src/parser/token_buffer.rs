@@ -1,6 +1,6 @@
 pub(super) struct TokenBuffer<'src> {
     lexer: Lexer<'src>,
-    buf: VecDeque<Located<EofResult<TokenKind>>>,
+    buf: VecDeque<EofResult<Located<TokenKind>>>,
 }
 
 impl<'src> TokenBuffer<'src> {
@@ -20,21 +20,24 @@ impl<'src> TokenBuffer<'src> {
 
     #[inline(always)]
     pub fn eof(&mut self) -> bool {
-        matches!(self.peeked().0, Err(Eof))
+        matches!(self.peeked(), Err(Eof(_)))
     }
 
     /// Returns the location of the current token,
     /// or an empty-length location if in the Eof state.
     #[inline(always)]
     pub fn current_location(&mut self) -> Location {
-        self.peeked().1.clone()
+        match self.peeked() {
+            Ok((_, loc)) | Err(Eof(loc)) => loc.clone(),
+            Err(NotEof(err)) => err.location().clone(),
+        }
     }
 
     pub fn slice(&mut self) -> Option<&'src str> {
 
         let source = self.source();
 
-        let (Ok(_), loc) = self.peeked() else {
+        let Ok((_, loc)) = self.peeked() else {
             return None
         };
 
@@ -49,17 +52,20 @@ impl<'src> TokenBuffer<'src> {
 
     #[inline(always)]
     pub fn peek(&mut self) -> EofResult<TokenKind> {
-        self.peeked().0.clone()
+        match self.peeked() {
+            Ok((tok, _)) => Ok(*tok),
+            Err(err) => Err(err.clone()),
+        }
     }
 
     pub fn peek_with_slice(&mut self) -> EofResult<(TokenKind, &'src str)> {
         let source = self.lexer.source();
         match self.peeked() {
-            (Ok(tok), loc) => {
+            Ok((tok, loc)) => {
                 let slice = loc.slice(source);
                 Ok((*tok, slice))
             },
-            (Err(err), _) => Err(err.clone()),
+            Err(err) => Err(err.clone()),
         }
     }
 
@@ -69,13 +75,25 @@ impl<'src> TokenBuffer<'src> {
 
         // SAFETY: `fill_buf()` always adds 2 elements to `self.buf`,
         //         even when the lexer is in Eof
-        let (first, _) = self.buf.front().unwrap();
-        let (second, _) = self.buf.get(1).unwrap();
+        let first = self.buf.front()
+            .expect("first element missing: `fill_buf()` should have filled 2 elements into `self.buf`");
+        let second = self.buf.get(1)
+            .expect("second element missing: `fill_buf()` should have filled 2 elements into `self.buf`");
 
-        (first.clone(), second.clone())
+        let first = match first {
+            Ok((tok, _)) => Ok(*tok),
+            Err(err) => Err(err.clone()),
+        };
+
+        let second = match second {
+            Ok((tok, _)) => Ok(*tok),
+            Err(err) => Err(err.clone()),
+        };
+
+        (first, second)
     }
 
-    fn peeked(&mut self) -> &Located<EofResult<TokenKind>> {
+    fn peeked(&mut self) -> &EofResult<Located<TokenKind>> {
 
         self.fill_buf();
 
@@ -91,18 +109,14 @@ impl<'src> TokenBuffer<'src> {
         }
     }
 
-    fn lex_next(&mut self) -> Located<EofResult<TokenKind>> {
+    fn lex_next(&mut self) -> EofResult<Located<TokenKind>> {
 
         match self.lexer.next() {
-            Some(Ok((tok, loc))) => (Ok(tok), loc),
-            Some(Err(lex_err)) => {
-                let loc = lex_err.location().clone();
-                let err = lex_err.into();
-                (Err(NotEof(err)), loc)
-            },
+            Some(Ok(tok)) => Ok(tok),
+            Some(Err(lex_err)) => Err(NotEof(lex_err.into())),
             None => {
                 let loc = self.lexer.current_location();
-                (Err(Eof), loc)
+                Err(Eof(loc))
             },
         }
     }
@@ -149,13 +163,13 @@ impl<'src, TOut> SlicedTokenConsumer<'src, TOut, ConsumerResult<TOut>> for Token
     {
         let source = self.lexer.source();
         let tok = match self.peeked() {
-            (Ok(tok), loc) => (*tok, loc.slice(source), loc.clone()),
-            (Err(Eof), _) => return Err(ScanEof),
-            (Err(NotEof(err)), _) => return Err(ScanErr(err.clone())),
+            Ok((tok, loc)) => (*tok, loc.slice(source), loc.clone()),
+            Err(err) => return Err(err.clone().into()),
         };
 
+        let loc = tok.2.clone();
         let Some(result) = mapper(tok).map_err(ScanErr)? else {
-            return Err(NoMatch)
+            return Err(NoMatch(loc))
         };
 
         // The mapper matched the token.
@@ -220,7 +234,8 @@ impl TokenConsumer<TokenKind, bool> for TokenBuffer<'_> {
 mod tests {
     use super::*;
     use crate::lexer::IdentifierKind::Basic;
-    use crate::parser::error::syntax_err;
+    use crate::parser::result::ScanErrorKind;
+    use crate::parser::ParserError;
     use crate::parser::ParserErrorKind::Syntax;
     use postgres_basics::fn_info;
     use TokenKind::Identifier;
@@ -248,7 +263,7 @@ mod tests {
 
         buffer.next();
 
-        assert_matches!(buffer.peek(), Err(Eof));
+        assert_matches!(buffer.peek(), Err(Eof(_)));
         assert_eq!(Location::new(15..15, 1, 16), buffer.current_location());
     }
 
@@ -257,7 +272,7 @@ mod tests {
         let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
-        assert_eq!(Err(NoMatch), buffer.consume_eq(TokenKind::Comma));
+        assert_matches!(buffer.consume_eq(TokenKind::Comma), Err(NoMatch(_)));
 
         assert_eq!(
             Ok(Identifier(Basic)),
@@ -270,7 +285,10 @@ mod tests {
         let lexer = Lexer::new("two identifiers", true);
         let mut buffer =  TokenBuffer::new(lexer);
 
-        let actual: ScanResult<()> = buffer.consume(|_| Err(syntax_err!("")));
+        let actual: ScanResult<()> = buffer.consume(|_| {
+            let err = ParserError::syntax(fn_info!(""), Location::new(0..0, 0, 0));
+            Err(err)
+        });
 
         assert_matches!(actual, Err(ScanErr(_)));
         let ScanErr(actual) = actual.unwrap_err() else {
@@ -297,7 +315,7 @@ mod tests {
         let mut buffer =  TokenBuffer::new(lexer);
 
         let result: ScanResult<()> = buffer.consume(|_| None);
-        assert_eq!(Err(NoMatch), result);
+        assert_matches!(result, Err(NoMatch(_)));
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
     }
 
@@ -317,7 +335,7 @@ mod tests {
         let mut buffer =  TokenBuffer::new(lexer);
 
         let result: ScanResult<TokenKind> = buffer.consume(|_| false);
-        assert_eq!(Err(NoMatch), result);
+        assert_matches!(result, Err(NoMatch(_)));
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
     }
 
@@ -347,12 +365,12 @@ mod tests {
 
         buffer.next();
         let result = buffer.peek2();
-        assert_eq!((Ok(Identifier(Basic)), Err(Eof)), result);
+        assert_matches!(result, (Ok(Identifier(Basic)), Err(Eof(_))));
         assert_eq!(Location::new(18..23, 1, 19), buffer.current_location());
 
         buffer.next();
         let result = buffer.peek2();
-        assert_eq!((Err(Eof), Err(Eof)), result);
+        assert_matches!(result, (Err(Eof(_)), Err(Eof(_))));
         assert_eq!(Location::new(23..23, 1, 24), buffer.current_location());
     }
 }
@@ -364,7 +382,7 @@ use crate::{
         result::{
             EofErrorKind::{Eof, NotEof},
             EofResult,
-            ScanErrorKind::{Eof as ScanEof, NoMatch, ScanErr},
+            ScanErrorKind::{NoMatch, ScanErr},
             ScanResult,
         },
         ParseResult,

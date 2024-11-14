@@ -47,7 +47,11 @@ impl Parser<'_> {
                 Kw(Vacuum) => self.vacuum_stmt(),
             }
             Err {
-                Ok(_) | Err(EofErrorKind::Eof) => syntax_err!(FN_NAME),
+                Ok(_) => {
+                    let loc = self.buffer.current_location();
+                    syntax_err(fn_info!(FN_NAME), loc)
+                },
+                Err(Eof(loc)) => syntax_err(fn_info!(FN_NAME), loc),
                 Err(NotEof(err)) => err,
             }
         }
@@ -98,7 +102,7 @@ use crate::{
         ast_node::RawStmt::{self, ClosePortalStmt, DeallocateStmt, ListenStmt, LoadStmt, UnlistenStmt},
         consume_macro::consume,
         error::syntax_err,
-        result::EofErrorKind::{self, NotEof},
+        result::EofErrorKind::{Eof, NotEof},
         ParseResult,
         Parser
     }
