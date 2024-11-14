@@ -169,7 +169,7 @@ use crate::{
     lexer::StringKind::{self, *},
     parser::{
         result::{Optional, ScanErrorKind, ScanResult},
-        token_buffer::SlicedTokenConsumer,
+        token_stream::SlicedTokenConsumer,
         Parser,
         ParserError,
         ParserErrorKind::{ExtendedString, UnicodeString}

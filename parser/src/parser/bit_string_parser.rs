@@ -94,7 +94,7 @@ use crate::{
     parser::{
         result::ScanResult,
         string_parser::strip_delimiters,
-        token_buffer::SlicedTokenConsumer,
+        token_stream::SlicedTokenConsumer,
         Parser
     },
     string_decoders::BitStringDecoder,

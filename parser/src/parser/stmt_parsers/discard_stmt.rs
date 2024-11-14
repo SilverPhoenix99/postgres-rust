@@ -57,6 +57,6 @@ mod tests {
 use crate::lexer::Keyword::{All, Plans, Sequences, Temp, Temporary};
 use crate::parser::ast_node::DiscardStmt;
 use crate::parser::result::Required;
-use crate::parser::token_buffer::TokenConsumer;
+use crate::parser::token_stream::TokenConsumer;
 use crate::parser::{ParseResult, Parser};
 use postgres_basics::fn_info;

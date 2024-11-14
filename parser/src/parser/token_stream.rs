@@ -1,9 +1,9 @@
-pub(super) struct TokenBuffer<'src> {
+pub(super) struct TokenStream<'src> {
     lexer: Lexer<'src>,
     buf: VecDeque<EofResult<Located<RawTokenKind>>>,
 }
 
-impl<'src> TokenBuffer<'src> {
+impl<'src> TokenStream<'src> {
 
     #[inline(always)]
     pub fn new(lexer: Lexer<'src>) -> Self {
@@ -163,7 +163,7 @@ pub(super) trait TokenConsumer<TOut, FRes> {
 /// which is an internal error that's only returned by the `TokenBuffer` directly.
 pub(super) type ConsumerResult<T> = ParseResult<Option<T>>;
 
-impl<'src, TOut> SlicedTokenConsumer<'src, TOut, ConsumerResult<TOut>> for TokenBuffer<'src> {
+impl<'src, TOut> SlicedTokenConsumer<'src, TOut, ConsumerResult<TOut>> for TokenStream<'src> {
     fn consume_with_slice<F>(&mut self, mapper: F) -> ScanResult<TOut>
     where
         F: Fn(SlicedToken<'src>) -> ConsumerResult<TOut>
@@ -187,7 +187,7 @@ impl<'src, TOut> SlicedTokenConsumer<'src, TOut, ConsumerResult<TOut>> for Token
     }
 }
 
-impl<'src, TOut> SlicedTokenConsumer<'src, TOut, Option<TOut>> for TokenBuffer<'src> {
+impl<'src, TOut> SlicedTokenConsumer<'src, TOut, Option<TOut>> for TokenStream<'src> {
     #[inline(always)]
     fn consume_with_slice<F>(&mut self, mapper: F) -> ScanResult<TOut>
     where
@@ -197,7 +197,7 @@ impl<'src, TOut> SlicedTokenConsumer<'src, TOut, Option<TOut>> for TokenBuffer<'
     }
 }
 
-impl<'src> SlicedTokenConsumer<'src, SlicedToken<'src>, bool> for TokenBuffer<'src> {
+impl<'src> SlicedTokenConsumer<'src, SlicedToken<'src>, bool> for TokenStream<'src> {
     #[inline(always)]
     fn consume_with_slice<P>(&mut self, pred: P) -> ScanResult<SlicedToken<'src>>
     where
@@ -207,7 +207,7 @@ impl<'src> SlicedTokenConsumer<'src, SlicedToken<'src>, bool> for TokenBuffer<'s
     }
 }
 
-impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenBuffer<'_> {
+impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenStream<'_> {
     #[inline(always)]
     fn consume<F>(&mut self, mapper: F) -> ScanResult<TOut>
     where
@@ -217,7 +217,7 @@ impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenBuffer<'_> {
     }
 }
 
-impl<TOut> TokenConsumer<TOut, Option<TOut>> for TokenBuffer<'_> {
+impl<TOut> TokenConsumer<TOut, Option<TOut>> for TokenStream<'_> {
     #[inline(always)]
     fn consume<F>(&mut self, mapper: F) -> ScanResult<TOut>
     where
@@ -227,7 +227,7 @@ impl<TOut> TokenConsumer<TOut, Option<TOut>> for TokenBuffer<'_> {
     }
 }
 
-impl TokenConsumer<RawTokenKind, bool> for TokenBuffer<'_> {
+impl TokenConsumer<RawTokenKind, bool> for TokenStream<'_> {
     #[inline(always)]
     fn consume<P>(&mut self, pred: P) -> ScanResult<RawTokenKind>
     where
@@ -249,7 +249,7 @@ mod tests {
     #[test]
     fn test_eof() {
         let lexer = Lexer::new("", true);
-        let mut buffer =  TokenBuffer::new(lexer);
+        let mut buffer =  TokenStream::new(lexer);
 
         assert!(buffer.eof())
     }
@@ -257,7 +257,7 @@ mod tests {
     #[test]
     fn test_next_and_peek_and_current_location() {
         let lexer = Lexer::new("two identifiers", true);
-        let mut buffer =  TokenBuffer::new(lexer);
+        let mut buffer =  TokenStream::new(lexer);
 
         assert_matches!(buffer.peek(), Ok(_));
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
@@ -276,7 +276,7 @@ mod tests {
     #[test]
     fn test_consume_eq() {
         let lexer = Lexer::new("two identifiers", true);
-        let mut buffer =  TokenBuffer::new(lexer);
+        let mut buffer =  TokenStream::new(lexer);
 
         assert_matches!(buffer.consume_eq(RawTokenKind::Operator(OperatorKind::Comma)), Err(NoMatch(_)));
 
@@ -289,7 +289,7 @@ mod tests {
     #[test]
     fn test_consume_returning_err() {
         let lexer = Lexer::new("two identifiers", true);
-        let mut buffer =  TokenBuffer::new(lexer);
+        let mut buffer =  TokenStream::new(lexer);
 
         let actual: ScanResult<()> = buffer.consume(|_| {
             let err = ParserError::syntax(fn_info!(""), Location::new(0..0, 0, 0));
@@ -308,7 +308,7 @@ mod tests {
     #[test]
     fn test_consume_returning_ok() {
         let lexer = Lexer::new("two identifiers", true);
-        let mut buffer =  TokenBuffer::new(lexer);
+        let mut buffer =  TokenStream::new(lexer);
 
         let result = buffer.consume(|tok| Ok(Some(tok)));
         assert_eq!(Ok(Identifier(Basic)), result);
@@ -318,7 +318,7 @@ mod tests {
     #[test]
     fn test_consume_returning_none() {
         let lexer = Lexer::new("two identifiers", true);
-        let mut buffer =  TokenBuffer::new(lexer);
+        let mut buffer =  TokenStream::new(lexer);
 
         let result: ScanResult<()> = buffer.consume(|_| None);
         assert_matches!(result, Err(NoMatch(_)));
@@ -328,7 +328,7 @@ mod tests {
     #[test]
     fn test_consume_returning_some() {
         let lexer = Lexer::new("two identifiers", true);
-        let mut buffer =  TokenBuffer::new(lexer);
+        let mut buffer =  TokenStream::new(lexer);
 
         let result = buffer.consume(Some);
         assert_eq!(Ok(Identifier(Basic)), result);
@@ -338,7 +338,7 @@ mod tests {
     #[test]
     fn test_consume_returning_false() {
         let lexer = Lexer::new("two identifiers", true);
-        let mut buffer =  TokenBuffer::new(lexer);
+        let mut buffer =  TokenStream::new(lexer);
 
         let result: ScanResult<RawTokenKind> = buffer.consume(|_| false);
         assert_matches!(result, Err(NoMatch(_)));
@@ -348,7 +348,7 @@ mod tests {
     #[test]
     fn test_consume_returning_true() {
         let lexer = Lexer::new("two identifiers", true);
-        let mut buffer =  TokenBuffer::new(lexer);
+        let mut buffer =  TokenStream::new(lexer);
 
         let result = buffer.consume(|_| true);
         assert_eq!(Ok(Identifier(Basic)), result);
@@ -358,7 +358,7 @@ mod tests {
     #[test]
     fn test_peek2() {
         let lexer = Lexer::new("three identifiers innit", true);
-        let mut buffer =  TokenBuffer::new(lexer);
+        let mut buffer =  TokenStream::new(lexer);
 
         let result = buffer.peek2();
         assert_eq!((Ok(Identifier(Basic)), Ok(Identifier(Basic))), result);

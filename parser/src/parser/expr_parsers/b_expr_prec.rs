@@ -214,7 +214,7 @@ use crate::{
             ScanResult,
             ScanResultTrait
         },
-        token_buffer::TokenConsumer,
+        token_stream::TokenConsumer,
         Parser,
     }
 };
