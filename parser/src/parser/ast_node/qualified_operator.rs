@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct QualifiedOperator(pub Vec<CowStr>, pub Operator);
+pub struct QualifiedOperator(pub Vec<Str>, pub Operator);
 
 impl From<Operator> for QualifiedOperator {
     fn from(value: Operator) -> Self {
@@ -7,7 +7,5 @@ impl From<Operator> for QualifiedOperator {
     }
 }
 
-use crate::parser::{
-    ast_node::Operator,
-    CowStr
-};
+use crate::parser::ast_node::Operator;
+use postgres_basics::Str;

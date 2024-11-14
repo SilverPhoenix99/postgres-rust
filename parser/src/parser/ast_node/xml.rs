@@ -26,7 +26,7 @@ pub enum XmlStandalone {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct XmlElement {
-    name: CowStr,
+    name: Str,
     attributes: Vec<ExprNode>,
     args: Vec<ExprNode>,
 }
@@ -40,7 +40,7 @@ pub struct XmlParse {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct XmlProcessingInstruction {
-    name: CowStr,
+    name: Str,
     args: Option<ExprNode>,
 }
 
@@ -59,7 +59,5 @@ pub struct XmlSerialize {
     indent: bool,
 }
 
-use crate::parser::{
-    ast_node::{ExprNode, SystemType},
-    CowStr
-};
+use crate::parser::ast_node::{ExprNode, SystemType};
+use postgres_basics::Str;

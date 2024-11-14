@@ -21,7 +21,7 @@ impl Parser<'_> {
 
     /// Alias: `RoleId`
     #[inline]
-    pub(super) fn role_id(&mut self) -> ScanResult<CowStr> {
+    pub(super) fn role_id(&mut self) -> ScanResult<Str> {
 
         // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
@@ -47,7 +47,7 @@ impl Parser<'_> {
         */
 
         if let Some(ident) = self.identifier().no_match_to_option()? {
-            return if ident == "public" {
+            return if ident.as_ref() == "public" {
                 Ok(RoleSpec::Public)
             }
             else {
@@ -176,10 +176,9 @@ use crate::{
             ScanResult,
             ScanResultTrait,
         },
-        CowStr,
         Parser,
         ParserError,
         ParserErrorKind::ReservedRoleSpec
     },
 };
-use postgres_basics::fn_info;
+use postgres_basics::{fn_info, Str};

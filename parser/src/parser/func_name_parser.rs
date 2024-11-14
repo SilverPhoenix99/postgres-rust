@@ -13,7 +13,7 @@ impl Parser<'_> {
             matches!(kw.details().category(), Unreserved | ColumnName | TypeFuncName)
         ).no_match_to_option()?;
 
-        let (ident, required_indirection): (CowStr, bool) = if let Some(kw) = kw {
+        let (ident, required_indirection): (Str, bool) = if let Some(kw) = kw {
             let name = kw.details().text().into();
             match kw.details().category() {
                 TypeFuncName => return Ok(vec![name]),
@@ -73,14 +73,13 @@ mod tests {
     }
 }
 
-use crate::parser::error::syntax_err;
-use crate::parser::QualifiedName;
 use crate::{
     lexer::KeywordCategory::{ColumnName, Reserved, TypeFuncName, Unreserved},
     parser::{
+        error::syntax_err,
         result::{ScanResult, ScanResultTrait},
-        CowStr,
         Parser,
-    }
+        QualifiedName
+    },
 };
-use postgres_basics::fn_info;
+use postgres_basics::{fn_info, Str};

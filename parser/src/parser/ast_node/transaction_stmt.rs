@@ -1,5 +1,3 @@
-use crate::parser::ast_node::CowStr;
-
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum IsolationLevel {
     ReadUncommitted,
@@ -23,11 +21,13 @@ pub enum TransactionStmt {
     /// Semantically identical to `BEGIN`.
     Start(Vec<TransactionMode>),
     Commit { chain: bool },
-    CommitPrepared(String),
-    Savepoint(CowStr),
-    Release(CowStr),
-    Prepare(String),
+    CommitPrepared(Box<str>),
+    Savepoint(Str),
+    Release(Str),
+    Prepare(Box<str>),
     Rollback { chain: bool },
-    RollbackTo(CowStr),
-    RollbackPrepared(String),
+    RollbackTo(Str),
+    RollbackPrepared(Box<str>),
 }
+
+use postgres_basics::Str;

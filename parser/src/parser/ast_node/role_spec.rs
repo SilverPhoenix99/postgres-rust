@@ -4,11 +4,11 @@ pub enum RoleSpec {
     CurrentRole,
     CurrentUser,
     SessionUser,
-    Name(CowStr),
+    Name(Str),
 }
 
 impl RoleSpec {
-    pub(in crate::parser) fn into_role_id(self, location: Location) -> ParseResult<CowStr> {
+    pub(in crate::parser) fn into_role_id(self, location: Location) -> ParseResult<Str> {
         const FN_NAME: &str = "postgres_parser::parser::ast_node::RoleSpec::into_role_id";
 
         let err = match self {
@@ -24,9 +24,8 @@ impl RoleSpec {
 }
 
 use crate::parser::{
-    ast_node::CowStr,
     ParseResult,
     ParserError,
     ParserErrorKind::{ForbiddenRoleSpec, ReservedRoleSpec}
 };
-use postgres_basics::{fn_info, Location};
+use postgres_basics::{fn_info, Location, Str};

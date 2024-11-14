@@ -4,7 +4,7 @@ pub(super) struct StringParser<'p, 'src>(
 
 impl<'p, 'src> StringParser<'p, 'src> {
 
-    pub fn parse(&mut self) -> ScanResult<String> {
+    pub fn parse(&mut self) -> ScanResult<Box<str>> {
 
         let (kind, slice, loc) = self.try_consume(false)?;
 
@@ -12,7 +12,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
 
         if kind == Dollar {
             // Not concatenable, and no escapes to deal with.
-            return Ok(string);
+            return Ok(string.into_boxed_str());
         }
 
         let mut end_index = loc.range().end;
@@ -42,7 +42,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
         )
     }
 
-    fn decode_string(&mut self, kind: StringKind, slice: &str, loc: Location) -> ScanResult<String> {
+    fn decode_string(&mut self, kind: StringKind, slice: &str, loc: Location) -> ScanResult<Box<str>> {
         const FN_NAME: &str = "postgres_parser::parser::string_parser::StringParser::decode_string";
 
         let result = match kind {

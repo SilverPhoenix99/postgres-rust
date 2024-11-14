@@ -8,18 +8,18 @@ pub enum EventTriggerState {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct AlterEventTrigStmt {
-    trigger: CowStr,
+    trigger: Str,
     state: EventTriggerState,
 }
 
 impl AlterEventTrigStmt {
     #[inline(always)]
-    pub fn new(trigger: CowStr, state: EventTriggerState) -> Self {
+    pub fn new(trigger: Str, state: EventTriggerState) -> Self {
         Self { trigger, state }
     }
 
     #[inline(always)]
-    pub fn trigger(&self) -> &CowStr {
+    pub fn trigger(&self) -> &Str {
         &self.trigger
     }
 
@@ -29,4 +29,4 @@ impl AlterEventTrigStmt {
     }
 }
 
-use crate::parser::ast_node::CowStr;
+use postgres_basics::Str;

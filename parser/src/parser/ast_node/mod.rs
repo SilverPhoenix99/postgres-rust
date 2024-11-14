@@ -97,7 +97,7 @@ macro_rules! impl_from {
 }
 
 pub type BinaryOperands = Box<(ExprNode, ExprNode)>;
-pub(super) type QualifiedName = Vec<CowStr>;
+pub(super) type QualifiedName = Vec<Str>;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct AggregateWithArgtypes {
@@ -122,33 +122,33 @@ pub struct RelationExpr {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum UnsignedNumber {
     IntegerConst(NonNegative),
-    NumericConst { radix: u32, value: String },
+    NumericConst { value: Box<str>, radix: u32 },
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum SignedNumber {
     IntegerConst(i32),
-    NumericConst { value: String, radix: u32, negative: bool },
+    NumericConst { value: Box<str>, radix: u32, negative: bool },
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum AclOption {
-    Schemas(Vec<CowStr>),
+    Schemas(Vec<Str>),
     Roles(Vec<RoleSpec>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SpecificAccessPrivilege {
     AlterSystem,
-    Create(Option<Vec<CowStr>>),
-    References(Option<Vec<CowStr>>),
-    Select(Option<Vec<CowStr>>),
-    Named(CowStr, Option<Vec<CowStr>>),
+    Create(Option<Vec<Str>>),
+    References(Option<Vec<Str>>),
+    Select(Option<Vec<Str>>),
+    Named(Str, Option<Vec<Str>>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum AccessPrivilege {
-    All(Option<Vec<CowStr>>),
+    All(Option<Vec<Str>>),
     Specific(Vec<SpecificAccessPrivilege>),
 }
 
@@ -165,11 +165,11 @@ pub enum AclTarget {
 pub enum ExprNode {
     /* Constants */
     NullConst,
-    StringConst(String),
-    BinaryStringConst(String),
-    HexStringConst(String),
+    StringConst(Box<str>),
+    BinaryStringConst(Box<str>),
+    HexStringConst(Box<str>),
     IntegerConst(i32),
-    NumericConst { radix: u32, value: String },
+    NumericConst { radix: u32, value: Box<str> },
     BooleanConst(bool),
 
     SetToDefault,
@@ -317,6 +317,5 @@ impl ExprNode {
     }
 }
 
-use crate::parser::CowStr;
 use impl_from;
-use postgres_basics::NonNegative;
+use postgres_basics::{NonNegative, Str};

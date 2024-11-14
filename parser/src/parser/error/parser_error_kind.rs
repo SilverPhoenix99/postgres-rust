@@ -41,7 +41,7 @@ pub enum ParserErrorKind {
 
     /// When an identifier is used as an unrecognized role option
     #[error(r#"unrecognized role option "{0}""#)]
-    UnrecognizedRoleOption(String),
+    UnrecognizedRoleOption(Box<str>),
 
     /// When "UNENCRYPTED PASSWORD" is used as a role option
     #[error("UNENCRYPTED PASSWORD is no longer supported")]
@@ -56,7 +56,18 @@ pub struct NameList(pub QualifiedName);
 
 impl Display for NameList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.0.join("."))
+
+        if self.0.is_empty() {
+            return f.write_str("")
+        }
+
+        let name = self.0
+            .iter()
+            .fold(String::new(), |acc, s| acc + "." + s.as_ref());
+
+        let name = &name[1..];
+
+        f.write_str(&name)
     }
 }
 
@@ -136,11 +147,13 @@ impl ErrorReport for ParserErrorKind {
     }
 }
 
-use crate::lexer::LexerErrorKind;
-use crate::parser::QualifiedName;
-use crate::string_decoders::{
-    ExtendedStringError,
-    UnicodeStringError,
+use crate::{
+    lexer::LexerErrorKind,
+    parser::QualifiedName,
+    string_decoders::{
+        ExtendedStringError,
+        UnicodeStringError,
+    }
 };
 use postgres_basics::{
     elog::{ErrorReport, HasSqlState},
@@ -150,7 +163,7 @@ use postgres_basics::{
         InvalidParameterValue,
         ReservedName,
         SyntaxError,
-    },
+    }
 };
 use std::borrow::Cow;
 use std::fmt::{Display, Formatter};

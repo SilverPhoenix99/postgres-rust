@@ -5,7 +5,7 @@ pub enum VariableShowStmt {
     TransactionIsolation,
     TimeZone,
     // Name, possibly qualified, separated by dots
-    Name(Vec<CowStr>),
+    Name(Vec<Str>),
 }
 
-use super::CowStr;
+use postgres_basics::Str;

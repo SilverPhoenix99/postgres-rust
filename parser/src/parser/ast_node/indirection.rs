@@ -3,7 +3,7 @@ pub enum Indirection {
     /// `.*`
     All,
     /// `.ColLabel`
-    Property(CowStr),
+    Property(Str),
     /// `[expr]`
     Index(ExprNode),
     /// `[:]`
@@ -16,7 +16,5 @@ pub enum Indirection {
     Slice(ExprNode, ExprNode),
 }
 
-use crate::parser::{
-    ast_node::ExprNode,
-    CowStr
-};
+use crate::parser::ast_node::ExprNode;
+use postgres_basics::Str;

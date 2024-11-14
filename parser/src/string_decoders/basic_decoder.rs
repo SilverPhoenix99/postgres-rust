@@ -10,7 +10,7 @@ impl<'src> BasicStringDecoder<'src> {
         BasicStringDecoder { source, is_ident }
     }
 
-    pub fn decode(&self) -> String {
+    pub fn decode(&self) -> Box<str> {
 
         let (quote, escape) = if self.is_ident {
             (r#"""#, r#""""#)
@@ -20,6 +20,7 @@ impl<'src> BasicStringDecoder<'src> {
         };
 
         self.source.replace(escape, quote)
+            .into_boxed_str()
     }
 }
 
@@ -31,6 +32,6 @@ mod tests {
     fn test_basic_string() {
         let src = "don''t do what Donny Dont does";
         let decoder = BasicStringDecoder::new(src, false);
-        assert_eq!("don't do what Donny Dont does", decoder.decode())
+        assert_eq!("don't do what Donny Dont does", decoder.decode().as_ref())
     }
 }

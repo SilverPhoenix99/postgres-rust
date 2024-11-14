@@ -1,12 +1,12 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct RenameStmt {
     target: RenameTarget,
-    new_name: CowStr,
+    new_name: Str,
 }
 
 impl RenameStmt {
     #[inline(always)]
-    pub fn new(target: RenameTarget, new_name: CowStr) -> Self {
+    pub fn new(target: RenameTarget, new_name: Str) -> Self {
         Self { target, new_name }
     }
 
@@ -14,7 +14,7 @@ impl RenameStmt {
         &self.target
     }
 
-    pub fn new_name(&self) -> &CowStr {
+    pub fn new_name(&self) -> &Str {
         &self.new_name
     }
 }
@@ -24,50 +24,48 @@ pub enum RenameTarget {
     Aggregate(AggregateWithArgtypes),
     Collation(QualifiedName),
     Conversion(QualifiedName),
-    Database(CowStr),
+    Database(Str),
     Domain(QualifiedName),
-    DomainConstraint { domain: QualifiedName, constraint: CowStr },
-    EventTrigger(CowStr),
-    ForeignDataWrapper(CowStr),
-    ForeignServer(CowStr),
+    DomainConstraint { domain: QualifiedName, constraint: Str },
+    EventTrigger(Str),
+    ForeignDataWrapper(Str),
+    ForeignServer(Str),
     ForeignTable { target: RelationExpr, missing_ok: bool },
-    ForeignTableColumn { table: RelationExpr, column: CowStr, missing_ok: bool },
+    ForeignTableColumn { table: RelationExpr, column: Str, missing_ok: bool },
     Function(FunctionWithArgtypes),
     Index { target: QualifiedName, missing_ok: bool },
-    Language(CowStr),
+    Language(Str),
     MaterializedView { target: QualifiedName, missing_ok: bool },
     MaterializedViewColumn { view: QualifiedName, column: QualifiedName, missing_ok: bool },
     OperatorClass(QualifiedName),
     OperatorFamily(QualifiedName),
-    Policy { table: QualifiedName, policy: CowStr, missing_ok: bool },
+    Policy { table: QualifiedName, policy: Str, missing_ok: bool },
     Procedure(FunctionWithArgtypes),
-    Publication(CowStr),
+    Publication(Str),
     /// Aliases:
     /// * `Group`
     /// * `User`
-    Role(CowStr),
+    Role(Str),
     Routine(FunctionWithArgtypes),
-    Rule { relation: QualifiedName, rule: CowStr },
-    Schema(CowStr),
+    Rule { relation: QualifiedName, rule: Str },
+    Schema(Str),
     Sequence { target: QualifiedName, missing_ok: bool },
     Statistic(QualifiedName),
-    Subscription(CowStr),
+    Subscription(Str),
     Table { target: RelationExpr, missing_ok: bool },
-    TableColumn { table: RelationExpr, column: CowStr, missing_ok: bool },
-    TableConstraint { table: RelationExpr, constraint: CowStr, missing_ok: bool },
-    Tablespace(CowStr),
+    TableColumn { table: RelationExpr, column: Str, missing_ok: bool },
+    TableConstraint { table: RelationExpr, constraint: Str, missing_ok: bool },
+    Tablespace(Str),
     TextSearchConfiguration(QualifiedName),
     TextSearchDictionary(QualifiedName),
     TextSearchParser(QualifiedName),
     TextSearchTemplate(QualifiedName),
-    Trigger { table: QualifiedName, trigger: CowStr },
+    Trigger { table: QualifiedName, trigger: Str },
     Type(QualifiedName),
-    TypeAttribute { typ: QualifiedName, attribute: CowStr },
+    TypeAttribute { typ: QualifiedName, attribute: Str },
     View { target: QualifiedName, missing_ok: bool },
-    ViewColumn { view: QualifiedName, column: CowStr, missing_ok: bool },
+    ViewColumn { view: QualifiedName, column: Str, missing_ok: bool },
 }
 
-use crate::parser::{
-    ast_node::{AggregateWithArgtypes, FunctionWithArgtypes, QualifiedName, RelationExpr},
-    CowStr
-};
+use crate::parser::ast_node::{AggregateWithArgtypes, FunctionWithArgtypes, QualifiedName, RelationExpr};
+use postgres_basics::Str;

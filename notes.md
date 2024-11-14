@@ -5,8 +5,6 @@
   * `backend/utils/mb/stringinfo_mb.c` / `include/mb/stringinfo_mb.h`
 
 # TO DO
-* Replace `String` with `Box<str>` in enums and structs.
-* Replace `CowStr` with `Str` (enum with either `&'static str` or `Box<str>`).
 * Wrap `ParserWarningKind` in a `LocatedErrorReport`.
 * Merge `Parser.move_stmt` into `Parser.fetch_stmt`
 * Test `NumericSpec`.

@@ -66,7 +66,7 @@ impl<'src> Parser<'src> {
                 Kw(Like) if kind.intersects(OperatorKind::Like) => Ok(Operator::Like.into()),
                 Kw(Ilike) if kind.intersects(OperatorKind::Like) => Ok(ILike.into()),
                 UserDefinedOperator if kind.intersects(OperatorKind::UserDefined) => {
-                    let op = slice.expect("slice is valid due to previous match").to_owned();
+                    let op = slice.expect("slice is valid due to previous match").into();
                     Ok(UserDefined(op).into())
                 },
                 Kw(OperatorKw) if kind.intersects(OperatorKind::Explicit) => {

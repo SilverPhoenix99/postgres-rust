@@ -1,13 +1,13 @@
 #[derive(Debug, Clone, PartialEq)]
 pub struct RangeVar {
-    catalog: Option<CowStr>,
-    schema: Option<CowStr>,
-    relation: CowStr,
+    catalog: Option<Str>,
+    schema: Option<Str>,
+    relation: Str,
     persistence: RelationPersistence,
 }
 
 impl RangeVar {
-    pub fn new(relation: CowStr) -> Self {
+    pub fn new(relation: Str) -> Self {
         Self {
             catalog: None,
             schema: None,
@@ -16,12 +16,12 @@ impl RangeVar {
         }
     }
 
-    pub fn with_schema(mut self, schema: CowStr) -> Self {
+    pub fn with_schema(mut self, schema: Str) -> Self {
         self.schema = Some(schema);
         self
     }
 
-    pub fn with_catalog(mut self, catalog: CowStr) -> Self {
+    pub fn with_catalog(mut self, catalog: Str) -> Self {
         self.catalog = Some(catalog);
         self
     }
@@ -31,15 +31,15 @@ impl RangeVar {
         self
     }
 
-    pub fn relation(&self) -> &CowStr {
+    pub fn relation(&self) -> &Str {
         &self.relation
     }
 
-    pub fn catalog(&self) -> &Option<CowStr> {
+    pub fn catalog(&self) -> &Option<Str> {
         &self.catalog
     }
 
-    pub fn schema(&self) -> &Option<CowStr> {
+    pub fn schema(&self) -> &Option<Str> {
         &self.schema
     }
 
@@ -59,4 +59,4 @@ pub enum RelationPersistence {
     Temp      = b't',
 }
 
-use crate::parser::CowStr;
+use postgres_basics::Str;
