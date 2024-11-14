@@ -56,7 +56,7 @@ mod tests {
 use crate::{
     lexer::{
         Keyword::{Collation, Conversion, DefaultKw, Event, Group, Language, Large, Privileges, Procedural},
-        TokenKind::Keyword as Kw,
+        RawTokenKind::Keyword as Kw,
     },
     parser::{
         ast_node::RawStmt,

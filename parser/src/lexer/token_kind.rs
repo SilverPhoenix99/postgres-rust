@@ -55,7 +55,7 @@ pub enum BitStringKind {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum TokenKind {
+pub(in crate) enum RawTokenKind {
     /// `(`
     OpenParenthesis,
     /// `)`
@@ -113,12 +113,12 @@ pub enum TokenKind {
     BitStringLiteral(BitStringKind),
 }
 
-impl TokenKind {
+impl RawTokenKind {
 
     #[inline(always)]
     pub fn identifier_kind(&self) -> Option<IdentifierKind> {
         match self {
-            TokenKind::Identifier(kind) => Some(*kind),
+            RawTokenKind::Identifier(kind) => Some(*kind),
             _ => None
         }
     }
@@ -126,7 +126,7 @@ impl TokenKind {
     #[inline(always)]
     pub fn string_kind(&self) -> Option<StringKind> {
         match self {
-            TokenKind::StringLiteral(kind) => Some(*kind),
+            RawTokenKind::StringLiteral(kind) => Some(*kind),
             _ => None
         }
     }
@@ -134,7 +134,7 @@ impl TokenKind {
     #[inline(always)]
     pub fn bit_string_kind(&self) -> Option<BitStringKind> {
         match self {
-            TokenKind::BitStringLiteral(kind) => Some(*kind),
+            RawTokenKind::BitStringLiteral(kind) => Some(*kind),
             _ => None
         }
     }
@@ -167,7 +167,7 @@ impl TokenKind {
     #[inline(always)]
     pub fn keyword(&self) -> Option<Keyword> {
         match self {
-            TokenKind::Keyword(kw) => Some(*kw),
+            RawTokenKind::Keyword(kw) => Some(*kw),
             _ => None
         }
     }
@@ -177,7 +177,7 @@ impl TokenKind {
 mod tests {
     use super::*;
     use BitStringKind::*;
-    use TokenKind::*;
+    use RawTokenKind::*;
 
     #[test]
     fn test_identifier_kind() {

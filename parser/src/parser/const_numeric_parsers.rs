@@ -2,7 +2,7 @@ impl Parser<'_> {
 
     /// Alias: `NumericOnly`
     pub(in crate::parser) fn signed_number(&mut self) -> ScanResult<SignedNumber> {
-        use TokenKind::{Minus, Plus};
+        use RawTokenKind::{Minus, Plus};
         const FN_NAME: &str = "postgres_parser::parser::Parser::signed_number";
 
         // ('+' | '-')? (ICONST | FCONST)
@@ -60,7 +60,7 @@ impl Parser<'_> {
 
     /// Alias: `SignedIconst`
     pub(in crate::parser) fn signed_i32_literal(&mut self) -> ScanResult<i32> {
-        use TokenKind::{Minus, Plus};
+        use RawTokenKind::{Minus, Plus};
         const FN_NAME: &str = "postgres_parser::parser::Parser::signed_i32_literal";
 
         // ('+' | '-')? ICONST
@@ -140,7 +140,7 @@ mod tests {
 }
 
 use crate::{
-    lexer::TokenKind::{self, NumberLiteral},
+    lexer::RawTokenKind::{self, NumberLiteral},
     parser::{
         ast_node::{SignedNumber, UnsignedNumber},
         result::{Required, ScanResult, ScanResultTrait},
@@ -149,4 +149,3 @@ use crate::{
     }
 };
 use postgres_basics::fn_info;
-

@@ -36,7 +36,7 @@ mod tests {
 }
 
 use crate::{
-    lexer::TokenKind::Mul,
+    lexer::RawTokenKind::Mul,
     parser::{
         ast_node::OneOrAll,
         result::{Optional, Required},

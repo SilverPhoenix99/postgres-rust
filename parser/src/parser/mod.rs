@@ -33,7 +33,7 @@ type CowStr = Cow<'static, str>;
 pub(crate) type ParseResult<T> = Result<T, ParserError>;
 
 pub struct ParserResult {
-    pub result: Result<Vec<RawStmt>, ParserError>,
+    pub result: ParseResult<Vec<RawStmt>>,
     pub warnings: Vec<Located<ParserWarningKind>>,
 }
 
@@ -48,11 +48,6 @@ impl<'src> Parser<'src> {
 
     pub fn new(source: &'src str, config: ParserConfig) -> Self {
         let lexer = Lexer::new(source, config.standard_conforming_strings());
-        Self::with_lexer(lexer, config)
-    }
-
-    #[inline(always)]
-    pub fn with_lexer(lexer: Lexer<'src>, config: ParserConfig) -> Self {
         Self {
             buffer: TokenBuffer::new(lexer),
             config,
@@ -107,7 +102,7 @@ impl<'src> Parser<'src> {
 
     /// Returns `true` if it consumed at least 1 `;` (semicolon)
     fn semicolons(&mut self) -> ParseResult<bool> {
-        use TokenKind::Semicolon;
+        use RawTokenKind::Semicolon;
 
         // Production: (';')*
 
@@ -326,7 +321,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Post-condition: Vec is **Not** empty
-    fn col_id_list(&mut self, separator: TokenKind) -> ScanResult<QualifiedName> {
+    fn col_id_list(&mut self, separator: RawTokenKind) -> ScanResult<QualifiedName> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::col_id_list";
 
         /*
@@ -581,7 +576,7 @@ impl<'src> Parser<'src> {
 
         let uescape = self.buffer.consume_with_slice(|(tok, slice, loc)| {
             
-            let TokenKind::StringLiteral(_) = tok else {
+            let RawTokenKind::StringLiteral(_) = tok else {
                 return Err(
                     ParserError::new(UescapeDelimiterMissing, fn_info!(FN_NAME), loc)
                 )
@@ -943,7 +938,7 @@ use crate::lexer::{
     Keyword,
     KeywordCategory::*,
     Lexer,
-    TokenKind::{self, CloseParenthesis, Comma, Dot, OpenParenthesis}
+    RawTokenKind::{self, CloseParenthesis, Comma, Dot, OpenParenthesis}
 };
 use postgres_basics::{fn_info, Located};
 use std::{borrow::Cow, mem};

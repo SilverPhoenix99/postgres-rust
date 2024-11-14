@@ -1,4 +1,4 @@
-use crate::lexer::TokenKind::Dot;
+use crate::lexer::RawTokenKind::Dot;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 enum TypeNameKind {
@@ -699,7 +699,7 @@ use crate::{
             Zone,
         },
         KeywordCategory::{ColumnName, TypeFuncName, Unreserved},
-        TokenKind::{CloseBracket, Keyword as Kw, OpenBracket}
+        RawTokenKind::{CloseBracket, Keyword as Kw, OpenBracket}
     },
     parser::{
         ast_node::{

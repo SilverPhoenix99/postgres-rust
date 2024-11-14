@@ -41,7 +41,7 @@ mod tests {
     }
 }
 
-use crate::lexer::TokenKind::Comma;
+use crate::lexer::RawTokenKind::Comma;
 use crate::parser::ast_node::NotifyStmt;
 use crate::parser::result::{Optional, Required};
 use crate::parser::{ParseResult, Parser};

@@ -136,7 +136,7 @@ mod tests {
 use crate::{
     lexer::{
         Keyword::{By, Cascade, Grant, Granted, Group, OptionKw, Restrict, With},
-        TokenKind::Comma
+        RawTokenKind::Comma
     },
     parser::{
         ast_node::{DropBehavior, RoleSpec},

@@ -299,7 +299,7 @@ use crate::{
             Types,
             User,
         },
-        TokenKind::Keyword as Kw
+        RawTokenKind::Keyword as Kw
     },
     parser::{
         ast_node::{AclOption, AclTarget, AlterDefaultPrivilegesStmt, GrantStmt},

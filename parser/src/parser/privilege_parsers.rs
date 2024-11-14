@@ -197,7 +197,7 @@ use crate::{
             Select as SelectKw,
             SystemKw
         },
-        TokenKind::{Comma, Keyword as Kw}
+        RawTokenKind::{Comma, Keyword as Kw}
     },
     parser::{
         ast_node::{

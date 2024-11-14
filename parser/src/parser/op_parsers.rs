@@ -45,7 +45,7 @@ impl<'src> Parser<'src> {
     }
 
     pub(super) fn operator(&mut self, kind: OperatorKind) -> ScanResult<QualifiedOperator> {
-        use TokenKind::{Equals, Greater, GreaterEquals, Keyword as Kw, Less, LessEquals, NotEquals};
+        use RawTokenKind::{Equals, Greater, GreaterEquals, Keyword as Kw, Less, LessEquals, NotEquals};
         use crate::lexer::Keyword::{Ilike, Like, Operator as OperatorKw};
 
         const FN_NAME: &str = "postgres_parser::parser::Parser::operator";
@@ -219,7 +219,7 @@ mod tests {
 }
 
 use crate::{
-    lexer::TokenKind::{
+    lexer::RawTokenKind::{
         self,
         Circumflex,
         CloseParenthesis,

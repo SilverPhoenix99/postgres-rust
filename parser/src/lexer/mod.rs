@@ -2,17 +2,18 @@ mod error;
 mod keyword;
 mod token_kind;
 
-pub use self::{
-    error::{LexerError, LexerErrorKind},
-    keyword::{Keyword, KeywordCategory, KeywordDetails},
-    token_kind::{BitStringKind, IdentifierKind, StringKind, TokenKind},
+pub use self::error::LexerErrorKind;
+pub(crate) use self::{
+    error::LexerError,
+    keyword::{Keyword, KeywordCategory},
+    token_kind::{BitStringKind, IdentifierKind, RawTokenKind, StringKind},
 };
 
-pub type LexerResult = Result<Located<TokenKind>, LexerError>;
-type LexResult<T = TokenKind> = Result<T, (LexerErrorKind, &'static FnInfo)>;
+pub(crate) type LexerResult = Result<Located<RawTokenKind>, LexerError>;
+type LexResult<T = RawTokenKind> = Result<T, (LexerErrorKind, &'static FnInfo)>;
 
 #[derive(Debug)]
-pub struct Lexer<'src> {
+pub(crate) struct Lexer<'src> {
     standard_conforming_strings: bool,
     buffer: CharBuffer<'src>,
     peeked: Option<Option<LexerResult>>,
@@ -737,6 +738,7 @@ impl<'src> Lexer<'src> {
 mod tests {
     use super::*;
     use crate::error::HasLocation;
+    use crate::lexer::token_kind::RawTokenKind;
     use crate::lexer::Keyword::{FromKw, Not, Select, StringKw};
     use std::ops::Range;
 
@@ -1039,7 +1041,7 @@ mod tests {
     }
 
     fn assert_tok(
-        expected_kind: TokenKind,
+        expected_kind: RawTokenKind,
         range: Range<u32>,
         line: u32,
         col: u32,
@@ -1079,7 +1081,7 @@ mod tests {
 
 use self::{
     error::LexerErrorKind::*,
-    token_kind::{BitStringKind::*, IdentifierKind::*, StringKind::*, TokenKind::*},
+    token_kind::{BitStringKind::*, IdentifierKind::*, RawTokenKind::*, StringKind::*},
     Keyword::Nchar
 };
 use postgres_basics::{

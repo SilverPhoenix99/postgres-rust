@@ -94,7 +94,7 @@ use crate::{
     lexer::{
         BitStringKind::*,
         Keyword::{False, Null, True},
-        TokenKind::Keyword as Kw
+        RawTokenKind::Keyword as Kw
     },
     parser::{
         ast_node::{
