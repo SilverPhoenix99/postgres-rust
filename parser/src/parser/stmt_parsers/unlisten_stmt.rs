@@ -8,7 +8,7 @@ impl Parser<'_> {
             UNLISTEN ColId
         */
 
-        if self.buffer.consume_eq(Mul).optional()?.is_some() {
+        if self.buffer.consume_op(Mul).optional()?.is_some() {
             return Ok(OneOrAll::All)
         }
 
@@ -36,7 +36,7 @@ mod tests {
 }
 
 use crate::{
-    lexer::RawTokenKind::Mul,
+    lexer::OperatorKind::Mul,
     parser::{
         ast_node::OneOrAll,
         result::{Optional, Required},

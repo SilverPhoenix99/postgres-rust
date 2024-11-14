@@ -1,5 +1,5 @@
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum IdentifierKind {
+pub(crate) enum IdentifierKind {
 
     /// E.g.: `ident`
     Basic,
@@ -12,7 +12,7 @@ pub enum IdentifierKind {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum StringKind {
+pub(crate) enum StringKind {
 
     /// E.g.: `'str'`
     Basic {
@@ -46,7 +46,7 @@ pub enum StringKind {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum BitStringKind {
+pub(crate) enum BitStringKind {
     /// E.g.: `b'010'`
     Binary,
 
@@ -55,7 +55,7 @@ pub enum BitStringKind {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub(in crate) enum RawTokenKind {
+pub(crate) enum OperatorKind {
     /// `(`
     OpenParenthesis,
     /// `)`
@@ -104,6 +104,11 @@ pub(in crate) enum RawTokenKind {
     GreaterEquals,
     /// `<>` or `!=`
     NotEquals,
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub(in crate) enum RawTokenKind {
+    Operator(OperatorKind),
     UserDefinedOperator,
     Param { index: i32 },
     Identifier(IdentifierKind),
@@ -116,7 +121,15 @@ pub(in crate) enum RawTokenKind {
 impl RawTokenKind {
 
     #[inline(always)]
-    pub fn identifier_kind(&self) -> Option<IdentifierKind> {
+    pub fn operator(&self) -> Option<OperatorKind> {
+        match self {
+            RawTokenKind::Operator(kind) => Some(*kind),
+            _ => None
+        }
+    }
+    
+    #[inline(always)]
+    pub fn identifier(&self) -> Option<IdentifierKind> {
         match self {
             RawTokenKind::Identifier(kind) => Some(*kind),
             _ => None
@@ -124,7 +137,7 @@ impl RawTokenKind {
     }
 
     #[inline(always)]
-    pub fn string_kind(&self) -> Option<StringKind> {
+    pub fn string(&self) -> Option<StringKind> {
         match self {
             RawTokenKind::StringLiteral(kind) => Some(*kind),
             _ => None
@@ -132,7 +145,7 @@ impl RawTokenKind {
     }
 
     #[inline(always)]
-    pub fn bit_string_kind(&self) -> Option<BitStringKind> {
+    pub fn bit_string(&self) -> Option<BitStringKind> {
         match self {
             RawTokenKind::BitStringLiteral(kind) => Some(*kind),
             _ => None
@@ -177,24 +190,31 @@ impl RawTokenKind {
 mod tests {
     use super::*;
     use BitStringKind::*;
+    use OperatorKind::{CloseParenthesis, Semicolon};
     use RawTokenKind::*;
 
     #[test]
+    fn test_operator_kind() {
+        assert_eq!(None, Identifier(IdentifierKind::Basic).operator());
+        assert_eq!(Some(CloseParenthesis), Operator(CloseParenthesis).operator())
+    }
+
+    #[test]
     fn test_identifier_kind() {
-        assert_eq!(Some(IdentifierKind::Basic), Identifier(IdentifierKind::Basic).identifier_kind());
-        assert_eq!(None, CloseParenthesis.identifier_kind())
+        assert_eq!(Some(IdentifierKind::Basic), Identifier(IdentifierKind::Basic).identifier());
+        assert_eq!(None, Operator(CloseParenthesis).identifier())
     }
 
     #[test]
     fn test_string_kind() {
-        assert_eq!(Some(StringKind::Unicode), StringLiteral(StringKind::Unicode).string_kind());
-        assert_eq!(None, CloseParenthesis.string_kind())
+        assert_eq!(Some(StringKind::Unicode), StringLiteral(StringKind::Unicode).string());
+        assert_eq!(None, Operator(CloseParenthesis).string())
     }
 
     #[test]
     fn test_bit_string_kind() {
-        assert_eq!(Some(Hex), BitStringLiteral(Hex).bit_string_kind());
-        assert_eq!(None, CloseParenthesis.bit_string_kind())
+        assert_eq!(Some(Hex), BitStringLiteral(Hex).bit_string());
+        assert_eq!(None, Operator(CloseParenthesis).bit_string())
     }
 
     #[test]
@@ -247,7 +267,7 @@ mod tests {
         let kw = super::Keyword::find("between").unwrap();
         assert_eq!(Some(kw), Keyword(kw).keyword());
 
-        assert_eq!(None, Semicolon.keyword());
+        assert_eq!(None, Operator(Semicolon).keyword());
     }
 }
 

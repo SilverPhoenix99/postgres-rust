@@ -31,7 +31,7 @@ impl<'p, 'src> BitStringParser<'p, 'src> {
     fn try_consume_string(&mut self) -> ScanResult<(StringKind, &'src str)> {
 
         self.0.buffer.consume_with_slice(|(tok, slice, _)|
-            tok.string_kind()
+            tok.string()
                 .filter(|kind|
                     matches!(kind, Basic { concatenable: true } | Extended { concatenable: true })
                 )

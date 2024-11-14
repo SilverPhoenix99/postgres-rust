@@ -102,15 +102,14 @@ impl<'src> Parser<'src> {
 
     /// Returns `true` if it consumed at least 1 `;` (semicolon)
     fn semicolons(&mut self) -> ParseResult<bool> {
-        use RawTokenKind::Semicolon;
 
         // Production: (';')*
 
-        if self.buffer.consume_eq(Semicolon).optional()?.is_none() {
+        if self.buffer.consume_op(Semicolon).optional()?.is_none() {
             return Ok(false)
         }
 
-        while self.buffer.consume_eq(Semicolon).optional()?.is_some() {}
+        while self.buffer.consume_op(Semicolon).optional()?.is_some() {}
 
         Ok(true)
     }
@@ -159,7 +158,7 @@ impl<'src> Parser<'src> {
         let mut elements = vec![element];
 
         loop {
-            let element = match self.buffer.consume_eq(Comma) {
+            let element = match self.buffer.consume_op(Comma) {
                 Ok(_) => {
                     self.transaction_mode().required(fn_info!(FN_NAME))?
                 }
@@ -175,7 +174,7 @@ impl<'src> Parser<'src> {
             elements.push(element);
         }
 
-        while self.buffer.consume_eq(Comma).optional()?.is_some() {
+        while self.buffer.consume_op(Comma).optional()?.is_some() {
             let element = self.transaction_mode().required(fn_info!(FN_NAME))?;
             elements.push(element);
         }
@@ -273,7 +272,7 @@ impl<'src> Parser<'src> {
         let element = self.var_name()?;
         let mut elements = vec![element];
 
-        while self.buffer.consume_eq(Comma).optional()?.is_some() {
+        while self.buffer.consume_op(Comma).optional()?.is_some() {
             let element = self.var_name().required(fn_info!(FN_NAME))?;
             elements.push(element);
         }
@@ -313,15 +312,15 @@ impl<'src> Parser<'src> {
             '(' name_list ')'
         */
 
-        self.buffer.consume_eq(OpenParenthesis)?;
+        self.buffer.consume_op(OpenParenthesis)?;
         let names = self.name_list().required(fn_info!(FN_NAME))?;
-        self.buffer.consume_eq(CloseParenthesis).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_op(CloseParenthesis).required(fn_info!(FN_NAME))?;
 
         Ok(names)
     }
 
     /// Post-condition: Vec is **Not** empty
-    fn col_id_list(&mut self, separator: RawTokenKind) -> ScanResult<QualifiedName> {
+    fn col_id_list(&mut self, separator: OperatorKind) -> ScanResult<QualifiedName> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::col_id_list";
 
         /*
@@ -331,7 +330,7 @@ impl<'src> Parser<'src> {
         let element = self.col_id()?;
         let mut elements = vec![element];
 
-        while self.buffer.consume_eq(separator).optional()?.is_some() {
+        while self.buffer.consume_op(separator).optional()?.is_some() {
             let element = self.col_id().required(fn_info!(FN_NAME))?;
             elements.push(element);
         }
@@ -347,9 +346,9 @@ impl<'src> Parser<'src> {
             '(' expr_list ')'
         */
 
-        self.buffer.consume_eq(OpenParenthesis)?;
+        self.buffer.consume_op(OpenParenthesis)?;
         let exprs = self.expr_list().required(fn_info!(FN_NAME))?;
-        self.buffer.consume_eq(CloseParenthesis).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_op(CloseParenthesis).required(fn_info!(FN_NAME))?;
 
         Ok(exprs)
     }
@@ -365,7 +364,7 @@ impl<'src> Parser<'src> {
         let expr = self.a_expr()?;
         let mut exprs = vec![expr];
 
-        while self.buffer.consume_eq(Comma).optional()?.is_some() {
+        while self.buffer.consume_op(Comma).optional()?.is_some() {
             let expr = self.a_expr().required(fn_info!(FN_NAME))?;
             exprs.push(expr);
         }
@@ -379,7 +378,7 @@ impl<'src> Parser<'src> {
 
         let mut elements = vec![self.qualified_name()?];
 
-        while self.buffer.consume_eq(Comma).optional()?.is_some() {
+        while self.buffer.consume_op(Comma).optional()?.is_some() {
             let element = self.qualified_name().required(fn_info!(FN_NAME))?;
             elements.push(element);
         }
@@ -432,7 +431,7 @@ impl<'src> Parser<'src> {
         let element = self.any_name()?;
         let mut elements = vec![element];
 
-        while self.buffer.consume_eq(Comma).optional()?.is_some() {
+        while self.buffer.consume_op(Comma).optional()?.is_some() {
             let element = self.any_name().required(fn_info!(FN_NAME))?;
             elements.push(element);
         }
@@ -466,7 +465,7 @@ impl<'src> Parser<'src> {
 
         let mut attrs = vec![prefix];
 
-        while self.buffer.consume_eq(Dot).optional()?.is_some() {
+        while self.buffer.consume_op(Dot).optional()?.is_some() {
             let attr = self.col_label().required(fn_info!(FN_NAME))?;
             attrs.push(attr);
         }
@@ -478,9 +477,9 @@ impl<'src> Parser<'src> {
     fn i32_literal_paren(&mut self) -> ScanResult<i32> {
         const FN_NAME: &str = "postgres_parser::parser::Parser::i32_literal_paren";
 
-        self.buffer.consume_eq(OpenParenthesis)?;
+        self.buffer.consume_op(OpenParenthesis)?;
         let num = self.i32_literal().required(fn_info!(FN_NAME))?;
-        self.buffer.consume_eq(CloseParenthesis).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_op(CloseParenthesis).required(fn_info!(FN_NAME))?;
 
         Ok(num)
     }
@@ -562,6 +561,15 @@ impl<'src> Parser<'src> {
         IdentifierParser(self).parse()
     }
 
+    /// '+' | '-'
+    fn sign(&mut self) ->  ScanResult<OperatorKind> {
+        use OperatorKind::{Minus, Plus};
+        self.buffer.consume(|tok|
+            tok.operator()
+                .filter(|op| matches!(op, Minus | Plus))
+        )
+    }
+
     /// Production: `UESCAPE SCONST`
     fn uescape(&mut self) -> ParseResult<char> {
         use Keyword::Uescape;
@@ -575,7 +583,7 @@ impl<'src> Parser<'src> {
         };
 
         let uescape = self.buffer.consume_with_slice(|(tok, slice, loc)| {
-            
+
             let RawTokenKind::StringLiteral(_) = tok else {
                 return Err(
                     ParserError::new(UescapeDelimiterMissing, fn_info!(FN_NAME), loc)
@@ -601,6 +609,7 @@ impl<'src> Parser<'src> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::lexer::OperatorKind::Dot;
     use crate::parser::ast_node::QualifiedName;
     use postgres_basics::guc::BackslashQuote;
     use test_case::test_case;
@@ -938,7 +947,8 @@ use crate::lexer::{
     Keyword,
     KeywordCategory::*,
     Lexer,
-    RawTokenKind::{self, CloseParenthesis, Comma, Dot, OpenParenthesis}
+    OperatorKind::{self, CloseParenthesis, Comma, Dot, OpenParenthesis, Semicolon},
+    RawTokenKind
 };
 use postgres_basics::{fn_info, Located};
 use std::{borrow::Cow, mem};

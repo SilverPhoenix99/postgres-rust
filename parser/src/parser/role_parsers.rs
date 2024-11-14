@@ -11,7 +11,7 @@ impl Parser<'_> {
         let role = self.role_spec()?;
         let mut roles = vec![role];
 
-        while self.buffer.consume_eq(Comma).optional()?.is_some() {
+        while self.buffer.consume_op(Comma).optional()?.is_some() {
             let role = self.role_spec().required(fn_info!(FN_NAME))?;
             roles.push(role);
         }
@@ -164,7 +164,7 @@ use crate::{
     lexer::{
         Keyword::{CurrentRole, CurrentUser, NoneKw, SessionUser},
         KeywordCategory::Reserved,
-        RawTokenKind::Comma
+        OperatorKind::Comma
     },
     parser::{
         ast_node::RoleSpec,

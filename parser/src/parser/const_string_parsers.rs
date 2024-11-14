@@ -12,7 +12,7 @@ impl Parser<'_> {
     pub(in crate::parser) fn bit_string(&mut self) -> ScanResult<(BitStringKind, String)> {
 
         let (kind, slice) = self.buffer.consume_with_slice(|(tok, slice, _)|
-            tok.bit_string_kind()
+            tok.bit_string()
                 .map(|kind|
                     (
                         kind,

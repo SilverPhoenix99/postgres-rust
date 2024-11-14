@@ -2,14 +2,11 @@ impl Parser<'_> {
 
     /// Alias: `NumericOnly`
     pub(in crate::parser) fn signed_number(&mut self) -> ScanResult<SignedNumber> {
-        use RawTokenKind::{Minus, Plus};
         const FN_NAME: &str = "postgres_parser::parser::Parser::signed_number";
 
         // ('+' | '-')? (ICONST | FCONST)
 
-        let sign = self.buffer
-            .consume(|tok| matches!(tok, Minus | Plus))
-            .no_match_to_option()?;
+        let sign = self.sign().no_match_to_option()?;
 
         let number = self.unsigned_number();
 
@@ -60,14 +57,11 @@ impl Parser<'_> {
 
     /// Alias: `SignedIconst`
     pub(in crate::parser) fn signed_i32_literal(&mut self) -> ScanResult<i32> {
-        use RawTokenKind::{Minus, Plus};
         const FN_NAME: &str = "postgres_parser::parser::Parser::signed_i32_literal";
 
         // ('+' | '-')? ICONST
 
-        let sign = self.buffer
-            .consume(|tok| matches!(tok, Minus | Plus))
-            .no_match_to_option()?;
+        let sign = self.sign().no_match_to_option()?;
 
         let num = self.i32_literal();
 
@@ -140,10 +134,13 @@ mod tests {
 }
 
 use crate::{
-    lexer::RawTokenKind::{self, NumberLiteral},
+    lexer::{
+        OperatorKind::{self, Minus, Plus},
+        RawTokenKind::NumberLiteral,
+    },
     parser::{
         ast_node::{SignedNumber, UnsignedNumber},
-        result::{Required, ScanResult, ScanResultTrait},
+        result::{EofResult, Required, ScanResult, ScanResultTrait},
         token_buffer::{SlicedTokenConsumer, TokenConsumer},
         Parser
     }

@@ -29,10 +29,10 @@ impl Parser<'_> {
             | '[' a_expr ':' a_expr ']'
         */
 
-        if self.buffer.consume_eq(Dot).no_match_to_option()?.is_some() {
+        if self.buffer.consume_op(Dot).no_match_to_option()?.is_some() {
             // `.`
 
-            if self.buffer.consume_eq(Mul).try_match(fn_info!(FN_NAME))?.is_some() {
+            if self.buffer.consume_op(Mul).try_match(fn_info!(FN_NAME))?.is_some() {
                 // `.*`
                 return Ok(Indirection::All)
             }
@@ -43,19 +43,19 @@ impl Parser<'_> {
         }
 
         // `[`
-        self.buffer.consume_eq(OpenBracket)?;
+        self.buffer.consume_op(OpenBracket)?;
 
-        if self.buffer.consume_eq(Colon).try_match(fn_info!(FN_NAME))?.is_some() {
+        if self.buffer.consume_op(Colon).try_match(fn_info!(FN_NAME))?.is_some() {
             // `[ :`
 
-            if self.buffer.consume_eq(CloseBracket).try_match(fn_info!(FN_NAME))?.is_some() {
+            if self.buffer.consume_op(CloseBracket).try_match(fn_info!(FN_NAME))?.is_some() {
                 // `[ : ]`
                 return Ok(Indirection::FullSlice)
             }
 
             // `[ : a_expr ]`
             let expr = self.a_expr().required(fn_info!(FN_NAME))?;
-            self.buffer.consume_eq(CloseBracket).required(fn_info!(FN_NAME))?;
+            self.buffer.consume_op(CloseBracket).required(fn_info!(FN_NAME))?;
 
             return Ok(Indirection::SliceTo(expr))
         }
@@ -63,22 +63,22 @@ impl Parser<'_> {
         // `[ a_expr`
         let left = self.a_expr().required(fn_info!(FN_NAME))?;
 
-        if self.buffer.consume_eq(CloseBracket).try_match(fn_info!(FN_NAME))?.is_some() {
+        if self.buffer.consume_op(CloseBracket).try_match(fn_info!(FN_NAME))?.is_some() {
             // `[ a_expr ]`
             return Ok(Indirection::Index(left))
         }
 
         // `[ a_expr :`
-        self.buffer.consume_eq(Colon).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_op(Colon).required(fn_info!(FN_NAME))?;
 
-        if self.buffer.consume_eq(CloseBracket).try_match(fn_info!(FN_NAME))?.is_some() {
+        if self.buffer.consume_op(CloseBracket).try_match(fn_info!(FN_NAME))?.is_some() {
             // `[ a_expr : ]`
             return Ok(Indirection::SliceFrom(left))
         }
 
         // `[ expr : expr ]`
         let right = self.a_expr().required(fn_info!(FN_NAME))?;
-        self.buffer.consume_eq(CloseBracket).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_op(CloseBracket).required(fn_info!(FN_NAME))?;
 
         Ok(Indirection::Slice(left, right))
     }
@@ -109,7 +109,7 @@ mod tests {
 }
 
 use crate::{
-    lexer::RawTokenKind::{CloseBracket, Colon, Dot, Mul, OpenBracket},
+    lexer::OperatorKind::{CloseBracket, Colon, Dot, Mul, OpenBracket},
     parser::{
         ast_node::Indirection,
         result::{Optional, Required, ScanResult, ScanResultTrait, TryMatch},

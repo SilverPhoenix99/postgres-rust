@@ -1,5 +1,3 @@
-use crate::lexer::RawTokenKind::Dot;
-
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 enum TypeNameKind {
     Simple,
@@ -56,7 +54,7 @@ impl Parser<'_> {
                 ARRAY ( '[' ICONST ']' )?
             */
 
-            if self.buffer.consume_eq(OpenBracket).optional()?.is_none() {
+            if self.buffer.consume_op(OpenBracket).optional()?.is_none() {
                 // it's just `ARRAY`
                 return Ok(vec![None])
             }
@@ -65,7 +63,7 @@ impl Parser<'_> {
                 '[' ICONST ']'
             */
             let dim_len = self.i32_literal().required(fn_info!(FN_NAME))?;
-            self.buffer.consume_eq(CloseBracket).required(fn_info!(FN_NAME))?;
+            self.buffer.consume_op(CloseBracket).required(fn_info!(FN_NAME))?;
             return Ok(vec![Some(dim_len)])
         }
 
@@ -75,9 +73,9 @@ impl Parser<'_> {
 
         let mut elements = Vec::new();
 
-        while self.buffer.consume_eq(OpenBracket).optional()?.is_some() {
+        while self.buffer.consume_op(OpenBracket).optional()?.is_some() {
             let dim_len = self.i32_literal().optional()?;
-            self.buffer.consume_eq(CloseBracket).required(fn_info!(FN_NAME))?;
+            self.buffer.consume_op(CloseBracket).required(fn_info!(FN_NAME))?;
             elements.push(dim_len);
         }
 
@@ -170,7 +168,7 @@ impl Parser<'_> {
         */
 
         match self.buffer.peek2() {
-            (Ok(Kw(kw)), Ok(Dot)) if kind == Const && kw.details().category() == ColumnName => {
+            (Ok(Kw(kw)), Ok(Op(Dot))) if kind == Const && kw.details().category() == ColumnName => {
                 let prefix = self.ident_or_keyword(|_| true)?;
 
                 let name = self.attrs(prefix)?;
@@ -625,7 +623,9 @@ mod tests {
         assert_eq!(
             Ok(expected.clone()),
             actual,
-            r"expected {expected:?} for source {source:?} but actually got {actual:?}"
+            "source:   {source:?}\n\
+             expected: Ok({expected:?})\n\
+             actual:   {actual:?}"
         );
     }
 
@@ -656,9 +656,6 @@ mod tests {
     }
 }
 
-use crate::parser::error::syntax_err;
-use crate::parser::result::EofErrorKind::Eof;
-use crate::parser::ParserError;
 use crate::{
     lexer::{
         Keyword::{
@@ -699,7 +696,8 @@ use crate::{
             Zone,
         },
         KeywordCategory::{ColumnName, TypeFuncName, Unreserved},
-        RawTokenKind::{CloseBracket, Keyword as Kw, OpenBracket}
+        OperatorKind::{CloseBracket, Dot, OpenBracket},
+        RawTokenKind::{Keyword as Kw, Operator as Op},
     },
     parser::{
         ast_node::{
@@ -711,16 +709,18 @@ use crate::{
             TypeName::{self, *},
         },
         consume_macro::consume,
+        error::syntax_err,
         result::{
-            EofErrorKind::NotEof,
+            EofErrorKind::{Eof, NotEof},
             Optional,
             Required,
             ScanErrorKind::NoMatch,
             ScanResult,
-            ScanResultTrait,
+            ScanResultTrait
         },
         ParseResult,
         Parser,
+        ParserError,
         ParserErrorKind::{FloatPrecisionOverflow, FloatPrecisionUnderflow}
     },
 };
