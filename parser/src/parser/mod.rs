@@ -550,7 +550,7 @@ impl<'src> Parser<'src> {
     /// Alias: `IDENT`
     #[inline(always)]
     fn identifier(&mut self) -> ScanResult<Box<str>> {
-        IdentifierParser(self).parse()
+        IdentifierParser(&mut self.buffer).parse()
     }
 
     /// '+' | '-'
@@ -902,15 +902,12 @@ use self::{
         ScanResultTrait,
         TryMatch,
     },
-    token_stream::{SlicedTokenConsumer, TokenConsumer, TokenStream},
-    uescape_escape::uescape_escape
+    token_stream::{TokenConsumer, TokenStream}
 };
 use crate::lexer::{
     Keyword,
     KeywordCategory::*,
-    Lexer,
-    OperatorKind::{self, CloseParenthesis, Comma, Dot, OpenParenthesis, Semicolon},
-    RawTokenKind
+    OperatorKind::{self, CloseParenthesis, Comma, Dot, OpenParenthesis, Semicolon}
 };
 use postgres_basics::{fn_info, Located, Str};
-use std::{borrow::Cow, mem};
+use std::mem;
