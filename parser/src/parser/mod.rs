@@ -37,17 +37,13 @@ pub struct ParserResult {
 
 pub struct Parser<'src> {
     buffer: TokenStream<'src>,
-    /// All the warnings that have been collected while parsing.
-    warnings: Vec<Located<ParserWarningKind>>,
 }
 
 impl<'src> Parser<'src> {
 
     pub fn new(source: &'src str, config: ParserConfig) -> Self {
-        let lexer = Lexer::new(source, config.standard_conforming_strings());
         Self {
-            buffer: TokenStream::new(lexer, config.backslash_quote()),
-            warnings: Vec::new(),
+            buffer: TokenStream::new(source, config)
         }
     }
 
@@ -58,7 +54,7 @@ impl<'src> Parser<'src> {
 
         ParserResult {
             result,
-            warnings: mem::take(&mut self.warnings),
+            warnings: mem::take(self.buffer.warnings()),
         }
     }
 
@@ -568,37 +564,7 @@ impl<'src> Parser<'src> {
 
     /// Production: `UESCAPE SCONST`
     fn uescape(&mut self) -> ParseResult<char> {
-        use Keyword::Uescape;
-        const FN_NAME: &str = "postgres_parser::parser::Parser::uescape";
-
-        // Try to consume UESCAPE + the string following it.
-        // see [base_yylex](https://github.com/postgres/postgres/blob/1c61fd8b527954f0ec522e5e60a11ce82628b681/src/backend/parser/parser.c#L256)
-
-        if self.buffer.consume_kw_eq(Uescape).optional()?.is_none() {
-            return Ok('\\')
-        };
-
-        let uescape = self.buffer.consume_with_slice(|(tok, slice, loc)| {
-
-            let RawTokenKind::StringLiteral(_) = tok else {
-                return Err(
-                    ParserError::new(UescapeDelimiterMissing, fn_info!(FN_NAME), loc)
-                )
-            };
-
-            match uescape_escape(slice) {
-                Some(escape) => Ok(Some(escape)),
-                None => Err(
-                    ParserError::new(InvalidUescapeDelimiter, fn_info!(FN_NAME), loc)
-                ),
-            }
-        });
-
-        uescape.map_err(|err| match err {
-            Eof(loc) => ParserError::new(InvalidUescapeDelimiter, fn_info!(FN_NAME), loc),
-            NoMatch(loc) => syntax_err(fn_info!(FN_NAME), loc),
-            ScanErr(err) => err
-        })
+        self.buffer.uescape()
     }
 }
 

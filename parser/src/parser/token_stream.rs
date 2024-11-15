@@ -2,16 +2,23 @@ pub(super) struct TokenStream<'src> {
     backslash_quote: BackslashQuote,
     lexer: Lexer<'src>,
     buf: VecDeque<EofResult<Located<RawTokenKind>>>,
+    /// All the warnings that have been collected while parsing.
+    warnings: Vec<Located<ParserWarningKind>>
 }
 
 impl<'src> TokenStream<'src> {
 
-    #[inline(always)]
-    pub fn new(lexer: Lexer<'src>, backslash_quote: BackslashQuote) -> Self {
+    pub fn new(source: &'src str, config: ParserConfig) -> Self {
+        let lexer = Lexer::new(source, config.standard_conforming_strings());
+        Self::with_lexer(lexer, config.backslash_quote())
+    }
+
+    pub fn with_lexer(lexer: Lexer<'src>, backslash_quote: BackslashQuote) -> Self {
         Self {
             backslash_quote,
             lexer,
-            buf: VecDeque::with_capacity(2)
+            buf: VecDeque::with_capacity(2),
+            warnings: Vec::new()
         }
     }
 
@@ -22,6 +29,10 @@ impl<'src> TokenStream<'src> {
 
     pub fn backslash_quote(&self) -> BackslashQuote {
         self.backslash_quote
+    }
+
+    pub fn warnings(&mut self) -> &mut Vec<Located<ParserWarningKind>> {
+        &mut self.warnings
     }
 
     #[inline(always)]
@@ -149,6 +160,41 @@ impl<'src> TokenStream<'src> {
             tok.keyword().filter(|kw| pred(*kw))
         )
     }
+
+    /// Production: `UESCAPE SCONST`
+    pub fn uescape(&mut self) -> ParseResult<char> {
+        use Keyword::Uescape;
+        const FN_NAME: &str = "postgres_parser::parser::Parser::uescape";
+
+        // Try to consume UESCAPE + the string following it.
+        // see [base_yylex](https://github.com/postgres/postgres/blob/1c61fd8b527954f0ec522e5e60a11ce82628b681/src/backend/parser/parser.c#L256)
+
+        if self.consume_kw_eq(Uescape).optional()?.is_none() {
+            return Ok('\\')
+        };
+
+        let uescape = self.consume_with_slice(|(tok, slice, loc)| {
+
+            let RawTokenKind::StringLiteral(_) = tok else {
+                return Err(
+                    ParserError::new(UescapeDelimiterMissing, fn_info!(FN_NAME), loc)
+                )
+            };
+
+            match uescape_escape(slice) {
+                Some(escape) => Ok(Some(escape)),
+                None => Err(
+                    ParserError::new(InvalidUescapeDelimiter, fn_info!(FN_NAME), loc)
+                ),
+            }
+        });
+
+        uescape.map_err(|err| match err {
+            crate::parser::result::ScanErrorKind::Eof(loc) => ParserError::new(InvalidUescapeDelimiter, fn_info!(FN_NAME), loc),
+            NoMatch(loc) => syntax_err(fn_info!(FN_NAME), loc),
+            ScanErr(err) => err
+        })
+    }
 }
 
 pub(super) type SlicedToken<'src> = (RawTokenKind, &'src str, Location);
@@ -255,16 +301,14 @@ mod tests {
 
     #[test]
     fn test_eof() {
-        let lexer = Lexer::new("", true);
-        let mut buffer =  TokenStream::new(lexer, DEFAULT_CONFIG.backslash_quote());
+        let mut buffer =  TokenStream::new("", DEFAULT_CONFIG);
 
         assert!(buffer.eof())
     }
 
     #[test]
     fn test_next_and_peek_and_current_location() {
-        let lexer = Lexer::new("two identifiers", true);
-        let mut buffer =  TokenStream::new(lexer, DEFAULT_CONFIG.backslash_quote());
+        let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
         assert_matches!(buffer.peek(), Ok(_));
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
@@ -282,8 +326,7 @@ mod tests {
 
     #[test]
     fn test_consume_eq() {
-        let lexer = Lexer::new("two identifiers", true);
-        let mut buffer =  TokenStream::new(lexer, DEFAULT_CONFIG.backslash_quote());
+        let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
         assert_matches!(buffer.consume_eq(RawTokenKind::Operator(OperatorKind::Comma)), Err(NoMatch(_)));
 
@@ -295,8 +338,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_err() {
-        let lexer = Lexer::new("two identifiers", true);
-        let mut buffer =  TokenStream::new(lexer, DEFAULT_CONFIG.backslash_quote());
+        let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
         let actual: ScanResult<()> = buffer.consume(|_| {
             let err = ParserError::syntax(fn_info!(""), Location::new(0..0, 0, 0));
@@ -314,8 +356,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_ok() {
-        let lexer = Lexer::new("two identifiers", true);
-        let mut buffer =  TokenStream::new(lexer, DEFAULT_CONFIG.backslash_quote());
+        let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
         let result = buffer.consume(|tok| Ok(Some(tok)));
         assert_eq!(Ok(Identifier(Basic)), result);
@@ -324,8 +365,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_none() {
-        let lexer = Lexer::new("two identifiers", true);
-        let mut buffer =  TokenStream::new(lexer, DEFAULT_CONFIG.backslash_quote());
+        let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
         let result: ScanResult<()> = buffer.consume(|_| None);
         assert_matches!(result, Err(NoMatch(_)));
@@ -334,8 +374,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_some() {
-        let lexer = Lexer::new("two identifiers", true);
-        let mut buffer =  TokenStream::new(lexer, DEFAULT_CONFIG.backslash_quote());
+        let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
         let result = buffer.consume(Some);
         assert_eq!(Ok(Identifier(Basic)), result);
@@ -344,8 +383,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_false() {
-        let lexer = Lexer::new("two identifiers", true);
-        let mut buffer =  TokenStream::new(lexer, DEFAULT_CONFIG.backslash_quote());
+        let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
         let result: ScanResult<RawTokenKind> = buffer.consume(|_| false);
         assert_matches!(result, Err(NoMatch(_)));
@@ -354,8 +392,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_true() {
-        let lexer = Lexer::new("two identifiers", true);
-        let mut buffer =  TokenStream::new(lexer, DEFAULT_CONFIG.backslash_quote());
+        let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
         let result = buffer.consume(|_| true);
         assert_eq!(Ok(Identifier(Basic)), result);
@@ -364,8 +401,7 @@ mod tests {
 
     #[test]
     fn test_peek2() {
-        let lexer = Lexer::new("three identifiers innit", true);
-        let mut buffer =  TokenStream::new(lexer, DEFAULT_CONFIG.backslash_quote());
+        let mut buffer =  TokenStream::new("three identifiers innit", DEFAULT_CONFIG);
 
         let result = buffer.peek2();
         assert_eq!((Ok(Identifier(Basic)), Ok(Identifier(Basic))), result);
@@ -392,15 +428,27 @@ use crate::{
     error::HasLocation,
     lexer::{Keyword, Lexer, OperatorKind, RawTokenKind},
     parser::{
+        error::syntax_err,
         result::{
             EofErrorKind::{Eof, NotEof},
             EofResult,
+            Optional,
             ScanErrorKind::{NoMatch, ScanErr},
-            ScanResult,
+            ScanResult
         },
+        uescape_escape::uescape_escape,
         ParseResult,
+        ParserConfig,
+        ParserError,
+        ParserErrorKind::{InvalidUescapeDelimiter, UescapeDelimiterMissing},
+        ParserWarningKind
     },
 };
-use postgres_basics::guc::BackslashQuote;
-use postgres_basics::{Located, Location};
+use postgres_basics::{
+    fn_info,
+    guc::BackslashQuote,
+    Located,
+    Location
+};
 use std::collections::VecDeque;
+use std::mem;
