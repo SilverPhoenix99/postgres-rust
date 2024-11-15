@@ -107,13 +107,13 @@ pub(crate) enum OperatorKind {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub(in crate) enum RawTokenKind {
+pub(crate) enum RawTokenKind {
     Operator(OperatorKind),
     UserDefinedOperator,
     Param { index: i32 },
     Identifier(IdentifierKind),
     Keyword(Keyword),
-    NumberLiteral { radix: u32 },
+    NumberLiteral(NumberRadix),
     StringLiteral(StringKind),
     BitStringLiteral(BitStringKind),
 }
@@ -127,7 +127,7 @@ impl RawTokenKind {
             _ => None
         }
     }
-    
+
     #[inline(always)]
     pub fn identifier(&self) -> Option<IdentifierKind> {
         match self {
@@ -272,3 +272,4 @@ mod tests {
 }
 
 use crate::lexer::Keyword;
+use crate::NumberRadix;

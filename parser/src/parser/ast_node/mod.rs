@@ -122,13 +122,13 @@ pub struct RelationExpr {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum UnsignedNumber {
     IntegerConst(NonNegative),
-    NumericConst { value: Box<str>, radix: u32 },
+    NumericConst { value: Box<str>, radix: NumberRadix },
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum SignedNumber {
     IntegerConst(i32),
-    NumericConst { value: Box<str>, radix: u32, negative: bool },
+    NumericConst { value: Box<str>, radix: NumberRadix, negative: bool },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -169,7 +169,7 @@ pub enum ExprNode {
     BinaryStringConst(Box<str>),
     HexStringConst(Box<str>),
     IntegerConst(i32),
-    NumericConst { radix: u32, value: Box<str> },
+    NumericConst { radix: NumberRadix, value: Box<str> },
     BooleanConst(bool),
 
     SetToDefault,
@@ -318,4 +318,5 @@ impl ExprNode {
 }
 
 use impl_from;
+use crate::NumberRadix;
 use postgres_basics::{NonNegative, Str};

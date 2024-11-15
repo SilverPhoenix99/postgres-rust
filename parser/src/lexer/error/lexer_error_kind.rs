@@ -16,14 +16,14 @@ pub enum LexerErrorKind {
     #[error("trailing junk after parameter")]
     TrailingJunkAfterParameter,
 
-    #[error("invalid {0} integer",
-        match .radix {
-            2 => "binary",
-            8 => "octal",
+    #[error("invalid {} integer",
+        match .0 {
+            NumberRadix::Binary => "binary",
+            NumberRadix::Octal => "octal",
             _ => "hexadecimal",
         }
     )]
-    InvalidInteger { radix: u32 },
+    InvalidInteger(NumberRadix),
 
     #[error("trailing junk after numeric literal")]
     TrailingJunkAfterNumericLiteral,
@@ -71,6 +71,7 @@ impl ErrorReport for LexerErrorKind {
     }
 }
 
+use crate::NumberRadix;
 use postgres_basics::{
     elog::{ErrorReport, HasSqlState},
     sql_state::SqlState,
