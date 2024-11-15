@@ -158,10 +158,6 @@ mod tests {
         let result = string_parser.parse();
         assert_eq!(Ok("an extended string".into()), result);
     }
-
-    fn token_stream(source: &str) -> TokenStream<'_> {
-        TokenStream::new(source, DEFAULT_CONFIG)
-    }
 }
 
 use crate::{
