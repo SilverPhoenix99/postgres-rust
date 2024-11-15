@@ -1,9 +1,9 @@
-pub(in crate::parser) fn parse_number(value: &str, radix: u32) -> UnsignedNumber {
+pub(in crate::parser) fn parse_number(value: &str, radix: NumberRadix) -> UnsignedNumber {
     use crate::parser::ast_node::UnsignedNumber::*;
 
     let value = value.replace("_", "");
 
-    if let Ok(int) = i32::from_str_radix(&value, radix) {
+    if let Ok(int) = i32::from_str_radix(&value, radix as u32) {
         // SAFETY: `0 <= int <= i32::MAX`
         IntegerConst(int.into())
     }
@@ -24,3 +24,4 @@ mod tests {
 }
 
 use crate::parser::ast_node::UnsignedNumber;
+use crate::NumberRadix;

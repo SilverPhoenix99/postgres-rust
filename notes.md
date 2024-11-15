@@ -3,6 +3,7 @@
 * Don't implement these. They're just Rust's `String`/`Vec`:
   * `common/stringinfo.c` / `include/lib/stringinfo.h` 
   * `backend/utils/mb/stringinfo_mb.c` / `include/mb/stringinfo_mb.h`
+* Check layout of structs and enums with `#![feature(rustc_attrs)]` 
 
 # TO DO
 * Wrap `ParserWarningKind` in a `LocatedErrorReport`.

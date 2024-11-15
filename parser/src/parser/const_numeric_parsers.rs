@@ -40,7 +40,7 @@ impl Parser<'_> {
         // ICONST | FCONST
 
         self.buffer.consume_with_slice(|(tok, slice, _)| {
-            let NumberLiteral { radix } = tok else { return None };
+            let NumberLiteral(radix) = tok else { return None };
             parse_number(slice, radix)
         })
     }
@@ -49,7 +49,7 @@ impl Parser<'_> {
     pub(in crate::parser) fn i32_literal(&mut self) -> ScanResult<i32> {
 
         self.buffer.consume_with_slice(|(tok, slice, _)| {
-            let NumberLiteral { radix } = tok else { return None };
+            let NumberLiteral(radix) = tok else { return None };
             let Some(UnsignedNumber::IntegerConst(int)) = parse_number(slice, radix) else { return None };
             Some(int.into())
         })
@@ -78,12 +78,12 @@ impl Parser<'_> {
     }
 }
 
-fn parse_number(value: &str, radix: u32) -> Option<UnsignedNumber> {
+fn parse_number(value: &str, radix: NumberRadix) -> Option<UnsignedNumber> {
     use UnsignedNumber::*;
 
     let value = value.replace("_", "");
 
-    if let Ok(int) = i32::from_str_radix(&value, radix) {
+    if let Ok(int) = i32::from_str_radix(&value, radix as u32) {
         // SAFETY: `0 <= int <= i32::MAX`
         Some(IntegerConst(int.into()))
     }
@@ -101,9 +101,9 @@ mod tests {
     use crate::parser::tests::DEFAULT_CONFIG;
     use test_case::test_case;
 
-    #[test_case( "1.01", SignedNumber::NumericConst { value: "1.01".into(), radix: 10, negative: false })]
-    #[test_case("+2.02", SignedNumber::NumericConst { value: "2.02".into(), radix: 10, negative: false })]
-    #[test_case("-3.03", SignedNumber::NumericConst { value: "3.03".into(), radix: 10, negative: true })]
+    #[test_case( "1.01", SignedNumber::NumericConst { value: "1.01".into(), radix: NumberRadix::Decimal, negative: false })]
+    #[test_case("+2.02", SignedNumber::NumericConst { value: "2.02".into(), radix: NumberRadix::Decimal, negative: false })]
+    #[test_case("-3.03", SignedNumber::NumericConst { value: "3.03".into(), radix: NumberRadix::Decimal, negative: true })]
     #[test_case(  "101", SignedNumber::IntegerConst(101))]
     #[test_case( "+202", SignedNumber::IntegerConst(202))]
     #[test_case( "-303", SignedNumber::IntegerConst(-303))]
@@ -113,7 +113,7 @@ mod tests {
         assert_eq!(Ok(expected), actual);
     }
 
-    #[test_case("1.1", UnsignedNumber::NumericConst { value: "1.1".into(), radix: 10 })]
+    #[test_case("1.1", UnsignedNumber::NumericConst { value: "1.1".into(), radix: NumberRadix::Decimal })]
     #[test_case("11",  UnsignedNumber::IntegerConst(11.into()))]
     fn test_unsigned_number(source: &str, expected: UnsignedNumber) {
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
@@ -138,14 +138,15 @@ mod tests {
 
 use crate::{
     lexer::{
-        OperatorKind::{self, Minus, Plus},
+        OperatorKind::Minus,
         RawTokenKind::NumberLiteral,
     },
     parser::{
         ast_node::{SignedNumber, UnsignedNumber},
-        result::{EofResult, Required, ScanResult, ScanResultTrait},
-        token_stream::{SlicedTokenConsumer, TokenConsumer},
+        result::{Required, ScanResult, ScanResultTrait},
+        token_stream::SlicedTokenConsumer,
         Parser
-    }
+    },
+    NumberRadix
 };
 use postgres_basics::fn_info;

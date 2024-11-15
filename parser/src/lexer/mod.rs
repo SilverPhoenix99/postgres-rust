@@ -201,7 +201,7 @@ impl<'src> Lexer<'src> {
                 }
             }
             '0' => match self.buffer.peek() {
-                None => Ok(NumberLiteral { radix: 10 }),
+                None => Ok(NumberLiteral(Decimal)),
                 Some(c) => match c {
                     'x' | 'X' => self.lex_hex_integer(),
                     'o' | 'O' => self.lex_oct_integer(),
@@ -344,7 +344,7 @@ impl<'src> Lexer<'src> {
         // so there's no need to do any check here
         self.lex_dec_digits();
         self.lex_dec_real()?;
-        Ok(NumberLiteral { radix: 10 })
+        Ok(NumberLiteral(Decimal))
     }
 
     fn lex_dec_integer(&mut self) -> LexResult {
@@ -361,7 +361,7 @@ impl<'src> Lexer<'src> {
                 // Don't consume '..' now.
                 // It'll get consumed later as DotDot.
                 self.buffer.push_back();
-                return Ok(NumberLiteral { radix: 10 })
+                return Ok(NumberLiteral(Decimal))
             }
             // A trailing \. is valid, so this match is optional (empty match).
             self.lex_dec_digits();
@@ -369,7 +369,7 @@ impl<'src> Lexer<'src> {
 
         self.lex_dec_real()?;
 
-        Ok(NumberLiteral { radix: 10 })
+        Ok(NumberLiteral(Decimal))
     }
 
     fn lex_dec_real(&mut self) -> LexResult<()> {
@@ -433,20 +433,20 @@ impl<'src> Lexer<'src> {
 
     #[inline(always)]
     fn lex_hex_integer(&mut self) -> LexResult {
-        self.lex_prefixed_int(is_hex_digit, 16)
+        self.lex_prefixed_int(is_hex_digit, Hexadecimal)
     }
 
     #[inline(always)]
     fn lex_oct_integer(&mut self) -> LexResult {
-        self.lex_prefixed_int(is_oct_digit, 8)
+        self.lex_prefixed_int(is_oct_digit, Octal)
     }
 
     #[inline(always)]
     fn lex_bin_integer(&mut self) -> LexResult {
-        self.lex_prefixed_int(is_bin_digit, 2)
+        self.lex_prefixed_int(is_bin_digit, NumberRadix::Binary)
     }
 
-    fn lex_prefixed_int(&mut self, is_digit: impl Fn(char) -> bool, radix: u32) -> LexResult {
+    fn lex_prefixed_int(&mut self, is_digit: impl Fn(char) -> bool, radix: NumberRadix) -> LexResult {
         const FN_NAME: &str = "postgres_parser::lexer::Lexer::lex_prefixed_int";
 
         self.buffer.consume_one(); // ignore [xXoObB]
@@ -464,14 +464,14 @@ impl<'src> Lexer<'src> {
         let span = self.buffer.slice(start_index).as_bytes();
 
         if span.is_empty() || span.last().is_some_and(|c| *c == b'_') {
-            return Err((InvalidInteger { radix }, fn_info!(FN_NAME)))
+            return Err((InvalidInteger(radix), fn_info!(FN_NAME)))
         }
 
         if self.buffer.peek().is_some_and(is_ident_start) {
             return Err((TrailingJunkAfterNumericLiteral, fn_info!(FN_NAME)))
         }
 
-        Ok(NumberLiteral { radix })
+        Ok(NumberLiteral(radix))
     }
 
     #[inline] // Only called from a single place
@@ -740,7 +740,6 @@ mod tests {
     use crate::error::HasLocation;
     use crate::lexer::token_kind::RawTokenKind;
     use crate::lexer::Keyword::{FromKw, Not, Select, StringKw};
-    use crate::lexer::OperatorKind::{Circumflex, CloseBracket, CloseParenthesis, ColonEquals, Div, Dot, DotDot, EqualsGreater, Mul, OpenBracket, OpenParenthesis, Percent, Plus};
     use std::ops::Range;
 
     #[test]
@@ -829,7 +828,7 @@ mod tests {
         let source = "0x_1_C0e_E_a92";
         let mut lex = Lexer::new(source, true);
 
-        assert_tok(NumberLiteral { radix: 16 }, 0..14, 1, 1, lex.next());
+        assert_tok(NumberLiteral(Hexadecimal), 0..14, 1, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -838,7 +837,7 @@ mod tests {
         let source = "0o20155_53_7";
         let mut lex = Lexer::new(source, true);
 
-        assert_tok(NumberLiteral { radix: 8 }, 0..12, 1, 1, lex.next());
+        assert_tok(NumberLiteral(Octal), 0..12, 1, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -847,7 +846,7 @@ mod tests {
         let source = "0b1_001000_01001_01101";
         let mut lex = Lexer::new(source, true);
 
-        assert_tok(NumberLiteral { radix: 2 }, 0..22, 1, 1, lex.next());
+        assert_tok(NumberLiteral(NumberRadix::Binary), 0..22, 1, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -860,9 +859,9 @@ mod tests {
         ";
         let mut lex = Lexer::new(source, true);
 
-        assert_tok(NumberLiteral { radix: 10 }, 0..5, 1, 1, lex.next());
-        assert_tok(NumberLiteral { radix: 10 }, 6..13, 2, 1, lex.next());
-        assert_tok(NumberLiteral { radix: 10 }, 14..15, 3, 1, lex.next());
+        assert_tok(NumberLiteral(Decimal), 0..5, 1, 1, lex.next());
+        assert_tok(NumberLiteral(Decimal), 6..13, 2, 1, lex.next());
+        assert_tok(NumberLiteral(Decimal), 14..15, 3, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -871,7 +870,7 @@ mod tests {
         let source = "184..";
         let mut lex = Lexer::new(source, true);
 
-        assert_tok(NumberLiteral { radix: 10 }, 0..3, 1, 1, lex.next());
+        assert_tok(NumberLiteral(Decimal), 0..3, 1, 1, lex.next());
         assert_tok(Operator(DotDot), 3..5, 1, 4, lex.next());
         assert_eq!(None, lex.next());
     }
@@ -885,9 +884,9 @@ mod tests {
         ";
         let mut lex = Lexer::new(source, true);
 
-        assert_tok(NumberLiteral { radix: 10 }, 0..16, 1, 1, lex.next());
-        assert_tok(NumberLiteral { radix: 10 }, 17..21, 2, 1, lex.next());
-        assert_tok(NumberLiteral { radix: 10 }, 22..25, 3, 1, lex.next());
+        assert_tok(NumberLiteral(Decimal), 0..16, 1, 1, lex.next());
+        assert_tok(NumberLiteral(Decimal), 17..21, 2, 1, lex.next());
+        assert_tok(NumberLiteral(Decimal), 22..25, 3, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -1087,10 +1086,11 @@ use self::{
         IdentifierKind::*,
         OperatorKind::*,
         RawTokenKind::*,
-        StringKind::*
+        StringKind::*,
     },
-    Keyword::Nchar
+    Keyword::Nchar,
 };
+use crate::NumberRadix::{self, Decimal, Hexadecimal, Octal};
 use postgres_basics::{
     ascii::*,
     fn_info,

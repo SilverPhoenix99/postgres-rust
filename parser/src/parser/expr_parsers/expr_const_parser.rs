@@ -68,13 +68,14 @@ impl Parser<'_> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::parser::ast_node::ExprNode;
+    use crate::parser::ast_node::ExprNode::{self, *};
+    use crate::parser::ast_node::{TypeName::*, *};
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::Parser;
     use test_case::test_case;
 
-    #[test_case("123", ExprNode::IntegerConst(123))]
-    #[test_case("123.45", ExprNode::NumericConst { radix: 10, value: "123.45".into() })]
+    #[test_case("123", IntegerConst(123))]
+    #[test_case("123.45", NumericConst { radix: crate::NumberRadix::Decimal, value: "123.45".into() })]
     #[test_case("true", BooleanConst(true))]
     #[test_case("false", BooleanConst(false))]
     #[test_case("null", NullConst)]

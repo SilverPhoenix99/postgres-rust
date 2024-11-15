@@ -451,4 +451,3 @@ use postgres_basics::{
     Location
 };
 use std::collections::VecDeque;
-use std::mem;
