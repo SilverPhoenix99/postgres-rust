@@ -6,7 +6,7 @@ impl Parser<'_> {
     /// * `file_name`
     #[inline(always)]
     pub(in crate::parser) fn string(&mut self) -> ScanResult<Box<str>> {
-        StringParser(self).parse()
+        StringParser(&mut self.buffer).parse()
     }
 
     pub(in crate::parser) fn bit_string(&mut self) -> ScanResult<(BitStringKind, Box<str>)> {

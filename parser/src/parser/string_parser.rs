@@ -1,5 +1,5 @@
 pub(super) struct StringParser<'p, 'src>(
-    pub &'p mut Parser<'src>,
+    pub &'p mut TokenStream<'src>,
 );
 
 impl<'p, 'src> StringParser<'p, 'src> {
@@ -29,7 +29,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
 
     fn try_consume(&mut self, only_concatenable: bool) -> ScanResult<(StringKind, &'src str, Location)> {
 
-        self.0.buffer.consume_with_slice(|(tok, slice, loc)|
+        self.0.consume_with_slice(|(tok, slice, loc)|
             tok.string()
                 .filter(|kind| {
                     !only_concatenable || match kind {
@@ -51,11 +51,11 @@ impl<'p, 'src> StringParser<'p, 'src> {
                 Ok(string)
             },
             Extended { .. } => {
-                let mut decoder = ExtendedStringDecoder::new(slice, self.0.buffer.backslash_quote());
+                let mut decoder = ExtendedStringDecoder::new(slice, self.0.backslash_quote());
                 let ExtendedStringResult { result, warning } = decoder.decode();
 
                 if let Some(warning) = warning {
-                    self.0.warnings.push((warning.into(), loc.clone()));
+                    self.0.warnings().push((warning.into(), loc.clone()));
                 }
 
                 result.map_err(|err|
@@ -107,13 +107,12 @@ pub(super) fn strip_delimiters(kind: StringKind, slice: &str) -> &str {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::{Parser, ParserConfig};
-    use postgres_basics::guc::BackslashQuote;
+    use crate::parser::tests::DEFAULT_CONFIG;
 
     #[test]
     fn test_parse_basic_string() {
-        let mut parser = new_parser("'a basic string'");
-        let mut string_parser = StringParser(&mut parser);
+        let mut token_stream = TokenStream::new("'a basic string'", DEFAULT_CONFIG);
+        let mut string_parser = StringParser(&mut token_stream);
 
         let result = string_parser.parse();
         assert_eq!(Ok("a basic string".into()), result);
@@ -122,11 +121,12 @@ mod tests {
     #[test]
     fn test_parse_basic_string_concatenable() {
 
-        let mut parser = new_parser(
+        let source = 
             "'a basic string'\n\
             ' that concatenates'"
-        );
-        let mut string_parser = StringParser(&mut parser);
+        ;
+        let mut token_stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let mut string_parser = StringParser(&mut token_stream);
 
         let result = string_parser.parse();
         assert_eq!(Ok("a basic string that concatenates".into()), result);
@@ -134,8 +134,8 @@ mod tests {
 
     #[test]
     fn test_dollar_string() {
-        let mut parser = new_parser("$dollar$a $ string$dollar$");
-        let mut string_parser = StringParser(&mut parser);
+        let mut token_stream = TokenStream::new("$dollar$a $ string$dollar$", DEFAULT_CONFIG);
+        let mut string_parser = StringParser(&mut token_stream);
 
         let result = string_parser.parse();
         assert_eq!(Ok("a $ string".into()), result);
@@ -143,8 +143,8 @@ mod tests {
 
     #[test]
     fn test_unicode_string() {
-        let mut parser = new_parser(r"u&'!0061n unicode string' UESCAPE '!'");
-        let mut string_parser = StringParser(&mut parser);
+        let mut token_stream = TokenStream::new(r"u&'!0061n unicode string' UESCAPE '!'", DEFAULT_CONFIG);
+        let mut string_parser = StringParser(&mut token_stream);
 
         let result = string_parser.parse();
         assert_eq!(Ok("an unicode string".into()), result);
@@ -152,16 +152,15 @@ mod tests {
 
     #[test]
     fn test_extended_string() {
-        let mut parser = new_parser(r"e'\u0061n extended string'");
-        let mut string_parser = StringParser(&mut parser);
+        let mut token_stream = TokenStream::new(r"e'\u0061n extended string'", DEFAULT_CONFIG);
+        let mut string_parser = StringParser(&mut token_stream);
 
         let result = string_parser.parse();
         assert_eq!(Ok("an extended string".into()), result);
     }
 
-    fn new_parser(source: &str) -> Parser<'_> {
-        let config = ParserConfig::new(true, BackslashQuote::SafeEncoding);
-        Parser::new(source, config)
+    fn token_stream(source: &str) -> TokenStream<'_> {
+        TokenStream::new(source, DEFAULT_CONFIG)
     }
 }
 
@@ -169,8 +168,7 @@ use crate::{
     lexer::StringKind::{self, *},
     parser::{
         result::{Optional, ScanErrorKind, ScanResult},
-        token_stream::SlicedTokenConsumer,
-        Parser,
+        token_stream::{SlicedTokenConsumer, TokenStream},
         ParserError,
         ParserErrorKind::{ExtendedString, UnicodeString}
     },
