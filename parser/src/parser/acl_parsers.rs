@@ -2,7 +2,6 @@ impl Parser<'_> {
 
     /// Post-condition: Vec is **Not** empty
     pub(super) fn grantee_list(&mut self) -> ScanResult<Vec<RoleSpec>> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::grantee_list";
 
         /*
             grantee ( ',' grantee )*
@@ -12,7 +11,7 @@ impl Parser<'_> {
         let mut elements = vec![element];
 
         while self.buffer.consume_op(Comma).optional()?.is_some() {
-            let element = self.grantee().required(fn_info!(FN_NAME))?;
+            let element = self.grantee().required(fn_info!())?;
             elements.push(element);
         }
 
@@ -20,7 +19,6 @@ impl Parser<'_> {
     }
 
     fn grantee(&mut self) -> ScanResult<RoleSpec> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::grantee";
 
         /*
               role_spec
@@ -30,7 +28,7 @@ impl Parser<'_> {
         let is_required = self.buffer.consume_kw_eq(Group).no_match_to_option()?.is_some();
         let role = self.role_spec();
         if is_required {
-            role.required(fn_info!(FN_NAME)).map_err(From::from)
+            role.required(fn_info!()).map_err(From::from)
         }
         else {
             role
@@ -39,7 +37,6 @@ impl Parser<'_> {
 
     /// Alias: `opt_grant_grant_option`
     pub(super) fn opt_grant_option(&mut self) -> EofResult<bool> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_grant_grant_option";
 
         /*
             ( WITH GRANT OPTION )?
@@ -49,8 +46,8 @@ impl Parser<'_> {
             return Ok(false)
         }
 
-        self.buffer.consume_kw_eq(Grant).required(fn_info!(FN_NAME))?;
-        self.buffer.consume_kw_eq(OptionKw).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(Grant).required(fn_info!())?;
+        self.buffer.consume_kw_eq(OptionKw).required(fn_info!())?;
 
         Ok(true)
     }
@@ -71,16 +68,15 @@ impl Parser<'_> {
     }
 
     pub(super) fn opt_granted_by(&mut self) -> ScanResult<RoleSpec> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_granted_by";
 
         /*
             GRANTED BY role_spec
         */
 
         self.buffer.consume_kw_eq(Granted)?;
-        self.buffer.consume_kw_eq(By).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(By).required(fn_info!())?;
 
-        self.role_spec().required(fn_info!(FN_NAME)).map_err(From::from)
+        self.role_spec().required(fn_info!()).map_err(From::from)
     }
 }
 

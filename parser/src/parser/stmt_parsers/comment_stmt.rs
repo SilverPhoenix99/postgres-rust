@@ -1,7 +1,6 @@
 impl Parser<'_> {
     /// Alias: `CommentStmt`
     pub(in crate::parser) fn comment_stmt(&mut self) -> ParseResult<RawStmt> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::comment_stmt";
 
         /*
             COMMENT ON AGGREGATE aggregate_with_argtypes IS comment_text
@@ -24,7 +23,7 @@ impl Parser<'_> {
             COMMENT ON TYPE_P Typename IS comment_text
         */
 
-        self.buffer.consume_kw_eq(On).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(On).required(fn_info!())?;
 
         todo!()
     }

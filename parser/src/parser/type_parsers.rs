@@ -8,7 +8,6 @@ impl Parser<'_> {
 
     /// Alias: `Typename`
     pub(in crate::parser) fn type_name(&mut self) -> ScanResult<SystemType> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::type_name";
 
         /*
             ( SETOF )? SimpleTypename opt_array_bounds
@@ -20,7 +19,7 @@ impl Parser<'_> {
 
         let typ = if setof {
             // this means the `SETOF` keyword was present, so the production has already started
-            typ.required(fn_info!(FN_NAME))?
+            typ.required(fn_info!())?
         }
         else {
             typ?
@@ -40,7 +39,6 @@ impl Parser<'_> {
 
     /// Post-condition: Vec is **Not** empty
     fn opt_array_bounds(&mut self) -> ScanResult<Vec<Option<i32>>> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_array_bounds";
 
         /*
               ARRAY ( '[' ICONST ']' )?
@@ -62,8 +60,8 @@ impl Parser<'_> {
             /*
                 '[' ICONST ']'
             */
-            let dim_len = self.i32_literal().required(fn_info!(FN_NAME))?;
-            self.buffer.consume_op(CloseBracket).required(fn_info!(FN_NAME))?;
+            let dim_len = self.i32_literal().required(fn_info!())?;
+            self.buffer.consume_op(CloseBracket).required(fn_info!())?;
             return Ok(vec![Some(dim_len)])
         }
 
@@ -75,7 +73,7 @@ impl Parser<'_> {
 
         while self.buffer.consume_op(OpenBracket).optional()?.is_some() {
             let dim_len = self.i32_literal().optional()?;
-            self.buffer.consume_op(CloseBracket).required(fn_info!(FN_NAME))?;
+            self.buffer.consume_op(CloseBracket).required(fn_info!())?;
             elements.push(dim_len);
         }
 
@@ -157,7 +155,6 @@ impl Parser<'_> {
     ///         * `BitWithLength` and `BitWithoutLength`
     ///     * `func_name` (partially)
     fn parse_type(&mut self, kind: TypeNameKind) -> ScanResult<TypeName> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::parse_type";
 
         /*
             There's a difference here between C-PG's `AexprConst` and this production.
@@ -184,7 +181,7 @@ impl Parser<'_> {
             return Ok(GenericTypeName::new(name, modifiers).into())
         }
 
-        consume!{self FN_NAME
+        consume!{self
             Ok {
                 Kw(JsonKw) => Ok(Json),
                 Kw(Boolean) => Ok(Bool),
@@ -203,12 +200,12 @@ impl Parser<'_> {
                         Some(1..=24) => Ok(Float4),
                         Some(num @ ..=0) => {
                             let loc = self.buffer.current_location();
-                            let err = ParserError::new(FloatPrecisionUnderflow(num), fn_info!(FN_NAME), loc);
+                            let err = ParserError::new(FloatPrecisionUnderflow(num), fn_info!(), loc);
                             Err(err.into())
                         },
                         Some(num @ 54..) => {
                             let loc = self.buffer.current_location();
-                            let err = ParserError::new(FloatPrecisionOverflow(num), fn_info!(FN_NAME), loc);
+                            let err = ParserError::new(FloatPrecisionOverflow(num), fn_info!(), loc);
                             Err(err.into())
                         },
                     }
@@ -358,13 +355,12 @@ impl Parser<'_> {
     }
 
     fn opt_timezone(&mut self) -> ParseResult<bool> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_timezone";
 
         /*
             ( (WITH | WITHOUT) TIME ZONE )?
         */
 
-        let result = consume!{self FN_NAME
+        let result = consume!{self
             Ok {
                 Kw(With), Kw(TimeKw), Kw(Zone) => Ok(true),
                 Kw(Without), Kw(TimeKw), Kw(Zone) => Ok(false),
@@ -382,7 +378,6 @@ impl Parser<'_> {
 
     pub(in crate::parser) fn opt_interval(&mut self) -> ParseResult<IntervalRange> {
         use IntervalRange::*;
-        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_interval";
 
         /*
               YEAR
@@ -409,7 +404,7 @@ impl Parser<'_> {
                 },
                 Kw(MinuteKw) => {
                     if self.buffer.consume_kw_eq(To).optional()?.is_some() {
-                        self.buffer.consume_kw_eq(SecondKw).required(fn_info!(FN_NAME))?;
+                        self.buffer.consume_kw_eq(SecondKw).required(fn_info!())?;
                         let precision = self.i32_literal_paren().optional()?;
                         Ok(MinuteToSecond { precision })
                     }
@@ -430,9 +425,9 @@ impl Parser<'_> {
                             Err {
                                 Ok(_) => {
                                     let loc = self.buffer.current_location();
-                                    syntax_err(fn_info!(FN_NAME), loc)
+                                    syntax_err(fn_info!(), loc)
                                 },
-                                Err(Eof(loc)) => syntax_err(fn_info!(FN_NAME), loc),
+                                Err(Eof(loc)) => syntax_err(fn_info!(), loc),
                                 Err(NotEof(err)) => err,
                             }
                         };
@@ -456,9 +451,9 @@ impl Parser<'_> {
                             Err {
                                 Ok(_) => {
                                     let loc = self.buffer.current_location();
-                                    syntax_err(fn_info!(FN_NAME), loc)
+                                    syntax_err(fn_info!(), loc)
                                 },
-                                Err(Eof(loc)) => syntax_err(fn_info!(FN_NAME), loc),
+                                Err(Eof(loc)) => syntax_err(fn_info!(), loc),
                                 Err(NotEof(err)) => err,
                             }
                         };
@@ -471,7 +466,7 @@ impl Parser<'_> {
                 Kw(MonthKw) => Ok(Month),
                 Kw(YearKw) => {
                     if self.buffer.consume_kw_eq(To).optional()?.is_some() {
-                        self.buffer.consume_kw_eq(MonthKw).required(fn_info!(FN_NAME))?;
+                        self.buffer.consume_kw_eq(MonthKw).required(fn_info!())?;
                         Ok(YearToMonth)
                     }
                     else {

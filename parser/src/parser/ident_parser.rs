@@ -5,7 +5,6 @@ pub(super) struct IdentifierParser<'p, 'src>(
 impl<'p, 'src> IdentifierParser<'p, 'src> {
 
     pub fn parse(&mut self) -> ScanResult<Box<str>> {
-        const FN_NAME: &str = "postgres_parser::parser::ident_parser::IdentifierParser::parse";
 
         let (kind, slice, loc) = self.0.consume_with_slice(|(tok, slice, loc)|
             tok.identifier()
@@ -31,7 +30,7 @@ impl<'p, 'src> IdentifierParser<'p, 'src> {
                     .decode()
                     .map(str::into_string)
                     .map_err(|err|
-                        ParserError::new(UnicodeString(err), fn_info!(FN_NAME), loc)
+                        ParserError::new(UnicodeString(err), fn_info!(), loc)
                     )
             },
         };

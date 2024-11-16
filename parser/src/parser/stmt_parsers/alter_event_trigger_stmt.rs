@@ -1,6 +1,5 @@
 impl Parser<'_> {
     pub(in crate::parser) fn alter_event_trigger_stmt(&mut self) -> ParseResult<RawStmt> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::alter_event_trigger_stmt";
 
         /*
             ALTER EVENT TRIGGER ColId enable_trigger
@@ -8,12 +7,12 @@ impl Parser<'_> {
             ALTER EVENT TRIGGER ColId RENAME TO ColId
         */
 
-        self.buffer.consume_kw_eq(Trigger).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(Trigger).required(fn_info!())?;
 
-        let trigger = self.col_id().required(fn_info!(FN_NAME))?;
+        let trigger = self.col_id().required(fn_info!())?;
 
         let op = self.buffer.consume_kw(|kw| matches!(kw, Owner | Rename))
-            .try_match(fn_info!(FN_NAME))?;
+            .try_match(fn_info!())?;
 
         let Some(op) = op else {
             /*
@@ -24,13 +23,13 @@ impl Parser<'_> {
             return Ok(stmt.into())
         };
 
-        self.buffer.consume_kw_eq(To).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(To).required(fn_info!())?;
 
         let stmt = if op == Owner {
             /*
                 ... OWNER TO RoleSpec
             */
-            let new_owner = self.role_spec().required(fn_info!(FN_NAME))?;
+            let new_owner = self.role_spec().required(fn_info!())?;
             let stmt = AlterOwnerStmt::new(
                 AlterOwnerTarget::EventTrigger(trigger),
                 new_owner
@@ -41,7 +40,7 @@ impl Parser<'_> {
             /*
                 ... RENAME TO ColId
             */
-            let new_name = self.col_id().required(fn_info!(FN_NAME))?;
+            let new_name = self.col_id().required(fn_info!())?;
             let stmt = RenameStmt::new(
                 RenameTarget::EventTrigger(trigger),
                 new_name
@@ -53,7 +52,6 @@ impl Parser<'_> {
     }
 
     fn enable_trigger(&mut self) -> ParseResult<EventTriggerState> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::enable_trigger";
 
         /*
             ENABLE_P
@@ -68,7 +66,7 @@ impl Parser<'_> {
                     .filter(|kw| matches!(kw, Enable | Disable))
                     .map(|kw| kw == Enable)
             )
-            .required(fn_info!(FN_NAME))?;
+            .required(fn_info!())?;
 
         if !enable {
             return Ok(Disabled)

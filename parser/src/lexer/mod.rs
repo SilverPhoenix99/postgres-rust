@@ -103,8 +103,6 @@ impl<'src> Lexer<'src> {
     }
 
     fn lex_token(&mut self, concatenable_string: bool) -> LexResult {
-        const FN_NAME: &str = "postgres_parser::lexer::Lexer::lex_token";
-
         match self.buffer.consume_one().expect("eof should have already been filtered out") {
             '(' => Ok(Operator(OpenParenthesis)),
             ')' => Ok(Operator(CloseParenthesis)),
@@ -138,7 +136,7 @@ impl<'src> Lexer<'src> {
                 Some(c) if is_decimal_digit(c) => self.lex_param(),
                 Some('$') => self.lex_dollar_string(), // empty delimiter
                 Some(c) if is_ident_start(c) => self.lex_dollar_string(),
-                _ => Err((UnexpectedChar { unknown: '$' }, fn_info!(FN_NAME))),
+                _ => Err((UnexpectedChar { unknown: '$' }, fn_info!())),
             }
             '\'' => {
                 if self.standard_conforming_strings {
@@ -181,7 +179,7 @@ impl<'src> Lexer<'src> {
                     match self.buffer.peek() {
                         Some('\'') => { // u&'...'
                             if !self.standard_conforming_strings {
-                                return Err((UnsafeUnicodeString, fn_info!(FN_NAME)))
+                                return Err((UnsafeUnicodeString, fn_info!()))
                             }
                             self.buffer.consume_one();
                             self.lex_quote_string(StringKind::Unicode)
@@ -213,15 +211,13 @@ impl<'src> Lexer<'src> {
             op if is_op(op) => self.lex_operator(),
             id if is_ident_start(id) => self.lex_identifier(),
             unknown => {
-                Err((UnexpectedChar { unknown }, fn_info!(FN_NAME)))
+                Err((UnexpectedChar { unknown }, fn_info!()))
             },
         }
     }
 
     #[inline] // Only called from a single place
     fn lex_operator(&mut self) -> LexResult {
-        const FN_NAME: &str = "postgres_parser::lexer::Lexer::lex_operator";
-
         self.buffer.push_back(); // so it's easier to consume
 
         // All trivia have already been consumed, so it never starts as a comment ("/*" or "--").
@@ -285,7 +281,7 @@ impl<'src> Lexer<'src> {
                 }
 
                 if op.len() >= NAMEDATALEN {
-                    Err((OperatorTooLong, fn_info!(FN_NAME)))
+                    Err((OperatorTooLong, fn_info!()))
                 }
                 else {
                     Ok(UserDefinedOperator)
@@ -296,8 +292,6 @@ impl<'src> Lexer<'src> {
 
     #[inline] // Only called from a single place
     fn lex_param(&mut self) -> LexResult {
-        const FN_NAME: &str = "postgres_parser::lexer::Lexer::lex_param";
-
         // $ has already been consumed, so no need to worry about it here
 
         let start_index = self.buffer.current_index();
@@ -307,7 +301,7 @@ impl<'src> Lexer<'src> {
         // check junk
         let consumed = self.buffer.consume_if(is_ident_start);
         if consumed.is_some() {
-            return Err((TrailingJunkAfterParameter, fn_info!(FN_NAME)))
+            return Err((TrailingJunkAfterParameter, fn_info!()))
         }
 
         // SAFETY: They're all ASCII decimal digits
@@ -319,7 +313,7 @@ impl<'src> Lexer<'src> {
             //   The leading digit in i32::MAX is '2',
             //   so if the leading digit is above,
             //   then the string can't be safely parsed as an i32.
-            return Err((ParameterNumberTooLarge, fn_info!(FN_NAME)))
+            return Err((ParameterNumberTooLarge, fn_info!()))
         }
 
         // i32 is used to match original C-PG's expectation that it won't be > i32::MAX
@@ -329,7 +323,7 @@ impl<'src> Lexer<'src> {
                 acc.checked_mul(10)?.checked_add(n)
             )
             .map_or(
-                Err((ParameterNumberTooLarge, fn_info!(FN_NAME))),
+                Err((ParameterNumberTooLarge, fn_info!())),
                 |index| Ok(Param { index })
             )
     }
@@ -373,7 +367,6 @@ impl<'src> Lexer<'src> {
     }
 
     fn lex_dec_real(&mut self) -> LexResult<()> {
-        const FN_NAME: &str = "postgres_parser::lexer::Lexer::lex_dec_real";
 
         // Returns:
         //   Ok(true)  - When the pattern matched successfully after '[Ee]'.
@@ -396,7 +389,7 @@ impl<'src> Lexer<'src> {
             if !dec {
                 if sign {
                     // [Ee] [+-] (?!\d)
-                    return Err((TrailingJunkAfterNumericLiteral, fn_info!(FN_NAME)))
+                    return Err((TrailingJunkAfterNumericLiteral, fn_info!()))
                 }
                 // [Ee] (?![+-\d])
                 self.buffer.push_back();
@@ -404,7 +397,7 @@ impl<'src> Lexer<'src> {
         }
 
         if self.buffer.peek().is_some_and(is_ident_start) {
-            return Err((TrailingJunkAfterNumericLiteral, fn_info!(FN_NAME)))
+            return Err((TrailingJunkAfterNumericLiteral, fn_info!()))
         }
 
         Ok(())
@@ -447,7 +440,6 @@ impl<'src> Lexer<'src> {
     }
 
     fn lex_prefixed_int(&mut self, is_digit: impl Fn(char) -> bool, radix: NumberRadix) -> LexResult {
-        const FN_NAME: &str = "postgres_parser::lexer::Lexer::lex_prefixed_int";
 
         self.buffer.consume_one(); // ignore [xXoObB]
 
@@ -464,11 +456,11 @@ impl<'src> Lexer<'src> {
         let span = self.buffer.slice(start_index).as_bytes();
 
         if span.is_empty() || span.last().is_some_and(|c| *c == b'_') {
-            return Err((InvalidInteger(radix), fn_info!(FN_NAME)))
+            return Err((InvalidInteger(radix), fn_info!()))
         }
 
         if self.buffer.peek().is_some_and(is_ident_start) {
-            return Err((TrailingJunkAfterNumericLiteral, fn_info!(FN_NAME)))
+            return Err((TrailingJunkAfterNumericLiteral, fn_info!()))
         }
 
         Ok(NumberLiteral(radix))
@@ -476,7 +468,6 @@ impl<'src> Lexer<'src> {
 
     #[inline] // Only called from a single place
     fn lex_bit_string(&mut self, kind: BitStringKind) -> LexResult {
-        const FN_NAME: &str = "postgres_parser::lexer::Lexer::lex_bit_string";
 
         // No content validation to simplify the lexer.
 
@@ -489,7 +480,7 @@ impl<'src> Lexer<'src> {
                     else {
                         UnterminatedBitString
                     };
-                    return Err((err, fn_info!(FN_NAME)))
+                    return Err((err, fn_info!()))
                 },
                 Some('\'') => return Ok(BitStringLiteral(kind)),
                 _ => {}
@@ -498,13 +489,12 @@ impl<'src> Lexer<'src> {
     }
 
     fn lex_quote_ident(&mut self, ident_kind: IdentifierKind) -> LexResult {
-        const FN_NAME: &str = "postgres_parser::lexer::Lexer::lex_quote_ident";
 
         let start_index = self.buffer.current_index();
 
         loop {
             let Some(c) = self.buffer.consume_one() else {
-                return Err((UnterminatedQuotedIdentifier, fn_info!(FN_NAME)))
+                return Err((UnterminatedQuotedIdentifier, fn_info!()))
             };
 
             if c != '"' {
@@ -518,7 +508,7 @@ impl<'src> Lexer<'src> {
             }
 
             return if self.buffer.current_index() - start_index == 1 {
-                Err((EmptyDelimitedIdentifier, fn_info!(FN_NAME))) // only consumed '"'
+                Err((EmptyDelimitedIdentifier, fn_info!())) // only consumed '"'
             }
             else {
                 Ok(Identifier(ident_kind))
@@ -527,11 +517,10 @@ impl<'src> Lexer<'src> {
     }
 
     fn lex_quote_string(&mut self, kind: StringKind) -> LexResult {
-        const FN_NAME: &str = "postgres_parser::lexer::Lexer::lex_quote_string";
 
         loop {
             let Some(c) = self.buffer.consume_one() else {
-                return Err((UnterminatedQuotedString, fn_info!(FN_NAME)))
+                return Err((UnterminatedQuotedString, fn_info!()))
             };
 
             if c != '\'' {
@@ -548,7 +537,6 @@ impl<'src> Lexer<'src> {
     }
 
     fn lex_extended_string(&mut self, concatenable: bool) -> LexResult {
-        const FN_NAME: &str = "postgres_parser::lexer::Lexer::lex_extended_string";
 
         // To keep the lexer simple, parsing escapes will be done at a later point.
         // This way the lexer doesn't need to work with Strings,
@@ -556,11 +544,11 @@ impl<'src> Lexer<'src> {
 
         loop {
             let Some(c) = self.buffer.consume_one() else {
-                return Err((UnterminatedQuotedString, fn_info!(FN_NAME)))
+                return Err((UnterminatedQuotedString, fn_info!()))
             };
 
             if c == '\\' && self.buffer.consume_one().is_none() {
-                return Err((UnterminatedQuotedString, fn_info!(FN_NAME)))
+                return Err((UnterminatedQuotedString, fn_info!()))
             }
 
             if c == '\'' {
@@ -592,19 +580,18 @@ impl<'src> Lexer<'src> {
     }
 
     fn lex_dollar_string(&mut self) -> LexResult {
-        const FN_NAME: &str = "postgres_parser::lexer::Lexer::lex_dollar_string";
 
         // The delimiter always contains '$' as the last char,
         // even if the delimiter is empty (i.e., '$$'),
         // so it's easier to match and consume.
 
         let Some(delim) = self.lex_dollar_delim() else {
-            return Err((UnexpectedChar { unknown: '$' }, fn_info!(FN_NAME)))
+            return Err((UnexpectedChar { unknown: '$' }, fn_info!()))
         };
 
         loop {
             if self.buffer.eof() {
-                return Err((UnterminatedDollarQuotedString, fn_info!(FN_NAME)))
+                return Err((UnterminatedDollarQuotedString, fn_info!()))
             }
             if self.buffer.consume_char('$') {
                 if self.buffer.consume_string(delim) {
@@ -705,7 +692,6 @@ impl<'src> Lexer<'src> {
     }
 
     fn skip_block_comment(&mut self) -> Result<bool, LexerError> {
-        const FN_NAME: &str = "postgres_parser::lexer::Lexer::skip_block_comment";
 
         let start_index = self.buffer.current_index();
 
@@ -725,7 +711,7 @@ impl<'src> Lexer<'src> {
 
             if self.buffer.eof() {
                 let loc = self.buffer.location_starting_at(start_index);
-                let report = LexerError::new(UnterminatedBlockComment, fn_info!(FN_NAME), loc);
+                let report = LexerError::new(UnterminatedBlockComment, fn_info!(), loc);
                 return Err(report)
             }
 

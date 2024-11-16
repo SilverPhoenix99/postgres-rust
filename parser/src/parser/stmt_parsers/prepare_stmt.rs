@@ -1,20 +1,19 @@
 impl Parser<'_> {
     pub(in crate::parser) fn prepare_stmt(&mut self) -> ParseResult<RawStmt> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::prepare_stmt";
 
         /*
             PREPARE TRANSACTION SCONST
             PREPARE ColId ( '(' type_list ')' )? AS PreparableStmt
         */
 
-        let tx = self.buffer.consume_kw_eq(Transaction).try_match(fn_info!(FN_NAME))?;
+        let tx = self.buffer.consume_kw_eq(Transaction).try_match(fn_info!())?;
 
         if tx.is_some() {
-            let tx_id = self.string().required(fn_info!(FN_NAME))?;
+            let tx_id = self.string().required(fn_info!())?;
             return Ok(PrepareTransactionStmt(tx_id))
         }
 
-        let name = self.col_id().required(fn_info!(FN_NAME))?;
+        let name = self.col_id().required(fn_info!())?;
         todo!()
     }
 }

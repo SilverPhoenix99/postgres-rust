@@ -19,7 +19,6 @@ impl Parser<'_> {
 
     /// Post-condition: Vec is **Not** empty
     pub(super) fn privilege_list(&mut self) -> ScanResult<Vec<SpecificAccessPrivilege>> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::privilege_list";
 
         /*
             privilege ( ',' privilege )*
@@ -29,7 +28,7 @@ impl Parser<'_> {
         let mut elements = vec![element];
 
         while self.buffer.consume_op(Comma).optional()?.is_some() {
-            let element = self.privilege().required(fn_info!(FN_NAME))?;
+            let element = self.privilege().required(fn_info!())?;
             elements.push(element);
         }
 
@@ -37,7 +36,6 @@ impl Parser<'_> {
     }
 
     fn privilege(&mut self) -> ScanResult<SpecificAccessPrivilege> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::privilege";
 
         /*
               ALTER SYSTEM
@@ -47,7 +45,7 @@ impl Parser<'_> {
             | col_id opt_column_list
         */
 
-        let privilege = consume!{self FN_NAME
+        let privilege = consume!{self
             Ok {
                 Kw(Alter), Kw(SystemKw) => Ok(AlterSystem),
                 Kw(CreateKw) => {

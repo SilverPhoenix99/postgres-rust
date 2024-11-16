@@ -1,13 +1,12 @@
 impl Parser<'_> {
     pub(in crate::parser) fn savepoint_stmt(&mut self) -> ParseResult<TransactionStmt> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::savepoint_stmt";
-        
+
         /*
         TransactionStmt:
             SAVEPOINT ColId
         */
 
-        let name = self.col_id().required(fn_info!(FN_NAME))?;
+        let name = self.col_id().required(fn_info!())?;
 
         Ok(TransactionStmt::Savepoint(name))
     }

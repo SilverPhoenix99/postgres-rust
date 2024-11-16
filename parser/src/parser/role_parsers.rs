@@ -2,7 +2,6 @@ impl Parser<'_> {
 
     /// Post-condition: Vec is **Not** empty
     pub(super) fn role_list(&mut self) -> ScanResult<Vec<RoleSpec>> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::role_list";
 
         /*
             role_spec ( ',' role_spec )*
@@ -12,7 +11,7 @@ impl Parser<'_> {
         let mut roles = vec![role];
 
         while self.buffer.consume_op(Comma).optional()?.is_some() {
-            let role = self.role_spec().required(fn_info!(FN_NAME))?;
+            let role = self.role_spec().required(fn_info!())?;
             roles.push(role);
         }
 
@@ -34,7 +33,6 @@ impl Parser<'_> {
     /// Alias: `RoleSpec`
     pub(super) fn role_spec(&mut self) -> ScanResult<RoleSpec> {
         use crate::lexer::RawTokenKind::Keyword as Kw;
-        const FN_NAME: &str = "postgres_parser::parser::Parser::role_spec";
 
         /*
             role_spec :
@@ -68,7 +66,7 @@ impl Parser<'_> {
                 Ok(Kw(NoneKw)) => {
                     let loc = self.buffer.current_location();
                     ScanErr(
-                        ParserError::new(ReservedRoleSpec("none"), fn_info!(FN_NAME), loc)
+                        ParserError::new(ReservedRoleSpec("none"), fn_info!(), loc)
                     )
                 },
                 Ok(_) => {

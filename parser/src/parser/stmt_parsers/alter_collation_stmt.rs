@@ -1,6 +1,5 @@
 impl Parser<'_> {
     pub(in crate::parser) fn alter_collation_stmt(&mut self) -> ParseResult<RawStmt> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::alter_collation_stmt";
 
         /*
             ALTER COLLATION any_name OWNER TO RoleSpec
@@ -9,15 +8,15 @@ impl Parser<'_> {
             ALTER COLLATION any_name SET SCHEMA ColId
         */
 
-        let name = self.any_name().required(fn_info!(FN_NAME))?;
+        let name = self.any_name().required(fn_info!())?;
 
         let op = self.buffer.consume_kw(|kw| matches!(kw, Owner | Refresh | Rename | Set))
-            .required(fn_info!(FN_NAME))?;
+            .required(fn_info!())?;
 
         let stmt = match op {
             Owner => {
-                self.buffer.consume_kw_eq(To).required(fn_info!(FN_NAME))?;
-                let role = self.role_spec().required(fn_info!(FN_NAME))?;
+                self.buffer.consume_kw_eq(To).required(fn_info!())?;
+                let role = self.role_spec().required(fn_info!())?;
 
                 AlterOwnerStmt::new(
                     AlterOwnerTarget::Collation(name),
@@ -25,12 +24,12 @@ impl Parser<'_> {
                 ).into()
             },
             Refresh => {
-                self.buffer.consume_kw_eq(Version).required(fn_info!(FN_NAME))?;
+                self.buffer.consume_kw_eq(Version).required(fn_info!())?;
                 RefreshCollationVersionStmt(name)
             },
             Rename => {
-                self.buffer.consume_kw_eq(To).required(fn_info!(FN_NAME))?;
-                let new_name = self.col_id().required(fn_info!(FN_NAME))?;
+                self.buffer.consume_kw_eq(To).required(fn_info!())?;
+                let new_name = self.col_id().required(fn_info!())?;
 
                 RenameStmt::new(
                     RenameTarget::Collation(name),
@@ -38,8 +37,8 @@ impl Parser<'_> {
                 ).into()
             },
             Set => {
-                self.buffer.consume_kw_eq(Schema).required(fn_info!(FN_NAME))?;
-                let new_schema = self.col_id().required(fn_info!(FN_NAME))?;
+                self.buffer.consume_kw_eq(Schema).required(fn_info!())?;
+                let new_schema = self.col_id().required(fn_info!())?;
 
                 AlterObjectSchemaStmt::new(
                     AlterObjectSchemaTarget::Collation(name),

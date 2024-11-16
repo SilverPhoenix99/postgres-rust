@@ -59,7 +59,6 @@ impl<'src> Parser<'src> {
     }
 
     fn stmtmulti(&mut self) -> ParseResult<Vec<RawStmt>> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::stmtmulti";
 
         // This production is slightly cheating, not because it's more efficient,
         // but helps simplify capturing errors.
@@ -86,7 +85,7 @@ impl<'src> Parser<'src> {
         // if it's not Eof, then something didn't match properly
         if !self.buffer.eof() {
             let loc = self.buffer.current_location();
-            return Err(syntax_err(fn_info!(FN_NAME), loc))
+            return Err(syntax_err(fn_info!(), loc))
         }
 
         Ok(stmts)
@@ -123,7 +122,6 @@ impl<'src> Parser<'src> {
 
     fn opt_transaction_chain(&mut self) -> ParseResult<bool> {
         use Keyword::{And, Chain, No};
-        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_transaction_chain";
 
         if self.buffer.consume_kw_eq(And).optional()?.is_none() {
             return Ok(false)
@@ -131,7 +129,7 @@ impl<'src> Parser<'src> {
 
         let result = self.buffer.consume_kw_eq(No).optional()?.is_none();
 
-        self.buffer.consume_kw_eq(Chain).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(Chain).required(fn_info!())?;
 
         Ok(result)
     }
@@ -140,7 +138,6 @@ impl<'src> Parser<'src> {
     ///
     /// Alias: `transaction_mode_list_or_empty`
     fn transaction_mode_list(&mut self) -> ScanResult<Vec<TransactionMode>> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::transaction_mode_list";
 
         /*
             transaction_mode ( (',')? transaction_mode )*
@@ -152,7 +149,7 @@ impl<'src> Parser<'src> {
         loop {
             let element = match self.buffer.consume_op(Comma) {
                 Ok(_) => {
-                    self.transaction_mode().required(fn_info!(FN_NAME))?
+                    self.transaction_mode().required(fn_info!())?
                 }
                 Err(NoMatch(_)) => {
                     let mode = self.transaction_mode().optional();
@@ -167,7 +164,7 @@ impl<'src> Parser<'src> {
         }
 
         while self.buffer.consume_op(Comma).optional()?.is_some() {
-            let element = self.transaction_mode().required(fn_info!(FN_NAME))?;
+            let element = self.transaction_mode().required(fn_info!())?;
             elements.push(element);
         }
 
@@ -177,7 +174,6 @@ impl<'src> Parser<'src> {
     /// Alias: `transaction_mode_item`
     fn transaction_mode(&mut self) -> ScanResult<TransactionMode> {
         use Keyword::{Deferrable, Isolation, Level, Not, Only, Read, Write};
-        const FN_NAME: &str = "postgres_parser::parser::Parser::transaction_mode";
 
         /*
               ISOLATION LEVEL iso_level
@@ -194,12 +190,12 @@ impl<'src> Parser<'src> {
         match result {
             Deferrable => Ok(TransactionMode::Deferrable),
             Not => {
-                self.buffer.consume_kw_eq(Deferrable).required(fn_info!(FN_NAME))?;
+                self.buffer.consume_kw_eq(Deferrable).required(fn_info!())?;
                 Ok(TransactionMode::NotDeferrable)
             },
             Isolation => {
-                self.buffer.consume_kw_eq(Level).required(fn_info!(FN_NAME))?;
-                let isolation_level = self.isolation_level().required(fn_info!(FN_NAME))?;
+                self.buffer.consume_kw_eq(Level).required(fn_info!())?;
+                let isolation_level = self.isolation_level().required(fn_info!())?;
                 Ok(TransactionMode::IsolationLevel(isolation_level))
             },
             Read => {
@@ -209,7 +205,7 @@ impl<'src> Parser<'src> {
                         Some(Write) => Some(TransactionMode::ReadWrite),
                         _ => None
                     })
-                    .required(fn_info!(FN_NAME))
+                    .required(fn_info!())
                     .map_err(ScanErrorKind::from)
             },
             _ => unreachable!("it was already filtered by consume_kw()")
@@ -219,7 +215,6 @@ impl<'src> Parser<'src> {
     /// Alias: `iso_level`
     fn isolation_level(&mut self) -> ScanResult<IsolationLevel> {
         use Keyword::{Committed, Read, Repeatable, Serializable, Uncommitted};
-        const FN_NAME: &str = "postgres_parser::parser::Parser::isolation_level";
 
         /*
             READ UNCOMMITTED
@@ -235,7 +230,7 @@ impl<'src> Parser<'src> {
         match kw {
             Serializable => Ok(IsolationLevel::Serializable),
             Repeatable => {
-                self.buffer.consume_kw_eq(Read).required(fn_info!(FN_NAME))?;
+                self.buffer.consume_kw_eq(Read).required(fn_info!())?;
                 Ok(IsolationLevel::RepeatableRead)
             },
             Read => {
@@ -245,7 +240,7 @@ impl<'src> Parser<'src> {
                         Some(Uncommitted) => Some(IsolationLevel::ReadUncommitted),
                         _ => None
                     })
-                    .required(fn_info!(FN_NAME))?;
+                    .required(fn_info!())?;
 
                 Ok(level)
             },
@@ -255,7 +250,6 @@ impl<'src> Parser<'src> {
 
     /// Post-condition: Vec is **Not** empty
     fn var_list(&mut self) -> ScanResult<Vec<QualifiedName>> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::var_list";
 
         /*
             var_name ( ',' var_name )*
@@ -265,7 +259,7 @@ impl<'src> Parser<'src> {
         let mut elements = vec![element];
 
         while self.buffer.consume_op(Comma).optional()?.is_some() {
-            let element = self.var_name().required(fn_info!(FN_NAME))?;
+            let element = self.var_name().required(fn_info!())?;
             elements.push(element);
         }
 
@@ -298,22 +292,20 @@ impl<'src> Parser<'src> {
     ///
     /// Alias: `opt_column_list`
     fn opt_name_list(&mut self) -> ScanResult<Vec<Str>> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_col_list";
 
         /*
             '(' name_list ')'
         */
 
         self.buffer.consume_op(OpenParenthesis)?;
-        let names = self.name_list().required(fn_info!(FN_NAME))?;
-        self.buffer.consume_op(CloseParenthesis).required(fn_info!(FN_NAME))?;
+        let names = self.name_list().required(fn_info!())?;
+        self.buffer.consume_op(CloseParenthesis).required(fn_info!())?;
 
         Ok(names)
     }
 
     /// Post-condition: Vec is **Not** empty
     fn col_id_list(&mut self, separator: OperatorKind) -> ScanResult<QualifiedName> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::col_id_list";
 
         /*
             col_id ( <separator> col_id )*
@@ -323,7 +315,7 @@ impl<'src> Parser<'src> {
         let mut elements = vec![element];
 
         while self.buffer.consume_op(separator).optional()?.is_some() {
-            let element = self.col_id().required(fn_info!(FN_NAME))?;
+            let element = self.col_id().required(fn_info!())?;
             elements.push(element);
         }
 
@@ -332,22 +324,20 @@ impl<'src> Parser<'src> {
 
     /// Post-condition: Vec is **Not** empty
     fn expr_list_paren(&mut self) -> ScanResult<Vec<ExprNode>> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_type_modifiers";
 
         /*
             '(' expr_list ')'
         */
 
         self.buffer.consume_op(OpenParenthesis)?;
-        let exprs = self.expr_list().required(fn_info!(FN_NAME))?;
-        self.buffer.consume_op(CloseParenthesis).required(fn_info!(FN_NAME))?;
+        let exprs = self.expr_list().required(fn_info!())?;
+        self.buffer.consume_op(CloseParenthesis).required(fn_info!())?;
 
         Ok(exprs)
     }
 
     /// Post-condition: Vec is **Not** empty
     fn expr_list(&mut self) -> ScanResult<Vec<ExprNode>> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::expr_list";
 
         /*
             a_expr ( ',' a_expr )*
@@ -357,7 +347,7 @@ impl<'src> Parser<'src> {
         let mut exprs = vec![expr];
 
         while self.buffer.consume_op(Comma).optional()?.is_some() {
-            let expr = self.a_expr().required(fn_info!(FN_NAME))?;
+            let expr = self.a_expr().required(fn_info!())?;
             exprs.push(expr);
         }
 
@@ -366,12 +356,11 @@ impl<'src> Parser<'src> {
 
     /// Post-condition: Vec is **Not** empty
     fn qualified_name_list(&mut self) -> ScanResult<Vec<RangeVar>> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::qualified_name_list";
 
         let mut elements = vec![self.qualified_name()?];
 
         while self.buffer.consume_op(Comma).optional()?.is_some() {
-            let element = self.qualified_name().required(fn_info!(FN_NAME))?;
+            let element = self.qualified_name().required(fn_info!())?;
             elements.push(element);
         }
 
@@ -379,7 +368,6 @@ impl<'src> Parser<'src> {
     }
 
     fn qualified_name(&mut self) -> ScanResult<RangeVar> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::qualified_name";
 
         /*
             col_id attrs{0,2}
@@ -389,7 +377,7 @@ impl<'src> Parser<'src> {
         let qn = self.any_name()?;
 
         if !(1..=3).contains(&qn.len()) {
-            let err = ParserError::new(ImproperQualifiedName(NameList(qn)), fn_info!(FN_NAME), loc);
+            let err = ParserError::new(ImproperQualifiedName(NameList(qn)), fn_info!(), loc);
             return Err(err.into())
         }
 
@@ -414,7 +402,6 @@ impl<'src> Parser<'src> {
 
     /// Post-condition: Vec is **Not** empty
     fn any_name_list(&mut self) -> ScanResult<Vec<QualifiedName>> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::any_name_list";
 
         /*
             any_name ( ',' any_name )*
@@ -424,7 +411,7 @@ impl<'src> Parser<'src> {
         let mut elements = vec![element];
 
         while self.buffer.consume_op(Comma).optional()?.is_some() {
-            let element = self.any_name().required(fn_info!(FN_NAME))?;
+            let element = self.any_name().required(fn_info!())?;
             elements.push(element);
         }
 
@@ -446,7 +433,6 @@ impl<'src> Parser<'src> {
 
     /// Post-condition: Vec is **Not** empty
     fn attrs(&mut self, prefix: Str) -> ParseResult<QualifiedName> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::attrs";
 
         // A prefix token is passed to prevent a right shift of the Vec later on,
         // to insert the 1st element.
@@ -458,7 +444,7 @@ impl<'src> Parser<'src> {
         let mut attrs = vec![prefix];
 
         while self.buffer.consume_op(Dot).optional()?.is_some() {
-            let attr = self.col_label().required(fn_info!(FN_NAME))?;
+            let attr = self.col_label().required(fn_info!())?;
             attrs.push(attr);
         }
 
@@ -467,28 +453,26 @@ impl<'src> Parser<'src> {
 
     /// Production: `'(' ICONST ')'`
     fn i32_literal_paren(&mut self) -> ScanResult<i32> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::i32_literal_paren";
 
         self.buffer.consume_op(OpenParenthesis)?;
-        let num = self.i32_literal().required(fn_info!(FN_NAME))?;
-        self.buffer.consume_op(CloseParenthesis).required(fn_info!(FN_NAME))?;
+        let num = self.i32_literal().required(fn_info!())?;
+        self.buffer.consume_op(CloseParenthesis).required(fn_info!())?;
 
         Ok(num)
     }
 
     fn opt_unique_null_treatment(&mut self) -> ScanResult<bool> {
         use Keyword::{Distinct, Not, Nulls};
-        const FN_NAME: &str = "postgres_parser::parser::Parser::opt_unique_null_treatment";
 
         if self.buffer.consume_kw_eq(Nulls).optional()?.is_none() {
             return Ok(true)
         }
 
         let result = self.buffer.consume_kw_eq(Not)
-            .try_match(fn_info!(FN_NAME))?
+            .try_match(fn_info!())?
             .is_none();
 
-        self.buffer.consume_kw_eq(Distinct).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(Distinct).required(fn_info!())?;
 
         Ok(result)
     }

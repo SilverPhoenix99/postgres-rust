@@ -2,14 +2,13 @@ impl Parser<'_> {
 
     /// Alias: `AlterDefaultPrivilegesStmt`
     pub(super) fn alter_default_privileges_stmt(&mut self) -> ParseResult<AlterDefaultPrivilegesStmt> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::alter_default_privileges_stmt";
 
         /*
             ALTER DEFAULT PRIVILEGES DefACLOptionList DefACLAction
         */
 
-        let options = self.def_acl_option_list().required(fn_info!(FN_NAME))?;
-        let action = self.def_acl_action().required(fn_info!(FN_NAME))?;
+        let options = self.def_acl_option_list().required(fn_info!())?;
+        let action = self.def_acl_action().required(fn_info!())?;
 
         let stmt = AlterDefaultPrivilegesStmt::new(options, action);
         Ok(stmt)
@@ -32,16 +31,15 @@ impl Parser<'_> {
 
     /// Alias: `DefACLOption`
     fn def_acl_option(&mut self) -> ScanResult<AclOption> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::def_acl_option";
 
-        consume!{self FN_NAME
+        consume!{self
             Ok {
                 Kw(In), Kw(Schema) => {
-                    let schemas = self.name_list().required(fn_info!(FN_NAME))?;
+                    let schemas = self.name_list().required(fn_info!())?;
                     Ok(AclOption::Schemas(schemas))
                 },
                 Kw(For), Kw(Role | User) => {
-                    let roles = self.role_list().required(fn_info!(FN_NAME))?;
+                    let roles = self.role_list().required(fn_info!())?;
                     Ok(AclOption::Roles(roles))
                 }
             }
@@ -57,7 +55,6 @@ impl Parser<'_> {
 
     /// Alias: `DefACLAction`
     fn def_acl_action(&mut self) -> ScanResult<GrantStmt> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::def_acl_action";
 
         /*
               GRANT privileges ON defacl_privilege_target TO grantee_list opt_grant_option
@@ -67,12 +64,12 @@ impl Parser<'_> {
         consume!{self
             Ok {
                 Kw(Grant) => {
-                    let privileges = self.privileges().required(fn_info!(FN_NAME))?;
-                    self.buffer.consume_kw_eq(On).required(fn_info!(FN_NAME))?;
-                    let object_type = self.def_acl_privilege_target().required(fn_info!(FN_NAME))?;
-                    self.buffer.consume_kw_eq(To).required(fn_info!(FN_NAME))?;
-                    let grantees = self.grantee_list().required(fn_info!(FN_NAME))?;
-                    let grant_option = self.opt_grant_option().required(fn_info!(FN_NAME))?;
+                    let privileges = self.privileges().required(fn_info!())?;
+                    self.buffer.consume_kw_eq(On).required(fn_info!())?;
+                    let object_type = self.def_acl_privilege_target().required(fn_info!())?;
+                    self.buffer.consume_kw_eq(To).required(fn_info!())?;
+                    let grantees = self.grantee_list().required(fn_info!())?;
+                    let grant_option = self.opt_grant_option().required(fn_info!())?;
 
                     let stmt = GrantStmt::grant(privileges, object_type, grantees, grant_option);
                     Ok(stmt)
@@ -82,20 +79,20 @@ impl Parser<'_> {
                         /*
                             GRANT OPTION FOR
                         */
-                        self.buffer.consume_kw_eq(OptionKw).required(fn_info!(FN_NAME))?;
-                        self.buffer.consume_kw_eq(For).required(fn_info!(FN_NAME))?;
+                        self.buffer.consume_kw_eq(OptionKw).required(fn_info!())?;
+                        self.buffer.consume_kw_eq(For).required(fn_info!())?;
                         true
                     }
                     else {
                         false
                     };
 
-                    let privileges = self.privileges().required(fn_info!(FN_NAME))?;
-                    self.buffer.consume_kw_eq(On).required(fn_info!(FN_NAME))?;
-                    let object_type = self.def_acl_privilege_target().required(fn_info!(FN_NAME))?;
-                    self.buffer.consume_kw_eq(FromKw).required(fn_info!(FN_NAME))?;
-                    let grantees = self.grantee_list().required(fn_info!(FN_NAME))?;
-                    let drop_behavior = self.opt_drop_behavior().required(fn_info!(FN_NAME))?;
+                    let privileges = self.privileges().required(fn_info!())?;
+                    self.buffer.consume_kw_eq(On).required(fn_info!())?;
+                    let object_type = self.def_acl_privilege_target().required(fn_info!())?;
+                    self.buffer.consume_kw_eq(FromKw).required(fn_info!())?;
+                    let grantees = self.grantee_list().required(fn_info!())?;
+                    let drop_behavior = self.opt_drop_behavior().required(fn_info!())?;
 
                     let stmt = GrantStmt::revoke(privileges, object_type, grantees, grant_option, drop_behavior);
                     Ok(stmt)
@@ -314,4 +311,4 @@ use crate::{
         Parser
     }
 };
-use postgres_basics::fn_info;
+use postgres_basics::{fn_info, qual_fn_name};

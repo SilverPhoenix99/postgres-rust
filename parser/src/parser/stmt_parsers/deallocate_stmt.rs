@@ -1,7 +1,6 @@
 impl Parser<'_> {
     /// Alias: `DeallocateStmt`
     pub(in crate::parser) fn deallocate_stmt(&mut self) -> ParseResult<OneOrAll> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::deallocate_stmt";
 
         /*
             DEALLOCATE (PREPARE)? ALL
@@ -10,11 +9,11 @@ impl Parser<'_> {
 
         self.buffer.consume_kw_eq(Prepare).optional()?;
 
-        if self.buffer.consume_kw_eq(All).try_match(fn_info!(FN_NAME))?.is_some() {
+        if self.buffer.consume_kw_eq(All).try_match(fn_info!())?.is_some() {
             return Ok(OneOrAll::All)
         }
 
-        let name = self.col_id().required(fn_info!(FN_NAME))?;
+        let name = self.col_id().required(fn_info!())?;
         Ok(OneOrAll::Name(name))
     }
 }

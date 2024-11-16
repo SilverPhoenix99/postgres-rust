@@ -2,7 +2,6 @@ impl Parser<'_> {
 
     /// Alias: `AlterGroupStmt`
     pub(in crate::parser) fn alter_group_stmt(&mut self) -> ParseResult<RawStmt> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::alter_group_stmt";
 
         /*
             ALTER GROUP role_id RENAME TO role_id
@@ -10,10 +9,10 @@ impl Parser<'_> {
         */
 
         let role_loc = self.buffer.current_location();
-        let role = self.role_spec().required(fn_info!(FN_NAME))?;
+        let role = self.role_spec().required(fn_info!())?;
 
         let action = self.buffer.consume_kw(|kw| matches!(kw, Add | DropKw | Rename))
-            .required(fn_info!(FN_NAME))?;
+            .required(fn_info!())?;
 
         if action == Rename {
             return self.rename_group(role, role_loc).map(From::from);
@@ -23,11 +22,11 @@ impl Parser<'_> {
             ... (ADD | DROP) USER role_list
         */
 
-        self.buffer.consume_kw_eq(User).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(User).required(fn_info!())?;
 
         let action = if action == Add { AlterRoleAction::Add } else { AlterRoleAction::Remove };
 
-        let roles = self.role_list().required(fn_info!(FN_NAME))?;
+        let roles = self.role_list().required(fn_info!())?;
         let options = vec![RoleMembers(roles)];
 
         let stmt = AlterRoleStmt::new(role, action, options);
@@ -35,7 +34,6 @@ impl Parser<'_> {
     }
 
     fn rename_group(&mut self, role: RoleSpec, role_loc: Location) -> ParseResult<RenameStmt> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::rename_group";
 
         /*
             role_id RENAME TO role_id
@@ -43,10 +41,10 @@ impl Parser<'_> {
 
         let target = role.into_role_id(role_loc.clone())?;
 
-        self.buffer.consume_kw_eq(To).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(To).required(fn_info!())?;
 
         let new_name = self.role_spec()
-            .required(fn_info!(FN_NAME))?
+            .required(fn_info!())?
             .into_role_id(role_loc)?;
 
         let stmt = RenameStmt::new(Role(target), new_name);

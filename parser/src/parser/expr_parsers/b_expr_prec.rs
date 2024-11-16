@@ -39,7 +39,6 @@ impl Op {
 
 impl Parser<'_> {
     pub(super) fn b_expr_prec(&mut self, prec: i16) -> ScanResult<ExprNode> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::b_expr_prec";
 
         // Precedence climbing
 
@@ -53,7 +52,7 @@ impl Parser<'_> {
             max_prec = assoc.max_precedence();
 
             if op == Op::Typecast {
-                let type_name = self.type_name().required(fn_info!(FN_NAME))?;
+                let type_name = self.type_name().required(fn_info!())?;
                 expr = TypecastExpr::new(type_name, expr).into();
                 continue
             }
@@ -63,7 +62,7 @@ impl Parser<'_> {
                 continue
             }
 
-            let right = self.b_expr_prec(assoc.right_precedence()).required(fn_info!(FN_NAME))?;
+            let right = self.b_expr_prec(assoc.right_precedence()).required(fn_info!())?;
 
             expr = match op {
                 Op::Exponentiation => ExprNode::exponentiation(expr, right),
@@ -124,7 +123,6 @@ impl Parser<'_> {
     }
 
     fn expr_is(&mut self, left: ExprNode) -> ScanResult<ExprNode> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::expr_is";
 
         /*
             IS DISTINCT FROM b_expr
@@ -138,7 +136,7 @@ impl Parser<'_> {
             .is_some();
 
         let kw = self.buffer.consume_kw(|kw| matches!(kw, Document | Distinct))
-            .required(fn_info!(FN_NAME))?;
+            .required(fn_info!())?;
 
         if kw == Document {
             let mut expr = ExprNode::is_xml_document(left);
@@ -149,10 +147,10 @@ impl Parser<'_> {
         }
 
         // Distinct
-        self.buffer.consume_kw_eq(FromKw).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(FromKw).required(fn_info!())?;
 
         let assoc = Op::IsExpr.associativity();
-        let right = self.b_expr_prec(assoc.right_precedence()).required(fn_info!(FN_NAME))?;
+        let right = self.b_expr_prec(assoc.right_precedence()).required(fn_info!())?;
 
         let expr = if not_expr {
             ExprNode::not_distinct(left, right)
@@ -165,7 +163,6 @@ impl Parser<'_> {
     }
 
     fn b_expr_primary(&mut self) -> ScanResult<ExprNode> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::b_expr_primary";
 
         /*
             qual_Op b_expr(3)
@@ -176,7 +173,7 @@ impl Parser<'_> {
 
         if let Some(op) = self.qual_op().no_match_to_option()? {
             let prec = Left(2).right_precedence();
-            let right = self.b_expr_prec(prec).required(fn_info!(FN_NAME))?;
+            let right = self.b_expr_prec(prec).required(fn_info!())?;
             let expr = UnaryExpr::new(op, right);
             return Ok(expr.into())
         }
@@ -186,7 +183,7 @@ impl Parser<'_> {
         let op = self.sign()?;
 
         let prec = Right(6).right_precedence();
-        let right = self.b_expr_prec(prec).required(fn_info!(FN_NAME))?;
+        let right = self.b_expr_prec(prec).required(fn_info!())?;
 
         let expr = if op == Plus {
             UnaryExpr::unary_plus(right)
