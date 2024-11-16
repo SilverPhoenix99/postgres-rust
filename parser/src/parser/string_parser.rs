@@ -43,7 +43,6 @@ impl<'p, 'src> StringParser<'p, 'src> {
     }
 
     fn decode_string(&mut self, kind: StringKind, slice: &str, loc: Location) -> ScanResult<Box<str>> {
-        const FN_NAME: &str = "postgres_parser::parser::string_parser::StringParser::decode_string";
 
         let result = match kind {
             Basic { .. } => {
@@ -59,7 +58,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
                 }
 
                 result.map_err(|err|
-                    ParserError::new(ExtendedString(err), fn_info!(FN_NAME), loc)
+                    ParserError::new(ExtendedString(err), fn_info!(), loc)
                 )
             },
             Unicode => {
@@ -69,7 +68,7 @@ impl<'p, 'src> StringParser<'p, 'src> {
                 UnicodeStringDecoder::new(slice, false, escape)
                     .decode()
                     .map_err(|err|
-                        ParserError::new(UnicodeString(err), fn_info!(FN_NAME), loc)
+                        ParserError::new(UnicodeString(err), fn_info!(), loc)
                     )
             }
             Dollar => unreachable!("`$` strings don't have any escapes"),

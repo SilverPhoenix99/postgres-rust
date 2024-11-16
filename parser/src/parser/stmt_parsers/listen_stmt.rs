@@ -1,13 +1,12 @@
 impl Parser<'_> {
     /// Alias: `ListenStmt`
     pub(in crate::parser) fn listen_stmt(&mut self) -> ParseResult<Str> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::listen_stmt";
 
         /*
             LISTEN ColId
         */
 
-        self.col_id().required(fn_info!(FN_NAME))
+        self.col_id().required(fn_info!())
     }
 }
 

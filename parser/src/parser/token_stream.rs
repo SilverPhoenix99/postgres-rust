@@ -164,7 +164,6 @@ impl<'src> TokenStream<'src> {
     /// Production: `UESCAPE SCONST`
     pub fn uescape(&mut self) -> ParseResult<char> {
         use Keyword::Uescape;
-        const FN_NAME: &str = "postgres_parser::parser::Parser::uescape";
 
         // Try to consume UESCAPE + the string following it.
         // see [base_yylex](https://github.com/postgres/postgres/blob/1c61fd8b527954f0ec522e5e60a11ce82628b681/src/backend/parser/parser.c#L256)
@@ -177,21 +176,21 @@ impl<'src> TokenStream<'src> {
 
             let RawTokenKind::StringLiteral(_) = tok else {
                 return Err(
-                    ParserError::new(UescapeDelimiterMissing, fn_info!(FN_NAME), loc)
+                    ParserError::new(UescapeDelimiterMissing, fn_info!(), loc)
                 )
             };
 
             match uescape_escape(slice) {
                 Some(escape) => Ok(Some(escape)),
                 None => Err(
-                    ParserError::new(InvalidUescapeDelimiter, fn_info!(FN_NAME), loc)
+                    ParserError::new(InvalidUescapeDelimiter, fn_info!(), loc)
                 ),
             }
         });
 
         uescape.map_err(|err| match err {
-            crate::parser::result::ScanErrorKind::Eof(loc) => ParserError::new(InvalidUescapeDelimiter, fn_info!(FN_NAME), loc),
-            NoMatch(loc) => syntax_err(fn_info!(FN_NAME), loc),
+            crate::parser::result::ScanErrorKind::Eof(loc) => ParserError::new(InvalidUescapeDelimiter, fn_info!(), loc),
+            NoMatch(loc) => syntax_err(fn_info!(), loc),
             ScanErr(err) => err
         })
     }
@@ -341,7 +340,7 @@ mod tests {
         let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
         let actual: ScanResult<()> = buffer.consume(|_| {
-            let err = ParserError::syntax(fn_info!(""), Location::new(0..0, 0, 0));
+            let err = ParserError::syntax(fn_info!(), Location::new(0..0, 0, 0));
             Err(err)
         });
 

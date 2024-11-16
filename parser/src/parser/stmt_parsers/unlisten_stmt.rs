@@ -1,7 +1,6 @@
 impl Parser<'_> {
     /// Alias: `UnlistenStmt`
     pub(in crate::parser) fn unlisten_stmt(&mut self) -> ParseResult<OneOrAll> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::unlisten_stmt";
 
         /*
             UNLISTEN '*'
@@ -12,7 +11,7 @@ impl Parser<'_> {
             return Ok(OneOrAll::All)
         }
 
-        let name = self.col_id().required(fn_info!(FN_NAME))?;
+        let name = self.col_id().required(fn_info!())?;
         Ok(OneOrAll::Name(name))
     }
 }

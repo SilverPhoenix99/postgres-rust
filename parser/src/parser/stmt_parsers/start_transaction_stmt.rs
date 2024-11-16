@@ -1,13 +1,12 @@
 impl Parser<'_> {
     pub(in crate::parser) fn start_transaction_stmt(&mut self) -> ParseResult<TransactionStmt> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::start_transaction_stmt";
 
         /*
         TransactionStmt:
             START TRANSACTION transaction_mode_list_or_empty
         */
 
-        self.buffer.consume_kw_eq(Transaction).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(Transaction).required(fn_info!())?;
 
         let modes = self.transaction_mode_list()
             .optional()?

@@ -1,7 +1,6 @@
 impl Parser<'_> {
     /// Alias: `VariableShowStmt`
     pub(in crate::parser) fn show_stmt(&mut self) -> ParseResult<VariableShowStmt> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::show_stmt";
 
         /*
             SHOW var_name
@@ -25,20 +24,20 @@ impl Parser<'_> {
             /*
                 SHOW var_name
             */
-            let var_name = self.var_name().required(fn_info!(FN_NAME))?;
+            let var_name = self.var_name().required(fn_info!())?;
             return Ok(Name(var_name))
         };
 
         match show_stmt {
             SessionAuthorization => {
-                self.buffer.consume_kw_eq(Authorization).required(fn_info!(FN_NAME))?;
+                self.buffer.consume_kw_eq(Authorization).required(fn_info!())?;
             },
             TransactionIsolation => {
-                self.buffer.consume_kw_eq(Isolation).required(fn_info!(FN_NAME))?;
-                self.buffer.consume_kw_eq(Level).required(fn_info!(FN_NAME))?;
+                self.buffer.consume_kw_eq(Isolation).required(fn_info!())?;
+                self.buffer.consume_kw_eq(Level).required(fn_info!())?;
             }
             TimeZone => {
-                self.buffer.consume_kw_eq(Zone).required(fn_info!(FN_NAME))?;
+                self.buffer.consume_kw_eq(Zone).required(fn_info!())?;
             }
             _ => {}
         };

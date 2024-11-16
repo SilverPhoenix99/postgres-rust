@@ -1,7 +1,6 @@
 impl Parser<'_> {
     /// Post-condition: Vec is **Not** empty
     pub(in crate::parser) fn indirection(&mut self) -> ScanResult<Vec<Indirection>> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::indirection";
 
         /*
             ( indirection_el )+
@@ -17,7 +16,6 @@ impl Parser<'_> {
     }
 
     fn indirection_el(&mut self) -> ScanResult<Indirection> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::indirection_el";
 
         /*
               '.' '*'
@@ -32,12 +30,12 @@ impl Parser<'_> {
         if self.buffer.consume_op(Dot).no_match_to_option()?.is_some() {
             // `.`
 
-            if self.buffer.consume_op(Mul).try_match(fn_info!(FN_NAME))?.is_some() {
+            if self.buffer.consume_op(Mul).try_match(fn_info!())?.is_some() {
                 // `.*`
                 return Ok(Indirection::All)
             }
 
-            let property = self.col_label().required(fn_info!(FN_NAME))?;
+            let property = self.col_label().required(fn_info!())?;
             // `.ColLabel`
             return Ok(Indirection::Property(property))
         }
@@ -45,40 +43,40 @@ impl Parser<'_> {
         // `[`
         self.buffer.consume_op(OpenBracket)?;
 
-        if self.buffer.consume_op(Colon).try_match(fn_info!(FN_NAME))?.is_some() {
+        if self.buffer.consume_op(Colon).try_match(fn_info!())?.is_some() {
             // `[ :`
 
-            if self.buffer.consume_op(CloseBracket).try_match(fn_info!(FN_NAME))?.is_some() {
+            if self.buffer.consume_op(CloseBracket).try_match(fn_info!())?.is_some() {
                 // `[ : ]`
                 return Ok(Indirection::FullSlice)
             }
 
             // `[ : a_expr ]`
-            let expr = self.a_expr().required(fn_info!(FN_NAME))?;
-            self.buffer.consume_op(CloseBracket).required(fn_info!(FN_NAME))?;
+            let expr = self.a_expr().required(fn_info!())?;
+            self.buffer.consume_op(CloseBracket).required(fn_info!())?;
 
             return Ok(Indirection::SliceTo(expr))
         }
 
         // `[ a_expr`
-        let left = self.a_expr().required(fn_info!(FN_NAME))?;
+        let left = self.a_expr().required(fn_info!())?;
 
-        if self.buffer.consume_op(CloseBracket).try_match(fn_info!(FN_NAME))?.is_some() {
+        if self.buffer.consume_op(CloseBracket).try_match(fn_info!())?.is_some() {
             // `[ a_expr ]`
             return Ok(Indirection::Index(left))
         }
 
         // `[ a_expr :`
-        self.buffer.consume_op(Colon).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_op(Colon).required(fn_info!())?;
 
-        if self.buffer.consume_op(CloseBracket).try_match(fn_info!(FN_NAME))?.is_some() {
+        if self.buffer.consume_op(CloseBracket).try_match(fn_info!())?.is_some() {
             // `[ a_expr : ]`
             return Ok(Indirection::SliceFrom(left))
         }
 
         // `[ expr : expr ]`
-        let right = self.a_expr().required(fn_info!(FN_NAME))?;
-        self.buffer.consume_op(CloseBracket).required(fn_info!(FN_NAME))?;
+        let right = self.a_expr().required(fn_info!())?;
+        self.buffer.consume_op(CloseBracket).required(fn_info!())?;
 
         Ok(Indirection::Slice(left, right))
     }

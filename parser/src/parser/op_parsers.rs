@@ -45,7 +45,6 @@ impl<'src> Parser<'src> {
     }
 
     pub(super) fn operator(&mut self, kind: OperatorKind) -> ScanResult<QualifiedOperator> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::operator";
 
         let slice = self.buffer.slice();
 
@@ -75,9 +74,9 @@ impl<'src> Parser<'src> {
                         `OPERATOR '(' any_operator ')'`
                     */
 
-                    self.buffer.consume_op(OpenParenthesis).required(fn_info!(FN_NAME))?;
-                    let op = self.any_operator().required(fn_info!(FN_NAME))?;
-                    self.buffer.consume_op(CloseParenthesis).required(fn_info!(FN_NAME))?;
+                    self.buffer.consume_op(OpenParenthesis).required(fn_info!())?;
+                    let op = self.any_operator().required(fn_info!())?;
+                    self.buffer.consume_op(CloseParenthesis).required(fn_info!())?;
 
                     Ok(op)
                 },
@@ -93,7 +92,6 @@ impl<'src> Parser<'src> {
     }
 
     pub(super) fn any_operator(&mut self) -> ScanResult<QualifiedOperator> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::any_operator";
 
         /*
             ( col_id '.' )* all_op
@@ -102,7 +100,7 @@ impl<'src> Parser<'src> {
         let mut qn = Vec::new();
 
         while let Some(id) = self.col_id().optional()? {
-            self.buffer.consume_op(Dot).required(fn_info!(FN_NAME))?;
+            self.buffer.consume_op(Dot).required(fn_info!())?;
             qn.push(id);
         }
 
@@ -112,7 +110,7 @@ impl<'src> Parser<'src> {
             op?
         }
         else {
-            op.required(fn_info!(FN_NAME))?
+            op.required(fn_info!())?
         };
 
         let op = QualifiedOperator(qn, op);

@@ -1,20 +1,19 @@
 impl Parser<'_> {
     /// Alias: `ReassignOwnedStmt`
     pub(in crate::parser) fn reassign_owned_stmt(&mut self) -> ParseResult<ReassignOwnedStmt> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::reassign_owned_stmt";
 
         /*
             REASSIGN OWNED BY role_list TO RoleSpec
         */
 
-        self.buffer.consume_kw_eq(OwnedKw).required(fn_info!(FN_NAME))?;
-        self.buffer.consume_kw_eq(By).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(OwnedKw).required(fn_info!())?;
+        self.buffer.consume_kw_eq(By).required(fn_info!())?;
 
-        let roles = self.role_list().required(fn_info!(FN_NAME))?;
+        let roles = self.role_list().required(fn_info!())?;
 
-        self.buffer.consume_kw_eq(To).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(To).required(fn_info!())?;
 
-        let new_role = self.role_spec().required(fn_info!(FN_NAME))?;
+        let new_role = self.role_spec().required(fn_info!())?;
 
         Ok(ReassignOwnedStmt::new(roles, new_role))
     }

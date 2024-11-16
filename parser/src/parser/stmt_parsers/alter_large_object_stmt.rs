@@ -1,19 +1,18 @@
 impl Parser<'_> {
     pub(in crate::parser) fn alter_large_object_stmt(&mut self) -> ParseResult<RawStmt> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::alter_large_object_stmt";
 
         /*
             ALTER LARGE_P OBJECT_P NumericOnly OWNER TO RoleSpec
         */
 
-        self.buffer.consume_kw_eq(Object).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(Object).required(fn_info!())?;
 
-        let oid = self.signed_number().required(fn_info!(FN_NAME))?;
+        let oid = self.signed_number().required(fn_info!())?;
 
-        self.buffer.consume_kw_eq(Owner).required(fn_info!(FN_NAME))?;
-        self.buffer.consume_kw_eq(To).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(Owner).required(fn_info!())?;
+        self.buffer.consume_kw_eq(To).required(fn_info!())?;
 
-        let new_owner = self.role_spec().required(fn_info!(FN_NAME))?;
+        let new_owner = self.role_spec().required(fn_info!())?;
 
         let stmt = AlterOwnerStmt::new(
             AlterOwnerTarget::LargeObject(oid),

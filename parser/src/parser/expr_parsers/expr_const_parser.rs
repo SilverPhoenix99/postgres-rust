@@ -1,7 +1,6 @@
 impl Parser<'_> {
     /// Alias: `AexprConst`
     pub(in crate::parser) fn expr_const(&mut self) -> ScanResult<ExprNode> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::expr_const";
 
         /*
               ICONST
@@ -35,7 +34,7 @@ impl Parser<'_> {
         }
 
         if let Some(mut type_name) = self.const_typename().optional()? {
-            let value = self.string().required(fn_info!(FN_NAME))?;
+            let value = self.string().required(fn_info!())?;
 
             if let Interval(IntervalRange::Full { precision: None }) = type_name {
                 // NB: `const_typename()` doesn't make this specific match,

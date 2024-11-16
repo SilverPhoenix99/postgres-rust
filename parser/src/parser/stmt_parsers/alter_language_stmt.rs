@@ -1,28 +1,27 @@
 impl Parser<'_> {
     pub(in crate::parser) fn alter_language_stmt(&mut self) -> ParseResult<RawStmt> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::alter_language_stmt";
 
         /*
             ALTER (PROCEDURAL)? LANGUAGE ColId OWNER TO RoleSpec # AlterOwnerStmt
             ALTER (PROCEDURAL)? LANGUAGE ColId RENAME TO ColId # RenameStmt
         */
 
-        let name = self.col_id().required(fn_info!(FN_NAME))?;
+        let name = self.col_id().required(fn_info!())?;
 
         let action = self.buffer.consume_kw(|kw| matches!(kw, Owner | Rename))
-            .required(fn_info!(FN_NAME))?;
+            .required(fn_info!())?;
 
-        self.buffer.consume_kw_eq(To).required(fn_info!(FN_NAME))?;
+        self.buffer.consume_kw_eq(To).required(fn_info!())?;
 
         let stmt = if action == Owner {
-            let role = self.role_spec().required(fn_info!(FN_NAME))?;
+            let role = self.role_spec().required(fn_info!())?;
             AlterOwnerStmt::new(
                 AlterOwnerTarget::Language(name),
                 role
             ).into()
         }
         else {
-            let new_name = self.col_id().required(fn_info!(FN_NAME))?;
+            let new_name = self.col_id().required(fn_info!())?;
             RenameStmt::new(
                 RenameTarget::Language(name),
                 new_name

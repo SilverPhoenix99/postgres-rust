@@ -2,7 +2,6 @@ impl Parser<'_> {
 
     /// Alias: `NumericOnly`
     pub(in crate::parser) fn signed_number(&mut self) -> ScanResult<SignedNumber> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::signed_number";
 
         // ('+' | '-')? (ICONST | FCONST)
 
@@ -11,7 +10,7 @@ impl Parser<'_> {
         let number = self.unsigned_number();
 
         let number = if sign.is_some() {
-            number.required(fn_info!(FN_NAME))?
+            number.required(fn_info!())?
         }
         else {
             number?
@@ -57,7 +56,6 @@ impl Parser<'_> {
 
     /// Alias: `SignedIconst`
     pub(in crate::parser) fn signed_i32_literal(&mut self) -> ScanResult<i32> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::signed_i32_literal";
 
         // ('+' | '-')? ICONST
 
@@ -68,7 +66,7 @@ impl Parser<'_> {
         let Some(sign) = sign else { return num };
 
         // If sign is Some(_), then ICONST is required
-        let mut num = num.required(fn_info!(FN_NAME))?;
+        let mut num = num.required(fn_info!())?;
 
         if sign == Minus {
             num = -num;

@@ -1,10 +1,9 @@
 impl Parser<'_> {
     pub(in crate::parser) fn alter_stmt(&mut self) -> ParseResult<RawStmt> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::alter_stmt";
 
         // ALTER was consumed, so at least one of the following matches is required
 
-        consume! {self FN_NAME
+        consume! {self
             Ok {
                 Kw(Collation) => self.alter_collation_stmt(),
                 Kw(Conversion) => self.alter_conversion_stmt(),
@@ -18,9 +17,9 @@ impl Parser<'_> {
             Err {
                 Ok(_) => {
                     let loc = self.buffer.current_location();
-                    syntax_err(fn_info!(FN_NAME), loc)
+                    syntax_err(fn_info!(), loc)
                 },
-                Err(Eof(loc)) => syntax_err(fn_info!(FN_NAME), loc),
+                Err(Eof(loc)) => syntax_err(fn_info!(), loc),
                 Err(NotEof(err)) => err.clone(),
             }
         }

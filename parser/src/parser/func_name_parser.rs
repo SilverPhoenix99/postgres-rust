@@ -1,6 +1,5 @@
 impl Parser<'_> {
     pub(in crate::parser) fn func_name(&mut self) -> ScanResult<QualifiedName> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::func_name";
 
         /*
               type_func_name_keyword
@@ -30,7 +29,7 @@ impl Parser<'_> {
         let name = self.attrs(ident)?;
 
         if required_indirection && name.len() == 1 {
-            return Err(syntax_err(fn_info!(FN_NAME), loc).into());
+            return Err(syntax_err(fn_info!(), loc).into());
         }
 
         Ok(name)

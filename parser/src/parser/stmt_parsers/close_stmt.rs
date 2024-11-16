@@ -1,18 +1,17 @@
 impl Parser<'_> {
     /// Alias: `ClosePortalStmt`
     pub(in crate::parser) fn close_stmt(&mut self) -> ParseResult<OneOrAll> {
-        const FN_NAME: &str = "postgres_parser::parser::Parser::close_stmt";
 
         /*
             CLOSE ALL
             CLOSE ColId
         */
 
-        if self.buffer.consume_kw_eq(All).try_match(fn_info!(FN_NAME))?.is_some() {
+        if self.buffer.consume_kw_eq(All).try_match(fn_info!())?.is_some() {
             return Ok(OneOrAll::All)
         }
 
-        let name = self.col_id().required(fn_info!(FN_NAME))?;
+        let name = self.col_id().required(fn_info!())?;
         Ok(OneOrAll::Name(name))
     }
 }

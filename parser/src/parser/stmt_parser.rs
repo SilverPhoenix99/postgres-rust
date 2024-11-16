@@ -3,7 +3,6 @@ impl Parser<'_> {
     pub(super) fn stmt(&mut self, allow_tx_legacy_stmts: bool) -> ParseResult<RawStmt> {
         use RawTokenKind::Keyword as Kw;
         use Keyword::*;
-        const FN_NAME: &str = "postgres_parser::parser::Parser::stmt";
 
         consume! {self
             Ok {
@@ -49,9 +48,9 @@ impl Parser<'_> {
             Err {
                 Ok(_) => {
                     let loc = self.buffer.current_location();
-                    syntax_err(fn_info!(FN_NAME), loc)
+                    syntax_err(fn_info!(), loc)
                 },
-                Err(Eof(loc)) => syntax_err(fn_info!(FN_NAME), loc),
+                Err(Eof(loc)) => syntax_err(fn_info!(), loc),
                 Err(NotEof(err)) => err,
             }
         }
