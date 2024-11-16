@@ -2,34 +2,12 @@
 pub fn fn_name_of_val(f: impl Fn() + 'static) -> &'static str {
 
     // Rust doesn't guarantee what the format of `type_name_of_val()` will be,
-    // so we'll attempt to get the slice safely, assuming anything might not match.
+    // so we'll attempt to get the slice safely, assuming it might not match it.
     let mut name = type_name_of_val(&f);
 
-    // Remove "<<" prefixed (generics from lazy_static)
-    let num_bytes = name.chars()
-        .take_while(|c| *c == '<')
-        .count();
-
-    // SAFETY: '<' is ASCII, so it's 1 byte
-    name = &name[num_bytes..];
-
-    // Get length until whitespace, if there's any (cast from lazy_static)
-    let num_bytes = name.chars()
-        .take_while(|c| !c.is_whitespace())
-        .map(char::len_utf8)
-        .sum();
-
-    // SAFETY: Summing the number of bytes per UTF-8 char will be at a char boundary.
-    name = &name[..num_bytes];
-
-    // The current format should be something like: <crate>(::<module>)?::<fn>::<STATIC_NAME>
+    // The current format should be something like: <crate>(::<module>)?::<fn>(::{{closure}})*
     // We'll just try to remove the last bit.
 
-    if let Some(index) = name.rfind("::") {
-        name = &name[..index]
-    }
-
-    // It might still be inside a closure, so we'll try to remove that too.
     while name.ends_with("::{{closure}}") {
         name = &name[..name.len() - "::{{closure}}".len()]
     }
@@ -41,20 +19,16 @@ pub fn fn_name_of_val(f: impl Fn() + 'static) -> &'static str {
 #[macro_export]
 macro_rules! qual_fn_name {
     () => {{
-        lazy_static::lazy_static! {
-            static ref FN_NAME: &'static str = $crate::fn_name_of_val(||{});
-        };
-        *FN_NAME
+        static FN_NAME: std::sync::OnceLock<&str> = std::sync::OnceLock::new();
+        *(FN_NAME.get_or_init(|| $crate::fn_name_of_val(||{})))
     }};
 }
 
 #[macro_export]
 macro_rules! fn_info {
     () => {{
-        lazy_static::lazy_static! {
-            static ref FN_INFO: $crate::FnInfo = $crate::FnInfo::new(file!(), line!(), $crate::qual_fn_name!());
-        }
-        &FN_INFO
+        static FN_INFO: std::sync::OnceLock<$crate::FnInfo> = std::sync::OnceLock::new();
+        FN_INFO.get_or_init(|| $crate::FnInfo::new(file!(), line!(), $crate::qual_fn_name!()))
     }};
 
     ($fn_name:expr) => {{
