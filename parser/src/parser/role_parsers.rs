@@ -44,7 +44,8 @@ impl Parser<'_> {
                 | non_reserved_word
         */
 
-        if let Some(ident) = self.identifier().no_match_to_option()? {
+        let ident = identifier(fn_info!()).parse(&mut self.buffer);
+        if let Some(ident) = ident.no_match_to_option()? {
             return if ident.as_ref() == "public" {
                 Ok(RoleSpec::Public)
             }
@@ -158,6 +159,7 @@ mod tests {
     }
 }
 
+use crate::parser::combinators::{identifier, ParserFunc};
 use crate::{
     lexer::{
         Keyword::{CurrentRole, CurrentUser, NoneKw, SessionUser},

@@ -8,16 +8,18 @@ impl Parser<'_> {
             END
         */
 
-        self.buffer.consume_kw_eq(Keyword::Case).no_match_to_option()?;
+        keyword(Case)
+            .parse(&mut self.buffer)
+            .no_match_to_option()?;
 
         let target = self.a_expr().try_match(fn_info!())?;
 
         let mut when_clauses = vec![];
 
-        while self.buffer.consume_kw_eq(When).try_match(fn_info!())?.is_some() {
+        while keyword(When).parse(&mut self.buffer).try_match(fn_info!())?.is_some() {
 
             let condition = self.a_expr().required(fn_info!())?;
-            self.buffer.consume_kw_eq(Then).required(fn_info!())?;
+            keyword(Then).required(fn_info!()).parse(&mut self.buffer)?;
             let body = self.a_expr().required(fn_info!())?;
 
             let clause = CaseWhen::new(condition, body);
@@ -29,7 +31,7 @@ impl Parser<'_> {
             return Err(syntax_err(fn_info!(), loc).into());
         }
 
-        let default = if self.buffer.consume_kw_eq(Else).try_match(fn_info!())?.is_some() {
+        let default = if keyword(Else).parse(&mut self.buffer).try_match(fn_info!())?.is_some() {
             Some(self.a_expr().required(fn_info!())?)
         }
         else {
@@ -49,9 +51,10 @@ mod tests {
 }
 
 use crate::{
-    lexer::Keyword::{self, Else, Then, When},
+    lexer::Keyword::{Case, Else, Then, When},
     parser::{
         ast_node::{CaseExpr, CaseWhen},
+        combinators::{keyword, ParserFunc, ParserFuncHelpers},
         error::syntax_err,
         result::{Required, ScanResult, ScanResultTrait, TryMatch},
         Parser

@@ -131,12 +131,14 @@ impl Parser<'_> {
             IS NOT DOCUMENT_P
         */
 
-        let not_expr = self.buffer.consume_kw_eq(Not)
-            .optional()?
+        let not_expr = keyword(Not)
+            .optional()
+            .parse(&mut self.buffer)?
             .is_some();
 
-        let kw = self.buffer.consume_kw(|kw| matches!(kw, Document | Distinct))
-            .required(fn_info!())?;
+        let kw = keyword_if(|kw| matches!(kw, Document | Distinct))
+            .required(fn_info!())
+            .parse(&mut self.buffer)?;
 
         if kw == Document {
             let mut expr = ExprNode::is_xml_document(left);
@@ -147,7 +149,9 @@ impl Parser<'_> {
         }
 
         // Distinct
-        self.buffer.consume_kw_eq(FromKw).required(fn_info!())?;
+        keyword(FromKw)
+            .required(fn_info!())
+            .parse(&mut self.buffer)?;
 
         let assoc = Op::IsExpr.associativity();
         let right = self.b_expr_prec(assoc.right_precedence()).required(fn_info!())?;
@@ -204,6 +208,12 @@ use crate::{
     },
     parser::{
         ast_node::{ExprNode, QualifiedOperator, TypecastExpr, UnaryExpr},
+        combinators::{
+            keyword,
+            keyword_if,
+            ParserFunc,
+            ParserFuncHelpers
+        },
         expr_parsers::associativity::Associativity::{self, Left, Non, Right},
         result::{
             Optional,

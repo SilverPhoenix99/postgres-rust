@@ -138,11 +138,7 @@ impl<'src> TokenStream<'src> {
         }
     }
 
-    #[inline(always)]
-    pub fn consume_eq(&mut self, kind: RawTokenKind) -> ScanResult<RawTokenKind> {
-        self.consume(|tok| kind == tok)
-    }
-
+    #[deprecated]
     pub fn consume_op(&mut self, kind: OperatorKind) -> ScanResult<OperatorKind> {
         self.consume(|tok|
             tok.operator()
@@ -150,49 +146,16 @@ impl<'src> TokenStream<'src> {
         )
     }
 
-    #[inline(always)]
+    #[deprecated]
     pub fn consume_kw_eq(&mut self, keyword: Keyword) -> ScanResult<Keyword> {
         self.consume_kw(|kw| keyword == kw)
     }
 
+    #[deprecated]
     pub fn consume_kw(&mut self, pred: impl Fn(Keyword) -> bool) -> ScanResult<Keyword> {
         self.consume(|tok|
             tok.keyword().filter(|kw| pred(*kw))
         )
-    }
-
-    /// Production: `UESCAPE SCONST`
-    pub fn uescape(&mut self) -> ParseResult<char> {
-        use Keyword::Uescape;
-
-        // Try to consume UESCAPE + the string following it.
-        // see [base_yylex](https://github.com/postgres/postgres/blob/1c61fd8b527954f0ec522e5e60a11ce82628b681/src/backend/parser/parser.c#L256)
-
-        if self.consume_kw_eq(Uescape).optional()?.is_none() {
-            return Ok('\\')
-        };
-
-        let uescape = self.consume_with_slice(|(tok, slice, loc)| {
-
-            let RawTokenKind::StringLiteral(_) = tok else {
-                return Err(
-                    ParserError::new(UescapeDelimiterMissing, fn_info!(), loc)
-                )
-            };
-
-            match uescape_escape(slice) {
-                Some(escape) => Ok(Some(escape)),
-                None => Err(
-                    ParserError::new(InvalidUescapeDelimiter, fn_info!(), loc)
-                ),
-            }
-        });
-
-        uescape.map_err(|err| match err {
-            crate::parser::result::ScanErrorKind::Eof(loc) => ParserError::new(InvalidUescapeDelimiter, fn_info!(), loc),
-            NoMatch(loc) => syntax_err(fn_info!(), loc),
-            ScanErr(err) => err
-        })
     }
 }
 
@@ -324,18 +287,6 @@ mod tests {
     }
 
     #[test]
-    fn test_consume_eq() {
-        let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
-
-        assert_matches!(buffer.consume_eq(RawTokenKind::Operator(OperatorKind::Comma)), Err(NoMatch(_)));
-
-        assert_eq!(
-            Ok(Identifier(Basic)),
-            buffer.consume_eq(Identifier(Basic))
-        );
-    }
-
-    #[test]
     fn test_consume_returning_err() {
         let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
@@ -427,24 +378,18 @@ use crate::{
     error::HasLocation,
     lexer::{Keyword, Lexer, OperatorKind, RawTokenKind},
     parser::{
-        error::syntax_err,
         result::{
             EofErrorKind::{Eof, NotEof},
             EofResult,
-            Optional,
             ScanErrorKind::{NoMatch, ScanErr},
             ScanResult
         },
-        uescape_escape::uescape_escape,
         ParseResult,
         ParserConfig,
-        ParserError,
-        ParserErrorKind::{InvalidUescapeDelimiter, UescapeDelimiterMissing},
         ParserWarningKind
     },
 };
 use postgres_basics::{
-    fn_info,
     guc::BackslashQuote,
     Located,
     Location

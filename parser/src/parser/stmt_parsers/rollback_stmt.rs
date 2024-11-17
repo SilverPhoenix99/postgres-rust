@@ -12,19 +12,21 @@ impl Parser<'_> {
             /*
                 ROLLBACK PREPARED SCONST
             */
-            let string = self.string().required(fn_info!())?;
+            let string = string(fn_info!())
+                .required(fn_info!())
+                .parse(&mut self.buffer)?;
             return Ok(TransactionStmt::RollbackPrepared(string))
         }
 
         self.opt_transaction()?;
 
-        match self.buffer.consume_kw_eq(To) {
+        match keyword(To).parse(&mut self.buffer) {
             Ok(_) => {
                 /*
                     ROLLBACK opt_transaction TO SAVEPOINT ColId
                     ROLLBACK opt_transaction TO ColId
                 */
-                self.buffer.consume_kw_eq(Savepoint).optional()?;
+                keyword(Savepoint).optional().parse(&mut self.buffer)?;
                 let name = self.col_id().required(fn_info!())?;
                 Ok(TransactionStmt::RollbackTo(name))
             },
@@ -120,6 +122,7 @@ mod tests {
 
 use crate::lexer::Keyword::{Prepared, Savepoint, To};
 use crate::parser::ast_node::TransactionStmt;
+use crate::parser::combinators::{keyword, string, ParserFunc, ParserFuncHelpers};
 use crate::parser::result::ScanErrorKind::{Eof, NoMatch, ScanErr};
 use crate::parser::result::{Optional, Required};
 use crate::parser::{ParseResult, Parser};

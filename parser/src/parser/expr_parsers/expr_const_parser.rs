@@ -18,12 +18,13 @@ impl Parser<'_> {
             return Ok(num.into())
         }
 
-        if let Some(string) = self.string().optional()? {
+        if let Some(string) = string(fn_info!()).optional().parse(&mut self.buffer)? {
             return Ok(StringConst(string))
         }
 
-        let bit_string_const = self.bit_string()
-            .optional()?
+        let bit_string_const = bit_string()
+            .optional()
+            .parse(&mut self.buffer)?
             .map(|(kind, value)| match kind {
                 Binary => BinaryStringConst(value),
                 Hex => HexStringConst(value),
@@ -34,7 +35,7 @@ impl Parser<'_> {
         }
 
         if let Some(mut type_name) = self.const_typename().optional()? {
-            let value = self.string().required(fn_info!())?;
+            let value = string(fn_info!()).required(fn_info!()).parse(&mut self.buffer)?;
 
             if let Interval(IntervalRange::Full { precision: None }) = type_name {
                 // NB: `const_typename()` doesn't make this specific match,
@@ -103,10 +104,10 @@ use crate::{
             TypeName::Interval,
             TypecastExpr
         },
+        combinators::{bit_string, string, ParserFunc, ParserFuncHelpers},
         consume_macro::consume,
         result::{
             Optional,
-            Required,
             ScanErrorKind::NoMatch,
             ScanResult,
             ScanResultTrait

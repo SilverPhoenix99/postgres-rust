@@ -6,7 +6,9 @@ impl Parser<'_> {
             LOAD SCONST
         */
 
-        self.string().required(fn_info!())
+        string(fn_info!())
+            .required(fn_info!())
+            .parse(&mut self.buffer)
     }
 }
 
@@ -22,6 +24,6 @@ mod tests {
     }
 }
 
-use crate::parser::result::Required;
+use crate::parser::combinators::{string, ParserFunc, ParserFuncHelpers};
 use crate::parser::{ParseResult, Parser};
 use postgres_basics::fn_info;

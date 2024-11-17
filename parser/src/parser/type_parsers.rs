@@ -175,7 +175,8 @@ impl Parser<'_> {
             _ => {}
         }
 
-        if let Some(ident) = self.identifier().no_match_to_option()? {
+        let ident = identifier(fn_info!()).parse(&mut self.buffer);
+        if let Some(ident) = ident.no_match_to_option()? {
             let name = self.attrs(ident.into())?;
             let modifiers = self.opt_type_modifiers()?;
             return Ok(GenericTypeName::new(name, modifiers).into())
@@ -703,6 +704,7 @@ use crate::{
             TypeModifiers,
             TypeName::{self, *},
         },
+        combinators::{identifier, ParserFunc},
         consume_macro::consume,
         error::syntax_err,
         result::{

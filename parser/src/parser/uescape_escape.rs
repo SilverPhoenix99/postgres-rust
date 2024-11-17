@@ -2,17 +2,13 @@
 #[inline] // Only called from a single place
 pub(super) fn uescape_escape(source: &str) -> Option<char> {
 
-    if source.len() != 3 {
+    if source.len() != 1 {
         // Only (some) ASCII chars are acceptable as the escape char
         return None
     }
 
-    let mut chars = source.chars();
-    if !chars.next().is_some_and(|c| c == '\'') {
-        return None
-    }
+    let escape = source.chars().next()?;
 
-    let escape = chars.next()?;
     if is_hex_digit(escape)
         || is_whitespace(escape)
         || escape == '+'
@@ -22,33 +18,29 @@ pub(super) fn uescape_escape(source: &str) -> Option<char> {
         return None
     }
 
-    match chars.next() {
-        Some('\'') => Some(escape),
-        _ => None
-    }
+    Some(escape)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_uescape_escape() {
-        assert_eq!(uescape_escape(""), None);
-        assert_eq!(uescape_escape("''"), None);
-        assert_eq!(uescape_escape("'' "), None);
-        assert_eq!(uescape_escape("' '"), None);
-        assert_eq!(uescape_escape("'a'"), None);
-        assert_eq!(uescape_escape("'f'"), None);
-        assert_eq!(uescape_escape("'0'"), None);
-        assert_eq!(uescape_escape("'9'"), None);
-        assert_eq!(uescape_escape("'+'"), None);
-        assert_eq!(uescape_escape("'''"), None);
-        assert_eq!(uescape_escape(r#"'"'"#), None);
-        assert_eq!(uescape_escape("'-'"), Some('-'));
-        assert_eq!(uescape_escape("'z'"), Some('z'));
-        assert_eq!(uescape_escape("'!'"), Some('!'));
+    #[test_case("", None ; "empty string")]
+    #[test_case(" ", None ; "space")]
+    #[test_case("a", None)]
+    #[test_case("f", None)]
+    #[test_case("0", None)]
+    #[test_case("9", None)]
+    #[test_case("+", None ; "plus sign")]
+    #[test_case("'", None ; "single quote")]
+    #[test_case(r#"""#, None ; "double quote")]
+    #[test_case("-", Some('-') ; "minus sign")]
+    #[test_case("z", Some('z'))]
+    #[test_case("!", Some('!') ; "exclamation mark")]
+    fn test_uescape_escape(source: &str, expected: Option<char>) {
+        assert_eq!(expected, uescape_escape(source));
     }
+
+    use test_case::test_case;
 }
 
 use postgres_basics::ascii::{is_hex_digit, is_whitespace};
