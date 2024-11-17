@@ -1,14 +1,12 @@
 pub mod ast_node;
 mod acl_parsers;
-mod bit_string_parser;
+mod combinators;
 mod config;
 mod const_numeric_parsers;
-mod const_string_parsers;
 mod consume_macro;
 mod error;
 mod expr_parsers;
 mod func_name_parser;
-mod ident_parser;
 mod op_parsers;
 mod parse_number;
 mod privilege_parsers;
@@ -16,7 +14,6 @@ mod result;
 mod role_parsers;
 mod stmt_parser;
 mod stmt_parsers;
-mod string_parser;
 mod token_stream;
 mod type_parsers;
 mod uescape_escape;
@@ -123,13 +120,15 @@ impl<'src> Parser<'src> {
     fn opt_transaction_chain(&mut self) -> ParseResult<bool> {
         use Keyword::{And, Chain, No};
 
-        if self.buffer.consume_kw_eq(And).optional()?.is_none() {
+        if keyword(And).optional().parse(&mut self.buffer)?.is_none() {
             return Ok(false)
         }
 
-        let result = self.buffer.consume_kw_eq(No).optional()?.is_none();
+        let result = keyword(No).optional().parse(&mut self.buffer)?.is_none();
 
-        self.buffer.consume_kw_eq(Chain).required(fn_info!())?;
+        keyword(Chain)
+            .required(fn_info!())
+            .parse(&mut self.buffer)?;
 
         Ok(result)
     }
@@ -520,7 +519,8 @@ impl<'src> Parser<'src> {
     where
         P: Fn(Keyword) -> bool
     {
-        if let Some(ident) = self.identifier().no_match_to_option()? {
+        let ident = identifier(fn_info!()).parse(&mut self.buffer);
+        if let Some(ident) = ident.no_match_to_option()? {
             return Ok(ident.into())
         }
 
@@ -531,12 +531,6 @@ impl<'src> Parser<'src> {
         )
     }
 
-    /// Alias: `IDENT`
-    #[inline(always)]
-    fn identifier(&mut self) -> ScanResult<Box<str>> {
-        IdentifierParser(&mut self.buffer).parse()
-    }
-
     /// '+' | '-'
     fn sign(&mut self) ->  ScanResult<OperatorKind> {
         use OperatorKind::{Minus, Plus};
@@ -544,11 +538,6 @@ impl<'src> Parser<'src> {
             tok.operator()
                 .filter(|op| matches!(op, Minus | Plus))
         )
-    }
-
-    /// Production: `UESCAPE SCONST`
-    fn uescape(&mut self) -> ParseResult<char> {
-        self.buffer.uescape()
     }
 }
 
@@ -836,24 +825,6 @@ mod tests {
         assert_eq!(Ok("xxyyzz".into()), parser.bare_col_label());
     }
 
-    #[test]
-    fn test_identifier() {
-        let source = "tEsT_iDeNtIfIeR";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        assert_eq!("test_identifier", parser.identifier().unwrap().as_ref());
-    }
-
-    #[test]
-    fn test_uescape() {
-        let source = "UESCAPE '!'";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        let actual = parser.uescape().unwrap();
-
-        assert_eq!('!', actual);
-    }
-
     #[test_case("", true)]
     #[test_case("nulls distinct", true)]
     #[test_case("nulls not distinct", false)]
@@ -877,7 +848,6 @@ use self::{
     },
     consume_macro::consume,
     error::{syntax_err, NameList, ParserErrorKind::*},
-    ident_parser::IdentifierParser,
     result::{
         Optional,
         Required,
@@ -893,5 +863,6 @@ use crate::lexer::{
     KeywordCategory::*,
     OperatorKind::{self, CloseParenthesis, Comma, Dot, OpenParenthesis, Semicolon}
 };
+use crate::parser::combinators::{identifier, keyword, ParserFunc, ParserFuncHelpers};
 use postgres_basics::{fn_info, Located, Str};
 use std::mem;

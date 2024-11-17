@@ -15,7 +15,9 @@ impl Parser<'_> {
             return Ok(NotifyStmt::new(condition_name))
         }
 
-        let payload = self.string().required(fn_info!())?;
+        let payload = string(fn_info!())
+            .required(fn_info!())
+            .parse(&mut self.buffer)?;
 
         Ok(NotifyStmt::with_payload(condition_name, payload))
     }
@@ -42,6 +44,7 @@ mod tests {
 
 use crate::lexer::OperatorKind::Comma;
 use crate::parser::ast_node::NotifyStmt;
+use crate::parser::combinators::{string, ParserFunc, ParserFuncHelpers};
 use crate::parser::result::{Optional, Required};
 use crate::parser::{ParseResult, Parser};
 use postgres_basics::fn_info;

@@ -311,4 +311,4 @@ use crate::{
         Parser
     }
 };
-use postgres_basics::{fn_info, qual_fn_name};
+use postgres_basics::fn_info;

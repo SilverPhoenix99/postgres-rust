@@ -22,7 +22,8 @@ impl Parser<'_> {
             }
         }
         else {
-            (self.identifier()?.into(), false)
+            let ident = identifier(fn_info!()).parse(&mut self.buffer)?;
+            (ident.into(), false)
         };
 
         let loc = self.buffer.current_location();
@@ -75,6 +76,7 @@ mod tests {
 use crate::{
     lexer::KeywordCategory::{ColumnName, Reserved, TypeFuncName, Unreserved},
     parser::{
+        combinators::{identifier, ParserFunc},
         error::syntax_err,
         result::{ScanResult, ScanResultTrait},
         Parser,

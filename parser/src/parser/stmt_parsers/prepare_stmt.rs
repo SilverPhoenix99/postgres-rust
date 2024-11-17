@@ -9,7 +9,9 @@ impl Parser<'_> {
         let tx = self.buffer.consume_kw_eq(Transaction).try_match(fn_info!())?;
 
         if tx.is_some() {
-            let tx_id = self.string().required(fn_info!())?;
+            let tx_id = string(fn_info!())
+                .required(fn_info!())
+                .parse(&mut self.buffer)?;
             return Ok(PrepareTransactionStmt(tx_id))
         }
 
@@ -35,6 +37,7 @@ use crate::{
     lexer::Keyword::Transaction,
     parser::{
         ast_node::RawStmt::{self, PrepareTransactionStmt},
+        combinators::{string, ParserFunc, ParserFuncHelpers},
         result::{Required, TryMatch},
         ParseResult,
         Parser

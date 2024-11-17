@@ -45,6 +45,15 @@ pub(crate) enum StringKind {
     Dollar,
 }
 
+impl StringKind {
+    pub fn is_concatenable(self) -> bool {
+        match self {
+            Self::Basic { concatenable } | Self::Extended { concatenable } => concatenable,
+            Self::Unicode | Self::Dollar => false
+        }
+    }
+}
+
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub(crate) enum BitStringKind {
     /// E.g.: `b'010'`

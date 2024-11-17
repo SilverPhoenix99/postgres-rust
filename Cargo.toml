@@ -15,6 +15,9 @@ version = "18.0.0-devel"
 useless_conversion = "deny"
 items_after_test_module = "allow"
 
+[workspace.lints.rust]
+unused_imports = "deny"
+
 [workspace.dependencies]
 assert_matches = "1"
 bitflags = "2"

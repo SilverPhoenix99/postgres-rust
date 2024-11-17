@@ -6,8 +6,8 @@ impl Parser<'_> {
             COMMIT PREPARED SCONST
         */
 
-        if self.buffer.consume_kw_eq(Prepared).optional()?.is_some() {
-            let string = self.string().required(fn_info!())?;
+        if keyword(Prepared).optional().parse(&mut self.buffer)?.is_some() {
+            let string = string(fn_info!()).required(fn_info!()).parse(&mut self.buffer)?;
             return Ok(TransactionStmt::CommitPrepared(string))
         }
 
@@ -69,6 +69,6 @@ mod tests {
 
 use crate::lexer::Keyword::Prepared;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::{Optional, Required};
+use crate::parser::combinators::{keyword, string, ParserFunc, ParserFuncHelpers};
 use crate::parser::{ParseResult, Parser};
 use postgres_basics::fn_info;
