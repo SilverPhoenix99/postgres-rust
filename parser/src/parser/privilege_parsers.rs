@@ -1,177 +1,78 @@
-impl Parser<'_> {
+pub(super) fn privileges() -> impl Combinator<Output = AccessPrivilege> {
 
-    pub(super) fn privileges(&mut self) -> ScanResult<AccessPrivilege> {
+    /*
+          ALL ( PRIVILEGES )? opt_column_list
+        | privilege_list
+    */
 
-        /*
-              ALL ( PRIVILEGES )? opt_column_list
-            | privilege_list
-        */
+    let all_privileges = sequence!{
+        keyword(AllKw).skip(),
+        keyword(Privileges).optional().skip(),
+        opt_name_list().optional()
+    };
 
-        if self.buffer.consume_kw_eq(All).no_match_to_option()?.is_some() {
-            self.buffer.consume_kw_eq(Privileges).optional()?;
-            let columns = self.opt_name_list().optional()?;
-            return Ok(AccessPrivilege::All(columns))
-        }
+    or(
+        all_privileges
+            .map(|(_, _, columns)| All(columns)),
+        privilege_list().map(Specific)
+    )
+}
 
-        let privileges = self.privilege_list()?;
-        Ok(AccessPrivilege::Specific(privileges))
-    }
+/// Post-condition: Vec is **Not** empty
+pub(super) fn privilege_list() -> impl Combinator<Output = Vec<SpecificAccessPrivilege>> {
 
-    /// Post-condition: Vec is **Not** empty
-    pub(super) fn privilege_list(&mut self) -> ScanResult<Vec<SpecificAccessPrivilege>> {
+    /*
+        privilege ( ',' privilege )*
+    */
 
-        /*
-            privilege ( ',' privilege )*
-        */
+    many_sep(operator(Comma), privilege())
+}
 
-        let element = self.privilege()?;
-        let mut elements = vec![element];
+fn privilege() -> impl Combinator<Output = SpecificAccessPrivilege> {
 
-        while self.buffer.consume_op(Comma).optional()?.is_some() {
-            let element = self.privilege().required(fn_info!())?;
-            elements.push(element);
-        }
+    /*
+          ALTER SYSTEM
+        | SELECT opt_column_list
+        | REFERENCES opt_column_list
+        | CREATE opt_column_list
+        | col_id opt_column_list
+    */
 
-        Ok(elements)
-    }
-
-    fn privilege(&mut self) -> ScanResult<SpecificAccessPrivilege> {
-
-        /*
-              ALTER SYSTEM
-            | SELECT opt_column_list
-            | REFERENCES opt_column_list
-            | CREATE opt_column_list
-            | col_id opt_column_list
-        */
-
-        let privilege = consume!{self
-            Ok {
-                Kw(Alter), Kw(SystemKw) => Ok(AlterSystem),
-                Kw(CreateKw) => {
-                    let columns = self.opt_name_list().optional()?;
-                    Ok(Create(columns))
-                },
-                Kw(ReferencesKw) => {
-                    let columns = self.opt_name_list().optional()?;
-                    Ok(References(columns))
-                },
-                Kw(SelectKw) => {
-                    let columns = self.opt_name_list().optional()?;
-                    Ok(Select(columns))
-                },
-            }
-            Err {
-                Ok(_) => {
-                    let loc = self.buffer.current_location();
-                    NoMatch(loc)
-                },
-                Err(err) => err.into(),
-            }
-        };
-
-        if let Some(privilege) = privilege.no_match_to_option()? {
-            return Ok(privilege);
-        }
-
-        let name = self.col_id()?;
-        let columns = self.opt_name_list().optional()?;
-
-        Ok(Named(name, columns))
+    match_first! {
+        keyword(Alter).and(keyword(SystemKw)).map(|_| AlterSystem),
+        keyword(CreateKw)
+            .and_then(opt_name_list().optional(), |_, columns| Create(columns)),
+        keyword(ReferencesKw)
+            .and_then(opt_name_list().optional(), |_, columns| References(columns)),
+        keyword(SelectKw)
+            .and_then(opt_name_list().optional(), |_, columns| Select(columns)),
+        col_id()
+            .and_then(opt_name_list().optional(), Named)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::ast_node::SpecificAccessPrivilege::{AlterSystem, Named};
+    use crate::parser::ast_node::{AccessPrivilege, SpecificAccessPrivilege};
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 
-    #[test_case("all")]
-    #[test_case("all privileges")]
-    fn test_all_privileges(source: &str) {
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(AccessPrivilege::All(None)), parser.privileges());
-    }
-
-    #[test]
-    fn test_all_privileges_with_columns() {
-        let source = "all (column_name)";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        let expected = vec!["column_name".into()];
-        assert_eq!(Ok(AccessPrivilege::All(Some(expected))), parser.privileges());
-    }
-
-    #[test]
-    fn test_specific_privileges() {
-        let source = "select, references";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        let expected = vec![
-            Select(None),
-            References(None),
-        ];
-        assert_eq!(Ok(AccessPrivilege::Specific(expected)), parser.privileges());
-    }
-
-    #[test]
-    fn test_name_privilege() {
-        let source = "some_name another_name(column_name)";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        let expected = None;
-        assert_eq!(Ok(Named("some_name".into(), expected)), parser.privilege());
-
-        let expected = Some(vec!["column_name".into()]);
-        assert_eq!(Ok(Named("another_name".into(), expected)), parser.privilege());
-    }
-
-    #[test]
-    fn test_select_privilege() {
-        let source = "select select(column_name)";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        let expected = None;
-        assert_eq!(Ok(Select(expected)), parser.privilege());
-
-        let expected = Some(vec!["column_name".into()]);
-        assert_eq!(Ok(Select(expected)), parser.privilege());
-    }
-
-    #[test]
-    fn test_references_privilege() {
-        let source = "references references(column_name)";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        let expected = None;
-        assert_eq!(Ok(References(expected)), parser.privilege());
-
-        let expected = Some(vec!["column_name".into()]);
-        assert_eq!(Ok(References(expected)), parser.privilege());
-    }
-
-    #[test]
-    fn test_create_privilege() {
-        let source = "create create(column_name)";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        let expected = None;
-        assert_eq!(Ok(Create(expected)), parser.privilege());
-
-        let expected = Some(vec!["column_name".into()]);
-        assert_eq!(Ok(Create(expected)), parser.privilege());
-    }
-
-    #[test]
-    fn test_alter_system_privilege() {
-        let source = "alter system";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(AlterSystem), parser.privilege());
+    #[test_case("all", All(None))]
+    #[test_case("all privileges", All(None))]
+    #[test_case("all (column_name)", All(Some(vec!["column_name".into()])))]
+    #[test_case("select, references", Specific(vec![Select(None), References(None)]))]
+    fn test_privileges(source: &str, expected: AccessPrivilege) {
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(expected), privileges().parse(&mut stream));
     }
 
     #[test]
     fn test_privilege_list() {
         let source = "alter system, select, create, some_privilege";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
         let expected = vec![
             AlterSystem,
@@ -180,38 +81,33 @@ mod tests {
             Named("some_privilege".into(), None),
         ];
 
-        assert_eq!(Ok(expected), parser.privilege_list());
+        assert_eq!(Ok(expected), privilege_list().parse(&mut stream));
+    }
+
+    #[test_case("alter system", AlterSystem)]
+    #[test_case("select", Select(None))]
+    #[test_case("select(column_name)", Select(Some(vec!["column_name".into()])))]
+    #[test_case("references", References(None))]
+    #[test_case("references(column_name)", References(Some(vec!["column_name".into()])))]
+    #[test_case("create", Create(None))]
+    #[test_case("create(column_name)", Create(Some(vec!["column_name".into()])))]
+    #[test_case("some_name", Named("some_name".into(), None))]
+    #[test_case("another_name(column_name)", Named("another_name".into(), Some(vec!["column_name".into()])))]
+    fn test_privilege(source: &str, expected: SpecificAccessPrivilege) {
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(expected), privilege().parse(&mut stream));
     }
 }
 
-use crate::{
-    lexer::{
-        Keyword::{
-            All,
-            Alter,
-            Create as CreateKw,
-            Privileges,
-            References as ReferencesKw,
-            Select as SelectKw,
-            SystemKw
-        },
-        OperatorKind::Comma,
-        RawTokenKind::Keyword as Kw,
-    },
-    parser::{
-        ast_node::{
-            AccessPrivilege,
-            SpecificAccessPrivilege::{self, *},
-        },
-        consume_macro::consume,
-        result::{
-            Optional,
-            Required,
-            ScanErrorKind::NoMatch,
-            ScanResult,
-            ScanResultTrait
-        },
-        Parser
-    }
-};
-use postgres_basics::fn_info;
+use crate::lexer::Keyword::Create as CreateKw;
+use crate::lexer::Keyword::References as ReferencesKw;
+use crate::lexer::Keyword::Select as SelectKw;
+use crate::lexer::Keyword::{All as AllKw, Alter, Privileges, SystemKw};
+use crate::lexer::OperatorKind::Comma;
+use crate::parser::ast_node::AccessPrivilege::*;
+use crate::parser::ast_node::SpecificAccessPrivilege::AlterSystem;
+use crate::parser::ast_node::SpecificAccessPrivilege::*;
+use crate::parser::ast_node::{AccessPrivilege, SpecificAccessPrivilege};
+use crate::parser::combinators::{keyword, match_first, operator, or, sequence, Combinator};
+use crate::parser::combinators::{many_sep, CombinatorHelpers};
+use crate::parser::{col_id, opt_name_list};

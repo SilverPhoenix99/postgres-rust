@@ -52,7 +52,7 @@ impl Parser<'_> {
             max_prec = assoc.max_precedence();
 
             if op == Op::Typecast {
-                let type_name = self.type_name().required(fn_info!())?;
+                let type_name = self.type_name().required()?;
                 expr = TypecastExpr::new(type_name, expr).into();
                 continue
             }
@@ -62,7 +62,7 @@ impl Parser<'_> {
                 continue
             }
 
-            let right = self.b_expr_prec(assoc.right_precedence()).required(fn_info!())?;
+            let right = self.b_expr_prec(assoc.right_precedence()).required()?;
 
             expr = match op {
                 Op::Exponentiation => ExprNode::exponentiation(expr, right),
@@ -89,7 +89,7 @@ impl Parser<'_> {
         let range = min_prec..=max_prec;
 
         if range.contains(&2) {
-            if let Some(op) = self.qual_op().no_match_to_option()? {
+            if let Some(op) = self.qual_op().maybe_match()? {
                 return Ok(Op::QualifiedOperator(op))
             }
         }
@@ -137,7 +137,7 @@ impl Parser<'_> {
             .is_some();
 
         let kw = keyword_if(|kw| matches!(kw, Document | Distinct))
-            .required(fn_info!())
+            .required()
             .parse(&mut self.buffer)?;
 
         if kw == Document {
@@ -150,11 +150,11 @@ impl Parser<'_> {
 
         // Distinct
         keyword(FromKw)
-            .required(fn_info!())
+            .required()
             .parse(&mut self.buffer)?;
 
         let assoc = Op::IsExpr.associativity();
-        let right = self.b_expr_prec(assoc.right_precedence()).required(fn_info!())?;
+        let right = self.b_expr_prec(assoc.right_precedence()).required()?;
 
         let expr = if not_expr {
             ExprNode::not_distinct(left, right)
@@ -175,19 +175,19 @@ impl Parser<'_> {
             '+' b_expr(6)
         */
 
-        if let Some(op) = self.qual_op().no_match_to_option()? {
+        if let Some(op) = self.qual_op().maybe_match()? {
             let prec = Left(2).right_precedence();
-            let right = self.b_expr_prec(prec).required(fn_info!())?;
+            let right = self.b_expr_prec(prec).required()?;
             let expr = UnaryExpr::new(op, right);
             return Ok(expr.into())
         }
 
         // TODO: c_expr()
 
-        let op = self.sign()?;
+        let op = sign().parse(&mut self.buffer)?;
 
         let prec = Right(6).right_precedence();
-        let right = self.b_expr_prec(prec).required(fn_info!())?;
+        let right = self.b_expr_prec(prec).required()?;
 
         let expr = if op == Plus {
             UnaryExpr::unary_plus(right)
@@ -200,29 +200,30 @@ impl Parser<'_> {
     }
 }
 
-use crate::{
-    lexer::{
-        Keyword::{Distinct, Document, FromKw, Is, Not},
-        OperatorKind::*,
-        RawTokenKind::{Keyword, Operator}
-    },
-    parser::{
-        ast_node::{ExprNode, QualifiedOperator, TypecastExpr, UnaryExpr},
-        combinators::{
-            keyword,
-            keyword_if,
-            ParserFunc,
-            ParserFuncHelpers
-        },
-        expr_parsers::associativity::Associativity::{self, Left, Non, Right},
-        result::{
-            Optional,
-            Required,
-            ScanResult,
-            ScanResultTrait
-        },
-        token_stream::TokenConsumer,
-        Parser,
-    }
-};
-use postgres_basics::fn_info;
+use crate::lexer::Keyword::Distinct;
+use crate::lexer::Keyword::Document;
+use crate::lexer::Keyword::FromKw;
+use crate::lexer::Keyword::Is;
+use crate::lexer::Keyword::Not;
+use crate::lexer::OperatorKind::*;
+use crate::lexer::RawTokenKind::Keyword;
+use crate::lexer::RawTokenKind::Operator;
+use crate::parser::ast_node::ExprNode;
+use crate::parser::ast_node::QualifiedOperator;
+use crate::parser::ast_node::TypecastExpr;
+use crate::parser::ast_node::UnaryExpr;
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::keyword_if;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::expr_parsers::associativity::Associativity;
+use crate::parser::expr_parsers::associativity::Associativity::Left;
+use crate::parser::expr_parsers::associativity::Associativity::Non;
+use crate::parser::expr_parsers::associativity::Associativity::Right;
+use crate::parser::result::Optional;
+use crate::parser::result::Required;
+use crate::parser::result::ScanResult;
+use crate::parser::result::ScanResultTrait;
+use crate::parser::sign;
+use crate::parser::token_stream::TokenConsumer;
+use crate::parser::Parser;

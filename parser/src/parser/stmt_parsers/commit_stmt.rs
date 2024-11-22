@@ -1,74 +1,48 @@
-impl Parser<'_> {
-    pub(in crate::parser) fn commit_stmt(&mut self) -> ParseResult<TransactionStmt> {
+pub(in crate::parser) fn commit_stmt() -> impl Combinator<Output = TransactionStmt> {
 
-        /*
-            COMMIT opt_transaction opt_transaction_chain
-            COMMIT PREPARED SCONST
-        */
+    /*
+        COMMIT PREPARED SCONST
+        COMMIT opt_transaction opt_transaction_chain
+    */
 
-        if keyword(Prepared).optional().parse(&mut self.buffer)?.is_some() {
-            let string = string(fn_info!()).required(fn_info!()).parse(&mut self.buffer)?;
-            return Ok(TransactionStmt::CommitPrepared(string))
-        }
-
-        self.opt_transaction()?;
-
-        let chain = self.opt_transaction_chain()?;
-
-        Ok(TransactionStmt::Commit { chain })
-    }
+    keyword(Commit)
+        .and_right(match_first!{
+            keyword(Prepared)
+                .and_right(string())
+                .map(TransactionStmt::CommitPrepared),
+            opt_transaction()
+                .and_right(opt_transaction_chain())
+                .map(|chain| TransactionStmt::Commit { chain })
+        })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
+    use test_case::test_case;
 
-    #[test]
-    fn test_commit() {
-        let mut parser = Parser::new("", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Commit { chain: false }), parser.commit_stmt());
-    }
-
-    #[test]
-    fn test_commit_chain() {
-        let mut parser = Parser::new("and chain", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Commit { chain: true }), parser.commit_stmt());
-    }
-
-    #[test]
-    fn test_commit_no_chain() {
-        let mut parser = Parser::new("and no chain", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Commit { chain: false }), parser.commit_stmt());
-    }
-
-    #[test]
-    fn test_commit_transaction() {
-        let mut parser = Parser::new("transaction", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Commit { chain: false }), parser.commit_stmt());
-    }
-
-    #[test]
-    fn test_commit_transaction_chain() {
-        let mut parser = Parser::new("transaction and chain", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Commit { chain: true }), parser.commit_stmt());
-    }
-
-    #[test]
-    fn test_commit_transaction_no_chain() {
-        let mut parser = Parser::new("transaction and no chain", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Commit { chain: false }), parser.commit_stmt());
+    #[test_case("commit", false)]
+    #[test_case("commit and chain", true)]
+    #[test_case("commit and no chain", false)]
+    #[test_case("commit transaction", false)]
+    #[test_case("commit transaction and chain", true)]
+    #[test_case("commit transaction and no chain", false)]
+    fn test_commit(source: &str, expected: bool) {
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(TransactionStmt::Commit { chain: expected }), commit_stmt().parse(&mut stream));
     }
 
     #[test]
     fn test_commit_prepared() {
-        let mut parser = Parser::new("prepared 'test-name'", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::CommitPrepared("test-name".into())), parser.commit_stmt());
+        let mut stream = TokenStream::new("commit prepared 'test-name'", DEFAULT_CONFIG);
+        assert_eq!(Ok(TransactionStmt::CommitPrepared("test-name".into())), commit_stmt().parse(&mut stream));
     }
 }
 
-use crate::lexer::Keyword::Prepared;
+use crate::lexer::Keyword::{Commit, Prepared};
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::combinators::{keyword, string, ParserFunc, ParserFuncHelpers};
-use crate::parser::{ParseResult, Parser};
-use postgres_basics::fn_info;
+use crate::parser::combinators::{keyword, match_first, string, Combinator, CombinatorHelpers};
+use crate::parser::opt_transaction::opt_transaction;
+use crate::parser::opt_transaction_chain::opt_transaction_chain;

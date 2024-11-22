@@ -8,12 +8,12 @@ pub struct ParserError(
 );
 
 impl ParserError {
-    pub fn new(source: ParserErrorKind, fn_info: &'static FnInfo, location: Location) -> Self {
-        Self(LocatedErrorReport::new(source, fn_info, location))
+    pub fn new(source: ParserErrorKind, location: Location) -> Self {
+        Self(LocatedErrorReport::new(source, location))
     }
 
-    pub fn syntax(fn_info: &'static FnInfo, location: Location) -> Self {
-        Self::new(Syntax, fn_info, location)
+    pub fn syntax(location: Location) -> Self {
+        Self::new(Syntax, location)
     }
 
     pub fn source(&self) -> &ParserErrorKind {
@@ -24,7 +24,7 @@ impl ParserError {
 impl From<LexerError> for ParserError {
     fn from(value: LexerError) -> Self {
         let source = value.source().into();
-        Self::new(source, value.fn_info(), value.location().clone())
+        Self::new(source, value.location().clone())
     }
 }
 
@@ -64,35 +64,26 @@ impl ErrorReport for ParserError {
     }
 }
 
-impl HasFnInfo for ParserError {
-    fn fn_info(&self) -> &'static FnInfo {
-        self.0.fn_info()
-    }
-}
-
 impl HasLocation for ParserError {
     fn location(&self) -> &Location {
         self.0.location()
     }
 }
 
-pub(super) fn syntax_err(fn_info: &'static FnInfo, location: Location) -> ParserError {
-    ParserError::syntax(fn_info, location)
+pub(super) fn syntax_err(location: Location) -> ParserError {
+    ParserError::syntax(location)
 }
 
-use crate::{
-    error::{HasLocation, LocatedErrorReport},
-    lexer::LexerError,
-    parser::ParserErrorKind::Syntax
-};
-use postgres_basics::{
-    elog::{ErrorReport, HasFnInfo, HasSqlState},
-    sql_state::SqlState,
-    FnInfo,
-    Location
-};
-use std::{
-    borrow::Cow,
-    error::Error,
-    fmt::{Debug, Display, Formatter}
-};
+use crate::error::HasLocation;
+use crate::error::LocatedErrorReport;
+use crate::lexer::LexerError;
+use crate::parser::ParserErrorKind::Syntax;
+use postgres_basics::elog::ErrorReport;
+use postgres_basics::elog::HasSqlState;
+use postgres_basics::sql_state::SqlState;
+use postgres_basics::Location;
+use std::borrow::Cow;
+use std::error::Error;
+use std::fmt::Debug;
+use std::fmt::Display;
+use std::fmt::Formatter;

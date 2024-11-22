@@ -51,58 +51,56 @@ pub(super) type ScanResult<T> = Result<T, ScanErrorKind>;
 pub(super) type EofResult<T> = Result<T, EofErrorKind>;
 
 pub(super) trait Required<T> {
-    /// `Eof` and `NoMatch` become `Err(Syntax)`
-    fn required(self, fn_info: &'static FnInfo) -> ParseResult<T>;
+    /// See [`required()`](crate::parser::combinators::required::required).
+    fn required(self) -> ParseResult<T>;
 }
 
 impl<T> Required<T> for ScanResult<T> {
-    fn required(self, fn_info: &'static FnInfo) -> ParseResult<T> {
+    fn required(self) -> ParseResult<T> {
         self.map_err(|err| match err {
             ScanErr(err) => err,
-            NoMatch(loc) | ScanEof(loc) => syntax_err(fn_info, loc)
+            NoMatch(loc) | ScanEof(loc) => syntax_err(loc)
         })
     }
 }
 
 impl<T> Required<T> for EofResult<T> {
-    fn required(self, fn_info: &'static FnInfo) -> ParseResult<T> {
+    fn required(self) -> ParseResult<T> {
         self.map_err(|err| match err {
             NotEof(err) => err,
-            Eof(loc) => syntax_err(fn_info, loc)
+            Eof(loc) => syntax_err(loc)
         })
     }
 }
 
 pub(super) trait TryMatch<T> {
-    /// `Eof` becomes `Err(Syntax)`
-    ///
-    /// `NoMatch` becomes `Ok(None)`
-    fn try_match(self, fn_info: &'static FnInfo) -> ParseResult<Option<T>>;
+    /// See [`try_match()`](crate::parser::combinators::try_match::try_match).
+    fn try_match(self) -> ParseResult<Option<T>>;
 }
 
 impl<T> TryMatch<T> for ScanResult<T> {
-    fn try_match(self, fn_info: &'static FnInfo) -> ParseResult<Option<T>> {
+    fn try_match(self) -> ParseResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
             Err(NoMatch(_)) => Ok(None),
-            Err(ScanEof(loc)) => Err(ParserError::syntax(fn_info, loc)),
+            Err(ScanEof(loc)) => Err(ParserError::syntax(loc)),
             Err(ScanErr(err)) => Err(err),
         }
     }
 }
 
 impl<T> TryMatch<T> for EofResult<T> {
-    fn try_match(self, fn_info: &'static FnInfo) -> ParseResult<Option<T>> {
+    fn try_match(self) -> ParseResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
-            Err(Eof(loc)) => Err(ParserError::syntax(fn_info, loc)),
+            Err(Eof(loc)) => Err(ParserError::syntax(loc)),
             Err(NotEof(err)) => Err(err),
         }
     }
 }
 
 pub(super) trait Optional<T> {
-    /// `Eof` and `NoMatch` become `Ok(None)`
+    /// See [`optional()`](crate::parser::combinators::optional::optional).
     fn optional(self) -> ParseResult<Option<T>>;
 }
 
@@ -127,16 +125,12 @@ impl<T> Optional<T> for EofResult<T> {
 }
 
 pub(super) trait ScanResultTrait<T> {
-    /// Hoists `NoMatch` to `Ok(None)`.
-    ///
-    /// Usually used when the 1st token is optional,
-    /// or there are multiple rules in the production,
-    /// but it should still break the whole production on `Eof` and `ParserErr`.
-    fn no_match_to_option(self) -> EofResult<Option<T>>;
+    /// See [`maybe_match()`](crate::parser::combinators::maybe_match::maybe_match).
+    fn maybe_match(self) -> EofResult<Option<T>>;
 }
 
 impl<T> ScanResultTrait<T> for ScanResult<T> {
-    fn no_match_to_option(self) -> EofResult<Option<T>> {
+    fn maybe_match(self) -> EofResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
             Err(NoMatch(_)) => Ok(None),
@@ -151,16 +145,13 @@ mod tests {
     // TODO
 }
 
-use crate::{
-    lexer::LexerError,
-    parser::{
-        error::syntax_err,
-        result::{
-            EofErrorKind::{Eof, NotEof},
-            ScanErrorKind::{Eof as ScanEof, NoMatch, ScanErr}
-        },
-        ParseResult,
-        ParserError
-    }
-};
-use postgres_basics::{FnInfo, Location};
+use crate::lexer::LexerError;
+use crate::parser::error::syntax_err;
+use crate::parser::result::EofErrorKind::Eof;
+use crate::parser::result::EofErrorKind::NotEof;
+use crate::parser::result::ScanErrorKind::Eof as ScanEof;
+use crate::parser::result::ScanErrorKind::NoMatch;
+use crate::parser::result::ScanErrorKind::ScanErr;
+use crate::parser::ParseResult;
+use crate::parser::ParserError;
+use postgres_basics::Location;

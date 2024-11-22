@@ -2,17 +2,15 @@
 /// Aliases:
 /// * `IDENT`
 /// * `UIDENT`
-pub(in crate::parser) fn identifier(caller: &'static FnInfo) -> IdentifierCombi {
-    IdentifierCombi { caller }
+pub(in crate::parser) fn identifier() -> IdentifierCombi {
+    IdentifierCombi
 }
 
-pub(in crate::parser) struct IdentifierCombi {
-    caller: &'static FnInfo,
-}
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub(in crate::parser) struct IdentifierCombi;
 
-impl ParserFunc for IdentifierCombi {
+impl Combinator for IdentifierCombi {
     type Output = Box<str>;
-    type Error = ScanErrorKind;
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
 
@@ -32,7 +30,7 @@ impl ParserFunc for IdentifierCombi {
 
             IdentifierKind::Unicode => {
 
-                let escape = uescape(self.caller).parse(stream)?;
+                let escape = uescape().parse(stream)?;
 
                 // Strip delimiters:
                 let slice = &slice[3..slice.len() - 1];
@@ -41,7 +39,7 @@ impl ParserFunc for IdentifierCombi {
                     .decode()
                     .map(str::into_string)
                     .map_err(|err|
-                        ParserError::new(UnicodeString(err), fn_info!(), loc)
+                        ParserError::new(UnicodeString(err), loc)
                     )?
             }
         };
@@ -72,19 +70,18 @@ mod tests {
     #[test_case(r#"u&"d!0061ta" UESCAPE '!'"#, "data")]
     fn test_identifier(source: &str, expected: &str) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let parser = identifier(fn_info!());
+        let parser = identifier();
         let actual = parser.parse(&mut stream);
         assert_eq!(expected, actual.unwrap().as_ref())
     }
 }
 
-use crate::parser::result::ScanErrorKind;
 use crate::{
     lexer::IdentifierKind::{self, Basic, Quoted},
     parser::{
         combinators::{
             string::uescape,
-            ParserFunc
+            Combinator
         },
         result::ScanResult,
         token_stream::{SlicedTokenConsumer, TokenStream},
@@ -93,4 +90,4 @@ use crate::{
     },
     string_decoders::{BasicStringDecoder, UnicodeStringDecoder}
 };
-use postgres_basics::{fn_info, FnInfo, NAMEDATALEN};
+use postgres_basics::NAMEDATALEN;

@@ -3,9 +3,11 @@
 * Don't implement these. They're just Rust's `String`/`Vec`:
   * `common/stringinfo.c` / `include/lib/stringinfo.h` 
   * `backend/utils/mb/stringinfo_mb.c` / `include/mb/stringinfo_mb.h`
-* Check layout of structs and enums with `#![feature(rustc_attrs)]` 
+* Check layout of structs and enums with `#![feature(rustc_attrs)]` + `#[rustc_layout(debug)]`.
+  * Ref: https://doc.rust-lang.org/beta/unstable-book/language-features/rustc-attrs.html
 
 # TO DO
+* Re-check usages of `const`. They might be `static` instead.
 * Wrap `ParserWarningKind` in a `LocatedErrorReport`.
 * Merge `Parser.move_stmt` into `Parser.fetch_stmt`
 * Test `NumericSpec`.

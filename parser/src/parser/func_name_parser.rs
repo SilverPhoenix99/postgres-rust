@@ -1,39 +1,34 @@
-impl Parser<'_> {
-    pub(in crate::parser) fn func_name(&mut self) -> ScanResult<QualifiedName> {
+pub(in crate::parser) fn func_name() -> impl Combinator<Output = QualifiedName> {
 
-        /*
-              type_func_name_keyword
-            | col_name_keyword attrs
-            | unreserved_keyword ( attrs )?
-            | IDENT ( attrs )?
-        */
+    /*
+          type_func_name_keyword
+        | col_name_keyword attrs
+        | unreserved_keyword ( attrs )?
+        | IDENT ( attrs )?
+    */
 
-        let kw = self.buffer.consume_kw(|kw|
-            matches!(kw.details().category(), Unreserved | ColumnName | TypeFuncName)
-        ).no_match_to_option()?;
-
-        let (ident, required_indirection): (Str, bool) = if let Some(kw) = kw {
-            let name = kw.details().text().into();
-            match kw.details().category() {
-                TypeFuncName => return Ok(vec![name]),
-                ColumnName => (name, true),
-                Unreserved => (name, false),
-                Reserved => unreachable!("it shouldn't accept Reserved keywords")
-            }
-        }
-        else {
-            let ident = identifier(fn_info!()).parse(&mut self.buffer)?;
-            (ident.into(), false)
-        };
-
-        let loc = self.buffer.current_location();
-        let name = self.attrs(ident)?;
-
-        if required_indirection && name.len() == 1 {
-            return Err(syntax_err(fn_info!(), loc).into());
-        }
-
-        Ok(name)
+    match_first!{
+        keyword_category(TypeFuncName)
+            .map(|kw| vec![kw.details().text().into()]),
+        attrs(
+            or(
+                keyword_category(Unreserved)
+                    .map(|kw| kw.details().text().into()),
+                identifier()
+                    .map(From::from)
+            )
+        ),
+        located(attrs(
+            keyword_category(ColumnName)
+                .map(|kw| kw.details().text().into())
+            ))
+            .map_result(|result| {
+                let (name, loc) = result?;
+                if name.len() == 1 {
+                    return Err(syntax_err(loc).into())
+                }
+                Ok(name)
+            }),
     }
 }
 
@@ -41,46 +36,47 @@ impl Parser<'_> {
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
 
     #[test]
     fn test_type_func_name_keyword() {
         let source = "authorization";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(vec!["authorization".into()]), parser.func_name());
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(vec!["authorization".into()]), func_name().parse(&mut stream));
     }
 
     #[test]
     fn test_col_name_keyword() {
     let source = "trim.something";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(vec!["trim".into(), "something".into()]), parser.func_name());
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(vec!["trim".into(), "something".into()]), func_name().parse(&mut stream));
     }
 
     #[test]
     fn test_unreserved_keyword() {
         let source = "attribute inline.some_thing";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(vec!["attribute".into()]), parser.func_name());
-        assert_eq!(Ok(vec!["inline".into(), "some_thing".into()]), parser.func_name());
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(vec!["attribute".into()]), func_name().parse(&mut stream));
+        assert_eq!(Ok(vec!["inline".into(), "some_thing".into()]), func_name().parse(&mut stream));
     }
 
     #[test]
     fn test_identifier() {
         let source = "some_ident another_ident.something";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(vec!["some_ident".into()]), parser.func_name());
-        assert_eq!(Ok(vec!["another_ident".into(), "something".into()]), parser.func_name());
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(vec!["some_ident".into()]), func_name().parse(&mut stream));
+        assert_eq!(Ok(vec!["another_ident".into(), "something".into()]), func_name().parse(&mut stream));
     }
 }
 
-use crate::{
-    lexer::KeywordCategory::{ColumnName, Reserved, TypeFuncName, Unreserved},
-    parser::{
-        combinators::{identifier, ParserFunc},
-        error::syntax_err,
-        result::{ScanResult, ScanResultTrait},
-        Parser,
-        QualifiedName
-    },
-};
-use postgres_basics::{fn_info, Str};
+use crate::lexer::KeywordCategory::ColumnName;
+use crate::lexer::KeywordCategory::TypeFuncName;
+use crate::lexer::KeywordCategory::Unreserved;
+use crate::parser::attrs;
+use crate::parser::combinators::or;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::combinators::{identifier, keyword_category, match_first};
+use crate::parser::error::syntax_err;
+use crate::parser::located_combinator::located;
+use crate::parser::QualifiedName;

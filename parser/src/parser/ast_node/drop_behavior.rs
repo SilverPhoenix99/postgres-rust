@@ -1,5 +1,6 @@
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Default, Copy, Clone, Eq, PartialEq)]
 pub enum DropBehavior {
+    #[default]
+    Restrict,
     Cascade,
-    Restrict
 }

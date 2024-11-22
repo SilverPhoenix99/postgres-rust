@@ -1,21 +1,18 @@
-impl Parser<'_> {
-    /// Alias: `ClusterStmt`
-    pub(in crate::parser) fn cluster_stmt(&mut self) -> ParseResult<RawStmt> {
+/// Alias: `ClusterStmt`
+pub(in crate::parser) fn cluster_stmt() -> impl Combinator<Output = RawStmt> {
 
-        /*
-            CLUSTER '(' utility_option_list ')'
-            CLUSTER '(' utility_option_list ')' qualified_name cluster_index_specification
-            CLUSTER opt_verbose
-            CLUSTER opt_verbose name ON qualified_name
-            CLUSTER opt_verbose qualified_name cluster_index_specification
-        */
-
-        todo!()
-    }
+    /*
+        CLUSTER '(' utility_option_list ')'
+        CLUSTER '(' utility_option_list ')' qualified_name cluster_index_specification
+        CLUSTER opt_verbose
+        CLUSTER opt_verbose name ON qualified_name
+        CLUSTER opt_verbose qualified_name cluster_index_specification
+    */
+    
+    keyword(Cluster)
+        .map(|_| todo!())
 }
 
-use crate::parser::{
-    ast_node::RawStmt,
-    ParseResult,
-    Parser
-};
+use crate::lexer::Keyword::Cluster;
+use crate::parser::ast_node::RawStmt;
+use crate::parser::combinators::{keyword, Combinator, CombinatorHelpers};

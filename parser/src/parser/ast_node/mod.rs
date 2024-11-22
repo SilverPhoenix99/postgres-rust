@@ -21,10 +21,13 @@ mod raw_stmt;
 mod reassign_owned_stmt;
 mod rename_stmt;
 mod role_spec;
+mod signed_number;
 mod system_type;
 mod transaction_stmt;
 mod typecast_expr;
 mod unary_expr;
+mod unique_null_treatment;
+mod unsigned_number;
 mod variable_show_stmt;
 mod xml;
 
@@ -52,6 +55,7 @@ pub use self::{
     reassign_owned_stmt::ReassignOwnedStmt,
     rename_stmt::{RenameStmt, RenameTarget},
     role_spec::RoleSpec,
+    signed_number::SignedNumber,
     system_type::{
         FuncArgClass,
         FuncType,
@@ -66,9 +70,11 @@ pub use self::{
     transaction_stmt::{IsolationLevel, TransactionMode, TransactionStmt},
     typecast_expr::TypecastExpr,
     unary_expr::UnaryExpr,
+    unsigned_number::UnsignedNumber,
     variable_show_stmt::VariableShowStmt,
-    xml::{XmlElement, XmlParse, XmlProcessingInstruction, XmlRoot}
+    xml::{XmlElement, XmlParse, XmlProcessingInstruction, XmlRoot},
 };
+pub(super) use unique_null_treatment::UniqueNullTreatment;
 
 /// Generates `From` impls, where the input is wrapped in an output enum variant.
 macro_rules! impl_from {
@@ -117,18 +123,6 @@ pub struct OperatorWithArgtypes {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct RelationExpr {
     // TODO
-}
-
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum UnsignedNumber {
-    IntegerConst(NonNegative),
-    NumericConst { value: Box<str>, radix: NumberRadix },
-}
-
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum SignedNumber {
-    IntegerConst(i32),
-    NumericConst { value: Box<str>, radix: NumberRadix, negative: bool },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -319,4 +313,4 @@ impl ExprNode {
 
 use impl_from;
 use crate::NumberRadix;
-use postgres_basics::{NonNegative, Str};
+use postgres_basics::Str;

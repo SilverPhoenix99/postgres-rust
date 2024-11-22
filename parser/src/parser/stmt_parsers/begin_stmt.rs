@@ -1,68 +1,44 @@
-impl Parser<'_> {
-    pub(in crate::parser) fn begin_stmt(&mut self) -> ParseResult<TransactionStmt> {
+pub(in crate::parser) fn begin_stmt() -> impl Combinator<Output = TransactionStmt> {
 
-        /*
-        TransactionStmtLegacy:
-            BEGIN_P opt_transaction opt_transaction_mode_list
-        */
+    /*
+    TransactionStmtLegacy:
+        BEGIN_P opt_transaction opt_transaction_mode_list
+    */
 
-        self.opt_transaction()?;
-
-        let modes = self.transaction_mode_list()
-            .optional()?
-            .unwrap_or_default();
-
-        Ok(TransactionStmt::Start(modes))
-    }
+    keyword(Begin)
+        .and(opt_transaction::opt_transaction())
+        .and_right(
+            transaction_mode_list()
+                .optional()
+                .map(Option::unwrap_or_default)
+                .map(TransactionStmt::Begin)
+        )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::IsolationLevel::Serializable;
-    use crate::parser::ast_node::TransactionMode::{Deferrable, IsolationLevel, ReadOnly, ReadWrite};
+    use crate::parser::ast_node::IsolationLevel::*;
+    use crate::parser::ast_node::TransactionMode::{self, *};
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
+    use test_case::test_case;
+    use TransactionStmt::Begin;
 
-    #[test]
-    fn test_begin() {
-        let mut parser = Parser::new("", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Start(Vec::new())), parser.begin_stmt());
-    }
-
-    #[test]
-    fn test_begin_transaction() {
-        let mut parser = Parser::new("transaction", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Start(Vec::new())), parser.begin_stmt());
-    }
-
-    #[test]
-    fn test_begin_work() {
-        let mut parser = Parser::new("work", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Start(Vec::new())), parser.begin_stmt());
-    }
-
-    #[test]
-    fn test_begin_with_transaction_modes() {
-        let mut parser = Parser::new("read only, read write deferrable", DEFAULT_CONFIG);
-        let expected_modes = vec![ReadOnly, ReadWrite, Deferrable];
-        assert_eq!(Ok(TransactionStmt::Start(expected_modes)), parser.begin_stmt());
-    }
-
-    #[test]
-    fn test_begin_transaction_with_transaction_modes() {
-        let mut parser = Parser::new("transaction read write", DEFAULT_CONFIG);
-        let expected_modes = vec![ReadWrite];
-        assert_eq!(Ok(TransactionStmt::Start(expected_modes)), parser.begin_stmt());
-    }
-
-    #[test]
-    fn test_begin_work_with_transaction_modes() {
-        let mut parser = Parser::new("work isolation level serializable", DEFAULT_CONFIG);
-        let expected_modes = vec![IsolationLevel(Serializable)];
-        assert_eq!(Ok(TransactionStmt::Start(expected_modes)), parser.begin_stmt());
+    #[test_case("begin", Vec::new())]
+    #[test_case("begin transaction", Vec::new())]
+    #[test_case("begin work", Vec::new())]
+    #[test_case("begin read only, read write deferrable", vec![ReadOnly, ReadWrite, Deferrable])]
+    #[test_case("begin transaction read write", vec![ReadWrite])]
+    #[test_case("begin work isolation level serializable", vec![IsolationLevel(Serializable)])]
+    fn test_begin(source: &str, expected: Vec<TransactionMode>) {
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(Begin(expected)), begin_stmt().parse(&mut stream));
     }
 }
 
+use crate::lexer::Keyword::Begin;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::Optional;
-use crate::parser::{ParseResult, Parser};
+use crate::parser::combinators::{keyword, Combinator, CombinatorHelpers};
+use crate::parser::opt_transaction;
+use crate::parser::transaction_mode_list::transaction_mode_list;

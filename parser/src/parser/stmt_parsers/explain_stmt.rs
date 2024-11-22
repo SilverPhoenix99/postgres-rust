@@ -1,20 +1,19 @@
-impl Parser<'_> {
-    /// Alias: `ExplainStmt`
-    pub(in crate::parser) fn explain_stmt(&mut self) -> ParseResult<RawStmt> {
+/// Alias: `ExplainStmt`
+pub(in crate::parser) fn explain_stmt() -> impl Combinator<Output = RawStmt> {
 
-        /*
-            EXPLAIN ExplainableStmt
-            EXPLAIN analyze_keyword opt_verbose ExplainableStmt
-            EXPLAIN VERBOSE ExplainableStmt
-            EXPLAIN '(' utility_option_list ')' ExplainableStmt
-        */
+    /*
+        EXPLAIN ExplainableStmt
+        EXPLAIN analyze_keyword opt_verbose ExplainableStmt
+        EXPLAIN VERBOSE ExplainableStmt
+        EXPLAIN '(' utility_option_list ')' ExplainableStmt
+    */
 
-        todo!()
-    }
+    keyword(Explain)
+        .map(|_| todo!())
 }
 
-use crate::parser::{
-    ast_node::RawStmt,
-    ParseResult,
-    Parser
-};
+use crate::lexer::Keyword::Explain;
+use crate::parser::ast_node::RawStmt;
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

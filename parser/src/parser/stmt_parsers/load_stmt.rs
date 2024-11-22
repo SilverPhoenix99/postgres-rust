@@ -1,29 +1,29 @@
-impl Parser<'_> {
-    /// Alias: `LoadStmt`
-    pub(in crate::parser) fn load_stmt(&mut self) -> ParseResult<Box<str>> {
+/// Alias: `LoadStmt`
+pub(in crate::parser) fn load_stmt() -> impl Combinator<Output = Box<str>> {
 
-        /*
-            LOAD SCONST
-        */
-
-        string(fn_info!())
-            .required(fn_info!())
-            .parse(&mut self.buffer)
-    }
+    /*
+        LOAD SCONST
+    */
+    
+    keyword(Load)
+        .and_right(string())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
 
     #[test]
     fn test_load_stmt() {
-        let mut parser = Parser::new("'test string'", DEFAULT_CONFIG);
-        assert_eq!(Ok("test string".into()), parser.load_stmt());
+        let mut stream = TokenStream::new("load 'test string'", DEFAULT_CONFIG);
+        assert_eq!(Ok("test string".into()), load_stmt().parse(&mut stream));
     }
 }
 
-use crate::parser::combinators::{string, ParserFunc, ParserFuncHelpers};
-use crate::parser::{ParseResult, Parser};
-use postgres_basics::fn_info;
+use crate::lexer::Keyword::Load;
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::string;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

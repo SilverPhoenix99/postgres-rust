@@ -10,17 +10,17 @@ impl Parser<'_> {
 
         keyword(Case)
             .parse(&mut self.buffer)
-            .no_match_to_option()?;
+            .maybe_match()?;
 
-        let target = self.a_expr().try_match(fn_info!())?;
+        let target = self.a_expr().try_match()?;
 
         let mut when_clauses = vec![];
 
-        while keyword(When).parse(&mut self.buffer).try_match(fn_info!())?.is_some() {
+        while keyword(When).parse(&mut self.buffer).try_match()?.is_some() {
 
-            let condition = self.a_expr().required(fn_info!())?;
-            keyword(Then).required(fn_info!()).parse(&mut self.buffer)?;
-            let body = self.a_expr().required(fn_info!())?;
+            let condition = self.a_expr().required()?;
+            keyword(Then).required().parse(&mut self.buffer)?;
+            let body = self.a_expr().required()?;
 
             let clause = CaseWhen::new(condition, body);
             when_clauses.push(clause);
@@ -28,11 +28,11 @@ impl Parser<'_> {
 
         if when_clauses.is_empty() {
             let loc = self.buffer.current_location();
-            return Err(syntax_err(fn_info!(), loc).into());
+            return Err(syntax_err(loc).into());
         }
 
-        let default = if keyword(Else).parse(&mut self.buffer).try_match(fn_info!())?.is_some() {
-            Some(self.a_expr().required(fn_info!())?)
+        let default = if keyword(Else).parse(&mut self.buffer).try_match()?.is_some() {
+            Some(self.a_expr().required()?)
         }
         else {
             None
@@ -50,14 +50,18 @@ mod tests {
     }
 }
 
-use crate::{
-    lexer::Keyword::{Case, Else, Then, When},
-    parser::{
-        ast_node::{CaseExpr, CaseWhen},
-        combinators::{keyword, ParserFunc, ParserFuncHelpers},
-        error::syntax_err,
-        result::{Required, ScanResult, ScanResultTrait, TryMatch},
-        Parser
-    }
-};
-use postgres_basics::fn_info;
+use crate::lexer::Keyword::Case;
+use crate::lexer::Keyword::Else;
+use crate::lexer::Keyword::Then;
+use crate::lexer::Keyword::When;
+use crate::parser::ast_node::CaseExpr;
+use crate::parser::ast_node::CaseWhen;
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::error::syntax_err;
+use crate::parser::result::Required;
+use crate::parser::result::ScanResult;
+use crate::parser::result::ScanResultTrait;
+use crate::parser::result::TryMatch;
+use crate::parser::Parser;

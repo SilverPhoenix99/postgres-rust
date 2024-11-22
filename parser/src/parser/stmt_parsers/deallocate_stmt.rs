@@ -1,50 +1,38 @@
-impl Parser<'_> {
-    /// Alias: `DeallocateStmt`
-    pub(in crate::parser) fn deallocate_stmt(&mut self) -> ParseResult<OneOrAll> {
+/// Alias: `DeallocateStmt`
+pub(in crate::parser) fn deallocate_stmt() -> impl Combinator<Output = OneOrAll> {
 
-        /*
-            DEALLOCATE (PREPARE)? ALL
-            DEALLOCATE (PREPARE)? ColId
-        */
+    /*
+        DEALLOCATE (PREPARE)? ALL
+        DEALLOCATE (PREPARE)? ColId
+    */
 
-        self.buffer.consume_kw_eq(Prepare).optional()?;
-
-        if self.buffer.consume_kw_eq(All).try_match(fn_info!())?.is_some() {
-            return Ok(OneOrAll::All)
-        }
-
-        let name = self.col_id().required(fn_info!())?;
-        Ok(OneOrAll::Name(name))
-    }
+    keyword(Deallocate)
+        .and(keyword(Prepare).optional())
+        .and_right(or(
+            keyword(All).map(|_| OneOrAll::All),
+            col_id().map(OneOrAll::Name)
+        ))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
+    use test_case::test_case;
 
-    #[test]
-    fn test_deallocate_all() {
-        let mut parser = Parser::new("all", DEFAULT_CONFIG);
-        assert_eq!(Ok(OneOrAll::All), parser.deallocate_stmt());
-    }
-
-    #[test]
-    fn test_deallocate_named() {
-        let mut parser = Parser::new("abort", DEFAULT_CONFIG);
-        assert_eq!(Ok(OneOrAll::Name("abort".into())), parser.deallocate_stmt());
-        let mut parser = Parser::new("ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(OneOrAll::Name("ident".into())), parser.deallocate_stmt());
+    #[test_case("deallocate all", OneOrAll::All)]
+    #[test_case("deallocate prepare all", OneOrAll::All)]
+    #[test_case("deallocate abort", OneOrAll::Name("abort".into()))]
+    #[test_case("deallocate prepare ident", OneOrAll::Name("ident".into()))]
+    fn test_deallocate(source: &str, expected: OneOrAll) {
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(expected), deallocate_stmt().parse(&mut stream));
     }
 }
 
-use crate::{
-    lexer::Keyword::{All, Prepare},
-    parser::{
-        ast_node::OneOrAll,
-        result::{Optional, Required, TryMatch},
-        ParseResult,
-        Parser
-    },
-};
-use postgres_basics::fn_info;
+use crate::lexer::Keyword::Prepare;
+use crate::lexer::Keyword::{All, Deallocate};
+use crate::parser::ast_node::OneOrAll;
+use crate::parser::col_id;
+use crate::parser::combinators::{keyword, or, Combinator, CombinatorHelpers};

@@ -1,50 +1,52 @@
-impl Parser<'_> {
-    /// Alias: `NotifyStmt`
-    pub(in crate::parser) fn notify_stmt(&mut self) -> ParseResult<NotifyStmt> {
+/// Alias: `NotifyStmt`
+pub(in crate::parser) fn notify_stmt() -> impl Combinator<Output = NotifyStmt> {
 
-        /*
-            NOTIFY ColId (',' SCONST)?
-        */
+    /*
+        NOTIFY ColId ( ',' SCONST )?
+    */
 
-        let condition_name = self.col_id().required(fn_info!())?;
-
-        if self.buffer.consume_op(Comma).optional()?.is_none() {
-            /*
-                NOTIFY ColId
-            */
-            return Ok(NotifyStmt::new(condition_name))
-        }
-
-        let payload = string(fn_info!())
-            .required(fn_info!())
-            .parse(&mut self.buffer)?;
-
-        Ok(NotifyStmt::with_payload(condition_name, payload))
-    }
+    keyword(Notify)
+        .and_right(col_id())
+        .and_then(
+            operator(Comma).and_right(string())
+                .optional(),
+            |condition_name, payload| {
+                if let Some(payload) = payload {
+                    NotifyStmt::with_payload(condition_name, payload)
+                }
+                else {
+                    NotifyStmt::new(condition_name)
+                }
+            }
+        )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
 
     #[test]
     fn test_notify() {
-        let mut parser = Parser::new("test_ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(NotifyStmt::new("test_ident".into())), parser.notify_stmt());
+        let mut stream = TokenStream::new("notify test_ident", DEFAULT_CONFIG);
+        assert_eq!(Ok(NotifyStmt::new("test_ident".into())), notify_stmt().parse(&mut stream));
     }
 
     #[test]
     fn test_notify_with_payload() {
-        let mut parser = Parser::new("test_ident, 'test-payload'", DEFAULT_CONFIG);
+        let mut stream = TokenStream::new("notify test_ident, 'test-payload'", DEFAULT_CONFIG);
         let expected = NotifyStmt::with_payload("test_ident".into(), "test-payload".into());
-        assert_eq!(Ok(expected), parser.notify_stmt());
+        assert_eq!(Ok(expected), notify_stmt().parse(&mut stream));
     }
 }
 
+use crate::lexer::Keyword::Notify;
 use crate::lexer::OperatorKind::Comma;
 use crate::parser::ast_node::NotifyStmt;
-use crate::parser::combinators::{string, ParserFunc, ParserFuncHelpers};
-use crate::parser::result::{Optional, Required};
-use crate::parser::{ParseResult, Parser};
-use postgres_basics::fn_info;
+use crate::parser::col_id;
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::operator;
+use crate::parser::combinators::string;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

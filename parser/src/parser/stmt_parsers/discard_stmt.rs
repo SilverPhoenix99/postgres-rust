@@ -1,61 +1,46 @@
-impl Parser<'_> {
-    /// Alias: `DiscardStmt`
-    pub(in crate::parser) fn discard_stmt(&mut self) -> ParseResult<DiscardStmt> {
+/// Alias: `DiscardStmt`
+pub(in crate::parser) fn discard_stmt() -> impl Combinator<Output = DiscardStmt> {
 
-        /*
-            DISCARD (ALL | PLANS | SEQUENCES | TEMP | TEMPORARY)
-        */
+    /*
+        DISCARD (ALL | PLANS | SEQUENCES | TEMP | TEMPORARY)
+    */
 
-        let stmt = self.buffer
-            .consume(|tok| match tok.keyword() {
-                Some(All) => Some(DiscardStmt::All),
-                Some(Plans) => Some(DiscardStmt::Plans),
-                Some(Sequences) => Some(DiscardStmt::Sequences),
-                Some(Temp | Temporary) => Some(DiscardStmt::Temporary),
-                _ => None,
-            })
-            .required(fn_info!())?;
-
-        Ok(stmt)
-    }
+    keyword(Discard)
+        .and_right(match_first!{
+            keyword(All).map(|_| DiscardStmt::All),
+            keyword(Plans).map(|_| DiscardStmt::Plans),
+            keyword(Sequences).map(|_| DiscardStmt::Sequences),
+            keyword(Temp).or(keyword(Temporary))
+                .map(|_| DiscardStmt::Temporary),
+        })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
-    use crate::parser::Parser;
+    use crate::parser::token_stream::TokenStream;
+    use test_case::test_case;
 
-    #[test]
-    fn test_discard_all() {
-        let mut parser = Parser::new("all", DEFAULT_CONFIG);
-        assert_eq!(Ok(DiscardStmt::All), parser.discard_stmt());
-    }
-
-    #[test]
-    fn test_discard_plans() {
-        let mut parser = Parser::new("plans", DEFAULT_CONFIG);
-        assert_eq!(Ok(DiscardStmt::Plans), parser.discard_stmt());
-    }
-
-    #[test]
-    fn test_discard_sequences() {
-        let mut parser = Parser::new("sequences", DEFAULT_CONFIG);
-        assert_eq!(Ok(DiscardStmt::Sequences), parser.discard_stmt());
-    }
-
-    #[test]
-    fn test_discard_temporary() {
-        let mut parser = Parser::new("temp", DEFAULT_CONFIG);
-        assert_eq!(Ok(DiscardStmt::Temporary), parser.discard_stmt());
-        let mut parser = Parser::new("temporary", DEFAULT_CONFIG);
-        assert_eq!(Ok(DiscardStmt::Temporary), parser.discard_stmt());
+    #[test_case("discard all", DiscardStmt::All)]
+    #[test_case("discard plans", DiscardStmt::Plans)]
+    #[test_case("discard sequences", DiscardStmt::Sequences)]
+    #[test_case("discard temp", DiscardStmt::Temporary)]
+    #[test_case("discard temporary", DiscardStmt::Temporary)]
+    fn test_discard(source: &str, expected: DiscardStmt) {
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(expected), discard_stmt().parse(&mut stream));
     }
 }
 
-use crate::lexer::Keyword::{All, Plans, Sequences, Temp, Temporary};
+use crate::lexer::Keyword::All;
+use crate::lexer::Keyword::Discard;
+use crate::lexer::Keyword::Plans;
+use crate::lexer::Keyword::Sequences;
+use crate::lexer::Keyword::Temp;
+use crate::lexer::Keyword::Temporary;
 use crate::parser::ast_node::DiscardStmt;
-use crate::parser::result::Required;
-use crate::parser::token_stream::TokenConsumer;
-use crate::parser::{ParseResult, Parser};
-use postgres_basics::fn_info;
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::match_first;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

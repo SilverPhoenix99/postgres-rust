@@ -1,79 +1,60 @@
-impl Parser<'_> {
+/// Alias: `AlterGroupStmt`
+pub(in crate::parser) fn alter_group_stmt() -> impl Combinator<Output = RawStmt> {
 
-    /// Alias: `AlterGroupStmt`
-    pub(in crate::parser) fn alter_group_stmt(&mut self) -> ParseResult<RawStmt> {
+    /*
+        ALTER GROUP role_id RENAME TO role_id
+        ALTER GROUP role_spec (ADD | DROP) USER role_list
+    */
 
-        /*
-            ALTER GROUP role_id RENAME TO role_id
-            ALTER GROUP role_spec (ADD | DROP) USER role_list
-        */
-
-        let role_loc = self.buffer.current_location();
-        let role = self.role_spec().required(fn_info!())?;
-
-        let action = self.buffer.consume_kw(|kw| matches!(kw, Add | DropKw | Rename))
-            .required(fn_info!())?;
-
-        if action == Rename {
-            return self.rename_group(role, role_loc).map(From::from);
-        }
-
-        /*
-            ... (ADD | DROP) USER role_list
-        */
-
-        self.buffer.consume_kw_eq(User).required(fn_info!())?;
-
-        let action = if action == Add { AlterRoleAction::Add } else { AlterRoleAction::Remove };
-
-        let roles = self.role_list().required(fn_info!())?;
-        let options = vec![RoleMembers(roles)];
-
-        let stmt = AlterRoleStmt::new(role, action, options);
-        Ok(stmt.into())
-    }
-
-    fn rename_group(&mut self, role: RoleSpec, role_loc: Location) -> ParseResult<RenameStmt> {
-
-        /*
-            role_id RENAME TO role_id
-        */
-
-        let target = role.into_role_id(role_loc.clone())?;
-
-        self.buffer.consume_kw_eq(To).required(fn_info!())?;
-
-        let new_name = self.role_spec()
-            .required(fn_info!())?
-            .into_role_id(role_loc)?;
-
-        let stmt = RenameStmt::new(Role(target), new_name);
-        Ok(stmt)
-    }
+    keyword(Group)
+        .and_right(located(role_spec()))
+        .chain_result(match_first_with_state!{|(group, group_loc), stream| {
+            {
+                keyword(Rename)
+                    .and(keyword(To))
+                    .and_right(role_id())
+            } => (new_name) {
+                let group = group.into_role_id(group_loc)?;
+                RenameStmt::new(Role(group), new_name).into()
+            },
+            {
+                or(
+                    keyword(Add).map(|_| AlterRoleAction::Add),
+                    keyword(DropKw).map(|_| AlterRoleAction::Remove),
+                )
+                .and_left(keyword(User))
+                .and(role_list())
+            } => ((action, roles)) {
+                let options = vec![RoleMembers(roles)];
+                AlterRoleStmt::new(group, action, options).into()
+            }
+        }})
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::ast_node::RoleSpec;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
 
     #[test]
     fn test_group_rename() {
-        let source = "some_group rename to new_group_name";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let source = "group some_group rename to new_group_name";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
         let expected = RenameStmt::new(
             Role("some_group".into()),
             "new_group_name".into()
         );
 
-        assert_eq!(Ok(expected.into()), parser.alter_group_stmt());
+        assert_eq!(Ok(expected.into()), alter_group_stmt().parse(&mut stream));
     }
 
     #[test]
     fn test_add_role_to_group() {
-        let source = "some_group add user current_role, new_user";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let source = "group some_group add user current_role, new_user";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
         let expected = AlterRoleStmt::new(
             RoleSpec::Name("some_group".into()),
@@ -84,13 +65,13 @@ mod tests {
             ])]
         );
 
-        assert_eq!(Ok(expected.into()), parser.alter_group_stmt());
+        assert_eq!(Ok(expected.into()), alter_group_stmt().parse(&mut stream));
     }
 
     #[test]
     fn test_drop_role_from_group() {
-        let source = "some_group drop user session_user, public";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let source = "group some_group drop user session_user, public";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
         let expected = AlterRoleStmt::new(
             RoleSpec::Name("some_group".into()),
@@ -101,25 +82,24 @@ mod tests {
             ])]
         );
 
-        assert_eq!(Ok(expected.into()), parser.alter_group_stmt());
+        assert_eq!(Ok(expected.into()), alter_group_stmt().parse(&mut stream));
     }
 }
 
-use crate::{
-    lexer::Keyword::{Add, DropKw, Rename, To, User},
-    parser::{
-        ast_node::{
-            AlterRoleAction,
-            AlterRoleOption::RoleMembers,
-            AlterRoleStmt,
-            RawStmt,
-            RenameStmt,
-            RenameTarget::Role,
-            RoleSpec
-        },
-        result::Required,
-        ParseResult,
-        Parser
-    }
-};
-use postgres_basics::{fn_info, Location};
+use crate::lexer::Keyword::Rename;
+use crate::lexer::Keyword::To;
+use crate::lexer::Keyword::{Add, Group};
+use crate::lexer::Keyword::{DropKw, User};
+use crate::parser::ast_node::AlterRoleAction;
+use crate::parser::ast_node::AlterRoleOption::RoleMembers;
+use crate::parser::ast_node::AlterRoleStmt;
+use crate::parser::ast_node::RawStmt;
+use crate::parser::ast_node::RenameStmt;
+use crate::parser::ast_node::RenameTarget::Role;
+use crate::parser::combinators::or;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::combinators::{keyword, match_first_with_state};
+use crate::parser::located_combinator::located;
+use crate::parser::role_parsers::role_spec;
+use crate::parser::role_parsers::{role_id, role_list};

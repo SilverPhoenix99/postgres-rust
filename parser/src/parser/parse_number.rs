@@ -1,5 +1,4 @@
 pub(in crate::parser) fn parse_number(value: &str, radix: NumberRadix) -> UnsignedNumber {
-    use crate::parser::ast_node::UnsignedNumber::*;
 
     let value = value.replace("_", "");
 
@@ -24,4 +23,5 @@ mod tests {
 }
 
 use crate::parser::ast_node::UnsignedNumber;
+use crate::parser::ast_node::UnsignedNumber::{IntegerConst, NumericConst};
 use crate::NumberRadix;

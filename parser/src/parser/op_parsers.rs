@@ -19,7 +19,6 @@ bitflags! {
     const Subquery = Self::All.bits() | Self::Like.bits();
   }
 }
-
 impl<'src> Parser<'src> {
 
     /// Alias: `qual_Op`
@@ -74,9 +73,9 @@ impl<'src> Parser<'src> {
                         `OPERATOR '(' any_operator ')'`
                     */
 
-                    self.buffer.consume_op(OpenParenthesis).required(fn_info!())?;
-                    let op = self.any_operator().required(fn_info!())?;
-                    self.buffer.consume_op(CloseParenthesis).required(fn_info!())?;
+                    operator(OpenParenthesis).required().parse(&mut self.buffer)?;
+                    let op = self.any_operator().required()?;
+                    operator(CloseParenthesis).required().parse(&mut self.buffer)?;
 
                     Ok(op)
                 },
@@ -97,12 +96,10 @@ impl<'src> Parser<'src> {
             ( col_id '.' )* all_op
         */
 
-        let mut qn = Vec::new();
-
-        while let Some(id) = self.col_id().optional()? {
-            self.buffer.consume_op(Dot).required(fn_info!())?;
-            qn.push(id);
-        }
+        let qn = many(col_id().and_left(operator(Dot)))
+            .optional()
+            .parse(&mut self.buffer)?
+            .unwrap_or_default();
 
         let op = self.all_op();
 
@@ -110,7 +107,7 @@ impl<'src> Parser<'src> {
             op?
         }
         else {
-            op.required(fn_info!())?
+            op.required()?
         };
 
         let op = QualifiedOperator(qn, op);
@@ -213,41 +210,35 @@ mod tests {
     }
 }
 
-use crate::{
-    lexer::{
-        Keyword::{Ilike, Like, Operator as OperatorKw},
-        OperatorKind::{
-            Circumflex,
-            CloseParenthesis,
-            Div,
-            Dot,
-            Equals,
-            Greater,
-            GreaterEquals,
-            Less,
-            LessEquals,
-            Minus,
-            Mul,
-            NotEquals,
-            OpenParenthesis,
-            Percent,
-            Plus,
-        },
-        RawTokenKind::{
-            Keyword as Kw,
-            Operator as Op,
-            UserDefinedOperator,
-        }
-    },
-    parser::{
-        ast_node::{
-            Operator::{self, *},
-            QualifiedOperator
-        },
-        consume_macro::consume,
-        result::{Optional, Required, ScanErrorKind::NoMatch, ScanResult},
-        Parser
-    }
-};
+use crate::lexer::Keyword::Ilike;
+use crate::lexer::Keyword::Like;
+use crate::lexer::Keyword::Operator as OperatorKw;
+use crate::lexer::OperatorKind::Circumflex;
+use crate::lexer::OperatorKind::CloseParenthesis;
+use crate::lexer::OperatorKind::Div;
+use crate::lexer::OperatorKind::Dot;
+use crate::lexer::OperatorKind::Equals;
+use crate::lexer::OperatorKind::Greater;
+use crate::lexer::OperatorKind::GreaterEquals;
+use crate::lexer::OperatorKind::Less;
+use crate::lexer::OperatorKind::LessEquals;
+use crate::lexer::OperatorKind::Minus;
+use crate::lexer::OperatorKind::Mul;
+use crate::lexer::OperatorKind::NotEquals;
+use crate::lexer::OperatorKind::OpenParenthesis;
+use crate::lexer::OperatorKind::Percent;
+use crate::lexer::OperatorKind::Plus;
+use crate::lexer::RawTokenKind::Keyword as Kw;
+use crate::lexer::RawTokenKind::Operator as Op;
+use crate::lexer::RawTokenKind::UserDefinedOperator;
+use crate::parser::ast_node::Operator;
+use crate::parser::ast_node::Operator::*;
+use crate::parser::ast_node::QualifiedOperator;
+use crate::parser::combinators::{many, Combinator};
+use crate::parser::combinators::{operator, CombinatorHelpers};
+use crate::parser::consume_macro::consume;
+use crate::parser::result::Required;
+use crate::parser::result::ScanErrorKind::NoMatch;
+use crate::parser::result::ScanResult;
+use crate::parser::{col_id, Parser};
 use bitflags::bitflags;
-use postgres_basics::fn_info;

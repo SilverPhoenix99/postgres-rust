@@ -10,8 +10,8 @@ pub struct LexerError (
 impl LexerError {
 
     #[inline(always)]
-    pub fn new(source: LexerErrorKind, fn_info: &'static FnInfo, location: Location) -> Self {
-        let report = LocatedErrorReport::new(source, fn_info, location);
+    pub fn new(source: LexerErrorKind, location: Location) -> Self {
+        let report = LocatedErrorReport::new(source, location);
         Self(report)
     }
 
@@ -25,12 +25,6 @@ impl HasSqlState for LexerError {
     #[inline(always)]
     fn sql_state(&self) -> SqlState {
         self.source().sql_state()
-    }
-}
-
-impl HasFnInfo for LexerError {
-    fn fn_info(&self) -> &'static FnInfo {
-        self.0.fn_info()
     }
 }
 
@@ -59,10 +53,8 @@ impl ErrorReport for LexerError {
 }
 
 use crate::error::{HasLocation, LocatedErrorReport};
-use postgres_basics::{
-    elog::{ErrorReport, HasFnInfo, HasSqlState},
-    sql_state::SqlState,
-    FnInfo,
-    Location,
-};
+use postgres_basics::elog::ErrorReport;
+use postgres_basics::elog::HasSqlState;
+use postgres_basics::sql_state::SqlState;
+use postgres_basics::Location;
 use std::borrow::Cow;

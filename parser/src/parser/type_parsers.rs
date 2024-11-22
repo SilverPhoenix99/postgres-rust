@@ -13,21 +13,22 @@ impl Parser<'_> {
             ( SETOF )? SimpleTypename opt_array_bounds
         */
 
-        let setof = self.buffer.consume_kw_eq(Setof).no_match_to_option()?.is_some();
+        let setof = keyword(Setof).maybe_match().parse(&mut self.buffer)?.is_some();
 
         let typ = self.simple_typename();
 
         let typ = if setof {
             // this means the `SETOF` keyword was present, so the production has already started
-            typ.required(fn_info!())?
+            typ.required()?
         }
         else {
             typ?
         };
 
-        let array_bounds = self.opt_array_bounds()
-            .optional()?
-            .unwrap_or_default();
+        let array_bounds = opt_array_bounds()
+            .optional()
+            .map(|bounds| bounds.unwrap_or_default())
+            .parse(&mut self.buffer)?;
 
         let mut typ = typ.with_array_bounds(array_bounds);
         if setof {
@@ -35,54 +36,6 @@ impl Parser<'_> {
         }
 
         Ok(typ)
-    }
-
-    /// Post-condition: Vec is **Not** empty
-    fn opt_array_bounds(&mut self) -> ScanResult<Vec<Option<i32>>> {
-
-        /*
-              ARRAY ( '[' ICONST ']' )?
-            | ( '[' ( ICONST )? ']' )*
-        */
-
-        if self.buffer.consume_kw_eq(Array).no_match_to_option()?.is_some() {
-            // one-dimensional arrays
-
-            /*
-                ARRAY ( '[' ICONST ']' )?
-            */
-
-            if self.buffer.consume_op(OpenBracket).optional()?.is_none() {
-                // it's just `ARRAY`
-                return Ok(vec![None])
-            }
-
-            /*
-                '[' ICONST ']'
-            */
-            let dim_len = self.i32_literal().required(fn_info!())?;
-            self.buffer.consume_op(CloseBracket).required(fn_info!())?;
-            return Ok(vec![Some(dim_len)])
-        }
-
-        /*
-            ( '[' ( ICONST )? ']' )*
-        */
-
-        let mut elements = Vec::new();
-
-        while self.buffer.consume_op(OpenBracket).optional()?.is_some() {
-            let dim_len = self.i32_literal().optional()?;
-            self.buffer.consume_op(CloseBracket).required(fn_info!())?;
-            elements.push(dim_len);
-        }
-
-        if elements.is_empty() {
-            let loc = self.buffer.current_location();
-            return Err(NoMatch(loc))
-        }
-
-        Ok(elements)
     }
 
     /// Alias: `SimpleTypename`
@@ -106,7 +59,7 @@ impl Parser<'_> {
             | NATIONAL (CHAR | CHARACTER) opt_varying opt_paren_i32
             | TIMESTAMP opt_paren_i32 opt_timezone
             | TIME opt_paren_i32 opt_timezone
-            | INTERVAL ( '(' ICONST ')' | opt_interval)?
+            | INTERVAL ( '(' ICONST ')' | opt_interval )?
             | (IDENT | unreserved_keyword) ( attrs )? opt_type_modifiers
             | type_func_name_keyword ( attrs )? opt_type_modifiers
         */
@@ -166,18 +119,20 @@ impl Parser<'_> {
 
         match self.buffer.peek2() {
             (Ok(Kw(kw)), Ok(Op(Dot))) if kind == Const && kw.details().category() == ColumnName => {
-                let prefix = self.ident_or_keyword(|_| true)?;
 
-                let name = self.attrs(prefix)?;
+                let name = attrs(col_label()).parse(&mut self.buffer)?;
+
                 let modifiers = self.opt_type_modifiers()?;
                 return Ok(GenericTypeName::new(name, modifiers).into())
             },
             _ => {}
         }
 
-        let ident = identifier(fn_info!()).parse(&mut self.buffer);
-        if let Some(ident) = ident.no_match_to_option()? {
-            let name = self.attrs(ident.into())?;
+        let name = attrs(identifier().map(From::from))
+            .maybe_match()
+            .parse(&mut self.buffer)?;
+
+        if let Some(name) = name {
             let modifiers = self.opt_type_modifiers()?;
             return Ok(GenericTypeName::new(name, modifiers).into())
         }
@@ -196,23 +151,23 @@ impl Parser<'_> {
                 },
                 Kw(Float) => {
                     // `opt_float`:
-                    match self.i32_literal_paren().optional()? {
+                    match i32_literal_paren().optional().parse(&mut self.buffer)? {
                         None | Some(25..=53) => Ok(Float8),
                         Some(1..=24) => Ok(Float4),
                         Some(num @ ..=0) => {
                             let loc = self.buffer.current_location();
-                            let err = ParserError::new(FloatPrecisionUnderflow(num), fn_info!(), loc);
+                            let err = ParserError::new(FloatPrecisionUnderflow(num), loc);
                             Err(err.into())
                         },
                         Some(num @ 54..) => {
                             let loc = self.buffer.current_location();
-                            let err = ParserError::new(FloatPrecisionOverflow(num), fn_info!(), loc);
+                            let err = ParserError::new(FloatPrecisionOverflow(num), loc);
                             Err(err.into())
                         },
                     }
                 },
                 Kw(BitKw) => {
-                    let varying = self.opt_varying()?;
+                    let varying = opt_varying().parse(&mut self.buffer)?;
                     let mut modifiers = self.opt_type_modifiers()?;
 
                     if varying {
@@ -227,16 +182,16 @@ impl Parser<'_> {
                 },
                 Kw(VarcharKw) => self.character_type(true, kind),
                 Kw(Char | Character | Nchar) => {
-                    let varying = self.opt_varying()?;
+                    let varying = opt_varying().parse(&mut self.buffer)?;
                     self.character_type(varying, kind)
                 },
                 Kw(National), Kw(Char | Character) => {
-                    let varying = self.opt_varying()?;
+                    let varying = opt_varying().parse(&mut self.buffer)?;
                     self.character_type(varying, kind)
                 },
                 Kw(TimestampKw) => {
-                    let precision = self.i32_literal_paren().optional()?;
-                    if self.opt_timezone()? {
+                    let precision = i32_literal_paren().optional().parse(&mut self.buffer)?;
+                    if opt_timezone().parse(&mut self.buffer)? {
                         Ok(TimestampTz { precision })
                     }
                     else {
@@ -244,8 +199,8 @@ impl Parser<'_> {
                     }
                 },
                 Kw(TimeKw) => {
-                    let precision = self.i32_literal_paren().optional()?;
-                    if self.opt_timezone()? {
+                    let precision = i32_literal_paren().optional().parse(&mut self.buffer)?;
+                    if opt_timezone().parse(&mut self.buffer)? {
                         Ok(TimeTz { precision })
                     }
                     else {
@@ -253,9 +208,9 @@ impl Parser<'_> {
                     }
                 },
                 Kw(IntervalKw) => {
-                    let precision = self.i32_literal_paren().optional()?;
+                    let precision = i32_literal_paren().optional().parse(&mut self.buffer)?;
                     if precision.is_none() && kind == Simple {
-                        let range = self.opt_interval()?;
+                        let range = opt_interval().parse(&mut self.buffer)?;
                         Ok(Interval(range))
                     }
                     else {
@@ -263,7 +218,7 @@ impl Parser<'_> {
                     }
                 },
                 Kw(kw) if kw.details().category() == Unreserved => {
-                    if kw == Double && self.buffer.consume_kw_eq(Precision).optional()?.is_some() {
+                    if kw == Double && keyword(Precision).optional().parse(&mut self.buffer)?.is_some() {
                         // `Double` conflicts with, and has lower precedence than, any other `Keyword::Unreserved`.
                         // If it's followed by `Precision`, then it's a Float8.
                         // Otherwise, it's a plain `Unreserved` keyword, which can be its own User Defined Type.
@@ -316,7 +271,7 @@ impl Parser<'_> {
             | NATIONAL (CHAR | CHARACTER) opt_varying opt_paren_i32
         */
 
-        let mut length = self.i32_literal_paren().optional()?;
+        let mut length = i32_literal_paren().optional().parse(&mut self.buffer)?;
 
         if varying {
             Ok(Varchar { max_length: length })
@@ -342,147 +297,63 @@ impl Parser<'_> {
 
         Ok(modifiers)
     }
+}
 
-    fn opt_varying(&mut self) -> ParseResult<bool> {
+fn opt_timezone() -> impl Combinator<Output = bool> {
 
-        /*
-            ( VARYING )?
-        */
+    /*
+        ( (WITH | WITHOUT) TIME ZONE )?
+    */
 
-        let varying = self.buffer.consume_kw_eq(Varying)
-            .optional()?
-            .is_some();
-        Ok(varying)
+    or(
+        keyword(With).map(|_| true),
+        keyword(Without).map(|_| false),
+    )
+        .and_left(keyword(TimeKw))
+        .and_left(keyword(Zone))
+        .optional()
+        .map(|tz| tz.unwrap_or(false))
+}
+
+/// Post-condition: Vec is **Not** empty
+fn opt_array_bounds() -> impl Combinator<Output = Vec<Option<i32>>> {
+
+    /*
+          ARRAY ( '[' ICONST ']' )?
+        | ( '[' ( ICONST )? ']' )*
+    */
+
+    match_first!{
+        keyword(Array)
+            .and_right(
+                between(
+                    operator(OpenBracket),
+                    i32_literal(),
+                    operator(CloseBracket)
+                )
+                .optional()
+            )
+            .map(|dim| vec![dim]),
+        many(
+            between(
+                operator(OpenBracket),
+                i32_literal().optional(),
+                operator(CloseBracket)
+            )
+        )
     }
 
-    fn opt_timezone(&mut self) -> ParseResult<bool> {
+}
 
-        /*
-            ( (WITH | WITHOUT) TIME ZONE )?
-        */
+fn opt_varying() -> impl Combinator<Output = bool> {
 
-        let result = consume!{self
-            Ok {
-                Kw(With), Kw(TimeKw), Kw(Zone) => Ok(true),
-                Kw(Without), Kw(TimeKw), Kw(Zone) => Ok(false),
-                _ => Ok(false)
-            }
-            Err {
-                Err(err) => err,
-            }
-        };
+    /*
+        ( VARYING )?
+    */
 
-        let result = result.optional()?.unwrap_or(false);
-
-        Ok(result)
-    }
-
-    pub(in crate::parser) fn opt_interval(&mut self) -> ParseResult<IntervalRange> {
-        use IntervalRange::*;
-
-        /*
-              YEAR
-            | YEAR TO MONTH
-            | MONTH
-            | DAY
-            | DAY TO HOUR
-            | DAY TO MINUTE
-            | DAY TO SECOND ( '(' ICONST ')' )?
-            | HOUR
-            | HOUR TO MINUTE
-            | HOUR TO SECOND ( '(' ICONST ')' )?
-            | MINUTE
-            | MINUTE TO SECOND ( '(' ICONST ')' )?
-            | SECOND ( '(' ICONST ')' )?
-        */
-
-
-        let result = consume!{self
-            Ok {
-                Kw(SecondKw) => {
-                    let precision = self.i32_literal_paren().optional()?;
-                    Ok(Second { precision })
-                },
-                Kw(MinuteKw) => {
-                    if self.buffer.consume_kw_eq(To).optional()?.is_some() {
-                        self.buffer.consume_kw_eq(SecondKw).required(fn_info!())?;
-                        let precision = self.i32_literal_paren().optional()?;
-                        Ok(MinuteToSecond { precision })
-                    }
-                    else {
-                        Ok(Minute)
-                    }
-                },
-                Kw(HourKw) => {
-                    if self.buffer.consume_kw_eq(To).optional()?.is_some() {
-                        let result = consume!{self
-                            Ok {
-                                Kw(MinuteKw) => Ok(HourToMinute),
-                                Kw(SecondKw) => {
-                                    let precision = self.i32_literal_paren().optional()?;
-                                    Ok(HourToSecond { precision })
-                                },
-                            }
-                            Err {
-                                Ok(_) => {
-                                    let loc = self.buffer.current_location();
-                                    syntax_err(fn_info!(), loc)
-                                },
-                                Err(Eof(loc)) => syntax_err(fn_info!(), loc),
-                                Err(NotEof(err)) => err,
-                            }
-                        };
-                        result.map_err(NotEof)
-                    }
-                    else {
-                        Ok(Hour)
-                    }
-                },
-                Kw(DayKw) => {
-                    if self.buffer.consume_kw_eq(To).optional()?.is_some() {
-                        let result = consume!{self
-                            Ok {
-                                Kw(HourKw) => Ok(DayToHour),
-                                Kw(MinuteKw) => Ok(DayToMinute),
-                                Kw(SecondKw) => {
-                                    let precision = self.i32_literal_paren().optional()?;
-                                    Ok(DayToSecond { precision })
-                                },
-                            }
-                            Err {
-                                Ok(_) => {
-                                    let loc = self.buffer.current_location();
-                                    syntax_err(fn_info!(), loc)
-                                },
-                                Err(Eof(loc)) => syntax_err(fn_info!(), loc),
-                                Err(NotEof(err)) => err,
-                            }
-                        };
-                        result.map_err(NotEof)
-                    }
-                    else {
-                        Ok(Day)
-                    }
-                },
-                Kw(MonthKw) => Ok(Month),
-                Kw(YearKw) => {
-                    if self.buffer.consume_kw_eq(To).optional()?.is_some() {
-                        self.buffer.consume_kw_eq(MonthKw).required(fn_info!())?;
-                        Ok(YearToMonth)
-                    }
-                    else {
-                        Ok(Year)
-                    }
-                },
-                _ => Ok(Default::default()),
-            }
-            Err {
-                Err(err) => err,
-            }
-        };
-        let result = result.optional()?.unwrap_or_default();
-        Ok(result)
-    }
+    keyword(Varying)
+        .optional()
+        .map(|varying| varying.is_some())
 }
 
 #[cfg(test)]
@@ -490,6 +361,7 @@ mod tests {
     use super::*;
     use crate::parser::ast_node::SetOf;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 
     #[test_case("json", scalar(Json))]
@@ -524,8 +396,8 @@ mod tests {
     #[test_case("[3][4]", vec![Some(3), Some(4)])]
     fn test_opt_array_bounds(source: &str, expected: Vec<Option<i32>>) {
 
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        let actual = parser.opt_array_bounds();
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let actual = opt_array_bounds().parse(&mut stream);
 
         assert_eq!(
             Ok(expected.clone()),
@@ -624,102 +496,65 @@ mod tests {
              actual:   {actual:?}"
         );
     }
-
-    #[test_case("",                  IntervalRange::default())]
-    #[test_case("year",              IntervalRange::Year)]
-    #[test_case("year to month",     IntervalRange::YearToMonth)]
-    #[test_case("month",             IntervalRange::Month)]
-    #[test_case("day",               IntervalRange::Day)]
-    #[test_case("day to hour",       IntervalRange::DayToHour)]
-    #[test_case("day to second",     IntervalRange::DayToSecond { precision: None })]
-    #[test_case("day to second(7)",  IntervalRange::DayToSecond { precision: Some(7) })]
-    #[test_case("hour",              IntervalRange::Hour)]
-    #[test_case("hour to minute",    IntervalRange::HourToMinute)]
-    #[test_case("hour to second",    IntervalRange::HourToSecond { precision: None })]
-    #[test_case("hour to second(5)", IntervalRange::HourToSecond { precision: Some(5) })]
-    #[test_case("second",            IntervalRange::Second { precision: None })]
-    #[test_case("second(3)",         IntervalRange::Second { precision: Some(3) })]
-    fn test_opt_interval(source: &str, expected: IntervalRange) {
-
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        let actual = parser.opt_interval();
-
-        assert_eq!(
-            Ok(expected),
-            actual,
-            r"expected {expected:?} for source {source:?} but actually got {actual:?}"
-        );
-    }
 }
 
-use crate::{
-    lexer::{
-        Keyword::{
-            Array,
-            Bigint,
-            Bit as BitKw,
-            Boolean,
-            Char,
-            Character,
-            Day as DayKw,
-            Dec,
-            Decimal,
-            Double,
-            Float,
-            Hour as HourKw,
-            Int,
-            Integer,
-            Interval as IntervalKw,
-            Json as JsonKw,
-            Minute as MinuteKw,
-            Month as MonthKw,
-            National,
-            Nchar,
-            Numeric as NumericKw,
-            Precision,
-            Real,
-            Second as SecondKw,
-            Setof,
-            Smallint,
-            Time as TimeKw,
-            Timestamp as TimestampKw,
-            To,
-            Varchar as VarcharKw,
-            Varying,
-            With,
-            Without,
-            Year as YearKw,
-            Zone,
-        },
-        KeywordCategory::{ColumnName, TypeFuncName, Unreserved},
-        OperatorKind::{CloseBracket, Dot, OpenBracket},
-        RawTokenKind::{Keyword as Kw, Operator as Op},
-    },
-    parser::{
-        ast_node::{
-            ExprNode::IntegerConst,
-            GenericTypeName,
-            IntervalRange,
-            SystemType,
-            TypeModifiers,
-            TypeName::{self, *},
-        },
-        combinators::{identifier, ParserFunc},
-        consume_macro::consume,
-        error::syntax_err,
-        result::{
-            EofErrorKind::{Eof, NotEof},
-            Optional,
-            Required,
-            ScanErrorKind::NoMatch,
-            ScanResult,
-            ScanResultTrait
-        },
-        ParseResult,
-        Parser,
-        ParserError,
-        ParserErrorKind::{FloatPrecisionOverflow, FloatPrecisionUnderflow}
-    },
-};
-use postgres_basics::fn_info;
+use crate::lexer::Keyword::Array;
+use crate::lexer::Keyword::Bigint;
+use crate::lexer::Keyword::Bit as BitKw;
+use crate::lexer::Keyword::Boolean;
+use crate::lexer::Keyword::Char;
+use crate::lexer::Keyword::Character;
+use crate::lexer::Keyword::Dec;
+use crate::lexer::Keyword::Decimal;
+use crate::lexer::Keyword::Double;
+use crate::lexer::Keyword::Float;
+use crate::lexer::Keyword::Int;
+use crate::lexer::Keyword::Integer;
+use crate::lexer::Keyword::Interval as IntervalKw;
+use crate::lexer::Keyword::Json as JsonKw;
+use crate::lexer::Keyword::National;
+use crate::lexer::Keyword::Nchar;
+use crate::lexer::Keyword::Numeric as NumericKw;
+use crate::lexer::Keyword::Precision;
+use crate::lexer::Keyword::Real;
+use crate::lexer::Keyword::Setof;
+use crate::lexer::Keyword::Smallint;
+use crate::lexer::Keyword::Time as TimeKw;
+use crate::lexer::Keyword::Timestamp as TimestampKw;
+use crate::lexer::Keyword::Varchar as VarcharKw;
+use crate::lexer::Keyword::Varying;
+use crate::lexer::Keyword::With;
+use crate::lexer::Keyword::Without;
+use crate::lexer::Keyword::Zone;
+use crate::lexer::KeywordCategory::ColumnName;
+use crate::lexer::KeywordCategory::TypeFuncName;
+use crate::lexer::KeywordCategory::Unreserved;
+use crate::lexer::OperatorKind::CloseBracket;
+use crate::lexer::OperatorKind::Dot;
+use crate::lexer::OperatorKind::OpenBracket;
+use crate::lexer::RawTokenKind::Keyword as Kw;
+use crate::lexer::RawTokenKind::Operator as Op;
+use crate::parser::ast_node::ExprNode::IntegerConst;
+use crate::parser::ast_node::GenericTypeName;
+use crate::parser::ast_node::IntervalRange;
+use crate::parser::ast_node::SystemType;
+use crate::parser::ast_node::TypeModifiers;
+use crate::parser::ast_node::TypeName;
+use crate::parser::ast_node::TypeName::*;
+use crate::parser::combinators::{between, many, match_first, Combinator};
+use crate::parser::combinators::{identifier, keyword, operator};
+use crate::parser::combinators::{or, CombinatorHelpers};
+use crate::parser::const_numeric_parsers::i32_literal;
+use crate::parser::consume_macro::consume;
+use crate::parser::opt_interval::opt_interval;
+use crate::parser::result::Optional;
+use crate::parser::result::Required;
+use crate::parser::result::ScanErrorKind::NoMatch;
+use crate::parser::result::ScanResult;
+use crate::parser::Parser;
+use crate::parser::ParserError;
+use crate::parser::ParserErrorKind::FloatPrecisionOverflow;
+use crate::parser::ParserErrorKind::FloatPrecisionUnderflow;
+use crate::parser::{attrs, ParseResult};
+use crate::parser::{col_label, i32_literal_paren};
 use TypeNameKind::*;

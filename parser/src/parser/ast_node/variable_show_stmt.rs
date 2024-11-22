@@ -5,7 +5,7 @@ pub enum VariableShowStmt {
     TransactionIsolation,
     TimeZone,
     // Name, possibly qualified, separated by dots
-    Name(Vec<Str>),
+    Name(QualifiedName),
 }
 
-use postgres_basics::Str;
+use crate::parser::ast_node::QualifiedName;

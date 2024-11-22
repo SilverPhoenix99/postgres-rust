@@ -1,25 +1,17 @@
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct SimpleErrorReport<T> {
-    source: T,
-    fn_info: &'static FnInfo,
+    source: T
 }
 
 impl<T> SimpleErrorReport<T> {
     #[inline(always)]
-    pub fn new(source: T, fn_info: &'static FnInfo) -> Self {
-        Self { source, fn_info }
+    pub fn new(source: T) -> Self {
+        Self { source }
     }
 
     #[inline(always)]
     pub fn source(&self) -> &T {
         &self.source
-    }
-}
-
-impl<T> HasFnInfo for SimpleErrorReport<T> {
-    #[inline(always)]
-    fn fn_info(&self) -> &'static FnInfo {
-        self.fn_info
     }
 }
 
@@ -37,7 +29,5 @@ impl<T: Error> Display for SimpleErrorReport<T> {
     }
 }
 
-use crate::elog::HasFnInfo;
-use crate::FnInfo;
 use std::error::Error;
 use std::fmt::{Display, Formatter};

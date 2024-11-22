@@ -1,28 +1,15 @@
-impl Parser<'_> {
-    pub(in crate::parser) fn alter_stmt(&mut self) -> ParseResult<RawStmt> {
+pub(in crate::parser) fn alter_stmt() -> impl Combinator<Output = RawStmt> {
 
-        // ALTER was consumed, so at least one of the following matches is required
+    // ALTER was consumed, so at least one of the following matches is required
 
-        consume! {self
-            Ok {
-                Kw(Collation) => self.alter_collation_stmt(),
-                Kw(Conversion) => self.alter_conversion_stmt(),
-                Kw(DefaultKw), Kw(Privileges) => self.alter_default_privileges_stmt().map(From::from),
-                Kw(Event) => self.alter_event_trigger_stmt(),
-                Kw(Group) => self.alter_group_stmt(),
-                Kw(Language) => self.alter_language_stmt(),
-                Kw(Procedural), Kw(Language) => self.alter_language_stmt(),
-                Kw(Large) => self.alter_large_object_stmt(),
-            }
-            Err {
-                Ok(_) => {
-                    let loc = self.buffer.current_location();
-                    syntax_err(fn_info!(), loc)
-                },
-                Err(Eof(loc)) => syntax_err(fn_info!(), loc),
-                Err(NotEof(err)) => err.clone(),
-            }
-        }
+    match_first! {
+        alter_default_privileges_stmt().map(From::from),
+        alter_event_trigger_stmt(),
+        alter_collation_stmt(),
+        alter_conversion_stmt(),
+        alter_group_stmt(),
+        alter_language_stmt(),
+        alter_large_object_stmt(),
     }
 }
 
@@ -30,6 +17,7 @@ impl Parser<'_> {
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 
     #[test_case("collation some_name refresh version")]
@@ -41,29 +29,25 @@ mod tests {
     #[test_case("large object -127 owner to public")]
     fn test_alter(source: &str) {
 
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        let actual = parser.alter_stmt();
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let actual = alter_stmt().parse(&mut stream);
 
         // This only quickly tests that statement types aren't missing.
         // More in-depth testing is within each statement's module.
         assert_matches!(actual, Ok(_),
-            r"expected Ok(_) for {source:?} but actually got {actual:?}"
+            "expected Ok(_) for {source:?} but actually got {actual:?}"
         );
     }
 }
 
-use crate::{
-    lexer::{
-        Keyword::{Collation, Conversion, DefaultKw, Event, Group, Language, Large, Privileges, Procedural},
-        RawTokenKind::Keyword as Kw,
-    },
-    parser::{
-        ast_node::RawStmt,
-        consume,
-        error::syntax_err,
-        result::EofErrorKind::{Eof, NotEof},
-        ParseResult,
-        Parser
-    }
-};
-use postgres_basics::fn_info;
+use crate::parser::ast_node::RawStmt;
+use crate::parser::combinators::match_first;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::stmt_parsers::alter_collation_stmt::alter_collation_stmt;
+use crate::parser::stmt_parsers::alter_conversion_stmt::alter_conversion_stmt;
+use crate::parser::stmt_parsers::alter_default_privileges_stmt::alter_default_privileges_stmt;
+use crate::parser::stmt_parsers::alter_event_trigger_stmt::alter_event_trigger_stmt;
+use crate::parser::stmt_parsers::alter_group_stmt::alter_group_stmt;
+use crate::parser::stmt_parsers::alter_language_stmt::alter_language_stmt;
+use crate::parser::stmt_parsers::alter_large_object_stmt::alter_large_object_stmt;

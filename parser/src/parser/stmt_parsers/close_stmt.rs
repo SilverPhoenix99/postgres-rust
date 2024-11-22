@@ -1,49 +1,41 @@
-impl Parser<'_> {
-    /// Alias: `ClosePortalStmt`
-    pub(in crate::parser) fn close_stmt(&mut self) -> ParseResult<OneOrAll> {
+/// Alias: `ClosePortalStmt`
+pub(in crate::parser) fn close_stmt() -> impl Combinator<Output = OneOrAll> {
 
-        /*
-            CLOSE ALL
-            CLOSE ColId
-        */
+    /*
+        CLOSE ALL
+        CLOSE ColId
+    */
 
-        if self.buffer.consume_kw_eq(All).try_match(fn_info!())?.is_some() {
-            return Ok(OneOrAll::All)
-        }
-
-        let name = self.col_id().required(fn_info!())?;
-        Ok(OneOrAll::Name(name))
-    }
+    keyword(Close)
+        .and_right(or(
+            keyword(All).map(|_| OneOrAll::All),
+            col_id().map(OneOrAll::Name)
+        ))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
 
     #[test]
     fn test_close_all() {
-        let mut parser = Parser::new("all", DEFAULT_CONFIG);
-        assert_eq!(Ok(OneOrAll::All), parser.close_stmt());
+        let mut stream = TokenStream::new("close all", DEFAULT_CONFIG);
+        assert_eq!(Ok(OneOrAll::All), close_stmt().parse(&mut stream));
     }
 
     #[test]
     fn test_close_named() {
-        let mut parser = Parser::new("abort", DEFAULT_CONFIG);
-        assert_eq!(Ok(OneOrAll::Name("abort".into())), parser.close_stmt());
+        let mut stream = TokenStream::new("close abort", DEFAULT_CONFIG);
+        assert_eq!(Ok(OneOrAll::Name("abort".into())), close_stmt().parse(&mut stream));
 
-        let mut parser = Parser::new("ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(OneOrAll::Name("ident".into())), parser.close_stmt());
+        let mut stream = TokenStream::new("close ident", DEFAULT_CONFIG);
+        assert_eq!(Ok(OneOrAll::Name("ident".into())), close_stmt().parse(&mut stream));
     }
 }
 
-use crate::{
-    lexer::Keyword::All,
-    parser::{
-        ast_node::OneOrAll,
-        result::{Required, TryMatch},
-        ParseResult,
-        Parser
-    }
-};
-use postgres_basics::fn_info;
+use crate::lexer::Keyword::{All, Close};
+use crate::parser::ast_node::OneOrAll;
+use crate::parser::col_id;
+use crate::parser::combinators::{keyword, or, Combinator, CombinatorHelpers};

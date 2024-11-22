@@ -6,11 +6,11 @@ pub(in crate::parser) fn bit_string() -> BitStringCombi {
     BitStringCombi
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub(in crate::parser) struct BitStringCombi;
 
-impl ParserFunc for BitStringCombi {
+impl Combinator for BitStringCombi {
     type Output = (BitStringKind, Box<str>);
-    type Error = ScanErrorKind;
 
     /// Note that it doesn't validate the content.
     /// That needs to be done in a separate stage,
@@ -69,7 +69,6 @@ mod tests {
     }
 }
 
-use crate::parser::result::ScanErrorKind;
 use crate::{
     lexer::{
         BitStringKind,
@@ -78,7 +77,7 @@ use crate::{
     parser::{
         combinators::{
             string::strip_delimiters,
-            ParserFunc
+            Combinator
         },
         result::{Optional, ScanResult},
         token_stream::{SlicedTokenConsumer, TokenStream}

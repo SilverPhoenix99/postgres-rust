@@ -1,89 +1,65 @@
-impl Parser<'_> {
+/// Post-condition: Vec is **Not** empty
+pub(super) fn role_list() -> impl Combinator<Output = Vec<RoleSpec>> {
 
-    /// Post-condition: Vec is **Not** empty
-    pub(super) fn role_list(&mut self) -> ScanResult<Vec<RoleSpec>> {
+    /*
+        role_spec ( ',' role_spec )*
+    */
 
-        /*
-            role_spec ( ',' role_spec )*
-        */
+    many_sep(operator(Comma), role_spec())
+}
 
-        let role = self.role_spec()?;
-        let mut roles = vec![role];
+/// Alias: `RoleId`
+pub(super) fn role_id() -> impl Combinator<Output = Str> {
 
-        while self.buffer.consume_op(Comma).optional()?.is_some() {
-            let role = self.role_spec().required(fn_info!())?;
-            roles.push(role);
-        }
+    // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
-        Ok(roles)
-    }
+    located(role_spec())
+        .map_result(|result| match result {
+            Ok((role, loc)) => role.into_role_id(loc),
+            Err(err) => Err(err),
+        })
+}
 
-    /// Alias: `RoleId`
-    #[inline]
-    pub(super) fn role_id(&mut self) -> ScanResult<Str> {
+/// Alias: `RoleSpec`
+pub(super) fn role_spec() -> impl Combinator<Output = RoleSpec> {
 
-        // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
+    /*
+        role_spec :
+              NONE => Err(ReservedRoleSpec)
+            | CURRENT_ROLE
+            | CURRENT_USER
+            | SESSION_USER
+            | "public"
+            | non_reserved_word
+    */
 
-        let loc = self.buffer.current_location();
-        self.role_spec()?
-            .into_role_id(loc)
-            .map_err(ScanErr)
-    }
+    match_first! {
+        keyword(CurrentRole).map(|_| RoleSpec::CurrentRole),
+        keyword(CurrentUser).map(|_| RoleSpec::CurrentUser),
+        keyword(SessionUser).map(|_| RoleSpec::SessionUser),
 
-    /// Alias: `RoleSpec`
-    pub(super) fn role_spec(&mut self) -> ScanResult<RoleSpec> {
-        use crate::lexer::RawTokenKind::Keyword as Kw;
+        // "none" is a ColumnName keyword, so it must be checked before the next option
+        located(keyword(NoneKw)).map_result(|result| match result {
+            Ok((_, loc)) => Err(ScanErr(
+                ParserError::new(ReservedRoleSpec("none"), loc)
+            )),
+            Err(err) => Err(err)
+        }),
 
-        /*
-            role_spec :
-                  NONE => Err(ReservedRoleSpec)
-                | CURRENT_ROLE
-                | CURRENT_USER
-                | SESSION_USER
-                | "public"
-                | non_reserved_word
-        */
-
-        let ident = identifier(fn_info!()).parse(&mut self.buffer);
-        if let Some(ident) = ident.no_match_to_option()? {
-            return if ident.as_ref() == "public" {
-                Ok(RoleSpec::Public)
-            }
-            else {
-                Ok(RoleSpec::Name(ident.into()))
-            }
-        }
-
-        consume! {self
-            Ok {
-                Kw(CurrentRole) => Ok(RoleSpec::CurrentRole),
-                Kw(CurrentUser) => Ok(RoleSpec::CurrentUser),
-                Kw(SessionUser) => Ok(RoleSpec::SessionUser),
-                Kw(kw) if kw != NoneKw && kw.details().category() != Reserved => {
-                    Ok(RoleSpec::Name(kw.details().text().into()))
-                }
-            }
-            Err {
-                Ok(Kw(NoneKw)) => {
-                    let loc = self.buffer.current_location();
-                    ScanErr(
-                        ParserError::new(ReservedRoleSpec("none"), fn_info!(), loc)
-                    )
-                },
-                Ok(_) => {
-                    let loc = self.buffer.current_location();
-                    NoMatch(loc)
-                },
-                Err(err) => err.into(),
-            }
-        }
+        non_reserved_word().map(|ident| match ident.as_ref() {
+            "public" => RoleSpec::Public,
+            _ => RoleSpec::Name(ident)
+        })
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::result::ScanErrorKind::{NoMatch, ScanErr};
+    use crate::parser::result::ScanResult;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
     use crate::parser::ParserErrorKind;
     use crate::parser::ParserErrorKind::ForbiddenRoleSpec;
     use std::fmt::Debug;
@@ -91,9 +67,9 @@ mod tests {
     #[test]
     fn test_role_list() {
         let source = "public , CuRrEnT_rOlE,CURRENT_USER, session_user ,coalesce,xxYYzz none";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.role_list().unwrap();
+        let actual = role_list().parse(&mut stream).unwrap();
 
         let expected = [
             RoleSpec::Public,
@@ -110,43 +86,43 @@ mod tests {
     #[test]
     fn test_role_id() {
 
-        let mut parser = Parser::new("coalesce xxyyzz", DEFAULT_CONFIG);
-        assert_eq!(Ok("coalesce".into()), parser.role_id());
-        assert_eq!(Ok("xxyyzz".into()), parser.role_id());
+        let mut stream = TokenStream::new("coalesce xxyyzz", DEFAULT_CONFIG);
+        assert_eq!(Ok("coalesce".into()), role_id().parse(&mut stream));
+        assert_eq!(Ok("xxyyzz".into()), role_id().parse(&mut stream));
 
-        let mut parser = Parser::new("none", DEFAULT_CONFIG);
-        assert_err(ReservedRoleSpec("none"), parser.role_id());
+        let mut stream = TokenStream::new("none", DEFAULT_CONFIG);
+        assert_err(ReservedRoleSpec("none"), role_id().parse(&mut stream));
 
-        let mut parser = Parser::new("public", DEFAULT_CONFIG);
-        assert_err(ReservedRoleSpec("public"), parser.role_id());
+        let mut stream = TokenStream::new("public", DEFAULT_CONFIG);
+        assert_err(ReservedRoleSpec("public"), role_id().parse(&mut stream));
 
-        let mut parser = Parser::new("current_role", DEFAULT_CONFIG);
-        assert_err(ForbiddenRoleSpec("CURRENT_ROLE"), parser.role_id());
+        let mut stream = TokenStream::new("current_role", DEFAULT_CONFIG);
+        assert_err(ForbiddenRoleSpec("CURRENT_ROLE"), role_id().parse(&mut stream));
 
-        let mut parser = Parser::new("current_user", DEFAULT_CONFIG);
-        assert_err(ForbiddenRoleSpec("CURRENT_USER"), parser.role_id());
+        let mut stream = TokenStream::new("current_user", DEFAULT_CONFIG);
+        assert_err(ForbiddenRoleSpec("CURRENT_USER"), role_id().parse(&mut stream));
 
-        let mut parser = Parser::new("session_user", DEFAULT_CONFIG);
-        assert_err(ForbiddenRoleSpec("SESSION_USER"), parser.role_id());
+        let mut stream = TokenStream::new("session_user", DEFAULT_CONFIG);
+        assert_err(ForbiddenRoleSpec("SESSION_USER"), role_id().parse(&mut stream));
     }
 
     #[test]
     fn test_role_spec() {
         let source = "public CuRrEnT_rOlE CURRENT_USER session_user coalesce xxyyzz";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        assert_eq!(Ok(RoleSpec::Public), parser.role_spec());
-        assert_eq!(Ok(RoleSpec::CurrentRole), parser.role_spec());
-        assert_eq!(Ok(RoleSpec::CurrentUser), parser.role_spec());
-        assert_eq!(Ok(RoleSpec::SessionUser), parser.role_spec());
-        assert_eq!(Ok(RoleSpec::Name("coalesce".into())), parser.role_spec());
-        assert_eq!(Ok(RoleSpec::Name("xxyyzz".into())), parser.role_spec());
+        assert_eq!(Ok(RoleSpec::Public), role_spec().parse(&mut stream));
+        assert_eq!(Ok(RoleSpec::CurrentRole), role_spec().parse(&mut stream));
+        assert_eq!(Ok(RoleSpec::CurrentUser), role_spec().parse(&mut stream));
+        assert_eq!(Ok(RoleSpec::SessionUser), role_spec().parse(&mut stream));
+        assert_eq!(Ok(RoleSpec::Name("coalesce".into())), role_spec().parse(&mut stream));
+        assert_eq!(Ok(RoleSpec::Name("xxyyzz".into())), role_spec().parse(&mut stream));
 
-        let mut parser = Parser::new("collate", DEFAULT_CONFIG);
-        assert_matches!(parser.role_spec(), Err(NoMatch(_)));
+        let mut stream = TokenStream::new("collate", DEFAULT_CONFIG);
+        assert_matches!(role_spec().parse(&mut stream), Err(NoMatch(_)));
 
-        let mut parser = Parser::new("none", DEFAULT_CONFIG);
-        assert_err(ReservedRoleSpec("none"), parser.role_spec());
+        let mut stream = TokenStream::new("none", DEFAULT_CONFIG);
+        assert_err(ReservedRoleSpec("none"), role_spec().parse(&mut stream));
     }
 
     fn assert_err<T: Debug>(expected: ParserErrorKind, actual: ScanResult<T>) {
@@ -159,26 +135,20 @@ mod tests {
     }
 }
 
-use crate::parser::combinators::{identifier, ParserFunc};
-use crate::{
-    lexer::{
-        Keyword::{CurrentRole, CurrentUser, NoneKw, SessionUser},
-        KeywordCategory::Reserved,
-        OperatorKind::Comma
-    },
-    parser::{
-        ast_node::RoleSpec,
-        consume_macro::consume,
-        result::{
-            Optional,
-            Required,
-            ScanErrorKind::{NoMatch, ScanErr},
-            ScanResult,
-            ScanResultTrait,
-        },
-        Parser,
-        ParserError,
-        ParserErrorKind::ReservedRoleSpec
-    },
-};
-use postgres_basics::{fn_info, Str};
+use crate::lexer::Keyword::CurrentRole;
+use crate::lexer::Keyword::CurrentUser;
+use crate::lexer::Keyword::NoneKw;
+use crate::lexer::Keyword::SessionUser;
+use crate::lexer::OperatorKind::Comma;
+use crate::parser::ast_node::RoleSpec;
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::many_sep;
+use crate::parser::combinators::match_first;
+use crate::parser::combinators::operator;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::located_combinator::located;
+use crate::parser::non_reserved_word;
+use crate::parser::ParserError;
+use crate::parser::ParserErrorKind::ReservedRoleSpec;
+use postgres_basics::Str;
