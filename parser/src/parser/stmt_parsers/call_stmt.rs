@@ -1,18 +1,15 @@
-impl Parser<'_> {
-    /// Alias: `CallStmt`
-    pub(in crate::parser) fn call_stmt(&mut self) -> ParseResult<RawStmt> {
+/// Alias: `CallStmt`
+pub(in crate::parser) fn call_stmt() -> impl Combinator<Output = RawStmt> {
 
-        /*
-        CallStmt:
-            CALL func_application
-        */
+    /*
+    CallStmt:
+        CALL func_application
+    */
 
-        todo!()
-    }
+    keyword(Call)
+        .map(|_| todo!())
 }
 
-use crate::parser::{
-    ast_node::RawStmt,
-    ParseResult,
-    Parser
-};
+use crate::lexer::Keyword::Call;
+use crate::parser::ast_node::RawStmt;
+use crate::parser::combinators::{keyword, Combinator, CombinatorHelpers};

@@ -1,83 +1,58 @@
-impl Parser<'_> {
+/// Post-condition: Vec is **Not** empty
+pub(super) fn grantee_list() -> impl Combinator<Output = Vec<RoleSpec>> {
 
-    /// Post-condition: Vec is **Not** empty
-    pub(super) fn grantee_list(&mut self) -> ScanResult<Vec<RoleSpec>> {
+    /*
+        grantee ( ',' grantee )*
+    */
+    
+    many_sep(operator(Comma), grantee())
+}
 
-        /*
-            grantee ( ',' grantee )*
-        */
+fn grantee() -> impl Combinator<Output = RoleSpec> {
 
-        let element = self.grantee()?;
-        let mut elements = vec![element];
+    /*
+        ( GROUP )? role_spec
+    */
 
-        while self.buffer.consume_op(Comma).optional()?.is_some() {
-            let element = self.grantee().required(fn_info!())?;
-            elements.push(element);
-        }
+    keyword(Group).maybe_match()
+        .and_right(role_spec())
+}
 
-        Ok(elements)
-    }
+/// Alias: `opt_grant_grant_option`
+pub(super) fn opt_grant_option() -> impl Combinator<Output = bool> {
 
-    fn grantee(&mut self) -> ScanResult<RoleSpec> {
+    /*
+        ( WITH GRANT OPTION )?
+    */
 
-        /*
-              role_spec
-            | GROUP role_spec
-        */
+    keyword(With)
+        .and(keyword(Grant))
+        .and(keyword(OptionKw))
+        .optional()
+        .map(|grant| grant.is_some())
+}
 
-        let is_required = self.buffer.consume_kw_eq(Group).no_match_to_option()?.is_some();
-        let role = self.role_spec();
-        if is_required {
-            role.required(fn_info!()).map_err(From::from)
-        }
-        else {
-            role
-        }
-    }
+pub(super) fn opt_drop_behavior() -> impl Combinator<Output = DropBehavior> {
 
-    /// Alias: `opt_grant_grant_option`
-    pub(super) fn opt_grant_option(&mut self) -> EofResult<bool> {
+    /*
+        ( CASCADE | RESTRICT )?
+    */
 
-        /*
-            ( WITH GRANT OPTION )?
-        */
+    keyword(Cascade).map(|_| DropBehavior::Cascade)
+        .or(keyword(Restrict).map(|_| DropBehavior::Restrict))
+        .optional()
+        .map(Option::unwrap_or_default)
+}
 
-        if self.buffer.consume_kw_eq(With).optional()?.is_none() {
-            return Ok(false)
-        }
+pub(super) fn opt_granted_by() -> impl Combinator<Output = RoleSpec> {
 
-        self.buffer.consume_kw_eq(Grant).required(fn_info!())?;
-        self.buffer.consume_kw_eq(OptionKw).required(fn_info!())?;
+    /*
+        GRANTED BY role_spec
+    */
 
-        Ok(true)
-    }
-
-    pub(super) fn opt_drop_behavior(&mut self) -> EofResult<DropBehavior> {
-
-        /*
-            ( CASCADE | RESTRICT )?
-        */
-
-        if self.buffer.consume_kw_eq(Cascade).optional()?.is_some() {
-            return Ok(DropBehavior::Cascade)
-        }
-
-        self.buffer.consume_kw_eq(Restrict).optional()?;
-
-        Ok(DropBehavior::Restrict)
-    }
-
-    pub(super) fn opt_granted_by(&mut self) -> ScanResult<RoleSpec> {
-
-        /*
-            GRANTED BY role_spec
-        */
-
-        self.buffer.consume_kw_eq(Granted)?;
-        self.buffer.consume_kw_eq(By).required(fn_info!())?;
-
-        self.role_spec().required(fn_info!()).map_err(From::from)
-    }
+    keyword(Granted)
+        .and(keyword(By))
+        .and_right(role_spec())
 }
 
 #[cfg(test)]
@@ -85,59 +60,62 @@ mod tests {
     use super::*;
     use crate::parser::ast_node::RoleSpec;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
 
     #[test]
     fn test_grantee_list() {
         let source = "group session_user, current_role";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
         let expected = vec![
             RoleSpec::SessionUser,
             RoleSpec::CurrentRole
         ];
 
-        assert_eq!(Ok(expected), parser.grantee_list());
+        assert_eq!(Ok(expected), grantee_list().parse(&mut stream));
     }
 
     #[test]
     fn test_grantee() {
         let source = "current_user group public";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(RoleSpec::CurrentUser), parser.grantee());
-        assert_eq!(Ok(RoleSpec::Public), parser.grantee());
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(RoleSpec::CurrentUser), grantee().parse(&mut stream));
+        assert_eq!(Ok(RoleSpec::Public), grantee().parse(&mut stream));
     }
 
     #[test]
     fn test_opt_grant_option() {
-        let mut parser = Parser::new("with grant option", DEFAULT_CONFIG);
-        assert_eq!(Ok(true), parser.opt_grant_option());
-        assert_eq!(Ok(false), parser.opt_grant_option());
+        let mut stream = TokenStream::new("with grant option", DEFAULT_CONFIG);
+        let parser = opt_grant_option();
+        assert_eq!(Ok(true), parser.parse(&mut stream));
+        assert_eq!(Ok(false), parser.parse(&mut stream));
     }
 
     #[test]
     fn test_opt_drop_behavior() {
-        let mut parser = Parser::new("restrict cascade", DEFAULT_CONFIG);
-        assert_eq!(Ok(DropBehavior::Restrict), parser.opt_drop_behavior());
-        assert_eq!(Ok(DropBehavior::Cascade), parser.opt_drop_behavior());
-        assert_eq!(Ok(DropBehavior::Restrict), parser.opt_drop_behavior());
+        let mut stream = TokenStream::new("restrict cascade", DEFAULT_CONFIG);
+        assert_eq!(Ok(DropBehavior::Restrict), opt_drop_behavior().parse(&mut stream));
+        assert_eq!(Ok(DropBehavior::Cascade), opt_drop_behavior().parse(&mut stream));
+        assert_eq!(Ok(DropBehavior::Restrict), opt_drop_behavior().parse(&mut stream));
     }
 
     #[test]
     fn test_opt_granted_by() {
-        let mut parser = Parser::new("granted by public", DEFAULT_CONFIG);
-        assert_eq!(Ok(RoleSpec::Public), parser.opt_granted_by());
+        let mut stream = TokenStream::new("granted by public", DEFAULT_CONFIG);
+        assert_eq!(Ok(RoleSpec::Public), opt_granted_by().parse(&mut stream));
     }
 }
 
-use crate::{
-    lexer::{
-        Keyword::{By, Cascade, Grant, Granted, Group, OptionKw, Restrict, With},
-        OperatorKind::Comma
-    },
-    parser::{
-        ast_node::{DropBehavior, RoleSpec},
-        result::{EofResult, Optional, Required, ScanResult, ScanResultTrait},
-        Parser
-    }
-};
-use postgres_basics::fn_info;
+use crate::lexer::Keyword::By;
+use crate::lexer::Keyword::Cascade;
+use crate::lexer::Keyword::Grant;
+use crate::lexer::Keyword::Granted;
+use crate::lexer::Keyword::Group;
+use crate::lexer::Keyword::OptionKw;
+use crate::lexer::Keyword::Restrict;
+use crate::lexer::Keyword::With;
+use crate::lexer::OperatorKind::Comma;
+use crate::parser::ast_node::DropBehavior;
+use crate::parser::ast_node::RoleSpec;
+use crate::parser::combinators::{keyword, many_sep, operator, Combinator, CombinatorHelpers};
+use crate::parser::role_parsers::role_spec;

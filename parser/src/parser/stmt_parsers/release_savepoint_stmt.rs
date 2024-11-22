@@ -1,40 +1,37 @@
-impl Parser<'_> {
-    pub(in crate::parser) fn release_savepoint_stmt(&mut self) -> ParseResult<TransactionStmt> {
+pub(in crate::parser) fn release_savepoint_stmt() -> impl Combinator<Output = TransactionStmt> {
 
-        /*
-        TransactionStmt:
-            RELEASE SAVEPOINT ColId
-            RELEASE ColId
-        */
+    /*
+    TransactionStmt:
+        RELEASE SAVEPOINT ColId
+        RELEASE ColId
+    */
 
-        self.buffer.consume_kw_eq(Savepoint).optional()?;
-
-        let name = self.col_id().required(fn_info!())?;
-
-        Ok(TransactionStmt::Release(name))
-    }
+    keyword(Release)
+        .and(keyword(Savepoint).optional())
+        .and_right(col_id())
+        .map(TransactionStmt::Release)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
 
     #[test]
     fn test_release() {
-        let mut parser = Parser::new("test_ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Release("test_ident".into())), parser.release_savepoint_stmt());
+        let mut stream = TokenStream::new("release test_ident", DEFAULT_CONFIG);
+        assert_eq!(Ok(TransactionStmt::Release("test_ident".into())), release_savepoint_stmt().parse(&mut stream));
     }
 
     #[test]
     fn test_release_savepoint() {
-        let mut parser = Parser::new("savepoint test_ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Release("test_ident".into())), parser.release_savepoint_stmt());
+        let mut stream = TokenStream::new("release savepoint test_ident", DEFAULT_CONFIG);
+        assert_eq!(Ok(TransactionStmt::Release("test_ident".into())), release_savepoint_stmt().parse(&mut stream));
     }
 }
 
-use crate::lexer::Keyword::Savepoint;
+use crate::lexer::Keyword::{Release, Savepoint};
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::{Optional, Required};
-use crate::parser::{ParseResult, Parser};
-use postgres_basics::fn_info;
+use crate::parser::col_id;
+use crate::parser::combinators::{keyword, Combinator, CombinatorHelpers};

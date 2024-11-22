@@ -1,29 +1,30 @@
+/// `Eof` and `NoMatch` become `Ok(None)`.
 pub(in crate::parser) fn optional<P>(parser: P) -> OptionalCombi<P>
 where
-    P: ParserFunc
+    P: Combinator
 {
-    OptionalCombi { parser }
+    OptionalCombi(parser)
 }
 
-pub(in crate::parser) struct OptionalCombi<P>
-where
-    P: ParserFunc
-{
-    parser: P
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub(in crate::parser) struct OptionalCombi<P>(P);
+
+impl<P> OptionalCombi<P> {
+    fn optional(self) -> OptionalCombi<P> {
+        self
+    }
 }
 
-impl<P> ParserFunc for OptionalCombi<P>
+impl<P> Combinator for OptionalCombi<P>
 where
-    P: ParserFunc,
-    ScanErrorKind: From<P::Error>
+    P: Combinator
 {
     type Output = Option<P::Output>;
-    type Error = ParserError;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ParseResult<Self::Output> {
-        self.parser.parse(stream)
-            .map_err(ScanErrorKind::from)
+    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+        self.0.parse(stream)
             .optional()
+            .map_err(ScanErrorKind::from)
     }
 }
 
@@ -59,7 +60,6 @@ mod tests {
     }
 }
 
-use crate::parser::combinators::ParserFunc;
-use crate::parser::result::{Optional as Opt, ScanErrorKind};
+use crate::parser::combinators::Combinator;
+use crate::parser::result::{Optional as Opt, ScanErrorKind, ScanResult};
 use crate::parser::token_stream::TokenStream;
-use crate::parser::{ParseResult, ParserError};

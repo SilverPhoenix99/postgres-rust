@@ -1,17 +1,16 @@
-impl Parser<'_> {
-    /// Alias: `DoStmt`
-    pub(in crate::parser) fn do_stmt(&mut self) -> ParseResult<RawStmt> {
+/// Alias: `DoStmt`
+pub(in crate::parser) fn do_stmt() -> impl Combinator<Output = RawStmt> {
 
-        /*
-            DO dostmt_opt_list
-        */
+    /*
+        DO dostmt_opt_list
+    */
 
-        todo!()
-    }
+    keyword(Do)
+        .map(|_| todo!())
 }
 
-use crate::parser::{
-    ast_node::RawStmt,
-    ParseResult,
-    Parser
-};
+use crate::lexer::Keyword::Do;
+use crate::parser::ast_node::RawStmt;
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

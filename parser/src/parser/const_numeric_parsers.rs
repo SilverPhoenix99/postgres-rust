@@ -1,150 +1,99 @@
-impl Parser<'_> {
+/// Alias: `NumericOnly`
+pub(in crate::parser) fn signed_number() -> impl Combinator<Output = SignedNumber> {
 
-    /// Alias: `NumericOnly`
-    pub(in crate::parser) fn signed_number(&mut self) -> ScanResult<SignedNumber> {
+    // ('+' | '-')? (ICONST | FCONST)
 
-        // ('+' | '-')? (ICONST | FCONST)
+    parser(|stream| {
 
-        let sign = self.sign().no_match_to_option()?;
+        let sign = sign().maybe_match().parse(stream)?;
+        let num = number().map(SignedNumber::from);
 
-        let number = self.unsigned_number();
-
-        let number = if sign.is_some() {
-            number.required(fn_info!())?
-        }
-        else {
-            number?
+        let negative = match sign {
+            None => return num.parse(stream),
+            Some(sign) => sign == Minus,
         };
 
-        let negative = sign.is_some_and(|s| s == Minus);
-
-        let value = match number {
-            UnsignedNumber::IntegerConst(int) => {
-                let mut int: i32 = int.into();
-                if negative {
-                    int = -int;
-                }
-                SignedNumber::IntegerConst(int)
-            },
-            UnsignedNumber::NumericConst { value, radix } => {
-                SignedNumber::NumericConst { value, radix, negative }
-            }
-        };
-
-        Ok(value)
-    }
-
-    pub(in crate::parser) fn unsigned_number(&mut self) -> ScanResult<UnsignedNumber> {
-
-        // ICONST | FCONST
-
-        self.buffer.consume_with_slice(|(tok, slice, _)| {
-            let NumberLiteral(radix) = tok else { return None };
-            parse_number(slice, radix)
-        })
-    }
-
-    /// Alias: `ICONST`
-    pub(in crate::parser) fn i32_literal(&mut self) -> ScanResult<i32> {
-
-        self.buffer.consume_with_slice(|(tok, slice, _)| {
-            let NumberLiteral(radix) = tok else { return None };
-            let Some(UnsignedNumber::IntegerConst(int)) = parse_number(slice, radix) else { return None };
-            Some(int.into())
-        })
-    }
-
-    /// Alias: `SignedIconst`
-    pub(in crate::parser) fn signed_i32_literal(&mut self) -> ScanResult<i32> {
-
-        // ('+' | '-')? ICONST
-
-        let sign = self.sign().no_match_to_option()?;
-
-        let num = self.i32_literal();
-
-        let Some(sign) = sign else { return num };
-
-        // If sign is Some(_), then ICONST is required
-        let mut num = num.required(fn_info!())?;
-
-        if sign == Minus {
-            num = -num;
+        let mut num = num.required().parse(stream)?;
+        if negative {
+            num = num.neg();
         }
 
         Ok(num)
-    }
+    })
 }
 
-fn parse_number(value: &str, radix: NumberRadix) -> Option<UnsignedNumber> {
-    use UnsignedNumber::*;
 
-    let value = value.replace("_", "");
+/// Alias: `ICONST`
+pub(in crate::parser) fn i32_literal() -> impl Combinator<Output = i32> {
+    integer().map(i32::from)
+}
 
-    if let Ok(int) = i32::from_str_radix(&value, radix as u32) {
-        // SAFETY: `0 <= int <= i32::MAX`
-        Some(IntegerConst(int.into()))
-    }
-    else {
-        Some(NumericConst {
-            radix,
-            value: value.into_boxed_str()
-        })
-    }
+/// Alias: `SignedIconst`
+pub(in crate::parser) fn signed_i32_literal() -> impl Combinator<Output = i32> {
+
+    // ('+' | '-')? ICONST
+
+    parser(|stream| {
+
+        let sign = sign().maybe_match().parse(stream)?;
+
+        let int = match sign {
+            None => i32_literal().parse(stream)?,
+            Some(sign) => {
+                let mut num = i32_literal()
+                    .required()
+                    .parse(stream)?;
+                if sign == Minus {
+                    num = -num;
+                }
+                num
+            }
+        };
+
+        Ok(int)
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::ast_node::SignedNumber;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 
-    #[test_case( "1.01", SignedNumber::NumericConst { value: "1.01".into(), radix: NumberRadix::Decimal, negative: false })]
-    #[test_case("+2.02", SignedNumber::NumericConst { value: "2.02".into(), radix: NumberRadix::Decimal, negative: false })]
-    #[test_case("-3.03", SignedNumber::NumericConst { value: "3.03".into(), radix: NumberRadix::Decimal, negative: true })]
+    #[test_case( "1.01", SignedNumber::NumericConst { value: "1.01".into(), radix: crate::NumberRadix::Decimal, negative: false })]
+    #[test_case("+2.02", SignedNumber::NumericConst { value: "2.02".into(), radix: crate::NumberRadix::Decimal, negative: false })]
+    #[test_case("-3.03", SignedNumber::NumericConst { value: "3.03".into(), radix: crate::NumberRadix::Decimal, negative: true })]
     #[test_case(  "101", SignedNumber::IntegerConst(101))]
     #[test_case( "+202", SignedNumber::IntegerConst(202))]
     #[test_case( "-303", SignedNumber::IntegerConst(-303))]
     fn test_signed_number(source: &str, expected: SignedNumber) {
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        let actual = parser.signed_number();
-        assert_eq!(Ok(expected), actual);
-    }
-
-    #[test_case("1.1", UnsignedNumber::NumericConst { value: "1.1".into(), radix: NumberRadix::Decimal })]
-    #[test_case("11",  UnsignedNumber::IntegerConst(11.into()))]
-    fn test_unsigned_number(source: &str, expected: UnsignedNumber) {
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        let actual = parser.unsigned_number();
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let actual = signed_number().parse(&mut stream);
         assert_eq!(Ok(expected), actual);
     }
 
     #[test]
     fn test_i32_literal() {
-        let mut parser = Parser::new("123", DEFAULT_CONFIG);
-        assert_eq!(Ok(123), parser.i32_literal());
+        let mut stream = TokenStream::new("123", DEFAULT_CONFIG);
+        assert_eq!(Ok(123), i32_literal().parse(&mut stream));
     }
 
     #[test_case("-123", -123)]
     #[test_case("+321", 321)]
     fn test_signed_i32_literal(source: &str, expected: i32) {
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        let actual = parser.signed_i32_literal();
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let actual = signed_i32_literal().parse(&mut stream);
         assert_eq!(Ok(expected), actual);
     }
 }
 
-use crate::{
-    lexer::{
-        OperatorKind::Minus,
-        RawTokenKind::NumberLiteral,
-    },
-    parser::{
-        ast_node::{SignedNumber, UnsignedNumber},
-        result::{Required, ScanResult, ScanResultTrait},
-        token_stream::SlicedTokenConsumer,
-        Parser
-    },
-    NumberRadix
-};
-use postgres_basics::fn_info;
+use crate::lexer::OperatorKind::Minus;
+use crate::parser::ast_node::SignedNumber;
+use crate::parser::combinators::number;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::combinators::{integer, parser};
+use crate::parser::sign;
+use std::ops::Neg;

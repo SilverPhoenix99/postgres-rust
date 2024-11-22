@@ -1,69 +1,69 @@
-impl Parser<'_> {
-    pub(in crate::parser) fn alter_collation_stmt(&mut self) -> ParseResult<RawStmt> {
+pub(in crate::parser) fn alter_collation_stmt() -> impl Combinator<Output = RawStmt> {
 
-        /*
-            ALTER COLLATION any_name OWNER TO RoleSpec
-            ALTER COLLATION any_name REFRESH VERSION_P
-            ALTER COLLATION any_name RENAME TO ColId
-            ALTER COLLATION any_name SET SCHEMA ColId
-        */
+    /*
+        ALTER COLLATION any_name REFRESH VERSION_P
+        ALTER COLLATION any_name OWNER TO RoleSpec
+        ALTER COLLATION any_name RENAME TO ColId
+        ALTER COLLATION any_name SET SCHEMA ColId
+    */
 
-        let name = self.any_name().required(fn_info!())?;
-
-        let op = self.buffer.consume_kw(|kw| matches!(kw, Owner | Refresh | Rename | Set))
-            .required(fn_info!())?;
-
-        let stmt = match op {
-            Owner => {
-                self.buffer.consume_kw_eq(To).required(fn_info!())?;
-                let role = self.role_spec().required(fn_info!())?;
-
-                AlterOwnerStmt::new(
-                    AlterOwnerTarget::Collation(name),
-                    role
-                ).into()
-            },
-            Refresh => {
-                self.buffer.consume_kw_eq(Version).required(fn_info!())?;
+    keyword(Collation)
+        .and_right(any_name())
+        .chain_result(match_first_with_state!{|name, stream| {
+            {
+                keyword(Refresh)
+                    .and(keyword(Version))
+            } => (_) {
                 RefreshCollationVersionStmt(name)
             },
-            Rename => {
-                self.buffer.consume_kw_eq(To).required(fn_info!())?;
-                let new_name = self.col_id().required(fn_info!())?;
-
+            {
+                keyword(Owner)
+                    .and(keyword(To))
+                    .and_right(role_spec())
+            } => (new_owner) {
+                AlterOwnerStmt::new(
+                    AlterOwnerTarget::Collation(name),
+                    new_owner
+                ).into()
+            },
+            {
+                keyword(Rename)
+                    .and(keyword(To))
+                    .and_right(col_id())
+            } => (new_name) {
                 RenameStmt::new(
                     RenameTarget::Collation(name),
                     new_name
                 ).into()
             },
-            Set => {
-                self.buffer.consume_kw_eq(Schema).required(fn_info!())?;
-                let new_schema = self.col_id().required(fn_info!())?;
-
+            {
+                keyword(Set)
+                    .and(keyword(Schema))
+                    .and_right(col_id())
+            } => (new_schema) {
                 AlterObjectSchemaStmt::new(
                     AlterObjectSchemaTarget::Collation(name),
                     new_schema
                 ).into()
-            },
-            _ => unreachable!("ALTER COLLATION command must be one of OWNER, REFRESH, RENAME, or SET")
-        };
-
-        Ok(stmt)
-    }
+            }
+        }})
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::ast_node::RawStmt::RefreshCollationVersionStmt;
     use crate::parser::ast_node::RoleSpec::CurrentUser;
+    use crate::parser::ast_node::{AlterObjectSchemaTarget, AlterOwnerTarget, RenameTarget};
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
 
     #[test]
     fn test_collation_owner() {
-        let source = "collation_name owner to current_user";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let source = "collation collation_name owner to current_user";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.alter_collation_stmt();
+        let actual = alter_collation_stmt().parse(&mut stream);
 
         let expected = AlterOwnerStmt::new(
             AlterOwnerTarget::Collation(vec!["collation_name".into()]),
@@ -75,20 +75,20 @@ mod tests {
 
     #[test]
     fn test_collation_refresh_version() {
-        let source = "collation_name refresh version";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let source = "collation collation_name refresh version";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.alter_collation_stmt();
+        let actual = alter_collation_stmt().parse(&mut stream);
         let expected = RefreshCollationVersionStmt(vec!["collation_name".into()]);
         assert_eq!(Ok(expected), actual);
     }
 
     #[test]
     fn test_collation_rename() {
-        let source = "collation_name rename to something_else";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let source = "collation collation_name rename to something_else";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.alter_collation_stmt();
+        let actual = alter_collation_stmt().parse(&mut stream);
 
         let expected = RenameStmt::new(
             RenameTarget::Collation(vec!["collation_name".into()]),
@@ -100,10 +100,10 @@ mod tests {
 
     #[test]
     fn test_collation_set_schema() {
-        let source = "collation_name set schema some_schema";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let source = "collation collation_name set schema some_schema";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.alter_collation_stmt();
+        let actual = alter_collation_stmt().parse(&mut stream);
 
         let expected = AlterObjectSchemaStmt::new(
             AlterObjectSchemaTarget::Collation(vec!["collation_name".into()]),
@@ -114,21 +114,25 @@ mod tests {
     }
 }
 
-use crate::{
-    lexer::Keyword::{Owner, Refresh, Rename, Schema, Set, To, Version},
-    parser::{
-        ast_node::{
-            AlterObjectSchemaStmt,
-            AlterObjectSchemaTarget,
-            AlterOwnerStmt,
-            AlterOwnerTarget,
-            RawStmt::{self, RefreshCollationVersionStmt},
-            RenameStmt,
-            RenameTarget
-        },
-        result::Required,
-        ParseResult,
-        Parser,
-    },
-};
-use postgres_basics::fn_info;
+use crate::lexer::Keyword::Collation;
+use crate::lexer::Keyword::Owner;
+use crate::lexer::Keyword::Refresh;
+use crate::lexer::Keyword::Rename;
+use crate::lexer::Keyword::Schema;
+use crate::lexer::Keyword::Set;
+use crate::lexer::Keyword::To;
+use crate::lexer::Keyword::Version;
+use crate::parser::any_name;
+use crate::parser::ast_node::AlterObjectSchemaTarget;
+use crate::parser::ast_node::AlterOwnerStmt;
+use crate::parser::ast_node::AlterOwnerTarget;
+use crate::parser::ast_node::RawStmt::RefreshCollationVersionStmt;
+use crate::parser::ast_node::RenameStmt;
+use crate::parser::ast_node::RenameTarget;
+use crate::parser::ast_node::{AlterObjectSchemaStmt, RawStmt};
+use crate::parser::col_id;
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::match_first_with_state;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::role_parsers::role_spec;

@@ -1,22 +1,21 @@
-impl Parser<'_> {
-    /// Aliases:
-    /// * `RevokeStmt`
-    /// * `RevokeRoleStmt`
-    pub(in crate::parser) fn revoke_stmt(&mut self) -> ParseResult<RawStmt> {
+/// Aliases:
+/// * `RevokeStmt`
+/// * `RevokeRoleStmt`
+pub(in crate::parser) fn revoke_stmt() -> impl Combinator<Output = RawStmt> {
 
-        /*
-            REVOKE privileges ON privilege_target FROM grantee_list opt_granted_by opt_drop_behavior
-            REVOKE GRANT OPTION FOR privileges ON privilege_target FROM grantee_list opt_granted_by opt_drop_behavior
-            REVOKE privilege_list FROM role_list opt_granted_by opt_drop_behavior
-            REVOKE ColId OPTION FOR privilege_list FROM role_list opt_granted_by opt_drop_behavior
-        */
+    /*
+        REVOKE privileges ON privilege_target FROM grantee_list opt_granted_by opt_drop_behavior
+        REVOKE GRANT OPTION FOR privileges ON privilege_target FROM grantee_list opt_granted_by opt_drop_behavior
+        REVOKE privilege_list FROM role_list opt_granted_by opt_drop_behavior
+        REVOKE ColId OPTION FOR privilege_list FROM role_list opt_granted_by opt_drop_behavior
+    */
 
-        todo!()
-    }
+    keyword(Revoke)
+        .map(|_| todo!())
 }
 
-use crate::parser::{
-    ast_node::RawStmt,
-    ParseResult,
-    Parser
-};
+use crate::lexer::Keyword::Revoke;
+use crate::parser::ast_node::RawStmt;
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

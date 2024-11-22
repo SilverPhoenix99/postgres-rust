@@ -14,11 +14,11 @@ impl Parser<'_> {
             | ConstTypename SCONST
         */
 
-        if let Some(num) = self.unsigned_number().no_match_to_option()? {
+        if let Some(num) = number().maybe_match().parse(&mut self.buffer)? {
             return Ok(num.into())
         }
 
-        if let Some(string) = string(fn_info!()).optional().parse(&mut self.buffer)? {
+        if let Some(string) = string().optional().parse(&mut self.buffer)? {
             return Ok(StringConst(string))
         }
 
@@ -35,13 +35,13 @@ impl Parser<'_> {
         }
 
         if let Some(mut type_name) = self.const_typename().optional()? {
-            let value = string(fn_info!()).required(fn_info!()).parse(&mut self.buffer)?;
+            let value = string().required().parse(&mut self.buffer)?;
 
             if let Interval(IntervalRange::Full { precision: None }) = type_name {
                 // NB: `const_typename()` doesn't make this specific match,
                 // because `SCONST` is between `INTERVAL` and `opt_interval` (i.e., `INTERVAL SCONST opt_interval`),
                 // so that match is done here, if `INTERVAL` wasn't followed by `'(' ICONST ')'`
-                let range = self.opt_interval()?;
+                let range = opt_interval().parse(&mut self.buffer)?;
                 type_name = Interval(range)
             }
 
@@ -91,28 +91,28 @@ mod tests {
     }
 }
 
-use crate::{
-    lexer::{
-        BitStringKind::*,
-        Keyword::{False, Null, True},
-        RawTokenKind::Keyword as Kw
-    },
-    parser::{
-        ast_node::{
-            ExprNode::{self, BinaryStringConst, BooleanConst, HexStringConst, NullConst, StringConst},
-            IntervalRange,
-            TypeName::Interval,
-            TypecastExpr
-        },
-        combinators::{bit_string, string, ParserFunc, ParserFuncHelpers},
-        consume_macro::consume,
-        result::{
-            Optional,
-            ScanErrorKind::NoMatch,
-            ScanResult,
-            ScanResultTrait
-        },
-        Parser,
-    }
-};
-use postgres_basics::fn_info;
+use crate::lexer::BitStringKind::*;
+use crate::lexer::Keyword::False;
+use crate::lexer::Keyword::Null;
+use crate::lexer::Keyword::True;
+use crate::lexer::RawTokenKind::Keyword as Kw;
+use crate::parser::ast_node::ExprNode;
+use crate::parser::ast_node::ExprNode::BinaryStringConst;
+use crate::parser::ast_node::ExprNode::BooleanConst;
+use crate::parser::ast_node::ExprNode::HexStringConst;
+use crate::parser::ast_node::ExprNode::NullConst;
+use crate::parser::ast_node::ExprNode::StringConst;
+use crate::parser::ast_node::IntervalRange;
+use crate::parser::ast_node::TypeName::Interval;
+use crate::parser::ast_node::TypecastExpr;
+use crate::parser::combinators::bit_string;
+use crate::parser::combinators::number;
+use crate::parser::combinators::string;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::consume_macro::consume;
+use crate::parser::opt_interval::opt_interval;
+use crate::parser::result::Optional;
+use crate::parser::result::ScanErrorKind::NoMatch;
+use crate::parser::result::ScanResult;
+use crate::parser::Parser;

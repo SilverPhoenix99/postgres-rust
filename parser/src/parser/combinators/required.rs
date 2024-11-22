@@ -1,30 +1,24 @@
-pub(in crate::parser) fn required<P>(parser: P, caller: &'static FnInfo) -> RequiredCombi<P>
+/// `Eof` and `NoMatch` become `Err(Syntax)`.
+pub(in crate::parser) fn required<P>(parser: P) -> RequiredCombi<P>
 where
-    P: ParserFunc
+    P: Combinator
 {
-    RequiredCombi { parser, caller }
+    RequiredCombi(parser)
 }
 
-pub(in crate::parser) struct RequiredCombi<P>
-where
-    P: ParserFunc
-{
-    parser: P,
-    caller: &'static FnInfo,
-}
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub(in crate::parser) struct RequiredCombi<P>(P);
 
-impl<P> ParserFunc for RequiredCombi<P>
+impl<P> Combinator for RequiredCombi<P>
 where
-    P: ParserFunc,
-    ScanErrorKind: From<P::Error>
+    P: Combinator
 {
     type Output = P::Output;
-    type Error = ParserError;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ParseResult<Self::Output> {
-        self.parser.parse(stream)
+    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+        self.0.parse(stream)
+            .required()
             .map_err(ScanErrorKind::from)
-            .required(self.caller)
     }
 }
 
@@ -33,14 +27,15 @@ mod tests {
     use super::*;
     use crate::lexer::Keyword;
     use crate::parser::combinators::keyword;
+    use crate::parser::result::ScanErrorKind::ScanErr;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::ParserErrorKind;
-    use postgres_basics::fn_info;
+    use std::hint::unreachable_unchecked;
 
     #[test]
     fn test_required() {
         let mut stream = TokenStream::new("precision", DEFAULT_CONFIG);
-        let parser = required(keyword(Keyword::Precision), fn_info!("test_required"));
+        let parser = required(keyword(Keyword::Precision));
         let actual = parser.parse(&mut stream);
         assert_eq!(Ok(Keyword::Precision), actual);
     }
@@ -48,28 +43,26 @@ mod tests {
     #[test]
     fn test_no_match() {
         let mut stream = TokenStream::new("abort", DEFAULT_CONFIG);
-        let parser = required(keyword(Keyword::Precision), fn_info!("test_required"));
+        let parser = required(keyword(Keyword::Precision));
         let actual = parser.parse(&mut stream);
 
-        assert_matches!(actual, Err(_));
-        let err = actual.unwrap_err();
+        assert_matches!(actual, Err(ScanErr(_)));
+        let ScanErr(err) = actual.unwrap_err() else { unsafe { unreachable_unchecked() } };
         assert_eq!(&ParserErrorKind::Syntax, err.source())
     }
 
     #[test]
     fn test_eof() {
         let mut stream = TokenStream::new("", DEFAULT_CONFIG);
-        let parser = required(keyword(Keyword::Precision), fn_info!("test_required"));
+        let parser = required(keyword(Keyword::Precision));
         let actual = parser.parse(&mut stream);
 
-        assert_matches!(actual, Err(_));
-        let err = actual.unwrap_err();
+        assert_matches!(actual, Err(ScanErr(_)));
+        let ScanErr(err) = actual.unwrap_err() else { unsafe { unreachable_unchecked() } };
         assert_eq!(&ParserErrorKind::Syntax, err.source())
     }
 }
 
-use crate::parser::combinators::ParserFunc;
-use crate::parser::result::{Required, ScanErrorKind};
+use crate::parser::combinators::Combinator;
+use crate::parser::result::{Required, ScanErrorKind, ScanResult};
 use crate::parser::token_stream::TokenStream;
-use crate::parser::{ParseResult, ParserError};
-use postgres_basics::FnInfo;

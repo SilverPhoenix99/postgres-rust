@@ -1,55 +1,53 @@
-impl Parser<'_> {
-    pub(in crate::parser) fn alter_large_object_stmt(&mut self) -> ParseResult<RawStmt> {
+pub(in crate::parser) fn alter_large_object_stmt() -> impl Combinator<Output = RawStmt> {
 
-        /*
-            ALTER LARGE_P OBJECT_P NumericOnly OWNER TO RoleSpec
-        */
+    /*
+        ALTER LARGE_P OBJECT_P NumericOnly OWNER TO RoleSpec
+    */
 
-        self.buffer.consume_kw_eq(Object).required(fn_info!())?;
+    let parser = enclosure!(
+        keyword(Large)
+            .and(keyword(Object))
+            .and_right(signed_number())
+            .and_left(keyword(Owner))
+            .and_left(keyword(To))
+    );
 
-        let oid = self.signed_number().required(fn_info!())?;
-
-        self.buffer.consume_kw_eq(Owner).required(fn_info!())?;
-        self.buffer.consume_kw_eq(To).required(fn_info!())?;
-
-        let new_owner = self.role_spec().required(fn_info!())?;
-
-        let stmt = AlterOwnerStmt::new(
+    parser.and_then(role_spec(), |oid, new_owner|
+        AlterOwnerStmt::new(
             AlterOwnerTarget::LargeObject(oid),
             new_owner
-        );
-
-        Ok(stmt.into())
-    }
+        ).into()
+    )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::{RoleSpec, SignedNumber};
+    use crate::parser::ast_node::RoleSpec;
+    use crate::parser::ast_node::SignedNumber;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
 
     #[test]
     fn test_alter_large_object() {
-        let source = "object +654987 owner to some_user";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let source = "large object +654987 owner to some_user";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
         let expected = AlterOwnerStmt::new(
             AlterOwnerTarget::LargeObject(SignedNumber::IntegerConst(654987)),
             RoleSpec::Name("some_user".into())
         );
 
-        assert_eq!(Ok(expected.into()), parser.alter_large_object_stmt());
+        assert_eq!(Ok(expected.into()), alter_large_object_stmt().parse(&mut stream));
     }
 }
 
-use crate::{
-    lexer::Keyword::{Object, Owner, To},
-    parser::{
-        ast_node::{AlterOwnerStmt, AlterOwnerTarget, RawStmt},
-        result::Required,
-        ParseResult,
-        Parser
-    }
-};
-use postgres_basics::fn_info;
+use crate::lexer::Keyword::Owner;
+use crate::lexer::Keyword::To;
+use crate::lexer::Keyword::{Large, Object};
+use crate::parser::ast_node::AlterOwnerStmt;
+use crate::parser::ast_node::AlterOwnerTarget;
+use crate::parser::ast_node::RawStmt;
+use crate::parser::combinators::{enclosure, keyword, Combinator, CombinatorHelpers};
+use crate::parser::const_numeric_parsers::signed_number;
+use crate::parser::role_parsers::role_spec;

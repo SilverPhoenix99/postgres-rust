@@ -1,35 +1,37 @@
-impl Parser<'_> {
-    pub(in crate::parser) fn alter_language_stmt(&mut self) -> ParseResult<RawStmt> {
+pub(in crate::parser) fn alter_language_stmt() -> impl Combinator<Output = RawStmt> {
 
-        /*
-            ALTER (PROCEDURAL)? LANGUAGE ColId OWNER TO RoleSpec # AlterOwnerStmt
-            ALTER (PROCEDURAL)? LANGUAGE ColId RENAME TO ColId # RenameStmt
-        */
+    /*
+        ALTER (PROCEDURAL)? LANGUAGE ColId OWNER TO RoleSpec # AlterOwnerStmt
+        ALTER (PROCEDURAL)? LANGUAGE ColId RENAME TO ColId # RenameStmt
+    */
 
-        let name = self.col_id().required(fn_info!())?;
-
-        let action = self.buffer.consume_kw(|kw| matches!(kw, Owner | Rename))
-            .required(fn_info!())?;
-
-        self.buffer.consume_kw_eq(To).required(fn_info!())?;
-
-        let stmt = if action == Owner {
-            let role = self.role_spec().required(fn_info!())?;
-            AlterOwnerStmt::new(
-                AlterOwnerTarget::Language(name),
-                role
-            ).into()
-        }
-        else {
-            let new_name = self.col_id().required(fn_info!())?;
-            RenameStmt::new(
-                RenameTarget::Language(name),
-                new_name
-            ).into()
-        };
-
-        Ok(stmt)
-    }
+    or(
+        keyword(Procedural).and(keyword(Language)).skip(),
+        keyword(Language).skip()
+    )
+        .and_right(col_id())
+        .chain_result(match_first_with_state!(|name, stream| {
+            {
+                keyword(Owner)
+                    .and(keyword(To))
+                    .and_right(role_spec())
+            } => (role) {
+                AlterOwnerStmt::new(
+                    AlterOwnerTarget::Language(name),
+                    role
+                ).into()
+            },
+            {
+                keyword(Rename)
+                    .and(keyword(To))
+                    .and_right(col_id())
+            } => (new_name) {
+                RenameStmt::new(
+                    RenameTarget::Language(name),
+                    new_name
+                ).into()
+            },
+        }))
 }
 
 #[cfg(test)]
@@ -37,41 +39,48 @@ mod tests {
     use super::*;
     use crate::parser::ast_node::RoleSpec::Public;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
 
     #[test]
     fn test_alter_owner() {
-        let source = "some_language owner to public";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let source = "procedural language some_language owner to public";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
         let expected = AlterOwnerStmt::new(
             AlterOwnerTarget::Language("some_language".into()),
             Public
         );
 
-        assert_eq!(Ok(expected.into()), parser.alter_language_stmt());
+        assert_eq!(Ok(expected.into()), alter_language_stmt().parse(&mut stream));
     }
 
     #[test]
     fn test_rename() {
-        let source = "some_language rename to new_lang";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let source = "language some_language rename to new_lang";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
         let expected = RenameStmt::new(
             RenameTarget::Language("some_language".into()),
             "new_lang".into()
         );
 
-        assert_eq!(Ok(expected.into()), parser.alter_language_stmt());
+        assert_eq!(Ok(expected.into()), alter_language_stmt().parse(&mut stream));
     }
 }
 
-use crate::{
-    lexer::Keyword::{Owner, Rename, To},
-    parser::{
-        ast_node::{AlterOwnerStmt, AlterOwnerTarget, RawStmt, RenameStmt, RenameTarget},
-        result::Required,
-        ParseResult,
-        Parser
-    }
-};
-use postgres_basics::fn_info;
+use crate::lexer::Keyword::Language;
+use crate::lexer::Keyword::Owner;
+use crate::lexer::Keyword::Procedural;
+use crate::lexer::Keyword::Rename;
+use crate::lexer::Keyword::To;
+use crate::parser::ast_node::AlterOwnerStmt;
+use crate::parser::ast_node::AlterOwnerTarget;
+use crate::parser::ast_node::RawStmt;
+use crate::parser::ast_node::RenameStmt;
+use crate::parser::ast_node::RenameTarget;
+use crate::parser::col_id;
+use crate::parser::combinators::match_first_with_state;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::combinators::{keyword, or};
+use crate::parser::role_parsers::role_spec;

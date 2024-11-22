@@ -3,33 +3,26 @@
 /// * `SCONST`
 /// * `USCONST`
 /// * `file_name`
-pub(in crate::parser) fn string(caller: &'static FnInfo) -> StringCombi {
-    StringCombi {
-        uescape: UescapeState::ParseUescapeAfterwards,
-        caller
-    }
+pub(in crate::parser) fn string() -> StringCombi {
+    StringCombi
 }
 
-pub(super) fn uescape(caller: &'static FnInfo) -> UescapeCombi {
-    UescapeCombi { caller }
+pub(super) fn uescape() -> UescapeCombi {
+    UescapeCombi
 }
 
 // (SCONST)* as long as they're concatenable.
 // Internally used on productions that don't use UESCAPE.
-pub(in crate::parser) struct StringCombi {
-    uescape: UescapeState,
-    caller: &'static FnInfo,
-}
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub(in crate::parser) struct StringCombi;
 
-impl ParserFunc for StringCombi {
+impl Combinator for StringCombi {
     type Output = Box<str>;
-    type Error = ScanErrorKind;
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
 
         let mut parser = InnerParser {
-            uescape: self.uescape,
-            caller: self.caller,
+            uescape: ParseUescapeAfterwards,
             stream,
         };
 
@@ -38,7 +31,7 @@ impl ParserFunc for StringCombi {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 enum UescapeState {
     /// If it should parse UESCAPE SCONST
     ParseUescapeAfterwards,
@@ -47,9 +40,9 @@ enum UescapeState {
     IsUescape,
 }
 
+#[derive(Debug)]
 pub(super) struct InnerParser<'stream, 'src> {
     uescape: UescapeState,
-    caller: &'static FnInfo,
     stream: &'stream mut TokenStream<'src>,
 }
 
@@ -91,7 +84,7 @@ impl InnerParser<'_, '_> {
 
     fn decode_string(&mut self, kind: StringKind, slice: &str, loc: Location) -> ScanResult<Box<str>> {
 
-        let result = match kind {
+        match kind {
             Basic { .. } => {
                 let string = BasicStringDecoder::new(slice, false).decode();
                 Ok(string)
@@ -105,7 +98,7 @@ impl InnerParser<'_, '_> {
                 }
 
                 result.map_err(|err|
-                    ParserError::new(ExtendedString(err), self.caller, loc)
+                    ParserError::new(ExtendedString(err), loc).into()
                 )
             },
             Unicode => {
@@ -114,18 +107,16 @@ impl InnerParser<'_, '_> {
                 // so if we're here, we can safely assume that
                 // we're to the left of ( UESCAPE SCONST )?
 
-                let escape = uescape(self.caller).parse(self.stream)?;
+                let escape = uescape().parse(self.stream)?;
 
                 UnicodeStringDecoder::new(slice, false, escape)
                     .decode()
                     .map_err(|err|
-                        ParserError::new(UnicodeString(err), self.caller, loc)
+                        ParserError::new(UnicodeString(err), loc).into()
                     )
             }
             Dollar => unreachable!("`$` strings don't have any escapes"),
-        };
-
-        result.map_err(ScanErrorKind::from)
+        }
     }
 }
 
@@ -135,7 +126,7 @@ fn accept(uescape: UescapeState, kind: StringKind, is_first: bool) -> bool {
         // It's the 1st piece of the string, and:
         return
             // * we're *Not* to the right of a UESCAPE;
-            uescape == UescapeState::ParseUescapeAfterwards
+            uescape == ParseUescapeAfterwards
             // * or, we are, and it's a "simple" string.
             || matches!(kind, Basic { .. } | Extended { .. })
     }
@@ -169,39 +160,36 @@ pub(super) fn strip_delimiters(kind: StringKind, slice: &str) -> &str {
     &slice[range]
 }
 
-pub(super) struct UescapeCombi {
-    caller: &'static FnInfo,
-}
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub(super) struct UescapeCombi;
 
-impl ParserFunc for UescapeCombi {
+impl Combinator for UescapeCombi {
     type Output = char;
-    type Error = ParserError;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ParseResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
 
         if keyword(Uescape).parse(stream).optional()?.is_none() {
             return Ok('\\')
         }
 
         let mut parser = InnerParser {
-            uescape: UescapeState::IsUescape,
-            caller: self.caller,
+            uescape: IsUescape,
             stream
         };
 
         let (escape, loc) = match parser.parse() {
             Ok(ok) => ok,
-            Err(ScanErr(err)) => return Err(err),
+            Err(ScanErr(err)) => return Err(err.into()),
             Err(NoMatch(loc) | Eof(loc)) => {
                 return Err(
-                    ParserError::new(UescapeDelimiterMissing, self.caller, loc)
+                    ParserError::new(UescapeDelimiterMissing, loc).into()
                 )
             },
         };
 
         let escape = uescape_escape(&escape);
         escape.ok_or_else(||
-            ParserError::new(InvalidUescapeDelimiter, self.caller, loc)
+            ParserError::new(InvalidUescapeDelimiter, loc).into()
         )
     }
 }
@@ -210,7 +198,6 @@ impl ParserFunc for UescapeCombi {
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
-    use postgres_basics::fn_info;
     use test_case::test_case;
 
     #[test_case("$dollar$a $ string$dollar$", "a $ string")]
@@ -225,36 +212,37 @@ mod tests {
     #[test_case("u&'unicode esc!0061pe concatenation' UESCAPE ''\n''\n'!'", "unicode escape concatenation")]
     fn test_string(source: &str, expected: &str) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let parser = string(fn_info!());
+        let parser = string();
         let actual = parser.parse(&mut stream);
         assert_eq!(expected, actual.unwrap().as_ref())
     }
 }
 
-use crate::parser::ParseResult;
-use crate::{
-    lexer::{
-        Keyword::Uescape,
-        RawTokenKind::StringLiteral,
-        StringKind::{self, Basic, Dollar, Extended, Unicode}
-    },
-    parser::{
-        combinators::{keyword, ParserFunc},
-        result::{
-            Optional,
-            ScanErrorKind::{self, Eof, NoMatch, ScanErr},
-            ScanResult
-        },
-        token_stream::{SlicedTokenConsumer, TokenStream},
-        uescape_escape::uescape_escape,
-        ParserError,
-        ParserErrorKind::{ExtendedString, InvalidUescapeDelimiter, UescapeDelimiterMissing, UnicodeString}
-    },
-    string_decoders::{
-        BasicStringDecoder,
-        ExtendedStringDecoder,
-        ExtendedStringResult,
-        UnicodeStringDecoder
-    }
-};
-use postgres_basics::{FnInfo, Location};
+use crate::lexer::Keyword::Uescape;
+use crate::lexer::RawTokenKind::StringLiteral;
+use crate::lexer::StringKind;
+use crate::lexer::StringKind::Basic;
+use crate::lexer::StringKind::Dollar;
+use crate::lexer::StringKind::Extended;
+use crate::lexer::StringKind::Unicode;
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::uescape_escape::uescape_escape;
+use crate::parser::combinators::Combinator;
+use crate::parser::result::Optional;
+use crate::parser::result::ScanErrorKind::Eof;
+use crate::parser::result::ScanErrorKind::NoMatch;
+use crate::parser::result::ScanErrorKind::ScanErr;
+use crate::parser::result::ScanResult;
+use crate::parser::token_stream::SlicedTokenConsumer;
+use crate::parser::token_stream::TokenStream;
+use crate::parser::ParserError;
+use crate::parser::ParserErrorKind::ExtendedString;
+use crate::parser::ParserErrorKind::InvalidUescapeDelimiter;
+use crate::parser::ParserErrorKind::UescapeDelimiterMissing;
+use crate::parser::ParserErrorKind::UnicodeString;
+use crate::string_decoders::BasicStringDecoder;
+use crate::string_decoders::ExtendedStringDecoder;
+use crate::string_decoders::ExtendedStringResult;
+use crate::string_decoders::UnicodeStringDecoder;
+use postgres_basics::Location;
+use UescapeState::{IsUescape, ParseUescapeAfterwards};

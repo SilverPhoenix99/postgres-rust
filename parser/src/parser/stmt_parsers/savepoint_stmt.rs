@@ -1,30 +1,30 @@
-impl Parser<'_> {
-    pub(in crate::parser) fn savepoint_stmt(&mut self) -> ParseResult<TransactionStmt> {
+pub(in crate::parser) fn savepoint_stmt() -> impl Combinator<Output = TransactionStmt> {
 
-        /*
-        TransactionStmt:
-            SAVEPOINT ColId
-        */
+    /*
+    TransactionStmt:
+        SAVEPOINT ColId
+    */
 
-        let name = self.col_id().required(fn_info!())?;
-
-        Ok(TransactionStmt::Savepoint(name))
-    }
+    keyword(Savepoint)
+        .and_right(col_id())
+        .map(TransactionStmt::Savepoint)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
 
     #[test]
     fn test_savepoint() {
-        let mut parser = Parser::new("test_ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Savepoint("test_ident".into())), parser.savepoint_stmt());
+        let mut stream = TokenStream::new("savepoint test_ident", DEFAULT_CONFIG);
+        assert_eq!(Ok(TransactionStmt::Savepoint("test_ident".into())), savepoint_stmt().parse(&mut stream));
     }
 }
 
+use crate::lexer::Keyword::Savepoint;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::result::Required;
-use crate::parser::{ParseResult, Parser};
-use postgres_basics::fn_info;
+use crate::parser::col_id;
+use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::combinators::{keyword, Combinator};

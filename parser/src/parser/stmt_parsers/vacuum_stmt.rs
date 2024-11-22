@@ -1,18 +1,17 @@
-impl Parser<'_> {
-    /// Alias: `VacuumStmt`
-    pub(in crate::parser) fn vacuum_stmt(&mut self) -> ParseResult<RawStmt> {
+/// Alias: `VacuumStmt`
+pub(in crate::parser) fn vacuum_stmt() -> impl Combinator<Output = RawStmt> {
 
-        /*
-            VACUUM opt_full opt_freeze opt_verbose opt_analyze opt_vacuum_relation_list
-            VACUUM '(' utility_option_list ')' opt_vacuum_relation_list
-        */
+    /*
+        VACUUM opt_full opt_freeze opt_verbose opt_analyze opt_vacuum_relation_list
+        VACUUM '(' utility_option_list ')' opt_vacuum_relation_list
+    */
 
-        todo!()
-    }
+    keyword(Vacuum)
+        .map(|_| todo!())
 }
 
-use crate::parser::{
-    ast_node::RawStmt,
-    ParseResult,
-    Parser
-};
+use crate::lexer::Keyword::Vacuum;
+use crate::parser::ast_node::RawStmt;
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

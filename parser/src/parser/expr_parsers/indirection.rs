@@ -1,3 +1,4 @@
+use crate::parser::combinators::{operator, or, Combinator};
 impl Parser<'_> {
     /// Post-condition: Vec is **Not** empty
     pub(in crate::parser) fn indirection(&mut self) -> ScanResult<Vec<Indirection>> {
@@ -27,56 +28,59 @@ impl Parser<'_> {
             | '[' a_expr ':' a_expr ']'
         */
 
-        if self.buffer.consume_op(Dot).no_match_to_option()?.is_some() {
-            // `.`
+        let result = operator(Dot)
+            .and_right(
+                or(
+                    // `.*`
+                    operator(Mul).map(|_| Indirection::All),
+                    // `.ColLabel`
+                    col_label().map(Indirection::Property)
+                )
+            )
+            .maybe_match()
+            .parse(&mut self.buffer)?;
 
-            if self.buffer.consume_op(Mul).try_match(fn_info!())?.is_some() {
-                // `.*`
-                return Ok(Indirection::All)
-            }
-
-            let property = self.col_label().required(fn_info!())?;
-            // `.ColLabel`
-            return Ok(Indirection::Property(property))
+        if let Some(indirection) = result {
+            return Ok(indirection)
         }
 
         // `[`
-        self.buffer.consume_op(OpenBracket)?;
+        operator(OpenBracket).parse(&mut self.buffer)?;
 
-        if self.buffer.consume_op(Colon).try_match(fn_info!())?.is_some() {
+        if operator(Colon).try_match().parse(&mut self.buffer)?.is_some() {
             // `[ :`
 
-            if self.buffer.consume_op(CloseBracket).try_match(fn_info!())?.is_some() {
+            if operator(CloseBracket).try_match().parse(&mut self.buffer)?.is_some() {
                 // `[ : ]`
                 return Ok(Indirection::FullSlice)
             }
 
             // `[ : a_expr ]`
-            let expr = self.a_expr().required(fn_info!())?;
-            self.buffer.consume_op(CloseBracket).required(fn_info!())?;
+            let expr = self.a_expr().required()?;
+            operator(CloseBracket).required().parse(&mut self.buffer)?;
 
             return Ok(Indirection::SliceTo(expr))
         }
 
         // `[ a_expr`
-        let left = self.a_expr().required(fn_info!())?;
+        let left = self.a_expr().required()?;
 
-        if self.buffer.consume_op(CloseBracket).try_match(fn_info!())?.is_some() {
+        if operator(CloseBracket).try_match().parse(&mut self.buffer)?.is_some() {
             // `[ a_expr ]`
             return Ok(Indirection::Index(left))
         }
 
         // `[ a_expr :`
-        self.buffer.consume_op(Colon).required(fn_info!())?;
+        operator(Colon).required().parse(&mut self.buffer)?;
 
-        if self.buffer.consume_op(CloseBracket).try_match(fn_info!())?.is_some() {
+        if operator(CloseBracket).try_match().parse(&mut self.buffer)?.is_some() {
             // `[ a_expr : ]`
             return Ok(Indirection::SliceFrom(left))
         }
 
-        // `[ expr : expr ]`
-        let right = self.a_expr().required(fn_info!())?;
-        self.buffer.consume_op(CloseBracket).required(fn_info!())?;
+        // `[ a_expr : a_expr ]`
+        let right = self.a_expr().required()?;
+        operator(CloseBracket).required().parse(&mut self.buffer)?;
 
         Ok(Indirection::Slice(left, right))
     }
@@ -106,12 +110,15 @@ mod tests {
     }
 }
 
-use crate::{
-    lexer::OperatorKind::{CloseBracket, Colon, Dot, Mul, OpenBracket},
-    parser::{
-        ast_node::Indirection,
-        result::{Optional, Required, ScanResult, ScanResultTrait, TryMatch},
-        Parser
-    },
-};
-use postgres_basics::fn_info;
+use crate::lexer::OperatorKind::CloseBracket;
+use crate::lexer::OperatorKind::Colon;
+use crate::lexer::OperatorKind::Dot;
+use crate::lexer::OperatorKind::Mul;
+use crate::lexer::OperatorKind::OpenBracket;
+use crate::parser::ast_node::Indirection;
+use crate::parser::col_label;
+use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::result::Optional;
+use crate::parser::result::Required;
+use crate::parser::result::ScanResult;
+use crate::parser::Parser;

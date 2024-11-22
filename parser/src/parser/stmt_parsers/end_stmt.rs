@@ -1,60 +1,38 @@
-impl Parser<'_> {
-    pub(in crate::parser) fn end_stmt(&mut self) -> ParseResult<TransactionStmt> {
+pub(in crate::parser) fn end_stmt() -> impl Combinator<Output = TransactionStmt> {
 
-        /*
-        TransactionStmtLegacy:
-            END_P opt_transaction opt_transaction_chain
-        */
+    /*
+    TransactionStmtLegacy:
+        END_P opt_transaction opt_transaction_chain
+    */
 
-        self.opt_transaction()?;
-
-        let chain = self.opt_transaction_chain()?;
-
-        Ok(TransactionStmt::Commit { chain })
-    }
+    keyword(End)
+        .and(opt_transaction::opt_transaction())
+        .and_right(opt_transaction_chain())
+        .map(|chain| Commit { chain })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::ast_node::TransactionStmt::Commit;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
+    use test_case::test_case;
 
-    #[test]
-    fn test_end() {
-        let mut parser = Parser::new("", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Commit { chain: false }), parser.end_stmt());
-    }
-
-    #[test]
-    fn test_end_chain() {
-        let mut parser = Parser::new("and chain", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Commit { chain: true }), parser.end_stmt());
-    }
-
-    #[test]
-    fn test_end_no_chain() {
-        let mut parser = Parser::new("and no chain", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Commit { chain: false }), parser.end_stmt());
-    }
-
-    #[test]
-    fn test_end_transaction() {
-        let mut parser = Parser::new("transaction", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Commit { chain: false }), parser.end_stmt());
-    }
-
-    #[test]
-    fn test_end_transaction_chain() {
-        let mut parser = Parser::new("transaction and chain", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Commit { chain: true }), parser.end_stmt());
-    }
-
-    #[test]
-    fn test_end_transaction_no_chain() {
-        let mut parser = Parser::new("transaction and no chain", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Commit { chain: false }), parser.end_stmt());
+    #[test_case("end", false)]
+    #[test_case("end and chain", true)]
+    #[test_case("end and no chain", false)]
+    #[test_case("end transaction", false)]
+    #[test_case("end transaction and chain", true)]
+    #[test_case("end transaction and no chain", false)]
+    fn test_end(source: &str, expected: bool) {
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(Commit { chain: expected }), end_stmt().parse(&mut stream));
     }
 }
 
+use crate::lexer::Keyword::End;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::{ParseResult, Parser};
+use crate::parser::ast_node::TransactionStmt::Commit;
+use crate::parser::combinators::{keyword, Combinator, CombinatorHelpers};
+use crate::parser::{opt_transaction, opt_transaction_chain, };

@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub(super) struct TokenStream<'src> {
     backslash_quote: BackslashQuote,
     lexer: Lexer<'src>,
@@ -137,26 +138,6 @@ impl<'src> TokenStream<'src> {
             },
         }
     }
-
-    #[deprecated]
-    pub fn consume_op(&mut self, kind: OperatorKind) -> ScanResult<OperatorKind> {
-        self.consume(|tok|
-            tok.operator()
-                .filter(|op| *op == kind)
-        )
-    }
-
-    #[deprecated]
-    pub fn consume_kw_eq(&mut self, keyword: Keyword) -> ScanResult<Keyword> {
-        self.consume_kw(|kw| keyword == kw)
-    }
-
-    #[deprecated]
-    pub fn consume_kw(&mut self, pred: impl Fn(Keyword) -> bool) -> ScanResult<Keyword> {
-        self.consume(|tok|
-            tok.keyword().filter(|kw| pred(*kw))
-        )
-    }
 }
 
 pub(super) type SlicedToken<'src> = (RawTokenKind, &'src str, Location);
@@ -173,7 +154,7 @@ pub(super) trait TokenConsumer<TOut, FRes> {
         F: Fn(RawTokenKind) -> FRes;
 }
 
-/// Consumers are not allowed to return `Err(None)` (Eof),
+/// Consumers are not allowed to return `Err(Eof)`,
 /// which is an internal error that's only returned by the `TokenBuffer` directly.
 pub(super) type ConsumerResult<T> = ParseResult<Option<T>>;
 
@@ -258,7 +239,6 @@ mod tests {
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::ParserError;
     use crate::parser::ParserErrorKind::Syntax;
-    use postgres_basics::fn_info;
     use RawTokenKind::Identifier;
 
     #[test]
@@ -291,7 +271,7 @@ mod tests {
         let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
         let actual: ScanResult<()> = buffer.consume(|_| {
-            let err = ParserError::syntax(fn_info!(), Location::new(0..0, 0, 0));
+            let err = ParserError::syntax(Location::new(0..0, 0, 0));
             Err(err)
         });
 
@@ -374,24 +354,19 @@ mod tests {
     }
 }
 
-use crate::{
-    error::HasLocation,
-    lexer::{Keyword, Lexer, OperatorKind, RawTokenKind},
-    parser::{
-        result::{
-            EofErrorKind::{Eof, NotEof},
-            EofResult,
-            ScanErrorKind::{NoMatch, ScanErr},
-            ScanResult
-        },
-        ParseResult,
-        ParserConfig,
-        ParserWarningKind
-    },
-};
-use postgres_basics::{
-    guc::BackslashQuote,
-    Located,
-    Location
-};
+use crate::error::HasLocation;
+use crate::lexer::Lexer;
+use crate::lexer::RawTokenKind;
+use crate::parser::result::EofErrorKind::Eof;
+use crate::parser::result::EofErrorKind::NotEof;
+use crate::parser::result::EofResult;
+use crate::parser::result::ScanErrorKind::NoMatch;
+use crate::parser::result::ScanErrorKind::ScanErr;
+use crate::parser::result::ScanResult;
+use crate::parser::ParseResult;
+use crate::parser::ParserConfig;
+use crate::parser::ParserWarningKind;
+use postgres_basics::guc::BackslashQuote;
+use postgres_basics::Located;
+use postgres_basics::Location;
 use std::collections::VecDeque;

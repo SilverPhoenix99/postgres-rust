@@ -1,18 +1,15 @@
-impl Parser<'_> {
-    /// Alias: `AnalyzeStmt`
-    pub(in crate::parser) fn analyze_stmt(&mut self) -> ParseResult<RawStmt> {
+/// Alias: `AnalyzeStmt`
+pub(in crate::parser) fn analyze_stmt() -> impl Combinator<Output = RawStmt> {
 
-        /*
-            (ANALYSE | ANALYZE) '(' utility_option_list ')' opt_vacuum_relation_list
-            (ANALYSE | ANALYZE) (VERBOSE)? opt_vacuum_relation_list
-        */
+    /*
+        (ANALYSE | ANALYZE) '(' utility_option_list ')' opt_vacuum_relation_list
+        (ANALYSE | ANALYZE) (VERBOSE)? opt_vacuum_relation_list
+    */
 
-        todo!()
-    }
+    keyword(Analyze).or(keyword(Analyse))
+        .map(|_| todo!())
 }
 
-use crate::parser::{
-    ast_node::RawStmt,
-    ParseResult,
-    Parser
-};
+use crate::lexer::Keyword::{Analyse, Analyze};
+use crate::parser::ast_node::RawStmt;
+use crate::parser::combinators::{keyword, Combinator, CombinatorHelpers};

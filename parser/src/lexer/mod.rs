@@ -10,7 +10,7 @@ pub(crate) use self::{
 };
 
 pub(crate) type LexerResult = Result<Located<RawTokenKind>, LexerError>;
-type LexResult<T = RawTokenKind> = Result<T, (LexerErrorKind, &'static FnInfo)>;
+type LexResult<T = RawTokenKind> = Result<T, LexerErrorKind>;
 
 #[derive(Debug)]
 pub(crate) struct Lexer<'src> {
@@ -95,8 +95,8 @@ impl<'src> Lexer<'src> {
 
         match token {
             Ok(kind) => Some(Ok((kind, location))),
-            Err((err_code, fn_info)) => {
-                let report = LexerError::new(err_code, fn_info, location);
+            Err(err_code) => {
+                let report = LexerError::new(err_code, location);
                 Some(Err(report))
             }
         }
@@ -136,7 +136,7 @@ impl<'src> Lexer<'src> {
                 Some(c) if is_decimal_digit(c) => self.lex_param(),
                 Some('$') => self.lex_dollar_string(), // empty delimiter
                 Some(c) if is_ident_start(c) => self.lex_dollar_string(),
-                _ => Err((UnexpectedChar { unknown: '$' }, fn_info!())),
+                _ => Err(UnexpectedChar { unknown: '$' }),
             }
             '\'' => {
                 if self.standard_conforming_strings {
@@ -179,7 +179,7 @@ impl<'src> Lexer<'src> {
                     match self.buffer.peek() {
                         Some('\'') => { // u&'...'
                             if !self.standard_conforming_strings {
-                                return Err((UnsafeUnicodeString, fn_info!()))
+                                return Err(UnsafeUnicodeString)
                             }
                             self.buffer.consume_one();
                             self.lex_quote_string(StringKind::Unicode)
@@ -211,7 +211,7 @@ impl<'src> Lexer<'src> {
             op if is_op(op) => self.lex_operator(),
             id if is_ident_start(id) => self.lex_identifier(),
             unknown => {
-                Err((UnexpectedChar { unknown }, fn_info!()))
+                Err(UnexpectedChar { unknown })
             },
         }
     }
@@ -281,7 +281,7 @@ impl<'src> Lexer<'src> {
                 }
 
                 if op.len() >= NAMEDATALEN {
-                    Err((OperatorTooLong, fn_info!()))
+                    Err(OperatorTooLong)
                 }
                 else {
                     Ok(UserDefinedOperator)
@@ -301,7 +301,7 @@ impl<'src> Lexer<'src> {
         // check junk
         let consumed = self.buffer.consume_if(is_ident_start);
         if consumed.is_some() {
-            return Err((TrailingJunkAfterParameter, fn_info!()))
+            return Err(TrailingJunkAfterParameter)
         }
 
         // SAFETY: They're all ASCII decimal digits
@@ -313,7 +313,7 @@ impl<'src> Lexer<'src> {
             //   The leading digit in i32::MAX is '2',
             //   so if the leading digit is above,
             //   then the string can't be safely parsed as an i32.
-            return Err((ParameterNumberTooLarge, fn_info!()))
+            return Err(ParameterNumberTooLarge)
         }
 
         // i32 is used to match original C-PG's expectation that it won't be > i32::MAX
@@ -323,7 +323,7 @@ impl<'src> Lexer<'src> {
                 acc.checked_mul(10)?.checked_add(n)
             )
             .map_or(
-                Err((ParameterNumberTooLarge, fn_info!())),
+                Err(ParameterNumberTooLarge),
                 |index| Ok(Param { index })
             )
     }
@@ -389,7 +389,7 @@ impl<'src> Lexer<'src> {
             if !dec {
                 if sign {
                     // [Ee] [+-] (?!\d)
-                    return Err((TrailingJunkAfterNumericLiteral, fn_info!()))
+                    return Err(TrailingJunkAfterNumericLiteral)
                 }
                 // [Ee] (?![+-\d])
                 self.buffer.push_back();
@@ -397,7 +397,7 @@ impl<'src> Lexer<'src> {
         }
 
         if self.buffer.peek().is_some_and(is_ident_start) {
-            return Err((TrailingJunkAfterNumericLiteral, fn_info!()))
+            return Err(TrailingJunkAfterNumericLiteral)
         }
 
         Ok(())
@@ -456,11 +456,11 @@ impl<'src> Lexer<'src> {
         let span = self.buffer.slice(start_index).as_bytes();
 
         if span.is_empty() || span.last().is_some_and(|c| *c == b'_') {
-            return Err((InvalidInteger(radix), fn_info!()))
+            return Err(InvalidInteger(radix))
         }
 
         if self.buffer.peek().is_some_and(is_ident_start) {
-            return Err((TrailingJunkAfterNumericLiteral, fn_info!()))
+            return Err(TrailingJunkAfterNumericLiteral)
         }
 
         Ok(NumberLiteral(radix))
@@ -480,7 +480,7 @@ impl<'src> Lexer<'src> {
                     else {
                         UnterminatedBitString
                     };
-                    return Err((err, fn_info!()))
+                    return Err(err)
                 },
                 Some('\'') => return Ok(BitStringLiteral(kind)),
                 _ => {}
@@ -494,7 +494,7 @@ impl<'src> Lexer<'src> {
 
         loop {
             let Some(c) = self.buffer.consume_one() else {
-                return Err((UnterminatedQuotedIdentifier, fn_info!()))
+                return Err(UnterminatedQuotedIdentifier)
             };
 
             if c != '"' {
@@ -508,7 +508,7 @@ impl<'src> Lexer<'src> {
             }
 
             return if self.buffer.current_index() - start_index == 1 {
-                Err((EmptyDelimitedIdentifier, fn_info!())) // only consumed '"'
+                Err(EmptyDelimitedIdentifier) // only consumed '"'
             }
             else {
                 Ok(Identifier(ident_kind))
@@ -520,7 +520,7 @@ impl<'src> Lexer<'src> {
 
         loop {
             let Some(c) = self.buffer.consume_one() else {
-                return Err((UnterminatedQuotedString, fn_info!()))
+                return Err(UnterminatedQuotedString)
             };
 
             if c != '\'' {
@@ -544,11 +544,11 @@ impl<'src> Lexer<'src> {
 
         loop {
             let Some(c) = self.buffer.consume_one() else {
-                return Err((UnterminatedQuotedString, fn_info!()))
+                return Err(UnterminatedQuotedString)
             };
 
             if c == '\\' && self.buffer.consume_one().is_none() {
-                return Err((UnterminatedQuotedString, fn_info!()))
+                return Err(UnterminatedQuotedString)
             }
 
             if c == '\'' {
@@ -586,12 +586,12 @@ impl<'src> Lexer<'src> {
         // so it's easier to match and consume.
 
         let Some(delim) = self.lex_dollar_delim() else {
-            return Err((UnexpectedChar { unknown: '$' }, fn_info!()))
+            return Err(UnexpectedChar { unknown: '$' })
         };
 
         loop {
             if self.buffer.eof() {
-                return Err((UnterminatedDollarQuotedString, fn_info!()))
+                return Err(UnterminatedDollarQuotedString)
             }
             if self.buffer.consume_char('$') {
                 if self.buffer.consume_string(delim) {
@@ -711,7 +711,7 @@ impl<'src> Lexer<'src> {
 
             if self.buffer.eof() {
                 let loc = self.buffer.location_starting_at(start_index);
-                let report = LexerError::new(UnterminatedBlockComment, fn_info!(), loc);
+                let report = LexerError::new(UnterminatedBlockComment, loc);
                 return Err(report)
             }
 
@@ -1079,9 +1079,7 @@ use self::{
 use crate::NumberRadix::{self, Decimal, Hexadecimal, Octal};
 use postgres_basics::{
     ascii::*,
-    fn_info,
     CharBuffer,
-    FnInfo,
     Located,
     Location,
     NAMEDATALEN,

@@ -1,9 +1,10 @@
 // see `struct ErrorData` @ [elog.h](https://github.com/postgres/postgres/blob/2ceeb638b7b27da156c10cb9d5ea4f81cabda0d1/src/include/utils/elog.h#L441)
-pub trait SqlReport: ErrorReport + HasSqlState + HasFnInfo {}
+pub trait SqlReport: ErrorReport + HasSqlState {}
 
 impl<T> SqlReport for T
 where
-    T: ErrorReport + HasSqlState + HasFnInfo
+    T: ErrorReport + HasSqlState
 {}
 
-use crate::elog::{ErrorReport, HasFnInfo, HasSqlState};
+use crate::elog::ErrorReport;
+use crate::elog::HasSqlState;

@@ -1,18 +1,16 @@
-impl Parser<'_> {
-    /// Alias: `FetchStmt`
-    pub(in crate::parser) fn fetch_stmt(&mut self) -> ParseResult<RawStmt> {
+/// Alias: `FetchStmt`
+pub(in crate::parser) fn fetch_stmt() -> impl Combinator<Output = RawStmt> {
 
-        /*
-            FETCH fetch_args
-            MOVE fetch_args
-        */
+    /*
+        FETCH fetch_args
+    */
 
-        todo!()
-    }
+    keyword(Fetch)
+        .map(|_| todo!())
 }
 
-use crate::parser::{
-    ast_node::RawStmt,
-    ParseResult,
-    Parser
-};
+use crate::lexer::Keyword::Fetch;
+use crate::parser::ast_node::RawStmt;
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
