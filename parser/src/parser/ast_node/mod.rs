@@ -160,6 +160,14 @@ pub enum AclTarget {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum IndirectionExpr {
+    Param {
+        index: i32,
+        indirection: Vec<Indirection>,
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum ExprNode {
     /* Constants */
     NullConst,
@@ -192,6 +200,7 @@ pub enum ExprNode {
     SystemUser,
     User,
     CurrentCatalog,
+    Indirection(Box<IndirectionExpr>),
 
     /* Xml operations */
     IsXmlDocument(Box<ExprNode>),
@@ -204,6 +213,7 @@ pub enum ExprNode {
 }
 
 impl_from!(box BinaryExpr for ExprNode);
+impl_from!(box IndirectionExpr for ExprNode => Indirection);
 impl_from!(box CaseExpr for ExprNode);
 impl_from!(box TypecastExpr for ExprNode => Typecast);
 impl_from!(box UnaryExpr for ExprNode);

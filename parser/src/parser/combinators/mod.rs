@@ -11,14 +11,16 @@ mod number;
 mod operator;
 mod optional;
 mod or;
+mod param;
 mod parser;
 mod required;
+mod skip;
 mod string;
 mod try_match;
 mod uescape_escape;
-mod skip;
+mod user_defined_operator;
 
-#[allow(unused_imports)]
+#[allow(unused_imports)] // TODO: eventually remove
 pub(in crate::parser) use self::{
     and::{and, sequence, AndCombi},
     between::{between, BetweenCombi},
@@ -42,11 +44,13 @@ pub(in crate::parser) use self::{
     operator::{operator, operator_if, operator_result, operator_when, OperatorCombi, OperatorCondCombi},
     optional::{optional, OptionalCombi},
     or::{match_first, match_first_with_state, or, OrCombi},
+    param::{param, ParamCombi},
     parser::{enclosure, parser, ClosureCombi},
     required::{required, RequiredCombi},
     skip::{skip, SkipCombi},
     string::{string, StringCombi},
-    try_match::{try_match, TryMatchCombi}
+    try_match::{try_match, TryMatchCombi},
+    user_defined_operator::{user_defined_operator, UserOpCombi}
 };
 
 pub(in crate::parser) trait Combinator: Debug {
