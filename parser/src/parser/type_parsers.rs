@@ -112,7 +112,7 @@ impl Parser<'_> {
         /*
             There's a difference here between C-PG's `AexprConst` and this production.
             While C-PG needs to work around a couple of reduce/reduce conflicts, we ignore them here.
-            It will still emit Syntax errors like C-PG, but their location and specific will differ.
+            It will still emit Syntax errors like C-PG, but their location and specific message will differ.
 
             See https://github.com/postgres/postgres/blob/14e87ffa5c543b5f30ead7413084c25f7735039f/src/backend/parser/gram.y#L17315-L17335
         */

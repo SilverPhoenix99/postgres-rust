@@ -18,13 +18,15 @@ pub(in crate::parser) fn alter_group_stmt() -> impl Combinator<Output = RawStmt>
                 RenameStmt::new(Role(group), new_name).into()
             },
             {
-                or(
-                    keyword(Add).map(|_| AlterRoleAction::Add),
-                    keyword(DropKw).map(|_| AlterRoleAction::Remove),
+                sequence!(
+                    or(
+                        keyword(Add).map(|_| AlterRoleAction::Add),
+                        keyword(DropKw).map(|_| AlterRoleAction::Remove),
+                    ),
+                    keyword(User).skip(),
+                    role_list()
                 )
-                .and_left(keyword(User))
-                .and(role_list())
-            } => ((action, roles)) {
+            } => ((action, _, roles)) {
                 let options = vec![RoleMembers(roles)];
                 AlterRoleStmt::new(group, action, options).into()
             }
@@ -86,20 +88,25 @@ mod tests {
     }
 }
 
+use crate::lexer::Keyword::Add;
+use crate::lexer::Keyword::DropKw;
+use crate::lexer::Keyword::Group;
 use crate::lexer::Keyword::Rename;
 use crate::lexer::Keyword::To;
-use crate::lexer::Keyword::{Add, Group};
-use crate::lexer::Keyword::{DropKw, User};
+use crate::lexer::Keyword::User;
 use crate::parser::ast_node::AlterRoleAction;
 use crate::parser::ast_node::AlterRoleOption::RoleMembers;
 use crate::parser::ast_node::AlterRoleStmt;
 use crate::parser::ast_node::RawStmt;
 use crate::parser::ast_node::RenameStmt;
 use crate::parser::ast_node::RenameTarget::Role;
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::match_first_with_state;
 use crate::parser::combinators::or;
+use crate::parser::combinators::sequence;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::combinators::{keyword, match_first_with_state};
 use crate::parser::located_combinator::located;
+use crate::parser::role_parsers::role_id;
+use crate::parser::role_parsers::role_list;
 use crate::parser::role_parsers::role_spec;
-use crate::parser::role_parsers::{role_id, role_list};

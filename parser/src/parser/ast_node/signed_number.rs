@@ -5,7 +5,7 @@ pub enum SignedNumber {
 }
 
 impl std::ops::Neg for SignedNumber {
-    type Output = SignedNumber;
+    type Output = Self;
 
     fn neg(self) -> Self::Output {
         match self {

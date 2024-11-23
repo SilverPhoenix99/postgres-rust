@@ -5,20 +5,21 @@ pub(in crate::parser) fn notify_stmt() -> impl Combinator<Output = NotifyStmt> {
         NOTIFY ColId ( ',' SCONST )?
     */
 
-    keyword(Notify)
-        .and_right(col_id())
-        .and_then(
-            operator(Comma).and_right(string())
-                .optional(),
-            |condition_name, payload| {
-                if let Some(payload) = payload {
-                    NotifyStmt::with_payload(condition_name, payload)
-                }
-                else {
-                    NotifyStmt::new(condition_name)
-                }
-            }
-        )
+    sequence!(
+        keyword(Notify).skip(),
+        col_id(),
+        operator(Comma)
+            .and_right(string())
+            .optional()
+    ).map(|(_, condition_name, payload)| {
+        if let Some(payload) = payload {
+            NotifyStmt::with_payload(condition_name, payload)
+        }
+        else {
+            NotifyStmt::new(condition_name)
+        }
+    })
+
 }
 
 #[cfg(test)]
@@ -45,8 +46,8 @@ use crate::lexer::Keyword::Notify;
 use crate::lexer::OperatorKind::Comma;
 use crate::parser::ast_node::NotifyStmt;
 use crate::parser::col_id;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::operator;
 use crate::parser::combinators::string;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::combinators::{keyword, sequence};

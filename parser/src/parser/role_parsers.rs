@@ -5,7 +5,7 @@ pub(super) fn role_list() -> impl Combinator<Output = Vec<RoleSpec>> {
         role_spec ( ',' role_spec )*
     */
 
-    many_sep(operator(Comma), role_spec())
+    enclosure! { many_sep(operator(Comma), role_spec()) }
 }
 
 /// Alias: `RoleId`
@@ -141,6 +141,7 @@ use crate::lexer::Keyword::NoneKw;
 use crate::lexer::Keyword::SessionUser;
 use crate::lexer::OperatorKind::Comma;
 use crate::parser::ast_node::RoleSpec;
+use crate::parser::combinators::enclosure;
 use crate::parser::combinators::keyword;
 use crate::parser::combinators::many_sep;
 use crate::parser::combinators::match_first;

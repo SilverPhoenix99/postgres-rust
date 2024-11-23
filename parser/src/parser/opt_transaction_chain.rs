@@ -7,16 +7,18 @@ pub(super) fn opt_transaction_chain() -> impl Combinator<Output = bool> {
         | AND NO CHAIN
         | /* EMPTY */
     */
-    
-    keyword(And)
-        .and_right(
-            keyword(No)
-                .optional()
-                .map(|no| no.is_none())
-        )
-        .and_left(keyword(Chain))
-        .optional()
-        .map(|x| x.unwrap_or(false))
+
+    enclosure! {
+        keyword(And)
+            .and_right(
+                keyword(No)
+                    .optional()
+                    .map(|no| no.is_none())
+            )
+            .and_left(keyword(Chain))
+            .optional()
+            .map(|chain| chain.unwrap_or(false))
+    }
 }
 
 #[cfg(test)]
@@ -35,4 +37,5 @@ mod tests {
     }
 }
 
+use crate::parser::combinators::enclosure;
 use crate::parser::combinators::Combinator;

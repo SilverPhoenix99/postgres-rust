@@ -1,3 +1,32 @@
+/// Alias: `AexprConst`
+pub(in crate::parser) fn expr_const() -> impl Combinator<Output = ExprNode> {
+
+    /*
+          ICONST
+        | FCONST
+        | SCONST
+        | BCONST
+        | XCONST
+        | TRUE
+        | FALSE
+        | NULL
+        | ConstTypename SCONST
+    */
+
+    match_first! {
+        number().map(From::from),
+        string().map(StringConst),
+        bit_string()
+            .map(|(kind, value)| match kind {
+                Binary => BinaryStringConst(value),
+                Hex => HexStringConst(value),
+            }),
+        keyword(True).map(|_| BooleanConst(true)),
+        keyword(False).map(|_| BooleanConst(false)),
+        keyword(Null).map(|_| NullConst),
+    }
+}
+
 impl Parser<'_> {
     /// Alias: `AexprConst`
     pub(in crate::parser) fn expr_const(&mut self) -> ScanResult<ExprNode> {
@@ -14,26 +43,6 @@ impl Parser<'_> {
             | ConstTypename SCONST
         */
 
-        if let Some(num) = number().maybe_match().parse(&mut self.buffer)? {
-            return Ok(num.into())
-        }
-
-        if let Some(string) = string().optional().parse(&mut self.buffer)? {
-            return Ok(StringConst(string))
-        }
-
-        let bit_string_const = bit_string()
-            .optional()
-            .parse(&mut self.buffer)?
-            .map(|(kind, value)| match kind {
-                Binary => BinaryStringConst(value),
-                Hex => HexStringConst(value),
-            });
-
-        if let Some(bit_string_const) = bit_string_const {
-            return Ok(bit_string_const)
-        }
-
         if let Some(mut type_name) = self.const_typename().optional()? {
             let value = string().required().parse(&mut self.buffer)?;
 
@@ -49,20 +58,7 @@ impl Parser<'_> {
             return Ok(typecast.into())
         }
 
-        consume!{self
-            Ok {
-                Kw(True) => Ok(BooleanConst(true)),
-                Kw(False) => Ok(BooleanConst(false)),
-                Kw(Null) => Ok(NullConst),
-            }
-            Err {
-                Err(err) => err.into(),
-                _ => {
-                    let loc = self.buffer.current_location();
-                    NoMatch(loc)
-                },
-            }
-        }
+        expr_const().parse(&mut self.buffer)
     }
 }
 
@@ -95,7 +91,6 @@ use crate::lexer::BitStringKind::*;
 use crate::lexer::Keyword::False;
 use crate::lexer::Keyword::Null;
 use crate::lexer::Keyword::True;
-use crate::lexer::RawTokenKind::Keyword as Kw;
 use crate::parser::ast_node::ExprNode;
 use crate::parser::ast_node::ExprNode::BinaryStringConst;
 use crate::parser::ast_node::ExprNode::BooleanConst;
@@ -105,14 +100,12 @@ use crate::parser::ast_node::ExprNode::StringConst;
 use crate::parser::ast_node::IntervalRange;
 use crate::parser::ast_node::TypeName::Interval;
 use crate::parser::ast_node::TypecastExpr;
-use crate::parser::combinators::bit_string;
-use crate::parser::combinators::number;
 use crate::parser::combinators::string;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::consume_macro::consume;
+use crate::parser::combinators::{bit_string, match_first};
+use crate::parser::combinators::{keyword, number};
 use crate::parser::opt_interval::opt_interval;
 use crate::parser::result::Optional;
-use crate::parser::result::ScanErrorKind::NoMatch;
 use crate::parser::result::ScanResult;
 use crate::parser::Parser;

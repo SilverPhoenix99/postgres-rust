@@ -4,15 +4,12 @@ pub(in crate::parser) fn alter_large_object_stmt() -> impl Combinator<Output = R
         ALTER LARGE_P OBJECT_P NumericOnly OWNER TO RoleSpec
     */
 
-    let parser = enclosure!(
-        keyword(Large)
-            .and(keyword(Object))
-            .and_right(signed_number())
-            .and_left(keyword(Owner))
-            .and_left(keyword(To))
-    );
-
-    parser.and_then(role_spec(), |oid, new_owner|
+    sequence!(
+        keyword(Large).and(keyword(Object)).skip(),
+        signed_number(),
+        keyword(Owner).and(keyword(To)),
+        role_spec()
+    ).map(|(_, oid, _, new_owner)|
         AlterOwnerStmt::new(
             AlterOwnerTarget::LargeObject(oid),
             new_owner
@@ -42,12 +39,16 @@ mod tests {
     }
 }
 
+use crate::lexer::Keyword::Large;
+use crate::lexer::Keyword::Object;
 use crate::lexer::Keyword::Owner;
 use crate::lexer::Keyword::To;
-use crate::lexer::Keyword::{Large, Object};
 use crate::parser::ast_node::AlterOwnerStmt;
 use crate::parser::ast_node::AlterOwnerTarget;
 use crate::parser::ast_node::RawStmt;
-use crate::parser::combinators::{enclosure, keyword, Combinator, CombinatorHelpers};
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::sequence;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::const_numeric_parsers::signed_number;
 use crate::parser::role_parsers::role_spec;

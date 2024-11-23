@@ -41,8 +41,13 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Commit, Prepared};
+use crate::lexer::Keyword::Commit;
+use crate::lexer::Keyword::Prepared;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::combinators::{keyword, match_first, string, Combinator, CombinatorHelpers};
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::match_first;
+use crate::parser::combinators::string;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::opt_transaction::opt_transaction;
 use crate::parser::opt_transaction_chain::opt_transaction_chain;
