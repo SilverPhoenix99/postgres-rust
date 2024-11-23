@@ -78,12 +78,15 @@ pub(super) use unique_null_treatment::UniqueNullTreatment;
 
 /// Generates `From` impls, where the input is wrapped in an output enum variant.
 macro_rules! impl_from {
+
     ($variant:ident for $for_:ident) => {
         impl_from!($variant for $for_ => $variant);
     };
+
     (box $variant:ident for $for_:ident) => {
         impl_from!(box $variant for $for_ => $variant);
     };
+
     ($from:ident for $for_:ident => $variant:ident) => {
         impl From<$from> for $for_ {
             #[inline(always)]
@@ -92,6 +95,7 @@ macro_rules! impl_from {
             }
         }
     };
+
     (box $from:ident for $for_:ident => $variant:ident) => {
         impl From<$from> for $for_ {
             #[inline(always)]
@@ -166,7 +170,7 @@ pub enum ExprNode {
     NumericConst { radix: NumberRadix, value: Box<str> },
     BooleanConst(bool),
 
-    SetToDefault,
+    DefaultExpr,
     Typecast(Box<TypecastExpr>),
     CaseExpr(Box<CaseExpr>),
 
@@ -177,6 +181,17 @@ pub enum ExprNode {
     /// `IS NOT DISTINCT FROM`
     NotDistinct(BinaryOperands),
     BoolExpr(BoolExpr),
+    CurrentDate,
+    CurrentTime { precision: Option<i32> },
+    CurrentTimestamp { precision: Option<i32> },
+    LocalTime { precision: Option<i32> },
+    LocalTimestamp { precision: Option<i32> },
+    CurrentRole,
+    CurrentUser,
+    SessionUser,
+    SystemUser,
+    User,
+    CurrentCatalog,
 
     /* Xml operations */
     IsXmlDocument(Box<ExprNode>),
@@ -189,6 +204,7 @@ pub enum ExprNode {
 }
 
 impl_from!(box BinaryExpr for ExprNode);
+impl_from!(box CaseExpr for ExprNode);
 impl_from!(box TypecastExpr for ExprNode => Typecast);
 impl_from!(box UnaryExpr for ExprNode);
 impl_from!(box XmlParse for ExprNode);

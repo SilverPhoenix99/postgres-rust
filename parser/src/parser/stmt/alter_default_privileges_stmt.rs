@@ -5,16 +5,13 @@ pub(super) fn alter_default_privileges_stmt() -> impl Combinator<Output = AlterD
         ALTER DEFAULT PRIVILEGES DefACLOptionList DefACLAction
     */
 
-    keyword(DefaultKw)
-        .and(keyword(Privileges))
-        .and_right(
-            def_acl_option_list()
-                .optional()
-                .and_then(def_acl_action(), |options, action|
-                    AlterDefaultPrivilegesStmt::new(options.unwrap_or_default(), action)
-                )
-        )
-
+    sequence!(
+        keyword(DefaultKw).and(keyword(Privileges)).skip(),
+        def_acl_option_list().optional(),
+        def_acl_action()
+    ).map(|(_, options, action)|
+        AlterDefaultPrivilegesStmt::new(options.unwrap_or_default(), action)
+    )
 }
 
 /// Post-condition: Vec is **Not** empty
@@ -34,12 +31,22 @@ fn def_acl_option() -> impl Combinator<Output = AclOption> {
     */
 
     match_first!{
-        keyword(In)
-            .and(keyword(Schema))
-            .and_then(name_list(), |_, schemas| AclOption::Schemas(schemas)),
-        keyword(For)
-            .and(keyword_if(|kw| matches!(kw, Role | User)))
-            .and_then(role_list(), |_, roles| AclOption::Roles(roles))
+
+        sequence!(
+            keyword(In).and(keyword(Schema)),
+            name_list()
+        ).map(|(_, schemas)|
+            AclOption::Schemas(schemas)
+        ),
+
+        sequence!(
+            keyword(For)
+                .and(keyword_if(|kw| matches!(kw, Role | User)))
+                .skip(),
+            role_list()
+        ).map(|(_, roles)|
+            AclOption::Roles(roles)
+        )
     }
 }
 

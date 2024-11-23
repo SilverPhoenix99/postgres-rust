@@ -1,0 +1,72 @@
+pub(super) fn expr_primary() -> impl Combinator<Output = ExprNode> {
+    match_first! {
+        case_expr().map(From::from),
+        expr_const(),
+        keyword(CurrentRole).map(|_| ExprNode::CurrentRole),
+        keyword(CurrentUser).map(|_| ExprNode::CurrentUser),
+        keyword(SessionUser).map(|_| ExprNode::SessionUser),
+        keyword(SystemUser).map(|_| ExprNode::SystemUser),
+        keyword(User).map(|_| ExprNode::User),
+        keyword(CurrentCatalog).map(|_| ExprNode::CurrentCatalog),
+        keyword(CurrentDate).map(|_| ExprNode::CurrentDate),
+        keyword(CurrentTime)
+            .and_right(opt_precision())
+            .map(|precision| ExprNode::CurrentTime { precision }),
+        keyword(CurrentTimestamp)
+            .and_right(opt_precision())
+            .map(|precision| ExprNode::CurrentTimestamp { precision }),
+        keyword(Localtime)
+            .and_right(opt_precision())
+            .map(|precision| ExprNode::LocalTime { precision }),
+        keyword(Localtimestamp)
+            .and_right(opt_precision())
+            .map(|precision| ExprNode::LocalTimestamp { precision }),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
+    use test_case::test_case;
+
+    #[test_case("CURRENT_role", ExprNode::CurrentRole)]
+    #[test_case("current_USER", ExprNode::CurrentUser)]
+    #[test_case("SESSION_USER", ExprNode::SessionUser)]
+    #[test_case("system_user", ExprNode::SystemUser)]
+    #[test_case("uSeR", ExprNode::User)]
+    #[test_case("current_catalog", ExprNode::CurrentCatalog)]
+    #[test_case("current_date", ExprNode::CurrentDate)]
+    #[test_case("current_time", ExprNode::CurrentTime { precision: None })]
+    #[test_case("current_time(3)", ExprNode::CurrentTime { precision: Some(3) })]
+    #[test_case("current_timestamp", ExprNode::CurrentTimestamp { precision: None })]
+    #[test_case("current_timestamp(7)", ExprNode::CurrentTimestamp { precision: Some(7) })]
+    #[test_case("localtime", ExprNode::LocalTime { precision: None })]
+    #[test_case("localtime(6)", ExprNode::LocalTime { precision: Some(6) })]
+    #[test_case("localtimestamp", ExprNode::LocalTimestamp { precision: None })]
+    #[test_case("localtimestamp(4)", ExprNode::LocalTimestamp { precision: Some(4) })]
+    fn test_expr_primary(source: &str, expected: ExprNode) {
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let actual = expr_primary().parse(&mut stream);
+        assert_eq!(Ok(expected), actual)
+    }
+}
+
+use crate::lexer::Keyword::CurrentCatalog;
+use crate::lexer::Keyword::CurrentDate;
+use crate::lexer::Keyword::CurrentRole;
+use crate::lexer::Keyword::CurrentTime;
+use crate::lexer::Keyword::CurrentTimestamp;
+use crate::lexer::Keyword::CurrentUser;
+use crate::lexer::Keyword::Localtime;
+use crate::lexer::Keyword::Localtimestamp;
+use crate::lexer::Keyword::SessionUser;
+use crate::lexer::Keyword::SystemUser;
+use crate::lexer::Keyword::User;
+use crate::parser::ast_node::ExprNode;
+use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::combinators::{keyword, match_first, Combinator};
+use crate::parser::expr_parsers::case_expr::case_expr;
+use crate::parser::expr_parsers::expr_const::expr_const;
+use crate::parser::opt_precision::opt_precision;

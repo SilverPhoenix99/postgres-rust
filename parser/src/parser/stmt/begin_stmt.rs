@@ -4,15 +4,13 @@ pub(in crate::parser) fn begin_stmt() -> impl Combinator<Output = TransactionStm
     TransactionStmtLegacy:
         BEGIN_P opt_transaction opt_transaction_mode_list
     */
-
-    keyword(Begin)
-        .and(opt_transaction::opt_transaction())
-        .and_right(
-            transaction_mode_list()
-                .optional()
-                .map(Option::unwrap_or_default)
-                .map(TransactionStmt::Begin)
-        )
+    
+    sequence!(
+        keyword(Begin).and(opt_transaction()).skip(),
+        transaction_mode_list().optional()
+    ).map(|(_, tx_modes)|
+        TransactionStmt::Begin(tx_modes.unwrap_or_default())
+    )
 }
 
 #[cfg(test)]
@@ -39,6 +37,6 @@ mod tests {
 
 use crate::lexer::Keyword::Begin;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::combinators::{keyword, Combinator, CombinatorHelpers};
+use crate::parser::combinators::{keyword, sequence, Combinator, CombinatorHelpers};
 use crate::parser::opt_transaction;
 use crate::parser::transaction_mode_list::transaction_mode_list;

@@ -1,5 +1,88 @@
+mod abort_stmt;
+mod alter_collation_stmt;
+mod alter_conversion_stmt;
+mod alter_default_privileges_stmt;
+mod alter_event_trigger_stmt;
+mod alter_group_stmt;
+mod alter_language_stmt;
+mod alter_large_object_stmt;
+mod alter_stmt;
+mod analyze_stmt;
+mod begin_stmt;
+mod call_stmt;
+mod close_stmt;
+mod cluster_stmt;
+mod comment_stmt;
+mod commit_stmt;
+mod copy_stmt;
+mod deallocate_stmt;
+mod discard_stmt;
+mod do_stmt;
+mod drop_stmt;
+mod end_stmt;
+mod explain_stmt;
+mod fetch_stmt;
+mod import_stmt;
+mod listen_stmt;
+mod load_stmt;
+mod lock_stmt;
+mod move_stmt;
+mod notify_stmt;
+mod prepare_stmt;
+mod reassign_owner_stmt;
+mod reindex_stmt;
+mod release_savepoint_stmt;
+mod revoke_stmt;
+mod rollback_stmt;
+mod savepoint_stmt;
+mod security_stmt;
+mod set_stmt;
+mod show_stmt;
+mod start_transaction_stmt;
+mod truncate_stmt;
+mod unlisten_stmt;
+mod vacuum_stmt;
+
+pub(super) use self::{
+    abort_stmt::abort_stmt,
+    alter_stmt::alter_stmt,
+    analyze_stmt::analyze_stmt,
+    begin_stmt::begin_stmt,
+    call_stmt::call_stmt,
+    close_stmt::close_stmt,
+    cluster_stmt::cluster_stmt,
+    comment_stmt::comment_stmt,
+    commit_stmt::commit_stmt,
+    copy_stmt::copy_stmt,
+    deallocate_stmt::deallocate_stmt,
+    discard_stmt::discard_stmt,
+    do_stmt::do_stmt,
+    drop_stmt::drop_stmt,
+    end_stmt::end_stmt,
+    explain_stmt::explain_stmt,
+    fetch_stmt::fetch_stmt,
+    import_stmt::import_stmt,
+    listen_stmt::listen_stmt,
+    load_stmt::load_stmt,
+    lock_stmt::lock_stmt,
+    move_stmt::move_stmt,
+    notify_stmt::notify_stmt,
+    prepare_stmt::prepare_stmt,
+    reassign_owner_stmt::reassign_owned_stmt,
+    reindex_stmt::reindex_stmt,
+    release_savepoint_stmt::release_savepoint_stmt,
+    revoke_stmt::revoke_stmt,
+    rollback_stmt::rollback_stmt,
+    savepoint_stmt::savepoint_stmt,
+    security_stmt::security_stmt,
+    set_stmt::set_stmt,
+    show_stmt::show_stmt,
+    start_transaction_stmt::start_transaction_stmt,
+    truncate_stmt::truncate_stmt,
+    unlisten_stmt::unlisten_stmt,
+    vacuum_stmt::vacuum_stmt,
+};
 pub(super) fn stmt() -> impl Combinator<Output = RawStmt> {
-    use crate::lexer::Keyword::*;
 
     match_first! {
         abort_stmt().map(From::from),
@@ -78,43 +161,14 @@ mod tests {
     }
 }
 
+use crate::lexer::Keyword::Checkpoint;
 use crate::parser::ast_node::RawStmt;
-use crate::parser::ast_node::RawStmt::{ClosePortalStmt, DeallocateStmt, ListenStmt, LoadStmt, UnlistenStmt};
+use crate::parser::ast_node::RawStmt::ClosePortalStmt;
+use crate::parser::ast_node::RawStmt::DeallocateStmt;
+use crate::parser::ast_node::RawStmt::ListenStmt;
+use crate::parser::ast_node::RawStmt::LoadStmt;
+use crate::parser::ast_node::RawStmt::UnlistenStmt;
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::match_first;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::combinators::{keyword, match_first};
-use crate::parser::stmt_parsers::abort_stmt;
-use crate::parser::stmt_parsers::alter_stmt;
-use crate::parser::stmt_parsers::analyze_stmt;
-use crate::parser::stmt_parsers::call_stmt;
-use crate::parser::stmt_parsers::close_stmt;
-use crate::parser::stmt_parsers::cluster_stmt;
-use crate::parser::stmt_parsers::comment_stmt;
-use crate::parser::stmt_parsers::commit_stmt;
-use crate::parser::stmt_parsers::copy_stmt;
-use crate::parser::stmt_parsers::deallocate_stmt;
-use crate::parser::stmt_parsers::discard_stmt;
-use crate::parser::stmt_parsers::do_stmt;
-use crate::parser::stmt_parsers::drop_stmt;
-use crate::parser::stmt_parsers::explain_stmt;
-use crate::parser::stmt_parsers::fetch_stmt;
-use crate::parser::stmt_parsers::import_stmt;
-use crate::parser::stmt_parsers::listen_stmt;
-use crate::parser::stmt_parsers::load_stmt;
-use crate::parser::stmt_parsers::lock_stmt;
-use crate::parser::stmt_parsers::move_stmt;
-use crate::parser::stmt_parsers::notify_stmt;
-use crate::parser::stmt_parsers::prepare_stmt;
-use crate::parser::stmt_parsers::reassign_owned_stmt;
-use crate::parser::stmt_parsers::reindex_stmt;
-use crate::parser::stmt_parsers::release_savepoint_stmt;
-use crate::parser::stmt_parsers::revoke_stmt;
-use crate::parser::stmt_parsers::rollback_stmt;
-use crate::parser::stmt_parsers::savepoint_stmt;
-use crate::parser::stmt_parsers::security_stmt;
-use crate::parser::stmt_parsers::set_stmt;
-use crate::parser::stmt_parsers::show_stmt;
-use crate::parser::stmt_parsers::start_transaction_stmt;
-use crate::parser::stmt_parsers::truncate_stmt;
-use crate::parser::stmt_parsers::unlisten_stmt;
-use crate::parser::stmt_parsers::vacuum_stmt;

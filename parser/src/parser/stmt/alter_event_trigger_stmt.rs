@@ -1,9 +1,3 @@
-enum Kind {
-    State(EventTriggerState),
-    OwnerTo(RoleSpec),
-    RenameTo(Str),
-}
-
 pub(in crate::parser) fn alter_event_trigger_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
@@ -12,41 +6,36 @@ pub(in crate::parser) fn alter_event_trigger_stmt() -> impl Combinator<Output = 
         ALTER EVENT TRIGGER ColId RENAME TO ColId
     */
 
-    keyword(Event)
-        .and(keyword(Trigger))
-        .and_right(col_id())
-        .and_then(
-            match_first! {
-                enable_trigger()
-                    .map(Kind::State),
-                keyword(Owner).and(keyword(To))
-                    .and_right(role_spec())
-                    .map(Kind::OwnerTo),
-                keyword(Rename).and(keyword(To))
-                    .and_right(col_id())
-                    .map(Kind::RenameTo),
-            },
-            |trigger, kind| match kind {
-                Kind::State(state) => {
-                    AlterEventTrigStmt::new(trigger, state)
-                        .into()
-                },
-                Kind::OwnerTo(new_owner) => {
-                    AlterOwnerStmt::new(
-                        AlterOwnerTarget::EventTrigger(trigger),
-                        new_owner
-                    )
-                        .into()
-                },
-                Kind::RenameTo(new_name) => {
-                    RenameStmt::new(
-                        RenameTarget::EventTrigger(trigger),
-                        new_name
-                    )
-                        .into()
-                },
-            }
-        )
+    sequence!(
+        keyword(Event)
+            .and(keyword(Trigger))
+            .skip(),
+        col_id(),
+    ).chain_result(match_first_with_state!(|(_, trigger), stream| {
+        { enable_trigger() } => (state) {
+            AlterEventTrigStmt::new(trigger, state).into()
+        },
+        {
+            keyword(Owner)
+                .and(keyword(To))
+                .and_right(role_spec())
+        } => (new_owner) {
+            AlterOwnerStmt::new(
+                AlterOwnerTarget::EventTrigger(trigger),
+                new_owner
+            ).into()
+        },
+        {
+            keyword(Rename)
+                .and(keyword(To))
+                .and_right(col_id())
+        } => (new_name) {
+            RenameStmt::new(
+                RenameTarget::EventTrigger(trigger),
+                new_name
+            ).into()
+        }
+    }))
 }
 
 fn enable_trigger() -> impl Combinator<Output = EventTriggerState> {
@@ -58,18 +47,19 @@ fn enable_trigger() -> impl Combinator<Output = EventTriggerState> {
       | DISABLE_P
     */
 
-    keyword(Disable).map(|_| Disabled)
-        .or(
-            keyword(Enable)
-                .and_right(
-                    or(
-                        keyword(Replica).map(|_| FiresOnReplica),
-                        keyword(Always).map(|_| FiresAlways)
-                    )
-                    .optional()
-                    .map(|enable| enable.unwrap_or(FiresOnOrigin))
-                )
+    match_first! {
+        keyword(Disable).map(|_| Disabled),
+        sequence!(
+            keyword(Enable).skip(),
+            or(
+                keyword(Replica).map(|_| FiresOnReplica),
+                keyword(Always).map(|_| FiresAlways)
+            )
+            .optional()
+        ).map(|(_, enable)|
+            enable.unwrap_or(FiresOnOrigin)
         )
+    }
 }
 
 #[cfg(test)]
@@ -123,24 +113,27 @@ mod tests {
     }
 }
 
+use crate::lexer::Keyword::Always;
 use crate::lexer::Keyword::Disable;
 use crate::lexer::Keyword::Enable;
+use crate::lexer::Keyword::Event;
 use crate::lexer::Keyword::Owner;
 use crate::lexer::Keyword::Rename;
 use crate::lexer::Keyword::Replica;
 use crate::lexer::Keyword::To;
 use crate::lexer::Keyword::Trigger;
-use crate::lexer::Keyword::{Always, Event};
+use crate::parser::ast_node::AlterEventTrigStmt;
 use crate::parser::ast_node::AlterOwnerStmt;
 use crate::parser::ast_node::AlterOwnerTarget;
 use crate::parser::ast_node::RawStmt;
 use crate::parser::ast_node::RenameStmt;
 use crate::parser::ast_node::RenameTarget;
-use crate::parser::ast_node::{AlterEventTrigStmt, RoleSpec};
 use crate::parser::col_id;
 use crate::parser::combinators::keyword;
 use crate::parser::combinators::match_first;
+use crate::parser::combinators::match_first_with_state;
 use crate::parser::combinators::or;
+use crate::parser::combinators::sequence;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::role_parsers::role_spec;
@@ -149,4 +142,3 @@ use crate::parser::EventTriggerState::Disabled;
 use crate::parser::EventTriggerState::FiresAlways;
 use crate::parser::EventTriggerState::FiresOnOrigin;
 use crate::parser::EventTriggerState::FiresOnReplica;
-use postgres_basics::Str;

@@ -101,24 +101,23 @@ fn minute() -> impl Combinator<Output = IntervalRange> {
     */
 
     keyword(MinuteKw)
-        .and_right(keyword(To)
-            .and_right(keyword(SecondKw))
-            .and_right(
-                opt_precision().map(|precision| MinuteToSecond { precision })
+        .and_right(
+            sequence!(
+                keyword(To).and_right(keyword(SecondKw)).skip(),
+                opt_precision()
             )
+            .map(|(_, precision)| precision)
             .optional()
-        )
-        .map(|m| m.unwrap_or(Minute))
-}
-
-fn opt_precision() -> impl Combinator<Output = Option<i32>> {
-    i32_literal_paren()
-        .optional()
+        ).map(|precision| match precision {
+            None => Minute,
+            Some(precision) => MinuteToSecond { precision }
+        })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::ast_node::IntervalRange;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
@@ -171,6 +170,7 @@ use crate::parser::ast_node::IntervalRange::YearToMonth;
 use crate::parser::ast_node::IntervalRange::{Day, Hour, HourToMinute};
 use crate::parser::combinators::keyword;
 use crate::parser::combinators::match_first;
+use crate::parser::combinators::sequence;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::i32_literal_paren;
+use crate::parser::opt_precision::opt_precision;

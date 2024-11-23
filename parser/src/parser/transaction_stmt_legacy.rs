@@ -23,5 +23,7 @@ mod tests {
 }
 
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::combinators::{match_first, Combinator};
-use crate::parser::stmt_parsers::{begin_stmt, end_stmt};
+use crate::parser::combinators::match_first;
+use crate::parser::combinators::Combinator;
+use crate::parser::stmt::begin_stmt;
+use crate::parser::stmt::end_stmt;
