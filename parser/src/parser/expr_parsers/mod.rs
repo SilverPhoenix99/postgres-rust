@@ -1,10 +1,12 @@
-pub(super) mod indirection;
+mod indirection;
 mod associativity;
 mod a_expr_prec;
 mod b_expr_prec;
 mod case_expr;
 mod expr_const;
 mod expr_primary;
+
+pub(super) use indirection::indirection;
 
 impl Parser<'_> {
 

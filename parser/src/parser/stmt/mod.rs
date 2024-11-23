@@ -43,45 +43,6 @@ mod truncate_stmt;
 mod unlisten_stmt;
 mod vacuum_stmt;
 
-pub(super) use self::{
-    abort_stmt::abort_stmt,
-    alter_stmt::alter_stmt,
-    analyze_stmt::analyze_stmt,
-    begin_stmt::begin_stmt,
-    call_stmt::call_stmt,
-    close_stmt::close_stmt,
-    cluster_stmt::cluster_stmt,
-    comment_stmt::comment_stmt,
-    commit_stmt::commit_stmt,
-    copy_stmt::copy_stmt,
-    deallocate_stmt::deallocate_stmt,
-    discard_stmt::discard_stmt,
-    do_stmt::do_stmt,
-    drop_stmt::drop_stmt,
-    end_stmt::end_stmt,
-    explain_stmt::explain_stmt,
-    fetch_stmt::fetch_stmt,
-    import_stmt::import_stmt,
-    listen_stmt::listen_stmt,
-    load_stmt::load_stmt,
-    lock_stmt::lock_stmt,
-    move_stmt::move_stmt,
-    notify_stmt::notify_stmt,
-    prepare_stmt::prepare_stmt,
-    reassign_owner_stmt::reassign_owned_stmt,
-    reindex_stmt::reindex_stmt,
-    release_savepoint_stmt::release_savepoint_stmt,
-    revoke_stmt::revoke_stmt,
-    rollback_stmt::rollback_stmt,
-    savepoint_stmt::savepoint_stmt,
-    security_stmt::security_stmt,
-    set_stmt::set_stmt,
-    show_stmt::show_stmt,
-    start_transaction_stmt::start_transaction_stmt,
-    truncate_stmt::truncate_stmt,
-    unlisten_stmt::unlisten_stmt,
-    vacuum_stmt::vacuum_stmt,
-};
 pub(super) fn stmt() -> impl Combinator<Output = RawStmt> {
 
     match_first! {
@@ -123,7 +84,6 @@ pub(super) fn stmt() -> impl Combinator<Output = RawStmt> {
         vacuum_stmt(),
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -161,6 +121,44 @@ mod tests {
     }
 }
 
+pub(in crate::parser) use self::begin_stmt::begin_stmt;
+pub(in crate::parser) use self::end_stmt::end_stmt;
+
+use self::abort_stmt::abort_stmt;
+use self::alter_stmt::alter_stmt;
+use self::analyze_stmt::analyze_stmt;
+use self::call_stmt::call_stmt;
+use self::close_stmt::close_stmt;
+use self::cluster_stmt::cluster_stmt;
+use self::comment_stmt::comment_stmt;
+use self::commit_stmt::commit_stmt;
+use self::copy_stmt::copy_stmt;
+use self::deallocate_stmt::deallocate_stmt;
+use self::discard_stmt::discard_stmt;
+use self::do_stmt::do_stmt;
+use self::drop_stmt::drop_stmt;
+use self::explain_stmt::explain_stmt;
+use self::fetch_stmt::fetch_stmt;
+use self::import_stmt::import_stmt;
+use self::listen_stmt::listen_stmt;
+use self::load_stmt::load_stmt;
+use self::lock_stmt::lock_stmt;
+use self::move_stmt::move_stmt;
+use self::notify_stmt::notify_stmt;
+use self::prepare_stmt::prepare_stmt;
+use self::reassign_owner_stmt::reassign_owned_stmt;
+use self::reindex_stmt::reindex_stmt;
+use self::release_savepoint_stmt::release_savepoint_stmt;
+use self::revoke_stmt::revoke_stmt;
+use self::rollback_stmt::rollback_stmt;
+use self::savepoint_stmt::savepoint_stmt;
+use self::security_stmt::security_stmt;
+use self::set_stmt::set_stmt;
+use self::show_stmt::show_stmt;
+use self::start_transaction_stmt::start_transaction_stmt;
+use self::truncate_stmt::truncate_stmt;
+use self::unlisten_stmt::unlisten_stmt;
+use self::vacuum_stmt::vacuum_stmt;
 use crate::lexer::Keyword::Checkpoint;
 use crate::parser::ast_node::RawStmt;
 use crate::parser::ast_node::RawStmt::ClosePortalStmt;

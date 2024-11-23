@@ -1,5 +1,6 @@
 pub(super) fn expr_primary() -> impl Combinator<Output = ExprNode> {
     match_first! {
+        param_expr().map(From::from),
         case_expr().map(From::from),
         expr_const(),
         keyword(CurrentRole).map(|_| ExprNode::CurrentRole),
@@ -24,9 +25,17 @@ pub(super) fn expr_primary() -> impl Combinator<Output = ExprNode> {
     }
 }
 
+fn param_expr() -> impl Combinator<Output = IndirectionExpr> {
+    param().and_then(
+        indirection(),
+        |index, indirection| IndirectionExpr::Param { index, indirection }
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::ast_node::Indirection::FullSlice;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
@@ -51,6 +60,18 @@ mod tests {
         let actual = expr_primary().parse(&mut stream);
         assert_eq!(Ok(expected), actual)
     }
+    
+    #[test]
+    fn test_param_expr() {
+        let mut stream = TokenStream::new("$5[:]", DEFAULT_CONFIG);
+
+        let expected = IndirectionExpr::Param {
+            index: 5,
+            indirection: vec![FullSlice]
+        };
+
+        assert_eq!(Ok(expected), param_expr().parse(&mut stream))
+    }
 }
 
 use crate::lexer::Keyword::CurrentCatalog;
@@ -65,8 +86,13 @@ use crate::lexer::Keyword::SessionUser;
 use crate::lexer::Keyword::SystemUser;
 use crate::lexer::Keyword::User;
 use crate::parser::ast_node::ExprNode;
+use crate::parser::ast_node::IndirectionExpr;
+use crate::parser::combinators::keyword;
+use crate::parser::combinators::match_first;
+use crate::parser::combinators::param;
+use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::combinators::{keyword, match_first, Combinator};
 use crate::parser::expr_parsers::case_expr::case_expr;
 use crate::parser::expr_parsers::expr_const::expr_const;
+use crate::parser::expr_parsers::indirection;
 use crate::parser::opt_precision::opt_precision;
