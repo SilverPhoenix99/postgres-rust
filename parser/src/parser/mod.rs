@@ -50,93 +50,25 @@ impl<'src> Parser<'src> {
         }
     }
 
-    /// Not reentrant!
+    /// Not reentrant (yet)!
+    /// The TokenStream state is changed.
     pub fn parse(&mut self) -> ParserResult {
 
-        let result = self.stmtmulti().required();
+        let mut result = stmtmulti()
+            .parse(&mut self.buffer)
+            .required();
+
+        // If it's not Eof, then something didn't match properly.
+        // Discard the previous result, and mark the current location as a Syntax error.
+        if !self.buffer.eof() {
+            let loc = self.buffer.current_location();
+            result = Err(syntax_err(loc));
+        }
 
         ParserResult {
             result,
             warnings: mem::take(self.buffer.warnings()),
         }
-    }
-
-    fn stmtmulti(&mut self) -> ScanResult<Vec<RawStmt>> {
-
-        // This production is slightly cheating, not because it's more efficient,
-        // but helps simplify capturing errors.
-        // Production:
-        //     (';')* ( toplevel_stmt ( (';')+ toplevel_stmt? )* )?
-        // Original production:
-        //     toplevel_stmt? ( ';' toplevel_stmt? )*
-
-        semicolons().parse(&mut self.buffer)?;
-        if self.buffer.eof() {
-            // The whole string is empty, or just contains semicolons, whitespace, or comments.
-            return Ok(Vec::new())
-        }
-
-        // If the string wasn't considered "empty", then it has at least 1 token, that *must* match some statement.
-        let stmt = self.toplevel_stmt()?;
-        let mut stmts = vec![stmt];
-
-        while semicolons().parse(&mut self.buffer)? && !self.buffer.eof() {
-            let stmt = self.toplevel_stmt()?;
-            stmts.push(stmt);
-        }
-
-        // if it's not Eof, then something didn't match properly
-        if !self.buffer.eof() {
-            let loc = self.buffer.current_location();
-            return Err(syntax_err(loc).into())
-        }
-
-        Ok(stmts)
-    }
-
-    fn toplevel_stmt(&mut self) -> ScanResult<RawStmt> {
-
-        let result = transaction_stmt_legacy::transaction_stmt_legacy()
-            .parse(&mut self.buffer)
-            .maybe_match()?;
-        if let Some(result) = result {
-            return Ok(result.into())
-        }
-
-        stmt().parse(&mut self.buffer)
-    }
-
-    /// Post-condition: Vec is **Not** empty
-    fn expr_list_paren(&mut self) -> ScanResult<Vec<ExprNode>> {
-
-        /*
-            '(' expr_list ')'
-        */
-
-        OpenParenthesis.parse(&mut self.buffer)?;
-        let exprs = self.expr_list().required()?;
-        CloseParenthesis.required().parse(&mut self.buffer)?;
-
-        Ok(exprs)
-    }
-
-    /// Post-condition: Vec is **Not** empty
-    fn expr_list(&mut self) -> ScanResult<Vec<ExprNode>> {
-
-        /*
-            a_expr ( ',' a_expr )*
-        */
-
-        let expr = self.a_expr()?;
-        let mut exprs = vec![expr];
-
-        let comma = Comma.optional();
-        while comma.parse(&mut self.buffer)?.is_some() {
-            let expr = self.a_expr().required()?;
-            exprs.push(expr);
-        }
-
-        Ok(exprs)
     }
 
     /// Post-condition: Vec is **Not** empty
@@ -164,14 +96,63 @@ impl<'src> Parser<'src> {
     }
 }
 
-/// Returns `true` if it consumed at least 1 `;` (semicolon)
-fn semicolons() -> impl Combinator<Output = bool> {
+fn stmtmulti() -> impl Combinator<Output = Vec<RawStmt>> {
 
-    // Production: ( ';' )*
+    // This production is slightly cheating, not because it's more efficient,
+    // but helps simplify capturing the combinator.
+    // Production:
+    //     (';')* ( toplevel_stmt ( (';')+ toplevel_stmt? )* )?
+    // Original production:
+    //     toplevel_stmt? ( ';' toplevel_stmt? )*
 
-    many(Semicolon.skip())
-        .optional()
-        .map(|x| x.is_some())
+    semicolons().optional()
+        .and_right(
+            many_sep(semicolons(), toplevel_stmt().optional())
+        )
+        .map(|stmts|
+            stmts.into_iter()
+                .flatten()
+                .collect()
+        )
+}
+
+fn toplevel_stmt() -> impl Combinator<Output = RawStmt> {
+    match_first!(
+        transaction_stmt_legacy().map(From::from),
+        stmt()
+    )
+}
+
+/// Post-condition: Vec is **Not** empty
+fn expr_list_paren() -> impl Combinator<Output = Vec<ExprNode>> {
+
+    /*
+        '(' expr_list ')'
+    */
+
+    between(
+        OpenParenthesis,
+        expr_list(),
+        CloseParenthesis
+    )
+}
+
+/// Post-condition: Vec is **Not** empty
+fn expr_list() -> impl Combinator<Output = Vec<ExprNode>> {
+
+    /*
+        a_expr ( ',' a_expr )*
+    */
+
+    many_sep(Comma, a_expr())
+}
+
+/// Returns `Ok` if it consumed at least 1 `;` (semicolon).
+fn semicolons() -> impl Combinator<Output = ()> {
+
+    // Production: ( ';' )+
+
+    many(Semicolon.skip()).skip()
 }
 
 /// Alias: `transaction_mode_item`
@@ -443,8 +424,8 @@ mod tests {
     #[test_case("start transaction")]
     #[test_case("end transaction")]
     fn test_toplevel_stmt(source: &str) {
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-        let actual = parser.toplevel_stmt();
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let actual = toplevel_stmt().parse(&mut stream);
 
         // This only quickly tests that statement types aren't missing.
         // More in-depth testing is within each statement's module.
@@ -711,16 +692,17 @@ use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::error::syntax_err;
 use crate::parser::error::NameList;
+use crate::parser::expr_parsers::a_expr;
 use crate::parser::located_combinator::located;
 use crate::parser::opt_transaction::opt_transaction;
+use crate::parser::opt_transaction_chain::opt_transaction_chain;
 use crate::parser::result::Required;
 use crate::parser::result::ScanResult;
-use crate::parser::result::ScanResultTrait;
 use crate::parser::stmt::stmt;
 use crate::parser::token_stream::TokenConsumer;
 use crate::parser::token_stream::TokenStream;
+use crate::parser::transaction_stmt_legacy::transaction_stmt_legacy;
 use crate::parser::ParserErrorKind::ImproperQualifiedName;
-use opt_transaction_chain::opt_transaction_chain;
 use postgres_basics::Located;
 use postgres_basics::Str;
 use std::mem;

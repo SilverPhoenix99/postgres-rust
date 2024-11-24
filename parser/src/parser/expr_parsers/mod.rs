@@ -21,7 +21,7 @@ impl Parser<'_> {
     }
 }
 
-fn a_expr() -> impl Combinator<Output = ExprNode> {
+pub(in crate::parser) fn a_expr() -> impl Combinator<Output = ExprNode> {
     // TODO
     expr_primary()
 }
