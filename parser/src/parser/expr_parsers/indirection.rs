@@ -1,17 +1,18 @@
 /// Post-condition: Vec is **Not** empty
+// TODO: `indirection` has different rules depending on context.
+// See:
+// * [`makeColumnRef(..., List *indirection, ...)`](https://github.com/postgres/postgres/blob/ae4569161a27823793ca24825bbabce2a91a0bc9/src/backend/parser/gram.y#L18696-L18727)
+// * [`check_qualified_name()`](https://github.com/postgres/postgres/blob/ae4569161a27823793ca24825bbabce2a91a0bc9/src/backend/parser/gram.y#L18849-L18864)
+// * [`check_func_name()`](https://github.com/postgres/postgres/blob/ae4569161a27823793ca24825bbabce2a91a0bc9/src/backend/parser/gram.y#L18866-L18882)
+// * [`check_indirection()`](https://github.com/postgres/postgres/blob/ae4569161a27823793ca24825bbabce2a91a0bc9/src/backend/parser/gram.y#L18884-L18903)
+// * [`makeRangeVarFromQualifiedName(..., List *namelist, ...)`](https://github.com/postgres/postgres/blob/ae4569161a27823793ca24825bbabce2a91a0bc9/src/backend/parser/gram.y#L19335)
 pub(in crate::parser) fn indirection() -> impl Combinator<Output = Vec<Indirection>> {
 
     /*
         ( indirection_el )+
     */
 
-    many(indirection_el()).map_result(|result| {
-        let indirection = result?;
-
-        // TODO: check that only the last is allowed to be '*' (All)
-
-        Ok(indirection)
-    })
+    many(indirection_el())
 }
 
 fn indirection_el() -> impl Combinator<Output = Indirection> {
