@@ -639,41 +639,41 @@ mod tests {
     #[test]
     fn test_type_function_name() {
         let source = "before xxyyzz collation";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        assert_eq!(Ok("before".into()), type_function_name().parse(&mut parser.buffer));
-        assert_eq!(Ok("xxyyzz".into()), type_function_name().parse(&mut parser.buffer));
-        assert_eq!(Ok("collation".into()), type_function_name().parse(&mut parser.buffer));
+        assert_eq!(Ok("before".into()), type_function_name().parse(&mut stream));
+        assert_eq!(Ok("xxyyzz".into()), type_function_name().parse(&mut stream));
+        assert_eq!(Ok("collation".into()), type_function_name().parse(&mut stream));
     }
 
     #[test]
     fn test_non_reserved_word() {
         let source = "breadth xxyyzz boolean authorization";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        assert_eq!(Ok("breadth".into()), non_reserved_word().parse(&mut parser.buffer));
-        assert_eq!(Ok("xxyyzz".into()), non_reserved_word().parse(&mut parser.buffer));
-        assert_eq!(Ok("boolean".into()), non_reserved_word().parse(&mut parser.buffer));
-        assert_eq!(Ok("authorization".into()), non_reserved_word().parse(&mut parser.buffer));
+        assert_eq!(Ok("breadth".into()), non_reserved_word().parse(&mut stream));
+        assert_eq!(Ok("xxyyzz".into()), non_reserved_word().parse(&mut stream));
+        assert_eq!(Ok("boolean".into()), non_reserved_word().parse(&mut stream));
+        assert_eq!(Ok("authorization".into()), non_reserved_word().parse(&mut stream));
     }
 
     #[test]
     fn test_col_label() {
         let source = "sequence xxyyzz character";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        assert_eq!(Ok("sequence".into()), col_label().parse(&mut parser.buffer));
-        assert_eq!(Ok("xxyyzz".into()), col_label().parse(&mut parser.buffer));
-        assert_eq!(Ok("character".into()), col_label().parse(&mut parser.buffer));
+        assert_eq!(Ok("sequence".into()), col_label().parse(&mut stream));
+        assert_eq!(Ok("xxyyzz".into()), col_label().parse(&mut stream));
+        assert_eq!(Ok("character".into()), col_label().parse(&mut stream));
     }
 
     #[test]
     fn test_bare_col_label() {
         let source = "sequence xxyyzz";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        assert_eq!(Ok("sequence".into()), bare_col_label().parse(&mut parser.buffer));
-        assert_eq!(Ok("xxyyzz".into()), bare_col_label().parse(&mut parser.buffer));
+        assert_eq!(Ok("sequence".into()), bare_col_label().parse(&mut stream));
+        assert_eq!(Ok("xxyyzz".into()), bare_col_label().parse(&mut stream));
     }
 }
 
