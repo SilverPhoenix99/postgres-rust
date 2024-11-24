@@ -5,10 +5,10 @@ pub(in crate::parser) fn unlisten_stmt() -> impl Combinator<Output = OneOrAll> {
         UNLISTEN '*'
         UNLISTEN ColId
     */
-    
-    keyword(Unlisten)
+
+    Unlisten
         .and_right(match_first!{
-            operator(Mul).map(|_| OneOrAll::All),
+            Mul.map(|_| OneOrAll::All),
             col_id().map(OneOrAll::Name)
         })
 }
@@ -32,5 +32,6 @@ use crate::lexer::Keyword::Unlisten;
 use crate::lexer::OperatorKind::Mul;
 use crate::parser::ast_node::OneOrAll;
 use crate::parser::col_id;
-use crate::parser::combinators::{keyword, match_first, Combinator};
-use crate::parser::combinators::{operator, CombinatorHelpers};
+use crate::parser::combinators::match_first;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

@@ -5,7 +5,7 @@ pub(in crate::parser) fn start_transaction_stmt() -> impl Combinator<Output = Tr
     */
 
     sequence!(
-        keyword(Start).and(keyword(Transaction)).skip(),
+        Start.and(Transaction).skip(),
         transaction_mode_list().optional()
     ).map(|(_, tx_modes)|
         TransactionStmt::Start(tx_modes.unwrap_or_default())
@@ -36,7 +36,6 @@ mod tests {
 use crate::lexer::Keyword::Start;
 use crate::lexer::Keyword::Transaction;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::sequence;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;

@@ -6,14 +6,13 @@ pub(in crate::parser) fn alter_language_stmt() -> impl Combinator<Output = RawSt
     */
 
     or(
-        keyword(Procedural).and(keyword(Language)).skip(),
-        keyword(Language).skip()
+        Procedural.and(Language).skip(),
+        Language.skip()
     )
         .and_right(col_id())
         .chain_result(match_first_with_state!(|name, stream| {
             {
-                keyword(Owner)
-                    .and(keyword(To))
+                Owner.and(To)
                     .and_right(role_spec())
             } => (role) {
                 AlterOwnerStmt::new(
@@ -22,8 +21,7 @@ pub(in crate::parser) fn alter_language_stmt() -> impl Combinator<Output = RawSt
                 ).into()
             },
             {
-                keyword(Rename)
-                    .and(keyword(To))
+                Rename.and(To)
                     .and_right(col_id())
             } => (new_name) {
                 RenameStmt::new(
@@ -80,7 +78,7 @@ use crate::parser::ast_node::RenameStmt;
 use crate::parser::ast_node::RenameTarget;
 use crate::parser::col_id;
 use crate::parser::combinators::match_first_with_state;
+use crate::parser::combinators::or;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::combinators::{keyword, or};
 use crate::parser::role_parsers::role_spec;

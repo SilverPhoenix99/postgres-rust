@@ -6,9 +6,9 @@ pub(in crate::parser) fn notify_stmt() -> impl Combinator<Output = NotifyStmt> {
     */
 
     sequence!(
-        keyword(Notify).skip(),
+        Notify.skip(),
         col_id(),
-        operator(Comma)
+        Comma
             .and_right(string())
             .optional()
     ).map(|(_, condition_name, payload)| {
@@ -46,8 +46,7 @@ use crate::lexer::Keyword::Notify;
 use crate::lexer::OperatorKind::Comma;
 use crate::parser::ast_node::NotifyStmt;
 use crate::parser::col_id;
-use crate::parser::combinators::operator;
+use crate::parser::combinators::sequence;
 use crate::parser::combinators::string;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::combinators::{keyword, sequence};

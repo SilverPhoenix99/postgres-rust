@@ -6,10 +6,11 @@ pub(in crate::parser) fn copy_stmt() -> impl Combinator<Output = RawStmt> {
         COPY '(' PreparableStmt ')' TO opt_program copy_file_name opt_with copy_options
     */
 
-    keyword(CopyKw)
+    CopyKw
         .map(|_| todo!())
 }
 
 use crate::lexer::Keyword::CopyKw;
 use crate::parser::ast_node::RawStmt;
-use crate::parser::combinators::{keyword, Combinator, CombinatorHelpers};
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

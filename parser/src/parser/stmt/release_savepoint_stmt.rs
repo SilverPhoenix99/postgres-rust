@@ -6,8 +6,8 @@ pub(in crate::parser) fn release_savepoint_stmt() -> impl Combinator<Output = Tr
         RELEASE ColId
     */
 
-    keyword(Release)
-        .and(keyword(Savepoint).optional())
+    Release
+        .and(Savepoint.optional())
         .and_right(col_id())
         .map(TransactionStmt::Release)
 }
@@ -31,7 +31,9 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Release, Savepoint};
+use crate::lexer::Keyword::Release;
+use crate::lexer::Keyword::Savepoint;
 use crate::parser::ast_node::TransactionStmt;
 use crate::parser::col_id;
-use crate::parser::combinators::{keyword, Combinator, CombinatorHelpers};
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

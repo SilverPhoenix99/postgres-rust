@@ -1,10 +1,8 @@
 fn opt_unique_null_treatment() -> impl Combinator<Output = UniqueNullTreatment> {
-    use crate::lexer::Keyword::{Distinct, Not, Nulls};
-    use crate::parser::combinators::{keyword, optional, CombinatorHelpers};
 
-    keyword(Nulls)
-        .and_then(optional(keyword(Not)), |_, not| not.is_none().into())
-        .and_left(keyword(Distinct))
+    Nulls
+        .and_then(optional(Not), |_, not| not.is_none().into())
+        .and_left(Distinct)
         .optional()
         .map(Option::unwrap_or_default)
 }
@@ -25,5 +23,10 @@ mod tests {
     }
 }
 
+use crate::lexer::Keyword::Distinct;
+use crate::lexer::Keyword::Not;
+use crate::lexer::Keyword::Nulls;
 use crate::parser::ast_node::UniqueNullTreatment;
+use crate::parser::combinators::optional;
 use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

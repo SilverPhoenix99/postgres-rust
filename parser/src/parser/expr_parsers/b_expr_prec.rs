@@ -131,8 +131,7 @@ impl Parser<'_> {
             IS NOT DOCUMENT_P
         */
 
-        let not_expr = keyword(Not)
-            .optional()
+        let not_expr = Not.optional()
             .parse(&mut self.buffer)?
             .is_some();
 
@@ -149,8 +148,7 @@ impl Parser<'_> {
         }
 
         // Distinct
-        keyword(FromKw)
-            .required()
+        FromKw.required()
             .parse(&mut self.buffer)?;
 
         let assoc = Op::IsExpr.associativity();
@@ -212,7 +210,6 @@ use crate::parser::ast_node::ExprNode;
 use crate::parser::ast_node::QualifiedOperator;
 use crate::parser::ast_node::TypecastExpr;
 use crate::parser::ast_node::UnaryExpr;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::keyword_if;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;

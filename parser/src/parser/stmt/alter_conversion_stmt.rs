@@ -6,12 +6,11 @@ pub(in crate::parser) fn alter_conversion_stmt() -> impl Combinator<Output = Raw
         ALTER CONVERSION any_name SET SCHEMA ColId
     */
 
-    keyword(Conversion)
+    Conversion
         .and_right(any_name())
         .chain_result(match_first_with_state!{|conversion, stream| {
             {
-                keyword(Owner)
-                    .and(keyword(To))
+                Owner.and(To)
                     .and_right(role_spec())
             } => (new_owner) {
                 AlterOwnerStmt::new(
@@ -20,8 +19,7 @@ pub(in crate::parser) fn alter_conversion_stmt() -> impl Combinator<Output = Raw
                 ).into()
             },
             {
-                keyword(Rename)
-                    .and(keyword(To))
+                Rename.and(To)
                     .and_right(col_id())
             } => (new_name) {
                 RenameStmt::new(
@@ -30,8 +28,7 @@ pub(in crate::parser) fn alter_conversion_stmt() -> impl Combinator<Output = Raw
                 ).into()
             },
             {
-                keyword(Set)
-                    .and(keyword(Schema))
+                Set.and(Schema)
                     .and_right(col_id())
             } => (new_schema) {
                 AlterObjectSchemaStmt::new(
@@ -95,11 +92,12 @@ mod tests {
     }
 }
 
+use crate::lexer::Keyword::Conversion;
+use crate::lexer::Keyword::Owner;
 use crate::lexer::Keyword::Rename;
 use crate::lexer::Keyword::Schema;
 use crate::lexer::Keyword::Set;
 use crate::lexer::Keyword::To;
-use crate::lexer::Keyword::{Conversion, Owner};
 use crate::parser::any_name;
 use crate::parser::ast_node::AlterObjectSchemaStmt;
 use crate::parser::ast_node::AlterObjectSchemaTarget;
@@ -109,7 +107,7 @@ use crate::parser::ast_node::RawStmt;
 use crate::parser::ast_node::RenameStmt;
 use crate::parser::ast_node::RenameTarget;
 use crate::parser::col_id;
+use crate::parser::combinators::match_first_with_state;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::combinators::{keyword, match_first_with_state};
 use crate::parser::role_parsers::role_spec;

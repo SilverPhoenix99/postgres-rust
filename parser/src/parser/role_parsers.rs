@@ -5,7 +5,7 @@ pub(super) fn role_list() -> impl Combinator<Output = Vec<RoleSpec>> {
         role_spec ( ',' role_spec )*
     */
 
-    enclosure! { many_sep(operator(Comma), role_spec()) }
+    enclosure! { many_sep(Comma, role_spec()) }
 }
 
 /// Alias: `RoleId`
@@ -34,12 +34,12 @@ pub(super) fn role_spec() -> impl Combinator<Output = RoleSpec> {
     */
 
     match_first! {
-        keyword(CurrentRole).map(|_| RoleSpec::CurrentRole),
-        keyword(CurrentUser).map(|_| RoleSpec::CurrentUser),
-        keyword(SessionUser).map(|_| RoleSpec::SessionUser),
+        CurrentRole.map(|_| RoleSpec::CurrentRole),
+        CurrentUser.map(|_| RoleSpec::CurrentUser),
+        SessionUser.map(|_| RoleSpec::SessionUser),
 
         // "none" is a ColumnName keyword, so it must be checked before the next option
-        located(keyword(NoneKw)).map_result(|result| match result {
+        located(NoneKw).map_result(|result| match result {
             Ok((_, loc)) => Err(ScanErr(
                 ParserError::new(ReservedRoleSpec("none"), loc)
             )),
@@ -142,10 +142,8 @@ use crate::lexer::Keyword::SessionUser;
 use crate::lexer::OperatorKind::Comma;
 use crate::parser::ast_node::RoleSpec;
 use crate::parser::combinators::enclosure;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::many_sep;
 use crate::parser::combinators::match_first;
-use crate::parser::combinators::operator;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::located_combinator::located;

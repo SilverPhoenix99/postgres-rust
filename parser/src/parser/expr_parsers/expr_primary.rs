@@ -3,23 +3,23 @@ pub(super) fn expr_primary() -> impl Combinator<Output = ExprNode> {
         param_expr().map(From::from),
         case_expr().map(From::from),
         expr_const(),
-        keyword(CurrentRole).map(|_| ExprNode::CurrentRole),
-        keyword(CurrentUser).map(|_| ExprNode::CurrentUser),
-        keyword(SessionUser).map(|_| ExprNode::SessionUser),
-        keyword(SystemUser).map(|_| ExprNode::SystemUser),
-        keyword(User).map(|_| ExprNode::User),
-        keyword(CurrentCatalog).map(|_| ExprNode::CurrentCatalog),
-        keyword(CurrentDate).map(|_| ExprNode::CurrentDate),
-        keyword(CurrentTime)
+        CurrentRole.map(|_| ExprNode::CurrentRole),
+        CurrentUser.map(|_| ExprNode::CurrentUser),
+        SessionUser.map(|_| ExprNode::SessionUser),
+        SystemUser.map(|_| ExprNode::SystemUser),
+        User.map(|_| ExprNode::User),
+        CurrentCatalog.map(|_| ExprNode::CurrentCatalog),
+        CurrentDate.map(|_| ExprNode::CurrentDate),
+        CurrentTime
             .and_right(opt_precision())
             .map(|precision| ExprNode::CurrentTime { precision }),
-        keyword(CurrentTimestamp)
+        CurrentTimestamp
             .and_right(opt_precision())
             .map(|precision| ExprNode::CurrentTimestamp { precision }),
-        keyword(Localtime)
+        Localtime
             .and_right(opt_precision())
             .map(|precision| ExprNode::LocalTime { precision }),
-        keyword(Localtimestamp)
+        Localtimestamp
             .and_right(opt_precision())
             .map(|precision| ExprNode::LocalTimestamp { precision }),
     }
@@ -87,7 +87,6 @@ use crate::lexer::Keyword::SystemUser;
 use crate::lexer::Keyword::User;
 use crate::parser::ast_node::ExprNode;
 use crate::parser::ast_node::IndirectionExpr;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::param;
 use crate::parser::combinators::Combinator;

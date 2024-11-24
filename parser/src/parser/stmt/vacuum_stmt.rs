@@ -6,12 +6,11 @@ pub(in crate::parser) fn vacuum_stmt() -> impl Combinator<Output = RawStmt> {
         VACUUM '(' utility_option_list ')' opt_vacuum_relation_list
     */
 
-    keyword(Vacuum)
+    Vacuum
         .map(|_| todo!())
 }
 
 use crate::lexer::Keyword::Vacuum;
 use crate::parser::ast_node::RawStmt;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;

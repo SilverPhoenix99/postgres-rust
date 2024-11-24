@@ -14,11 +14,12 @@ pub(in crate::parser) fn security_stmt() -> impl Combinator<Output = RawStmt> {
         SECURITY LABEL opt_provider ON TYPE_P Typename IS security_label
     */
 
-    keyword(Security)
-        .and(keyword(Label))
+    Security.and(Label)
         .map(|_| todo!())
 }
 
-use crate::lexer::Keyword::{Label, Security};
+use crate::lexer::Keyword::Label;
+use crate::lexer::Keyword::Security;
 use crate::parser::ast_node::RawStmt;
-use crate::parser::combinators::{keyword, Combinator, CombinatorHelpers};
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

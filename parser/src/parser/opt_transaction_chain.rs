@@ -1,6 +1,4 @@
 pub(super) fn opt_transaction_chain() -> impl Combinator<Output = bool> {
-    use crate::lexer::Keyword::{And, Chain, No};
-    use crate::parser::combinators::{keyword, CombinatorHelpers};
 
     /*
           AND CHAIN
@@ -9,13 +7,12 @@ pub(super) fn opt_transaction_chain() -> impl Combinator<Output = bool> {
     */
 
     enclosure! {
-        keyword(And)
+        And
             .and_right(
-                keyword(No)
-                    .optional()
+                No.optional()
                     .map(|no| no.is_none())
             )
-            .and_left(keyword(Chain))
+            .and_left(Chain)
             .optional()
             .map(|chain| chain.unwrap_or(false))
     }
@@ -37,5 +34,9 @@ mod tests {
     }
 }
 
+use crate::lexer::Keyword::And;
+use crate::lexer::Keyword::Chain;
+use crate::lexer::Keyword::No;
 use crate::parser::combinators::enclosure;
 use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

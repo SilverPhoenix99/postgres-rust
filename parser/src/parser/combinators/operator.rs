@@ -1,7 +1,3 @@
-pub(in crate::parser) fn operator(operator: OperatorKind) -> OperatorCombi {
-    OperatorCombi(operator)
-}
-
 /// Conditionally consumes the operator.
 ///
 /// * If the `mapper` returns `true`, then the operator is consumed.
@@ -62,15 +58,13 @@ pub(in crate::parser) fn operator_result<O>(
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub(in crate::parser) struct OperatorCombi(OperatorKind);
-
-impl Combinator for OperatorCombi {
+impl Combinator for OperatorKind {
     type Output = OperatorKind;
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
         stream.consume(|tok|
-            tok.operator().filter(|op| *op == self.0)
+            tok.operator()
+                .filter(|&op| op == *self)
         )
     }
 }

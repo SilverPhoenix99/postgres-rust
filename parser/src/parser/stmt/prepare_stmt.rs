@@ -5,9 +5,9 @@ pub(in crate::parser) fn prepare_stmt() -> impl Combinator<Output = RawStmt> {
         PREPARE ColId ( '(' type_list ')' )? AS PreparableStmt
     */
 
-    keyword(Prepare)
+    Prepare
         .and_right(or(
-            keyword(Transaction)
+            Transaction
                 .and_then(string(), |_, tx_id| PrepareTransactionStmt(tx_id)),
             col_id().map(|_name| todo!())
         ))
@@ -33,4 +33,4 @@ use crate::parser::ast_node::RawStmt::PrepareTransactionStmt;
 use crate::parser::col_id;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::combinators::{keyword, or, string};
+use crate::parser::combinators::{or, string};

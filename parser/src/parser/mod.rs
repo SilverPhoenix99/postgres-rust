@@ -113,9 +113,9 @@ impl<'src> Parser<'src> {
             '(' expr_list ')'
         */
 
-        operator(OpenParenthesis).parse(&mut self.buffer)?;
+        OpenParenthesis.parse(&mut self.buffer)?;
         let exprs = self.expr_list().required()?;
-        operator(CloseParenthesis).required().parse(&mut self.buffer)?;
+        CloseParenthesis.required().parse(&mut self.buffer)?;
 
         Ok(exprs)
     }
@@ -130,7 +130,7 @@ impl<'src> Parser<'src> {
         let expr = self.a_expr()?;
         let mut exprs = vec![expr];
 
-        let comma = operator(Comma).optional();
+        let comma = Comma.optional();
         while comma.parse(&mut self.buffer)?.is_some() {
             let expr = self.a_expr().required()?;
             exprs.push(expr);
@@ -153,7 +153,7 @@ impl<'src> Parser<'src> {
         let mut attrs = vec![prefix];
 
         let parser = optional(
-            operator(Dot).and_right(col_label())
+            Dot.and_right(col_label())
         );
 
         while let Some(attr) = parser.parse(&mut self.buffer)? {
@@ -169,7 +169,7 @@ fn semicolons() -> impl Combinator<Output = bool> {
 
     // Production: ( ';' )*
 
-    many(operator(Semicolon).skip())
+    many(Semicolon.skip())
         .optional()
         .map(|x| x.is_some())
 }
@@ -189,16 +189,15 @@ fn transaction_mode() -> impl Combinator<Output = TransactionMode> {
     */
 
     match_first!{
-        keyword(Kw::Deferrable).map(|_| Deferrable),
-        keyword(Not).and_then(keyword(Kw::Deferrable), |_, _| NotDeferrable),
-        keyword(Read).and_right(
+        Kw::Deferrable.map(|_| Deferrable),
+        Not.and_then(Kw::Deferrable, |_, _| NotDeferrable),
+        Read.and_right(
             match_first!{
-                keyword(Only).map(|_| ReadOnly),
-                keyword(Write).map(|_| ReadWrite)
+                Only.map(|_| ReadOnly),
+                Write.map(|_| ReadWrite)
             }
         ),
-        keyword(Isolation)
-            .and(keyword(Level))
+        Isolation.and(Level)
             .and_right(isolation_level())
             .map(IsolationLevel)
     }
@@ -216,16 +215,15 @@ fn isolation_level() -> impl Combinator<Output = IsolationLevel> {
     */
 
     match_first!{
-        keyword(Serializable).map(|_| IsolationLevel::Serializable),
-        keyword(Repeatable)
-            .and_then(keyword(Read), |_, _| IsolationLevel::RepeatableRead),
-        keyword(Read)
-            .and_right(
-                match_first!{
-                    keyword(Committed).map(|_| IsolationLevel::ReadCommitted),
-                    keyword(Uncommitted).map(|_| IsolationLevel::ReadUncommitted)
-                }
-            )
+        Serializable.map(|_| IsolationLevel::Serializable),
+        Repeatable
+            .and_then(Read, |_, _| IsolationLevel::RepeatableRead),
+        Read.and_right(
+            match_first!{
+                Committed.map(|_| IsolationLevel::ReadCommitted),
+                Uncommitted.map(|_| IsolationLevel::ReadUncommitted)
+            }
+        )
     }
 }
 
@@ -238,11 +236,7 @@ fn opt_name_list() -> impl Combinator<Output = Vec<Str>> {
         '(' name_list ')'
     */
 
-    between(
-        operator(OpenParenthesis),
-        name_list(),
-        operator(CloseParenthesis)
-    )
+    between(OpenParenthesis, name_list(), CloseParenthesis)
 }
 
 /// Post-condition: Vec is **Not** empty
@@ -252,7 +246,7 @@ fn var_list() -> impl Combinator<Output = Vec<QualifiedName>> {
         var_name ( ',' var_name )*
     */
 
-    many_sep(operator(Comma), var_name())
+    many_sep(Comma, var_name())
 }
 
 /// Post-condition: Vec is **Not** empty
@@ -262,7 +256,7 @@ fn var_name() -> impl Combinator<Output = QualifiedName> {
         col_id ( '.' col_id )*
     */
 
-    many_sep(operator(Dot), col_id())
+    many_sep(Dot, col_id())
 }
 
 /// Post-condition: Vec is **Not** empty
@@ -274,7 +268,7 @@ fn name_list() -> impl Combinator<Output = Vec<Str>> {
         col_id ( ',' col_id )*
     */
 
-    many_sep(operator(Comma), col_id())
+    many_sep(Comma, col_id())
 }
 
 /// Post-condition: Vec is **Not** empty
@@ -284,7 +278,7 @@ fn col_id_list(separator: OperatorKind) -> impl Combinator<Output = QualifiedNam
         col_id ( <separator> col_id )*
     */
 
-    many_sep(operator(separator), col_id())
+    many_sep(separator, col_id())
 }
 
 /// Post-condition: Vec is **Not** empty
@@ -294,7 +288,7 @@ fn qualified_name_list() -> impl Combinator<Output = Vec<RangeVar>> {
         qualified_name ( ',' qualified_name )*
     */
 
-    many_sep(operator(Comma), qualified_name())
+    many_sep(Comma, qualified_name())
 }
 
 fn qualified_name() -> impl Combinator<Output = RangeVar> {
@@ -345,7 +339,7 @@ fn any_name_list() -> impl Combinator<Output=Vec<QualifiedName>> {
         any_name ( ',' any_name )*
     */
 
-    many_sep(operator(Comma), any_name())
+    many_sep(Comma, any_name())
 }
 
 /// Post-condition: Vec is **Not** empty
@@ -371,7 +365,7 @@ where
 
     many_pre(
         prefix,
-        operator(Dot).and_right(col_label())
+        Dot.and_right(col_label())
     )
 }
 
@@ -425,10 +419,8 @@ fn bare_col_label() -> impl Combinator<Output = Str> {
 /// Production: `'(' ICONST ')'`
 fn i32_literal_paren() -> impl Combinator<Output = i32> {
 
-    operator(OpenParenthesis)
-        .and(integer())
-        .and(operator(CloseParenthesis))
-        .map(|((_, int), _)| int.into())
+    between(OpenParenthesis, integer(), CloseParenthesis)
+        .map(|int| int.into())
 }
 
 /// '+' | '-'
@@ -707,13 +699,11 @@ use crate::parser::combinators::between;
 use crate::parser::combinators::enclosure;
 use crate::parser::combinators::identifier;
 use crate::parser::combinators::integer;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::keyword_if;
 use crate::parser::combinators::many;
 use crate::parser::combinators::many_pre;
 use crate::parser::combinators::many_sep;
 use crate::parser::combinators::match_first;
-use crate::parser::combinators::operator;
 use crate::parser::combinators::operator_if;
 use crate::parser::combinators::optional;
 use crate::parser::combinators::or;

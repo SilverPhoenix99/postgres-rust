@@ -5,7 +5,7 @@ pub(in crate::parser) fn end_stmt() -> impl Combinator<Output = TransactionStmt>
         END_P opt_transaction opt_transaction_chain
     */
 
-    keyword(End)
+    End
         .and(opt_transaction())
         .and_right(opt_transaction_chain())
         .map(|chain| Commit { chain })
@@ -34,7 +34,6 @@ mod tests {
 use crate::lexer::Keyword::End;
 use crate::parser::ast_node::TransactionStmt;
 use crate::parser::ast_node::TransactionStmt::Commit;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::opt_transaction;

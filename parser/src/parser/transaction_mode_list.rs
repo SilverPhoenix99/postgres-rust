@@ -11,7 +11,7 @@ pub(super) fn transaction_mode_list() -> impl Combinator<Output = Vec<Transactio
         many_pre(
             transaction_mode(),
             parser(|stream| {
-                let result = operator(Comma).parse(stream).optional()?;
+                let result = Comma.parse(stream).optional()?;
                 if result.is_some() {
                     transaction_mode().required()
                         .parse(stream)
@@ -56,10 +56,10 @@ mod tests {
 
 use crate::lexer::OperatorKind::Comma;
 use crate::parser::ast_node::TransactionMode;
-use crate::parser::combinators::operator;
+use crate::parser::combinators::enclosure;
+use crate::parser::combinators::many_pre;
 use crate::parser::combinators::parser;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::combinators::{enclosure, many_pre};
 use crate::parser::result::Optional;
 use crate::parser::transaction_mode;

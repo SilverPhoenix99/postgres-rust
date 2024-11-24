@@ -7,17 +7,16 @@ pub(in crate::parser) fn rollback_stmt() -> impl Combinator<Output = Transaction
         ROLLBACK opt_transaction opt_transaction_chain
     */
 
-    keyword(Rollback).and_right(
+    Rollback.and_right(
         match_first!{
-            keyword(Prepared)
+            Prepared
                 .and_right(string())
-                .map(TransactionStmt::RollbackPrepared),
+                .map(RollbackPrepared),
             opt_transaction().and_right(
                 match_first!{
-                    keyword(To)
-                        .and(keyword(Savepoint).optional())
+                    To.and(Savepoint.optional())
                         .and_right(col_id())
-                        .map(TransactionStmt::RollbackTo),
+                        .map(RollbackTo),
                     opt_transaction_chain()
                         .map(|chain| TransactionStmt::Rollback { chain })
                 }
@@ -51,8 +50,17 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{Prepared, Rollback, Savepoint, To};
+use crate::lexer::Keyword::Prepared;
+use crate::lexer::Keyword::Rollback;
+use crate::lexer::Keyword::Savepoint;
+use crate::lexer::Keyword::To;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::combinators::{keyword, match_first, string, Combinator, CombinatorHelpers};
+use crate::parser::ast_node::TransactionStmt::RollbackPrepared;
+use crate::parser::ast_node::TransactionStmt::RollbackTo;
+use crate::parser::col_id;
+use crate::parser::combinators::match_first;
+use crate::parser::combinators::string;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::opt_transaction::opt_transaction;
-use crate::parser::{col_id, opt_transaction_chain};
+use crate::parser::opt_transaction_chain;

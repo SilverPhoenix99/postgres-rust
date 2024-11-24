@@ -4,8 +4,8 @@ pub(super) fn grantee_list() -> impl Combinator<Output = Vec<RoleSpec>> {
     /*
         grantee ( ',' grantee )*
     */
-    
-    many_sep(operator(Comma), grantee())
+
+    many_sep(Comma, grantee())
 }
 
 fn grantee() -> impl Combinator<Output = RoleSpec> {
@@ -14,7 +14,7 @@ fn grantee() -> impl Combinator<Output = RoleSpec> {
         ( GROUP )? role_spec
     */
 
-    keyword(Group).maybe_match()
+    Group.maybe_match()
         .and_right(role_spec())
 }
 
@@ -25,9 +25,7 @@ pub(super) fn opt_grant_option() -> impl Combinator<Output = bool> {
         ( WITH GRANT OPTION )?
     */
 
-    keyword(With)
-        .and(keyword(Grant))
-        .and(keyword(OptionKw))
+    With.and(Grant).and(OptionKw)
         .optional()
         .map(|grant| grant.is_some())
 }
@@ -38,8 +36,8 @@ pub(super) fn opt_drop_behavior() -> impl Combinator<Output = DropBehavior> {
         ( CASCADE | RESTRICT )?
     */
 
-    keyword(Cascade).map(|_| DropBehavior::Cascade)
-        .or(keyword(Restrict).map(|_| DropBehavior::Restrict))
+    Cascade.map(|_| DropBehavior::Cascade)
+        .or(Restrict.map(|_| DropBehavior::Restrict))
         .optional()
         .map(Option::unwrap_or_default)
 }
@@ -50,8 +48,7 @@ pub(super) fn opt_granted_by() -> impl Combinator<Output = RoleSpec> {
         GRANTED BY role_spec
     */
 
-    keyword(Granted)
-        .and(keyword(By))
+    Granted.and(By)
         .and_right(role_spec())
 }
 
@@ -117,5 +114,7 @@ use crate::lexer::Keyword::With;
 use crate::lexer::OperatorKind::Comma;
 use crate::parser::ast_node::DropBehavior;
 use crate::parser::ast_node::RoleSpec;
-use crate::parser::combinators::{keyword, many_sep, operator, Combinator, CombinatorHelpers};
+use crate::parser::combinators::many_sep;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::role_parsers::role_spec;

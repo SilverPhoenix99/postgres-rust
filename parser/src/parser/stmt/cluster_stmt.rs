@@ -9,10 +9,11 @@ pub(in crate::parser) fn cluster_stmt() -> impl Combinator<Output = RawStmt> {
         CLUSTER opt_verbose qualified_name cluster_index_specification
     */
     
-    keyword(Cluster)
+    Cluster
         .map(|_| todo!())
 }
 
 use crate::lexer::Keyword::Cluster;
 use crate::parser::ast_node::RawStmt;
-use crate::parser::combinators::{keyword, Combinator, CombinatorHelpers};
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

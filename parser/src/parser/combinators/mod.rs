@@ -28,20 +28,18 @@ pub(in crate::parser) use self::{
     identifier::{identifier, IdentifierCombi},
     integer::{integer, IntegerCombi},
     keyword::{
-        keyword,
         keyword_category,
         keyword_if,
         keyword_result,
         keyword_when,
         KeywordCategoryCombi,
-        KeywordCombi,
         KeywordCondCombi,
     },
     many::{many, many_pre, many_sep, ManyCombi, ManyPrefixedCombi, ManySepCombi},
     map::{map, map_err, map_result},
     maybe_match::{maybe_match, MaybeMatchCombi},
     number::{number, NumberCombi},
-    operator::{operator, operator_if, operator_result, operator_when, OperatorCombi, OperatorCondCombi},
+    operator::{operator_if, operator_result, operator_when, OperatorCondCombi},
     optional::{optional, OptionalCombi},
     or::{match_first, match_first_with_state, or, OrCombi},
     param::{param, ParamCombi},
@@ -232,6 +230,7 @@ where
 
 impl<T: Combinator> CombinatorHelpers for T {}
 
-use crate::parser::result::{ScanErrorKind, ScanResult};
+use crate::parser::result::ScanErrorKind;
+use crate::parser::result::ScanResult;
 use crate::parser::token_stream::TokenStream;
 use std::fmt::Debug;

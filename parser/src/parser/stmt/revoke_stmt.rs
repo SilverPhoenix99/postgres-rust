@@ -10,12 +10,11 @@ pub(in crate::parser) fn revoke_stmt() -> impl Combinator<Output = RawStmt> {
         REVOKE ColId OPTION FOR privilege_list FROM role_list opt_granted_by opt_drop_behavior
     */
 
-    keyword(Revoke)
+    Revoke
         .map(|_| todo!())
 }
 
 use crate::lexer::Keyword::Revoke;
 use crate::parser::ast_node::RawStmt;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
