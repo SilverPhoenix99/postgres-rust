@@ -122,7 +122,7 @@ impl Parser<'_> {
 
                 let name = attrs(col_label()).parse(&mut self.buffer)?;
 
-                let modifiers = self.opt_type_modifiers()?;
+                let modifiers = opt_type_modifiers().parse(&mut self.buffer)?;
                 return Ok(GenericTypeName::new(name, modifiers).into())
             },
             _ => {}
@@ -133,7 +133,7 @@ impl Parser<'_> {
             .parse(&mut self.buffer)?;
 
         if let Some(name) = name {
-            let modifiers = self.opt_type_modifiers()?;
+            let modifiers = opt_type_modifiers().parse(&mut self.buffer)?;
             return Ok(GenericTypeName::new(name, modifiers).into())
         }
 
@@ -146,7 +146,7 @@ impl Parser<'_> {
                 Kw(Bigint) => Ok(Int8),
                 Kw(Real) => Ok(Float4),
                 Kw(Dec | Decimal | NumericKw) => {
-                    let modifiers = self.opt_type_modifiers()?;
+                    let modifiers = opt_type_modifiers().parse(&mut self.buffer)?;
                     Ok(Numeric(modifiers))
                 },
                 Kw(Float) => {
@@ -168,7 +168,7 @@ impl Parser<'_> {
                 },
                 Kw(BitKw) => {
                     let varying = opt_varying().parse(&mut self.buffer)?;
-                    let mut modifiers = self.opt_type_modifiers()?;
+                    let mut modifiers = opt_type_modifiers().parse(&mut self.buffer)?;
 
                     if varying {
                         Ok(Varbit(modifiers))
@@ -227,7 +227,7 @@ impl Parser<'_> {
                     else {
                         let prefix = kw.details().text().into();
                         let name = self.attrs(prefix)?;
-                        let modifiers = self.opt_type_modifiers()?;
+                        let modifiers = opt_type_modifiers().parse(&mut self.buffer)?;
 
                         Ok(GenericTypeName::new(name, modifiers).into())
                     }
@@ -241,7 +241,7 @@ impl Parser<'_> {
                         vec![name]
                     };
 
-                    let modifiers = self.opt_type_modifiers()?;
+                    let modifiers = opt_type_modifiers().parse(&mut self.buffer)?;
 
                     Ok(GenericTypeName::new(name, modifiers).into())
                 },
@@ -283,20 +283,18 @@ impl Parser<'_> {
             Ok(Bpchar { length })
         }
     }
+}
 
-    /// Post-condition: Vec **May** be empty
-    fn opt_type_modifiers(&mut self) -> ParseResult<TypeModifiers> {
+/// Post-condition: Vec **May** be empty
+fn opt_type_modifiers() -> impl Combinator<Output = TypeModifiers> {
 
-        /*
-            ( '(' expr_list ')' )?
-        */
+    /*
+        ( '(' expr_list ')' )?
+    */
 
-        let modifiers = self.expr_list_paren()
-            .optional()?
-            .unwrap_or_default();
-
-        Ok(modifiers)
-    }
+    expr_list_paren()
+        .optional()
+        .map(Option::unwrap_or_default)
 }
 
 fn opt_timezone() -> impl Combinator<Output = bool> {
@@ -568,15 +566,14 @@ use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::const_numeric_parsers::i32_literal;
 use crate::parser::consume_macro::consume;
+use crate::parser::expr_list_paren;
 use crate::parser::i32_literal_paren;
 use crate::parser::opt_interval::opt_interval;
-use crate::parser::result::Optional;
 use crate::parser::result::Required;
 use crate::parser::result::ScanErrorKind::NoMatch;
 use crate::parser::result::ScanResult;
 use crate::parser::type_parsers::TypeNameKind::Const;
 use crate::parser::type_parsers::TypeNameKind::Simple;
-use crate::parser::ParseResult;
 use crate::parser::Parser;
 use crate::parser::ParserError;
 use crate::parser::ParserErrorKind::FloatPrecisionOverflow;
