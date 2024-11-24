@@ -5,11 +5,10 @@ pub(in crate::parser) fn commit_stmt() -> impl Combinator<Output = TransactionSt
         COMMIT opt_transaction opt_transaction_chain
     */
 
-    keyword(Commit)
-        .and_right(match_first!{
-            keyword(Prepared)
+    Commit.and_right(match_first!{
+            Prepared
                 .and_right(string())
-                .map(TransactionStmt::CommitPrepared),
+                .map(CommitPrepared),
             opt_transaction()
                 .and_right(opt_transaction_chain())
                 .map(|chain| TransactionStmt::Commit { chain })
@@ -37,14 +36,14 @@ mod tests {
     #[test]
     fn test_commit_prepared() {
         let mut stream = TokenStream::new("commit prepared 'test-name'", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::CommitPrepared("test-name".into())), commit_stmt().parse(&mut stream));
+        assert_eq!(Ok(CommitPrepared("test-name".into())), commit_stmt().parse(&mut stream));
     }
 }
 
 use crate::lexer::Keyword::Commit;
 use crate::lexer::Keyword::Prepared;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::combinators::keyword;
+use crate::parser::ast_node::TransactionStmt::CommitPrepared;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::string;
 use crate::parser::combinators::Combinator;

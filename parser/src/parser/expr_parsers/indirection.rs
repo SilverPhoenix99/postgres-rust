@@ -28,16 +28,16 @@ fn indirection_el() -> impl Combinator<Output = Indirection> {
 
     match_first!(
 
-        operator(Dot).and_right(or(
-            operator(Mul).map(|_| All),
+        Dot.and_right(or(
+            Mul.map(|_| All),
             col_label().map(Property),
         )),
 
         between(
-            operator(OpenBracket).skip(),
+            OpenBracket.skip(),
             match_first!(
 
-                operator(Colon)
+                Colon
                     .and_right(
                         a_expr().map(SliceTo)
                             .optional()
@@ -47,7 +47,7 @@ fn indirection_el() -> impl Combinator<Output = Indirection> {
                 sequence!(
                     a_expr(),
                     optional(
-                        operator(Colon).and_right(
+                        Colon.and_right(
                             a_expr().optional()
                         ),
                     ))
@@ -57,7 +57,7 @@ fn indirection_el() -> impl Combinator<Output = Indirection> {
                         Some(Some(right)) => Slice(left, right),
                     })
             ),
-            operator(CloseBracket).skip()
+            CloseBracket.skip()
         )
     )
 }
@@ -102,15 +102,17 @@ use crate::lexer::OperatorKind::Dot;
 use crate::lexer::OperatorKind::Mul;
 use crate::lexer::OperatorKind::OpenBracket;
 use crate::parser::ast_node::Indirection;
+use crate::parser::ast_node::Indirection::All;
 use crate::parser::ast_node::Indirection::FullSlice;
+use crate::parser::ast_node::Indirection::Index;
 use crate::parser::ast_node::Indirection::Property;
+use crate::parser::ast_node::Indirection::Slice;
+use crate::parser::ast_node::Indirection::SliceFrom;
 use crate::parser::ast_node::Indirection::SliceTo;
-use crate::parser::ast_node::Indirection::{All, Index, Slice, SliceFrom};
 use crate::parser::col_label;
 use crate::parser::combinators::between;
 use crate::parser::combinators::many;
 use crate::parser::combinators::match_first;
-use crate::parser::combinators::operator;
 use crate::parser::combinators::optional;
 use crate::parser::combinators::or;
 use crate::parser::combinators::sequence;

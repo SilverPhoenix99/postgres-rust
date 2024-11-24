@@ -5,9 +5,9 @@ pub(in crate::parser) fn alter_large_object_stmt() -> impl Combinator<Output = R
     */
 
     sequence!(
-        keyword(Large).and(keyword(Object)).skip(),
+        Large.and(Object).skip(),
         signed_number(),
-        keyword(Owner).and(keyword(To)),
+        Owner.and(To),
         role_spec()
     ).map(|(_, oid, _, new_owner)|
         AlterOwnerStmt::new(
@@ -46,7 +46,6 @@ use crate::lexer::Keyword::To;
 use crate::parser::ast_node::AlterOwnerStmt;
 use crate::parser::ast_node::AlterOwnerTarget;
 use crate::parser::ast_node::RawStmt;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::sequence;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;

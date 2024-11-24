@@ -22,11 +22,12 @@ pub(in crate::parser) fn comment_stmt() -> impl Combinator<Output = RawStmt> {
         COMMENT ON TYPE_P Typename IS comment_text
     */
 
-    keyword(Comment)
-        .and(keyword(On))
+    Comment.and(On)
         .map(|_| todo!())
 }
 
-use crate::lexer::Keyword::{Comment, On};
+use crate::lexer::Keyword::Comment;
+use crate::lexer::Keyword::On;
 use crate::parser::ast_node::RawStmt;
-use crate::parser::combinators::{keyword, Combinator, CombinatorHelpers};
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

@@ -5,7 +5,7 @@ pub(in crate::parser) fn abort_stmt() -> impl Combinator<Output = TransactionStm
         ABORT_P opt_transaction opt_transaction_chain
     */
 
-    keyword(Abort)
+    Abort
         .and(opt_transaction())
         .and_right(opt_transaction_chain())
         .map(|chain| TransactionStmt::Rollback { chain })
@@ -32,6 +32,7 @@ mod tests {
 
 use crate::lexer::Keyword::Abort;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::combinators::{keyword, Combinator, CombinatorHelpers};
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::opt_transaction::opt_transaction;
 use crate::parser::opt_transaction_chain::opt_transaction_chain;

@@ -7,17 +7,14 @@ pub(in crate::parser) fn alter_event_trigger_stmt() -> impl Combinator<Output = 
     */
 
     sequence!(
-        keyword(Event)
-            .and(keyword(Trigger))
-            .skip(),
+        Event.and(Trigger).skip(),
         col_id(),
     ).chain_result(match_first_with_state!(|(_, trigger), stream| {
         { enable_trigger() } => (state) {
             AlterEventTrigStmt::new(trigger, state).into()
         },
         {
-            keyword(Owner)
-                .and(keyword(To))
+            Owner.and(To)
                 .and_right(role_spec())
         } => (new_owner) {
             AlterOwnerStmt::new(
@@ -26,8 +23,7 @@ pub(in crate::parser) fn alter_event_trigger_stmt() -> impl Combinator<Output = 
             ).into()
         },
         {
-            keyword(Rename)
-                .and(keyword(To))
+            Rename.and(To)
                 .and_right(col_id())
         } => (new_name) {
             RenameStmt::new(
@@ -48,12 +44,12 @@ fn enable_trigger() -> impl Combinator<Output = EventTriggerState> {
     */
 
     match_first! {
-        keyword(Disable).map(|_| Disabled),
+        Disable.map(|_| Disabled),
         sequence!(
-            keyword(Enable).skip(),
+            Enable.skip(),
             or(
-                keyword(Replica).map(|_| FiresOnReplica),
-                keyword(Always).map(|_| FiresAlways)
+                Replica.map(|_| FiresOnReplica),
+                Always.map(|_| FiresAlways)
             )
             .optional()
         ).map(|(_, enable)|
@@ -129,7 +125,6 @@ use crate::parser::ast_node::RawStmt;
 use crate::parser::ast_node::RenameStmt;
 use crate::parser::ast_node::RenameTarget;
 use crate::parser::col_id;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::match_first_with_state;
 use crate::parser::combinators::or;

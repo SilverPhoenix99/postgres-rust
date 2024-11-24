@@ -32,13 +32,12 @@ where
 mod tests {
     use super::*;
     use crate::lexer::Keyword;
-    use crate::parser::combinators::keyword;
     use crate::parser::tests::DEFAULT_CONFIG;
 
     #[test]
     fn test_optional() {
         let mut stream = TokenStream::new("precision", DEFAULT_CONFIG);
-        let parser = optional(keyword(Keyword::Precision));
+        let parser = optional(Keyword::Precision);
         let actual = parser.parse(&mut stream);
         assert_eq!(Ok(Some(Keyword::Precision)), actual);
     }
@@ -46,7 +45,7 @@ mod tests {
     #[test]
     fn test_optional_no_match() {
         let mut stream = TokenStream::new("abort", DEFAULT_CONFIG);
-        let parser = optional(keyword(Keyword::Precision));
+        let parser = optional(Keyword::Precision);
         let actual = parser.parse(&mut stream);
         assert_eq!(Ok(None), actual);
     }
@@ -54,12 +53,14 @@ mod tests {
     #[test]
     fn test_optional_eof() {
         let mut stream = TokenStream::new("", DEFAULT_CONFIG);
-        let parser = optional(keyword(Keyword::Precision));
+        let parser = optional(Keyword::Precision);
         let actual = parser.parse(&mut stream);
         assert_eq!(Ok(None), actual);
     }
 }
 
 use crate::parser::combinators::Combinator;
-use crate::parser::result::{Optional as Opt, ScanErrorKind, ScanResult};
+use crate::parser::result::Optional as Opt;
+use crate::parser::result::ScanErrorKind;
+use crate::parser::result::ScanResult;
 use crate::parser::token_stream::TokenStream;

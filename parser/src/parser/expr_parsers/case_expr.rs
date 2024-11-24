@@ -8,7 +8,7 @@ pub(super) fn case_expr() -> impl Combinator<Output = CaseExpr> {
     */
 
     sequence!(
-        keyword(Case).skip(),
+        Case.skip(),
         a_expr().optional(),
         many(when_clause()).required(),
         else_clause()
@@ -19,9 +19,9 @@ pub(super) fn case_expr() -> impl Combinator<Output = CaseExpr> {
 
 fn when_clause() -> impl Combinator<Output = CaseWhen> {
     sequence!(
-        keyword(When).skip(),
+        When.skip(),
         a_expr(),
-        keyword(Then).skip(),
+        Then.skip(),
         a_expr()
     ).map(|(_, condition, _, body)|
         CaseWhen::new(condition, body)
@@ -29,7 +29,7 @@ fn when_clause() -> impl Combinator<Output = CaseWhen> {
 }
 
 fn else_clause() -> impl Combinator<Output = Option<ExprNode>> {
-    keyword(Else)
+    Else
         .and_right(a_expr())
         .optional()
 }
@@ -49,7 +49,6 @@ use crate::lexer::Keyword::When;
 use crate::parser::ast_node::CaseExpr;
 use crate::parser::ast_node::CaseWhen;
 use crate::parser::ast_node::ExprNode;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::many;
 use crate::parser::combinators::sequence;
 use crate::parser::combinators::Combinator;

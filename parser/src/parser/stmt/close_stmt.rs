@@ -6,9 +6,9 @@ pub(in crate::parser) fn close_stmt() -> impl Combinator<Output = OneOrAll> {
         CLOSE ColId
     */
 
-    keyword(Close)
+    Close
         .and_right(or(
-            keyword(All).map(|_| OneOrAll::All),
+            All.map(|_| OneOrAll::All),
             col_id().map(OneOrAll::Name)
         ))
 }
@@ -35,7 +35,10 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{All, Close};
+use crate::lexer::Keyword::All;
+use crate::lexer::Keyword::Close;
 use crate::parser::ast_node::OneOrAll;
 use crate::parser::col_id;
-use crate::parser::combinators::{keyword, or, Combinator, CombinatorHelpers};
+use crate::parser::combinators::or;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

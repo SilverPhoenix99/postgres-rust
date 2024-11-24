@@ -51,7 +51,7 @@ pub(super) fn stmt() -> impl Combinator<Output = RawStmt> {
         analyze_stmt(),
         call_stmt(),
         cluster_stmt(),
-        keyword(Checkpoint).map(|_| RawStmt::CheckPoint),
+        Checkpoint.map(|_| CheckPoint),
         close_stmt().map(ClosePortalStmt),
         comment_stmt(),
         commit_stmt().map(From::from),
@@ -161,12 +161,12 @@ use self::unlisten_stmt::unlisten_stmt;
 use self::vacuum_stmt::vacuum_stmt;
 use crate::lexer::Keyword::Checkpoint;
 use crate::parser::ast_node::RawStmt;
+use crate::parser::ast_node::RawStmt::CheckPoint;
 use crate::parser::ast_node::RawStmt::ClosePortalStmt;
 use crate::parser::ast_node::RawStmt::DeallocateStmt;
 use crate::parser::ast_node::RawStmt::ListenStmt;
 use crate::parser::ast_node::RawStmt::LoadStmt;
 use crate::parser::ast_node::RawStmt::UnlistenStmt;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;

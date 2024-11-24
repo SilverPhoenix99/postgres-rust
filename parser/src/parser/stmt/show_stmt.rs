@@ -9,24 +9,18 @@ pub(in crate::parser) fn show_stmt() -> impl Combinator<Output = VariableShowStm
         SHOW var_name
     */
 
-    keyword(Show)
-        .and_right(match_first!{
-            keyword(All).skip()
-                .map(|_| VariableShowStmt::All),
-            keyword(Time).skip()
-                .and(keyword(Zone).skip())
-                .map(|_| TimeZone),
-            keyword(Session).skip()
-                .and(keyword(Authorization).skip())
-                .map(|_| SessionAuthorization),
-            keyword(Transaction).skip()
-                .and(keyword(Isolation).skip())
-                .and(keyword(Level).skip())
-                .map(|_| TransactionIsolation),
-            var_name()
-                .map(Name)
-        })
-
+    Show.and_right(match_first!{
+        All.skip()
+            .map(|_| VariableShowStmt::All),
+        Time.and(Zone).skip()
+            .map(|_| TimeZone),
+        Session.and(Authorization).skip()
+            .map(|_| SessionAuthorization),
+        Transaction.and(Isolation).and(Level).skip()
+            .map(|_| TransactionIsolation),
+        var_name()
+            .map(Name)
+    })
 }
 
 #[cfg(test)]
@@ -48,9 +42,21 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{All, Authorization, Isolation, Level, Session, Show, Time, Transaction, Zone};
+use crate::lexer::Keyword::All;
+use crate::lexer::Keyword::Authorization;
+use crate::lexer::Keyword::Isolation;
+use crate::lexer::Keyword::Level;
+use crate::lexer::Keyword::Session;
+use crate::lexer::Keyword::Show;
+use crate::lexer::Keyword::Time;
+use crate::lexer::Keyword::Transaction;
+use crate::lexer::Keyword::Zone;
 use crate::parser::ast_node::VariableShowStmt;
-use crate::parser::combinators::{keyword, match_first};
-use crate::parser::combinators::{Combinator, CombinatorHelpers};
+use crate::parser::ast_node::VariableShowStmt::Name;
+use crate::parser::ast_node::VariableShowStmt::SessionAuthorization;
+use crate::parser::ast_node::VariableShowStmt::TimeZone;
+use crate::parser::ast_node::VariableShowStmt::TransactionIsolation;
+use crate::parser::combinators::match_first;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::var_name;
-use VariableShowStmt::{Name, SessionAuthorization, TimeZone, TransactionIsolation};

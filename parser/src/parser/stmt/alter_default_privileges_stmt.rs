@@ -6,7 +6,7 @@ pub(super) fn alter_default_privileges_stmt() -> impl Combinator<Output = AlterD
     */
 
     sequence!(
-        keyword(DefaultKw).and(keyword(Privileges)).skip(),
+        DefaultKw.and(Privileges).skip(),
         def_acl_option_list().optional(),
         def_acl_action()
     ).map(|(_, options, action)|
@@ -33,15 +33,14 @@ fn def_acl_option() -> impl Combinator<Output = AclOption> {
     match_first!{
 
         sequence!(
-            keyword(In).and(keyword(Schema)),
+            In.and(Schema),
             name_list()
         ).map(|(_, schemas)|
             AclOption::Schemas(schemas)
         ),
 
         sequence!(
-            keyword(For)
-                .and(keyword_if(|kw| matches!(kw, Role | User)))
+            For.and(Role.or(User))
                 .skip(),
             role_list()
         ).map(|(_, roles)|
@@ -61,9 +60,9 @@ fn def_acl_action() -> impl Combinator<Output = GrantStmt> {
     match_first! {
         {
             let grant = sequence!{
-                keyword(Grant).and_right(privileges()),
-                keyword(On).and_right(def_acl_privilege_target()),
-                keyword(To).and_right(grantee_list()),
+                Grant.and_right(privileges()),
+                On.and_right(def_acl_privilege_target()),
+                To.and_right(grantee_list()),
                 opt_grant_option()
             };
 
@@ -73,13 +72,13 @@ fn def_acl_action() -> impl Combinator<Output = GrantStmt> {
         },
         {
             let revoke = sequence!{
-                keyword(Revoke).skip(),
-                keyword(Grant).and(keyword(OptionKw)).and(keyword(For))
-                        .optional()
-                        .map(|grant_option| grant_option.is_some()),
+                Revoke.skip(),
+                Grant.and(OptionKw).and(For)
+                    .optional()
+                    .map(|grant_option| grant_option.is_some()),
                 privileges(),
-                keyword(On).and_right(def_acl_privilege_target()),
-                keyword(FromKw).and_right(grantee_list()),
+                On.and_right(def_acl_privilege_target()),
+                FromKw.and_right(grantee_list()),
                 opt_drop_behavior()
             };
 
@@ -94,11 +93,11 @@ fn def_acl_action() -> impl Combinator<Output = GrantStmt> {
 fn def_acl_privilege_target() -> impl Combinator<Output = AclTarget> {
 
     match_first! {
-        keyword(Tables).map(|_| AclTarget::Table),
-        keyword(Functions).or(keyword(Routines)).map(|_| AclTarget::Function),
-        keyword(Sequences).map(|_| AclTarget::Sequence),
-        keyword(Types).map(|_| AclTarget::Type),
-        keyword(Schemas).map(|_| AclTarget::Schema),
+        Tables.map(|_| AclTarget::Table),
+        Functions.or(Routines).map(|_| AclTarget::Function),
+        Sequences.map(|_| AclTarget::Sequence),
+        Types.map(|_| AclTarget::Type),
+        Schemas.map(|_| AclTarget::Schema),
     }
 }
 
@@ -248,12 +247,15 @@ mod tests {
     }
 }
 
+use crate::lexer::Keyword::DefaultKw;
+use crate::lexer::Keyword::For;
 use crate::lexer::Keyword::FromKw;
 use crate::lexer::Keyword::Functions;
 use crate::lexer::Keyword::Grant;
 use crate::lexer::Keyword::In;
 use crate::lexer::Keyword::On;
 use crate::lexer::Keyword::OptionKw;
+use crate::lexer::Keyword::Privileges;
 use crate::lexer::Keyword::Revoke;
 use crate::lexer::Keyword::Role;
 use crate::lexer::Keyword::Routines;
@@ -264,13 +266,18 @@ use crate::lexer::Keyword::Tables;
 use crate::lexer::Keyword::To;
 use crate::lexer::Keyword::Types;
 use crate::lexer::Keyword::User;
-use crate::lexer::Keyword::{DefaultKw, For, Privileges};
-use crate::parser::acl_parsers::{grantee_list, opt_drop_behavior, opt_grant_option};
+use crate::parser::acl_parsers::grantee_list;
+use crate::parser::acl_parsers::opt_drop_behavior;
+use crate::parser::acl_parsers::opt_grant_option;
 use crate::parser::ast_node::AclOption;
 use crate::parser::ast_node::AclTarget;
 use crate::parser::ast_node::AlterDefaultPrivilegesStmt;
 use crate::parser::ast_node::GrantStmt;
-use crate::parser::combinators::{keyword, keyword_if, many, match_first, sequence, Combinator, CombinatorHelpers};
+use crate::parser::combinators::many;
+use crate::parser::combinators::match_first;
+use crate::parser::combinators::sequence;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::name_list;
 use crate::parser::privilege_parsers::privileges;
 use crate::parser::role_parsers::role_list;

@@ -18,11 +18,11 @@ pub(in crate::parser) fn opt_interval() -> impl Combinator<Output = IntervalRang
 
     let parser = match_first! {
         year(),
-        keyword(MonthKw).map(|_| Month),
+        MonthKw.map(|_| Month),
         day(),
         hour(),
         minute(),
-        keyword(SecondKw)
+        SecondKw
             .and_right(opt_precision())
             .map(|precision| Second { precision }),
     };
@@ -39,9 +39,8 @@ fn year() -> impl Combinator<Output = IntervalRange> {
         | YEAR TO MONTH
     */
 
-    keyword(YearKw).and_right(
-        keyword(To)
-            .and(keyword(MonthKw))
+    YearKw.and_right(
+        To.and(MonthKw)
             .optional()
             .map(|y|
                 if y.is_some() { YearToMonth } else { Year }
@@ -58,12 +57,12 @@ fn day() -> impl Combinator<Output = IntervalRange> {
         | DAY TO SECOND ( '(' ICONST ')' )?
     */
 
-    keyword(DayKw)
-        .and_right(keyword(To)
-            .and_right(match_first! {
-                keyword(HourKw).map(|_| DayToHour),
-                keyword(MinuteKw).map(|_| DayToMinute),
-                keyword(SecondKw).and_right(
+    DayKw
+        .and_right(
+            To.and_right(match_first! {
+                HourKw.map(|_| DayToHour),
+                MinuteKw.map(|_| DayToMinute),
+                SecondKw.and_right(
                     opt_precision().map(|precision| DayToSecond { precision })
                 )
             })
@@ -80,11 +79,11 @@ fn hour() -> impl Combinator<Output = IntervalRange> {
         | HOUR TO SECOND ( '(' ICONST ')' )?
     */
 
-    keyword(HourKw)
-        .and_right(keyword(To)
-            .and_right(match_first! {
-                keyword(MinuteKw).map(|_| HourToMinute),
-                keyword(SecondKw).and_right(
+    HourKw
+        .and_right(
+            To.and_right(match_first! {
+                MinuteKw.map(|_| HourToMinute),
+                SecondKw.and_right(
                     opt_precision().map(|precision| HourToSecond { precision })
                 )
             })
@@ -100,10 +99,10 @@ fn minute() -> impl Combinator<Output = IntervalRange> {
         | MINUTE TO SECOND ( '(' ICONST ')' )?
     */
 
-    keyword(MinuteKw)
+    MinuteKw
         .and_right(
             sequence!(
-                keyword(To).and_right(keyword(SecondKw)).skip(),
+                To.and(SecondKw).skip(),
                 opt_precision()
             )
             .map(|(_, precision)| precision)
@@ -168,7 +167,6 @@ use crate::parser::ast_node::IntervalRange::Second;
 use crate::parser::ast_node::IntervalRange::Year;
 use crate::parser::ast_node::IntervalRange::YearToMonth;
 use crate::parser::ast_node::IntervalRange::{Day, Hour, HourToMinute};
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::sequence;
 use crate::parser::combinators::Combinator;

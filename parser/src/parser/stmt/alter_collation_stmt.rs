@@ -7,18 +7,16 @@ pub(in crate::parser) fn alter_collation_stmt() -> impl Combinator<Output = RawS
         ALTER COLLATION any_name SET SCHEMA ColId
     */
 
-    keyword(Collation)
+    Collation
         .and_right(any_name())
         .chain_result(match_first_with_state!{|name, stream| {
             {
-                keyword(Refresh)
-                    .and(keyword(Version))
+                Refresh.and(Version)
             } => (_) {
                 RefreshCollationVersionStmt(name)
             },
             {
-                keyword(Owner)
-                    .and(keyword(To))
+                Owner.and(To)
                     .and_right(role_spec())
             } => (new_owner) {
                 AlterOwnerStmt::new(
@@ -27,8 +25,7 @@ pub(in crate::parser) fn alter_collation_stmt() -> impl Combinator<Output = RawS
                 ).into()
             },
             {
-                keyword(Rename)
-                    .and(keyword(To))
+                Rename.and(To)
                     .and_right(col_id())
             } => (new_name) {
                 RenameStmt::new(
@@ -37,8 +34,7 @@ pub(in crate::parser) fn alter_collation_stmt() -> impl Combinator<Output = RawS
                 ).into()
             },
             {
-                keyword(Set)
-                    .and(keyword(Schema))
+                Set.and(Schema)
                     .and_right(col_id())
             } => (new_schema) {
                 AlterObjectSchemaStmt::new(
@@ -123,15 +119,15 @@ use crate::lexer::Keyword::Set;
 use crate::lexer::Keyword::To;
 use crate::lexer::Keyword::Version;
 use crate::parser::any_name;
+use crate::parser::ast_node::AlterObjectSchemaStmt;
 use crate::parser::ast_node::AlterObjectSchemaTarget;
 use crate::parser::ast_node::AlterOwnerStmt;
 use crate::parser::ast_node::AlterOwnerTarget;
+use crate::parser::ast_node::RawStmt;
 use crate::parser::ast_node::RawStmt::RefreshCollationVersionStmt;
 use crate::parser::ast_node::RenameStmt;
 use crate::parser::ast_node::RenameTarget;
-use crate::parser::ast_node::{AlterObjectSchemaStmt, RawStmt};
 use crate::parser::col_id;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::match_first_with_state;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;

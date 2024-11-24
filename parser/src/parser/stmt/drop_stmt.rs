@@ -16,12 +16,11 @@ pub(in crate::parser) fn drop_stmt() -> impl Combinator<Output = RawStmt> {
         DROP TYPE_P type_name_list opt_drop_behavior
     */
 
-    keyword(DropKw)
+    DropKw
         .map(|_| todo!())
 }
 
 use crate::lexer::Keyword::DropKw;
 use crate::parser::ast_node::RawStmt;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;

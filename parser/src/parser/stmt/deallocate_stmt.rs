@@ -6,10 +6,10 @@ pub(in crate::parser) fn deallocate_stmt() -> impl Combinator<Output = OneOrAll>
         DEALLOCATE (PREPARE)? ColId
     */
 
-    keyword(Deallocate)
-        .and(keyword(Prepare).optional())
+    Deallocate
+        .and(Prepare.optional())
         .and_right(or(
-            keyword(All).map(|_| OneOrAll::All),
+            All.map(|_| OneOrAll::All),
             col_id().map(OneOrAll::Name)
         ))
 }
@@ -31,8 +31,11 @@ mod tests {
     }
 }
 
+use crate::lexer::Keyword::All;
+use crate::lexer::Keyword::Deallocate;
 use crate::lexer::Keyword::Prepare;
-use crate::lexer::Keyword::{All, Deallocate};
 use crate::parser::ast_node::OneOrAll;
 use crate::parser::col_id;
-use crate::parser::combinators::{keyword, or, Combinator, CombinatorHelpers};
+use crate::parser::combinators::or;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;

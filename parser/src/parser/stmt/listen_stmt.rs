@@ -5,7 +5,7 @@ pub(in crate::parser) fn listen_stmt() -> impl Combinator<Output = Str> {
         LISTEN ColId
     */
 
-    keyword(Listen)
+    Listen
         .and_right(col_id())
 }
 
@@ -27,7 +27,6 @@ mod tests {
 
 use crate::lexer::Keyword::Listen;
 use crate::parser::col_id;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
 use postgres_basics::Str;

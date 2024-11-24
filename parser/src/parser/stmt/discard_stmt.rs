@@ -5,12 +5,12 @@ pub(in crate::parser) fn discard_stmt() -> impl Combinator<Output = DiscardStmt>
         DISCARD (ALL | PLANS | SEQUENCES | TEMP | TEMPORARY)
     */
 
-    keyword(Discard)
+    Discard
         .and_right(match_first!{
-            keyword(All).map(|_| DiscardStmt::All),
-            keyword(Plans).map(|_| DiscardStmt::Plans),
-            keyword(Sequences).map(|_| DiscardStmt::Sequences),
-            keyword(Temp).or(keyword(Temporary))
+            All.map(|_| DiscardStmt::All),
+            Plans.map(|_| DiscardStmt::Plans),
+            Sequences.map(|_| DiscardStmt::Sequences),
+            Temp.or(Temporary)
                 .map(|_| DiscardStmt::Temporary),
         })
 }
@@ -40,7 +40,6 @@ use crate::lexer::Keyword::Sequences;
 use crate::lexer::Keyword::Temp;
 use crate::lexer::Keyword::Temporary;
 use crate::parser::ast_node::DiscardStmt;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;

@@ -6,8 +6,8 @@ pub(super) fn privileges() -> impl Combinator<Output = AccessPrivilege> {
     */
 
     let all_privileges = sequence!{
-        keyword(AllKw).skip(),
-        keyword(Privileges).optional().skip(),
+        AllKw.skip(),
+        Privileges.optional().skip(),
         opt_name_list().optional()
     };
 
@@ -25,7 +25,7 @@ pub(super) fn privilege_list() -> impl Combinator<Output = Vec<SpecificAccessPri
         privilege ( ',' privilege )*
     */
 
-    many_sep(operator(Comma), privilege())
+    many_sep(Comma, privilege())
 }
 
 fn privilege() -> impl Combinator<Output = SpecificAccessPrivilege> {
@@ -39,12 +39,12 @@ fn privilege() -> impl Combinator<Output = SpecificAccessPrivilege> {
     */
 
     match_first! {
-        keyword(Alter).and(keyword(SystemKw)).map(|_| AlterSystem),
-        keyword(CreateKw)
+        Alter.and(SystemKw).map(|_| AlterSystem),
+        CreateKw
             .and_then(opt_name_list().optional(), |_, columns| Create(columns)),
-        keyword(ReferencesKw)
+        ReferencesKw
             .and_then(opt_name_list().optional(), |_, columns| References(columns)),
-        keyword(SelectKw)
+        SelectKw
             .and_then(opt_name_list().optional(), |_, columns| Select(columns)),
         col_id()
             .and_then(opt_name_list().optional(), Named)
@@ -54,8 +54,6 @@ fn privilege() -> impl Combinator<Output = SpecificAccessPrivilege> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::SpecificAccessPrivilege::{AlterSystem, Named};
-    use crate::parser::ast_node::{AccessPrivilege, SpecificAccessPrivilege};
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
@@ -99,15 +97,28 @@ mod tests {
     }
 }
 
+use crate::lexer::Keyword::All as AllKw;
+use crate::lexer::Keyword::Alter;
 use crate::lexer::Keyword::Create as CreateKw;
+use crate::lexer::Keyword::Privileges;
 use crate::lexer::Keyword::References as ReferencesKw;
 use crate::lexer::Keyword::Select as SelectKw;
-use crate::lexer::Keyword::{All as AllKw, Alter, Privileges, SystemKw};
+use crate::lexer::Keyword::SystemKw;
 use crate::lexer::OperatorKind::Comma;
-use crate::parser::ast_node::AccessPrivilege::*;
+use crate::parser::ast_node::AccessPrivilege;
+use crate::parser::ast_node::AccessPrivilege::All;
+use crate::parser::ast_node::AccessPrivilege::Specific;
+use crate::parser::ast_node::SpecificAccessPrivilege;
 use crate::parser::ast_node::SpecificAccessPrivilege::AlterSystem;
-use crate::parser::ast_node::SpecificAccessPrivilege::*;
-use crate::parser::ast_node::{AccessPrivilege, SpecificAccessPrivilege};
-use crate::parser::combinators::{keyword, match_first, operator, or, sequence, Combinator};
-use crate::parser::combinators::{many_sep, CombinatorHelpers};
-use crate::parser::{col_id, opt_name_list};
+use crate::parser::ast_node::SpecificAccessPrivilege::Create;
+use crate::parser::ast_node::SpecificAccessPrivilege::Named;
+use crate::parser::ast_node::SpecificAccessPrivilege::References;
+use crate::parser::ast_node::SpecificAccessPrivilege::Select;
+use crate::parser::col_id;
+use crate::parser::combinators::many_sep;
+use crate::parser::combinators::match_first;
+use crate::parser::combinators::or;
+use crate::parser::combinators::sequence;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::opt_name_list;

@@ -21,9 +21,9 @@ pub(in crate::parser) fn expr_const() -> impl Combinator<Output = ExprNode> {
                 Binary => BinaryStringConst(value),
                 Hex => HexStringConst(value),
             }),
-        keyword(True).map(|_| BooleanConst(true)),
-        keyword(False).map(|_| BooleanConst(false)),
-        keyword(Null).map(|_| NullConst),
+        True.map(|_| BooleanConst(true)),
+        False.map(|_| BooleanConst(false)),
+        Null.map(|_| NullConst),
     }
 }
 
@@ -100,11 +100,11 @@ use crate::parser::ast_node::ExprNode::StringConst;
 use crate::parser::ast_node::IntervalRange;
 use crate::parser::ast_node::TypeName::Interval;
 use crate::parser::ast_node::TypecastExpr;
+use crate::parser::combinators::number;
 use crate::parser::combinators::string;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::combinators::{bit_string, match_first};
-use crate::parser::combinators::{keyword, number};
 use crate::parser::opt_interval::opt_interval;
 use crate::parser::result::Optional;
 use crate::parser::result::ScanResult;

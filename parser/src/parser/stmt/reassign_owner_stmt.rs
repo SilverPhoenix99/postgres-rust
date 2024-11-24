@@ -6,12 +6,9 @@ pub(in crate::parser) fn reassign_owned_stmt() -> impl Combinator<Output = Reass
     */
 
     sequence!(
-        keyword(Reassign)
-            .and(keyword(OwnedKw))
-            .and(keyword(By))
-            .skip(),
+        Reassign.and(OwnedKw).and(By).skip(),
         role_list(),
-        keyword(To).skip(),
+        To.skip(),
         role_spec()
     ).map(|(|_, roles, _, new_owner)| {
         ReassignOwnedStmt::new(roles, new_owner)
@@ -38,7 +35,13 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword::{By, OwnedKw, Reassign, To};
+use crate::lexer::Keyword::By;
+use crate::lexer::Keyword::OwnedKw;
+use crate::lexer::Keyword::Reassign;
+use crate::lexer::Keyword::To;
 use crate::parser::ast_node::ReassignOwnedStmt;
-use crate::parser::combinators::{keyword, sequence, Combinator, CombinatorHelpers};
-use crate::parser::role_parsers::{role_list, role_spec};
+use crate::parser::combinators::sequence;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::role_parsers::role_list;
+use crate::parser::role_parsers::role_spec;

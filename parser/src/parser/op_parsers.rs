@@ -19,7 +19,8 @@ bitflags! {
     const Subquery = Self::All.bits() | Self::Like.bits();
   }
 }
-impl<'src> Parser<'src> {
+
+impl Parser<'_> {
 
     /// Alias: `qual_Op`
     pub(super) fn qual_op(&mut self) -> ScanResult<QualifiedOperator> {
@@ -73,9 +74,9 @@ impl<'src> Parser<'src> {
                         `OPERATOR '(' any_operator ')'`
                     */
 
-                    operator(OpenParenthesis).required().parse(&mut self.buffer)?;
+                    OpenParenthesis.required().parse(&mut self.buffer)?;
                     let op = self.any_operator().required()?;
-                    operator(CloseParenthesis).required().parse(&mut self.buffer)?;
+                    CloseParenthesis.required().parse(&mut self.buffer)?;
 
                     Ok(op)
                 },
@@ -96,7 +97,7 @@ impl<'src> Parser<'src> {
             ( col_id '.' )* all_op
         */
 
-        let qn = many(col_id().and_left(operator(Dot)))
+        let qn = many(col_id().and_left(Dot))
             .optional()
             .parse(&mut self.buffer)?
             .unwrap_or_default();
@@ -232,13 +233,22 @@ use crate::lexer::RawTokenKind::Keyword as Kw;
 use crate::lexer::RawTokenKind::Operator as Op;
 use crate::lexer::RawTokenKind::UserDefinedOperator;
 use crate::parser::ast_node::Operator;
-use crate::parser::ast_node::Operator::*;
+use crate::parser::ast_node::Operator::Addition;
+use crate::parser::ast_node::Operator::Division;
+use crate::parser::ast_node::Operator::Exponentiation;
+use crate::parser::ast_node::Operator::ILike;
+use crate::parser::ast_node::Operator::Modulo;
+use crate::parser::ast_node::Operator::Multiplication;
+use crate::parser::ast_node::Operator::Subtraction;
+use crate::parser::ast_node::Operator::UserDefined;
 use crate::parser::ast_node::QualifiedOperator;
-use crate::parser::combinators::{many, Combinator};
-use crate::parser::combinators::{operator, CombinatorHelpers};
+use crate::parser::col_id;
+use crate::parser::combinators::many;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::consume_macro::consume;
 use crate::parser::result::Required;
 use crate::parser::result::ScanErrorKind::NoMatch;
 use crate::parser::result::ScanResult;
-use crate::parser::{col_id, Parser};
+use crate::parser::Parser;
 use bitflags::bitflags;

@@ -5,7 +5,7 @@ pub(in crate::parser) fn savepoint_stmt() -> impl Combinator<Output = Transactio
         SAVEPOINT ColId
     */
 
-    keyword(Savepoint)
+    Savepoint
         .and_right(col_id())
         .map(TransactionStmt::Savepoint)
 }
@@ -26,5 +26,5 @@ mod tests {
 use crate::lexer::Keyword::Savepoint;
 use crate::parser::ast_node::TransactionStmt;
 use crate::parser::col_id;
+use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::combinators::{keyword, Combinator};

@@ -8,12 +8,11 @@ pub(in crate::parser) fn explain_stmt() -> impl Combinator<Output = RawStmt> {
         EXPLAIN '(' utility_option_list ')' ExplainableStmt
     */
 
-    keyword(Explain)
+    Explain
         .map(|_| todo!())
 }
 
 use crate::lexer::Keyword::Explain;
 use crate::parser::ast_node::RawStmt;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;

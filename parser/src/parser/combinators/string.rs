@@ -168,7 +168,7 @@ impl Combinator for UescapeCombi {
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
 
-        if keyword(Uescape).parse(stream).optional()?.is_none() {
+        if Uescape.parse(stream).optional()?.is_none() {
             return Ok('\\')
         }
 
@@ -225,7 +225,6 @@ use crate::lexer::StringKind::Basic;
 use crate::lexer::StringKind::Dollar;
 use crate::lexer::StringKind::Extended;
 use crate::lexer::StringKind::Unicode;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::uescape_escape::uescape_escape;
 use crate::parser::combinators::Combinator;
 use crate::parser::result::Optional;
@@ -245,4 +244,5 @@ use crate::string_decoders::ExtendedStringDecoder;
 use crate::string_decoders::ExtendedStringResult;
 use crate::string_decoders::UnicodeStringDecoder;
 use postgres_basics::Location;
-use UescapeState::{IsUescape, ParseUescapeAfterwards};
+use UescapeState::IsUescape;
+use UescapeState::ParseUescapeAfterwards;

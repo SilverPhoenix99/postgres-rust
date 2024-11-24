@@ -4,8 +4,8 @@ pub(in crate::parser) fn load_stmt() -> impl Combinator<Output = Box<str>> {
     /*
         LOAD SCONST
     */
-    
-    keyword(Load)
+
+    Load
         .and_right(string())
 }
 
@@ -23,7 +23,6 @@ mod tests {
 }
 
 use crate::lexer::Keyword::Load;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::string;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;

@@ -6,12 +6,11 @@ pub(in crate::parser) fn alter_group_stmt() -> impl Combinator<Output = RawStmt>
         ALTER GROUP role_spec (ADD | DROP) USER role_list
     */
 
-    keyword(Group)
+    Group
         .and_right(located(role_spec()))
         .chain_result(match_first_with_state!{|(group, group_loc), stream| {
             {
-                keyword(Rename)
-                    .and(keyword(To))
+                Rename.and(To)
                     .and_right(role_id())
             } => (new_name) {
                 let group = group.into_role_id(group_loc)?;
@@ -20,10 +19,10 @@ pub(in crate::parser) fn alter_group_stmt() -> impl Combinator<Output = RawStmt>
             {
                 sequence!(
                     or(
-                        keyword(Add).map(|_| AlterRoleAction::Add),
-                        keyword(DropKw).map(|_| AlterRoleAction::Remove),
+                        Add.map(|_| AlterRoleAction::Add),
+                        DropKw.map(|_| AlterRoleAction::Remove),
                     ),
-                    keyword(User).skip(),
+                    User.skip(),
                     role_list()
                 )
             } => ((action, _, roles)) {
@@ -100,7 +99,6 @@ use crate::parser::ast_node::AlterRoleStmt;
 use crate::parser::ast_node::RawStmt;
 use crate::parser::ast_node::RenameStmt;
 use crate::parser::ast_node::RenameTarget::Role;
-use crate::parser::combinators::keyword;
 use crate::parser::combinators::match_first_with_state;
 use crate::parser::combinators::or;
 use crate::parser::combinators::sequence;

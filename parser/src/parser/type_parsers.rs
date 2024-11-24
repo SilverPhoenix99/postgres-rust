@@ -13,7 +13,7 @@ impl Parser<'_> {
             ( SETOF )? SimpleTypename opt_array_bounds
         */
 
-        let setof = keyword(Setof).maybe_match().parse(&mut self.buffer)?.is_some();
+        let setof = Setof.maybe_match().parse(&mut self.buffer)?.is_some();
 
         let typ = self.simple_typename();
 
@@ -218,7 +218,7 @@ impl Parser<'_> {
                     }
                 },
                 Kw(kw) if kw.details().category() == Unreserved => {
-                    if kw == Double && keyword(Precision).optional().parse(&mut self.buffer)?.is_some() {
+                    if kw == Double && Precision.optional().parse(&mut self.buffer)?.is_some() {
                         // `Double` conflicts with, and has lower precedence than, any other `Keyword::Unreserved`.
                         // If it's followed by `Precision`, then it's a Float8.
                         // Otherwise, it's a plain `Unreserved` keyword, which can be its own User Defined Type.
@@ -306,11 +306,11 @@ fn opt_timezone() -> impl Combinator<Output = bool> {
     */
 
     or(
-        keyword(With).map(|_| true),
-        keyword(Without).map(|_| false),
+        With.map(|_| true),
+        Without.map(|_| false),
     )
-        .and_left(keyword(TimeKw))
-        .and_left(keyword(Zone))
+        .and_left(TimeKw)
+        .and_left(Zone)
         .optional()
         .map(|tz| tz.unwrap_or(false))
 }
@@ -324,21 +324,21 @@ fn opt_array_bounds() -> impl Combinator<Output = Vec<Option<i32>>> {
     */
 
     match_first!{
-        keyword(Array)
+        Array
             .and_right(
                 between(
-                    operator(OpenBracket),
+                    OpenBracket,
                     i32_literal(),
-                    operator(CloseBracket)
+                    CloseBracket
                 )
                 .optional()
             )
             .map(|dim| vec![dim]),
         many(
             between(
-                operator(OpenBracket),
+                OpenBracket,
                 i32_literal().optional(),
-                operator(CloseBracket)
+                CloseBracket
             )
         )
     }
@@ -351,7 +351,7 @@ fn opt_varying() -> impl Combinator<Output = bool> {
         ( VARYING )?
     */
 
-    keyword(Varying)
+    Varying
         .optional()
         .map(|varying| varying.is_some())
 }
@@ -540,21 +540,44 @@ use crate::parser::ast_node::IntervalRange;
 use crate::parser::ast_node::SystemType;
 use crate::parser::ast_node::TypeModifiers;
 use crate::parser::ast_node::TypeName;
-use crate::parser::ast_node::TypeName::*;
-use crate::parser::combinators::{between, many, match_first, Combinator};
-use crate::parser::combinators::{identifier, keyword, operator};
-use crate::parser::combinators::{or, CombinatorHelpers};
+use crate::parser::ast_node::TypeName::Bit;
+use crate::parser::ast_node::TypeName::Bool;
+use crate::parser::ast_node::TypeName::Bpchar;
+use crate::parser::ast_node::TypeName::Float4;
+use crate::parser::ast_node::TypeName::Float8;
+use crate::parser::ast_node::TypeName::Int2;
+use crate::parser::ast_node::TypeName::Int4;
+use crate::parser::ast_node::TypeName::Int8;
+use crate::parser::ast_node::TypeName::Interval;
+use crate::parser::ast_node::TypeName::Json;
+use crate::parser::ast_node::TypeName::Numeric;
+use crate::parser::ast_node::TypeName::Time;
+use crate::parser::ast_node::TypeName::TimeTz;
+use crate::parser::ast_node::TypeName::Timestamp;
+use crate::parser::ast_node::TypeName::TimestampTz;
+use crate::parser::ast_node::TypeName::Varbit;
+use crate::parser::ast_node::TypeName::Varchar;
+use crate::parser::attrs;
+use crate::parser::col_label;
+use crate::parser::combinators::between;
+use crate::parser::combinators::identifier;
+use crate::parser::combinators::many;
+use crate::parser::combinators::match_first;
+use crate::parser::combinators::or;
+use crate::parser::combinators::Combinator;
+use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::const_numeric_parsers::i32_literal;
 use crate::parser::consume_macro::consume;
+use crate::parser::i32_literal_paren;
 use crate::parser::opt_interval::opt_interval;
 use crate::parser::result::Optional;
 use crate::parser::result::Required;
 use crate::parser::result::ScanErrorKind::NoMatch;
 use crate::parser::result::ScanResult;
+use crate::parser::type_parsers::TypeNameKind::Const;
+use crate::parser::type_parsers::TypeNameKind::Simple;
+use crate::parser::ParseResult;
 use crate::parser::Parser;
 use crate::parser::ParserError;
 use crate::parser::ParserErrorKind::FloatPrecisionOverflow;
 use crate::parser::ParserErrorKind::FloatPrecisionUnderflow;
-use crate::parser::{attrs, ParseResult};
-use crate::parser::{col_label, i32_literal_paren};
-use TypeNameKind::*;
