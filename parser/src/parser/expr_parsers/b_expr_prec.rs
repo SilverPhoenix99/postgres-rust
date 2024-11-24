@@ -89,7 +89,7 @@ impl Parser<'_> {
         let range = min_prec..=max_prec;
 
         if range.contains(&2) {
-            if let Some(op) = self.qual_op().maybe_match()? {
+            if let Some(op) = qual_op().maybe_match().parse(&mut self.buffer)? {
                 return Ok(Op::QualifiedOperator(op))
             }
         }
@@ -173,7 +173,7 @@ impl Parser<'_> {
             '+' b_expr(6)
         */
 
-        if let Some(op) = self.qual_op().maybe_match()? {
+        if let Some(op) = qual_op().maybe_match().parse(&mut self.buffer)? {
             let prec = Left(2).right_precedence();
             let right = self.b_expr_prec(prec).required()?;
             let expr = UnaryExpr::new(op, right);
@@ -217,10 +217,10 @@ use crate::parser::expr_parsers::associativity::Associativity;
 use crate::parser::expr_parsers::associativity::Associativity::Left;
 use crate::parser::expr_parsers::associativity::Associativity::Non;
 use crate::parser::expr_parsers::associativity::Associativity::Right;
+use crate::parser::op_parsers::qual_op;
 use crate::parser::result::Optional;
 use crate::parser::result::Required;
 use crate::parser::result::ScanResult;
-use crate::parser::result::ScanResultTrait;
 use crate::parser::sign;
 use crate::parser::token_stream::TokenConsumer;
 use crate::parser::Parser;

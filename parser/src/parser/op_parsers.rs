@@ -1,145 +1,132 @@
-bitflags! {
-  pub(in super) struct OperatorKind : u8 {
-    const Additive       = 1;
-    const Multiplicative = 1 << 1;
-    const Exponentiation = 1 << 2;
-    const Boolean        = 1 << 3;
-    const Explicit       = 1 << 4;
-    const UserDefined    = 1 << 5;
-    const Like           = 1 << 6;
+/// Alias: `subquery_Op`
+pub(super) fn subquery_op() -> impl Combinator<Output = QualifiedOperator> {
 
-    const Math = Self::Additive.bits()
-               | Self::Multiplicative.bits()
-               | Self::Exponentiation.bits()
-               | Self::Boolean.bits();
+    // Intentionally excludes NOT LIKE/NOT ILIKE, due to conflicts.
+    // Those will have to be checked separately.
 
-    const Qualified = Self::UserDefined.bits() | Self::Explicit.bits();
-    const Unqualified = Self::UserDefined.bits() | Self::Math.bits();
-    const All = Self::Unqualified.bits() | Self::Qualified.bits();
-    const Subquery = Self::All.bits() | Self::Like.bits();
-  }
+    match_first!(
+        qual_all_op(),
+        like_op().map(From::from)
+    )
 }
 
-impl Parser<'_> {
+/// Alias: `qual_all_Op`
+pub(super) fn qual_all_op() -> impl Combinator<Output = QualifiedOperator> {
+    match_first!(
+        all_op().map(From::from),
+        explicit_op()
+    )
+}
 
-    /// Alias: `qual_Op`
-    pub(super) fn qual_op(&mut self) -> ScanResult<QualifiedOperator> {
-        self.operator(OperatorKind::Qualified)
-    }
+/// Alias: `qual_Op`
+pub(super) fn qual_op() -> impl Combinator<Output = QualifiedOperator> {
+    match_first!(
+        user_defined_operator()
+            .map(|op| UserDefined(op).into()),
+        explicit_op(),
+    )
+}
 
-    /// Alias: `all_Op`
-    pub(super) fn all_op(&mut self) -> ScanResult<Operator> {
-        let QualifiedOperator(_qo, op) = self.operator(OperatorKind::Unqualified)?;
-        debug_assert!(_qo.is_empty());
-        Ok(op)
-    }
+pub(super) fn explicit_op() -> impl Combinator<Output = QualifiedOperator> {
 
-    /// Alias: `qual_all_Op`
-    pub(super) fn qual_all_op(&mut self) -> ScanResult<QualifiedOperator> {
-        self.operator(OperatorKind::All)
-    }
+    /*
+        OPERATOR '(' any_operator ')'
+    */
 
-    /// Alias: `subquery_Op`
-    pub(super) fn subquery_op(&mut self) -> ScanResult<QualifiedOperator> {
-        self.operator(OperatorKind::Subquery)
-    }
+    OperatorKw.and_right(between(
+        OpenParenthesis,
+        any_operator(),
+        CloseParenthesis
+    ))
+}
 
-    pub(super) fn operator(&mut self, kind: OperatorKind) -> ScanResult<QualifiedOperator> {
+fn any_operator() -> impl Combinator<Output = QualifiedOperator> {
 
-        let slice = self.buffer.slice();
+    /*
+        ( col_id '.' )* all_op
+    */
 
-        consume! {self
-            Ok {
-                Op(Plus) if kind.intersects(OperatorKind::Additive) => Ok(Addition.into()),
-                Op(Minus) if kind.intersects(OperatorKind::Additive) => Ok(Subtraction.into()),
-                Op(Mul) if kind.intersects(OperatorKind::Multiplicative) => Ok(Multiplication.into()),
-                Op(Div) if kind.intersects(OperatorKind::Multiplicative) => Ok(Division.into()),
-                Op(Percent) if kind.intersects(OperatorKind::Multiplicative) => Ok(Modulo.into()),
-                Op(Circumflex) if kind.intersects(OperatorKind::Exponentiation) => Ok(Exponentiation.into()),
-                Op(Less) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::Less.into()),
-                Op(Equals) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::Equals.into()),
-                Op(Greater) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::Greater.into()),
-                Op(LessEquals) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::LessEquals.into()),
-                Op(GreaterEquals) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::GreaterEquals.into()),
-                Op(NotEquals) if kind.intersects(OperatorKind::Boolean) => Ok(Operator::NotEquals.into()),
-                Kw(Like) if kind.intersects(OperatorKind::Like) => Ok(Operator::Like.into()),
-                Kw(Ilike) if kind.intersects(OperatorKind::Like) => Ok(ILike.into()),
-                UserDefinedOperator if kind.intersects(OperatorKind::UserDefined) => {
-                    let op = slice.expect("slice is valid due to previous match").into();
-                    Ok(UserDefined(op).into())
-                },
-                Kw(OperatorKw) if kind.intersects(OperatorKind::Explicit) => {
+    many(col_id().and_left(Dot))
+        .optional()
+        .map(Option::unwrap_or_default)
+        .and_then(all_op(), QualifiedOperator)
+}
 
-                    /*
-                        `OPERATOR '(' any_operator ')'`
-                    */
+/// Alias: `all_Op`.
+///
+/// Inlined: `MathOp`
+fn all_op() -> impl Combinator<Output = Operator> {
+    match_first!(
+        additive_op(),
+        multiplicative_op(),
+        exponentiation_op(),
+        boolean_op(),
+        user_defined_operator().map(UserDefined)
+    )
+}
 
-                    OpenParenthesis.required().parse(&mut self.buffer)?;
-                    let op = self.any_operator().required()?;
-                    CloseParenthesis.required().parse(&mut self.buffer)?;
+fn additive_op() -> impl Combinator<Output = Operator> {
+    or(
+        Plus.map(|_| Addition),
+        Minus.map(|_| Subtraction)
+    )
+}
 
-                    Ok(op)
-                },
-            }
-            Err {
-                Ok(_) => {
-                    let loc = self.buffer.current_location();
-                    NoMatch(loc)
-                },
-                Err(err) => err.into(),
-            }
-        }
-    }
+fn multiplicative_op() -> impl Combinator<Output = Operator> {
+    match_first!(
+        Mul.map(|_| Multiplication),
+        Div.map(|_| Division),
+        Percent.map(|_| Modulo),
+    )
+}
 
-    pub(super) fn any_operator(&mut self) -> ScanResult<QualifiedOperator> {
+fn exponentiation_op() -> impl Combinator<Output = Operator> {
+    Circumflex.map(|_| Exponentiation)
+}
 
-        /*
-            ( col_id '.' )* all_op
-        */
+fn boolean_op() -> impl Combinator<Output = Operator> {
+    match_first!(
+        Less.map(|_| Operator::Less),
+        Equals.map(|_| Operator::Equals),
+        Greater.map(|_| Operator::Greater),
+        LessEquals.map(|_| Operator::LessEquals),
+        GreaterEquals.map(|_| Operator::GreaterEquals),
+        NotEquals.map(|_| Operator::NotEquals),
+    )
+}
 
-        let qn = many(col_id().and_left(Dot))
-            .optional()
-            .parse(&mut self.buffer)?
-            .unwrap_or_default();
-
-        let op = self.all_op();
-
-        let op = if qn.is_empty() {
-            op?
-        }
-        else {
-            op.required()?
-        };
-
-        let op = QualifiedOperator(qn, op);
-        Ok(op)
-    }
+fn like_op() -> impl Combinator<Output = Operator> {
+    or(
+        Like.map(|_| Operator::Like),
+        Ilike.map(|_| ILike)
+    )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
 
     #[test]
     fn test_user_defined_op() {
 
         let source = "operator(|/) <@>";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
         let expected = QualifiedOperator(vec![], UserDefined("|/".into()));
-        assert_eq!(Ok(expected), parser.qual_op());
+        assert_eq!(Ok(expected), qual_op().parse(&mut stream));
 
         let expected = QualifiedOperator(vec![], UserDefined("<@>".into()));
-        assert_eq!(Ok(expected), parser.qual_op());
+        assert_eq!(Ok(expected), qual_op().parse(&mut stream));
     }
 
     #[test]
     fn test_qualified_op() {
         let source = "operator(some_qn.*)";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        let actual = parser.qual_op();
+        let actual = qual_op().parse(&mut stream);
         let expected = QualifiedOperator(
             vec!["some_qn".into()],
             Multiplication
@@ -150,64 +137,64 @@ mod tests {
     #[test]
     fn test_any_operator() {
         let source = "@@ != q_name.+";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
         let expected = QualifiedOperator(
             vec![],
             UserDefined("@@".into())
         );
-        assert_eq!(Ok(expected), parser.any_operator());
+        assert_eq!(Ok(expected), any_operator().parse(&mut stream));
 
         let expected = QualifiedOperator(
             vec![],
             Operator::NotEquals
         );
-        assert_eq!(Ok(expected), parser.any_operator());
+        assert_eq!(Ok(expected), any_operator().parse(&mut stream));
 
         let expected = QualifiedOperator(
             vec!["q_name".into()],
             Addition
         );
-        assert_eq!(Ok(expected), parser.any_operator());
+        assert_eq!(Ok(expected), any_operator().parse(&mut stream));
     }
 
     #[test]
     fn test_all_op() {
         let source = "~@ <>";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        assert_eq!(Ok(UserDefined("~@".into())), parser.all_op());
-        assert_eq!(Ok(Operator::NotEquals), parser.all_op());
+        assert_eq!(Ok(UserDefined("~@".into())), all_op().parse(&mut stream));
+        assert_eq!(Ok(Operator::NotEquals), all_op().parse(&mut stream));
     }
 
     #[test]
     fn test_math_op() {
 
         let source = "+ - * / % ^ < > = <= >= != <>";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        assert_eq!(Ok(Addition), parser.all_op());
-        assert_eq!(Ok(Subtraction), parser.all_op());
-        assert_eq!(Ok(Multiplication), parser.all_op());
-        assert_eq!(Ok(Division), parser.all_op());
-        assert_eq!(Ok(Modulo), parser.all_op());
-        assert_eq!(Ok(Exponentiation), parser.all_op());
-        assert_eq!(Ok(Operator::Less), parser.all_op());
-        assert_eq!(Ok(Operator::Greater), parser.all_op());
-        assert_eq!(Ok(Operator::Equals), parser.all_op());
-        assert_eq!(Ok(Operator::LessEquals), parser.all_op());
-        assert_eq!(Ok(Operator::GreaterEquals), parser.all_op());
-        assert_eq!(Ok(Operator::NotEquals), parser.all_op());
-        assert_eq!(Ok(Operator::NotEquals), parser.all_op());
+        assert_eq!(Ok(Addition), all_op().parse(&mut stream));
+        assert_eq!(Ok(Subtraction), all_op().parse(&mut stream));
+        assert_eq!(Ok(Multiplication), all_op().parse(&mut stream));
+        assert_eq!(Ok(Division), all_op().parse(&mut stream));
+        assert_eq!(Ok(Modulo), all_op().parse(&mut stream));
+        assert_eq!(Ok(Exponentiation), all_op().parse(&mut stream));
+        assert_eq!(Ok(Operator::Less), all_op().parse(&mut stream));
+        assert_eq!(Ok(Operator::Greater), all_op().parse(&mut stream));
+        assert_eq!(Ok(Operator::Equals), all_op().parse(&mut stream));
+        assert_eq!(Ok(Operator::LessEquals), all_op().parse(&mut stream));
+        assert_eq!(Ok(Operator::GreaterEquals), all_op().parse(&mut stream));
+        assert_eq!(Ok(Operator::NotEquals), all_op().parse(&mut stream));
+        assert_eq!(Ok(Operator::NotEquals), all_op().parse(&mut stream));
     }
 
     #[test]
     fn test_subquery_op() {
         let source = "like ilike";
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        assert_eq!(Ok(Operator::Like.into()), parser.subquery_op());
-        assert_eq!(Ok(ILike.into()), parser.subquery_op());
+        assert_eq!(Ok(Operator::Like.into()), subquery_op().parse(&mut stream));
+        assert_eq!(Ok(ILike.into()), subquery_op().parse(&mut stream));
     }
 }
 
@@ -229,9 +216,6 @@ use crate::lexer::OperatorKind::NotEquals;
 use crate::lexer::OperatorKind::OpenParenthesis;
 use crate::lexer::OperatorKind::Percent;
 use crate::lexer::OperatorKind::Plus;
-use crate::lexer::RawTokenKind::Keyword as Kw;
-use crate::lexer::RawTokenKind::Operator as Op;
-use crate::lexer::RawTokenKind::UserDefinedOperator;
 use crate::parser::ast_node::Operator;
 use crate::parser::ast_node::Operator::Addition;
 use crate::parser::ast_node::Operator::Division;
@@ -243,12 +227,10 @@ use crate::parser::ast_node::Operator::Subtraction;
 use crate::parser::ast_node::Operator::UserDefined;
 use crate::parser::ast_node::QualifiedOperator;
 use crate::parser::col_id;
+use crate::parser::combinators::between;
 use crate::parser::combinators::many;
+use crate::parser::combinators::match_first;
+use crate::parser::combinators::or;
+use crate::parser::combinators::user_defined_operator;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::consume_macro::consume;
-use crate::parser::result::Required;
-use crate::parser::result::ScanErrorKind::NoMatch;
-use crate::parser::result::ScanResult;
-use crate::parser::Parser;
-use bitflags::bitflags;
