@@ -24,6 +24,7 @@ mod transaction_mode_list;
 mod transaction_stmt_legacy;
 mod type_parsers;
 mod warning;
+mod simple_typename;
 
 pub use self::{
     config::ParserConfig,
@@ -121,6 +122,44 @@ fn toplevel_stmt() -> impl Combinator<Output = RawStmt> {
         transaction_stmt_legacy().map(From::from),
         stmt()
     )
+}
+
+/// Post-condition: Vec **May** be empty
+fn opt_type_modifiers() -> impl Combinator<Output = TypeModifiers> {
+
+    /*
+        ( '(' expr_list ')' )?
+    */
+
+    expr_list_paren()
+        .optional()
+        .map(Option::unwrap_or_default)
+}
+
+fn opt_varying() -> impl Combinator<Output = bool> {
+
+    /*
+        ( VARYING )?
+    */
+
+    Varying
+        .optional()
+        .map(|varying| varying.is_some())
+}
+
+fn opt_timezone() -> impl Combinator<Output = bool> {
+
+    /*
+        ( (WITH | WITHOUT) TIME ZONE )?
+    */
+
+    match_first!(
+        With.map(|_| true),
+        Without.map(|_| false)
+    )
+        .and_left(sequence!(Time, Zone).skip())
+        .optional()
+        .map(|tz| tz.unwrap_or(false))
 }
 
 /// Post-condition: Vec is **Not** empty
@@ -350,58 +389,58 @@ where
     )
 }
 
-fn ident_or_keyword<P>(pred: P) -> impl Combinator<Output = Str>
-where
-    P: Fn(Keyword) -> bool
-{
-    or(
-        identifier().map(Str::from),
-        keyword_if(pred)
-            .map(|kw| Str::from(kw.details().text())),
-    )
-}
-
 /// Aliases:
 /// * `ColLabel`
 /// * `attr_name`
 fn col_label() -> impl Combinator<Output = Str> {
-    enclosure! { ident_or_keyword(|_| true) }
+    match_first!(
+        identifier().map(From::from),
+        keyword_if(|_| true).map(From::from)
+    )
 }
 
 /// Aliases:
 /// * `ColId`
 /// * `name`
 fn col_id() -> impl Combinator<Output = Str> {
-    enclosure! {
-        ident_or_keyword(|kw|
-            matches!(kw.details().category(), Unreserved | ColumnName)
-        )
-    }
-}
-
-/// Alias: `NonReservedWord`
-fn non_reserved_word() -> impl Combinator<Output = Str> {
-    ident_or_keyword(|kw|
-        matches!(kw.details().category(), Unreserved | ColumnName | TypeFuncName)
+    match_first!(
+        identifier().map(From::from),
+        Unreserved.map(From::from),
+        ColumnName.map(From::from),
     )
 }
 
 fn type_function_name() -> impl Combinator<Output = Str> {
-    ident_or_keyword(|kw|
-        matches!(kw.details().category(), Unreserved | TypeFuncName)
+    match_first!(
+        identifier().map(From::from),
+        Unreserved.map(From::from),
+        TypeFuncName.map(From::from),
+    )
+}
+
+/// Alias: `NonReservedWord`
+fn non_reserved_word() -> impl Combinator<Output = Str> {
+    match_first!(
+        identifier().map(From::from),
+        Unreserved.map(From::from),
+        ColumnName.map(From::from),
+        TypeFuncName.map(From::from),
     )
 }
 
 /// Alias: `BareColLabel`
 fn bare_col_label() -> impl Combinator<Output = Str> {
-    ident_or_keyword(|kw| kw.details().bare())
+    match_first!(
+        identifier().map(From::from),
+        keyword_if(|kw| kw.details().bare()).map(From::from)
+    )
 }
 
 /// Production: `'(' ICONST ')'`
 fn i32_literal_paren() -> impl Combinator<Output = i32> {
 
     between(OpenParenthesis, integer(), CloseParenthesis)
-        .map(|int| int.into())
+        .map(From::from)
 }
 
 /// '+' | '-'
@@ -418,7 +457,7 @@ mod tests {
     use postgres_basics::guc::BackslashQuote;
     use test_case::test_case;
 
-    pub(in crate::parser) const DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding);
+    pub(in crate::parser) static DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding);
 
     #[test_case("begin transaction")]
     #[test_case("start transaction")]
@@ -659,6 +698,11 @@ mod tests {
 }
 
 use crate::lexer::Keyword;
+use crate::lexer::Keyword::Time;
+use crate::lexer::Keyword::Varying;
+use crate::lexer::Keyword::With;
+use crate::lexer::Keyword::Without;
+use crate::lexer::Keyword::Zone;
 use crate::lexer::KeywordCategory::ColumnName;
 use crate::lexer::KeywordCategory::TypeFuncName;
 use crate::lexer::KeywordCategory::Unreserved;
@@ -676,8 +720,7 @@ use crate::parser::ast_node::RangeVar;
 use crate::parser::ast_node::RawStmt;
 use crate::parser::ast_node::RoleSpec;
 use crate::parser::ast_node::TransactionMode;
-use crate::parser::combinators::between;
-use crate::parser::combinators::enclosure;
+use crate::parser::ast_node::TypeModifiers;
 use crate::parser::combinators::identifier;
 use crate::parser::combinators::integer;
 use crate::parser::combinators::keyword_if;
@@ -687,9 +730,9 @@ use crate::parser::combinators::many_sep;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::operator_if;
 use crate::parser::combinators::optional;
-use crate::parser::combinators::or;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::combinators::{between, sequence};
 use crate::parser::error::syntax_err;
 use crate::parser::error::NameList;
 use crate::parser::expr_parsers::a_expr;

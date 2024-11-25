@@ -8,18 +8,18 @@ pub(in crate::parser) fn func_name() -> impl Combinator<Output = QualifiedName> 
     */
 
     match_first!{
-        keyword_category(TypeFuncName)
+        TypeFuncName
             .map(|kw| vec![kw.details().text().into()]),
         attrs(
             or(
-                keyword_category(Unreserved)
+                Unreserved
                     .map(|kw| kw.details().text().into()),
                 identifier()
                     .map(From::from)
             )
         ),
         located(attrs(
-            keyword_category(ColumnName)
+            ColumnName
                 .map(|kw| kw.details().text().into())
             ))
             .map_result(|result| {
@@ -73,10 +73,11 @@ use crate::lexer::KeywordCategory::ColumnName;
 use crate::lexer::KeywordCategory::TypeFuncName;
 use crate::lexer::KeywordCategory::Unreserved;
 use crate::parser::attrs;
+use crate::parser::combinators::identifier;
+use crate::parser::combinators::match_first;
 use crate::parser::combinators::or;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::combinators::{identifier, keyword_category, match_first};
 use crate::parser::error::syntax_err;
 use crate::parser::located_combinator::located;
 use crate::parser::QualifiedName;

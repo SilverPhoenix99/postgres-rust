@@ -77,6 +77,7 @@ impl GenericTypeName {
         &self.type_modifiers
     }
 }
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum TypeName {
     Json,

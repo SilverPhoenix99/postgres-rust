@@ -71,7 +71,7 @@ class ErrCodesGenerator
       '',
       *render_enum,
       '',
-      'pub(super) const MAP: mphf::Map<u32, ()> = mphf::Map::new(&SALTS, &ENTRIES);',
+      'pub(super) static MAP: mphf::Map<u32, ()> = mphf::Map::new(&SALTS, &ENTRIES);',
       '',
       *render_variants_array,
       '',
@@ -133,7 +133,7 @@ class ErrCodesGenerator
       end
 
     [
-      "const ENTRIES: [(u32, ()); #{variants.size}] = [",
+      "static ENTRIES: [(u32, ()); #{variants.size}] = [",
       *variants,
       '];'
     ]
@@ -148,7 +148,7 @@ class ErrCodesGenerator
       end
 
     [
-      "const SALTS: [i16; #{@table.salts.size}] = [",
+      "static SALTS: [i16; #{@table.salts.size}] = [",
       *values,
       '];'
     ]

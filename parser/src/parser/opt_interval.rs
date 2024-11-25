@@ -14,9 +14,10 @@ pub(in crate::parser) fn opt_interval() -> impl Combinator<Output = IntervalRang
         | MINUTE
         | MINUTE TO SECOND ( '(' ICONST ')' )?
         | SECOND ( '(' ICONST ')' )?
+        | /* EMPTY */
     */
 
-    let parser = match_first! {
+    match_first! (
         year(),
         MonthKw.map(|_| Month),
         day(),
@@ -25,9 +26,7 @@ pub(in crate::parser) fn opt_interval() -> impl Combinator<Output = IntervalRang
         SecondKw
             .and_right(opt_precision())
             .map(|precision| Second { precision }),
-    };
-
-    parser
+    )
         .optional()
         .map(Option::unwrap_or_default)
 }

@@ -6,16 +6,15 @@ pub(super) fn opt_transaction_chain() -> impl Combinator<Output = bool> {
         | /* EMPTY */
     */
 
-    enclosure! {
-        And
-            .and_right(
-                No.optional()
-                    .map(|no| no.is_none())
-            )
-            .and_left(Chain)
-            .optional()
-            .map(|chain| chain.unwrap_or(false))
-    }
+    sequence!(
+        And.skip(),
+        No.optional(),
+        Chain.skip()
+    ).optional()
+        .map(|chain| match chain {
+            Some((_, no, _)) => no.is_none(),
+            None => false,
+        })
 }
 
 #[cfg(test)]
@@ -37,6 +36,6 @@ mod tests {
 use crate::lexer::Keyword::And;
 use crate::lexer::Keyword::Chain;
 use crate::lexer::Keyword::No;
-use crate::parser::combinators::enclosure;
+use crate::parser::combinators::sequence;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;

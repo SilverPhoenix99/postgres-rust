@@ -7,7 +7,6 @@
   * Ref: https://doc.rust-lang.org/beta/unstable-book/language-features/rustc-attrs.html
 
 # TO DO
-* Re-check usages of `const`. They might be `static` instead.
 * Wrap `ParserWarningKind` in a `LocatedErrorReport`.
 * Merge `Parser.move_stmt` into `Parser.fetch_stmt`
 * Test `NumericSpec`.
