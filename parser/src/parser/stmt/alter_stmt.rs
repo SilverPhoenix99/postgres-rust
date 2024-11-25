@@ -1,8 +1,6 @@
 pub(in crate::parser) fn alter_stmt() -> impl Combinator<Output = RawStmt> {
 
-    // ALTER was consumed, so at least one of the following matches is required
-
-    match_first! {
+    Alter.and_right(match_first! {
         alter_default_privileges_stmt().map(From::from),
         alter_event_trigger_stmt(),
         alter_collation_stmt(),
@@ -10,7 +8,7 @@ pub(in crate::parser) fn alter_stmt() -> impl Combinator<Output = RawStmt> {
         alter_group_stmt(),
         alter_language_stmt(),
         alter_large_object_stmt(),
-    }
+    })
 }
 
 #[cfg(test)]
@@ -20,13 +18,13 @@ mod tests {
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 
-    #[test_case("collation some_name refresh version")]
-    #[test_case("conversion some_conversion rename to new_conversion")]
-    #[test_case("default privileges in schema some_schema grant all on tables to public")]
-    #[test_case("event trigger some_trigger owner to current_user")]
-    #[test_case("group some_group rename to new_group_name")]
-    #[test_case("language lang owner to session_user")]
-    #[test_case("large object -127 owner to public")]
+    #[test_case("alter collation some_name refresh version")]
+    #[test_case("alter conversion some_conversion rename to new_conversion")]
+    #[test_case("alter default privileges in schema some_schema grant all on tables to public")]
+    #[test_case("alter event trigger some_trigger owner to current_user")]
+    #[test_case("alter group some_group rename to new_group_name")]
+    #[test_case("alter language lang owner to session_user")]
+    #[test_case("alter large object -127 owner to public")]
     fn test_alter(source: &str) {
 
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
@@ -40,6 +38,7 @@ mod tests {
     }
 }
 
+use crate::lexer::Keyword::Alter;
 use crate::parser::ast_node::RawStmt;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::Combinator;
