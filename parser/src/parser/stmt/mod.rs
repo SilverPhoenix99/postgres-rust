@@ -92,7 +92,7 @@ mod tests {
     use test_case::test_case;
 
     #[test_case("abort transaction")]
-    #[test_case("group some_group add user public")]
+    #[test_case("alter group some_group add user public")]
     #[test_case("close all")]
     #[test_case("commit and no chain")]
     #[test_case("deallocate all")]
