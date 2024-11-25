@@ -6,6 +6,7 @@ macro_rules! match_first {
 
     ($head:expr , $($tail:expr),+ $(,)?) => {
         $crate::parser::combinators::parser(|stream| {
+            #[allow(unused_imports)]
             use $crate::parser::combinators::Combinator;
             use $crate::parser::result::ScanErrorKind::ScanErr;
 
@@ -101,7 +102,7 @@ where
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
 
-        if let Some(ok) = self.left.parse(stream).maybe_match()? {
+        if let Some(ok) = self.left.parse(stream).optional()? {
             return Ok(ok)
         }
 
@@ -110,5 +111,5 @@ where
 }
 
 use crate::parser::combinators::Combinator;
-use crate::parser::result::{ScanResult, ScanResultTrait};
+use crate::parser::result::{Optional, ScanResult};
 use crate::parser::token_stream::TokenStream;

@@ -33,11 +33,13 @@ pub(super) fn explicit_op() -> impl Combinator<Output = QualifiedOperator> {
         OPERATOR '(' any_operator ')'
     */
 
-    OperatorKw.and_right(between(
-        OpenParenthesis,
+    sequence!(
+        OperatorKw.skip(),
+        OpenParenthesis.skip(),
         any_operator(),
-        CloseParenthesis
-    ))
+        CloseParenthesis.skip()
+    )
+        .map(|(_, _, op, _)| op)
 }
 
 fn any_operator() -> impl Combinator<Output = QualifiedOperator> {
@@ -46,7 +48,7 @@ fn any_operator() -> impl Combinator<Output = QualifiedOperator> {
         ( col_id '.' )* all_op
     */
 
-    many(col_id().and_left(Dot))
+    many(enclosure! { col_id().and_left(Dot) })
         .optional()
         .map(Option::unwrap_or_default)
         .and_then(all_op(), QualifiedOperator)
@@ -227,10 +229,10 @@ use crate::parser::ast_node::Operator::Subtraction;
 use crate::parser::ast_node::Operator::UserDefined;
 use crate::parser::ast_node::QualifiedOperator;
 use crate::parser::col_id;
-use crate::parser::combinators::between;
-use crate::parser::combinators::many;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::or;
 use crate::parser::combinators::user_defined_operator;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
+use crate::parser::combinators::enclosure;
+use crate::parser::combinators::{many, sequence};

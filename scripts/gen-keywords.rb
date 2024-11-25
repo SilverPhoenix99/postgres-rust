@@ -90,7 +90,7 @@ class KeywordsGenerator
       '',
       render_max_length,
       '',
-      'pub(super) const MAP: mphf::Map<&str, KeywordDetails> = mphf::Map::new(&SALTS, &ENTRIES);',
+      'pub(super) static MAP: mphf::Map<&str, KeywordDetails> = mphf::Map::new(&SALTS, &ENTRIES);',
       '',
       *render_keyword_details,
       '',
@@ -135,7 +135,7 @@ class KeywordsGenerator
       end
 
     [
-      "pub(super) const ENTRIES: [(&str, KeywordDetails); #{keywords.length}] = [",
+      "pub(super) static ENTRIES: [(&str, KeywordDetails); #{keywords.length}] = [",
       *kw_details,
       '];'
     ]
@@ -143,7 +143,7 @@ class KeywordsGenerator
 
   def render_max_length
     max_len = keywords.map { |kw| kw.text.size }.max
-    "pub(super) const MAX_KEYWORD_LENGTH: usize = #{max_len};"
+    "pub(super) static MAX_KEYWORD_LENGTH: usize = #{max_len};"
   end
 
   def render_salts
@@ -155,7 +155,7 @@ class KeywordsGenerator
       end
 
     [
-      "const SALTS: [i16; #{@table.salts.size}] = [",
+      "static SALTS: [i16; #{@table.salts.size}] = [",
       *values,
       '];'
     ]

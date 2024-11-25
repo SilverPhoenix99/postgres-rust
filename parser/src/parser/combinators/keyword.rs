@@ -1,7 +1,3 @@
-pub(in crate::parser) fn keyword_category(category: KeywordCategory) -> KeywordCategoryCombi {
-    KeywordCategoryCombi(category)
-}
-
 /// Conditionally consumes the keyword.
 ///
 /// * If the `mapper` returns `true`, then the keyword is consumed.
@@ -76,16 +72,13 @@ impl Combinator for Keyword {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub(in crate::parser) struct KeywordCategoryCombi(KeywordCategory);
-
-impl Combinator for KeywordCategoryCombi {
+impl Combinator for KeywordCategory {
     type Output = Keyword;
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
         stream.consume(|tok|
             tok.keyword().filter(|kw|
-                kw.details().category() == self.0
+                kw.details().category() == *self
             )
         )
     }
@@ -137,8 +130,7 @@ mod tests {
     #[test]
     fn test_keyword_category() {
         let mut stream = TokenStream::new("abort", DEFAULT_CONFIG);
-        let parser = keyword_category(Unreserved);
-        let actual = parser.parse(&mut stream);
+        let actual = Unreserved.parse(&mut stream);
         assert_eq!(Ok(Keyword::Abort), actual);
     }
 }

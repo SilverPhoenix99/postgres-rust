@@ -30,4 +30,14 @@ impl Keyword {
     }
 }
 
-use crate::lexer::keyword::keywords::{ENTRIES, MAP, MAX_KEYWORD_LENGTH};
+impl From<Keyword> for Str {
+    fn from(value: Keyword) -> Self {
+        value.details().text().into()
+    }
+}
+
+use crate::lexer::keyword::keywords::ENTRIES;
+use crate::lexer::keyword::keywords::MAP;
+use crate::lexer::keyword::keywords::MAX_KEYWORD_LENGTH;
+use postgres_basics::Str;
+use std::fmt::Debug;

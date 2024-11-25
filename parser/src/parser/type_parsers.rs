@@ -285,34 +285,6 @@ impl Parser<'_> {
     }
 }
 
-/// Post-condition: Vec **May** be empty
-fn opt_type_modifiers() -> impl Combinator<Output = TypeModifiers> {
-
-    /*
-        ( '(' expr_list ')' )?
-    */
-
-    expr_list_paren()
-        .optional()
-        .map(Option::unwrap_or_default)
-}
-
-fn opt_timezone() -> impl Combinator<Output = bool> {
-
-    /*
-        ( (WITH | WITHOUT) TIME ZONE )?
-    */
-
-    or(
-        With.map(|_| true),
-        Without.map(|_| false),
-    )
-        .and_left(TimeKw)
-        .and_left(Zone)
-        .optional()
-        .map(|tz| tz.unwrap_or(false))
-}
-
 /// Post-condition: Vec is **Not** empty
 fn opt_array_bounds() -> impl Combinator<Output = Vec<Option<i32>>> {
 
@@ -341,17 +313,6 @@ fn opt_array_bounds() -> impl Combinator<Output = Vec<Option<i32>>> {
         )
     }
 
-}
-
-fn opt_varying() -> impl Combinator<Output = bool> {
-
-    /*
-        ( VARYING )?
-    */
-
-    Varying
-        .optional()
-        .map(|varying| varying.is_some())
 }
 
 #[cfg(test)]
@@ -520,10 +481,6 @@ use crate::lexer::Keyword::Smallint;
 use crate::lexer::Keyword::Time as TimeKw;
 use crate::lexer::Keyword::Timestamp as TimestampKw;
 use crate::lexer::Keyword::Varchar as VarcharKw;
-use crate::lexer::Keyword::Varying;
-use crate::lexer::Keyword::With;
-use crate::lexer::Keyword::Without;
-use crate::lexer::Keyword::Zone;
 use crate::lexer::KeywordCategory::ColumnName;
 use crate::lexer::KeywordCategory::TypeFuncName;
 use crate::lexer::KeywordCategory::Unreserved;
@@ -536,7 +493,6 @@ use crate::parser::ast_node::ExprNode::IntegerConst;
 use crate::parser::ast_node::GenericTypeName;
 use crate::parser::ast_node::IntervalRange;
 use crate::parser::ast_node::SystemType;
-use crate::parser::ast_node::TypeModifiers;
 use crate::parser::ast_node::TypeName;
 use crate::parser::ast_node::TypeName::Bit;
 use crate::parser::ast_node::TypeName::Bool;
@@ -555,20 +511,19 @@ use crate::parser::ast_node::TypeName::Timestamp;
 use crate::parser::ast_node::TypeName::TimestampTz;
 use crate::parser::ast_node::TypeName::Varbit;
 use crate::parser::ast_node::TypeName::Varchar;
-use crate::parser::attrs;
 use crate::parser::col_label;
 use crate::parser::combinators::between;
 use crate::parser::combinators::identifier;
 use crate::parser::combinators::many;
 use crate::parser::combinators::match_first;
-use crate::parser::combinators::or;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::const_numeric_parsers::i32_literal;
 use crate::parser::consume_macro::consume;
-use crate::parser::expr_list_paren;
 use crate::parser::i32_literal_paren;
 use crate::parser::opt_interval::opt_interval;
+use crate::parser::opt_type_modifiers;
+use crate::parser::opt_varying;
 use crate::parser::result::Required;
 use crate::parser::result::ScanErrorKind::NoMatch;
 use crate::parser::result::ScanResult;
@@ -578,3 +533,4 @@ use crate::parser::Parser;
 use crate::parser::ParserError;
 use crate::parser::ParserErrorKind::FloatPrecisionOverflow;
 use crate::parser::ParserErrorKind::FloatPrecisionUnderflow;
+use crate::parser::{attrs, opt_timezone};
