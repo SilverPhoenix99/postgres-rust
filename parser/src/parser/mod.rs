@@ -9,6 +9,7 @@ mod expr_parsers;
 mod func_name_parser;
 mod located_combinator;
 mod op_parsers;
+mod opt_array_bounds;
 mod opt_interval;
 mod opt_precision;
 mod opt_transaction;
@@ -17,13 +18,14 @@ mod opt_unique_null_treatment;
 mod privilege_parsers;
 mod result;
 mod role_parsers;
+mod simple_typename;
 mod stmt;
 mod token_stream;
 mod transaction_mode_list;
 mod transaction_stmt_legacy;
 mod type_parsers;
+mod typename;
 mod warning;
-mod simple_typename;
 
 pub use self::{
     config::ParserConfig,

@@ -52,7 +52,7 @@ impl Parser<'_> {
             max_prec = assoc.max_precedence();
 
             if op == Op::Typecast {
-                let type_name = self.type_name().required()?;
+                let type_name = typename().required().parse(&mut self.buffer)?;
                 expr = TypecastExpr::new(type_name, expr).into();
                 continue
             }
@@ -223,4 +223,5 @@ use crate::parser::result::Required;
 use crate::parser::result::ScanResult;
 use crate::parser::sign;
 use crate::parser::token_stream::TokenConsumer;
+use crate::parser::typename::typename;
 use crate::parser::Parser;
