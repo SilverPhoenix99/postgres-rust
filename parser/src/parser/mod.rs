@@ -260,16 +260,6 @@ fn opt_name_list() -> impl Combinator<Output = Vec<Str>> {
 }
 
 /// Post-condition: Vec is **Not** empty
-fn var_list() -> impl Combinator<Output = Vec<QualifiedName>> {
-
-    /*
-        var_name ( ',' var_name )*
-    */
-
-    many_sep(Comma, var_name())
-}
-
-/// Post-condition: Vec is **Not** empty
 fn var_name() -> impl Combinator<Output = QualifiedName> {
 
     /*
@@ -546,17 +536,6 @@ mod tests {
     }
 
     #[test]
-    fn test_var_list() {
-        let mut stream = TokenStream::new("qual.name , second.qualified", DEFAULT_CONFIG);
-        let expected = vec![
-            vec!["qual".into(), "name".into()],
-            vec!["second".into(), "qualified".into()]
-        ];
-
-        assert_eq!(Ok(expected), var_list().parse(&mut stream));
-    }
-
-    #[test]
     /// All these methods are similar, so no point in repeating tests:
     /// * test_var_name
     /// * test_name_list
@@ -712,7 +691,7 @@ mod tests {
         assert_eq!(Ok("sequence".into()), bare_col_label().parse(&mut stream));
         assert_eq!(Ok("xxyyzz".into()), bare_col_label().parse(&mut stream));
     }
-    
+
     #[test_case("in", FunctionParameterMode::In)]
     #[test_case("in out", FunctionParameterMode::InOut)]
     #[test_case("out", FunctionParameterMode::Out)]
