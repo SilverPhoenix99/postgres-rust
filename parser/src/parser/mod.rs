@@ -14,7 +14,6 @@ mod opt_precision;
 mod opt_transaction;
 mod opt_transaction_chain;
 mod opt_unique_null_treatment;
-mod parse_number;
 mod privilege_parsers;
 mod result;
 mod role_parsers;
@@ -196,8 +195,7 @@ fn semicolons() -> impl Combinator<Output = ()> {
 
 /// Alias: `transaction_mode_item`
 fn transaction_mode() -> impl Combinator<Output = TransactionMode> {
-    use Keyword as Kw;
-    use Keyword::{Isolation, Level, Not, Only, Read, Write};
+    use Kw::{Isolation, Level, Not, Only, Read, Write};
     use TransactionMode::*;
 
     /*
@@ -225,7 +223,7 @@ fn transaction_mode() -> impl Combinator<Output = TransactionMode> {
 
 /// Alias: `iso_level`
 fn isolation_level() -> impl Combinator<Output = IsolationLevel> {
-    use Keyword::{Committed, Read, Repeatable, Serializable, Uncommitted};
+    use Kw::{Committed, Read, Repeatable, Serializable, Uncommitted};
 
     /*
           READ UNCOMMITTED
@@ -443,6 +441,20 @@ fn i32_literal_paren() -> impl Combinator<Output = i32> {
         .map(From::from)
 }
 
+fn arg_class() -> impl Combinator<Output = FunctionParameterMode> {
+    use FunctionParameterMode::*;
+
+    match_first!(
+        Kw::In.and_right(
+            Kw::Out.optional()
+                .map(|out| if out.is_some() { InOut } else { In })
+        ),
+        Kw::Out.map(|_| Out),
+        Kw::Inout.map(|_| InOut),
+        Kw::Variadic.map(|_| Variadic),
+    )
+}
+
 /// '+' | '-'
 fn sign() -> impl Combinator<Output = OperatorKind> {
     use OperatorKind::{Minus, Plus};
@@ -557,14 +569,17 @@ mod tests {
         assert_eq!(Ok(expected), col_id_list(Dot).parse(&mut stream));
     }
 
-    #[test] #[ignore]
+    #[test]
     fn test_expr_list() {
-        todo!()
-    }
+        let mut stream = TokenStream::new("1, 2, 3", DEFAULT_CONFIG);
 
-    #[test] #[ignore]
-    fn test_a_expr() {
-        todo!()
+        let expected = vec![
+            ExprNode::IntegerConst(1),
+            ExprNode::IntegerConst(2),
+            ExprNode::IntegerConst(3),
+        ];
+
+        assert_eq!(Ok(expected), expr_list().parse(&mut stream));
     }
 
     #[test]
@@ -695,9 +710,19 @@ mod tests {
         assert_eq!(Ok("sequence".into()), bare_col_label().parse(&mut stream));
         assert_eq!(Ok("xxyyzz".into()), bare_col_label().parse(&mut stream));
     }
+    
+    #[test_case("in", FunctionParameterMode::In)]
+    #[test_case("in out", FunctionParameterMode::InOut)]
+    #[test_case("out", FunctionParameterMode::Out)]
+    #[test_case("inout", FunctionParameterMode::InOut)]
+    #[test_case("variadic", FunctionParameterMode::Variadic)]
+    fn test_arg_class(source: &str, expected: FunctionParameterMode) {
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(expected), arg_class().parse(&mut stream));
+    }
 }
 
-use crate::lexer::Keyword;
+use crate::lexer::Keyword as Kw;
 use crate::lexer::Keyword::Time;
 use crate::lexer::Keyword::Varying;
 use crate::lexer::Keyword::With;
@@ -714,6 +739,7 @@ use crate::lexer::OperatorKind::OpenParenthesis;
 use crate::lexer::OperatorKind::Semicolon;
 use crate::parser::ast_node::EventTriggerState;
 use crate::parser::ast_node::ExprNode;
+use crate::parser::ast_node::FunctionParameterMode;
 use crate::parser::ast_node::IsolationLevel;
 use crate::parser::ast_node::QualifiedName;
 use crate::parser::ast_node::RangeVar;
