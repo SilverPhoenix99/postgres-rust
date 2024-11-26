@@ -26,6 +26,11 @@ pub(in crate::parser) fn a_expr() -> impl Combinator<Output = ExprNode> {
     expr_primary()
 }
 
+pub(in crate::parser) fn b_expr() -> impl Combinator<Output = ExprNode> {
+    // TODO
+    expr_primary()
+}
+
 use crate::parser::ast_node::ExprNode;
 use crate::parser::combinators::Combinator;
 use crate::parser::result::ScanResult;
