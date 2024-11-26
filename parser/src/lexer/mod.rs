@@ -60,11 +60,6 @@ impl<'src> Lexer<'src> {
         self.buffer.current_location()
     }
 
-    #[inline(always)]
-    pub fn eof(&self) -> bool {
-        self.buffer.eof()
-    }
-
     pub fn peek(&mut self) -> Option<LexerResult> {
 
         if let Some(result) = self.peeked.as_ref() {
