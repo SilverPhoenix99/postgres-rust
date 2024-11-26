@@ -1,5 +1,5 @@
 /// Alias: `Typename`
-pub(super) fn typename() -> impl Combinator<Output = SystemType> {
+pub(super) fn typename() -> impl Combinator<Output = Type> {
 
     /*
         ( SETOF )? SimpleTypename opt_array_bounds
@@ -46,19 +46,36 @@ mod tests {
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 
-    #[test_case("int", SystemType::new(TypeName::Int4, vec![], SetOf::Scalar))]
-    #[test_case("int[]", SystemType::new(TypeName::Int4, vec![None], SetOf::Scalar))]
-    #[test_case("setof int", SystemType::new(TypeName::Int4, vec![], SetOf::Table))]
-    #[test_case("setof int[]", SystemType::new(TypeName::Int4, vec![None], SetOf::Table))]
-    #[test_case("setof double precision[10][]", SystemType::new(TypeName::Float8, vec![Some(10), None], SetOf::Table))]
-    fn test_typename(source: &str, expected: SystemType) {
+    #[test_case("int", Type::new(TypeName::Int4, vec![], SetOf::Record))]
+    #[test_case("int[]", Type::new(TypeName::Int4, vec![None], SetOf::Record))]
+    #[test_case("setof int", Type::new(TypeName::Int4, vec![], SetOf::Table))]
+    #[test_case("setof int[]", Type::new(TypeName::Int4, vec![None], SetOf::Table))]
+    #[test_case("setof double precision[10][]", Type::new(TypeName::Float8, vec![Some(10), None], SetOf::Table))]
+    fn test_typename(source: &str, expected: Type) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(expected), typename().parse(&mut stream));
+    }
+
+    #[test]
+    fn test_generic_typename() {
+        let source = "setof some_.qualified_name";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+
+        let expected = Type::new(
+            TypeName::Generic {
+                name: vec!["some_".into(), "qualified_name".into()],
+                type_modifiers: vec![],
+            },
+            vec![],
+            SetOf::Table,
+        );
+
         assert_eq!(Ok(expected), typename().parse(&mut stream));
     }
 }
 
 use crate::lexer::Keyword::Setof;
-use crate::parser::ast_node::SystemType;
+use crate::parser::ast_node::Type;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::opt_array_bounds::opt_array_bounds;

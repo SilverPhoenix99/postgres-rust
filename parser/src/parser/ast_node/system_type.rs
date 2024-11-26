@@ -1,14 +1,14 @@
 pub type TypeModifiers = Vec<ExprNode>;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct SystemType {
+pub struct Type {
     name: TypeName,
+    /// If the type is a table (i.e., set) of records, or just a single record.
+    mult: SetOf,
     array_bounds: Vec<Option<i32>>,
-    /// If the type is a table (i.e., set) of records
-    mult: SetOf
 }
 
-impl SystemType {
+impl Type {
     pub fn new(name: TypeName, array_bounds: Vec<Option<i32>>, mult: SetOf) -> Self {
         Self { name, array_bounds, mult }
     }
@@ -17,7 +17,7 @@ impl SystemType {
         Self::new(self.name, array_bounds, self.mult)
     }
 
-    pub fn returning_table(self) -> SystemType {
+    pub fn returning_table(self) -> Type {
         Self::new(self.name, self.array_bounds, SetOf::Table)
     }
 
@@ -31,6 +31,10 @@ impl SystemType {
 
     pub fn mult(&self) -> SetOf {
         self.mult
+    }
+
+    pub fn deconstruct(self) -> (TypeName, Vec<Option<i32>>, SetOf) {
+        (self.name, self.array_bounds, self.mult)
     }
 }
 
@@ -55,26 +59,6 @@ pub enum IntervalRange {
 impl Default for IntervalRange {
     fn default() -> Self {
         Self::Full { precision: None }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct GenericTypeName {
-    name: QualifiedName,
-    type_modifiers: TypeModifiers
-}
-
-impl GenericTypeName {
-    pub fn new(name: QualifiedName, type_modifiers: TypeModifiers) -> Self {
-        Self { name, type_modifiers }
-    }
-
-    pub fn name(&self) -> &QualifiedName {
-        &self.name
-    }
-
-    pub fn type_modifiers(&self) -> &Vec<ExprNode> {
-        &self.type_modifiers
     }
 }
 
@@ -114,49 +98,56 @@ pub enum TypeName {
     Interval(IntervalRange),
     Oid(Oid),
     /// Non-builtin types
-    Generic(GenericTypeName),
+    Generic {
+        name: QualifiedName,
+        type_modifiers: TypeModifiers
+    },
 }
 
 impl_from!(IntervalRange for TypeName => Interval);
-impl_from!(GenericTypeName for TypeName => Generic);
 
 impl TypeName {
-    pub fn with_array_bounds(self, array_bounds: Vec<Option<i32>>) -> SystemType {
-        SystemType::from(self).with_array_bounds(array_bounds)
+    pub fn with_array_bounds(self, array_bounds: Vec<Option<i32>>) -> Type {
+        Type::from(self).with_array_bounds(array_bounds)
     }
 
-    pub fn returning_table(self) -> SystemType {
-        SystemType::from(self).returning_table()
+    pub fn returning_table(self) -> Type {
+        Type::from(self).returning_table()
     }
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum SetOf {
-    Scalar,
+    /// When the type represents a single record, or scalar
+    Record,
+    /// When the type represents a set of records (i.e., a table).
     Table,
 }
 
-impl From<TypeName> for SystemType {
+impl From<TypeName> for Type {
     fn from(value: TypeName) -> Self {
-        SystemType::new(value, Vec::new(), SetOf::Scalar)
+        Type::new(value, Vec::new(), SetOf::Record)
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum FuncArgClass {
-    In,
-    Out,
-    InOut,
-    Variadic
+#[derive(Debug, Default, Copy, Clone, Eq, PartialEq)]
+pub enum FunctionParameterMode {
+    #[default]
+    Default  = b'd' as isize,
+    In       = b'i' as isize,
+    Out      = b'o' as isize,
+    InOut    = b'b' as isize,
+    Variadic = b'v' as isize,
+    Table    = b't' as isize,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct TypeOf {
+pub struct TypeReference {
     field: QualifiedName,
     mult: SetOf
 }
 
-impl TypeOf {
+impl TypeReference {
     pub fn new(field: QualifiedName, mult: SetOf) -> Self {
         Self { field, mult }
     }
@@ -172,13 +163,12 @@ impl TypeOf {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum FuncType {
-    System(SystemType),
+    Type(Type),
     /// When the type is specified with `%TYPE`.
-    TypeOf(TypeOf),
+    Reference(TypeReference),
 }
 
-use crate::parser::{
-    ast_node::{impl_from, QualifiedName},
-    ExprNode
-};
+use crate::parser::ast_node::impl_from;
+use crate::parser::ast_node::QualifiedName;
+use crate::parser::ExprNode;
 use postgres_basics::Oid;

@@ -55,9 +55,9 @@ pub struct XmlRoot {
 pub struct XmlSerialize {
     kind: XmlNodeKind,
     x: ExprNode,
-    type_name: SystemType,
+    type_name: Type,
     indent: bool,
 }
 
-use crate::parser::ast_node::{ExprNode, SystemType};
+use crate::parser::ast_node::{ExprNode, Type};
 use postgres_basics::Str;

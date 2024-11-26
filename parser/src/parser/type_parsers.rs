@@ -50,8 +50,8 @@ impl Parser<'_> {
 
                 let name = attrs(col_label()).parse(&mut self.buffer)?;
 
-                let modifiers = opt_type_modifiers().parse(&mut self.buffer)?;
-                return Ok(GenericTypeName::new(name, modifiers).into())
+                let type_modifiers = opt_type_modifiers().parse(&mut self.buffer)?;
+                return Ok(Generic { name, type_modifiers })
             },
             _ => {}
         }
@@ -61,8 +61,8 @@ impl Parser<'_> {
             .parse(&mut self.buffer)?;
 
         if let Some(name) = name {
-            let modifiers = opt_type_modifiers().parse(&mut self.buffer)?;
-            return Ok(GenericTypeName::new(name, modifiers).into())
+            let type_modifiers = opt_type_modifiers().parse(&mut self.buffer)?;
+            return Ok(Generic { name, type_modifiers })
         }
 
         let p = match_first!(
@@ -152,18 +152,18 @@ impl Parser<'_> {
                     else {
                         let prefix = parser(move |_| Ok(kw.into()));
                         let name = attrs(prefix).parse(&mut self.buffer)?;
-                        let modifiers = opt_type_modifiers().parse(&mut self.buffer)?;
+                        let type_modifiers = opt_type_modifiers().parse(&mut self.buffer)?;
 
-                        Ok(GenericTypeName::new(name, modifiers).into())
+                        Ok(Generic { name, type_modifiers })
                     }
                 },
                 Kw(kw) if kw.category() == TypeFuncName => {
                     let name = kw.into();
                     let name = vec![name];
 
-                    let modifiers = opt_type_modifiers().parse(&mut self.buffer)?;
+                    let type_modifiers = opt_type_modifiers().parse(&mut self.buffer)?;
 
-                    Ok(GenericTypeName::new(name, modifiers).into())
+                    Ok(Generic { name, type_modifiers })
                 },
             }
             Err {
@@ -266,17 +266,17 @@ mod tests {
     #[test_case("national character(8)",          Bpchar { length: Some(8) })]
     #[test_case("interval",                       IntervalRange::default().into())]
     #[test_case("interval(7)",                    IntervalRange::Full { precision: Some(7) }.into())]
-    // FIXME: #[test_case("identif.attrib",                 GenericTypeName::new(vec!["identif".into(), "attrib".into()], vec![]).into())]
-    // FIXME: #[test_case("identif(33)",                    GenericTypeName::new(vec!["identif".into(), "attrib".into()], vec![IntegerConst(33)]).into())]
-    #[test_case("double",                         GenericTypeName::new(vec!["double".into()], vec![]).into())]
-    #[test_case("double.unreserved",              GenericTypeName::new(vec!["double".into(), "unreserved".into()], vec![]).into())]
-    #[test_case("double.unreserved(55)",          GenericTypeName::new(vec!["double".into(), "unreserved".into()], vec![IntegerConst(55)]).into())]
-    #[test_case("authorization",                  GenericTypeName::new(vec!["authorization".into()], vec![]).into())]
-    #[test_case("authorization(23)",              GenericTypeName::new(vec!["authorization".into()], vec![IntegerConst(23)]).into())]
-    // FIXME: #[test_case("func_name",                      GenericTypeName::new(vec!["full".into(), "type_func_name".into()], vec![]).into())]
-    // FIXME: #[test_case("func_name(73)",                  GenericTypeName::new(vec!["full".into(), "type_func_name".into()], vec![IntegerConst(73)]).into())]
-    #[test_case("dec.col_name",                   GenericTypeName::new(vec!["dec".into(), "col_name".into()], vec![]).into())]
-    #[test_case("dec.col_name(17)",               GenericTypeName::new(vec!["dec".into(), "col_name".into()], vec![IntegerConst(17)]).into())]
+    // FIXME: #[test_case("identif.attrib",                 TypeName::Generic { name: vec!["identif".into(), "attrib".into()], type_modifiers: vec![] })]
+    // FIXME: #[test_case("identif(33)",                    TypeName::Generic { name: vec!["identif".into(), "attrib".into()], type_modifiers: vec![IntegerConst(33)] })]
+    #[test_case("double",                         TypeName::Generic { name: vec!["double".into()], type_modifiers: vec![] })]
+    #[test_case("double.unreserved",              TypeName::Generic { name: vec!["double".into(), "unreserved".into()], type_modifiers: vec![] })]
+    #[test_case("double.unreserved(55)",          TypeName::Generic { name: vec!["double".into(), "unreserved".into()], type_modifiers: vec![IntegerConst(55)] })]
+    #[test_case("authorization",                  TypeName::Generic { name: vec!["authorization".into()], type_modifiers: vec![] })]
+    #[test_case("authorization(23)",              TypeName::Generic { name: vec!["authorization".into()], type_modifiers: vec![IntegerConst(23)] })]
+    // FIXME: #[test_case("func_name",                      TypeName::Generic { name: vec!["full".into(), "type_func_name".into()], type_modifiers: vec![] })]
+    // FIXME: #[test_case("func_name(73)",                  TypeName::Generic { name: vec!["full".into(), "type_func_name".into()], type_modifiers: vec![IntegerConst(73)] })]
+    #[test_case("dec.col_name",                   TypeName::Generic { name: vec!["dec".into(), "col_name".into()], type_modifiers: vec![] })]
+    #[test_case("dec.col_name(17)",               TypeName::Generic { name: vec!["dec".into(), "col_name".into()], type_modifiers: vec![IntegerConst(17)] })]
     fn test_const_typename(source: &str, expected: TypeName) {
 
         let mut parser = Parser::new(source, DEFAULT_CONFIG);
@@ -314,10 +314,8 @@ use crate::lexer::KeywordCategory::Unreserved;
 use crate::lexer::OperatorKind::Dot;
 use crate::lexer::RawTokenKind::Keyword as Kw;
 use crate::lexer::RawTokenKind::Operator as Op;
-use crate::parser::ast_node::GenericTypeName;
 use crate::parser::ast_node::IntervalRange;
 use crate::parser::ast_node::TypeName;
-use crate::parser::ast_node::TypeName::Bit;
 use crate::parser::ast_node::TypeName::Bool;
 use crate::parser::ast_node::TypeName::Bpchar;
 use crate::parser::ast_node::TypeName::Float4;
@@ -334,6 +332,7 @@ use crate::parser::ast_node::TypeName::Timestamp;
 use crate::parser::ast_node::TypeName::TimestampTz;
 use crate::parser::ast_node::TypeName::Varbit;
 use crate::parser::ast_node::TypeName::Varchar;
+use crate::parser::ast_node::TypeName::{Bit, Generic};
 use crate::parser::attrs;
 use crate::parser::col_label;
 use crate::parser::combinators::identifier;
