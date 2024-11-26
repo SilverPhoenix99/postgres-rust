@@ -10,9 +10,9 @@ impl Combinator for NumberCombi {
     type Output = UnsignedNumber;
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
-        stream.consume_with_slice(|(tok, slice, _)| {
-            let NumberLiteral(radix) = tok else { return None };
-            parse_number(slice, radix)
+        stream.consume(|tok| {
+            let TokenValue::UnsignedNumber(value) = tok else { return None };
+            Some(mem::take(value))
         })
     }
 }
@@ -32,8 +32,10 @@ mod tests {
     }
 }
 
-use crate::lexer::RawTokenKind::NumberLiteral;
 use crate::parser::ast_node::UnsignedNumber;
-use crate::parser::combinators::{integer::parse_number, Combinator};
+use crate::parser::combinators::Combinator;
 use crate::parser::result::ScanResult;
-use crate::parser::token_stream::{SlicedTokenConsumer, TokenStream};
+use crate::parser::token_stream::TokenConsumer;
+use crate::parser::token_stream::TokenStream;
+use crate::parser::token_value::TokenValue;
+use std::mem;

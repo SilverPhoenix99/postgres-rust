@@ -64,10 +64,10 @@ impl Combinator for Keyword {
     type Output = Keyword;
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
-        stream.consume(|tok|
-            tok.keyword()
-                .filter(|&kw| kw == *self)
-        )
+        stream.consume(|tok| match tok {
+            TokenValue::Keyword(kw) if kw == self => Some(*kw),
+            _ => None
+        })
     }
 }
 
@@ -76,11 +76,10 @@ impl Combinator for KeywordCategory {
     type Output = Keyword;
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
-        stream.consume(|tok|
-            tok.keyword().filter(|kw|
-                kw.category() == *self
-            )
-        )
+        stream.consume(|tok| match tok {
+            TokenValue::Keyword(kw) if kw.category() == *self => Some(*kw),
+            _ => None
+        })
     }
 }
 
@@ -99,9 +98,9 @@ where
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
         stream.consume(|tok| {
-            match tok.keyword() {
-                Some(kw) => (self.mapper)(kw),
-                None => Ok(None)
+            match tok {
+                TokenValue::Keyword(kw) => (self.mapper)(*kw),
+                _ => Ok(None)
             }
         })
     }
@@ -150,6 +149,7 @@ use crate::parser::result::ScanResult;
 use crate::parser::token_stream::ConsumerResult;
 use crate::parser::token_stream::TokenConsumer;
 use crate::parser::token_stream::TokenStream;
+use crate::parser::token_value::TokenValue;
 use std::fmt::Debug;
 use std::fmt::Formatter;
 use std::marker::PhantomData;

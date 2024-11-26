@@ -16,37 +16,10 @@ impl Combinator for BitStringCombi {
     /// That needs to be done in a separate stage,
     /// when we know the actual type from the catalog.
     fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
-
-        let (kind, slice) = self.try_consume_bit_string(stream)?;
-        let mut string = slice.to_owned();
-
-        while let Some(suffix) = self.try_consume_string(stream).optional()? {
-            string.push_str(suffix);
-        }
-
-        Ok((kind, string.into_boxed_str()))
-    }
-}
-
-impl BitStringCombi {
-
-    fn try_consume_bit_string<'src>(&self, stream: &mut TokenStream<'src>) -> ScanResult<(BitStringKind, &'src str)> {
-
-        stream.consume_with_slice(|(tok, slice, _)| {
-            let BitStringLiteral(kind) = tok else { return None };
-
-            // strip delimiters
-            let slice = &slice[2..(slice.len() - 1)];
-            Some((kind, slice))
-        })
-    }
-
-    fn try_consume_string<'src>(&self, stream: &mut TokenStream<'src>) -> ScanResult<&'src str> {
-
-        stream.consume_with_slice(|(tok, slice, _)| {
-            tok.string()
-                .filter(|kind| kind.is_concatenable())
-                .map(|kind| strip_delimiters(kind, slice))
+        stream.consume(|tok| {
+            let BitString { kind, value } = tok else { return None };
+            let value = mem::take(value);
+            Some((*kind, value))
         })
     }
 }
@@ -55,6 +28,7 @@ impl BitStringCombi {
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 
     #[test_case("b'0110'", BitStringKind::Binary, "0110")]
@@ -69,17 +43,10 @@ mod tests {
     }
 }
 
-use crate::{
-    lexer::{
-        BitStringKind,
-        RawTokenKind::BitStringLiteral
-    },
-    parser::{
-        combinators::{
-            string::strip_delimiters,
-            Combinator
-        },
-        result::{Optional, ScanResult},
-        token_stream::{SlicedTokenConsumer, TokenStream}
-    }
-};
+use crate::lexer::BitStringKind;
+use crate::parser::combinators::Combinator;
+use crate::parser::result::ScanResult;
+use crate::parser::token_stream::TokenConsumer;
+use crate::parser::token_stream::TokenStream;
+use crate::parser::token_value::TokenValue::BitString;
+use std::mem;

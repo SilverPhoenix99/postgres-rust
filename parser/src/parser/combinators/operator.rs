@@ -62,10 +62,10 @@ impl Combinator for OperatorKind {
     type Output = OperatorKind;
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
-        stream.consume(|tok|
-            tok.operator()
-                .filter(|&op| op == *self)
-        )
+        stream.consume(|tok| match tok {
+            Operator(op) if op == self => Some(*op),
+            _ => None,
+        })
     }
 }
 
@@ -84,9 +84,9 @@ where
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<O> {
         stream.consume(|tok|
-            match tok.operator() {
-                Some(op) => (self.mapper)(op),
-                None => Ok(None),
+            match tok {
+                Operator(op) => (self.mapper)(*op),
+                _ => Ok(None),
             }
         )
     }
@@ -101,6 +101,10 @@ impl<F, T> Debug for OperatorCondCombi<F, T> {
 use crate::lexer::OperatorKind;
 use crate::parser::combinators::Combinator;
 use crate::parser::result::ScanResult;
-use crate::parser::token_stream::{ConsumerResult, TokenConsumer, TokenStream};
-use std::fmt::{Debug, Formatter};
+use crate::parser::token_stream::ConsumerResult;
+use crate::parser::token_stream::TokenConsumer;
+use crate::parser::token_stream::TokenStream;
+use crate::parser::token_value::TokenValue::Operator;
+use std::fmt::Debug;
+use std::fmt::Formatter;
 use std::marker::PhantomData;
