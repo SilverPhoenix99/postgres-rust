@@ -27,47 +27,14 @@ pub(in crate::parser) fn expr_const() -> impl Combinator<Output = ExprNode> {
     }
 }
 
-impl Parser<'_> {
-    /// Alias: `AexprConst`
-    pub(in crate::parser) fn expr_const(&mut self) -> ScanResult<ExprNode> {
-
-        /*
-              ICONST
-            | FCONST
-            | SCONST
-            | BCONST
-            | XCONST
-            | TRUE
-            | FALSE
-            | NULL
-            | ConstTypename SCONST
-        */
-
-        if let Some(mut type_name) = self.const_typename().optional()? {
-            let value = string().required().parse(&mut self.buffer)?;
-
-            if let Interval(IntervalRange::Full { precision: None }) = type_name {
-                // NB: `const_typename()` doesn't make this specific match,
-                // because `SCONST` is between `INTERVAL` and `opt_interval` (i.e., `INTERVAL SCONST opt_interval`),
-                // so that match is done here, if `INTERVAL` wasn't followed by `'(' ICONST ')'`
-                let range = opt_interval().parse(&mut self.buffer)?;
-                type_name = Interval(range)
-            }
-
-            let typecast = TypecastExpr::new(type_name.into(), StringConst(value));
-            return Ok(typecast.into())
-        }
-
-        expr_const().parse(&mut self.buffer)
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::parser::ast_node::ExprNode::{self, *};
-    use crate::parser::ast_node::{TypeName::*, *};
+    use super::*;
+    use crate::parser::ast_node::ExprNode::*;
+    #[allow(unused_imports)]
+    use crate::parser::ast_node::TypeName::*;
     use crate::parser::tests::DEFAULT_CONFIG;
-    use crate::parser::Parser;
+    use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 
     #[test_case("123", IntegerConst(123))]
@@ -78,12 +45,10 @@ mod tests {
     #[test_case("b'0101'", BinaryStringConst("0101".into()))]
     #[test_case("x'19af'", HexStringConst("19af".into()))]
     #[test_case("'string literal'", StringConst("string literal".into()))]
-    #[test_case("interval '1' day", TypecastExpr::new(Interval(IntervalRange::Day).into(), StringConst("1".into())).into())]
     fn test_expr_const(source: &str, expected: ExprNode) {
-        let mut parser = Parser::new(source, DEFAULT_CONFIG);
-
-        let actual = parser.expr_const();
-        assert_eq!(actual, Ok(expected))
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let actual = expr_const().parse(&mut stream);
+        assert_eq!(Ok(expected), actual);
     }
 }
 
@@ -97,15 +62,9 @@ use crate::parser::ast_node::ExprNode::BooleanConst;
 use crate::parser::ast_node::ExprNode::HexStringConst;
 use crate::parser::ast_node::ExprNode::NullConst;
 use crate::parser::ast_node::ExprNode::StringConst;
-use crate::parser::ast_node::IntervalRange;
-use crate::parser::ast_node::TypeName::Interval;
-use crate::parser::ast_node::TypecastExpr;
+use crate::parser::combinators::bit_string;
+use crate::parser::combinators::match_first;
 use crate::parser::combinators::number;
 use crate::parser::combinators::string;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::combinators::{bit_string, match_first};
-use crate::parser::opt_interval::opt_interval;
-use crate::parser::result::Optional;
-use crate::parser::result::ScanResult;
-use crate::parser::Parser;
