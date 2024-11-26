@@ -28,11 +28,19 @@ impl Keyword {
     pub fn details(&self) -> &'static KeywordDetails {
         &ENTRIES[*self as usize].1
     }
+
+    pub fn category(&self) -> KeywordCategory {
+        self.details().category()
+    }
+
+    pub fn text(&self) -> &'static str {
+        self.details().text()
+    }
 }
 
 impl From<Keyword> for Str {
     fn from(value: Keyword) -> Self {
-        value.details().text().into()
+        value.text().into()
     }
 }
 

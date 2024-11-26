@@ -9,18 +9,15 @@ pub(in crate::parser) fn func_name() -> impl Combinator<Output = QualifiedName> 
 
     match_first!{
         TypeFuncName
-            .map(|kw| vec![kw.details().text().into()]),
+            .map(|kw| vec![kw.into()]),
         attrs(
             or(
-                Unreserved
-                    .map(|kw| kw.details().text().into()),
-                identifier()
-                    .map(From::from)
+                Unreserved.map(From::from),
+                identifier().map(From::from)
             )
         ),
         located(attrs(
-            ColumnName
-                .map(|kw| kw.details().text().into())
+            ColumnName.map(From::from)
             ))
             .map_result(|result| {
                 let (name, loc) = result?;

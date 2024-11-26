@@ -78,7 +78,7 @@ impl Combinator for KeywordCategory {
     fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
         stream.consume(|tok|
             tok.keyword().filter(|kw|
-                kw.details().category() == *self
+                kw.category() == *self
             )
         )
     }
@@ -116,22 +116,30 @@ impl<F, O> Debug for KeywordCondCombi<F, O> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::lexer::Keyword::Abort;
     use crate::lexer::KeywordCategory::Unreserved;
     use crate::parser::tests::DEFAULT_CONFIG;
 
     #[test]
-    fn test_keyword_if() {
+    fn test_keyword() {
         let mut stream = TokenStream::new("abort", DEFAULT_CONFIG);
-        let parser = keyword_if(|kw| kw.details().category() == Unreserved);
-        let actual = parser.parse(&mut stream);
-        assert_eq!(Ok(Keyword::Abort), actual);
+        let actual = Abort.parse(&mut stream);
+        assert_eq!(Ok(Abort), actual);
     }
 
     #[test]
     fn test_keyword_category() {
         let mut stream = TokenStream::new("abort", DEFAULT_CONFIG);
         let actual = Unreserved.parse(&mut stream);
-        assert_eq!(Ok(Keyword::Abort), actual);
+        assert_eq!(Ok(Abort), actual);
+    }
+
+    #[test]
+    fn test_keyword_if() {
+        let mut stream = TokenStream::new("abort", DEFAULT_CONFIG);
+        let parser = keyword_if(|kw| kw.category() == Unreserved);
+        let actual = parser.parse(&mut stream);
+        assert_eq!(Ok(Abort), actual);
     }
 }
 

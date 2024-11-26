@@ -195,10 +195,7 @@ fn generic_type() -> impl Combinator<Output = TypeName> {
                     return Ok(Float8)
                 }
 
-                let prefix = parser(move |_|
-                    Ok(Str::Static(kw.details().text()))
-                );
-
+                let prefix = parser(move |_| Ok(kw.into()));
                 attrs(prefix)
                     .and_then(enclosure! { opt_type_modifiers() }, |name, modifiers|
                         GenericTypeName::new(name, modifiers).into()
@@ -206,7 +203,7 @@ fn generic_type() -> impl Combinator<Output = TypeName> {
                     .parse(stream)
             }),
         attrs(or(
-            TypeFuncName.map(|kw| kw.details().text().into()),
+            TypeFuncName.map(From::from),
             identifier().map(From::from)
         ))
             .and_then(enclosure!{ opt_type_modifiers() }, |name, modifiers|
@@ -265,6 +262,7 @@ mod tests {
     #[test_case("national character varying(3)",  Varchar { max_length: Some(3) })]
     #[test_case("bit",                            Bit(vec![IntegerConst(1)]))]
     #[test_case("bit(77)",                        Bit(vec![IntegerConst(77)]))]
+    #[test_case("bit varying",                    Varbit(vec![]))]
     #[test_case("char",                           Bpchar { length: Some(1) })]
     #[test_case("char(4)",                        Bpchar { length: Some(4) })]
     #[test_case("character",                      Bpchar { length: Some(1) })]
@@ -275,7 +273,6 @@ mod tests {
     #[test_case("national char(7)",               Bpchar { length: Some(7) })]
     #[test_case("national character",             Bpchar { length: Some(1) })]
     #[test_case("national character(8)",          Bpchar { length: Some(8) })]
-    #[test_case("bit varying",                    Varbit(vec![]))]
     #[test_case("interval",                       IntervalRange::default().into())]
     #[test_case("interval day",                   IntervalRange::Day.into())]
     #[test_case("interval(5)",                    IntervalRange::Full { precision: Some(5) }.into())]
@@ -355,4 +352,3 @@ use crate::parser::opt_interval::opt_interval;
 use crate::parser::opt_precision::opt_precision;
 use crate::parser::ParserErrorKind::{FloatPrecisionOverflow, FloatPrecisionUnderflow};
 use crate::parser::{attrs, i32_literal_paren, opt_timezone, opt_type_modifiers, opt_varying, ParserError};
-use postgres_basics::Str;
