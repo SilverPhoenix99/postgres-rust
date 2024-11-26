@@ -17,7 +17,6 @@ mod required;
 mod skip;
 mod string;
 mod try_match;
-mod uescape_escape;
 mod user_defined_operator;
 
 #[allow(unused_imports)] // TODO: eventually remove

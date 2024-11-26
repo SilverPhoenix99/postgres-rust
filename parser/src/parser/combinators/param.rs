@@ -10,18 +10,11 @@ impl Combinator for ParamCombi {
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
         stream.consume(|tok| match tok {
-            Param { index } => Some(index),
+            Param { index } => Some(*index),
             _ => None
         })
     }
 }
-
-use crate::lexer::RawTokenKind;
-use crate::parser::combinators::Combinator;
-use crate::parser::result::ScanResult;
-use crate::parser::token_stream::TokenConsumer;
-use crate::parser::token_stream::TokenStream;
-use RawTokenKind::Param;
 
 #[cfg(test)]
 mod tests {
@@ -34,3 +27,9 @@ mod tests {
         assert_eq!(Ok(3), param().parse(&mut stream))
     }
 }
+
+use crate::parser::combinators::Combinator;
+use crate::parser::result::ScanResult;
+use crate::parser::token_stream::TokenConsumer;
+use crate::parser::token_stream::TokenStream;
+use crate::parser::token_value::TokenValue::Param;

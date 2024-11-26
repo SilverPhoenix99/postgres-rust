@@ -1,10 +1,7 @@
 #[derive(Debug)]
 pub(super) struct TokenStream<'src> {
-    backslash_quote: BackslashQuote,
-    lexer: Lexer<'src>,
-    buf: VecDeque<EofResult<Located<RawTokenKind>>>,
-    /// All the warnings that have been collected while parsing.
-    warnings: Vec<Located<ParserWarningKind>>
+    lexer: BufferedLexer<'src>,
+    buf: VecDeque<EofResult<Located<TokenValue>>>
 }
 
 impl<'src> TokenStream<'src> {
@@ -16,36 +13,35 @@ impl<'src> TokenStream<'src> {
 
     pub fn with_lexer(lexer: Lexer<'src>, backslash_quote: BackslashQuote) -> Self {
         Self {
-            backslash_quote,
-            lexer,
+            lexer: BufferedLexer {
+                lexer,
+                peek: None,
+                backslash_quote,
+                warnings: Vec::new()
+            },
             buf: VecDeque::with_capacity(2),
-            warnings: Vec::new()
         }
     }
 
     #[inline(always)]
     pub fn source(&self) -> &'src str {
-        self.lexer.source()
-    }
-
-    pub fn backslash_quote(&self) -> BackslashQuote {
-        self.backslash_quote
+        self.lexer.lexer.source()
     }
 
     pub fn warnings(&mut self) -> &mut Vec<Located<ParserWarningKind>> {
-        &mut self.warnings
+        &mut self.lexer.warnings
     }
 
     #[inline(always)]
     pub fn eof(&mut self) -> bool {
-        matches!(self.peeked(), Err(Eof(_)))
+        matches!(self.peek_mut(), Err(Eof(_)))
     }
 
     /// Returns the location of the current token,
     /// or an empty-length location if in the Eof state.
     #[inline(always)]
     pub fn current_location(&mut self) -> Location {
-        match self.peeked() {
+        match self.peek_mut() {
             Ok((_, loc)) | Err(Eof(loc)) => loc.clone(),
             Err(NotEof(err)) => err.location().clone(),
         }
@@ -55,7 +51,7 @@ impl<'src> TokenStream<'src> {
 
         let source = self.source();
 
-        let Ok((_, loc)) = self.peeked() else {
+        let Ok((_, loc)) = self.peek_mut() else {
             return None
         };
 
@@ -69,25 +65,23 @@ impl<'src> TokenStream<'src> {
     }
 
     #[inline(always)]
-    pub fn peek(&mut self) -> EofResult<RawTokenKind> {
-        match self.peeked() {
-            Ok((tok, _)) => Ok(*tok),
+    pub fn peek(&mut self) -> EofResult<&TokenValue> {
+        match self.peek_mut() {
+            Ok((tok, _)) => Ok(tok),
             Err(err) => Err(err.clone()),
         }
     }
 
-    pub fn peek_with_slice(&mut self) -> EofResult<(RawTokenKind, &'src str)> {
-        let source = self.lexer.source();
-        match self.peeked() {
-            Ok((tok, loc)) => {
-                let slice = loc.slice(source);
-                Ok((*tok, slice))
-            },
-            Err(err) => Err(err.clone()),
-        }
+    fn peek_mut(&mut self) -> &mut EofResult<Located<TokenValue>> {
+
+        self.fill_buf();
+
+        // SAFETY: `fill_buf()` always adds 2 elements to `self.buf`,
+        //         even when the lexer is done
+        self.buf.front_mut().unwrap()
     }
 
-    pub fn peek2(&mut self) -> (EofResult<RawTokenKind>, EofResult<RawTokenKind>) {
+    pub fn peek2(&mut self) -> (EofResult<&TokenValue>, EofResult<&TokenValue>) {
 
         self.fill_buf();
 
@@ -99,25 +93,16 @@ impl<'src> TokenStream<'src> {
             .expect("second element missing: `fill_buf()` should have filled 2 elements into `self.buf`");
 
         let first = match first {
-            Ok((tok, _)) => Ok(*tok),
+            Ok((tok, _)) => Ok(tok),
             Err(err) => Err(err.clone()),
         };
 
         let second = match second {
-            Ok((tok, _)) => Ok(*tok),
+            Ok((tok, _)) => Ok(tok),
             Err(err) => Err(err.clone()),
         };
 
         (first, second)
-    }
-
-    fn peeked(&mut self) -> &EofResult<Located<RawTokenKind>> {
-
-        self.fill_buf();
-
-        // SAFETY: `fill_buf()` always adds 2 elements to `self.buf`,
-        //         even when the lexer is done
-        self.buf.front().unwrap()
     }
 
     fn fill_buf(&mut self) {
@@ -127,88 +112,83 @@ impl<'src> TokenStream<'src> {
         }
     }
 
-    fn lex_next(&mut self) -> EofResult<Located<RawTokenKind>> {
+    fn lex_next(&mut self) -> EofResult<Located<TokenValue>> {
+        use RawTokenKind::*;
 
-        match self.lexer.next() {
-            Some(Ok(tok)) => Ok(tok),
-            Some(Err(lex_err)) => Err(NotEof(lex_err.into())),
-            None => {
-                let loc = self.lexer.current_location();
-                Err(Eof(loc))
+        let (tok, loc) = self.lexer.next()?;
+        let slice = loc.slice(self.source());
+
+        match tok {
+            Operator(op) => Ok((TokenValue::Operator(op), loc)),
+            Keyword(kw) => Ok((TokenValue::Keyword(kw), loc)),
+            Param { index } => Ok((TokenValue::Param { index }, loc)),
+            UserDefinedOperator => {
+                let value = TokenValue::UserDefinedOperator(slice.into());
+                Ok((value, loc))
             },
+            NumberLiteral(radix) => {
+                let value = parse_number(slice, radix);
+                let value = TokenValue::UnsignedNumber(value);
+                Ok((value, loc))
+            },
+            BitStringLiteral(kind) => self.lexer.parse_bit_string(slice, loc, kind),
+            Identifier(kind) => self.lexer.parse_identifier(slice, loc, kind),
+            StringLiteral(kind) => self.lexer.parse_string(slice, loc, kind),
         }
     }
 }
 
-pub(super) type SlicedToken<'src> = (RawTokenKind, &'src str, Location);
+fn parse_number(value: &str, radix: NumberRadix) -> UnsignedNumber {
 
-pub(super) trait SlicedTokenConsumer<'src, TOut, FRes> {
-    fn consume_with_slice<F>(&mut self, f: F) -> ScanResult<TOut>
-    where
-        F: Fn(SlicedToken<'src>) -> FRes;
+    let value = value.replace("_", "");
+
+    if let Ok(int) = i32::from_str_radix(&value, radix as u32) {
+        // SAFETY: `0 <= int <= i32::MAX`
+        IntegerConst(int.into())
+    }
+    else {
+        NumericConst {
+            radix,
+            value: value.into_boxed_str()
+        }
+    }
 }
 
 pub(super) trait TokenConsumer<TOut, FRes> {
     fn consume<F>(&mut self, f: F) -> ScanResult<TOut>
     where
-        F: Fn(RawTokenKind) -> FRes;
+        F: Fn(&mut TokenValue) -> FRes;
 }
 
 /// Consumers are not allowed to return `Err(Eof)`,
 /// which is an internal error that's only returned by the `TokenBuffer` directly.
 pub(super) type ConsumerResult<T> = ParseResult<Option<T>>;
 
-impl<'src, TOut> SlicedTokenConsumer<'src, TOut, ConsumerResult<TOut>> for TokenStream<'src> {
-    fn consume_with_slice<F>(&mut self, mapper: F) -> ScanResult<TOut>
+impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenStream<'_> {
+    fn consume<F>(&mut self, mapper: F) -> ScanResult<TOut>
     where
-        F: Fn(SlicedToken<'src>) -> ConsumerResult<TOut>
+        F: Fn(&mut TokenValue) -> ConsumerResult<TOut>
     {
-        let source = self.lexer.source();
-        let tok = match self.peeked() {
-            Ok((tok, loc)) => (*tok, loc.slice(source), loc.clone()),
+        let (tok, loc) = match self.peek_mut() {
+            Ok(ok) => ok,
             Err(err) => return Err(err.clone().into()),
         };
 
-        let loc = tok.2.clone();
-        let Some(result) = mapper(tok).map_err(ScanErr)? else {
-            return Err(NoMatch(loc))
-        };
+        match mapper(tok) {
 
-        // The mapper matched the token.
-        // Consume it from the Lexer.
-        self.next();
+            // Some parse error was returned
+            Err(err) => Err(ScanErr(err)),
 
-        Ok(result)
-    }
-}
+            // No match
+            Ok(None) => Err(NoMatch(loc.clone())),
 
-impl<'src, TOut> SlicedTokenConsumer<'src, TOut, Option<TOut>> for TokenStream<'src> {
-    #[inline(always)]
-    fn consume_with_slice<F>(&mut self, mapper: F) -> ScanResult<TOut>
-    where
-        F: Fn(SlicedToken<'src>) -> Option<TOut>
-    {
-        self.consume_with_slice(|tok| Ok(mapper(tok)))
-    }
-}
-
-impl<'src> SlicedTokenConsumer<'src, SlicedToken<'src>, bool> for TokenStream<'src> {
-    #[inline(always)]
-    fn consume_with_slice<P>(&mut self, pred: P) -> ScanResult<SlicedToken<'src>>
-    where
-        P: Fn(SlicedToken<'src>) -> bool
-    {
-        self.consume_with_slice(|tok| pred(tok.clone()).then_some(tok))
-    }
-}
-
-impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenStream<'_> {
-    #[inline(always)]
-    fn consume<F>(&mut self, mapper: F) -> ScanResult<TOut>
-    where
-        F: Fn(RawTokenKind) -> ConsumerResult<TOut>
-    {
-        self.consume_with_slice(|(tok, _, _)| mapper(tok))
+            // The mapper matched the token
+            Ok(Some(ok)) => {
+                // Consume it from the Lexer.
+                self.next();
+                Ok(ok)
+            },
+        }
     }
 }
 
@@ -216,30 +196,305 @@ impl<TOut> TokenConsumer<TOut, Option<TOut>> for TokenStream<'_> {
     #[inline(always)]
     fn consume<F>(&mut self, mapper: F) -> ScanResult<TOut>
     where
-        F: Fn(RawTokenKind) -> Option<TOut>
+        F: Fn(&mut TokenValue) -> Option<TOut>
     {
         self.consume(|tok| Ok(mapper(tok)))
     }
 }
 
-impl TokenConsumer<RawTokenKind, bool> for TokenStream<'_> {
+impl TokenConsumer<TokenValue, bool> for TokenStream<'_> {
     #[inline(always)]
-    fn consume<P>(&mut self, pred: P) -> ScanResult<RawTokenKind>
+    fn consume<P>(&mut self, pred: P) -> ScanResult<TokenValue>
     where
-        P: Fn(RawTokenKind) -> bool
+        P: Fn(&mut TokenValue) -> bool
     {
-        self.consume(|tok| pred(tok).then_some(tok))
+        let (tok, loc) = match self.peek_mut() {
+            Ok(ok) => ok,
+            Err(err) => return Err(err.clone().into()),
+        };
+
+        if !pred(tok) {
+            return Err(NoMatch(loc.clone()))
+        }
+
+        // SAFETY: `tok` already matched
+        let (tok, _) = self.buf.pop_front().unwrap()?;
+        Ok(tok)
     }
+}
+
+#[derive(Debug)]
+struct BufferedLexer<'src> {
+    lexer: Lexer<'src>,
+    peek: Option<EofResult<Located<RawTokenKind>>>,
+    backslash_quote: BackslashQuote,
+    /// All the warnings that have been collected while parsing.
+    warnings: Vec<Located<ParserWarningKind>>
+}
+
+impl BufferedLexer<'_> {
+
+    fn next(&mut self) -> EofResult<Located<RawTokenKind>> {
+        match self.peek() {
+            Ok(_) => self.peek.take().unwrap(),
+            Err(err) => {
+                // Don't consume to prevent moving forward.
+                Err(err.clone())
+            },
+        }
+    }
+
+    fn peek(&mut self) -> &EofResult<Located<RawTokenKind>> {
+
+        self.peek.get_or_insert_with(|| {
+            match self.lexer.next() {
+                Some(Ok(tok)) => Ok(tok),
+                Some(Err(lex_err)) => Err(NotEof(lex_err.into())),
+                None => {
+                    let loc = self.lexer.current_location();
+                    Err(Eof(loc))
+                },
+            }
+        })
+    }
+
+    fn parse_identifier(&mut self, slice: &str, loc: Location, kind: IdentifierKind) -> EofResult<Located<TokenValue>> {
+        use IdentifierKind::*;
+
+        /*
+            An identifier is truncated to 64 chars.
+
+              identifier
+            | "Identifier"
+            | u&"Identifier" ( UESCAPE ( SCONST )+ )?
+        */
+
+        let mut ident = match kind {
+            Basic => slice.to_lowercase(),
+            Quoted => {
+                // Strip delimiters:
+                let slice = &slice[1..slice.len() - 1];
+
+                let ident = BasicStringDecoder::new(slice, true).decode();
+                ident.into_string()
+            }
+            Unicode => {
+                let escape = self.uescape()?;
+
+                // Strip delimiters:
+                let slice = &slice[3..slice.len() - 1];
+
+                UnicodeStringDecoder::new(slice, true, escape)
+                    .decode()
+                    .map(str::into_string)
+                    .map_err(|err|
+                        ParserError::new(UnicodeString(err), loc.clone())
+                    )?
+            }
+        };
+
+        if ident.len() > NAMEDATALEN {
+            let len: usize = ident.chars()
+                .take(NAMEDATALEN)
+                .map(char::len_utf8)
+                .sum();
+            if len < ident.len() {
+                ident.truncate(len);
+            }
+        }
+
+        let ident = ident.into_boxed_str();
+        let ident = TokenValue::Identifier(ident);
+
+        Ok((ident, loc))
+    }
+
+    fn parse_bit_string(&mut self, slice: &str, loc: Location, kind: BitStringKind) -> EofResult<Located<TokenValue>> {
+
+        /*
+            b'0101' ( SCONST )*
+            x'01af' ( SCONST )*
+        */
+
+        // strip delimiters
+        let slice = &slice[2..(slice.len() - 1)];
+
+        let mut buffer = slice.to_owned();
+
+        let mut end_position = loc.range().end;
+        while let Some((suffix, suffix_loc)) = self.next_concatenable_string() {
+            buffer.push_str(suffix);
+            end_position = suffix_loc.range().end;
+        }
+
+        let range = loc.range().start..end_position;
+        let loc = Location::new(range, loc.line(), loc.col());
+
+        let value = buffer.into_boxed_str();
+        let value = TokenValue::BitString { value, kind };
+        Ok((value, loc))
+    }
+
+    fn parse_string(&mut self, slice: &str, loc: Location, kind: StringKind) -> EofResult<Located<TokenValue>> {
+        use StringKind::*;
+
+        /*
+              'String' ( SCONST )*
+            | e'String' ( SCONST )*
+            | n'String' ( SCONST )*
+            | u&'String' ( SCONST )* ( UESCAPE ( SCONST )+ )?
+        */
+
+        let slice = strip_delimiters(kind, slice);
+        let mut buffer = slice.to_owned();
+
+        if kind == Dollar {
+            // Not concatenable, and no escapes to deal with.
+            let value = buffer.into_boxed_str();
+            let value = TokenValue::String(value);
+            return Ok((value, loc));
+        }
+
+        let mut end_position = loc.range().end;
+        while let Some((suffix, suffix_loc)) = self.next_concatenable_string() {
+            buffer.push_str(suffix);
+            end_position = suffix_loc.range().end;
+        }
+
+        let range = loc.range().start..end_position;
+        let loc = Location::new(range, loc.line(), loc.col());
+
+        let string = match kind {
+            Basic { .. } => {
+                BasicStringDecoder::new(&buffer, false).decode()
+            }
+            Extended { .. } => {
+
+                let mut decoder = ExtendedStringDecoder::new(&buffer, self.backslash_quote);
+                let ExtendedStringResult { result, warning } = decoder.decode();
+
+                if let Some(warning) = warning {
+                    self.warnings.push((warning.into(), loc.clone()));
+                }
+
+                result.map_err(|err|
+                    ParserError::new(ExtendedString(err), loc.clone())
+                )?
+            }
+            Unicode => {
+
+                let escape = self.uescape()?;
+
+                UnicodeStringDecoder::new(&buffer, false, escape)
+                    .decode()
+                    .map_err(|err|
+                        ParserError::new(UnicodeString(err), loc.clone())
+                    )?
+            }
+            Dollar => unreachable!("`$` strings don't have any escapes"),
+        };
+
+        let value = TokenValue::String(string);
+        Ok((value, loc))
+    }
+
+    fn uescape(&mut self) -> ParseResult<char> {
+        use RawTokenKind::{Keyword as Kw, StringLiteral};
+        use StringKind::*;
+
+        /*
+            ( UESCAPE ( SCONST )+ )?
+        */
+
+        let Ok((Kw(Uescape), _)) = self.peek() else { return Ok('\\') };
+        let _ = self.next();
+
+        let (kind, loc) = match self.peek() {
+
+            Ok((StringLiteral(kind @ (Basic { .. } | Extended { .. })), loc)) => (*kind, loc.clone()),
+
+            // No match or Eof
+            Ok((_, loc))
+            | Err(Eof(loc)) => {
+                return Err(
+                    ParserError::new(UescapeDelimiterMissing, loc.clone())
+                )
+            },
+
+            Err(NotEof(err)) => return Err(err.clone()),
+        };
+        let _ = self.next();
+
+        let slice = loc.slice(self.lexer.source());
+        let slice = strip_delimiters(kind, slice);
+
+        let mut buffer = slice.to_owned();
+
+        let mut end_position = loc.range().end;
+        while let Some((suffix, suffix_loc)) = self.next_concatenable_string() {
+            buffer.push_str(suffix);
+            end_position = suffix_loc.range().end;
+        }
+
+        let range = loc.range().start..end_position;
+        let loc = Location::new(range, loc.line(), loc.col());
+
+        uescape_escape(&buffer).ok_or_else(||
+            ParserError::new(InvalidUescapeDelimiter, loc)
+        )
+    }
+
+    fn next_concatenable_string(&mut self) -> Option<Located<&str>> {
+
+        let (kind, loc) = {
+            let Ok((RawTokenKind::StringLiteral(kind), loc)) = self.peek() else { return None };
+            if !kind.is_concatenable() {
+                return None
+            }
+            (*kind, loc.clone())
+        };
+        let _ = self.next();
+
+        let slice = loc.slice(self.lexer.source());
+        let slice = strip_delimiters(kind, slice);
+        Some((slice, loc))
+    }
+}
+
+fn strip_delimiters(kind: StringKind, slice: &str) -> &str {
+    use StringKind::*;
+
+    let range = match kind {
+        Dollar => {
+            let delim_len = slice.chars()
+                .enumerate()
+                .skip(1)
+                .find(|(_, c)| *c == '$')
+                .map(|(i, _)| i + 1) // include the '$'
+                .expect("$-string delimiter should exist");
+
+            let str_end = slice.len() - delim_len;
+            delim_len..str_end
+        }
+        Basic { .. } => 1..(slice.len() - 1),
+        Extended { .. } => {
+            // `e'`, `n'`, or `'`
+            let delim_len = if slice.starts_with('\'') { 1 } else { 2 };
+            delim_len..(slice.len() - 1)
+        }
+        Unicode => 3..(slice.len() - 1),
+    };
+
+    &slice[range]
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lexer::IdentifierKind::Basic;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::ParserError;
     use crate::parser::ParserErrorKind::Syntax;
-    use RawTokenKind::Identifier;
+    use TokenValue::Identifier;
 
     #[test]
     fn test_eof() {
@@ -288,8 +543,8 @@ mod tests {
     fn test_consume_returning_ok() {
         let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
-        let result = buffer.consume(|tok| Ok(Some(tok)));
-        assert_eq!(Ok(Identifier(Basic)), result);
+        let result = buffer.consume(|tok| Ok(Some(tok.clone())));
+        assert_matches!(result, Ok(Identifier(_)));
         assert_eq!(Location::new(4..15, 1, 5), buffer.current_location());
     }
 
@@ -306,8 +561,8 @@ mod tests {
     fn test_consume_returning_some() {
         let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
-        let result = buffer.consume(Some);
-        assert_eq!(Ok(Identifier(Basic)), result);
+        let result = buffer.consume(|tok| Some(tok.clone()));
+        assert_matches!(result, Ok(Identifier(_)));
         assert_eq!(Location::new(4..15, 1, 5), buffer.current_location());
     }
 
@@ -315,7 +570,7 @@ mod tests {
     fn test_consume_returning_false() {
         let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
-        let result: ScanResult<RawTokenKind> = buffer.consume(|_| false);
+        let result: ScanResult<TokenValue> = buffer.consume(|_| false);
         assert_matches!(result, Err(NoMatch(_)));
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
     }
@@ -325,7 +580,7 @@ mod tests {
         let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
         let result = buffer.consume(|_| true);
-        assert_eq!(Ok(Identifier(Basic)), result);
+        assert_matches!(result, Ok(Identifier(_)));
         assert_eq!(Location::new(4..15, 1, 5), buffer.current_location());
     }
 
@@ -334,17 +589,17 @@ mod tests {
         let mut buffer =  TokenStream::new("three identifiers innit", DEFAULT_CONFIG);
 
         let result = buffer.peek2();
-        assert_eq!((Ok(Identifier(Basic)), Ok(Identifier(Basic))), result);
+        assert_matches!(result, (Ok(Identifier(_)), Ok(Identifier(_))));
         assert_eq!(Location::new(0..5, 1, 1), buffer.current_location());
 
         buffer.next();
         let result = buffer.peek2();
-        assert_eq!((Ok(Identifier(Basic)), Ok(Identifier(Basic))), result);
+        assert_matches!(result, (Ok(Identifier(_)), Ok(Identifier(_))));
         assert_eq!(Location::new(6..17, 1, 7), buffer.current_location());
 
         buffer.next();
         let result = buffer.peek2();
-        assert_matches!(result, (Ok(Identifier(Basic)), Err(Eof(_))));
+        assert_matches!(result, (Ok(Identifier(_)), Err(Eof(_))));
         assert_eq!(Location::new(18..23, 1, 19), buffer.current_location());
 
         buffer.next();
@@ -355,18 +610,37 @@ mod tests {
 }
 
 use crate::error::HasLocation;
+use crate::lexer::BitStringKind;
+use crate::lexer::IdentifierKind;
+use crate::lexer::Keyword::Uescape;
 use crate::lexer::Lexer;
 use crate::lexer::RawTokenKind;
+use crate::lexer::StringKind;
+use crate::parser::ast_node::UnsignedNumber;
+use crate::parser::ast_node::UnsignedNumber::IntegerConst;
+use crate::parser::ast_node::UnsignedNumber::NumericConst;
 use crate::parser::result::EofErrorKind::Eof;
 use crate::parser::result::EofErrorKind::NotEof;
 use crate::parser::result::EofResult;
 use crate::parser::result::ScanErrorKind::NoMatch;
 use crate::parser::result::ScanErrorKind::ScanErr;
 use crate::parser::result::ScanResult;
+use crate::parser::token_value::TokenValue;
+use crate::parser::uescape_escape::uescape_escape;
 use crate::parser::ParseResult;
 use crate::parser::ParserConfig;
+use crate::parser::ParserError;
+use crate::parser::ParserErrorKind::UescapeDelimiterMissing;
+use crate::parser::ParserErrorKind::UnicodeString;
+use crate::parser::ParserErrorKind::{ExtendedString, InvalidUescapeDelimiter};
 use crate::parser::ParserWarningKind;
+use crate::string_decoders::BasicStringDecoder;
+use crate::string_decoders::ExtendedStringDecoder;
+use crate::string_decoders::ExtendedStringResult;
+use crate::string_decoders::UnicodeStringDecoder;
+use crate::NumberRadix;
 use postgres_basics::guc::BackslashQuote;
 use postgres_basics::Located;
 use postgres_basics::Location;
+use postgres_basics::NAMEDATALEN;
 use std::collections::VecDeque;

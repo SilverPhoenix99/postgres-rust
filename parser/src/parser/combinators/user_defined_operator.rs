@@ -9,18 +9,12 @@ impl Combinator for UserOpCombi {
     type Output = Box<str>;
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
-        stream.consume_with_slice(|(tok, slice, _)| match tok {
-            UserDefinedOperator => Some(slice.to_string().into_boxed_str()),
-            _ => None
+        stream.consume(|tok| {
+            let UserDefinedOperator(value) = tok else { return None };
+            Some(mem::take(value))
         })
     }
 }
-
-use crate::lexer::RawTokenKind::UserDefinedOperator;
-use crate::parser::combinators::Combinator;
-use crate::parser::result::ScanResult;
-use crate::parser::token_stream::SlicedTokenConsumer;
-use crate::parser::token_stream::TokenStream;
 
 #[cfg(test)]
 mod tests {
@@ -33,3 +27,10 @@ mod tests {
         assert_eq!("~@", user_defined_operator().parse(&mut stream).unwrap().as_ref());
     }
 }
+
+use crate::parser::combinators::Combinator;
+use crate::parser::result::ScanResult;
+use crate::parser::token_stream::TokenConsumer;
+use crate::parser::token_stream::TokenStream;
+use crate::parser::token_value::TokenValue::UserDefinedOperator;
+use std::mem;
