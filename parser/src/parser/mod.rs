@@ -72,30 +72,6 @@ impl<'src> Parser<'src> {
             warnings: mem::take(self.buffer.warnings()),
         }
     }
-
-    /// Post-condition: Vec is **Not** empty
-    #[deprecated]
-    fn attrs(&mut self, prefix: Str) -> ScanResult<QualifiedName> {
-
-        // A prefix token is passed to prevent a right shift of the Vec later on,
-        // to insert the 1st element.
-
-        /*
-            prefix ( '.' col_label )*
-        */
-
-        let mut attrs = vec![prefix];
-
-        let parser = optional(
-            Dot.and_right(col_label())
-        );
-
-        while let Some(attr) = parser.parse(&mut self.buffer)? {
-            attrs.push(attr);
-        }
-
-        Ok(attrs)
-    }
 }
 
 fn stmtmulti() -> impl Combinator<Output = Vec<RawStmt>> {
@@ -736,7 +712,6 @@ use crate::parser::combinators::many_pre;
 use crate::parser::combinators::many_sep;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::operator_if;
-use crate::parser::combinators::optional;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::combinators::{between, sequence};
@@ -747,7 +722,6 @@ use crate::parser::located_combinator::located;
 use crate::parser::opt_transaction::opt_transaction;
 use crate::parser::opt_transaction_chain::opt_transaction_chain;
 use crate::parser::result::Required;
-use crate::parser::result::ScanResult;
 use crate::parser::stmt::stmt;
 use crate::parser::token_stream::TokenConsumer;
 use crate::parser::token_stream::TokenStream;
