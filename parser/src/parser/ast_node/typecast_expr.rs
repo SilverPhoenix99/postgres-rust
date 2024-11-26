@@ -1,15 +1,15 @@
 #[derive(Debug, Clone, PartialEq)]
 pub struct TypecastExpr {
-    type_name: SystemType,
+    type_name: Type,
     value: ExprNode,
 }
 
 impl TypecastExpr {
-    pub fn new(type_name: SystemType, value: ExprNode) -> Self {
+    pub fn new(type_name: Type, value: ExprNode) -> Self {
         Self { type_name, value }
     }
 
-    pub fn type_name(&self) -> &SystemType {
+    pub fn type_name(&self) -> &Type {
         &self.type_name
     }
 
@@ -18,4 +18,4 @@ impl TypecastExpr {
     }
 }
 
-use crate::parser::ast_node::{ExprNode, SystemType};
+use crate::parser::ast_node::{ExprNode, Type};

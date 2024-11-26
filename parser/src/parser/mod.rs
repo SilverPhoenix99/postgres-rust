@@ -7,6 +7,7 @@ mod consume_macro;
 mod error;
 mod expr_parsers;
 mod func_name_parser;
+mod func_type;
 mod located_combinator;
 mod op_parsers;
 mod opt_array_bounds;

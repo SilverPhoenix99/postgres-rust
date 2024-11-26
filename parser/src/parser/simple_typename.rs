@@ -197,8 +197,8 @@ fn generic_type() -> impl Combinator<Output = TypeName> {
 
                 let prefix = parser(move |_| Ok(kw.into()));
                 attrs(prefix)
-                    .and_then(enclosure! { opt_type_modifiers() }, |name, modifiers|
-                        GenericTypeName::new(name, modifiers).into()
+                    .and_then(enclosure! { opt_type_modifiers() }, |name, type_modifiers|
+                        Generic { name, type_modifiers }
                     )
                     .parse(stream)
             }),
@@ -206,8 +206,8 @@ fn generic_type() -> impl Combinator<Output = TypeName> {
             TypeFuncName.map(From::from),
             identifier().map(From::from)
         ))
-            .and_then(enclosure!{ opt_type_modifiers() }, |name, modifiers|
-                GenericTypeName::new(name, modifiers).into()
+            .and_then(enclosure!{ opt_type_modifiers() }, |name, type_modifiers|
+                Generic { name, type_modifiers }
             )
     )
 }
@@ -276,12 +276,12 @@ mod tests {
     #[test_case("interval",                       IntervalRange::default().into())]
     #[test_case("interval day",                   IntervalRange::Day.into())]
     #[test_case("interval(5)",                    IntervalRange::Full { precision: Some(5) }.into())]
-    #[test_case("identif.attrib",                 GenericTypeName::new(vec!["identif".into(), "attrib".into()], vec![]).into())]
-    #[test_case("identif(33)",                    GenericTypeName::new(vec!["identif".into()], vec![IntegerConst(33)]).into())]
-    #[test_case("double",                         GenericTypeName::new(vec!["double".into()], vec![]).into())]
-    #[test_case("double.unreserved",              GenericTypeName::new(vec!["double".into(), "unreserved".into()], vec![]).into())]
-    #[test_case("double.unreserved(55)",          GenericTypeName::new(vec!["double".into(), "unreserved".into()], vec![IntegerConst(55)]).into())]
-    #[test_case("full.type_func_name",            GenericTypeName::new(vec!["full".into(), "type_func_name".into()], vec![]).into())]
+    #[test_case("identif.attrib",                 TypeName::Generic { name: vec!["identif".into(), "attrib".into()], type_modifiers: vec![] })]
+    #[test_case("identif(33)",                    TypeName::Generic { name: vec!["identif".into()], type_modifiers: vec![IntegerConst(33)] })]
+    #[test_case("double",                         TypeName::Generic { name: vec!["double".into()], type_modifiers: vec![] })]
+    #[test_case("double.unreserved",              TypeName::Generic { name: vec!["double".into(), "unreserved".into()], type_modifiers: vec![] })]
+    #[test_case("double.unreserved(55)",          TypeName::Generic { name: vec!["double".into(), "unreserved".into()], type_modifiers: vec![IntegerConst(55)] })]
+    #[test_case("full.type_func_name",            TypeName::Generic { name: vec!["full".into(), "type_func_name".into()], type_modifiers: vec![] })]
     fn test_simple_typename(source: &str, expected: TypeName) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = simple_typename().parse(&mut stream);
@@ -315,7 +315,6 @@ use crate::lexer::Keyword::{
 };
 use crate::lexer::KeywordCategory::{TypeFuncName, Unreserved};
 use crate::parser::ast_node::ExprNode::IntegerConst;
-use crate::parser::ast_node::GenericTypeName;
 use crate::parser::ast_node::IntervalRange;
 use crate::parser::ast_node::IntervalRange::Full;
 use crate::parser::ast_node::TypeName::{
@@ -352,3 +351,4 @@ use crate::parser::opt_interval::opt_interval;
 use crate::parser::opt_precision::opt_precision;
 use crate::parser::ParserErrorKind::{FloatPrecisionOverflow, FloatPrecisionUnderflow};
 use crate::parser::{attrs, i32_literal_paren, opt_timezone, opt_type_modifiers, opt_varying, ParserError};
+use TypeName::Generic;

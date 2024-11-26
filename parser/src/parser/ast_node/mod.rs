@@ -57,15 +57,14 @@ pub use self::{
     role_spec::RoleSpec,
     signed_number::SignedNumber,
     system_type::{
-        FuncArgClass,
         FuncType,
-        GenericTypeName,
+        FunctionParameterMode,
         IntervalRange,
         SetOf,
-        SystemType,
+        Type,
         TypeModifiers,
         TypeName,
-        TypeOf,
+        TypeReference,
     },
     transaction_stmt::{IsolationLevel, TransactionMode, TransactionStmt},
     typecast_expr::TypecastExpr,
@@ -165,17 +164,6 @@ pub enum IndirectionExpr {
         index: i32,
         indirection: Vec<Indirection>,
     }
-}
-
-#[derive(Debug, Default, Copy, Clone, Eq, PartialEq)]
-pub enum FunctionParameterMode {
-    #[default]
-    Default  = b'd' as isize,
-    In       = b'i' as isize,
-    Out      = b'o' as isize,
-    InOut    = b'b' as isize,
-    Variadic = b'v' as isize,
-    Table    = b't' as isize,
 }
 
 #[derive(Debug, Clone, PartialEq)]
