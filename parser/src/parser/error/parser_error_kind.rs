@@ -147,24 +147,18 @@ impl ErrorReport for ParserErrorKind {
     }
 }
 
-use crate::{
-    lexer::LexerErrorKind,
-    parser::QualifiedName,
-    string_decoders::{
-        ExtendedStringError,
-        UnicodeStringError,
-    }
-};
-use postgres_basics::{
-    elog::{ErrorReport, HasSqlState},
-    sql_state::SqlState::{
-        self,
-        FeatureNotSupported,
-        InvalidParameterValue,
-        ReservedName,
-        SyntaxError,
-    }
-};
+use crate::lexer::LexerErrorKind;
+use crate::parser::ast_node::QualifiedName;
+use crate::string_decoders::ExtendedStringError;
+use crate::string_decoders::UnicodeStringError;
+use postgres_basics::elog::ErrorReport;
+use postgres_basics::elog::HasSqlState;
+use postgres_basics::sql_state::SqlState;
+use postgres_basics::sql_state::SqlState::FeatureNotSupported;
+use postgres_basics::sql_state::SqlState::InvalidParameterValue;
+use postgres_basics::sql_state::SqlState::ReservedName;
+use postgres_basics::sql_state::SqlState::SyntaxError;
 use std::borrow::Cow;
-use std::fmt::{Display, Formatter};
+use std::fmt::Display;
+use std::fmt::Formatter;
 use ParserErrorKind::*;

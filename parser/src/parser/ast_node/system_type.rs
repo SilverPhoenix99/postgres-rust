@@ -169,6 +169,6 @@ pub enum FuncType {
 }
 
 use crate::parser::ast_node::impl_from;
+use crate::parser::ast_node::ExprNode;
 use crate::parser::ast_node::QualifiedName;
-use crate::parser::ExprNode;
 use postgres_basics::Oid;

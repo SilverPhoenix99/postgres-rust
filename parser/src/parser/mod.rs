@@ -21,10 +21,10 @@ mod result;
 mod role_parsers;
 mod simple_typename;
 mod stmt;
+mod stmtmulti;
 mod token_stream;
 mod token_value;
 mod transaction_mode_list;
-mod transaction_stmt_legacy;
 mod typename;
 mod uescape_escape;
 mod warning;
@@ -74,33 +74,6 @@ impl<'src> Parser<'src> {
             warnings: mem::take(self.buffer.warnings()),
         }
     }
-}
-
-fn stmtmulti() -> impl Combinator<Output = Vec<RawStmt>> {
-
-    // This production is slightly cheating, not because it's more efficient,
-    // but helps simplify capturing the combinator.
-    // Production:
-    //     (';')* ( toplevel_stmt ( (';')+ toplevel_stmt? )* )?
-    // Original production:
-    //     toplevel_stmt? ( ';' toplevel_stmt? )*
-
-    semicolons().optional()
-        .and_right(
-            many_sep(semicolons(), toplevel_stmt().optional())
-        )
-        .map(|stmts|
-            stmts.into_iter()
-                .flatten()
-                .collect()
-        )
-}
-
-fn toplevel_stmt() -> impl Combinator<Output = RawStmt> {
-    match_first!(
-        transaction_stmt_legacy().map(From::from),
-        stmt()
-    )
 }
 
 /// Post-condition: Vec **May** be empty
@@ -163,66 +136,6 @@ fn expr_list() -> impl Combinator<Output = Vec<ExprNode>> {
     */
 
     many_sep(Comma, a_expr())
-}
-
-/// Returns `Ok` if it consumed at least 1 `;` (semicolon).
-fn semicolons() -> impl Combinator<Output = ()> {
-
-    // Production: ( ';' )+
-
-    many(Semicolon.skip()).skip()
-}
-
-/// Alias: `transaction_mode_item`
-fn transaction_mode() -> impl Combinator<Output = TransactionMode> {
-    use Kw::{Isolation, Level, Not, Only, Read, Write};
-    use TransactionMode::*;
-
-    /*
-          ISOLATION LEVEL iso_level
-        | READ ONLY
-        | READ WRITE
-        | DEFERRABLE
-        | NOT DEFERRABLE
-    */
-
-    match_first!{
-        Kw::Deferrable.map(|_| Deferrable),
-        Not.and_then(Kw::Deferrable, |_, _| NotDeferrable),
-        Read.and_right(
-            match_first!{
-                Only.map(|_| ReadOnly),
-                Write.map(|_| ReadWrite)
-            }
-        ),
-        Isolation.and(Level)
-            .and_right(isolation_level())
-            .map(IsolationLevel)
-    }
-}
-
-/// Alias: `iso_level`
-fn isolation_level() -> impl Combinator<Output = IsolationLevel> {
-    use Kw::{Committed, Read, Repeatable, Serializable, Uncommitted};
-
-    /*
-          READ UNCOMMITTED
-        | READ COMMITTED
-        | REPEATABLE READ
-        | SERIALIZABLE
-    */
-
-    match_first!{
-        Serializable.map(|_| IsolationLevel::Serializable),
-        Repeatable
-            .and_then(Read, |_, _| IsolationLevel::RepeatableRead),
-        Read.and_right(
-            match_first!{
-                Committed.map(|_| IsolationLevel::ReadCommitted),
-                Uncommitted.map(|_| IsolationLevel::ReadUncommitted)
-            }
-        )
-    }
 }
 
 /// Post-condition: Vec is **Not** empty
@@ -411,20 +324,6 @@ fn i32_literal_paren() -> impl Combinator<Output = i32> {
         .map(From::from)
 }
 
-fn arg_class() -> impl Combinator<Output = FunctionParameterMode> {
-    use FunctionParameterMode::*;
-
-    match_first!(
-        Kw::In.and_right(
-            Kw::Out.optional()
-                .map(|out| if out.is_some() { InOut } else { In })
-        ),
-        Kw::Out.map(|_| Out),
-        Kw::Inout.map(|_| InOut),
-        Kw::Variadic.map(|_| Variadic),
-    )
-}
-
 /// '+' | '-'
 fn sign() -> impl Combinator<Output = OperatorKind> {
     use OperatorKind::{Minus, Plus};
@@ -435,83 +334,9 @@ fn sign() -> impl Combinator<Output = OperatorKind> {
 mod tests {
     use super::*;
     use crate::lexer::OperatorKind::Dot;
-    use crate::parser::ast_node::QualifiedName;
     use postgres_basics::guc::BackslashQuote;
-    use test_case::test_case;
 
     pub(in crate::parser) static DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding);
-
-    #[test_case("begin transaction")]
-    #[test_case("start transaction")]
-    #[test_case("end transaction")]
-    fn test_toplevel_stmt(source: &str) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = toplevel_stmt().parse(&mut stream);
-
-        // This only quickly tests that statement types aren't missing.
-        // More in-depth testing is within each statement's module.
-        assert_matches!(actual, Ok(_),
-            r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
-        )
-    }
-
-    #[test]
-    fn test_transaction_mode() {
-
-        let mut stream = TokenStream::new(
-            "\
-                read only \
-                read write \
-                deferrable \
-                not deferrable \
-                isolation level read committed \
-                isolation level read uncommitted \
-                isolation level repeatable read \
-                isolation level serializable\
-            ",
-            DEFAULT_CONFIG
-        );
-
-        let expected = [
-            TransactionMode::ReadOnly,
-            TransactionMode::ReadWrite,
-            TransactionMode::Deferrable,
-            TransactionMode::NotDeferrable,
-            TransactionMode::IsolationLevel(IsolationLevel::ReadCommitted),
-            TransactionMode::IsolationLevel(IsolationLevel::ReadUncommitted),
-            TransactionMode::IsolationLevel(IsolationLevel::RepeatableRead),
-            TransactionMode::IsolationLevel(IsolationLevel::Serializable),
-        ];
-
-        for expected_mode in expected {
-            assert_eq!(Ok(expected_mode), transaction_mode().parse(&mut stream));
-        }
-    }
-
-    #[test]
-    fn test_isolation_level() {
-
-        let mut stream = TokenStream::new(
-            "\
-                read committed \
-                read uncommitted \
-                repeatable read \
-                serializable\
-            ",
-            DEFAULT_CONFIG
-        );
-
-        let expected = [
-            IsolationLevel::ReadCommitted,
-            IsolationLevel::ReadUncommitted,
-            IsolationLevel::RepeatableRead,
-            IsolationLevel::Serializable,
-        ];
-
-        for expected_mode in expected {
-            assert_eq!(Ok(expected_mode), isolation_level().parse(&mut stream));
-        }
-    }
 
     #[test]
     /// All these methods are similar, so no point in repeating tests:
@@ -669,19 +494,8 @@ mod tests {
         assert_eq!(Ok("sequence".into()), bare_col_label().parse(&mut stream));
         assert_eq!(Ok("xxyyzz".into()), bare_col_label().parse(&mut stream));
     }
-
-    #[test_case("in", FunctionParameterMode::In)]
-    #[test_case("in out", FunctionParameterMode::InOut)]
-    #[test_case("out", FunctionParameterMode::Out)]
-    #[test_case("inout", FunctionParameterMode::InOut)]
-    #[test_case("variadic", FunctionParameterMode::Variadic)]
-    fn test_arg_class(source: &str, expected: FunctionParameterMode) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(expected), arg_class().parse(&mut stream));
-    }
 }
 
-use crate::lexer::Keyword as Kw;
 use crate::lexer::Keyword::Time;
 use crate::lexer::Keyword::Varying;
 use crate::lexer::Keyword::With;
@@ -695,39 +509,32 @@ use crate::lexer::OperatorKind::CloseParenthesis;
 use crate::lexer::OperatorKind::Comma;
 use crate::lexer::OperatorKind::Dot;
 use crate::lexer::OperatorKind::OpenParenthesis;
-use crate::lexer::OperatorKind::Semicolon;
-use crate::parser::ast_node::EventTriggerState;
 use crate::parser::ast_node::ExprNode;
-use crate::parser::ast_node::FunctionParameterMode;
-use crate::parser::ast_node::IsolationLevel;
 use crate::parser::ast_node::QualifiedName;
 use crate::parser::ast_node::RangeVar;
 use crate::parser::ast_node::RawStmt;
-use crate::parser::ast_node::RoleSpec;
-use crate::parser::ast_node::TransactionMode;
 use crate::parser::ast_node::TypeModifiers;
+use crate::parser::combinators::between;
 use crate::parser::combinators::identifier;
 use crate::parser::combinators::integer;
 use crate::parser::combinators::keyword_if;
-use crate::parser::combinators::many;
 use crate::parser::combinators::many_pre;
 use crate::parser::combinators::many_sep;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::operator_if;
+use crate::parser::combinators::sequence;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::combinators::{between, sequence};
 use crate::parser::error::syntax_err;
 use crate::parser::error::NameList;
+use crate::parser::error::ParserErrorKind::ImproperQualifiedName;
 use crate::parser::expr_parsers::a_expr;
 use crate::parser::located_combinator::located;
 use crate::parser::opt_transaction::opt_transaction;
 use crate::parser::opt_transaction_chain::opt_transaction_chain;
 use crate::parser::result::Required;
-use crate::parser::stmt::stmt;
+use crate::parser::stmtmulti::stmtmulti;
 use crate::parser::token_stream::TokenStream;
-use crate::parser::transaction_stmt_legacy::transaction_stmt_legacy;
-use crate::parser::ParserErrorKind::ImproperQualifiedName;
 use postgres_basics::Located;
 use postgres_basics::Str;
 use std::mem;
