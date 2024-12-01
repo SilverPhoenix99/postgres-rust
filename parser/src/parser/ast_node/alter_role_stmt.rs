@@ -58,4 +58,4 @@ impl AlterRoleStmt {
     }
 }
 
-use crate::parser::RoleSpec;
+use crate::parser::ast_node::RoleSpec;

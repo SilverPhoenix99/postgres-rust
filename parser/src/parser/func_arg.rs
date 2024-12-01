@@ -38,6 +38,20 @@ pub(super) fn func_arg() -> impl Combinator<Output = FuncArg> {
     })
 }
 
+fn arg_class() -> impl Combinator<Output = FunctionParameterMode> {
+    use FunctionParameterMode::*;
+
+    match_first!(
+        Kw::In.and_right(
+            Kw::Out.optional()
+                .map(|out| if out.is_some() { InOut } else { In })
+        ),
+        Kw::Out.map(|_| Out),
+        Kw::Inout.map(|_| InOut),
+        Kw::Variadic.map(|_| Variadic),
+    )
+}
+
 fn is_arg_name(
     first: &EofResult<&TokenValue>,
     second: &EofResult<&TokenValue>,
@@ -66,7 +80,6 @@ fn is_arg_name(
 mod tests {
     use super::*;
     use crate::parser::ast_node::FuncType;
-    use crate::parser::ast_node::FunctionParameterMode;
     use crate::parser::ast_node::SetOf;
     use crate::parser::ast_node::Type;
     use crate::parser::ast_node::TypeName;
@@ -100,14 +113,26 @@ mod tests {
 
         assert_eq!(Ok(expected), actual);
     }
+
+    #[test_case("in", FunctionParameterMode::In)]
+    #[test_case("in out", FunctionParameterMode::InOut)]
+    #[test_case("out", FunctionParameterMode::Out)]
+    #[test_case("inout", FunctionParameterMode::InOut)]
+    #[test_case("variadic", FunctionParameterMode::Variadic)]
+    fn test_arg_class(source: &str, expected: FunctionParameterMode) {
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        assert_eq!(Ok(expected), arg_class().parse(&mut stream));
+    }
 }
 
+use crate::lexer::Keyword as Kw;
 use crate::lexer::Keyword::Double;
 use crate::lexer::Keyword::Precision;
 use crate::lexer::KeywordCategory::TypeFuncName;
 use crate::lexer::KeywordCategory::Unreserved;
-use crate::parser::arg_class;
 use crate::parser::ast_node::FuncArg;
+use crate::parser::ast_node::FunctionParameterMode;
+use crate::parser::combinators::match_first;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::func_type::func_type;

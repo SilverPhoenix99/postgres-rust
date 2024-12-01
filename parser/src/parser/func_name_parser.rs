@@ -69,6 +69,7 @@ mod tests {
 use crate::lexer::KeywordCategory::ColumnName;
 use crate::lexer::KeywordCategory::TypeFuncName;
 use crate::lexer::KeywordCategory::Unreserved;
+use crate::parser::ast_node::QualifiedName;
 use crate::parser::attrs;
 use crate::parser::combinators::identifier;
 use crate::parser::combinators::match_first;
@@ -77,4 +78,3 @@ use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
 use crate::parser::error::syntax_err;
 use crate::parser::located_combinator::located;
-use crate::parser::QualifiedName;
