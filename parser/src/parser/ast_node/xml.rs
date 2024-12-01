@@ -24,27 +24,27 @@ pub enum XmlStandalone {
     Omitted,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct XmlElement {
     name: Str,
     attributes: Vec<ExprNode>,
     args: Vec<ExprNode>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct XmlParse {
     text: ExprNode,
     kind: XmlNodeKind,
     preserve_whitespace: bool
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct XmlProcessingInstruction {
     name: Str,
     args: Option<ExprNode>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct XmlRoot {
     version: Option<ExprNode>,
     standalone: XmlStandalone,
