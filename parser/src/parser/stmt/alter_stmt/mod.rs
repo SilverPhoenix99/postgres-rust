@@ -1,4 +1,12 @@
-pub(in crate::parser) fn alter_stmt() -> impl Combinator<Output = RawStmt> {
+mod alter_default_privileges_stmt;
+mod alter_event_trigger_stmt;
+mod alter_collation_stmt;
+mod alter_conversion_stmt;
+mod alter_group_stmt;
+mod alter_language_stmt;
+mod alter_large_object_stmt;
+
+pub(super) fn alter_stmt() -> impl Combinator<Output = RawStmt> {
 
     Alter.and_right(match_first! {
         alter_default_privileges_stmt().map(From::from),
@@ -38,15 +46,15 @@ mod tests {
     }
 }
 
+use self::alter_collation_stmt::alter_collation_stmt;
+use self::alter_conversion_stmt::alter_conversion_stmt;
+use self::alter_default_privileges_stmt::alter_default_privileges_stmt;
+use self::alter_event_trigger_stmt::alter_event_trigger_stmt;
+use self::alter_group_stmt::alter_group_stmt;
+use self::alter_language_stmt::alter_language_stmt;
+use self::alter_large_object_stmt::alter_large_object_stmt;
 use crate::lexer::Keyword::Alter;
 use crate::parser::ast_node::RawStmt;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::stmt::alter_collation_stmt::alter_collation_stmt;
-use crate::parser::stmt::alter_conversion_stmt::alter_conversion_stmt;
-use crate::parser::stmt::alter_default_privileges_stmt::alter_default_privileges_stmt;
-use crate::parser::stmt::alter_event_trigger_stmt::alter_event_trigger_stmt;
-use crate::parser::stmt::alter_group_stmt::alter_group_stmt;
-use crate::parser::stmt::alter_language_stmt::alter_language_stmt;
-use crate::parser::stmt::alter_large_object_stmt::alter_large_object_stmt;
