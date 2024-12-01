@@ -1,6 +1,6 @@
 pub type TypeModifiers = Vec<ExprNode>;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Type {
     name: TypeName,
     /// If the type is a table (i.e., set) of records, or just a single record.
@@ -62,7 +62,7 @@ impl Default for IntervalRange {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TypeName {
     Json,
     Bool,
@@ -161,7 +161,7 @@ impl TypeReference {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum FuncType {
     Type(Type),
     /// When the type is specified with `%TYPE`.

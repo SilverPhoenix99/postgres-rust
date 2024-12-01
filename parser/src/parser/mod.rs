@@ -5,6 +5,7 @@ mod config;
 mod const_numeric_parsers;
 mod error;
 mod expr_parsers;
+mod func_arg;
 mod func_name_parser;
 mod func_type;
 mod located_combinator;

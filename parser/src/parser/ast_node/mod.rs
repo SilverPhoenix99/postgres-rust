@@ -30,6 +30,7 @@ mod unique_null_treatment;
 mod unsigned_number;
 mod variable_show_stmt;
 mod xml;
+mod func_arg;
 
 pub use self::{
     alter_default_privileges_stmt::AlterDefaultPrivilegesStmt,
@@ -42,6 +43,7 @@ pub use self::{
     case_expr::{CaseExpr, CaseWhen},
     discard_stmt::DiscardStmt,
     drop_behavior::DropBehavior,
+    func_arg::FuncArg,
     grant_stmt::GrantStmt,
     indirection::Indirection,
     notify_stmt::NotifyStmt,
@@ -158,7 +160,7 @@ pub enum AclTarget {
     Schema,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum IndirectionExpr {
     Param {
         index: i32,
@@ -166,7 +168,7 @@ pub enum IndirectionExpr {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ExprNode {
     /* Constants */
     NullConst,

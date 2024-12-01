@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum BoolExpr {
     Not(Box<ExprNode>),
     Or(BinaryOperands),

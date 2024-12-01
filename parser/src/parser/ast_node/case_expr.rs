@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct CaseExpr {
     target: Option<ExprNode>,
     when_clauses: Vec<CaseWhen>,
@@ -23,7 +23,7 @@ impl CaseExpr {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct CaseWhen {
     condition: ExprNode,
     body: ExprNode,
