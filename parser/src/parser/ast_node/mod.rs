@@ -8,6 +8,7 @@ mod bool_expr;
 mod case_expr;
 mod discard_stmt;
 mod drop_behavior;
+mod function_parameter;
 mod grant_stmt;
 mod indirection;
 mod notify_stmt;
@@ -30,7 +31,6 @@ mod unique_null_treatment;
 mod unsigned_number;
 mod variable_show_stmt;
 mod xml;
-mod func_arg;
 
 pub use self::{
     alter_default_privileges_stmt::AlterDefaultPrivilegesStmt,
@@ -43,7 +43,7 @@ pub use self::{
     case_expr::{CaseExpr, CaseWhen},
     discard_stmt::DiscardStmt,
     drop_behavior::DropBehavior,
-    func_arg::FuncArg,
+    function_parameter::FunctionParameter,
     grant_stmt::GrantStmt,
     indirection::Indirection,
     notify_stmt::NotifyStmt,

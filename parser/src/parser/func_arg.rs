@@ -1,4 +1,4 @@
-pub(super) fn func_arg() -> impl Combinator<Output = FuncArg> {
+pub(super) fn func_arg() -> impl Combinator<Output = FunctionParameter> {
 
     /*
           arg_class ( type_function_name )? func_type
@@ -33,7 +33,7 @@ pub(super) fn func_arg() -> impl Combinator<Output = FuncArg> {
         let mode = mode.unwrap_or_default();
 
         let func_type = func_type().required().parse(stream)?;
-        let func_arg = FuncArg::new(arg_name, mode, func_type);
+        let func_arg = FunctionParameter::new(arg_name, mode, func_type);
         Ok(func_arg)
     })
 }
@@ -105,7 +105,7 @@ mod tests {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = func_arg().parse(&mut stream);
 
-        let expected = FuncArg::new(
+        let expected = FunctionParameter::new(
             arg_name,
             mode,
             FuncType::Type(Type::new(type_name, vec![], set_of))
@@ -130,7 +130,7 @@ use crate::lexer::Keyword::Double;
 use crate::lexer::Keyword::Precision;
 use crate::lexer::KeywordCategory::TypeFuncName;
 use crate::lexer::KeywordCategory::Unreserved;
-use crate::parser::ast_node::FuncArg;
+use crate::parser::ast_node::FunctionParameter;
 use crate::parser::ast_node::FunctionParameterMode;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::Combinator;

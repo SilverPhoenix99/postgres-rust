@@ -1,11 +1,11 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct FuncArg {
+pub struct FunctionParameter {
     name: Option<Str>,
     mode: FunctionParameterMode,
     arg_type: FuncType,
 }
 
-impl FuncArg {
+impl FunctionParameter {
     pub fn new(name: Option<Str>, mode: FunctionParameterMode, arg_type: FuncType) -> Self {
         Self { name, mode, arg_type }
     }
