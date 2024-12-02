@@ -8,6 +8,7 @@ mod cluster_stmt;
 mod comment_stmt;
 mod commit_stmt;
 mod copy_stmt;
+mod create_stmt;
 mod deallocate_stmt;
 mod discard_stmt;
 mod do_stmt;
@@ -49,6 +50,7 @@ pub(super) fn stmt() -> impl Combinator<Output = RawStmt> {
         comment_stmt(),
         commit_stmt().map(From::from),
         copy_stmt(),
+        create_stmt(),
         deallocate_stmt().map(DeallocateStmt),
         discard_stmt().map(From::from),
         do_stmt(),
@@ -88,6 +90,7 @@ mod tests {
     #[test_case("alter group some_group add user public")]
     #[test_case("close all")]
     #[test_case("commit and no chain")]
+    #[test_case("create database the_db with allow connections false")]
     #[test_case("deallocate all")]
     #[test_case("discard all")]
     #[test_case("listen ident")]
@@ -126,6 +129,7 @@ use self::cluster_stmt::cluster_stmt;
 use self::comment_stmt::comment_stmt;
 use self::commit_stmt::commit_stmt;
 use self::copy_stmt::copy_stmt;
+use self::create_stmt::create_stmt;
 use self::deallocate_stmt::deallocate_stmt;
 use self::discard_stmt::discard_stmt;
 use self::do_stmt::do_stmt;

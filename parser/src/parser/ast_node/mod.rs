@@ -6,6 +6,7 @@ mod alter_role_stmt;
 mod binary_expr;
 mod bool_expr;
 mod case_expr;
+mod create_database_stmt;
 mod discard_stmt;
 mod drop_behavior;
 mod function_parameter;
@@ -42,6 +43,7 @@ pub use self::{
     binary_expr::BinaryExpr,
     bool_expr::BoolExpr,
     case_expr::{CaseExpr, CaseWhen},
+    create_database_stmt::{CreateDatabaseStmt, CreatedbOption, CreatedbOptionKind, CreatedbOptionValue},
     discard_stmt::DiscardStmt,
     drop_behavior::DropBehavior,
     function_parameter::FunctionParameter,
@@ -132,13 +134,13 @@ pub struct RelationExpr {
     // TODO
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AclOption {
     Schemas(Vec<Str>),
     Roles(Vec<RoleSpec>),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum SpecificAccessPrivilege {
     AlterSystem,
     Create(Option<Vec<Str>>),
@@ -147,7 +149,7 @@ pub enum SpecificAccessPrivilege {
     Named(Str, Option<Vec<Str>>),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AccessPrivilege {
     All(Option<Vec<Str>>),
     Specific(Vec<SpecificAccessPrivilege>),

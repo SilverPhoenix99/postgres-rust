@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PrepareStmt {
     name: Str,
     arg_types: Vec<Type>,

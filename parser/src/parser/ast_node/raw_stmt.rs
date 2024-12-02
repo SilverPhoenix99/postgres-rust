@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RawStmt {
     AlterDefaultPrivilegesStmt(Box<AlterDefaultPrivilegesStmt>),
     AlterEventTrigStmt(AlterEventTrigStmt),
@@ -7,6 +7,7 @@ pub enum RawStmt {
     AlterRoleStmt(AlterRoleStmt),
     CheckPoint,
     ClosePortalStmt(OneOrAll),
+    CreateDatabaseStmt(CreateDatabaseStmt),
     DeallocateStmt(OneOrAll),
     DiscardStmt(DiscardStmt),
     ListenStmt(Str),
@@ -27,6 +28,7 @@ impl_from!(AlterEventTrigStmt for RawStmt);
 impl_from!(AlterObjectSchemaStmt for RawStmt);
 impl_from!(AlterOwnerStmt for RawStmt);
 impl_from!(AlterRoleStmt for RawStmt);
+impl_from!(CreateDatabaseStmt for RawStmt);
 impl_from!(DiscardStmt for RawStmt);
 impl_from!(NotifyStmt for RawStmt);
 impl_from!(box PrepareStmt for RawStmt);
@@ -35,21 +37,20 @@ impl_from!(RenameStmt for RawStmt);
 impl_from!(TransactionStmt for RawStmt);
 impl_from!(VariableShowStmt for RawStmt);
 
-use crate::parser::ast_node::{
-    impl_from,
-    AlterDefaultPrivilegesStmt,
-    AlterEventTrigStmt,
-    AlterObjectSchemaStmt,
-    AlterOwnerStmt,
-    AlterRoleStmt,
-    DiscardStmt,
-    NotifyStmt,
-    OneOrAll,
-    PrepareStmt,
-    QualifiedName,
-    ReassignOwnedStmt,
-    RenameStmt,
-    TransactionStmt,
-    VariableShowStmt
-};
+use crate::parser::ast_node::impl_from;
+use crate::parser::ast_node::AlterDefaultPrivilegesStmt;
+use crate::parser::ast_node::AlterEventTrigStmt;
+use crate::parser::ast_node::AlterObjectSchemaStmt;
+use crate::parser::ast_node::AlterOwnerStmt;
+use crate::parser::ast_node::AlterRoleStmt;
+use crate::parser::ast_node::CreateDatabaseStmt;
+use crate::parser::ast_node::DiscardStmt;
+use crate::parser::ast_node::NotifyStmt;
+use crate::parser::ast_node::OneOrAll;
+use crate::parser::ast_node::PrepareStmt;
+use crate::parser::ast_node::QualifiedName;
+use crate::parser::ast_node::ReassignOwnedStmt;
+use crate::parser::ast_node::RenameStmt;
+use crate::parser::ast_node::TransactionStmt;
+use crate::parser::ast_node::VariableShowStmt;
 use postgres_basics::Str;
