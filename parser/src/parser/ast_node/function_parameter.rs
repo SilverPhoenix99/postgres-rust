@@ -23,6 +23,12 @@ impl FunctionParameter {
     }
 }
 
+impl From<FuncType> for FunctionParameter {
+    fn from(value: FuncType) -> Self {
+        Self::new(None, Default::default(), value)
+    }
+}
+
 use crate::parser::ast_node::FuncType;
 use crate::parser::ast_node::FunctionParameterMode;
 use postgres_basics::Str;

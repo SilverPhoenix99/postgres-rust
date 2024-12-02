@@ -29,10 +29,18 @@ pub(super) fn func_arg() -> impl Combinator<Output = FunctionParameter> {
             mode = arg_class().optional().parse(stream)?;
         }
 
+        let func_type = if mode.is_none() && arg_name.is_none() {
+            // Nothing matched before, so 
+            func_type().parse(stream)?
+        }
+        else {
+            // At least 1 matched
+            func_type().required().parse(stream)?
+        };
+
         // In case `arg_class` didn't match, there's still a default that can be applied.
         let mode = mode.unwrap_or_default();
 
-        let func_type = func_type().required().parse(stream)?;
         let func_arg = FunctionParameter::new(arg_name, mode, func_type);
         Ok(func_arg)
     })

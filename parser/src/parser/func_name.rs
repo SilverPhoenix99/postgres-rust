@@ -1,13 +1,22 @@
 pub(in crate::parser) fn func_name() -> impl Combinator<Output = QualifiedName> {
 
     /*
-          type_func_name_keyword
-        | col_name_keyword attrs
-        | unreserved_keyword ( attrs )?
-        | IDENT ( attrs )?
+        Original production:
+              type_function_name
+            | ColId attrs
+
+        The original production used `indirection` instead of `attrs`,
+        but the only valid rule from `indirection` is: `'.' ColLabel`.
+        See [function_with_argtypes](https://github.com/postgres/postgres/blob/97173536ed4b1c29dce0dc4119db136e142f60a2/src/backend/parser/gram.y#L17267).
+
+        Refactored production:
+              type_func_name_keyword
+            | col_name_keyword attrs
+            | unreserved_keyword ( attrs )?
+            | IDENT ( attrs )?
     */
 
-    match_first!{
+    match_first! {
         TypeFuncName
             .map(|kw| vec![kw.into()]),
         attrs(
@@ -16,9 +25,7 @@ pub(in crate::parser) fn func_name() -> impl Combinator<Output = QualifiedName> 
                 identifier().map(From::from)
             )
         ),
-        located(attrs(
-            ColumnName.map(From::from)
-            ))
+        located(attrs(ColumnName.map(From::from)))
             .map_result(|result| {
                 let (name, loc) = result?;
                 if name.len() == 1 {
