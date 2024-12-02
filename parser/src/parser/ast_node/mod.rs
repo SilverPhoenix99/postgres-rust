@@ -13,6 +13,7 @@ mod grant_stmt;
 mod indirection;
 mod notify_stmt;
 mod numeric_spec;
+mod object_with_args;
 mod one_or_all;
 mod operator;
 mod prepare_stmt;
@@ -48,6 +49,7 @@ pub use self::{
     indirection::Indirection,
     notify_stmt::NotifyStmt,
     numeric_spec::NumericSpec,
+    object_with_args::ObjectWithArgs,
     one_or_all::OneOrAll,
     operator::Operator,
     prepare_stmt::PrepareStmt,
