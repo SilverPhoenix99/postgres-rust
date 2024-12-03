@@ -1,5 +1,6 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RawStmt {
+    AlterDatabaseRefreshCollStmt(Str),
     AlterDefaultPrivilegesStmt(Box<AlterDefaultPrivilegesStmt>),
     AlterEventTrigStmt(AlterEventTrigStmt),
     AlterObjectSchemaStmt(AlterObjectSchemaStmt),
