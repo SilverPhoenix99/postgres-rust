@@ -5,15 +5,12 @@ pub(super) fn privileges() -> impl Combinator<Output = AccessPrivilege> {
         | privilege_list
     */
 
-    let all_privileges = sequence!{
-        AllKw.skip(),
-        Privileges.optional().skip(),
-        opt_name_list().optional()
-    };
-
-    or(
-        all_privileges
-            .map(|(_, _, columns)| All(columns)),
+    match_first!(
+        sequence!(
+            AllKw.and(Privileges.optional()).skip(),
+            opt_name_list().optional()
+        )
+            .map(|(_, columns)| All(columns)),
         privilege_list().map(Specific)
     )
 }
@@ -117,7 +114,6 @@ use crate::parser::ast_node::SpecificAccessPrivilege::Select;
 use crate::parser::col_id;
 use crate::parser::combinators::many_sep;
 use crate::parser::combinators::match_first;
-use crate::parser::combinators::or;
 use crate::parser::combinators::sequence;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;

@@ -1,9 +1,14 @@
 /// Alias: `CreatedbStmt`
 pub(super) fn create_database_stmt() -> impl Combinator<Output = CreateDatabaseStmt> {
 
-    Database.and_right(col_id())
-        .and_left(With.optional())
-        .and_then(createdb_opt_list(), CreateDatabaseStmt::new)
+    sequence!(
+        Database.skip(),
+        col_id(),
+        With.optional().skip(),
+        createdb_opt_list()
+    ).map(|(_, name, _, options)|
+        CreateDatabaseStmt::new(name, options)
+    )
 }
 
 fn createdb_opt_list() -> impl Combinator<Output = Vec<CreatedbOption>> {
@@ -19,9 +24,13 @@ fn createdb_opt_item() -> impl Combinator<Output = CreatedbOption> {
         | createdb_opt_name ( '=' )? signed_number
     */
 
-    createdb_opt_name()
-        .and_left(Equals.optional())
-        .and_then(createdb_opt_value(), CreatedbOption::new)
+    sequence!(
+        createdb_opt_name(),
+        Equals.optional().skip(),
+        createdb_opt_value()
+    ).map(|(kind, _, value)|
+        CreatedbOption::new(kind, value)
+    )
 }
 
 fn createdb_opt_name() -> impl Combinator<Output = CreatedbOptionKind> {
@@ -198,6 +207,7 @@ use crate::parser::col_id;
 use crate::parser::combinators::identifier;
 use crate::parser::combinators::many;
 use crate::parser::combinators::match_first;
+use crate::parser::combinators::sequence;
 use crate::parser::combinators::string;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
