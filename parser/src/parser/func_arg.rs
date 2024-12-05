@@ -9,9 +9,8 @@ pub(super) fn func_arg() -> impl Combinator<Output = FunctionParameter> {
     // The 1st token of `func_type` might be a `type_function_name`, so this production is LL(2),
     // due to the conflict with the optional argument name which is also `type_function_name`.
 
-    arg_class().optional().chain_result(|mode, stream| {
+    arg_class().optional().chain(|mut mode, stream| {
 
-        let mut mode = mode?;
         let (first, second) = stream.peek2();
 
         let arg_name = if is_arg_name(&first, &second) {

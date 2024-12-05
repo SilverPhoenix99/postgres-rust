@@ -186,8 +186,7 @@ fn generic_type() -> impl Combinator<Output = TypeName> {
 
     match_first!(
         Unreserved
-            .chain_result(|result, stream| {
-                let kw = result?;
+            .chain(|kw, stream| {
                 if kw == Double && Precision.optional().parse(stream)?.is_some() {
                     // `Double` conflicts with, and has lower precedence than, any other `Keyword::Unreserved`.
                     // If it's followed by `Precision`, then it's a Float8.

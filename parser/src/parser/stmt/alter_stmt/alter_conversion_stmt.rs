@@ -8,7 +8,7 @@ pub(in crate::parser) fn alter_conversion_stmt() -> impl Combinator<Output = Raw
 
     Conversion
         .and_right(any_name())
-        .chain_result(match_first_with_state!{|conversion, stream| {
+        .chain(match_first_with_state!{|conversion, stream| {
             {
                 Owner.and(To)
                     .and_right(role_spec())

@@ -16,7 +16,7 @@ pub(super) fn alter_database_stmt() -> impl Combinator<Output = RawStmt> {
 
     Database
         .and_right(col_id())
-        .chain_result(match_first_with_state! {|name, stream| {
+        .chain(match_first_with_state! {|name, stream| {
             {
                 sequence!(Refresh, Collation, Version)
             } => (_) {
@@ -103,8 +103,8 @@ use crate::parser::ast_node::RawStmt::AlterDatabaseRefreshCollStmt;
 use crate::parser::ast_node::RenameStmt;
 use crate::parser::ast_node::RenameTarget;
 use crate::parser::col_id;
+use crate::parser::combinators::match_first_with_state;
 use crate::parser::combinators::sequence;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::combinators::match_first_with_state;
 use crate::parser::role_parsers::role_spec;

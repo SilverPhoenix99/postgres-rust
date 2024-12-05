@@ -31,7 +31,7 @@ macro_rules! match_first {
 
 pub(in crate::parser) use match_first;
 
-/// Pair this with [`chain_result()`](super::CombinatorHelpers::chain_result).
+/// Pair this with [`chain()`](super::CombinatorHelpers::chain).
 macro_rules! match_first_with_state {
     (
         $($move:ident)? |$state:pat, $stream:ident| {
@@ -40,11 +40,9 @@ macro_rules! match_first_with_state {
             $(,)?
         }
     ) => {
-        $($move)? |result, $stream| {
+        $($move)? |$state, $stream| {
             use $crate::parser::combinators::Combinator;
             use $crate::parser::result::ScanErrorKind::{Eof, NoMatch, ScanErr};
-
-            let $state = result?;
 
             let p = $head;
             let result = p.parse($stream);
