@@ -9,7 +9,7 @@ pub(in crate::parser) fn alter_collation_stmt() -> impl Combinator<Output = RawS
 
     Collation
         .and_right(any_name())
-        .chain_result(match_first_with_state!{|name, stream| {
+        .chain(match_first_with_state!{|name, stream| {
             {
                 Refresh.and(Version)
             } => (_) {

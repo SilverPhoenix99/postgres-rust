@@ -9,7 +9,7 @@ pub(in crate::parser) fn alter_event_trigger_stmt() -> impl Combinator<Output = 
     sequence!(
         Event.and(Trigger).skip(),
         col_id(),
-    ).chain_result(match_first_with_state!(|(_, trigger), stream| {
+    ).chain(match_first_with_state!(|(_, trigger), stream| {
         { enable_trigger() } => (state) {
             AlterEventTrigStmt::new(trigger, state).into()
         },

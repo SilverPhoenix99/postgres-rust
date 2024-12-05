@@ -10,7 +10,7 @@ pub(in crate::parser) fn alter_language_stmt() -> impl Combinator<Output = RawSt
         Language.skip()
     )
         .and_right(col_id())
-        .chain_result(match_first_with_state!(|name, stream| {
+        .chain(match_first_with_state!(|name, stream| {
             {
                 Owner.and(To)
                     .and_right(role_spec())

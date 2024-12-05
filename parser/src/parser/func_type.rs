@@ -5,8 +5,7 @@ pub(super) fn func_type() -> impl Combinator<Output = FuncType> {
         | ( SETOF )? type_function_name attrs '%' TYPE_P
     */
 
-    typename().chain_result(|typ, stream| {
-        let typ = typ?;
+    typename().chain(|typ, stream| {
 
         // In `Typename`, only generic types goes to `type_function_name`.
         let Generic { name, type_modifiers } = typ.name() else {

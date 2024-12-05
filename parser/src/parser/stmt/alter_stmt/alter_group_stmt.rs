@@ -8,7 +8,7 @@ pub(in crate::parser) fn alter_group_stmt() -> impl Combinator<Output = RawStmt>
 
     Group
         .and_right(located(role_spec()))
-        .chain_result(match_first_with_state!{|(group, group_loc), stream| {
+        .chain(match_first_with_state!{|(group, group_loc), stream| {
             {
                 Rename.and(To)
                     .and_right(role_id())

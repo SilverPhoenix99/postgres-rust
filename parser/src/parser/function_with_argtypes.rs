@@ -38,8 +38,7 @@ pub(super) fn function_with_argtypes() -> impl Combinator<Output = ObjectWithArg
             .and_then(func_args(), ObjectWithArgs::new),
 
         attrs(ColumnName.map(From::from))
-            .chain_result(|name, stream| {
-                let name = name?;
+            .chain(|name, stream| {
                 if name.len() == 1 {
                     return Ok(ObjectWithArgs::new(name, None))
                 }

@@ -185,38 +185,36 @@ where
 
     /// This is similar to [`CombinatorHelpers::map()`](CombinatorHelpers::map),
     /// but includes the stream as an argument to the closure.
-    fn chain<O>(self, mapper: impl Fn(Self::Output, &mut TokenStream) -> O)
+    fn chain<O>(self, mapper: impl Fn(Self::Output, &mut TokenStream) -> ScanResult<O>)
         -> impl Combinator<Output = O>
     {
-        fn inner<I, O>(mapper: impl Fn(I, &mut TokenStream) -> O)
+        fn inner<I, O>(mapper: impl Fn(I, &mut TokenStream) -> ScanResult<O>)
             -> impl Fn(ScanResult<I>, &mut TokenStream) -> ScanResult<O>
         {
-            move |result, stream| {
-                let result = result?;
-                let ok = mapper(result, stream);
-                Ok(ok)
-            }
+            move |result, stream| mapper(result?, stream)
         }
 
-        self.chain_result(inner(mapper))
+        let mapper= inner(mapper);
+        self.chain_result(mapper)
     }
 
     /// This is similar to [`CombinatorHelpers::map_err()`](CombinatorHelpers::map_err),
     /// but includes the stream as an argument to the closure.
-    fn chain_err(self, mapper: impl Fn(ScanErrorKind, &mut TokenStream) -> ScanErrorKind)
-        -> impl Combinator
+    fn chain_err(self, mapper: impl Fn(ScanErrorKind, &mut TokenStream) -> ScanResult<Self::Output>)
+        -> impl Combinator<Output = Self::Output>
     {
-        fn inner<O>(mapper: impl Fn(ScanErrorKind, &mut TokenStream) -> ScanErrorKind)
-            -> impl Fn(ScanResult<O>, &mut TokenStream) -> ScanResult<O>
+        fn inner<I>(mapper: impl Fn(ScanErrorKind, &mut TokenStream) -> ScanResult<I>)
+            -> impl Fn(ScanResult<I>, &mut TokenStream) -> ScanResult<I>
         {
-            move |result, stream| {
-                result.map_err(|err|
-                    mapper(err, stream)
-                )
-            }
+            move |result, stream|
+                match result {
+                    Err(err) => mapper(err, stream),
+                    _ => result,
+                }
         }
 
-        self.chain_result(inner(mapper))
+        let mapper = inner(mapper);
+        self.chain_result(mapper)
     }
 }
 
