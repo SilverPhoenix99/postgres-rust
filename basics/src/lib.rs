@@ -46,6 +46,7 @@ pub mod wchar;
 mod char_buffer;
 mod concealable;
 mod fn_info;
+mod impl_from;
 mod location;
 mod named;
 mod non_negative;

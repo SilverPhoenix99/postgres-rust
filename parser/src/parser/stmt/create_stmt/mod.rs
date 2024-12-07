@@ -1,5 +1,7 @@
 mod create_database_stmt;
 
+pub(super) use create_database_stmt::createdb_opt_value;
+
 pub(super) fn create_stmt() -> impl Combinator<Output = RawStmt> {
 
     Create.and_right(match_first! {

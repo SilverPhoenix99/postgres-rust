@@ -30,5 +30,8 @@ impl From<UnsignedNumber> for SignedNumber {
     }
 }
 
+impl_from!(i32 for SignedNumber::IntegerConst);
+
 use crate::parser::ast_node::UnsignedNumber;
 use crate::NumberRadix;
+use postgres_basics::impl_from;

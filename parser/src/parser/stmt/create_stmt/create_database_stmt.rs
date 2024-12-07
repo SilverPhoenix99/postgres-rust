@@ -61,7 +61,7 @@ fn createdb_opt_name() -> impl Combinator<Output = CreatedbOptionKind> {
     }
 }
 
-fn createdb_opt_value() -> impl Combinator<Output = CreatedbOptionValue> {
+pub(in crate::parser::stmt) fn createdb_opt_value() -> impl Combinator<Output = CreatedbOptionValue> {
     use CreatedbOptionValue::*;
 
     /*
@@ -72,21 +72,19 @@ fn createdb_opt_value() -> impl Combinator<Output = CreatedbOptionValue> {
 
     match_first! {
         DefaultKw.map(|_| Default),
-        True.map(|_| Boolean(true)),
-        False.map(|_| Boolean(false)),
-        On.map(|kw| String(kw.into())),
-        string().map(|string| String(string.into())),
+        True.map(|_| true.into()),
+        False.map(|_| false.into()),
+        On.map(|kw| kw.text().into()),
+        string().map(From::from),
         // `Off` is handled by this production:
-        non_reserved_word().map(String),
-        signed_number().map(Number)
+        non_reserved_word().map(From::from),
+        signed_number().map(From::from)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use crate::parser::ast_node::SignedNumber;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
@@ -100,8 +98,8 @@ mod tests {
         let expected = CreateDatabaseStmt::new(
             "db_name".into(),
             vec![
-                CreatedbOption::new(ConnectionLimit, CreatedbOptionValue::Number(SignedNumber::IntegerConst(753))),
-                CreatedbOption::new(AllowConnections, CreatedbOptionValue::String("on".into())),
+                CreatedbOption::new(ConnectionLimit, 753),
+                CreatedbOption::new(AllowConnections, "on"),
             ]
         );
 
@@ -115,15 +113,15 @@ mod tests {
         let actual = createdb_opt_list().parse(&mut stream);
 
         let expected = vec![
-            CreatedbOption::new(ConnectionLimit, CreatedbOptionValue::Number(SignedNumber::IntegerConst(753))),
-            CreatedbOption::new(AllowConnections, CreatedbOptionValue::String("on".into())),
+            CreatedbOption::new(ConnectionLimit, 753),
+            CreatedbOption::new(AllowConnections, "on"),
         ];
 
         assert_eq!(Ok(expected), actual);
     }
 
     #[test_case("allow_connections DEFAULT", CreatedbOption::new(AllowConnections, CreatedbOptionValue::Default))]
-    #[test_case("oid = 54321", CreatedbOption::new(Oid, CreatedbOptionValue::Number(SignedNumber::IntegerConst(54321))))]
+    #[test_case("oid = 54321", CreatedbOption::new(Oid, 54321))]
     fn test_createdb_opt_item(source: &str, expected: CreatedbOption) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = createdb_opt_item().parse(&mut stream);
@@ -156,12 +154,12 @@ mod tests {
     }
 
     #[test_case("default", CreatedbOptionValue::Default)]
-    #[test_case("true", CreatedbOptionValue::Boolean(true))]
-    #[test_case("false", CreatedbOptionValue::Boolean(false))]
-    #[test_case("on", CreatedbOptionValue::String("on".into()))]
-    #[test_case("off", CreatedbOptionValue::String("off".into()))]
-    #[test_case("'value'", CreatedbOptionValue::String("value".into()))]
-    #[test_case("+123", CreatedbOptionValue::Number(SignedNumber::IntegerConst(123)))]
+    #[test_case("true", true.into())]
+    #[test_case("false", false.into())]
+    #[test_case("on", "on".into())]
+    #[test_case("off", "off".into())]
+    #[test_case("'value'", "value".into())]
+    #[test_case("+123", 123.into())]
     fn test_createdb_opt_value(source: &str, expected: CreatedbOptionValue) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = createdb_opt_value().parse(&mut stream);

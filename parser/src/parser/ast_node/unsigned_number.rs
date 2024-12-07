@@ -10,5 +10,8 @@ impl Default for UnsignedNumber {
     }
 }
 
+impl_from!(NonNegative for UnsignedNumber::IntegerConst);
+
 use crate::NumberRadix;
+use postgres_basics::impl_from;
 use postgres_basics::NonNegative;

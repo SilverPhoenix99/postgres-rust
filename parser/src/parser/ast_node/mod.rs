@@ -83,36 +83,6 @@ pub use self::{
 };
 pub(super) use unique_null_treatment::UniqueNullTreatment;
 
-/// Generates `From` impls, where the input is wrapped in an output enum variant.
-macro_rules! impl_from {
-
-    ($variant:ident for $for_:ident) => {
-        impl_from!($variant for $for_ => $variant);
-    };
-
-    (box $variant:ident for $for_:ident) => {
-        impl_from!(box $variant for $for_ => $variant);
-    };
-
-    ($from:ident for $for_:ident => $variant:ident) => {
-        impl From<$from> for $for_ {
-            #[inline(always)]
-            fn from(value: $from) -> Self {
-                Self::$variant(value)
-            }
-        }
-    };
-
-    (box $from:ident for $for_:ident => $variant:ident) => {
-        impl From<$from> for $for_ {
-            #[inline(always)]
-            fn from(value: $from) -> Self {
-                Self::$variant(Box::new(value))
-            }
-        }
-    };
-}
-
 pub type BinaryOperands = Box<(ExprNode, ExprNode)>;
 pub(super) type QualifiedName = Vec<Str>;
 
@@ -220,9 +190,9 @@ pub enum ExprNode {
 }
 
 impl_from!(box BinaryExpr for ExprNode);
-impl_from!(box IndirectionExpr for ExprNode => Indirection);
+impl_from!(box IndirectionExpr for ExprNode::Indirection);
 impl_from!(box CaseExpr for ExprNode);
-impl_from!(box TypecastExpr for ExprNode => Typecast);
+impl_from!(box TypecastExpr for ExprNode::Typecast);
 impl_from!(box UnaryExpr for ExprNode);
 impl_from!(box XmlParse for ExprNode);
 impl_from!(box XmlProcessingInstruction for ExprNode);
@@ -344,6 +314,6 @@ impl ExprNode {
     }
 }
 
-use impl_from;
 use crate::NumberRadix;
+use postgres_basics::impl_from;
 use postgres_basics::Str;

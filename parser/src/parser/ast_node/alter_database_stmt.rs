@@ -25,8 +25,14 @@ pub struct AlterdbOption {
 }
 
 impl AlterdbOption {
-    pub fn new(kind: AlterdbOptionKind, value: CreatedbOptionValue) -> AlterdbOption {
-        Self { kind, value }
+    pub fn new<V>(kind: AlterdbOptionKind, value: V) -> AlterdbOption
+    where
+        V: Into<CreatedbOptionValue>,
+    {
+        Self {
+            kind,
+            value: value.into(),
+        }
     }
 
     pub fn kind(&self) -> &AlterdbOptionKind {
