@@ -1,7 +1,5 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum OneOrAll {
+pub enum OneOrAll<T> {
     All,
-    Name(Str),
+    One(T),
 }
-
-use postgres_basics::Str;

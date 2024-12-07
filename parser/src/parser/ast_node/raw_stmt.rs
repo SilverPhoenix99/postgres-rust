@@ -8,9 +8,9 @@ pub enum RawStmt {
     AlterOwnerStmt(AlterOwnerStmt),
     AlterRoleStmt(AlterRoleStmt),
     CheckPoint,
-    ClosePortalStmt(OneOrAll),
+    ClosePortalStmt(OneOrAll<Str>),
     CreateDatabaseStmt(CreateDatabaseStmt),
-    DeallocateStmt(OneOrAll),
+    DeallocateStmt(OneOrAll<Str>),
     DiscardStmt(DiscardStmt),
     ListenStmt(Str),
     LoadStmt(Box<str>),
@@ -21,7 +21,7 @@ pub enum RawStmt {
     RefreshCollationVersionStmt(QualifiedName),
     RenameStmt(RenameStmt),
     TransactionStmt(TransactionStmt),
-    UnlistenStmt(OneOrAll),
+    UnlistenStmt(OneOrAll<Str>),
     VariableShowStmt(VariableShowStmt),
 }
 
