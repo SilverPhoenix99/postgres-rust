@@ -20,8 +20,7 @@ fn createdb_opt_item() -> impl Combinator<Output = CreatedbOption> {
 
     /*
           createdb_opt_name ( '=' )? DEFAULT
-        | createdb_opt_name ( '=' )? opt_boolean_or_string
-        | createdb_opt_name ( '=' )? signed_number
+        | createdb_opt_name ( '=' )? var_value
     */
 
     sequence!(
@@ -66,19 +65,12 @@ pub(in crate::parser::stmt) fn createdb_opt_value() -> impl Combinator<Output = 
 
     /*
           DEFAULT
-        | opt_boolean_or_string
-        | signed_number
+        | var_value
     */
 
     match_first! {
         DefaultKw.map(|_| Default),
-        True.map(|_| true.into()),
-        False.map(|_| false.into()),
-        On.map(|kw| kw.text().into()),
-        string().map(From::from),
-        // `Off` is handled by this production:
-        non_reserved_word().map(From::from),
-        signed_number().map(From::from)
+        var_value().map(From::from)
     }
 }
 
@@ -171,11 +163,8 @@ use crate::lexer::Keyword as Kw;
 use crate::lexer::Keyword::Connection;
 use crate::lexer::Keyword::Database;
 use crate::lexer::Keyword::DefaultKw;
-use crate::lexer::Keyword::False;
 use crate::lexer::Keyword::Limit;
 use crate::lexer::Keyword::LocationKw;
-use crate::lexer::Keyword::On;
-use crate::lexer::Keyword::True;
 use crate::lexer::Keyword::With;
 use crate::lexer::OperatorKind::Equals;
 use crate::parser::ast_node::CreateDatabaseStmt;
@@ -206,8 +195,6 @@ use crate::parser::combinators::identifier;
 use crate::parser::combinators::many;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::sequence;
-use crate::parser::combinators::string;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::const_numeric_parsers::signed_number;
-use crate::parser::non_reserved_word;
+use crate::parser::var_value::var_value;
