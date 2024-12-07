@@ -1,5 +1,5 @@
 /// Alias: `ClosePortalStmt`
-pub(in crate::parser) fn close_stmt() -> impl Combinator<Output = OneOrAll> {
+pub(in crate::parser) fn close_stmt() -> impl Combinator<Output = OneOrAll<Str>> {
 
     /*
         CLOSE ALL
@@ -9,7 +9,7 @@ pub(in crate::parser) fn close_stmt() -> impl Combinator<Output = OneOrAll> {
     Close
         .and_right(or(
             All.map(|_| OneOrAll::All),
-            col_id().map(OneOrAll::Name)
+            col_id().map(OneOrAll::One)
         ))
 }
 
@@ -28,10 +28,10 @@ mod tests {
     #[test]
     fn test_close_named() {
         let mut stream = TokenStream::new("close abort", DEFAULT_CONFIG);
-        assert_eq!(Ok(OneOrAll::Name("abort".into())), close_stmt().parse(&mut stream));
+        assert_eq!(Ok(OneOrAll::One("abort".into())), close_stmt().parse(&mut stream));
 
         let mut stream = TokenStream::new("close ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(OneOrAll::Name("ident".into())), close_stmt().parse(&mut stream));
+        assert_eq!(Ok(OneOrAll::One("ident".into())), close_stmt().parse(&mut stream));
     }
 }
 
@@ -42,3 +42,4 @@ use crate::parser::col_id;
 use crate::parser::combinators::or;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
+use postgres_basics::Str;

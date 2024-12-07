@@ -1,5 +1,5 @@
 /// Alias: `UnlistenStmt`
-pub(in crate::parser) fn unlisten_stmt() -> impl Combinator<Output = OneOrAll> {
+pub(in crate::parser) fn unlisten_stmt() -> impl Combinator<Output = OneOrAll<Str>> {
 
     /*
         UNLISTEN '*'
@@ -9,7 +9,7 @@ pub(in crate::parser) fn unlisten_stmt() -> impl Combinator<Output = OneOrAll> {
     Unlisten
         .and_right(match_first!{
             Mul.map(|_| OneOrAll::All),
-            col_id().map(OneOrAll::Name)
+            col_id().map(OneOrAll::One)
         })
 }
 
@@ -21,8 +21,8 @@ mod tests {
     use test_case::test_case;
 
     #[test_case("unlisten *", OneOrAll::All)]
-    #[test_case("unlisten test_name", OneOrAll::Name("test_name".into()))]
-    fn test_unlisten(source: &str, expected: OneOrAll) {
+    #[test_case("unlisten test_name", OneOrAll::One("test_name".into()))]
+    fn test_unlisten(source: &str, expected: OneOrAll<Str>) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         assert_eq!(Ok(expected), unlisten_stmt().parse(&mut stream));
     }
@@ -35,3 +35,4 @@ use crate::parser::col_id;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
+use postgres_basics::Str;
