@@ -97,6 +97,17 @@ impl From<Box<str>> for CreatedbOptionValue {
     }
 }
 
+impl From<VarValue> for CreatedbOptionValue {
+    fn from(value: VarValue) -> Self {
+        match value {
+            VarValue::Boolean(value) => Self::Boolean(value),
+            VarValue::String(value) => Self::String(value),
+            VarValue::Number(value) => Self::Number(value),
+        }
+    }
+}
+
 use crate::parser::ast_node::impl_from;
 use crate::parser::ast_node::SignedNumber;
+use crate::parser::ast_node::VarValue;
 use postgres_basics::Str;

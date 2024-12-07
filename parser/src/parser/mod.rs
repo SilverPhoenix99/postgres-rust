@@ -1,5 +1,6 @@
 pub mod ast_node;
 mod acl_parsers;
+mod boolean_or_string;
 mod combinators;
 mod config;
 mod const_numeric_parsers;
@@ -28,6 +29,7 @@ mod token_value;
 mod transaction_mode_list;
 mod typename;
 mod uescape_escape;
+mod var_value;
 mod warning;
 
 pub use self::{

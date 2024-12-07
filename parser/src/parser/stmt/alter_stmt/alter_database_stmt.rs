@@ -59,8 +59,7 @@ fn alterdb_opt_item() -> impl Combinator<Output = AlterdbOption> {
 
     /*
           alterdb_opt_name ( '=' )? DEFAULT
-        | alterdb_opt_name ( '=' )? opt_boolean_or_string
-        | alterdb_opt_name ( '=' )? signed_number
+        | alterdb_opt_name ( '=' )? var_value
     */
 
     sequence!(
