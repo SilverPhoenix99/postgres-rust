@@ -104,7 +104,7 @@ pub enum TypeName {
     },
 }
 
-impl_from!(IntervalRange for TypeName => Interval);
+impl_from!(IntervalRange for TypeName::Interval);
 
 impl TypeName {
     pub fn with_array_bounds(self, array_bounds: Vec<Option<i32>>) -> Type {
@@ -168,7 +168,7 @@ pub enum FuncType {
     Reference(TypeReference),
 }
 
-use crate::parser::ast_node::impl_from;
 use crate::parser::ast_node::ExprNode;
 use crate::parser::ast_node::QualifiedName;
+use postgres_basics::impl_from;
 use postgres_basics::Oid;

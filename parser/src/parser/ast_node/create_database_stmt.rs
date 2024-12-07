@@ -25,8 +25,14 @@ pub struct CreatedbOption {
 }
 
 impl CreatedbOption {
-    pub fn new(kind: CreatedbOptionKind, value: CreatedbOptionValue) -> Self {
-        CreatedbOption { kind, value }
+    pub fn new<V>(kind: CreatedbOptionKind, value: V) -> Self
+    where
+        V: Into<CreatedbOptionValue>
+    {
+        CreatedbOption {
+            kind,
+            value: value.into(),
+        }
     }
 
     pub fn kind(&self) -> &CreatedbOptionKind {
@@ -73,5 +79,24 @@ pub enum CreatedbOptionValue {
     String(Str),
 }
 
+impl_from!(SignedNumber for CreatedbOptionValue::Number);
+impl_from!(Str for CreatedbOptionValue::String);
+impl_from!(String for CreatedbOptionValue::String);
+impl_from!(bool for CreatedbOptionValue::Boolean);
+impl_from!(i32 for CreatedbOptionValue::Number);
+
+impl From<&'static str> for CreatedbOptionValue {
+    fn from(value: &'static str) -> Self {
+        Self::String(value.into())
+    }
+}
+
+impl From<Box<str>> for CreatedbOptionValue {
+    fn from(value: Box<str>) -> Self {
+        Self::String(value.into())
+    }
+}
+
+use crate::parser::ast_node::impl_from;
 use crate::parser::ast_node::SignedNumber;
 use postgres_basics::Str;

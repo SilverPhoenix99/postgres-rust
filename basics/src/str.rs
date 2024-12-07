@@ -33,15 +33,11 @@ impl AsRef<str> for Str {
     }
 }
 
+impl_from!(String for Str::Boxed);
+
 impl From<Box<str>> for Str {
     fn from(value: Box<str>) -> Self {
         Self::Boxed(value)
-    }
-}
-
-impl From<String> for Str {
-    fn from(value: String) -> Self {
-        Self::Boxed(value.into_boxed_str())
     }
 }
 
@@ -69,5 +65,6 @@ impl PartialOrd for Str {
     }
 }
 
+use crate::impl_from;
 use std::cmp::Ordering;
 use std::ops::Deref;

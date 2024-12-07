@@ -8,17 +8,8 @@ pub(crate) enum ScanErrorKind {
     NoMatch(Location),
 }
 
-impl From<LexerError> for ScanErrorKind {
-    fn from(value: LexerError) -> Self {
-        ScanErr(value.into())
-    }
-}
-
-impl From<ParserError> for ScanErrorKind {
-    fn from(value: ParserError) -> Self {
-        ScanErr(value)
-    }
-}
+impl_from!(LexerError for ScanErrorKind::ScanErr);
+impl_from!(ParserError for ScanErrorKind::ScanErr);
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum EofErrorKind {
@@ -26,17 +17,8 @@ pub(crate) enum EofErrorKind {
     Eof(Location),
 }
 
-impl From<LexerError> for EofErrorKind {
-    fn from(value: LexerError) -> Self {
-        NotEof(ParserError::from(value))
-    }
-}
-
-impl From<ParserError> for EofErrorKind {
-    fn from(value: ParserError) -> Self {
-        NotEof(value)
-    }
-}
+impl_from!(LexerError for EofErrorKind::NotEof);
+impl_from!(ParserError for EofErrorKind::NotEof);
 
 impl From<EofErrorKind> for ScanErrorKind {
     fn from(value: EofErrorKind) -> Self {
@@ -154,4 +136,5 @@ use crate::parser::result::ScanErrorKind::NoMatch;
 use crate::parser::result::ScanErrorKind::ScanErr;
 use crate::parser::ParseResult;
 use crate::parser::ParserError;
+use postgres_basics::impl_from;
 use postgres_basics::Location;

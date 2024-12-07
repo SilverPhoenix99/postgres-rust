@@ -1,5 +1,6 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RawStmt {
+    AlterDatabaseStmt(AlterDatabaseStmt),
     AlterDatabaseRefreshCollStmt(Str),
     AlterDefaultPrivilegesStmt(Box<AlterDefaultPrivilegesStmt>),
     AlterEventTrigStmt(AlterEventTrigStmt),
@@ -25,6 +26,7 @@ pub enum RawStmt {
 }
 
 impl_from!(box AlterDefaultPrivilegesStmt for RawStmt);
+impl_from!(AlterDatabaseStmt for RawStmt);
 impl_from!(AlterEventTrigStmt for RawStmt);
 impl_from!(AlterObjectSchemaStmt for RawStmt);
 impl_from!(AlterOwnerStmt for RawStmt);
@@ -38,7 +40,7 @@ impl_from!(RenameStmt for RawStmt);
 impl_from!(TransactionStmt for RawStmt);
 impl_from!(VariableShowStmt for RawStmt);
 
-use crate::parser::ast_node::impl_from;
+use crate::parser::ast_node::AlterDatabaseStmt;
 use crate::parser::ast_node::AlterDefaultPrivilegesStmt;
 use crate::parser::ast_node::AlterEventTrigStmt;
 use crate::parser::ast_node::AlterObjectSchemaStmt;
@@ -54,4 +56,5 @@ use crate::parser::ast_node::ReassignOwnedStmt;
 use crate::parser::ast_node::RenameStmt;
 use crate::parser::ast_node::TransactionStmt;
 use crate::parser::ast_node::VariableShowStmt;
+use postgres_basics::impl_from;
 use postgres_basics::Str;
