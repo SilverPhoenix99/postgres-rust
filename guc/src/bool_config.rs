@@ -1,5 +1,3 @@
-use crate::{ConfigMetadata, GenericConfig};
-
 #[derive(Debug)]
 pub struct BoolConfig {
     value: bool,
@@ -18,12 +16,15 @@ impl BoolConfig {
 
 pub struct SimpleBoolConfig {
     metadata: ConfigMetadata,
-    gen: GenericConfig,
+    generic: GenericConfig,
     config: BoolConfig,
 }
 
 impl SimpleBoolConfig {
     pub fn new(metadata: ConfigMetadata, config: BoolConfig) -> Self {
-        Self { metadata, config, gen: GenericConfig::default() }
+        Self { metadata, config, generic: GenericConfig::default() }
     }
 }
+
+use crate::ConfigMetadata;
+use crate::GenericConfig;
