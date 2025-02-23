@@ -27,7 +27,7 @@ where
     T: Debug + Copy + Clone + Sized + 'static {
 
     metadata: ConfigMetadata,
-    gen: GenericConfig,
+    generic: GenericConfig,
     config: EnumConfig<T>
 }
 
@@ -36,9 +36,10 @@ where
     T: Debug + Copy + Clone + Sized {
 
     pub fn new(metadata: ConfigMetadata, config: EnumConfig<T>) -> Self {
-        Self { metadata, config, gen: GenericConfig::default() }
+        Self { metadata, config, generic: GenericConfig::default() }
     }
 }
 
-use crate::{ConfigMetadata, GenericConfig};
+use crate::ConfigMetadata;
+use crate::GenericConfig;
 use std::fmt::Debug;
