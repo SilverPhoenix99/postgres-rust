@@ -504,6 +504,8 @@ __END__
 
 # assumes running in this directory
 
+## irb -rclipboard
+
 load './grammar-transform.rb';
 
 grammar = Grammar.load_bison('../../postgres/src/backend/parser/gram.y');
