@@ -36,7 +36,7 @@ mod unary_expr;
 mod unique_null_treatment;
 mod unsigned_number;
 mod var_value;
-mod variable_show_stmt;
+mod variable_target;
 mod xml;
 
 pub use self::{
@@ -86,7 +86,7 @@ pub use self::{
     unary_expr::UnaryExpr,
     unsigned_number::UnsignedNumber,
     var_value::VarValue,
-    variable_show_stmt::VariableShowStmt,
+    variable_target::VariableTarget,
     xml::{XmlElement, XmlParse, XmlProcessingInstruction, XmlRoot},
 };
 pub(super) use unique_null_treatment::UniqueNullTreatment;

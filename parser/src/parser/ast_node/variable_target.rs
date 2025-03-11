@@ -1,11 +1,13 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum VariableShowStmt {
+pub enum VariableTarget {
     All,
     SessionAuthorization,
     TransactionIsolation,
     TimeZone,
-    // Name, possibly qualified, separated by dots
-    Name(QualifiedName),
+    Variable {
+        // Name, possibly qualified, separated by dots
+        name: QualifiedName
+    },
 }
 
 use crate::parser::ast_node::QualifiedName;

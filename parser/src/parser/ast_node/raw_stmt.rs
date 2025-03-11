@@ -23,7 +23,8 @@ pub enum RawStmt {
     RenameStmt(RenameStmt),
     TransactionStmt(TransactionStmt),
     UnlistenStmt(OneOrAll<Str>),
-    VariableShowStmt(VariableShowStmt),
+    VariableResetStmt(VariableTarget),
+    VariableShowStmt(VariableTarget),
 }
 
 impl_from!(box AlterDefaultPrivilegesStmt for RawStmt);
@@ -40,7 +41,6 @@ impl_from!(box PrepareStmt for RawStmt);
 impl_from!(ReassignOwnedStmt for RawStmt);
 impl_from!(RenameStmt for RawStmt);
 impl_from!(TransactionStmt for RawStmt);
-impl_from!(VariableShowStmt for RawStmt);
 
 use crate::parser::ast_node::AlterDatabaseStmt;
 use crate::parser::ast_node::AlterDefaultPrivilegesStmt;
@@ -58,6 +58,6 @@ use crate::parser::ast_node::QualifiedName;
 use crate::parser::ast_node::ReassignOwnedStmt;
 use crate::parser::ast_node::RenameStmt;
 use crate::parser::ast_node::TransactionStmt;
-use crate::parser::ast_node::VariableShowStmt;
+use crate::parser::ast_node::VariableTarget;
 use postgres_basics::impl_from;
 use postgres_basics::Str;
