@@ -10,6 +10,7 @@ mod bool_expr;
 mod boolean_or_string;
 mod case_expr;
 mod create_database_stmt;
+mod default_or_value;
 mod discard_stmt;
 mod drop_behavior;
 mod function_parameter;
@@ -34,7 +35,6 @@ mod typecast_expr;
 mod unary_expr;
 mod unique_null_treatment;
 mod unsigned_number;
-mod var_list;
 mod var_value;
 mod variable_show_stmt;
 mod xml;
@@ -52,6 +52,7 @@ pub use self::{
     boolean_or_string::BooleanOrString,
     case_expr::{CaseExpr, CaseWhen},
     create_database_stmt::{CreateDatabaseStmt, CreatedbOption, CreatedbOptionKind, CreatedbOptionValue},
+    default_or_value::ValueOrDefault,
     discard_stmt::DiscardStmt,
     drop_behavior::DropBehavior,
     function_parameter::FunctionParameter,
@@ -84,7 +85,6 @@ pub use self::{
     typecast_expr::TypecastExpr,
     unary_expr::UnaryExpr,
     unsigned_number::UnsignedNumber,
-    var_list::VarList,
     var_value::VarValue,
     variable_show_stmt::VariableShowStmt,
     xml::{XmlElement, XmlParse, XmlProcessingInstruction, XmlRoot},

@@ -13,8 +13,8 @@ pub(in crate::parser) fn alter_system_stmt() -> impl Combinator<Output = RawStmt
             }),
             Set.and_right(var_name())
                 .and_then(generic_set_tail(), |name, set| match set {
-                VarList::Default => AlterSystemStmt::SetDefault { name },
-                VarList::Values(values) => AlterSystemStmt::Set { name, values }
+                ValueOrDefault::Default => AlterSystemStmt::SetDefault { name },
+                ValueOrDefault::Value(values) => AlterSystemStmt::Set { name, values }
             })
         })
         .map(From::from)
@@ -45,7 +45,7 @@ use crate::lexer::Keyword::SystemKw;
 use crate::parser::ast_node::AlterSystemStmt;
 use crate::parser::ast_node::OneOrAll;
 use crate::parser::ast_node::RawStmt;
-use crate::parser::ast_node::VarList;
+use crate::parser::ast_node::ValueOrDefault;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
