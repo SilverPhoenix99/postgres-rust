@@ -1,5 +1,5 @@
 /// Alias: `AlterSystemStmt`
-pub(super) fn alter_system_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn alter_system_stmt() -> impl Combinator<Output = AlterSystemStmt> {
 
     /*
           ALTER SYSTEM_P RESET generic_reset
@@ -18,7 +18,6 @@ pub(super) fn alter_system_stmt() -> impl Combinator<Output = RawStmt> {
                 ValueOrDefault::Value(values) => AlterSystemStmt::Set { name, values }
             })
         })
-        .map(From::from)
 }
 
 #[cfg(test)]
@@ -36,7 +35,7 @@ mod tests {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = alter_system_stmt().parse(&mut stream);
 
-        assert_eq!(Ok(expected.into()), actual)
+        assert_eq!(Ok(expected), actual)
     }
 }
 
@@ -45,7 +44,6 @@ use crate::lexer::Keyword::Set;
 use crate::lexer::Keyword::SystemKw;
 use crate::parser::ast_node::AlterSystemStmt;
 use crate::parser::ast_node::OneOrAll;
-use crate::parser::ast_node::RawStmt;
 use crate::parser::ast_node::ValueOrDefault;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::Combinator;

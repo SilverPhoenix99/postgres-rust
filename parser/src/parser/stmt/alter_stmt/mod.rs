@@ -19,7 +19,7 @@ pub(super) fn alter_stmt() -> impl Combinator<Output = RawStmt> {
         alter_group_stmt(),
         alter_language_stmt(),
         alter_large_object_stmt(),
-        alter_system_stmt(),
+        alter_system_stmt().map(From::from),
     })
 }
 
