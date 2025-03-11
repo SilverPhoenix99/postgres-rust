@@ -1,5 +1,5 @@
 /// Alias: `DiscardStmt`
-pub(in crate::parser) fn discard_stmt() -> impl Combinator<Output = DiscardStmt> {
+pub(super) fn discard_stmt() -> impl Combinator<Output = DiscardStmt> {
 
     /*
         DISCARD (ALL | PLANS | SEQUENCES | TEMP | TEMPORARY)

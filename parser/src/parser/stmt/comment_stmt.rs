@@ -1,5 +1,5 @@
 /// Alias: `CommentStmt`
-pub(in crate::parser) fn comment_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn comment_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         COMMENT ON AGGREGATE aggregate_with_argtypes IS comment_text

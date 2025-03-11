@@ -1,5 +1,5 @@
 /// Alias: `DeallocateStmt`
-pub(in crate::parser) fn deallocate_stmt() -> impl Combinator<Output = OneOrAll<Str>> {
+pub(super) fn deallocate_stmt() -> impl Combinator<Output = OneOrAll<Str>> {
 
     /*
         DEALLOCATE (PREPARE)? ALL

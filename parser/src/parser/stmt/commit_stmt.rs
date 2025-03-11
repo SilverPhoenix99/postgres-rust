@@ -1,4 +1,4 @@
-pub(in crate::parser) fn commit_stmt() -> impl Combinator<Output = TransactionStmt> {
+pub(super) fn commit_stmt() -> impl Combinator<Output = TransactionStmt> {
 
     /*
         COMMIT PREPARED SCONST

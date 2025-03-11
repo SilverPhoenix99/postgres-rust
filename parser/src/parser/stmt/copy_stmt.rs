@@ -1,5 +1,5 @@
 /// Alias: `CopyStmt`
-pub(in crate::parser) fn copy_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn copy_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         COPY opt_binary qualified_name opt_column_list copy_from opt_program copy_file_name copy_delimiter opt_with copy_options where_clause

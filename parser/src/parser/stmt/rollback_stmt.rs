@@ -1,4 +1,4 @@
-pub(in crate::parser) fn rollback_stmt() -> impl Combinator<Output = TransactionStmt> {
+pub(super) fn rollback_stmt() -> impl Combinator<Output = TransactionStmt> {
 
     /*
         ROLLBACK PREPARED SCONST

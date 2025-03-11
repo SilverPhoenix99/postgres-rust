@@ -1,5 +1,5 @@
 /// Alias: `NotifyStmt`
-pub(in crate::parser) fn notify_stmt() -> impl Combinator<Output = NotifyStmt> {
+pub(super) fn notify_stmt() -> impl Combinator<Output = NotifyStmt> {
 
     /*
         NOTIFY ColId ( ',' SCONST )?

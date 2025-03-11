@@ -1,5 +1,5 @@
 /// Alias: `FetchStmt`
-pub(in crate::parser) fn move_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn move_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         MOVE fetch_args

@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `RevokeStmt`
 /// * `RevokeRoleStmt`
-pub(in crate::parser) fn revoke_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn revoke_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         REVOKE privileges ON privilege_target FROM grantee_list opt_granted_by opt_drop_behavior

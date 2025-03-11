@@ -1,4 +1,4 @@
-pub(in crate::parser) fn start_transaction_stmt() -> impl Combinator<Output = TransactionStmt> {
+pub(super) fn start_transaction_stmt() -> impl Combinator<Output = TransactionStmt> {
 
     /*
         START TRANSACTION opt_transaction_mode_list

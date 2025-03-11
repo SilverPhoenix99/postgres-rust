@@ -1,5 +1,5 @@
 /// Alias: `DropStmt`
-pub(in crate::parser) fn drop_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn drop_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         DROP DOMAIN_P IF_P EXISTS type_name_list opt_drop_behavior

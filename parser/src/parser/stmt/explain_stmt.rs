@@ -1,5 +1,5 @@
 /// Alias: `ExplainStmt`
-pub(in crate::parser) fn explain_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn explain_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         EXPLAIN ExplainableStmt

@@ -1,5 +1,5 @@
 /// Alias: `ReindexStmt`
-pub(in crate::parser) fn reindex_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn reindex_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         REINDEX opt_reindex_option_list reindex_target_relation opt_concurrently qualified_name

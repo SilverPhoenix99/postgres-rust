@@ -1,5 +1,5 @@
 /// Alias: `ReassignOwnedStmt`
-pub(in crate::parser) fn reassign_owned_stmt() -> impl Combinator<Output = ReassignOwnedStmt> {
+pub(super) fn reassign_owned_stmt() -> impl Combinator<Output = ReassignOwnedStmt> {
 
     /*
         REASSIGN OWNED BY role_list TO RoleSpec

@@ -1,5 +1,5 @@
 /// Alias: `TruncateStmt`
-pub(in crate::parser) fn truncate_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn truncate_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         TRUNCATE opt_table relation_expr_list opt_restart_seqs opt_drop_behavior
