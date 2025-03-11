@@ -1,5 +1,5 @@
 /// Alias: `VariableShowStmt`
-pub(in crate::parser) fn show_stmt() -> impl Combinator<Output = VariableShowStmt> {
+pub(super) fn show_stmt() -> impl Combinator<Output = VariableShowStmt> {
 
     /*
         SHOW ALL

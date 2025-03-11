@@ -1,5 +1,5 @@
 /// Alias: `SecLabelStmt`
-pub(in crate::parser) fn security_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn security_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         SECURITY LABEL opt_provider ON AGGREGATE aggregate_with_argtypes IS security_label

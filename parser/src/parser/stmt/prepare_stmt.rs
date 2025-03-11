@@ -1,4 +1,4 @@
-pub(in crate::parser) fn prepare_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn prepare_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         PREPARE TRANSACTION SCONST

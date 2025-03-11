@@ -1,5 +1,5 @@
 /// Alias: `ListenStmt`
-pub(in crate::parser) fn listen_stmt() -> impl Combinator<Output = Str> {
+pub(super) fn listen_stmt() -> impl Combinator<Output = Str> {
 
     /*
         LISTEN ColId

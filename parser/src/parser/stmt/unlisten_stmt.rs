@@ -1,5 +1,5 @@
 /// Alias: `UnlistenStmt`
-pub(in crate::parser) fn unlisten_stmt() -> impl Combinator<Output = OneOrAll<Str>> {
+pub(super) fn unlisten_stmt() -> impl Combinator<Output = OneOrAll<Str>> {
 
     /*
         UNLISTEN '*'

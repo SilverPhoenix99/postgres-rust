@@ -1,5 +1,5 @@
 /// Alias: `ClosePortalStmt`
-pub(in crate::parser) fn close_stmt() -> impl Combinator<Output = OneOrAll<Str>> {
+pub(super) fn close_stmt() -> impl Combinator<Output = OneOrAll<Str>> {
 
     /*
         CLOSE ALL

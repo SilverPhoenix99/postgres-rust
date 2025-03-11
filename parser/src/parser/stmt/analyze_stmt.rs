@@ -1,5 +1,5 @@
 /// Alias: `AnalyzeStmt`
-pub(in crate::parser) fn analyze_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn analyze_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         (ANALYSE | ANALYZE) '(' utility_option_list ')' opt_vacuum_relation_list

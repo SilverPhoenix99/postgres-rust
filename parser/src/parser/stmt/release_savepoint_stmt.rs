@@ -1,4 +1,4 @@
-pub(in crate::parser) fn release_savepoint_stmt() -> impl Combinator<Output = TransactionStmt> {
+pub(super) fn release_savepoint_stmt() -> impl Combinator<Output = TransactionStmt> {
 
     /*
     TransactionStmt:

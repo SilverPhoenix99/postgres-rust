@@ -1,5 +1,5 @@
 /// Alias: `DoStmt`
-pub(in crate::parser) fn do_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn do_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         DO dostmt_opt_list

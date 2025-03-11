@@ -1,4 +1,4 @@
-pub(in crate::parser) fn abort_stmt() -> impl Combinator<Output = TransactionStmt> {
+pub(super) fn abort_stmt() -> impl Combinator<Output = TransactionStmt> {
 
     /*
     TransactionStmt:

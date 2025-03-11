@@ -1,5 +1,5 @@
 /// Alias: `LoadStmt`
-pub(in crate::parser) fn load_stmt() -> impl Combinator<Output = Box<str>> {
+pub(super) fn load_stmt() -> impl Combinator<Output = Box<str>> {
 
     /*
         LOAD SCONST

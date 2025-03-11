@@ -1,5 +1,5 @@
 /// Alias: `ClusterStmt`
-pub(in crate::parser) fn cluster_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn cluster_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         CLUSTER '(' utility_option_list ')'

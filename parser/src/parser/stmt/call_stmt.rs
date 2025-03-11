@@ -1,5 +1,5 @@
 /// Alias: `CallStmt`
-pub(in crate::parser) fn call_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn call_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
     CallStmt:

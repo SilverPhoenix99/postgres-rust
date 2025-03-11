@@ -4,7 +4,7 @@ pub(in crate::parser) fn begin_stmt() -> impl Combinator<Output = TransactionStm
     TransactionStmtLegacy:
         BEGIN_P opt_transaction opt_transaction_mode_list
     */
-    
+
     sequence!(
         Begin.and(opt_transaction()).skip(),
         transaction_mode_list().optional()

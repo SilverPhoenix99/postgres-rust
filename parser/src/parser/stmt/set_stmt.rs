@@ -1,4 +1,4 @@
-pub(in crate::parser) fn set_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn set_stmt() -> impl Combinator<Output = RawStmt> {
 
     // TODO Conflicts
 

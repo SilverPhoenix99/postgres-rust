@@ -1,5 +1,5 @@
 /// Alias: `ImportForeignSchemaStmt`
-pub(in crate::parser) fn import_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn import_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         IMPORT_P FOREIGN SCHEMA ColId import_qualification FROM SERVER ColId INTO ColId create_generic_options
