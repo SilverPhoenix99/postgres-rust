@@ -1,4 +1,4 @@
-pub(in crate::parser) fn alter_large_object_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn alter_large_object_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         ALTER LARGE_P OBJECT_P NumericOnly OWNER TO RoleSpec

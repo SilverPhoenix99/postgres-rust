@@ -1,4 +1,5 @@
-pub(in crate::parser) fn alter_system_stmt() -> impl Combinator<Output = RawStmt> {
+/// Alias: `AlterSystemStmt`
+pub(super) fn alter_system_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
           ALTER SYSTEM_P RESET generic_reset

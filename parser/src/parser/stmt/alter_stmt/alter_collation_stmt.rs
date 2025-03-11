@@ -1,4 +1,5 @@
-pub(in crate::parser) fn alter_collation_stmt() -> impl Combinator<Output = RawStmt> {
+/// Alias: `AlterCollationStmt`
+pub(super) fn alter_collation_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         ALTER COLLATION any_name REFRESH VERSION_P

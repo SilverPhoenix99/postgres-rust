@@ -1,4 +1,4 @@
-pub(in crate::parser) fn alter_conversion_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn alter_conversion_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         ALTER CONVERSION any_name OWNER TO RoleSpec
