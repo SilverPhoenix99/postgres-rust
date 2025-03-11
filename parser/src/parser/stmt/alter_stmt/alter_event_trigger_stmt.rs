@@ -1,4 +1,5 @@
-pub(in crate::parser) fn alter_event_trigger_stmt() -> impl Combinator<Output = RawStmt> {
+/// Includes: `AlterEventTrigStmt`
+pub(super) fn alter_event_trigger_stmt() -> impl Combinator<Output = RawStmt> {
 
     /*
         ALTER EVENT TRIGGER ColId enable_trigger
