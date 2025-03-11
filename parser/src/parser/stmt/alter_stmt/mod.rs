@@ -6,6 +6,7 @@ mod alter_event_trigger_stmt;
 mod alter_group_stmt;
 mod alter_language_stmt;
 mod alter_large_object_stmt;
+mod alter_system_stmt;
 
 pub(super) fn alter_stmt() -> impl Combinator<Output = RawStmt> {
 
@@ -18,6 +19,7 @@ pub(super) fn alter_stmt() -> impl Combinator<Output = RawStmt> {
         alter_group_stmt(),
         alter_language_stmt(),
         alter_large_object_stmt(),
+        alter_system_stmt(),
     })
 }
 
@@ -36,6 +38,7 @@ mod tests {
     #[test_case("alter group some_group rename to new_group_name")]
     #[test_case("alter language lang owner to session_user")]
     #[test_case("alter large object -127 owner to public")]
+    #[test_case("alter system reset all")]
     fn test_alter(source: &str) {
 
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
@@ -57,6 +60,7 @@ use self::alter_event_trigger_stmt::alter_event_trigger_stmt;
 use self::alter_group_stmt::alter_group_stmt;
 use self::alter_language_stmt::alter_language_stmt;
 use self::alter_large_object_stmt::alter_large_object_stmt;
+use self::alter_system_stmt::alter_system_stmt;
 use crate::lexer::Keyword::Alter;
 use crate::parser::ast_node::RawStmt;
 use crate::parser::combinators::match_first;
