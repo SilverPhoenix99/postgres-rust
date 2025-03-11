@@ -33,6 +33,7 @@ mod typecast_expr;
 mod unary_expr;
 mod unique_null_treatment;
 mod unsigned_number;
+mod var_list;
 mod var_value;
 mod variable_show_stmt;
 mod xml;
@@ -81,6 +82,7 @@ pub use self::{
     typecast_expr::TypecastExpr,
     unary_expr::UnaryExpr,
     unsigned_number::UnsignedNumber,
+    var_list::VarList,
     var_value::VarValue,
     variable_show_stmt::VariableShowStmt,
     xml::{XmlElement, XmlParse, XmlProcessingInstruction, XmlRoot},

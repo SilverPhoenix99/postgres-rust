@@ -10,6 +10,8 @@ mod func_arg;
 mod func_name;
 mod func_type;
 mod function_with_argtypes;
+mod generic_reset;
+mod generic_set_tail;
 mod located_combinator;
 mod op_parsers;
 mod opt_array_bounds;
