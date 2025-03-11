@@ -1,5 +1,6 @@
 pub mod ast_node;
 mod acl_parsers;
+mod all_or_var_name;
 mod boolean_or_string;
 mod combinators;
 mod config;
@@ -10,7 +11,6 @@ mod func_arg;
 mod func_name;
 mod func_type;
 mod function_with_argtypes;
-mod generic_reset;
 mod generic_set_tail;
 mod located_combinator;
 mod op_parsers;

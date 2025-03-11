@@ -8,7 +8,7 @@ pub(super) fn alter_system_stmt() -> impl Combinator<Output = AlterSystemStmt> {
 
     SystemKw
         .and_right(match_first! {
-            Reset.and_then(generic_reset(), |_, reset| match reset {
+            Reset.and_then(all_or_var_name(), |_, reset| match reset {
                 OneOrAll::All => AlterSystemStmt::ResetAll,
                 OneOrAll::One(name) => AlterSystemStmt::Reset { name }
             }),
@@ -42,12 +42,12 @@ mod tests {
 use crate::lexer::Keyword::Reset;
 use crate::lexer::Keyword::Set;
 use crate::lexer::Keyword::SystemKw;
+use crate::parser::all_or_var_name::all_or_var_name;
 use crate::parser::ast_node::AlterSystemStmt;
 use crate::parser::ast_node::OneOrAll;
 use crate::parser::ast_node::ValueOrDefault;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;
-use crate::parser::generic_reset::generic_reset;
 use crate::parser::generic_set_tail::generic_set_tail;
 use crate::parser::var_name;

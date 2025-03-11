@@ -26,6 +26,7 @@ mod prepare_stmt;
 mod reassign_owner_stmt;
 mod reindex_stmt;
 mod release_savepoint_stmt;
+mod reset_stmt;
 mod revoke_stmt;
 mod rollback_stmt;
 mod savepoint_stmt;
@@ -36,6 +37,7 @@ mod start_transaction_stmt;
 mod truncate_stmt;
 mod unlisten_stmt;
 mod vacuum_stmt;
+mod variable_target;
 
 pub(super) fn stmt() -> impl Combinator<Output = RawStmt> {
 
@@ -67,18 +69,20 @@ pub(super) fn stmt() -> impl Combinator<Output = RawStmt> {
         reassign_owned_stmt().map(From::from),
         reindex_stmt(),
         release_savepoint_stmt().map(From::from),
+        reset_stmt().map(VariableResetStmt),
         revoke_stmt(),
         rollback_stmt().map(From::from),
         savepoint_stmt().map(From::from),
         security_stmt(),
         set_stmt(),
-        show_stmt().map(From::from),
+        show_stmt().map(VariableShowStmt),
         start_transaction_stmt().map(From::from),
         truncate_stmt(),
         unlisten_stmt().map(UnlistenStmt),
         vacuum_stmt(),
     }
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -99,6 +103,7 @@ mod tests {
     #[test_case("prepare transaction 'tx id'")]
     #[test_case("reassign owned by public, test_role to target_role")]
     #[test_case("release savepoint test_ident")]
+    #[test_case("reset time zone")]
     #[test_case("rollback to test_ident")]
     #[test_case("savepoint test_ident")]
     #[test_case("show all")]
@@ -119,6 +124,7 @@ mod tests {
 
 pub(in crate::parser) use self::begin_stmt::begin_stmt;
 pub(in crate::parser) use self::end_stmt::end_stmt;
+pub(in crate::parser) use self::reset_stmt::reset_stmt;
 
 use self::abort_stmt::abort_stmt;
 use self::alter_stmt::alter_stmt;
@@ -164,6 +170,8 @@ use crate::parser::ast_node::RawStmt::DeallocateStmt;
 use crate::parser::ast_node::RawStmt::ListenStmt;
 use crate::parser::ast_node::RawStmt::LoadStmt;
 use crate::parser::ast_node::RawStmt::UnlistenStmt;
+use crate::parser::ast_node::RawStmt::VariableResetStmt;
+use crate::parser::ast_node::RawStmt::VariableShowStmt;
 use crate::parser::combinators::match_first;
 use crate::parser::combinators::Combinator;
 use crate::parser::combinators::CombinatorHelpers;

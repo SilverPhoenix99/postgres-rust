@@ -1,5 +1,11 @@
-pub(super) fn generic_reset() -> impl Combinator<Output = OneOrAll<QualifiedName>> {
+/// Alias: `generic_reset`
+pub(super) fn all_or_var_name() -> impl Combinator<Output = OneOrAll<QualifiedName>> {
 
+    /*
+          ALL
+        | var_name
+    */
+    
     match_first!(
         Keyword::All.map(|_| OneOrAll::All),
         var_name().map(OneOrAll::One)
@@ -18,7 +24,7 @@ mod tests {
     fn test_generic_reset(source: &str, expected: OneOrAll<QualifiedName>) {
 
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = generic_reset().parse(&mut stream);
+        let actual = all_or_var_name().parse(&mut stream);
         assert_eq!(Ok(expected), actual);
     }
 }
