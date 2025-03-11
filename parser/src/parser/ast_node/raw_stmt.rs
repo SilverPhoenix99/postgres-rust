@@ -7,6 +7,7 @@ pub enum RawStmt {
     AlterObjectSchemaStmt(AlterObjectSchemaStmt),
     AlterOwnerStmt(AlterOwnerStmt),
     AlterRoleStmt(AlterRoleStmt),
+    AlterSystemStmt(AlterSystemStmt),
     CheckPoint,
     ClosePortalStmt(OneOrAll<Str>),
     CreateDatabaseStmt(CreateDatabaseStmt),
@@ -31,6 +32,7 @@ impl_from!(AlterEventTrigStmt for RawStmt);
 impl_from!(AlterObjectSchemaStmt for RawStmt);
 impl_from!(AlterOwnerStmt for RawStmt);
 impl_from!(AlterRoleStmt for RawStmt);
+impl_from!(AlterSystemStmt for RawStmt);
 impl_from!(CreateDatabaseStmt for RawStmt);
 impl_from!(DiscardStmt for RawStmt);
 impl_from!(NotifyStmt for RawStmt);
@@ -46,6 +48,7 @@ use crate::parser::ast_node::AlterEventTrigStmt;
 use crate::parser::ast_node::AlterObjectSchemaStmt;
 use crate::parser::ast_node::AlterOwnerStmt;
 use crate::parser::ast_node::AlterRoleStmt;
+use crate::parser::ast_node::AlterSystemStmt;
 use crate::parser::ast_node::CreateDatabaseStmt;
 use crate::parser::ast_node::DiscardStmt;
 use crate::parser::ast_node::NotifyStmt;

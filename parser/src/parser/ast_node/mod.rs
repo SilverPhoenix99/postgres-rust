@@ -4,6 +4,7 @@ mod alter_event_trig_stmt;
 mod alter_object_schema_stmt;
 mod alter_owner_stmt;
 mod alter_role_stmt;
+mod alter_system_stmt;
 mod binary_expr;
 mod bool_expr;
 mod boolean_or_string;
@@ -45,6 +46,7 @@ pub use self::{
     alter_object_schema_stmt::{AlterObjectSchemaStmt, AlterObjectSchemaTarget},
     alter_owner_stmt::{AlterOwnerStmt, AlterOwnerTarget},
     alter_role_stmt::{AlterRoleAction, AlterRoleOption, AlterRoleStmt},
+    alter_system_stmt::AlterSystemStmt,
     binary_expr::BinaryExpr,
     bool_expr::BoolExpr,
     boolean_or_string::BooleanOrString,
