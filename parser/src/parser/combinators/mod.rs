@@ -21,6 +21,7 @@ mod generic_set_tail;
 mod i32_literal_paren;
 mod name_list;
 mod non_reserved_word;
+mod non_reserved_word_or_sconst;
 mod operators;
 mod opt_array_bounds;
 mod opt_interval;
@@ -69,6 +70,7 @@ use self::{
     i32_literal_paren::i32_literal_paren,
     name_list::name_list,
     non_reserved_word::non_reserved_word,
+    non_reserved_word_or_sconst::non_reserved_word_or_sconst,
     operators::{explicit_op, qual_all_op, qual_op, subquery_op},
     opt_array_bounds::opt_array_bounds,
     opt_interval::opt_interval,
