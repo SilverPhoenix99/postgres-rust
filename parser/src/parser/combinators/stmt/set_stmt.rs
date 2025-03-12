@@ -1,0 +1,12 @@
+pub(super) fn set_stmt() -> impl Combinator<Output = RawStmt> {
+
+    // TODO Conflicts
+
+    Set
+        .map(|_| todo!())
+}
+
+use crate::lexer::Keyword::Set;
+use crate::parser::ast_node::RawStmt;
+use crate::parser::combinators::foundation::Combinator;
+use crate::parser::combinators::foundation::CombinatorHelpers;

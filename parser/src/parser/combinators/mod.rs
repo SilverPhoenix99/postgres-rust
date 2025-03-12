@@ -1,226 +1,102 @@
-mod and;
-mod between;
-mod bit_string;
-mod identifier;
-mod integer;
-mod keyword;
-mod many;
-mod map;
-mod maybe_match;
-mod number;
-mod operator;
-mod optional;
-mod or;
-mod param;
-mod parser;
-mod required;
-mod skip;
-mod string;
-mod try_match;
-mod user_defined_operator;
+pub(super) mod foundation;
+
+mod acl;
+mod all_or_var_name;
+mod any_name;
+mod attrs;
+mod bare_col_label;
+mod boolean_or_string;
+mod col_id;
+mod col_id_list;
+mod col_label;
+mod const_numeric;
+mod expr;
+mod expr_list;
+mod expr_list_paren;
+mod func_arg;
+mod func_name;
+mod func_type;
+mod function_with_argtypes;
+mod generic_set_tail;
+mod i32_literal_paren;
+mod name_list;
+mod non_reserved_word;
+mod operators;
+mod opt_array_bounds;
+mod opt_interval;
+mod opt_name_list;
+mod opt_precision;
+mod opt_timezone;
+mod opt_transaction;
+mod opt_transaction_chain;
+mod opt_type_modifiers;
+mod opt_unique_null_treatment;
+mod opt_varying;
+mod privilege;
+mod qualified_name;
+mod role;
+mod sign;
+mod simple_typename;
+mod stmt;
+mod stmtmulti;
+mod transaction_mode_list;
+mod type_function_name;
+mod typename;
+mod var_name;
+mod var_value;
+
+pub(super) use stmtmulti::stmtmulti;
 
 #[allow(unused_imports)] // TODO: eventually remove
-pub(in crate::parser) use self::{
-    and::{and, sequence, AndCombi},
-    between::{between, BetweenCombi},
-    bit_string::{bit_string, BitStringCombi},
-    identifier::{identifier, IdentifierCombi},
-    integer::{integer, IntegerCombi},
-    keyword::{keyword_if, keyword_result, keyword_when, KeywordCondCombi},
-    many::{many, many_pre, many_sep, ManyCombi, ManyPrefixedCombi, ManySepCombi},
-    map::{map, map_err, map_result},
-    maybe_match::{maybe_match, MaybeMatchCombi},
-    number::{number, NumberCombi},
-    operator::{operator_if, operator_result, operator_when, OperatorCondCombi},
-    optional::{optional, OptionalCombi},
-    or::{match_first, match_first_with_state, or, OrCombi},
-    param::{param, ParamCombi},
-    parser::{enclosure, parser, ClosureCombi},
-    required::{required, RequiredCombi},
-    skip::{skip, SkipCombi},
-    string::{string, StringCombi},
-    try_match::{try_match, TryMatchCombi},
-    user_defined_operator::{user_defined_operator, UserOpCombi}
+use self::{
+    acl::{grantee_list, opt_drop_behavior, opt_grant_option, opt_granted_by},
+    all_or_var_name::all_or_var_name,
+    any_name::{any_name, any_name_list},
+    attrs::attrs,
+    bare_col_label::bare_col_label,
+    boolean_or_string::{boolean_or_string, boolean_or_string_list},
+    col_id::col_id,
+    col_id_list::col_id_list,
+    col_label::col_label,
+    const_numeric::{i32_literal, signed_i32_literal, signed_number},
+    expr_list::expr_list,
+    expr_list_paren::expr_list_paren,
+    func_arg::func_arg,
+    func_name::func_name,
+    func_type::func_type,
+    function_with_argtypes::{function_with_argtypes, function_with_argtypes_list},
+    generic_set_tail::generic_set_tail,
+    i32_literal_paren::i32_literal_paren,
+    name_list::name_list,
+    non_reserved_word::non_reserved_word,
+    operators::{explicit_op, qual_all_op, qual_op, subquery_op},
+    opt_array_bounds::opt_array_bounds,
+    opt_interval::opt_interval,
+    opt_name_list::opt_name_list,
+    opt_precision::opt_precision,
+    opt_timezone::opt_timezone,
+    opt_transaction::opt_transaction,
+    opt_transaction_chain::opt_transaction_chain,
+    opt_type_modifiers::opt_type_modifiers,
+    opt_unique_null_treatment::opt_unique_null_treatment,
+    opt_varying::opt_varying,
+    privilege::{privilege_list, privileges},
+    qualified_name::{qualified_name, qualified_name_list},
+    role::{role_id, role_list, role_spec},
+    sign::sign,
+    simple_typename::simple_typename,
+    stmt::{begin_stmt, end_stmt, stmt},
+    transaction_mode_list::transaction_mode_list,
+    type_function_name::type_function_name,
+    typename::typename,
+    var_name::var_name,
+    var_value::{var_list, var_value}
 };
 
-pub(in crate::parser) trait Combinator: Debug {
-    type Output;
+#[cfg(test)]
+mod tests {
+    use crate::parser::ParserConfig;
+    use postgres_basics::guc::BackslashQuote;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output>;
+    pub(super) static DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding);
 }
-
-pub(in crate::parser) trait CombinatorHelpers
-where
-    Self: Sized + Combinator
-{
-    /// See [`optional()`](optional::optional).
-    #[inline]
-    fn optional(self) -> OptionalCombi<Self> {
-        optional(self)
-    }
-
-    /// See [`required()`](required::required).
-    #[inline]
-    fn required(self) -> RequiredCombi<Self> {
-        required(self)
-    }
-
-    /// See [`try_match()`](try_match::try_match).
-    #[inline]
-    fn try_match(self) -> TryMatchCombi<Self> {
-        try_match(self)
-    }
-
-    /// See [`maybe_match()`](maybe_match::maybe_match).
-    #[inline]
-    fn maybe_match(self) -> MaybeMatchCombi<Self> {
-        maybe_match(self)
-    }
-
-    /// See [`and()`](and::and).
-    #[inline]
-    fn and<R>(self, right: R) -> AndCombi<Self, R>
-    where
-        R: Combinator
-    {
-        and(self, right)
-    }
-
-    /// Same as `(Self && R)`
-    #[inline]
-    fn and_then<R, O>(self, right: R, mapper: impl Fn(Self::Output, R::Output) -> O)
-        -> impl Combinator<Output = O>
-    where
-        R: Combinator
-    {
-        self.and(right)
-            .map(move |(left, right)| mapper(left, right))
-    }
-
-    /// Same as `(Self && R)`.
-    ///
-    /// Returns `Self::Output`.
-    #[inline]
-    fn and_left<R>(self, right: R) -> impl Combinator<Output = Self::Output>
-    where
-        R: Combinator
-    {
-        self.and(right).left()
-    }
-
-    /// Same as `(Self && R)`.
-    ///
-    /// Returns `Right::Output`.
-    #[inline]
-    fn and_right<R>(self, right: R) -> impl Combinator<Output = R::Output>
-    where
-        R: Combinator
-    {
-        self.and(right).right()
-    }
-
-    /// See [`or()`](or::or)
-    #[inline]
-    fn or<R>(self, right: R) -> OrCombi<Self, R>
-    where
-        R: Combinator<Output = Self::Output>
-    {
-        or(self, right)
-    }
-
-    /// See [`map()`](map::map).
-    #[inline]
-    fn map<O>(self, mapper: impl Fn(Self::Output) -> O) -> impl Combinator<Output = O>
-    {
-        map(self, mapper)
-    }
-
-    /// See [`map_err()`](map_err).
-    #[inline]
-    fn map_err(self, mapper: impl Fn(ScanErrorKind) -> ScanErrorKind)
-        -> impl Combinator<Output = Self::Output>
-    {
-        map_err(self, mapper)
-    }
-
-    /// See [`map_result()`](map_result).
-    #[inline]
-    fn map_result<O>(self, mapper: impl Fn(ScanResult<Self::Output>) -> ScanResult<O>)
-          -> impl Combinator<Output = O>
-    {
-        map_result(self, mapper)
-    }
-
-    #[inline]
-    fn left<L, R>(self) -> impl Combinator<Output = L>
-    where
-        Self: Combinator<Output = (L, R)>
-    {
-        self.map(|(left, _)| left)
-    }
-
-    #[inline]
-    fn right<L, R>(self) -> impl Combinator<Output = R>
-    where
-        Self: Combinator<Output = (L, R)>
-    {
-        self.map(|(_, right)| right)
-    }
-
-    #[inline]
-    fn skip(self) -> SkipCombi<Self> {
-        skip(self)
-    }
-
-    /// This is similar to [`CombinatorHelpers::map_result()`](CombinatorHelpers::map_result),
-    /// but includes the stream as an argument to the closure.
-    fn chain_result<O>(self, mapper: impl Fn(ScanResult<Self::Output>, &mut TokenStream) -> ScanResult<O>)
-        -> impl Combinator<Output = O>
-    {
-        parser(move |stream| {
-            let result = self.parse(stream);
-            mapper(result, stream)
-        })
-    }
-
-    /// This is similar to [`CombinatorHelpers::map()`](CombinatorHelpers::map),
-    /// but includes the stream as an argument to the closure.
-    fn chain<O>(self, mapper: impl Fn(Self::Output, &mut TokenStream) -> ScanResult<O>)
-        -> impl Combinator<Output = O>
-    {
-        fn inner<I, O>(mapper: impl Fn(I, &mut TokenStream) -> ScanResult<O>)
-            -> impl Fn(ScanResult<I>, &mut TokenStream) -> ScanResult<O>
-        {
-            move |result, stream| mapper(result?, stream)
-        }
-
-        let mapper= inner(mapper);
-        self.chain_result(mapper)
-    }
-
-    /// This is similar to [`CombinatorHelpers::map_err()`](CombinatorHelpers::map_err),
-    /// but includes the stream as an argument to the closure.
-    fn chain_err(self, mapper: impl Fn(ScanErrorKind, &mut TokenStream) -> ScanResult<Self::Output>)
-        -> impl Combinator<Output = Self::Output>
-    {
-        fn inner<I>(mapper: impl Fn(ScanErrorKind, &mut TokenStream) -> ScanResult<I>)
-            -> impl Fn(ScanResult<I>, &mut TokenStream) -> ScanResult<I>
-        {
-            move |result, stream|
-                match result {
-                    Err(err) => mapper(err, stream),
-                    _ => result,
-                }
-        }
-
-        let mapper = inner(mapper);
-        self.chain_result(mapper)
-    }
-}
-
-impl<T: Combinator> CombinatorHelpers for T {}
-
-use crate::parser::result::ScanErrorKind;
-use crate::parser::result::ScanResult;
-use crate::parser::token_stream::TokenStream;
-use std::fmt::Debug;
