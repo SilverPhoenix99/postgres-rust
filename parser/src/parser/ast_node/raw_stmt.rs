@@ -1,7 +1,7 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RawStmt {
-    AlterDatabaseStmt(AlterDatabaseStmt),
     AlterDatabaseRefreshCollStmt(Str),
+    AlterDatabaseStmt(AlterDatabaseStmt),
     AlterDefaultPrivilegesStmt(Box<AlterDefaultPrivilegesStmt>),
     AlterEventTrigStmt(AlterEventTrigStmt),
     AlterObjectSchemaStmt(AlterObjectSchemaStmt),
@@ -10,6 +10,7 @@ pub enum RawStmt {
     AlterSystemStmt(AlterSystemStmt),
     CheckPoint,
     ClosePortalStmt(OneOrAll<Str>),
+    ConstraintsSetStmt(ConstraintsSetStmt),
     CreateDatabaseStmt(CreateDatabaseStmt),
     DeallocateStmt(OneOrAll<Str>),
     DiscardStmt(DiscardStmt),
@@ -24,6 +25,7 @@ pub enum RawStmt {
     TransactionStmt(TransactionStmt),
     UnlistenStmt(OneOrAll<Str>),
     VariableResetStmt(VariableTarget),
+    VariableSetStmt(VariableSetStmt),
     VariableShowStmt(VariableTarget),
 }
 
@@ -34,12 +36,14 @@ impl_from!(AlterObjectSchemaStmt for RawStmt);
 impl_from!(AlterOwnerStmt for RawStmt);
 impl_from!(AlterRoleStmt for RawStmt);
 impl_from!(AlterSystemStmt for RawStmt);
+impl_from!(ConstraintsSetStmt for RawStmt);
 impl_from!(CreateDatabaseStmt for RawStmt);
 impl_from!(DiscardStmt for RawStmt);
 impl_from!(NotifyStmt for RawStmt);
 impl_from!(box PrepareStmt for RawStmt);
 impl_from!(ReassignOwnedStmt for RawStmt);
 impl_from!(RenameStmt for RawStmt);
+impl_from!(VariableSetStmt for RawStmt);
 impl_from!(TransactionStmt for RawStmt);
 
 use crate::parser::ast_node::AlterDatabaseStmt;
@@ -49,6 +53,7 @@ use crate::parser::ast_node::AlterObjectSchemaStmt;
 use crate::parser::ast_node::AlterOwnerStmt;
 use crate::parser::ast_node::AlterRoleStmt;
 use crate::parser::ast_node::AlterSystemStmt;
+use crate::parser::ast_node::ConstraintsSetStmt;
 use crate::parser::ast_node::CreateDatabaseStmt;
 use crate::parser::ast_node::DiscardStmt;
 use crate::parser::ast_node::NotifyStmt;
@@ -58,6 +63,7 @@ use crate::parser::ast_node::QualifiedName;
 use crate::parser::ast_node::ReassignOwnedStmt;
 use crate::parser::ast_node::RenameStmt;
 use crate::parser::ast_node::TransactionStmt;
+use crate::parser::ast_node::VariableSetStmt;
 use crate::parser::ast_node::VariableTarget;
 use postgres_basics::impl_from;
 use postgres_basics::Str;

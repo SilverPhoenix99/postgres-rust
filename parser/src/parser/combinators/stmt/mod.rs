@@ -113,6 +113,7 @@ mod tests {
     #[test_case("show all")]
     #[test_case("start transaction read only, read write deferrable")]
     #[test_case("unlisten *")]
+    #[test_case("set schema 'abc123'")]
     fn test_stmt(source: &str) {
 
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
