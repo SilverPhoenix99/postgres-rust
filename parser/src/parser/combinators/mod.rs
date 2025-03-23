@@ -10,6 +10,7 @@ mod col_id;
 mod col_id_list;
 mod col_label;
 mod const_numeric;
+mod document_or_content;
 mod expr;
 mod expr_list;
 mod expr_list_paren;
@@ -60,6 +61,7 @@ use self::{
     col_id_list::col_id_list,
     col_label::col_label,
     const_numeric::{i32_literal, signed_i32_literal, signed_number},
+    document_or_content::document_or_content,
     expr_list::expr_list,
     expr_list_paren::expr_list_paren,
     func_arg::func_arg,
@@ -92,7 +94,7 @@ use self::{
     type_function_name::type_function_name,
     typename::typename,
     var_name::var_name,
-    var_value::{var_list, var_value}
+    var_value::{var_list, var_value},
 };
 
 #[cfg(test)]

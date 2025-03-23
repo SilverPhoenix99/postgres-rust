@@ -87,7 +87,7 @@ pub use self::{
     unsigned_number::UnsignedNumber,
     var_value::VarValue,
     variable_target::VariableTarget,
-    xml::{XmlElement, XmlParse, XmlProcessingInstruction, XmlRoot},
+    xml::{XmlElement, XmlNodeKind, XmlParse, XmlProcessingInstruction, XmlRoot},
 };
 pub(super) use unique_null_treatment::UniqueNullTreatment;
 
