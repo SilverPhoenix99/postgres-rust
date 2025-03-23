@@ -9,7 +9,7 @@ where
 
     many_pre(
         prefix,
-        Dot.and_right(col_label::col_label())
+        Dot.and_right(col_label())
     )
 }
 

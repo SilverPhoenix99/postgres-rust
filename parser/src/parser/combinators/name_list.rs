@@ -7,7 +7,7 @@ pub(super) fn name_list() -> impl Combinator<Output = Vec<Str>> {
         col_id ( ',' col_id )*
     */
 
-    many_sep(Comma, col_id::col_id())
+    many_sep(Comma, col_id())
 }
 
 use crate::lexer::OperatorKind::Comma;

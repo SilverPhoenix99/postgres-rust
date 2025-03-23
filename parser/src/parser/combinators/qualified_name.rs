@@ -14,7 +14,7 @@ pub(super) fn qualified_name() -> impl Combinator<Output = RangeVar> {
         col_id attrs{1,3}
     */
 
-    located(any_name::any_name())
+    located(any_name())
         .map_result(|result| {
             let (mut qn, loc) = result?;
 

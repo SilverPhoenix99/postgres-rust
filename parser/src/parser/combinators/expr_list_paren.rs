@@ -7,7 +7,7 @@ pub(super) fn expr_list_paren() -> impl Combinator<Output = Vec<ExprNode>> {
 
     between(
         OpenParenthesis,
-        expr_list::expr_list(),
+        expr_list(),
         CloseParenthesis
     )
 }

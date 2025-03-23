@@ -5,7 +5,7 @@ pub(super) fn var_name() -> impl Combinator<Output = QualifiedName> {
         col_id ( '.' col_id )*
     */
 
-    many_sep(Dot, col_id::col_id())
+    many_sep(Dot, col_id())
 }
 
 use crate::lexer::OperatorKind::Dot;
