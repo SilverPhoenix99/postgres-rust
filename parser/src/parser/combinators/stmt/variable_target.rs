@@ -1,3 +1,4 @@
+/// Alias: `reset_rest`
 pub(super) fn variable_target() -> impl Combinator<Output = VariableTarget> {
 
     /*
