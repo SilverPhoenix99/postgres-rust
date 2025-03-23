@@ -2,8 +2,8 @@
 pub(super) fn alter_system_stmt() -> impl Combinator<Output = AlterSystemStmt> {
 
     /*
-          ALTER SYSTEM_P RESET generic_reset
-        | ALTER SYSTEM_P SET var_name generic_set_tail
+          ALTER SYSTEM RESET generic_reset
+        | ALTER SYSTEM SET var_name generic_set_tail
     */
 
     SystemKw
