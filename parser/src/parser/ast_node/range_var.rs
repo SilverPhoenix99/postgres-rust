@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct RangeVar {
     catalog: Option<Str>,
     schema: Option<Str>,
@@ -49,7 +49,7 @@ impl RangeVar {
 }
 
 #[repr(u8)]
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum RelationPersistence {
     /// regular table
     Permanent = b'p',
