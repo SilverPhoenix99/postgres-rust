@@ -49,6 +49,9 @@ pub enum ParserErrorKind {
 
     #[error("improper qualified name (too many dotted names): {0}")]
     ImproperQualifiedName(NameList),
+
+    #[error("time zone interval must be HOUR or HOUR TO MINUTE")]
+    InvalidZoneValue
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -87,6 +90,7 @@ impl HasSqlState for ParserErrorKind {
             UnicodeString(err) => err.sql_state(),
             UnrecognizedRoleOption(_) => SyntaxError,
             ImproperQualifiedName(_) => SyntaxError,
+            InvalidZoneValue => SyntaxError,
         }
     }
 }
@@ -95,54 +99,57 @@ impl ErrorReport for ParserErrorKind {
     fn hint(&self) -> Option<Cow<'static, str>> {
         match self {
             ExtendedString(err) => err.hint(),
+            Lexer(err) => err.hint(),
+            UnicodeString(err) => err.hint(),
+            UnencryptedPassword => Some("Remove UNENCRYPTED to store the password in encrypted form instead.".into()),
             FloatPrecisionOverflow(_) => None,
             FloatPrecisionUnderflow(_) => None,
             ForbiddenRoleSpec(_) => None,
             InvalidUescapeDelimiter => None,
-            Lexer(err) => err.hint(),
             ReservedRoleSpec(_) => None,
             Syntax => None,
             UescapeDelimiterMissing => None,
-            UnencryptedPassword => Some("Remove UNENCRYPTED to store the password in encrypted form instead.".into()),
-            UnicodeString(err) => err.hint(),
             UnrecognizedRoleOption(_) => None,
             ImproperQualifiedName(_) => None,
+            InvalidZoneValue => None,
         }
     }
 
     fn detail(&self) -> Option<Cow<'static, str>> {
         match self {
             ExtendedString(err) => err.detail(),
+            Lexer(err) => err.detail(),
+            UnicodeString(err) => err.detail(),
             FloatPrecisionOverflow(_) => None,
             FloatPrecisionUnderflow(_) => None,
             ForbiddenRoleSpec(_) => None,
             InvalidUescapeDelimiter => None,
-            Lexer(err) => err.detail(),
             ReservedRoleSpec(_) => None,
             Syntax => None,
             UescapeDelimiterMissing => None,
             UnencryptedPassword => None,
-            UnicodeString(err) => err.detail(),
             UnrecognizedRoleOption(_) => None,
             ImproperQualifiedName(_) => None,
+            InvalidZoneValue => None,
         }
     }
 
     fn detail_log(&self) -> Option<Cow<'static, str>> {
         match self {
             ExtendedString(err) => err.detail_log(),
+            Lexer(err) => err.detail_log(),
+            UnicodeString(err) => err.detail_log(),
             FloatPrecisionOverflow(_) => None,
             FloatPrecisionUnderflow(_) => None,
             ForbiddenRoleSpec(_) => None,
             InvalidUescapeDelimiter => None,
-            Lexer(err) => err.detail_log(),
             ReservedRoleSpec(_) => None,
             Syntax => None,
             UescapeDelimiterMissing => None,
             UnencryptedPassword => None,
-            UnicodeString(err) => err.detail_log(),
             UnrecognizedRoleOption(_) => None,
             ImproperQualifiedName(_) => None,
+            InvalidZoneValue => None,
         }
     }
 }

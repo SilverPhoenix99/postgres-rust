@@ -28,6 +28,8 @@ mod raw_stmt;
 mod reassign_owned_stmt;
 mod rename_stmt;
 mod role_spec;
+mod set_rest;
+mod set_rest_more;
 mod signed_number;
 mod system_type;
 mod transaction_stmt;
@@ -38,6 +40,7 @@ mod unsigned_number;
 mod var_value;
 mod variable_target;
 mod xml;
+mod zone_value;
 
 pub use self::{
     alter_database_stmt::{AlterDatabaseStmt, AlterdbOption, AlterdbOptionKind},
@@ -70,6 +73,8 @@ pub use self::{
     reassign_owned_stmt::ReassignOwnedStmt,
     rename_stmt::{RenameStmt, RenameTarget},
     role_spec::RoleSpec,
+    set_rest::SetRest,
+    set_rest_more::SetRestMore,
     signed_number::SignedNumber,
     system_type::{
         FuncType,
@@ -88,6 +93,7 @@ pub use self::{
     var_value::VarValue,
     variable_target::VariableTarget,
     xml::{XmlElement, XmlNodeKind, XmlParse, XmlProcessingInstruction, XmlRoot},
+    zone_value::ZoneValue,
 };
 pub(super) use unique_null_treatment::UniqueNullTreatment;
 

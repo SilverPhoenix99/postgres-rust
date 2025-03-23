@@ -31,6 +31,7 @@ mod revoke_stmt;
 mod rollback_stmt;
 mod savepoint_stmt;
 mod security_stmt;
+mod set_rest;
 mod set_stmt;
 mod show_stmt;
 mod start_transaction_stmt;
