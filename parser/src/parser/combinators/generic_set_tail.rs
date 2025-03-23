@@ -1,5 +1,10 @@
 pub(super) fn generic_set_tail() -> impl Combinator<Output = ValueOrDefault<Vec<VarValue>>> {
 
+    /*
+          (TO | '=') DEFAULT
+        | (TO | '=') var_list
+    */
+
     To.skip().or(Equals.skip())
         .and_right(match_first!(
             DefaultKw.map(|_| ValueOrDefault::Default),
