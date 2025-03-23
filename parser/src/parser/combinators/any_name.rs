@@ -1,5 +1,5 @@
 /// Post-condition: Vec is **Not** empty
-pub(super) fn any_name_list() -> impl Combinator<Output=Vec<QualifiedName>> {
+pub(super) fn any_name_list() -> impl Combinator<Output = Vec<QualifiedName>> {
 
     /*
         any_name ( ',' any_name )*
@@ -17,7 +17,7 @@ pub(super) fn any_name() -> impl Combinator<Output = QualifiedName> {
         col_id attrs
     */
 
-    attrs::attrs(col_id::col_id())
+    attrs(col_id())
 }
 
 #[cfg(test)]

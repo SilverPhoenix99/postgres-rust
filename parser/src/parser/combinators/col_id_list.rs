@@ -5,7 +5,7 @@ pub(super) fn col_id_list(separator: OperatorKind) -> impl Combinator<Output = Q
         col_id ( <separator> col_id )*
     */
 
-    many_sep(separator, col_id::col_id())
+    many_sep(separator, col_id())
 }
 
 #[cfg(test)]
