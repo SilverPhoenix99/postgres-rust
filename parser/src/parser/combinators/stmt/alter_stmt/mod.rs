@@ -7,6 +7,7 @@ mod alter_group_stmt;
 mod alter_language_stmt;
 mod alter_large_object_stmt;
 mod alter_system_stmt;
+mod set_reset_clause;
 
 pub(super) fn alter_stmt() -> impl Combinator<Output = RawStmt> {
 
