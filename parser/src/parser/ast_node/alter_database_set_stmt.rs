@@ -1,11 +1,11 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct AlterDatabaseSetStmt {
     name: Str,
-    option: AlterdbSetOption
+    option: SetResetClause
 }
 
 impl AlterDatabaseSetStmt {
-    pub fn new<T>(name: T, option: AlterdbSetOption) -> Self
+    pub fn new<T>(name: T, option: SetResetClause) -> Self
     where T: Into<Str>
     {
         Self {
@@ -18,17 +18,10 @@ impl AlterDatabaseSetStmt {
         &self.name
     }
 
-    pub fn option(&self) -> &AlterdbSetOption {
+    pub fn option(&self) -> &SetResetClause {
         &self.option
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum AlterdbSetOption {
-    Set(SetRest),
-    Reset(VariableTarget)
-}
-
-use crate::parser::ast_node::SetRest;
-use crate::parser::ast_node::VariableTarget;
+use crate::parser::ast_node::SetResetClause;
 use postgres_basics::Str;
