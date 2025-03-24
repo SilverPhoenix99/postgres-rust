@@ -1,3 +1,4 @@
+mod alter_database_set_stmt;
 mod alter_database_stmt;
 mod alter_default_privileges_stmt;
 mod alter_event_trig_stmt;
@@ -46,6 +47,7 @@ mod xml;
 mod zone_value;
 
 pub use self::{
+    alter_database_set_stmt::{AlterDatabaseSetStmt, AlterdbSetOption},
     alter_database_stmt::{AlterDatabaseStmt, AlterdbOption, AlterdbOptionKind},
     alter_default_privileges_stmt::AlterDefaultPrivilegesStmt,
     alter_event_trig_stmt::{AlterEventTrigStmt, EventTriggerState},

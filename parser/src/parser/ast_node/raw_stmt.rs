@@ -1,6 +1,7 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RawStmt {
     AlterDatabaseRefreshCollStmt(Str),
+    AlterDatabaseSetStmt(AlterDatabaseSetStmt),
     AlterDatabaseStmt(AlterDatabaseStmt),
     AlterDefaultPrivilegesStmt(Box<AlterDefaultPrivilegesStmt>),
     AlterEventTrigStmt(AlterEventTrigStmt),
@@ -29,8 +30,9 @@ pub enum RawStmt {
     VariableShowStmt(VariableTarget),
 }
 
-impl_from!(box AlterDefaultPrivilegesStmt for RawStmt);
+impl_from!(AlterDatabaseSetStmt for RawStmt);
 impl_from!(AlterDatabaseStmt for RawStmt);
+impl_from!(box AlterDefaultPrivilegesStmt for RawStmt);
 impl_from!(AlterEventTrigStmt for RawStmt);
 impl_from!(AlterObjectSchemaStmt for RawStmt);
 impl_from!(AlterOwnerStmt for RawStmt);
@@ -46,6 +48,7 @@ impl_from!(RenameStmt for RawStmt);
 impl_from!(VariableSetStmt for RawStmt);
 impl_from!(TransactionStmt for RawStmt);
 
+use crate::parser::ast_node::AlterDatabaseSetStmt;
 use crate::parser::ast_node::AlterDatabaseStmt;
 use crate::parser::ast_node::AlterDefaultPrivilegesStmt;
 use crate::parser::ast_node::AlterEventTrigStmt;
