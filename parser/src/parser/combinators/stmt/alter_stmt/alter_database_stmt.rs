@@ -55,7 +55,7 @@ pub(super) fn alter_database_stmt() -> impl Combinator<Output = RawStmt> {
                         AlterDatabaseStmt::new(name, vec![option]).into()
                     }
                     SetOption::SetRest(set) => {
-                        let option = AlterdbSetOption::Set(set);
+                        let option = SetResetClause::Set(set);
                         AlterDatabaseSetStmt::new(name, option).into()
                     }
                 }
@@ -63,7 +63,7 @@ pub(super) fn alter_database_stmt() -> impl Combinator<Output = RawStmt> {
             {
                 reset_stmt()
             } => (variable_target) {
-                let option = AlterdbSetOption::Reset(variable_target);
+                let option = SetResetClause::Reset(variable_target);
                 AlterDatabaseSetStmt::new(name, option).into()
             },
             {
@@ -182,7 +182,7 @@ mod tests {
 
         let expected = AlterDatabaseSetStmt::new(
             "db_name",
-            AlterdbSetOption::Set(SetRest::TransactionSnapshot("tx".into())),
+            SetResetClause::Set(SetRest::TransactionSnapshot("tx".into())),
         );
 
         assert_eq!(Ok(expected.into()), actual);
@@ -196,7 +196,7 @@ mod tests {
 
         let expected = AlterDatabaseSetStmt::new(
             "db_name",
-            AlterdbSetOption::Reset(VariableTarget::TimeZone)
+            SetResetClause::Reset(VariableTarget::TimeZone)
         );
 
         assert_eq!(Ok(expected.into()), actual);
@@ -246,11 +246,11 @@ use crate::parser::ast_node::AlterdbOptionKind::ConnectionLimit;
 use crate::parser::ast_node::AlterdbOptionKind::IsTemplate;
 use crate::parser::ast_node::AlterdbOptionKind::Tablespace;
 use crate::parser::ast_node::AlterdbOptionKind::Unknown;
-use crate::parser::ast_node::AlterdbSetOption;
 use crate::parser::ast_node::RawStmt;
 use crate::parser::ast_node::RawStmt::AlterDatabaseRefreshCollStmt;
 use crate::parser::ast_node::RenameStmt;
 use crate::parser::ast_node::RenameTarget;
+use crate::parser::ast_node::SetResetClause;
 use crate::parser::ast_node::SetRest;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::identifier;

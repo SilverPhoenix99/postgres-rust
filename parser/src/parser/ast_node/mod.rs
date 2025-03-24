@@ -31,6 +31,7 @@ mod raw_stmt;
 mod reassign_owned_stmt;
 mod rename_stmt;
 mod role_spec;
+mod set_reset_clause;
 mod set_rest;
 mod set_rest_more;
 mod signed_number;
@@ -47,7 +48,7 @@ mod xml;
 mod zone_value;
 
 pub use self::{
-    alter_database_set_stmt::{AlterDatabaseSetStmt, AlterdbSetOption},
+    alter_database_set_stmt::AlterDatabaseSetStmt,
     alter_database_stmt::{AlterDatabaseStmt, AlterdbOption, AlterdbOptionKind},
     alter_default_privileges_stmt::AlterDefaultPrivilegesStmt,
     alter_event_trig_stmt::{AlterEventTrigStmt, EventTriggerState},
@@ -80,6 +81,7 @@ pub use self::{
     reassign_owned_stmt::ReassignOwnedStmt,
     rename_stmt::{RenameStmt, RenameTarget},
     role_spec::RoleSpec,
+    set_reset_clause::SetResetClause,
     set_rest::SetRest,
     set_rest_more::SetRestMore,
     signed_number::SignedNumber,
