@@ -71,7 +71,7 @@ mod tests {
     fn test_alter_enable() {
         let mut stream = TokenStream::new("event trigger trigger_name enable", DEFAULT_CONFIG);
 
-        let expected = AlterEventTrigStmt::new("trigger_name".into(), FiresOnOrigin);
+        let expected = AlterEventTrigStmt::new("trigger_name", FiresOnOrigin);
 
         assert_eq!(Ok(expected.into()), alter_event_trigger_stmt().parse(&mut stream));
     }
@@ -94,7 +94,7 @@ mod tests {
 
         let expected = RenameStmt::new(
             RenameTarget::EventTrigger("trigger_name".into()),
-            "another_trigger".into()
+            "another_trigger"
         );
 
         assert_eq!(Ok(expected.into()), alter_event_trigger_stmt().parse(&mut stream));

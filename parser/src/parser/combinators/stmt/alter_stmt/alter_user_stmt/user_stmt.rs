@@ -97,7 +97,7 @@ mod tests {
 
         let expected = RenameStmt::new(
             Role("this_user".into()),
-            "that_role".into()
+            "that_role"
         );
 
         assert_eq!(Ok(expected.into()), actual);

@@ -6,10 +6,7 @@ pub struct AlterUserMappingStmt {
 }
 
 impl AlterUserMappingStmt {
-    pub fn new<T>(user: RoleSpec, server_name: T, options: Vec<GenericOptionKind>) -> Self
-    where
-        Str: From<T>
-    {
+    pub fn new<T: Into<Str>>(user: RoleSpec, server_name: T, options: Vec<GenericOptionKind>) -> Self {
         Self {
             user,
             server_name: server_name.into(),

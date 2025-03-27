@@ -5,8 +5,11 @@ pub struct CreateDatabaseStmt {
 }
 
 impl CreateDatabaseStmt {
-    pub fn new(name: Str, options: Vec<CreatedbOption>) -> Self {
-        Self { name, options }
+    pub fn new<T: Into<Str>>(name: T, options: Vec<CreatedbOption>) -> Self {
+        Self {
+            name: name.into(),
+            options
+        }
     }
 
     pub fn name(&self) -> &str {
@@ -25,10 +28,7 @@ pub struct CreatedbOption {
 }
 
 impl CreatedbOption {
-    pub fn new<V>(kind: CreatedbOptionKind, value: V) -> Self
-    where
-        CreatedbOptionValue: From<V>
-    {
+    pub fn new<V: Into<CreatedbOptionValue>>(kind: CreatedbOptionKind, value: V) -> Self {
         CreatedbOption {
             kind,
             value: value.into(),

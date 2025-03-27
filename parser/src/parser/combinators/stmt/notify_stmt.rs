@@ -31,13 +31,13 @@ mod tests {
     #[test]
     fn test_notify() {
         let mut stream = TokenStream::new("notify test_ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(NotifyStmt::new("test_ident".into())), notify_stmt().parse(&mut stream));
+        assert_eq!(Ok(NotifyStmt::new("test_ident")), notify_stmt().parse(&mut stream));
     }
 
     #[test]
     fn test_notify_with_payload() {
         let mut stream = TokenStream::new("notify test_ident, 'test-payload'", DEFAULT_CONFIG);
-        let expected = NotifyStmt::with_payload("test_ident".into(), "test-payload".into());
+        let expected = NotifyStmt::with_payload("test_ident", "test-payload");
         assert_eq!(Ok(expected), notify_stmt().parse(&mut stream));
     }
 }

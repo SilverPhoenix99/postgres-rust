@@ -46,7 +46,7 @@ mod tests {
 
         let expected = RenameStmt::new(
             Role("some_group".into()),
-            "new_group_name".into()
+            "new_group_name"
         );
 
         assert_eq!(Ok(expected.into()), alter_group_stmt().parse(&mut stream));

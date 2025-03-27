@@ -154,7 +154,7 @@ mod tests {
 
         let expected = RenameStmt::new(
             RenameTarget::Database("db_name".into()),
-            "this_db".into()
+            "this_db"
         );
 
         assert_eq!(Ok(expected.into()), actual);
@@ -167,7 +167,7 @@ mod tests {
         let actual = alter_database_stmt().parse(&mut stream);
 
         let expected = AlterDatabaseStmt::new(
-            "db_name".into(),
+            "db_name",
             vec![AlterdbOption::new(Tablespace, "some_name")]
         );
 
@@ -209,7 +209,7 @@ mod tests {
         let actual = alter_database_stmt().parse(&mut stream);
 
         let expected = AlterDatabaseStmt::new(
-            "the_db_name".into(),
+            "the_db_name",
             vec![
                 AlterdbOption::new(AllowConnections, CreatedbOptionValue::Default),
                 AlterdbOption::new(ConnectionLimit, 5),

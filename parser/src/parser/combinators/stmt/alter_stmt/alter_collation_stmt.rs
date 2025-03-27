@@ -89,7 +89,7 @@ mod tests {
 
         let expected = RenameStmt::new(
             RenameTarget::Collation(vec!["collation_name".into()]),
-            "something_else".into()
+            "something_else"
         );
 
         assert_eq!(Ok(expected.into()), actual);
@@ -104,7 +104,7 @@ mod tests {
 
         let expected = AlterObjectSchemaStmt::new(
             AlterObjectSchemaTarget::Collation(vec!["collation_name".into()]),
-            "some_schema".into()
+            "some_schema"
         );
 
         assert_eq!(Ok(expected.into()), actual);

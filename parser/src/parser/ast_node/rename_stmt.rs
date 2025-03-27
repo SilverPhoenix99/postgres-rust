@@ -6,8 +6,11 @@ pub struct RenameStmt {
 
 impl RenameStmt {
     #[inline(always)]
-    pub fn new(target: RenameTarget, new_name: Str) -> Self {
-        Self { target, new_name }
+    pub fn new<T: Into<Str>>(target: RenameTarget, new_name: T) -> Self {
+        Self {
+            target,
+            new_name: new_name.into(),
+        }
     }
 
     pub fn target(&self) -> &RenameTarget {

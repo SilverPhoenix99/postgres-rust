@@ -6,8 +6,11 @@ pub struct AlterObjectSchemaStmt {
 
 impl AlterObjectSchemaStmt {
     #[inline(always)]
-    pub fn new(target: AlterObjectSchemaTarget, new_schema: Str) -> Self {
-        Self { target, new_schema }
+    pub fn new<T: Into<Str>>(target: AlterObjectSchemaTarget, new_schema: T) -> Self {
+        Self {
+            target,
+            new_schema: new_schema.into(),
+        }
     }
 
     pub fn target(&self) -> &AlterObjectSchemaTarget {

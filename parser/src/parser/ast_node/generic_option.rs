@@ -7,8 +7,8 @@ pub struct GenericOption {
 impl GenericOption {
     pub fn new<N, A>(name: N, arg: A) -> Self
     where
-        Str: From<N>,
-        Box<str>: From<A>,
+        N: Into<Str>,
+        A: Into<Box<str>>
     {
         Self {
             name: name.into(),

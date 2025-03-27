@@ -59,7 +59,7 @@ mod tests {
 
         let expected = RenameStmt::new(
             RenameTarget::Language("some_language".into()),
-            "new_lang".into()
+            "new_lang"
         );
 
         assert_eq!(Ok(expected.into()), alter_language_stmt().parse(&mut stream));

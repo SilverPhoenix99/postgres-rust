@@ -6,13 +6,23 @@ pub struct NotifyStmt {
 
 impl NotifyStmt {
     #[inline(always)]
-    pub fn new(condition_name: Str) -> Self {
-        Self { condition_name, payload: None }
+    pub fn new<T: Into<Str>>(condition_name: T) -> Self {
+        Self {
+            condition_name: condition_name.into(),
+            payload: None
+        }
     }
 
     #[inline(always)]
-    pub fn with_payload(condition_name: Str, payload: Box<str>) -> Self {
-        Self { condition_name, payload: Some(payload) }
+    pub fn with_payload<N, P>(condition_name: N, payload: P) -> Self
+    where
+        N: Into<Str>,
+        P: Into<Box<str>>
+    {
+        Self {
+            condition_name: condition_name.into(),
+            payload: Some(payload.into())
+        }
     }
 
     #[inline(always)]

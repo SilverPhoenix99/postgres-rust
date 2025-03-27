@@ -88,7 +88,7 @@ mod tests {
         let actual = create_database_stmt().parse(&mut stream);
 
         let expected = CreateDatabaseStmt::new(
-            "db_name".into(),
+            "db_name",
             vec![
                 CreatedbOption::new(ConnectionLimit, 753),
                 CreatedbOption::new(AllowConnections, "on"),
