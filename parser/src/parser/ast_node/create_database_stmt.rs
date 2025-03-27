@@ -27,7 +27,7 @@ pub struct CreatedbOption {
 impl CreatedbOption {
     pub fn new<V>(kind: CreatedbOptionKind, value: V) -> Self
     where
-        V: Into<CreatedbOptionValue>
+        CreatedbOptionValue: From<V>
     {
         CreatedbOption {
             kind,

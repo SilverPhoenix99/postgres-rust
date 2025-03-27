@@ -27,7 +27,7 @@ pub struct AlterdbOption {
 impl AlterdbOption {
     pub fn new<V>(kind: AlterdbOptionKind, value: V) -> AlterdbOption
     where
-        V: Into<CreatedbOptionValue>,
+        CreatedbOptionValue: From<V>
     {
         Self {
             kind,
