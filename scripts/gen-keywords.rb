@@ -1,3 +1,7 @@
+####################################################################################################
+# Generates the `Keyword` enum for the SQL keywords,
+# and the corresponding minimal perfect Map.
+####################################################################################################
 
 require 'pathname'
 require 'set'

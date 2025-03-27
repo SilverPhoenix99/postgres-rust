@@ -1,3 +1,7 @@
+####################################################################################################
+# Generates the `SqlState` enum for the SQLSTATE error codes,
+# and the corresponding minimal perfect Map.
+####################################################################################################
 
 require 'pathname'
 require_relative 'minimal_perfect_hash'

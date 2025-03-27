@@ -6,7 +6,7 @@ RUST_PROJECT_ROOT = Pathname(__dir__).parent.expand_path
 PG_ROOT = RUST_PROJECT_ROOT.parent / 'postgres'
 
 ###############################################################################
-# Keywords
+# gen:keywords - Keywords
 ###############################################################################
 keywords_input = PG_ROOT / 'src/include/parser/kwlist.h'
 keywords_output = RUST_PROJECT_ROOT / 'parser/src/lexer/keyword/keywords.rs'
@@ -18,11 +18,14 @@ file keywords_output => [keywords_input, 'gen-keywords.rb'] do
   KeywordsGenerator.run! keywords_input, keywords_output
 end
 
-task build: keywords_output
+namespace :gen do
+  desc "Generates the `Keyword` enum for the SQL keywords"
+  task keywords: keywords_output
+end
 
 
 ###############################################################################
-# Error Codes (SQLSTATE)
+# gen:errcodes - Error Codes (SQLSTATE)
 ###############################################################################
 err_codes_input = PG_ROOT / 'src/backend/utils/errcodes.txt'
 err_codes_root = RUST_PROJECT_ROOT / 'basics/src/sql_state'
@@ -33,6 +36,11 @@ CLEAN << err_codes_output
 file err_codes_output => [err_codes_input, 'gen-errcodes.rb'] do
   require_relative 'gen-errcodes.rb'
   ErrCodesGenerator.run! err_codes_input, err_codes_output
+end
+
+namespace :gen do
+  desc "Generates the `SqlState` enum for the SQLSTATE error codes"
+  task errcodes: err_codes_output
 end
 
 ###############################################################################
@@ -62,11 +70,27 @@ task :uncache do |_, args|
 end
 
 ###############################################################################
+# gen:grammar - Grammar
+###############################################################################
+grammar_output = Pathname(__dir__) / 'grammar/grammar.bison'
+grammar_input = PG_ROOT / 'src/backend/parser/gram.y'
+
+file grammar_output => grammar_input do
+  require_relative 'grammar-transform.rb'
+  GrammarTransform.run! grammar_input, grammar_output
+end
+
+namespace :gen do
+  desc "Generates the Bison grammar file"
+  task grammar: grammar_output
+end
+
+###############################################################################
 # Top-level tasks
 ###############################################################################
 
 desc "Generates all source files"
-task generate: [keywords_output, err_codes_output]
+task generate: %w[gen:grammar gen:errcodes gen:keywords]
 
 desc "Main task - runs everything"
 task build: :generate
