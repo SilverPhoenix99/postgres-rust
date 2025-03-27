@@ -31,7 +31,7 @@ impl RangeVar {
         self
     }
 
-    pub fn relation(&self) -> &Str {
+    pub fn relation(&self) -> &str {
         &self.relation
     }
 

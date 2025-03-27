@@ -14,7 +14,7 @@ impl RenameStmt {
         &self.target
     }
 
-    pub fn new_name(&self) -> &Str {
+    pub fn new_name(&self) -> &str {
         &self.new_name
     }
 }
