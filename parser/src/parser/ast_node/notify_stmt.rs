@@ -16,7 +16,7 @@ impl NotifyStmt {
     }
 
     #[inline(always)]
-    pub fn condition_name(&self) -> &Str {
+    pub fn condition_name(&self) -> &str {
         &self.condition_name
     }
 

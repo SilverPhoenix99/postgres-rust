@@ -14,7 +14,7 @@ impl AlterObjectSchemaStmt {
         &self.target
     }
 
-    pub fn new_schema(&self) -> &Str {
+    pub fn new_schema(&self) -> &str {
         &self.new_schema
     }
 }

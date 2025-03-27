@@ -15,7 +15,7 @@ impl AlterDatabaseSetStmt {
         }
     }
 
-    pub fn name(&self) -> &Str {
+    pub fn name(&self) -> &str {
         &self.name
     }
 

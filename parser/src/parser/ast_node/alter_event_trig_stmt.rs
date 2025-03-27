@@ -19,7 +19,7 @@ impl AlterEventTrigStmt {
     }
 
     #[inline(always)]
-    pub fn trigger(&self) -> &Str {
+    pub fn trigger(&self) -> &str {
         &self.trigger
     }
 
