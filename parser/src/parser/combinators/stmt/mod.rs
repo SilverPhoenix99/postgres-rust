@@ -1,6 +1,7 @@
 mod abort_stmt;
 mod alter_stmt;
 mod analyze_stmt;
+mod auth_ident;
 mod begin_stmt;
 mod call_stmt;
 mod close_stmt;
@@ -131,6 +132,7 @@ use self::{
     abort_stmt::abort_stmt,
     alter_stmt::alter_stmt,
     analyze_stmt::analyze_stmt,
+    auth_ident::auth_ident,
     call_stmt::call_stmt,
     close_stmt::close_stmt,
     cluster_stmt::cluster_stmt,

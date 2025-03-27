@@ -4,6 +4,7 @@ pub enum AlterRoleAction {
     Remove,
 }
 
+/// Alias: `AlterOptRoleElem`
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AlterRoleOption {
     RoleMembers(Vec<RoleSpec>),
@@ -13,7 +14,7 @@ pub enum AlterRoleOption {
     ValidUntil(Box<str>),
     SuperUser(bool),
     CreateRole(bool),
-    Replication(bool),
+    IsReplication(bool),
     CreateDatabase(bool),
     CanLogin(bool),
     BypassRls(bool),

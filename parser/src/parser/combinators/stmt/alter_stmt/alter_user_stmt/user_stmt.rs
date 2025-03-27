@@ -1,0 +1,203 @@
+pub(super) fn user_stmt() -> impl Combinator<Output = RawStmt> {
+
+    /*
+          ALL ( in_database )? SetResetClause   => AlterRoleSetStmt
+        | RoleId RENAME TO RoleId               => RenameStmt
+        | RoleSpec in_database SetResetClause   => AlterRoleSetStmt
+        | RoleSpec WITH AlterOptRoleList        => AlterRoleStmt
+        | RoleSpec SetResetClause               => AlterRoleSetStmt
+        | RoleSpec AlterOptRoleList             => AlterRoleStmt
+    */
+
+    match_first! {
+        sequence!(All.skip(), in_database().optional(), set_reset_clause())
+            .map(|(_, dbname, set_stmt)|
+                AlterRoleSetStmt::new(OneOrAll::All, dbname, set_stmt).into()
+            ),
+        located(role_spec()).chain(match_first_with_state!(|(role, loc), stream| {
+            {
+                Rename.and(To)
+                    .and_right(role_id())
+            } => (new_name) {
+                let role_id = role.into_role_id(loc)?;
+                RenameStmt::new(Role(role_id), new_name).into()
+            },
+            {
+                sequence!(in_database(), set_reset_clause())
+            } => ((dbname, set_stmt)) {
+                AlterRoleSetStmt::new(OneOrAll::One(role), Some(dbname), set_stmt).into()
+            },
+            {
+                With.and_right(alter_role_options())
+            } => (options) {
+                AlterRoleStmt::new(role, Add, options).into()
+            },
+            {
+                set_reset_clause()
+            } => (set_stmt) {
+                AlterRoleSetStmt::new(OneOrAll::One(role), None, set_stmt).into()
+            },
+            {
+                alter_role_options()
+            } => (options) {
+                AlterRoleStmt::new(role, Add, options).into()
+            }
+        }))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::parser::ast_node::SetResetClause::Reset;
+    use crate::parser::ast_node::SetResetClause::Set;
+    use crate::parser::ast_node::SetRest::LocalTransactionCharacteristics;
+    use crate::parser::ast_node::SetRest::TransactionSnapshot;
+    use crate::parser::ast_node::TransactionMode::Deferrable;
+    use crate::parser::ast_node::VariableTarget::{SessionAuthorization, TimeZone};
+    use crate::parser::ast_node::{AlterRoleOption, RoleSpec};
+    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
+
+    #[test]
+    fn test_all_in_db_set() {
+        let source = "all in database foo set transaction snapshot 'bar'";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let actual = user_stmt().parse(&mut stream);
+
+        let expected = AlterRoleSetStmt::new(
+            OneOrAll::All,
+            Some("foo".into()),
+            Set(TransactionSnapshot("bar".into()))
+        );
+
+        assert_eq!(Ok(expected.into()), actual);
+    }
+
+    #[test]
+    fn test_all_set() {
+        let source = "all set transaction deferrable";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let actual = user_stmt().parse(&mut stream);
+
+        let expected = AlterRoleSetStmt::new(
+            OneOrAll::All,
+            None,
+            Set(LocalTransactionCharacteristics(vec![Deferrable]))
+        );
+
+        assert_eq!(Ok(expected.into()), actual);
+    }
+
+    #[test]
+    fn test_rename() {
+        let source = "this_user rename to that_role";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let actual = user_stmt().parse(&mut stream);
+
+        let expected = RenameStmt::new(
+            Role("this_user".into()),
+            "that_role".into()
+        );
+
+        assert_eq!(Ok(expected.into()), actual);
+    }
+
+    #[test]
+    fn test_role_in_db() {
+        let source = "current_user in database test_db reset session authorization";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let actual = user_stmt().parse(&mut stream);
+
+        let expected = AlterRoleSetStmt::new(
+            OneOrAll::One(RoleSpec::CurrentUser),
+            Some("test_db".into()),
+            Reset(SessionAuthorization)
+        );
+
+        assert_eq!(Ok(expected.into()), actual);
+    }
+
+    #[test]
+    fn test_role_set_reset_clause() {
+        let source = "public reset time zone";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let actual = user_stmt().parse(&mut stream);
+
+        let expected = AlterRoleSetStmt::new(
+            OneOrAll::One(RoleSpec::Public),
+            None,
+            Reset(TimeZone)
+        );
+
+        assert_eq!(Ok(expected.into()), actual);
+    }
+
+    #[test]
+    fn test_role_with_alter_op() {
+        let source = "public encrypted password 'abc123'";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let actual = user_stmt().parse(&mut stream);
+
+        let expected = AlterRoleStmt::new(
+            RoleSpec::Public,
+            Add,
+            vec![AlterRoleOption::Password(Some("abc123".into()))],
+        );
+
+        assert_eq!(Ok(expected.into()), actual);
+    }
+
+    #[test]
+    fn test_role_alter_op() {
+        let source = "public with noinherit";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let actual = user_stmt().parse(&mut stream);
+
+        let expected = AlterRoleStmt::new(
+            RoleSpec::Public,
+            Add,
+            vec![AlterRoleOption::Inherit(false)],
+        );
+
+        assert_eq!(Ok(expected.into()), actual);
+    }
+
+    #[test]
+    fn test_role_no_options() {
+        let source = "public";
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let actual = user_stmt().parse(&mut stream);
+
+        let expected = AlterRoleStmt::new(
+            RoleSpec::Public,
+            Add,
+            vec![]
+        );
+
+        assert_eq!(Ok(expected.into()), actual);
+    }
+}
+
+use super::alter_role_option::alter_role_options;
+use super::in_database::in_database;
+use crate::lexer::Keyword::All;
+use crate::lexer::Keyword::Rename;
+use crate::lexer::Keyword::To;
+use crate::lexer::Keyword::With;
+use crate::parser::ast_node::AlterRoleAction::Add;
+use crate::parser::ast_node::AlterRoleSetStmt;
+use crate::parser::ast_node::AlterRoleStmt;
+use crate::parser::ast_node::OneOrAll;
+use crate::parser::ast_node::RawStmt;
+use crate::parser::ast_node::RenameStmt;
+use crate::parser::ast_node::RenameTarget::Role;
+use crate::parser::combinators::foundation::located;
+use crate::parser::combinators::foundation::match_first;
+use crate::parser::combinators::foundation::match_first_with_state;
+use crate::parser::combinators::foundation::sequence;
+use crate::parser::combinators::foundation::Combinator;
+use crate::parser::combinators::foundation::CombinatorHelpers;
+use crate::parser::combinators::role_id;
+use crate::parser::combinators::role_spec;
+use crate::parser::combinators::stmt::alter_stmt::set_reset_clause;
