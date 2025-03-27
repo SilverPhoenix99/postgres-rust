@@ -7,8 +7,10 @@ pub enum RawStmt {
     AlterEventTrigStmt(AlterEventTrigStmt),
     AlterObjectSchemaStmt(AlterObjectSchemaStmt),
     AlterOwnerStmt(AlterOwnerStmt),
+    AlterRoleSetStmt(AlterRoleSetStmt),
     AlterRoleStmt(AlterRoleStmt),
     AlterSystemStmt(AlterSystemStmt),
+    AlterUserMappingStmt(AlterUserMappingStmt),
     CheckPoint,
     ClosePortalStmt(OneOrAll<Str>),
     ConstraintsSetStmt(ConstraintsSetStmt),
@@ -36,8 +38,10 @@ impl_from!(box AlterDefaultPrivilegesStmt for RawStmt);
 impl_from!(AlterEventTrigStmt for RawStmt);
 impl_from!(AlterObjectSchemaStmt for RawStmt);
 impl_from!(AlterOwnerStmt for RawStmt);
+impl_from!(AlterRoleSetStmt for RawStmt);
 impl_from!(AlterRoleStmt for RawStmt);
 impl_from!(AlterSystemStmt for RawStmt);
+impl_from!(AlterUserMappingStmt for RawStmt);
 impl_from!(ConstraintsSetStmt for RawStmt);
 impl_from!(CreateDatabaseStmt for RawStmt);
 impl_from!(DiscardStmt for RawStmt);
@@ -54,8 +58,10 @@ use crate::parser::ast_node::AlterDefaultPrivilegesStmt;
 use crate::parser::ast_node::AlterEventTrigStmt;
 use crate::parser::ast_node::AlterObjectSchemaStmt;
 use crate::parser::ast_node::AlterOwnerStmt;
+use crate::parser::ast_node::AlterRoleSetStmt;
 use crate::parser::ast_node::AlterRoleStmt;
 use crate::parser::ast_node::AlterSystemStmt;
+use crate::parser::ast_node::AlterUserMappingStmt;
 use crate::parser::ast_node::ConstraintsSetStmt;
 use crate::parser::ast_node::CreateDatabaseStmt;
 use crate::parser::ast_node::DiscardStmt;

@@ -4,8 +4,10 @@ mod alter_default_privileges_stmt;
 mod alter_event_trig_stmt;
 mod alter_object_schema_stmt;
 mod alter_owner_stmt;
+mod alter_role_set_stmt;
 mod alter_role_stmt;
 mod alter_system_stmt;
+mod alter_user_mapping_stmt;
 mod binary_expr;
 mod bool_expr;
 mod boolean_or_string;
@@ -13,10 +15,12 @@ mod case_expr;
 mod constraints_set_mode;
 mod constraints_set_stmt;
 mod create_database_stmt;
+mod create_role_option;
 mod default_or_value;
 mod discard_stmt;
 mod drop_behavior;
 mod function_parameter;
+mod generic_option;
 mod grant_stmt;
 mod indirection;
 mod notify_stmt;
@@ -54,8 +58,10 @@ pub use self::{
     alter_event_trig_stmt::{AlterEventTrigStmt, EventTriggerState},
     alter_object_schema_stmt::{AlterObjectSchemaStmt, AlterObjectSchemaTarget},
     alter_owner_stmt::{AlterOwnerStmt, AlterOwnerTarget},
+    alter_role_set_stmt::AlterRoleSetStmt,
     alter_role_stmt::{AlterRoleAction, AlterRoleOption, AlterRoleStmt},
     alter_system_stmt::AlterSystemStmt,
+    alter_user_mapping_stmt::AlterUserMappingStmt,
     binary_expr::BinaryExpr,
     bool_expr::BoolExpr,
     boolean_or_string::BooleanOrString,
@@ -63,10 +69,12 @@ pub use self::{
     constraints_set_mode::ConstraintsSetMode,
     constraints_set_stmt::ConstraintsSetStmt,
     create_database_stmt::{CreateDatabaseStmt, CreatedbOption, CreatedbOptionKind, CreatedbOptionValue},
+    create_role_option::CreateRoleOption,
     default_or_value::ValueOrDefault,
     discard_stmt::DiscardStmt,
     drop_behavior::DropBehavior,
     function_parameter::FunctionParameter,
+    generic_option::{GenericOption, GenericOptionKind},
     grant_stmt::GrantStmt,
     indirection::Indirection,
     notify_stmt::NotifyStmt,

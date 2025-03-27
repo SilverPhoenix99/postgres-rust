@@ -3,10 +3,12 @@ mod alter_conversion_stmt;
 mod alter_database_stmt;
 mod alter_default_privileges_stmt;
 mod alter_event_trigger_stmt;
+mod alter_generic_option;
 mod alter_group_stmt;
 mod alter_language_stmt;
 mod alter_large_object_stmt;
 mod alter_system_stmt;
+mod alter_user_stmt;
 mod set_reset_clause;
 
 pub(super) fn alter_stmt() -> impl Combinator<Output = RawStmt> {
@@ -21,6 +23,7 @@ pub(super) fn alter_stmt() -> impl Combinator<Output = RawStmt> {
         alter_language_stmt(),
         alter_large_object_stmt(),
         alter_system_stmt().map(From::from),
+        alter_user_stmt()
     })
 }
 
@@ -40,6 +43,7 @@ mod tests {
     #[test_case("alter language lang owner to session_user")]
     #[test_case("alter large object -127 owner to public")]
     #[test_case("alter system reset all")]
+    #[test_case("alter user public")]
     fn test_alter(source: &str) {
 
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
@@ -53,15 +57,20 @@ mod tests {
     }
 }
 
-use self::alter_collation_stmt::alter_collation_stmt;
-use self::alter_conversion_stmt::alter_conversion_stmt;
-use self::alter_database_stmt::alter_database_stmt;
-use self::alter_default_privileges_stmt::alter_default_privileges_stmt;
-use self::alter_event_trigger_stmt::alter_event_trigger_stmt;
-use self::alter_group_stmt::alter_group_stmt;
-use self::alter_language_stmt::alter_language_stmt;
-use self::alter_large_object_stmt::alter_large_object_stmt;
-use self::alter_system_stmt::alter_system_stmt;
+use self::{
+    alter_collation_stmt::alter_collation_stmt,
+    alter_conversion_stmt::alter_conversion_stmt,
+    alter_database_stmt::alter_database_stmt,
+    alter_default_privileges_stmt::alter_default_privileges_stmt,
+    alter_event_trigger_stmt::alter_event_trigger_stmt,
+    alter_generic_option::alter_generic_options,
+    alter_group_stmt::alter_group_stmt,
+    alter_language_stmt::alter_language_stmt,
+    alter_large_object_stmt::alter_large_object_stmt,
+    alter_system_stmt::alter_system_stmt,
+    alter_user_stmt::alter_user_stmt,
+    set_reset_clause::set_reset_clause
+};
 use crate::lexer::Keyword::Alter;
 use crate::parser::ast_node::RawStmt;
 use crate::parser::combinators::foundation::match_first;

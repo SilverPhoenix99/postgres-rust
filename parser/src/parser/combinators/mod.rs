@@ -18,6 +18,7 @@ mod func_arg;
 mod func_name;
 mod func_type;
 mod function_with_argtypes;
+mod generic_option;
 mod generic_set_tail;
 mod i32_literal_paren;
 mod name_list;
@@ -68,6 +69,7 @@ use self::{
     func_name::func_name,
     func_type::func_type,
     function_with_argtypes::{function_with_argtypes, function_with_argtypes_list},
+    generic_option::generic_option,
     generic_set_tail::generic_set_tail,
     i32_literal_paren::i32_literal_paren,
     name_list::name_list,
