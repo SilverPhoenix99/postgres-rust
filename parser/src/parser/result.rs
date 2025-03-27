@@ -33,7 +33,7 @@ pub(super) type ScanResult<T> = Result<T, ScanErrorKind>;
 pub(super) type EofResult<T> = Result<T, EofErrorKind>;
 
 pub(super) trait Required<T> {
-    /// See [`required()`](crate::parser::combinators::required::required).
+    /// See [`required()`](crate::parser::combinators::foundation::required::required).
     fn required(self) -> ParseResult<T>;
 }
 
@@ -56,7 +56,7 @@ impl<T> Required<T> for EofResult<T> {
 }
 
 pub(super) trait TryMatch<T> {
-    /// See [`try_match()`](crate::parser::combinators::try_match::try_match).
+    /// See [`try_match()`](crate::parser::combinators::foundation::try_match::try_match).
     fn try_match(self) -> ParseResult<Option<T>>;
 }
 
@@ -82,7 +82,7 @@ impl<T> TryMatch<T> for EofResult<T> {
 }
 
 pub(super) trait Optional<T> {
-    /// See [`optional()`](crate::parser::combinators::optional::optional).
+    /// See [`optional()`](crate::parser::combinators::foundation::optional::optional).
     fn optional(self) -> ParseResult<Option<T>>;
 }
 
@@ -107,7 +107,7 @@ impl<T> Optional<T> for EofResult<T> {
 }
 
 pub(super) trait ScanResultTrait<T> {
-    /// See [`maybe_match()`](crate::parser::combinators::maybe_match::maybe_match).
+    /// See [`maybe_match()`](crate::parser::combinators::foundation::maybe_match::maybe_match).
     fn maybe_match(self) -> EofResult<Option<T>>;
 }
 
