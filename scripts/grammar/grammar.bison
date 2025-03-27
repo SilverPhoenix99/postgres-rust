@@ -500,8 +500,7 @@ alter_table_cmd :
   | ALTER opt_column ColId alter_generic_options
   | ADD_P TableConstraint
   | ALTER CONSTRAINT ColId ConstraintAttributeSpec
-  | ALTER CONSTRAINT ColId SET INHERIT
-  | ALTER CONSTRAINT ColId SET NO INHERIT
+  | ALTER CONSTRAINT ColId INHERIT
   | VALIDATE CONSTRAINT ColId
   | DROP CONSTRAINT IF_P EXISTS ColId opt_drop_behavior
   | DROP CONSTRAINT ColId opt_drop_behavior
