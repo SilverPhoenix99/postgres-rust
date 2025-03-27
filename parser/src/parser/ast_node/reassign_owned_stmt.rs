@@ -11,7 +11,7 @@ impl ReassignOwnedStmt {
     }
 
     #[inline(always)]
-    pub fn roles(&self) -> &Vec<RoleSpec> {
+    pub fn roles(&self) -> &[RoleSpec] {
         &self.roles
     }
 

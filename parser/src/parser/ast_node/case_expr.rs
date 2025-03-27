@@ -14,7 +14,7 @@ impl CaseExpr {
         &self.target
     }
 
-    pub fn when_clauses(&self) -> &Vec<CaseWhen> {
+    pub fn when_clauses(&self) -> &[CaseWhen] {
         &self.when_clauses
     }
 

@@ -9,7 +9,7 @@ impl AlterDefaultPrivilegesStmt {
         Self { options, action }
     }
 
-    pub fn options(&self) -> &Vec<AclOption> {
+    pub fn options(&self) -> &[AclOption] {
         &self.options
     }
 

@@ -25,7 +25,7 @@ impl Type {
         &self.name
     }
 
-    pub fn array_bounds(&self) -> &Vec<Option<i32>> {
+    pub fn array_bounds(&self) -> &[Option<i32>] {
         &self.array_bounds
     }
 

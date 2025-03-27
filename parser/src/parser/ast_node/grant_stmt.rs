@@ -58,7 +58,7 @@ impl GrantStmt {
         self.object_type
     }
 
-    pub fn grantees(&self) -> &Vec<RoleSpec> {
+    pub fn grantees(&self) -> &[RoleSpec] {
         &self.grantees
     }
 

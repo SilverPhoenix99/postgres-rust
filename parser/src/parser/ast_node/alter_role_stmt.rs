@@ -43,7 +43,7 @@ impl AlterRoleStmt {
     }
 
     #[inline(always)]
-    pub fn options(&self) -> &Vec<AlterRoleOption> {
+    pub fn options(&self) -> &[AlterRoleOption] {
         &self.options
     }
 
