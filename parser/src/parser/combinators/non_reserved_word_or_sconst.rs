@@ -23,6 +23,6 @@ mod tests {
 use crate::parser::combinators::foundation::string;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
-use crate::parser::combinators::non_reserved_word::non_reserved_word;
+use crate::parser::combinators::non_reserved_word;
 use postgres_basics::Str;
 use postgres_basics::Str::Boxed;
