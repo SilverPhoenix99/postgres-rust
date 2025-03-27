@@ -44,6 +44,8 @@ fn transaction_stmt_legacy() -> impl Combinator<Output = TransactionStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[allow(unused_imports)]
+    use crate::parser::ast_node::TransactionMode::ReadOnly;
     use crate::parser::combinators::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
@@ -62,7 +64,7 @@ mod tests {
         )
     }
 
-    #[test_case("begin transaction read only", TransactionStmt::Begin(vec![crate::parser::ast_node::TransactionMode::ReadOnly]))]
+    #[test_case("begin transaction read only", TransactionStmt::Begin(vec![ReadOnly]))]
     #[test_case("end transaction", TransactionStmt::Commit { chain: false })]
     fn test_transaction(source: &str, expected: TransactionStmt) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
@@ -79,6 +81,6 @@ use crate::parser::combinators::foundation::many_sep;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use crate::parser::combinators::stmt;
 use crate::parser::combinators::stmt::begin_stmt;
 use crate::parser::combinators::stmt::end_stmt;
-use crate::parser::combinators::stmt::stmt;
