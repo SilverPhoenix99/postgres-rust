@@ -13,7 +13,7 @@ impl AlterDatabaseStmt {
         &self.name
     }
 
-    pub fn options(&self) -> &Vec<AlterdbOption> {
+    pub fn options(&self) -> &[AlterdbOption] {
         &self.options
     }
 }

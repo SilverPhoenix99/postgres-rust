@@ -13,7 +13,7 @@ impl CreateDatabaseStmt {
         &self.name
     }
 
-    pub fn options(&self) -> &Vec<CreatedbOption> {
+    pub fn options(&self) -> &[CreatedbOption] {
         &self.options
     }
 }
