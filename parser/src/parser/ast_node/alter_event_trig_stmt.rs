@@ -14,8 +14,11 @@ pub struct AlterEventTrigStmt {
 
 impl AlterEventTrigStmt {
     #[inline(always)]
-    pub fn new(trigger: Str, state: EventTriggerState) -> Self {
-        Self { trigger, state }
+    pub fn new<T: Into<Str>>(trigger: T, state: EventTriggerState) -> Self {
+        Self {
+            trigger: trigger.into(),
+            state
+        }
     }
 
     #[inline(always)]

@@ -5,10 +5,7 @@ pub struct AlterDatabaseSetStmt {
 }
 
 impl AlterDatabaseSetStmt {
-    pub fn new<T>(name: T, option: SetResetClause) -> Self
-    where
-        Str: From<T>
-    {
+    pub fn new<T: Into<Str>>(name: T, option: SetResetClause) -> Self {
         Self {
             name: name.into(),
             option

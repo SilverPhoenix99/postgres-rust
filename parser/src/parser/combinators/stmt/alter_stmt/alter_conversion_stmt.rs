@@ -70,7 +70,7 @@ mod tests {
 
         let expected = RenameStmt::new(
             RenameTarget::Conversion(vec!["conversion_name".into()]),
-            "other_conversion".into(),
+            "other_conversion"
         );
 
         assert_eq!(Ok(expected.into()), actual);
@@ -85,7 +85,7 @@ mod tests {
 
         let expected = AlterObjectSchemaStmt::new(
             AlterObjectSchemaTarget::Conversion(vec!["conversion_name".into()]),
-            "some_schema".into(),
+            "some_schema"
         );
 
         assert_eq!(Ok(expected.into()), actual);
