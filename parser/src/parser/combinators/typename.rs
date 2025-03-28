@@ -30,7 +30,7 @@ pub(super) fn typename() -> impl Combinator<Output = Type> {
     })
 }
 
-/// `Vec` **May** be empty
+/// Post-condition: Vec **May** be empty.
 fn array_bounds() -> impl Combinator<Output = Vec<Option<i32>>> {
     opt_array_bounds()
         .optional()
