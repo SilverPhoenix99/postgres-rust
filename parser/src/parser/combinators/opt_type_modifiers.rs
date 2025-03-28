@@ -1,4 +1,4 @@
-/// Post-condition: Vec **May** be empty
+/// Post-condition: Vec **May** be empty.
 pub(super) fn opt_type_modifiers() -> impl Combinator<Output = TypeModifiers> {
 
     /*
