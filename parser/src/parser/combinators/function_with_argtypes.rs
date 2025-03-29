@@ -1,5 +1,5 @@
 /// Post-condition: Vec is **Not** empty
-pub(super) fn function_with_argtypes_list() -> impl Combinator<Output = Vec<ObjectWithArgs>> {
+pub(super) fn function_with_argtypes_list() -> impl Combinator<Output = Vec<FunctionWithArgs>> {
 
     /*
         function_with_argtypes ( ',' function_with_argtypes )*
@@ -8,7 +8,7 @@ pub(super) fn function_with_argtypes_list() -> impl Combinator<Output = Vec<Obje
     many_sep(Comma, function_with_argtypes())
 }
 
-pub(super) fn function_with_argtypes() -> impl Combinator<Output = ObjectWithArgs> {
+pub(super) fn function_with_argtypes() -> impl Combinator<Output = FunctionWithArgs> {
 
     /*
         Original production:
@@ -29,21 +29,21 @@ pub(super) fn function_with_argtypes() -> impl Combinator<Output = ObjectWithArg
 
     match_first! {
         TypeFuncName.map(|kw| vec![From::from(kw)])
-            .and_then(func_args(), ObjectWithArgs::new),
+            .and_then(func_args(), FunctionWithArgs::new),
 
         attrs(or(
             Unreserved.map(From::from),
             identifier().map(From::from)
         ))
-            .and_then(func_args(), ObjectWithArgs::new),
+            .and_then(func_args(), FunctionWithArgs::new),
 
         attrs(ColumnName.map(From::from))
             .chain(|name, stream| {
                 if name.len() == 1 {
-                    return Ok(ObjectWithArgs::new(name, None))
+                    return Ok(FunctionWithArgs::new(name, None))
                 }
                 let args = func_args().parse(stream)?;
-                Ok(ObjectWithArgs::new(name, args))
+                Ok(FunctionWithArgs::new(name, args))
             })
     }
 }
@@ -94,23 +94,23 @@ mod tests {
     use test_case::test_case;
 
     // type_func_name_keyword ( func_args )?
-    #[test_case("collation", ObjectWithArgs::new(vec!["collation".into()], None))]
-    #[test_case("current_schema()", ObjectWithArgs::new(vec!["current_schema".into()], Some(vec![])))]
+    #[test_case("collation", FunctionWithArgs::new(vec!["collation".into()], None))]
+    #[test_case("current_schema()", FunctionWithArgs::new(vec!["current_schema".into()], Some(vec![])))]
     // unreserved_keyword ( attrs )? ( func_args )?
-    #[test_case("double.trouble()", ObjectWithArgs::new(vec!["double".into(), "trouble".into()], Some(vec![])))]
-    #[test_case("double.double", ObjectWithArgs::new(vec!["double".into(), "double".into()], None))]
-    #[test_case("double()", ObjectWithArgs::new(vec!["double".into()], Some(vec![])))]
-    #[test_case("double", ObjectWithArgs::new(vec!["double".into()], None))]
+    #[test_case("double.trouble()", FunctionWithArgs::new(vec!["double".into(), "trouble".into()], Some(vec![])))]
+    #[test_case("double.double", FunctionWithArgs::new(vec!["double".into(), "double".into()], None))]
+    #[test_case("double()", FunctionWithArgs::new(vec!["double".into()], Some(vec![])))]
+    #[test_case("double", FunctionWithArgs::new(vec!["double".into()], None))]
     // IDENT ( attrs )? ( func_args )?
-    #[test_case("ident.qualified_()", ObjectWithArgs::new(vec!["ident".into(), "qualified_".into()], Some(vec![])))]
-    #[test_case("qualif.ident", ObjectWithArgs::new(vec!["qualif".into(), "ident".into()], None))]
-    #[test_case("ident()", ObjectWithArgs::new(vec!["ident".into()], Some(vec![])))]
-    #[test_case("ident", ObjectWithArgs::new(vec!["ident".into()], None))]
+    #[test_case("ident.qualified_()", FunctionWithArgs::new(vec!["ident".into(), "qualified_".into()], Some(vec![])))]
+    #[test_case("qualif.ident", FunctionWithArgs::new(vec!["qualif".into(), "ident".into()], None))]
+    #[test_case("ident()", FunctionWithArgs::new(vec!["ident".into()], Some(vec![])))]
+    #[test_case("ident", FunctionWithArgs::new(vec!["ident".into()], None))]
     // col_name_keyword ( attrs ( func_args )? )?
-    #[test_case("float.point()", ObjectWithArgs::new(vec!["float".into(), "point".into()], Some(vec![])))]
-    #[test_case("float.boat", ObjectWithArgs::new(vec!["float".into(), "boat".into()], None))]
-    #[test_case("float", ObjectWithArgs::new(vec!["float".into()], None))]
-    fn test_function_with_argtypes(source: &str, expected: ObjectWithArgs) {
+    #[test_case("float.point()", FunctionWithArgs::new(vec!["float".into(), "point".into()], Some(vec![])))]
+    #[test_case("float.boat", FunctionWithArgs::new(vec!["float".into(), "boat".into()], None))]
+    #[test_case("float", FunctionWithArgs::new(vec!["float".into()], None))]
+    fn test_function_with_argtypes(source: &str, expected: FunctionWithArgs) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = function_with_argtypes().parse(&mut stream);
         assert_eq!(Ok(expected), actual);
@@ -133,7 +133,7 @@ use crate::lexer::OperatorKind::CloseParenthesis;
 use crate::lexer::OperatorKind::Comma;
 use crate::lexer::OperatorKind::OpenParenthesis;
 use crate::parser::ast_node::FunctionParameter;
-use crate::parser::ast_node::ObjectWithArgs;
+use crate::parser::ast_node::FunctionWithArgs;
 use crate::parser::combinators::attrs;
 use crate::parser::combinators::foundation::between;
 use crate::parser::combinators::foundation::identifier;
