@@ -84,7 +84,7 @@ pub use self::{
     operator::Operator,
     prepare_stmt::PrepareStmt,
     qualified_operator::QualifiedOperator,
-    range_var::{RangeVar, RelationPersistence},
+    range_var::{RangeVar, RelationName, RelationPersistence, SchemaName},
     raw_stmt::RawStmt,
     reassign_owned_stmt::ReassignOwnedStmt,
     rename_stmt::{RenameStmt, RenameTarget},
