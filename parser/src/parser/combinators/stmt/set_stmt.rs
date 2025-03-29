@@ -24,7 +24,7 @@ pub(super) fn set_stmt() -> impl Combinator<Output = RawStmt> {
     })
 }
 
-fn constraints_set_list() -> impl Combinator<Output = OneOrAll<Vec<RangeVar>>> {
+fn constraints_set_list() -> impl Combinator<Output = OneOrAll<Vec<RelationName>>> {
 
     /*
           ALL
@@ -84,8 +84,8 @@ mod tests {
     }
 
     #[test_case("all", OneOrAll::All)]
-    #[test_case("_relation", OneOrAll::One(vec![RangeVar::new("_relation".into())]))]
-    fn test_constraints_set_list(source: &str, expected: OneOrAll<Vec<RangeVar>>) {
+    #[test_case("_relation", OneOrAll::One(vec![RelationName::new("_relation", None)]))]
+    fn test_constraints_set_list(source: &str, expected: OneOrAll<Vec<RelationName>>) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = constraints_set_list().parse(&mut stream);
         assert_eq!(Ok(expected), actual);
@@ -111,8 +111,8 @@ use crate::parser::ast_node::ConstraintsSetMode::Deferred;
 use crate::parser::ast_node::ConstraintsSetMode::Immediate;
 use crate::parser::ast_node::ConstraintsSetStmt;
 use crate::parser::ast_node::OneOrAll;
-use crate::parser::ast_node::RangeVar;
 use crate::parser::ast_node::RawStmt;
+use crate::parser::ast_node::RelationName;
 use crate::parser::ast_node::VariableSetStmt;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::optional;

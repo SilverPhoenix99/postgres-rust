@@ -1,15 +1,15 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ConstraintsSetStmt {
-    constraints: OneOrAll<Vec<RangeVar>>,
+    constraints: OneOrAll<Vec<RelationName>>,
     mode: ConstraintsSetMode
 }
 
 impl ConstraintsSetStmt {
-    pub fn new(constraints: OneOrAll<Vec<RangeVar>>, mode: ConstraintsSetMode) -> Self {
+    pub fn new(constraints: OneOrAll<Vec<RelationName>>, mode: ConstraintsSetMode) -> Self {
         Self { constraints, mode }
     }
 
-    pub fn constraints(&self) -> &OneOrAll<Vec<RangeVar>> {
+    pub fn constraints(&self) -> &OneOrAll<Vec<RelationName>> {
         &self.constraints
     }
 
@@ -30,4 +30,4 @@ use crate::parser::ast_node::ConstraintsSetMode;
 use crate::parser::ast_node::ConstraintsSetMode::Deferred;
 use crate::parser::ast_node::ConstraintsSetMode::Immediate;
 use crate::parser::ast_node::OneOrAll;
-use crate::parser::ast_node::RangeVar;
+use crate::parser::ast_node::RelationName;
