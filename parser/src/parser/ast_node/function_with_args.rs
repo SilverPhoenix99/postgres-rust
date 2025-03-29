@@ -1,11 +1,11 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct ObjectWithArgs {
+pub struct FunctionWithArgs {
     name: QualifiedName,
     /// `None` if parameters weren't specified
     args: Option<Vec<FunctionParameter>>
 }
 
-impl ObjectWithArgs {
+impl FunctionWithArgs {
     pub fn new(name: QualifiedName, args: Option<Vec<FunctionParameter>>) -> Self {
         Self { name, args }
     }

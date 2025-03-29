@@ -20,12 +20,12 @@ mod default_or_value;
 mod discard_stmt;
 mod drop_behavior;
 mod function_parameter;
+mod function_with_args;
 mod generic_option;
 mod grant_stmt;
 mod indirection;
 mod notify_stmt;
 mod numeric_spec;
-mod object_with_args;
 mod one_or_all;
 mod operator;
 mod prepare_stmt;
@@ -74,12 +74,12 @@ pub use self::{
     discard_stmt::DiscardStmt,
     drop_behavior::DropBehavior,
     function_parameter::FunctionParameter,
+    function_with_args::FunctionWithArgs,
     generic_option::{GenericOption, GenericOptionKind},
     grant_stmt::GrantStmt,
     indirection::Indirection,
     notify_stmt::NotifyStmt,
     numeric_spec::NumericSpec,
-    object_with_args::ObjectWithArgs,
     one_or_all::OneOrAll,
     operator::Operator,
     prepare_stmt::PrepareStmt,
