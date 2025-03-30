@@ -53,7 +53,6 @@ impl RelationName {
     }
 }
 
-
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct RangeVar {
     relation: RelationName,

@@ -90,167 +90,162 @@ fn def_acl_action() -> impl Combinator<Output = GrantStmt> {
 }
 
 /// Alias: `defacl_privilege_target`
-fn def_acl_privilege_target() -> impl Combinator<Output = AclTarget> {
+fn def_acl_privilege_target() -> impl Combinator<Output = PrivilegeDefaultsTarget> {
 
     match_first! {
-        Tables.map(|_| AclTarget::Table),
-        Functions.or(Routines).map(|_| AclTarget::Function),
-        Sequences.map(|_| AclTarget::Sequence),
-        Types.map(|_| AclTarget::Type),
-        Schemas.map(|_| AclTarget::Schema),
+        Kw::Tables.map(|_| Tables),
+        Kw::Functions.or(Routines).map(|_| Functions),
+        Kw::Sequences.map(|_| Sequences),
+        Kw::Types.map(|_| Types),
+        Kw::Schemas.map(|_| Schemas),
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::{AccessPrivilege, AclOption::*, AclTarget, DropBehavior, RoleSpec::*};
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
-    use crate::parser::token_stream::TokenStream;
+    use crate::parser::ast_node::AccessPrivilege;
+    use crate::parser::ast_node::AclOption::*;
+    use crate::parser::ast_node::DropBehavior;
+    use crate::parser::ast_node::PrivilegeDefaultsTarget;
+    use crate::parser::ast_node::RoleSpec::*;
+    use crate::parser::tests::test_parser;
     use test_case::test_case;
 
     #[test]
     fn test_alter_default_privileges_stmt() {
-        let source = "default privileges in schema some_schema grant all on tables to public";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        let expected = AlterDefaultPrivilegesStmt::new(
-            vec![AclOption::Schemas(vec!["some_schema".into()])],
-            GrantStmt::grant(
-                AccessPrivilege::All(None),
-                AclTarget::Table,
-                vec![Public],
-                false
+        test_parser! {
+            source = "default privileges in schema some_schema grant all on tables to public",
+            parser = alter_default_privileges_stmt(),
+            expected = AlterDefaultPrivilegesStmt::new(
+                vec![AclOption::Schemas(vec!["some_schema".into()])],
+                GrantStmt::grant(
+                    AccessPrivilege::All(None),
+                    Tables,
+                    vec![Public],
+                    false
+                )
             )
-        );
-
-        assert_eq!(Ok(expected), alter_default_privileges_stmt().parse(&mut stream));
+        }
     }
 
     #[test]
     fn test_acl_option_list() {
-        let source = "in schema my_schema for role public for user current_user";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        let expected = vec![
-            AclOption::Schemas(vec!["my_schema".into()]),
-            Roles(vec![Public]),
-            Roles(vec![CurrentUser]),
-        ];
-
-        assert_eq!(Ok(expected), def_acl_option_list().parse(&mut stream));
+        test_parser! {
+            source = "in schema my_schema for role public for user current_user",
+            parser = def_acl_option_list(),
+            expected = vec![
+                AclOption::Schemas(vec!["my_schema".into()]),
+                Roles(vec![Public]),
+                Roles(vec![CurrentUser]),
+            ]
+        }
     }
 
     #[test]
     fn test_def_acl_option_in_schema() {
-        let source = "in schema a,b,c";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        assert_eq!(Ok(AclOption::Schemas(vec!["a".into(), "b".into(), "c".into()])), def_acl_option().parse(&mut stream));
+        test_parser! {
+            source = "in schema a,b,c",
+            parser = def_acl_option(),
+            expected = AclOption::Schemas(vec![
+                "a".into(),
+                "b".into(),
+                "c".into()
+            ])
+        }
     }
 
     #[test]
     fn test_def_acl_option_for_role() {
-        let source = "for role public,current_role";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        assert_eq!(Ok(Roles(vec![Public, CurrentRole])), def_acl_option().parse(&mut stream));
+        test_parser! {
+            source = "for role public,current_role",
+            parser = def_acl_option(),
+            expected = Roles(vec![Public, CurrentRole])
+        }
     }
 
     #[test]
     fn test_def_acl_option_for_user() {
-        let source = "for user my_user,session_user";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        assert_eq!(Ok(Roles(vec![Name("my_user".into()), SessionUser])), def_acl_option().parse(&mut stream));
+        test_parser! {
+            source = "for user my_user,session_user",
+            parser = def_acl_option(),
+            expected = Roles(vec![Name("my_user".into()), SessionUser])
+        }
     }
 
     #[test]
     fn test_grant_def_acl_action() {
-        let source = "grant all on tables to public";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        let actual = def_acl_action().parse(&mut stream);
-
-        let expected = GrantStmt::grant(
-            AccessPrivilege::All(None),
-            AclTarget::Table,
-            vec![Public],
-            false
-        );
-
-        assert_eq!(Ok(expected), actual);
+        test_parser! {
+            source = "grant all on tables to public",
+            parser = def_acl_action(),
+            expected = GrantStmt::grant(
+                AccessPrivilege::All(None),
+                Tables,
+                vec![Public],
+                false
+            )
+        }
     }
 
     #[test]
     fn test_grant_with_option_def_acl_action() {
-        let source = "grant all privileges on tables to public with grant option";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        let actual = def_acl_action().parse(&mut stream);
-
-        let expected = GrantStmt::grant(
-            AccessPrivilege::All(None),
-            AclTarget::Table,
-            vec![Public],
-            true
-        );
-
-        assert_eq!(Ok(expected), actual);
+        test_parser! {
+            source = "grant all privileges on tables to public with grant option",
+            parser = def_acl_action(),
+            expected = GrantStmt::grant(
+                AccessPrivilege::All(None),
+                Tables,
+                vec![Public],
+                true
+            )
+        }
     }
 
     #[test]
     fn test_revoke_def_acl_action() {
-        let source = "revoke all privileges on tables from public";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        let actual = def_acl_action().parse(&mut stream);
-
-        let expected = GrantStmt::revoke(
-            AccessPrivilege::All(None),
-            AclTarget::Table,
-            vec![Public],
-            false,
-            DropBehavior::Restrict
-        );
-
-        assert_eq!(Ok(expected), actual);
+        test_parser! {
+            source = "revoke all privileges on tables from public",
+            parser = def_acl_action(),
+            expected = GrantStmt::revoke(
+                AccessPrivilege::All(None),
+                Tables,
+                vec![Public],
+                false,
+                DropBehavior::Restrict
+            )
+        }
     }
 
     #[test]
     fn test_revoke_grant_option_cascade_def_acl_action() {
-        let source = "revoke grant option for all privileges on tables from public cascade";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        let actual = def_acl_action().parse(&mut stream);
-
-        let expected = GrantStmt::revoke(
-            AccessPrivilege::All(None),
-            AclTarget::Table,
-            vec![Public],
-            true,
-            DropBehavior::Cascade
-        );
-
-        assert_eq!(Ok(expected), actual);
+        test_parser! {
+            source = "revoke grant option for all privileges on tables from public cascade",
+            parser = def_acl_action(),
+            expected = GrantStmt::revoke(
+                AccessPrivilege::All(None),
+                Tables,
+                vec![Public],
+                true,
+                DropBehavior::Cascade
+            )
+        }
     }
 
-    #[test_case("tables", AclTarget::Table)]
-    #[test_case("functions", AclTarget::Function)]
-    #[test_case("sequences", AclTarget::Sequence)]
-    #[test_case("routines", AclTarget::Function)]
-    #[test_case("types", AclTarget::Type)]
-    #[test_case("schemas", AclTarget::Schema)]
-    fn test_def_acl_privilege_target(source: &str, expected: AclTarget) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(expected), def_acl_privilege_target().parse(&mut stream));
+    #[test_case("tables", PrivilegeDefaultsTarget::Tables)]
+    #[test_case("functions", PrivilegeDefaultsTarget::Functions)]
+    #[test_case("sequences", PrivilegeDefaultsTarget::Sequences)]
+    #[test_case("routines", PrivilegeDefaultsTarget::Functions)]
+    #[test_case("types", PrivilegeDefaultsTarget::Types)]
+    #[test_case("schemas", PrivilegeDefaultsTarget::Schemas)]
+    fn test_def_acl_privilege_target(source: &str, expected: PrivilegeDefaultsTarget) {
+        test_parser!(source, def_acl_privilege_target(), expected);
     }
 }
 
+use crate::lexer::Keyword as Kw;
 use crate::lexer::Keyword::DefaultKw;
 use crate::lexer::Keyword::For;
 use crate::lexer::Keyword::FromKw;
-use crate::lexer::Keyword::Functions;
 use crate::lexer::Keyword::Grant;
 use crate::lexer::Keyword::In;
 use crate::lexer::Keyword::On;
@@ -260,16 +255,17 @@ use crate::lexer::Keyword::Revoke;
 use crate::lexer::Keyword::Role;
 use crate::lexer::Keyword::Routines;
 use crate::lexer::Keyword::Schema;
-use crate::lexer::Keyword::Schemas;
-use crate::lexer::Keyword::Sequences;
-use crate::lexer::Keyword::Tables;
 use crate::lexer::Keyword::To;
-use crate::lexer::Keyword::Types;
 use crate::lexer::Keyword::User;
 use crate::parser::ast_node::AclOption;
-use crate::parser::ast_node::AclTarget;
 use crate::parser::ast_node::AlterDefaultPrivilegesStmt;
 use crate::parser::ast_node::GrantStmt;
+use crate::parser::ast_node::PrivilegeDefaultsTarget;
+use crate::parser::ast_node::PrivilegeDefaultsTarget::Functions;
+use crate::parser::ast_node::PrivilegeDefaultsTarget::Schemas;
+use crate::parser::ast_node::PrivilegeDefaultsTarget::Sequences;
+use crate::parser::ast_node::PrivilegeDefaultsTarget::Tables;
+use crate::parser::ast_node::PrivilegeDefaultsTarget::Types;
 use crate::parser::combinators::foundation::many;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::sequence;

@@ -2,7 +2,7 @@
 pub struct GrantStmt {
     is_grant: bool,
     privileges: AccessPrivilege,
-    object_type: AclTarget,
+    object_type: PrivilegeDefaultsTarget,
     grantees: Vec<RoleSpec>,
     grant_option: bool,
     drop_behavior: DropBehavior,
@@ -11,7 +11,7 @@ pub struct GrantStmt {
 impl GrantStmt {
     pub fn grant(
         privileges: AccessPrivilege,
-        object_type: AclTarget,
+        object_type: PrivilegeDefaultsTarget,
         grantees: Vec<RoleSpec>,
         grant_option: bool
     ) -> Self {
@@ -27,7 +27,7 @@ impl GrantStmt {
 
     pub fn revoke(
         privileges: AccessPrivilege,
-        object_type: AclTarget,
+        object_type: PrivilegeDefaultsTarget,
         grantees: Vec<RoleSpec>,
         grant_option: bool,
         drop_behavior: DropBehavior
@@ -54,7 +54,7 @@ impl GrantStmt {
         &self.privileges
     }
 
-    pub fn object_type(&self) -> AclTarget {
+    pub fn object_type(&self) -> PrivilegeDefaultsTarget {
         self.object_type
     }
 
@@ -67,4 +67,7 @@ impl GrantStmt {
     }
 }
 
-use crate::parser::ast_node::{AccessPrivilege, AclTarget, DropBehavior, RoleSpec};
+use crate::parser::ast_node::AccessPrivilege;
+use crate::parser::ast_node::DropBehavior;
+use crate::parser::ast_node::PrivilegeDefaultsTarget;
+use crate::parser::ast_node::RoleSpec;

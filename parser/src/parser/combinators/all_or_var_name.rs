@@ -21,7 +21,7 @@ mod tests {
 
     #[test_case("all", OneOrAll::All)]
     #[test_case("_ident", OneOrAll::One(vec!["_ident".into()]))]
-    fn test_generic_reset(source: &str, expected: OneOrAll<QualifiedName>) {
+    fn test_all_or_var_name(source: &str, expected: OneOrAll<QualifiedName>) {
 
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = all_or_var_name().parse(&mut stream);

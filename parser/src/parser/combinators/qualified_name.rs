@@ -11,7 +11,7 @@ pub(super) fn qualified_name_list() -> impl Combinator<Output = Vec<RelationName
 pub(super) fn qualified_name() -> impl Combinator<Output = RelationName> {
 
     /*
-        col_id attrs{1,3}
+        (col_id attrs){1,3}
     */
 
     located(any_name())

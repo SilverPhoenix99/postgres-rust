@@ -60,7 +60,35 @@ mod tests {
     use crate::parser::ParserConfig;
     use postgres_basics::guc::BackslashQuote;
 
-    pub(in crate::parser) static DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding);
+    pub(super) static DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding);
+
+    macro_rules! test_parser {
+        (
+            source = $source:expr,
+            parser = $parser:expr,
+            expected = $expected:expr
+        ) => {{
+            test_parser!($source, $parser, $expected)
+        }};
+
+        (
+            $source:expr,
+            $parser:expr,
+            $expected:expr
+        ) => {{
+            use crate::parser::combinators::tests::DEFAULT_CONFIG;
+            use crate::parser::token_stream::TokenStream;
+
+            let mut stream = TokenStream::new($source, DEFAULT_CONFIG);
+            let actual = $parser.parse(&mut stream);
+
+            let expected = $expected;
+
+            assert_eq!(Ok(expected), actual);
+        }};
+    }
+
+    pub(super) use test_parser;
 }
 
 use crate::parser::ast_node::RawStmt;
