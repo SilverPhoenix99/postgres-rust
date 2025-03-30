@@ -1,3 +1,12 @@
+pub(super) fn aggregate_with_argtypes_list() -> impl Combinator<Output = Vec<AggregateWithArgs>> {
+
+    /*
+        aggr_func ( ',' aggr_func )*
+    */
+
+    many_sep(Comma, aggregate_with_argtypes())
+}
+
 pub(super) fn aggregate_with_argtypes() -> impl Combinator<Output = AggregateWithArgs> {
 
     /*
@@ -77,6 +86,22 @@ mod tests {
     use crate::parser::ast_node::TypeName::Json;
     use crate::parser::tests::test_parser;
     use test_case::test_case;
+
+    #[test]
+    fn test_aggregate_with_argtypes_list() {
+        test_parser!(
+            source = "agg_name(json), agg_name(*)",
+            parser = aggregate_with_argtypes_list(),
+            expected = vec![
+                AggregateWithArgs::new(
+                    vec!["agg_name".into()],
+                    vec![FuncType::Type(Json.into()).into()],
+                    vec![]
+                ),
+                AggregateWithArgs::new(vec!["agg_name".into()], vec![], vec![])
+            ]
+        )
+    }
 
     #[test]
     fn test_aggregate_with_argtypes() {
