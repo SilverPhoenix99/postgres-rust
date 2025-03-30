@@ -51,7 +51,10 @@ pub enum ParserErrorKind {
     ImproperQualifiedName(NameList),
 
     #[error("time zone interval must be HOUR or HOUR TO MINUTE")]
-    InvalidZoneValue
+    InvalidZoneValue,
+
+    #[error("missing argument")]
+    MissingOperatorArgumentType,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -70,7 +73,7 @@ impl Display for NameList {
 
         let name = &name[1..];
 
-        f.write_str(&name)
+        f.write_str(name)
     }
 }
 
@@ -91,6 +94,7 @@ impl HasSqlState for ParserErrorKind {
             UnrecognizedRoleOption(_) => SyntaxError,
             ImproperQualifiedName(_) => SyntaxError,
             InvalidZoneValue => SyntaxError,
+            MissingOperatorArgumentType => SyntaxError,
         }
     }
 }
@@ -112,6 +116,7 @@ impl ErrorReport for ParserErrorKind {
             UnrecognizedRoleOption(_) => None,
             ImproperQualifiedName(_) => None,
             InvalidZoneValue => None,
+            MissingOperatorArgumentType => Some("Use NONE to denote the missing argument of a unary operator.".into()),
         }
     }
 
@@ -131,6 +136,7 @@ impl ErrorReport for ParserErrorKind {
             UnrecognizedRoleOption(_) => None,
             ImproperQualifiedName(_) => None,
             InvalidZoneValue => None,
+            MissingOperatorArgumentType => None,
         }
     }
 
@@ -150,6 +156,7 @@ impl ErrorReport for ParserErrorKind {
             UnrecognizedRoleOption(_) => None,
             ImproperQualifiedName(_) => None,
             InvalidZoneValue => None,
+            MissingOperatorArgumentType => None,
         }
     }
 }

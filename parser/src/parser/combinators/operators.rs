@@ -42,7 +42,7 @@ pub(super) fn explicit_op() -> impl Combinator<Output = QualifiedOperator> {
         .map(|(_, _, op, _)| op)
 }
 
-fn any_operator() -> impl Combinator<Output = QualifiedOperator> {
+pub(super) fn any_operator() -> impl Combinator<Output = QualifiedOperator> {
 
     /*
         ( col_id '.' )* all_op

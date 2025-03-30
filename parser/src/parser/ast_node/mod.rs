@@ -28,6 +28,7 @@ mod notify_stmt;
 mod numeric_spec;
 mod one_or_all;
 mod operator;
+mod operator_with_args;
 mod prepare_stmt;
 mod qualified_operator;
 mod range_var;
@@ -82,6 +83,7 @@ pub use self::{
     numeric_spec::NumericSpec,
     one_or_all::OneOrAll,
     operator::Operator,
+    operator_with_args::OperatorWithArgs,
     prepare_stmt::PrepareStmt,
     qualified_operator::QualifiedOperator,
     range_var::{RangeVar, RelationName, RelationPersistence, SchemaName},
