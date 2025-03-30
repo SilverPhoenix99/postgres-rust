@@ -23,6 +23,7 @@ mod load_stmt;
 mod lock_stmt;
 mod move_stmt;
 mod notify_stmt;
+mod operator_with_argtypes;
 mod prepare_stmt;
 mod reassign_owner_stmt;
 mod reindex_stmt;
@@ -128,6 +129,7 @@ mod tests {
     }
 }
 
+#[allow(unused_imports)] // TODO: eventually remove
 use self::{
     abort_stmt::abort_stmt,
     alter_stmt::alter_stmt,
@@ -153,6 +155,7 @@ use self::{
     lock_stmt::lock_stmt,
     move_stmt::move_stmt,
     notify_stmt::notify_stmt,
+    operator_with_argtypes::{operator_with_argtypes, operator_with_argtypes_list},
     prepare_stmt::prepare_stmt,
     reassign_owner_stmt::reassign_owned_stmt,
     reindex_stmt::reindex_stmt,
@@ -168,7 +171,7 @@ use self::{
     truncate_stmt::truncate_stmt,
     unlisten_stmt::unlisten_stmt,
     vacuum_stmt::vacuum_stmt,
-    variable_target::variable_target
+    variable_target::variable_target,
 };
 use crate::lexer::Keyword::Checkpoint;
 use crate::parser::ast_node::RawStmt;
