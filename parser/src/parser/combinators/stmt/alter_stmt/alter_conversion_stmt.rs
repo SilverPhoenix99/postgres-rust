@@ -43,7 +43,7 @@ pub(super) fn alter_conversion_stmt() -> impl Combinator<Output = RawStmt> {
 mod tests {
     use super::*;
     use crate::parser::ast_node::RoleSpec::SessionUser;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
     #[test]

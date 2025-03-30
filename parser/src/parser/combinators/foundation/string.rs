@@ -25,7 +25,7 @@ impl Combinator for StringCombi {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use test_case::test_case;
 
     #[test_case("$dollar$a $ string$dollar$", "a $ string")]

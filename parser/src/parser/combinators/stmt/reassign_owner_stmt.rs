@@ -19,7 +19,7 @@ pub(super) fn reassign_owned_stmt() -> impl Combinator<Output = ReassignOwnedStm
 mod tests {
     use super::*;
     use crate::parser::ast_node::RoleSpec;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
     #[test]

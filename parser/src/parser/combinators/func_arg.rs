@@ -90,7 +90,7 @@ mod tests {
     use crate::parser::ast_node::SetOf;
     use crate::parser::ast_node::Type;
     use crate::parser::ast_node::TypeName;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use postgres_basics::Str;
     use test_case::test_case;

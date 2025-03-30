@@ -108,7 +108,7 @@ mod tests {
     use super::*;
     #[allow(unused_imports)]
     use crate::parser::ast_node::RoleSpec::Public;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 

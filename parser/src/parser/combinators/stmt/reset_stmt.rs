@@ -12,7 +12,7 @@ pub(super) fn reset_stmt() -> impl Combinator<Output = VariableTarget> {
 mod tests {
     use super::*;
     use crate::parser::ast_node::VariableTarget;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
     #[test]

@@ -58,7 +58,7 @@ pub(super) fn signed_i32_literal() -> impl Combinator<Output = i32> {
 mod tests {
     use super::*;
     use crate::parser::ast_node::SignedNumber;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 

@@ -25,7 +25,7 @@ pub(super) fn notify_stmt() -> impl Combinator<Output = NotifyStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
     #[test]

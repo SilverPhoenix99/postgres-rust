@@ -80,7 +80,7 @@ fn isolation_level() -> impl Combinator<Output = IsolationLevel> {
 mod tests {
     use super::*;
     use crate::parser::result::ScanErrorKind::NoMatch;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use TransactionMode::ReadOnly;
     use TransactionMode::ReadWrite;

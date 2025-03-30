@@ -36,7 +36,7 @@ pub(super) fn alter_group_stmt() -> impl Combinator<Output = RawStmt> {
 mod tests {
     use super::*;
     use crate::parser::ast_node::RoleSpec;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
     #[test]

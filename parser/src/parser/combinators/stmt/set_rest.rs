@@ -143,7 +143,7 @@ mod tests {
     use crate::parser::ast_node::TransactionMode::ReadOnly;
     #[allow(unused_imports)]
     use crate::parser::ast_node::XmlNodeKind::Document;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use postgres_basics::Str;
     use test_case::test_case;

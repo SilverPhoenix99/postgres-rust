@@ -20,7 +20,7 @@ impl Combinator for NumberCombi {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use test_case::test_case;
 
     #[test_case("1.1", UnsignedNumber::NumericConst { value: "1.1".into(), radix: crate::NumberRadix::Decimal })]

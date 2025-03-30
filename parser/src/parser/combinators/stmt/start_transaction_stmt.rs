@@ -15,8 +15,10 @@ pub(super) fn start_transaction_stmt() -> impl Combinator<Output = TransactionSt
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::TransactionMode::{Deferrable, ReadOnly, ReadWrite};
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::ast_node::TransactionMode::Deferrable;
+    use crate::parser::ast_node::TransactionMode::ReadOnly;
+    use crate::parser::ast_node::TransactionMode::ReadWrite;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
     #[test]

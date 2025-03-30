@@ -58,9 +58,9 @@ impl<'src> Parser<'src> {
 #[cfg(test)]
 mod tests {
     use crate::parser::ParserConfig;
-    use postgres_basics::guc::BackslashQuote;
+    use postgres_basics::guc::BackslashQuote::SafeEncoding;
 
-    pub(super) static DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding);
+    pub(super) static DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, SafeEncoding);
 
     macro_rules! test_parser {
         (
@@ -76,7 +76,7 @@ mod tests {
             $parser:expr,
             $expected:expr
         ) => {{
-            use crate::parser::combinators::tests::DEFAULT_CONFIG;
+            use crate::parser::tests::DEFAULT_CONFIG;
             use crate::parser::token_stream::TokenStream;
 
             let mut stream = TokenStream::new($source, DEFAULT_CONFIG);

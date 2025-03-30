@@ -12,7 +12,7 @@ pub(super) fn col_id_list(separator: OperatorKind) -> impl Combinator<Output = Q
 mod tests {
     use super::*;
     use crate::lexer::OperatorKind::Dot;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
     #[test]

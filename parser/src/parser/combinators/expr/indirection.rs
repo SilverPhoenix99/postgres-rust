@@ -67,7 +67,7 @@ fn indirection_el() -> impl Combinator<Output = Indirection> {
 mod tests {
     use super::*;
     use crate::parser::ast_node::ExprNode;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 

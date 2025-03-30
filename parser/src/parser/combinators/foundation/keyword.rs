@@ -117,7 +117,7 @@ mod tests {
     use super::*;
     use crate::lexer::Keyword::Abort;
     use crate::lexer::KeywordCategory::Unreserved;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
 
     #[test]
     fn test_keyword() {
