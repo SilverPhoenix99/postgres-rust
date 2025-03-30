@@ -55,6 +55,9 @@ pub enum ParserErrorKind {
 
     #[error("missing argument")]
     MissingOperatorArgumentType,
+    
+    #[error("aggregates cannot have output arguments")]
+    AggregateWithOutputParameters,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -95,6 +98,7 @@ impl HasSqlState for ParserErrorKind {
             ImproperQualifiedName(_) => SyntaxError,
             InvalidZoneValue => SyntaxError,
             MissingOperatorArgumentType => SyntaxError,
+            AggregateWithOutputParameters => FeatureNotSupported,
         }
     }
 }
@@ -117,6 +121,7 @@ impl ErrorReport for ParserErrorKind {
             ImproperQualifiedName(_) => None,
             InvalidZoneValue => None,
             MissingOperatorArgumentType => Some("Use NONE to denote the missing argument of a unary operator.".into()),
+            AggregateWithOutputParameters => None,
         }
     }
 
@@ -137,6 +142,7 @@ impl ErrorReport for ParserErrorKind {
             ImproperQualifiedName(_) => None,
             InvalidZoneValue => None,
             MissingOperatorArgumentType => None,
+            AggregateWithOutputParameters => None,
         }
     }
 
@@ -157,6 +163,7 @@ impl ErrorReport for ParserErrorKind {
             ImproperQualifiedName(_) => None,
             InvalidZoneValue => None,
             MissingOperatorArgumentType => None,
+            AggregateWithOutputParameters => None,
         }
     }
 }

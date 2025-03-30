@@ -1,4 +1,5 @@
 mod abort_stmt;
+mod aggregate_with_argtypes;
 mod alter_stmt;
 mod analyze_stmt;
 mod auth_ident;
@@ -132,6 +133,7 @@ mod tests {
 #[allow(unused_imports)] // TODO: eventually remove
 use self::{
     abort_stmt::abort_stmt,
+    aggregate_with_argtypes::aggr_args,
     alter_stmt::alter_stmt,
     analyze_stmt::analyze_stmt,
     auth_ident::auth_ident,
