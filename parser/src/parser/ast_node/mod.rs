@@ -160,12 +160,12 @@ pub enum AccessPrivilege {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum AclTarget {
-    Table,
-    Function,
-    Sequence,
-    Type,
-    Schema,
+pub enum PrivilegeDefaultsTarget {
+    Functions,
+    Schemas,
+    Sequences,
+    Tables,
+    Types,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
