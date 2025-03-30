@@ -19,7 +19,7 @@ impl Combinator for ParamCombi {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
 
     #[test]
     fn test_param() {

@@ -50,7 +50,7 @@ fn alter_generic_option() -> impl Combinator<Output = GenericOptionKind> {
 mod tests {
     use super::*;
     use crate::parser::ast_node::GenericOption;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 

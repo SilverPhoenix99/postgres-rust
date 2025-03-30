@@ -11,7 +11,7 @@ pub(super) fn set_reset_clause() -> impl Combinator<Output = SetResetClause> {
 mod tests {
     use super::*;
     use crate::parser::ast_node::{SetRest, VariableTarget};
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
     #[test]

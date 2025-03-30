@@ -56,9 +56,9 @@ pub(super) fn role_spec() -> impl Combinator<Output = RoleSpec> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
     use crate::parser::result::ScanErrorKind::{NoMatch, ScanErr};
     use crate::parser::result::ScanResult;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use crate::parser::ParserErrorKind;
     use crate::parser::ParserErrorKind::ForbiddenRoleSpec;

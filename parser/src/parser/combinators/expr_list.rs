@@ -11,7 +11,7 @@ pub(super) fn expr_list() -> impl Combinator<Output = Vec<ExprNode>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
     #[test]

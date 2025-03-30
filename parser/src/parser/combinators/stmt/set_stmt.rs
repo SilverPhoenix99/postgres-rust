@@ -54,7 +54,7 @@ fn constraints_set_mode() -> impl Combinator<Output = ConstraintsSetMode> {
 mod tests {
     use super::*;
     use crate::parser::ast_node::SetRest;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 

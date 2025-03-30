@@ -116,7 +116,7 @@ fn minute() -> impl Combinator<Output = IntervalRange> {
 mod tests {
     use super::*;
     use crate::parser::ast_node::IntervalRange;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 

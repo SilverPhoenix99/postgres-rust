@@ -52,7 +52,7 @@ mod tests {
     use crate::parser::ast_node::RawStmt::RefreshCollationVersionStmt;
     use crate::parser::ast_node::RoleSpec::CurrentUser;
     use crate::parser::ast_node::{AlterObjectSchemaTarget, AlterOwnerTarget, RenameTarget};
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
     #[test]

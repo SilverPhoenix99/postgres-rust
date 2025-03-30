@@ -55,7 +55,7 @@ pub(super) fn qualified_name() -> impl Combinator<Output = RelationName> {
 mod tests {
     use super::*;
     use crate::parser::ast_node::SchemaName;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
     #[test]

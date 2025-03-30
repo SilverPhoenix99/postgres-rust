@@ -34,7 +34,7 @@ mod tests {
     use crate::parser::ast_node::GenericOptionKind::Unspecified;
     use crate::parser::ast_node::RoleSpec::CurrentUser;
     use crate::parser::ast_node::RoleSpec::Public;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
     #[test]

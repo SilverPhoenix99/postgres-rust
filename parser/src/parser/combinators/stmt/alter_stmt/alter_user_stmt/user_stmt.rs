@@ -56,7 +56,7 @@ mod tests {
     use crate::parser::ast_node::TransactionMode::Deferrable;
     use crate::parser::ast_node::VariableTarget::{SessionAuthorization, TimeZone};
     use crate::parser::ast_node::{AlterRoleOption, RoleSpec};
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
     #[test]

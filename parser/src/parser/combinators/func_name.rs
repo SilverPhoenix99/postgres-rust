@@ -39,7 +39,7 @@ pub(super) fn func_name() -> impl Combinator<Output = QualifiedName> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
     #[test]

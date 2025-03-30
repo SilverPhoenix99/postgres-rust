@@ -31,7 +31,7 @@ pub(super) fn opt_array_bounds() -> impl Combinator<Output = Vec<Option<i32>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 

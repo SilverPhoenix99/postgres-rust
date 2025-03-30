@@ -22,7 +22,7 @@ impl Combinator for IdentifierCombi {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use test_case::test_case;
 
     #[test_case("sOmE_iDeNtIfIeR", "some_identifier")]

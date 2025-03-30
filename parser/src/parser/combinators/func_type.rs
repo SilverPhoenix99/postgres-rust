@@ -45,7 +45,7 @@ mod tests {
     use super::*;
     use crate::parser::ast_node;
     use crate::parser::ast_node::SetOf;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
     #[test]

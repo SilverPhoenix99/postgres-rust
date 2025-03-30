@@ -18,7 +18,7 @@ pub(super) fn discard_stmt() -> impl Combinator<Output = DiscardStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 

@@ -32,7 +32,7 @@ where
 mod tests {
     use super::*;
     use crate::lexer::Keyword;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
 
     #[test]
     fn test_optional() {

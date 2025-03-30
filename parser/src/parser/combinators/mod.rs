@@ -98,11 +98,3 @@ use self::{
     var_name::var_name,
     var_value::{var_list, var_value},
 };
-
-#[cfg(test)]
-mod tests {
-    use crate::parser::ParserConfig;
-    use postgres_basics::guc::BackslashQuote;
-
-    pub(super) static DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, BackslashQuote::SafeEncoding);
-}

@@ -56,7 +56,7 @@ pub(super) fn opt_granted_by() -> impl Combinator<Output = RoleSpec> {
 mod tests {
     use super::*;
     use crate::parser::ast_node::RoleSpec;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
     #[test]

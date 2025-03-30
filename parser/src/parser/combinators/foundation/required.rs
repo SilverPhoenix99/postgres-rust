@@ -27,7 +27,7 @@ mod tests {
     use super::*;
     use crate::lexer::Keyword;
     use crate::parser::result::ScanErrorKind::ScanErr;
-    use crate::parser::combinators::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::ParserErrorKind;
     use std::hint::unreachable_unchecked;
 
