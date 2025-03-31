@@ -28,8 +28,7 @@ pub(super) fn aggr_args() -> impl Combinator<Output = (Vec<FunctionParameter>, V
         | '(' aggr_args_list ( ORDER BY aggr_args_list )? ')'
     */
 
-    between(
-        OpenParenthesis,
+    between_paren(
         match_first! {
             Mul
                 .map(|_| (Vec::new(), Vec::new())),
@@ -40,8 +39,7 @@ pub(super) fn aggr_args() -> impl Combinator<Output = (Vec<FunctionParameter>, V
                     .optional()
                     .map(Option::unwrap_or_default)
             )
-        },
-        CloseParenthesis
+        }
     )
 }
 
@@ -202,14 +200,12 @@ mod tests {
 
 use crate::lexer::Keyword::By;
 use crate::lexer::Keyword::Order;
-use crate::lexer::OperatorKind::CloseParenthesis;
 use crate::lexer::OperatorKind::Comma;
 use crate::lexer::OperatorKind::Mul;
-use crate::lexer::OperatorKind::OpenParenthesis;
 use crate::parser::ast_node::AggregateWithArgs;
 use crate::parser::ast_node::FunctionParameter;
 use crate::parser::ast_node::FunctionParameterMode as Mode;
-use crate::parser::combinators::foundation::between;
+use crate::parser::combinators::between_paren;
 use crate::parser::combinators::foundation::located;
 use crate::parser::combinators::foundation::many_sep;
 use crate::parser::combinators::foundation::match_first;

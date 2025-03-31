@@ -28,27 +28,23 @@ fn oper_argtypes() -> impl Combinator<Output = (Option<Type>, Option<Type>)> {
         | '(' Typename ')' => Err
     */
 
-    between(
-        OpenParenthesis,
-        match_first! {
-            NoneKw.and(Comma)
-                .and_right(typename())
-                .map(|typ| (None, Some(typ))),
-            typename()
-                .and_left(or(
-                    close_paren(),
-                    Comma.skip()
-                ))
-                .and_then(
-                    or(
-                        NoneKw.map(|_| None),
-                        typename().map(Some)
-                    ),
-                    |typ1, typ2| (Some(typ1), typ2)
-                )
-        },
-        CloseParenthesis
-    )
+    between_paren(match_first! {
+        NoneKw.and(Comma)
+            .and_right(typename())
+            .map(|typ| (None, Some(typ))),
+        typename()
+            .and_left(or(
+                close_paren(),
+                Comma.skip()
+            ))
+            .and_then(
+                or(
+                    NoneKw.map(|_| None),
+                    typename().map(Some)
+                ),
+                |typ1, typ2| (Some(typ1), typ2)
+            )
+    })
 }
 
 fn close_paren() -> impl Combinator<Output = ()> {
@@ -107,16 +103,16 @@ mod tests {
 use crate::lexer::Keyword::NoneKw;
 use crate::lexer::OperatorKind::CloseParenthesis;
 use crate::lexer::OperatorKind::Comma;
-use crate::lexer::OperatorKind::OpenParenthesis;
 use crate::parser::ast_node::OperatorWithArgs;
 use crate::parser::ast_node::Type;
+use crate::parser::combinators::between_paren;
 use crate::parser::combinators::foundation::located;
+use crate::parser::combinators::foundation::many_sep;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
-use crate::parser::combinators::foundation::{between, many_sep};
 use crate::parser::combinators::operators::any_operator;
 use crate::parser::combinators::typename;
 use crate::parser::result::ScanErrorKind::ScanErr;
