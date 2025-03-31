@@ -1,7 +1,7 @@
 /// Post-condition: Vec is **Not** empty
 ///
 /// Alias: `opt_column_list`
-pub(super) fn opt_name_list() -> impl Combinator<Output = Vec<Str>> {
+pub(super) fn paren_name_list() -> impl Combinator<Output = Vec<Str>> {
 
     /*
         '(' name_list ')'

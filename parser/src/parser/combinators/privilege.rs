@@ -8,7 +8,7 @@ pub(super) fn privileges() -> impl Combinator<Output = AccessPrivilege> {
     match_first!(
         sequence!(
             AllKw.and(Privileges.optional()).skip(),
-            opt_name_list().optional()
+            paren_name_list().optional()
         )
             .map(|(_, columns)| All(columns)),
         privilege_list().map(Specific)
@@ -38,13 +38,13 @@ fn privilege() -> impl Combinator<Output = SpecificAccessPrivilege> {
     match_first! {
         Alter.and(SystemKw).map(|_| AlterSystem),
         CreateKw
-            .and_then(opt_name_list().optional(), |_, columns| Create(columns)),
+            .and_then(paren_name_list().optional(), |_, columns| Create(columns)),
         ReferencesKw
-            .and_then(opt_name_list().optional(), |_, columns| References(columns)),
+            .and_then(paren_name_list().optional(), |_, columns| References(columns)),
         SelectKw
-            .and_then(opt_name_list().optional(), |_, columns| Select(columns)),
+            .and_then(paren_name_list().optional(), |_, columns| Select(columns)),
         col_id()
-            .and_then(opt_name_list().optional(), Named)
+            .and_then(paren_name_list().optional(), Named)
     }
 }
 
@@ -117,4 +117,4 @@ use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
-use crate::parser::combinators::opt_name_list;
+use crate::parser::combinators::paren_name_list;
