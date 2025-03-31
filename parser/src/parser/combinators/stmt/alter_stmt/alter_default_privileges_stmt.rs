@@ -50,6 +50,10 @@ fn def_acl_option() -> impl Combinator<Output = AclOption> {
 }
 
 /// Alias: `DefACLAction`
+///
+/// This should match GRANT/REVOKE, except that individual target objects
+/// are not mentioned, and we only allow a subset of object types.
+///
 fn def_acl_action() -> impl Combinator<Output = GrantStmt> {
 
     /*
