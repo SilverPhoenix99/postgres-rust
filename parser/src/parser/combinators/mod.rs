@@ -27,7 +27,6 @@ mod non_reserved_word_or_sconst;
 mod operators;
 mod opt_array_bounds;
 mod opt_interval;
-mod opt_name_list;
 mod opt_precision;
 mod opt_timezone;
 mod opt_transaction;
@@ -35,6 +34,7 @@ mod opt_transaction_chain;
 mod opt_type_modifiers;
 mod opt_unique_null_treatment;
 mod opt_varying;
+mod paren_name_list;
 mod privilege;
 mod qualified_name;
 mod role;
@@ -78,7 +78,6 @@ use self::{
     operators::{any_operator, explicit_op, qual_all_op, qual_op, subquery_op},
     opt_array_bounds::opt_array_bounds,
     opt_interval::opt_interval,
-    opt_name_list::opt_name_list,
     opt_precision::opt_precision,
     opt_timezone::opt_timezone,
     opt_transaction::opt_transaction,
@@ -86,6 +85,7 @@ use self::{
     opt_type_modifiers::opt_type_modifiers,
     opt_unique_null_treatment::opt_unique_null_treatment,
     opt_varying::opt_varying,
+    paren_name_list::paren_name_list,
     privilege::{privilege_list, privileges},
     qualified_name::{qualified_name, qualified_name_list},
     role::{role_id, role_list, role_spec},
