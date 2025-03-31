@@ -42,6 +42,7 @@ mod sign;
 mod simple_typename;
 mod stmt;
 mod stmtmulti;
+mod string_or_null;
 mod transaction_mode_list;
 mod type_function_name;
 mod typename;
@@ -92,6 +93,7 @@ use self::{
     sign::sign,
     simple_typename::simple_typename,
     stmt::{begin_stmt, end_stmt, stmt},
+    string_or_null::string_or_null,
     transaction_mode_list::transaction_mode_list,
     type_function_name::type_function_name,
     typename::typename,
