@@ -62,12 +62,10 @@ fn func_args() -> impl Combinator<Output = Option<Vec<FunctionParameter>>> {
         ( '(' ( func_args_list )? ')' )?
     */
 
-    between(
-        OpenParenthesis,
+    between_paren(
         func_args_list()
             .optional()
-            .map(Option::unwrap_or_default),
-        CloseParenthesis,
+            .map(Option::unwrap_or_default)
     )
         .optional()
 }
@@ -129,13 +127,11 @@ mod tests {
 use crate::lexer::KeywordCategory::ColumnName;
 use crate::lexer::KeywordCategory::TypeFuncName;
 use crate::lexer::KeywordCategory::Unreserved;
-use crate::lexer::OperatorKind::CloseParenthesis;
 use crate::lexer::OperatorKind::Comma;
-use crate::lexer::OperatorKind::OpenParenthesis;
 use crate::parser::ast_node::FunctionParameter;
 use crate::parser::ast_node::FunctionWithArgs;
 use crate::parser::combinators::attrs;
-use crate::parser::combinators::foundation::between;
+use crate::parser::combinators::between_paren;
 use crate::parser::combinators::foundation::identifier;
 use crate::parser::combinators::foundation::many_sep;
 use crate::parser::combinators::foundation::match_first;

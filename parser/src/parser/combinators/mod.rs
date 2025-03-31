@@ -5,6 +5,7 @@ mod all_or_var_name;
 mod any_name;
 mod attrs;
 mod bare_col_label;
+mod between_paren;
 mod boolean_or_string;
 mod col_id;
 mod col_id_list;
@@ -53,6 +54,7 @@ pub(super) use stmtmulti::stmtmulti;
 
 #[allow(unused_imports)] // TODO: eventually remove
 use self::{
+    between_paren::between_paren,
     acl::{grantee_list, opt_drop_behavior, opt_grant_option, opt_granted_by},
     all_or_var_name::all_or_var_name,
     any_name::{any_name, any_name_list},

@@ -4,10 +4,8 @@ pub(super) fn alter_generic_options() -> impl Combinator<Output = Vec<GenericOpt
         OPTIONS '(' alter_generic_option_list ')'
     */
 
-    Options.and_right(between(
-        OpenParenthesis,
+    Options.and_right(between_paren(
         alter_generic_option_list(),
-        CloseParenthesis
     ))
 }
 
@@ -98,16 +96,14 @@ mod tests {
 use crate::lexer::Keyword as Kw;
 use crate::lexer::Keyword::DropKw;
 use crate::lexer::Keyword::Options;
-use crate::lexer::OperatorKind::CloseParenthesis;
 use crate::lexer::OperatorKind::Comma;
-use crate::lexer::OperatorKind::OpenParenthesis;
 use crate::parser::ast_node::GenericOptionKind;
 use crate::parser::ast_node::GenericOptionKind::Add;
 use crate::parser::ast_node::GenericOptionKind::Drop;
 use crate::parser::ast_node::GenericOptionKind::Set;
 use crate::parser::ast_node::GenericOptionKind::Unspecified;
+use crate::parser::combinators::between_paren;
 use crate::parser::combinators::col_label;
-use crate::parser::combinators::foundation::between;
 use crate::parser::combinators::foundation::many_sep;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
