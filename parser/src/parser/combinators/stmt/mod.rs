@@ -26,6 +26,7 @@ mod move_stmt;
 mod notify_stmt;
 mod operator_with_argtypes;
 mod prepare_stmt;
+mod privilege_target;
 mod reassign_owner_stmt;
 mod reindex_stmt;
 mod release_savepoint_stmt;
