@@ -31,6 +31,7 @@ mod one_or_all;
 mod operator;
 mod operator_with_args;
 mod prepare_stmt;
+mod privilege_target;
 mod qualified_operator;
 mod range_var;
 mod raw_stmt;
@@ -87,6 +88,7 @@ pub use self::{
     operator::Operator,
     operator_with_args::OperatorWithArgs,
     prepare_stmt::PrepareStmt,
+    privilege_target::PrivilegeTarget,
     qualified_operator::QualifiedOperator,
     range_var::{RangeVar, RelationName, RelationPersistence, SchemaName},
     raw_stmt::RawStmt,
