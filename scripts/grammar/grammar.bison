@@ -2184,6 +2184,7 @@ defacl_privilege_target :
   | SEQUENCES
   | TYPES_P
   | SCHEMAS
+  | LARGE_P OBJECTS_P
 ;
 
 IndexStmt :
@@ -5214,6 +5215,7 @@ unreserved_keyword :
   | NOWAIT
   | NULLS_P
   | OBJECT_P
+  | OBJECTS_P
   | OF
   | OFF
   | OIDS
@@ -5801,6 +5803,7 @@ bare_label_keyword :
   | NULLS_P
   | NUMERIC
   | OBJECT_P
+  | OBJECTS_P
   | OF
   | OFF
   | OIDS
