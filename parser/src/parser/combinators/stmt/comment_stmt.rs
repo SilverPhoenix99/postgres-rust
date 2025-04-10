@@ -379,11 +379,11 @@ mod tests {
     use crate::parser::ast_node::{
         AggregateWithArgs,
         FunctionWithArgs,
+        Operator::Addition,
+        OperatorWithArgs,
+        QualifiedOperator,
         SignedNumber::IntegerConst,
         TypeName::{Int4, Varchar},
-        Operator::Addition,
-        QualifiedOperator,
-        OperatorWithArgs,
     };
     use crate::parser::tests::test_parser;
     use test_case::test_case;
@@ -554,7 +554,6 @@ use crate::parser::ast_node::CommentTarget::*;
 use crate::parser::combinators::any_name;
 use crate::parser::combinators::between_paren;
 use crate::parser::combinators::col_id;
-use crate::parser::combinators::const_numeric::signed_number;
 use crate::parser::combinators::foundation::and;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::match_first_with_state;
@@ -562,6 +561,7 @@ use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::function_with_argtypes;
+use crate::parser::combinators::signed_number;
 use crate::parser::combinators::simple_typename;
 use crate::parser::combinators::stmt::aggregate_with_argtypes;
 use crate::parser::combinators::stmt::operator_with_argtypes;
