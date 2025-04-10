@@ -13,6 +13,7 @@ pub enum RawStmt {
     AlterUserMappingStmt(AlterUserMappingStmt),
     CheckPoint,
     ClosePortalStmt(OneOrAll<Str>),
+    CommentStmt(CommentStmt),
     ConstraintsSetStmt(ConstraintsSetStmt),
     CreateDatabaseStmt(CreateDatabaseStmt),
     DeallocateStmt(OneOrAll<Str>),
@@ -42,6 +43,7 @@ impl_from!(AlterRoleSetStmt for RawStmt);
 impl_from!(AlterRoleStmt for RawStmt);
 impl_from!(AlterSystemStmt for RawStmt);
 impl_from!(AlterUserMappingStmt for RawStmt);
+impl_from!(CommentStmt for RawStmt);
 impl_from!(ConstraintsSetStmt for RawStmt);
 impl_from!(CreateDatabaseStmt for RawStmt);
 impl_from!(DiscardStmt for RawStmt);
@@ -52,6 +54,7 @@ impl_from!(RenameStmt for RawStmt);
 impl_from!(VariableSetStmt for RawStmt);
 impl_from!(TransactionStmt for RawStmt);
 
+use crate::parser::ast_node::comment_stmt::CommentStmt;
 use crate::parser::ast_node::AlterDatabaseSetStmt;
 use crate::parser::ast_node::AlterDatabaseStmt;
 use crate::parser::ast_node::AlterDefaultPrivilegesStmt;

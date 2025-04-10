@@ -13,6 +13,7 @@ mod binary_expr;
 mod bool_expr;
 mod boolean_or_string;
 mod case_expr;
+mod comment_stmt;
 mod constraints_set_mode;
 mod constraints_set_stmt;
 mod create_database_stmt;
@@ -70,6 +71,7 @@ pub use self::{
     bool_expr::BoolExpr,
     boolean_or_string::BooleanOrString,
     case_expr::{CaseExpr, CaseWhen},
+    comment_stmt::{CommentStmt, CommentTarget},
     constraints_set_mode::ConstraintsSetMode,
     constraints_set_stmt::ConstraintsSetStmt,
     create_database_stmt::{CreateDatabaseStmt, CreatedbOption, CreatedbOptionKind, CreatedbOptionValue},

@@ -57,7 +57,7 @@ pub(super) fn stmt() -> impl Combinator<Output = RawStmt> {
         cluster_stmt(),
         Checkpoint.map(|_| CheckPoint),
         close_stmt().map(ClosePortalStmt),
-        comment_stmt(),
+        comment_stmt().map(From::from),
         commit_stmt().map(From::from),
         copy_stmt(),
         create_stmt(),
@@ -100,7 +100,9 @@ mod tests {
 
     #[test_case("abort transaction")]
     #[test_case("alter group some_group add user public")]
+    #[test_case("checkpoint")]
     #[test_case("close all")]
+    #[test_case("comment on type int is 'comment'")]
     #[test_case("commit and no chain")]
     #[test_case("create database the_db with allow connections false")]
     #[test_case("deallocate all")]
@@ -114,10 +116,10 @@ mod tests {
     #[test_case("reset time zone")]
     #[test_case("rollback to test_ident")]
     #[test_case("savepoint test_ident")]
+    #[test_case("set schema 'abc123'")]
     #[test_case("show all")]
     #[test_case("start transaction read only, read write deferrable")]
     #[test_case("unlisten *")]
-    #[test_case("set schema 'abc123'")]
     fn test_stmt(source: &str) {
 
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
@@ -134,7 +136,7 @@ mod tests {
 #[allow(unused_imports)] // TODO: eventually remove
 use self::{
     abort_stmt::abort_stmt,
-    aggregate_with_argtypes::aggr_args,
+    aggregate_with_argtypes::{aggr_args, aggregate_with_argtypes, aggregate_with_argtypes_list},
     alter_stmt::alter_stmt,
     analyze_stmt::analyze_stmt,
     auth_ident::auth_ident,
