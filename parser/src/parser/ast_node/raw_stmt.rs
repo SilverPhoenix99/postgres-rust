@@ -54,7 +54,6 @@ impl_from!(RenameStmt for RawStmt);
 impl_from!(VariableSetStmt for RawStmt);
 impl_from!(TransactionStmt for RawStmt);
 
-use crate::parser::ast_node::comment_stmt::CommentStmt;
 use crate::parser::ast_node::AlterDatabaseSetStmt;
 use crate::parser::ast_node::AlterDatabaseStmt;
 use crate::parser::ast_node::AlterDefaultPrivilegesStmt;
@@ -65,6 +64,7 @@ use crate::parser::ast_node::AlterRoleSetStmt;
 use crate::parser::ast_node::AlterRoleStmt;
 use crate::parser::ast_node::AlterSystemStmt;
 use crate::parser::ast_node::AlterUserMappingStmt;
+use crate::parser::ast_node::CommentStmt;
 use crate::parser::ast_node::ConstraintsSetStmt;
 use crate::parser::ast_node::CreateDatabaseStmt;
 use crate::parser::ast_node::DiscardStmt;
