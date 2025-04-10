@@ -23,7 +23,7 @@ impl AlterOwnerStmt {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AlterOwnerTarget {
-    Aggregate(AggregateWithArgtypes),
+    Aggregate(AggregateWithArgs),
     Collation(QualifiedName),
     Conversion(QualifiedName),
     Database(Str),
@@ -31,15 +31,15 @@ pub enum AlterOwnerTarget {
     EventTrigger(Str),
     ForeignDataWrapper(Str),
     ForeignServer(Str),
-    Function(FunctionWithArgtypes),
+    Function(FunctionWithArgs),
     Language(Str),
     LargeObject(SignedNumber),
-    Operator(OperatorWithArgtypes),
+    Operator(OperatorWithArgs),
     OperatorClass(QualifiedName),
     OperatorFamily(QualifiedName),
-    Procedure(FunctionWithArgtypes),
+    Procedure(FunctionWithArgs),
     Publication(Str),
-    Routine(FunctionWithArgtypes),
+    Routine(FunctionWithArgs),
     Schema(Str),
     Statistic(QualifiedName),
     Subscription(Str),
@@ -49,12 +49,10 @@ pub enum AlterOwnerTarget {
     Type(QualifiedName),
 }
 
-use crate::parser::ast_node::{
-    AggregateWithArgtypes,
-    FunctionWithArgtypes,
-    OperatorWithArgtypes,
-    QualifiedName,
-    RoleSpec,
-    SignedNumber
-};
+use crate::parser::ast_node::AggregateWithArgs;
+use crate::parser::ast_node::FunctionWithArgs;
+use crate::parser::ast_node::OperatorWithArgs;
+use crate::parser::ast_node::QualifiedName;
+use crate::parser::ast_node::RoleSpec;
+use crate::parser::ast_node::SignedNumber;
 use postgres_basics::Str;
