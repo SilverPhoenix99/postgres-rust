@@ -125,21 +125,6 @@ pub type BinaryOperands = Box<(ExprNode, ExprNode)>;
 pub(super) type QualifiedName = Vec<Str>;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct AggregateWithArgtypes {
-    // TODO
-}
-
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct FunctionWithArgtypes {
-    // TODO
-}
-
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct OperatorWithArgtypes {
-    // TODO
-}
-
-#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct RelationExpr {
     // TODO
 }

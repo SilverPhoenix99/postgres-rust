@@ -24,7 +24,7 @@ impl RenameStmt {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RenameTarget {
-    Aggregate(AggregateWithArgtypes),
+    Aggregate(AggregateWithArgs),
     Collation(QualifiedName),
     Conversion(QualifiedName),
     Database(Str),
@@ -35,7 +35,7 @@ pub enum RenameTarget {
     ForeignServer(Str),
     ForeignTable { target: RelationExpr, missing_ok: bool },
     ForeignTableColumn { table: RelationExpr, column: Str, missing_ok: bool },
-    Function(FunctionWithArgtypes),
+    Function(FunctionWithArgs),
     Index { target: QualifiedName, missing_ok: bool },
     Language(Str),
     MaterializedView { target: QualifiedName, missing_ok: bool },
@@ -43,13 +43,13 @@ pub enum RenameTarget {
     OperatorClass(QualifiedName),
     OperatorFamily(QualifiedName),
     Policy { table: QualifiedName, policy: Str, missing_ok: bool },
-    Procedure(FunctionWithArgtypes),
+    Procedure(FunctionWithArgs),
     Publication(Str),
     /// Aliases:
     /// * `Group`
     /// * `User`
     Role(Str),
-    Routine(FunctionWithArgtypes),
+    Routine(FunctionWithArgs),
     Rule { relation: QualifiedName, rule: Str },
     Schema(Str),
     Sequence { target: QualifiedName, missing_ok: bool },
@@ -70,5 +70,8 @@ pub enum RenameTarget {
     ViewColumn { view: QualifiedName, column: Str, missing_ok: bool },
 }
 
-use crate::parser::ast_node::{AggregateWithArgtypes, FunctionWithArgtypes, QualifiedName, RelationExpr};
+use crate::parser::ast_node::AggregateWithArgs;
+use crate::parser::ast_node::FunctionWithArgs;
+use crate::parser::ast_node::QualifiedName;
+use crate::parser::ast_node::RelationExpr;
 use postgres_basics::Str;

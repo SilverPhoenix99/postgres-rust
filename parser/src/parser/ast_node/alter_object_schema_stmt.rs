@@ -24,19 +24,19 @@ impl AlterObjectSchemaStmt {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AlterObjectSchemaTarget {
-    Aggregate(AggregateWithArgtypes),
+    Aggregate(AggregateWithArgs),
     Collation(QualifiedName),
     Conversion(QualifiedName),
     Domain(QualifiedName),
     Extension(Str),
     ForeignTable { target: RelationExpr, missing_ok: bool },
-    Function(FunctionWithArgtypes),
+    Function(FunctionWithArgs),
     MaterializedView { target: QualifiedName, missing_ok: bool },
-    Operator(OperatorWithArgtypes),
+    Operator(OperatorWithArgs),
     OperatorClass(QualifiedName),
     OperatorFamily(QualifiedName),
-    Procedure(FunctionWithArgtypes),
-    Routine(FunctionWithArgtypes),
+    Procedure(FunctionWithArgs),
+    Routine(FunctionWithArgs),
     Sequence { target: QualifiedName, missing_ok: bool },
     Statistic(QualifiedName),
     Table { target: RelationExpr, missing_ok: bool },
@@ -48,11 +48,9 @@ pub enum AlterObjectSchemaTarget {
     View { target: QualifiedName, missing_ok: bool },
 }
 
-use crate::parser::ast_node::{
-    AggregateWithArgtypes,
-    FunctionWithArgtypes,
-    OperatorWithArgtypes,
-    QualifiedName,
-    RelationExpr
-};
+use crate::parser::ast_node::AggregateWithArgs;
+use crate::parser::ast_node::FunctionWithArgs;
+use crate::parser::ast_node::OperatorWithArgs;
+use crate::parser::ast_node::QualifiedName;
+use crate::parser::ast_node::RelationExpr;
 use postgres_basics::Str;
