@@ -90,7 +90,7 @@ fn comment_target() -> impl Combinator<Output = CommentTarget> {
         subscription(),
         table(),
         tablespace(),
-        text_search_configuration(),
+        text_search(),
         transform(),
         trigger(),
         type_(),
@@ -314,7 +314,7 @@ fn tablespace() -> impl Combinator<Output = CommentTarget> + Sized {
         .map(Tablespace)
 }
 
-fn text_search_configuration() -> impl Combinator<Output = CommentTarget> {
+fn text_search() -> impl Combinator<Output = CommentTarget> {
     and(Text, Search)
         .and_right(match_first! {
             Configuration
