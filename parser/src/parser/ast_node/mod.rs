@@ -39,6 +39,7 @@ mod raw_stmt;
 mod reassign_owned_stmt;
 mod rename_stmt;
 mod role_spec;
+mod security_label_stmt;
 mod set_reset_clause;
 mod set_rest;
 mod set_rest_more;
@@ -97,6 +98,7 @@ pub use self::{
     reassign_owned_stmt::ReassignOwnedStmt,
     rename_stmt::{RenameStmt, RenameTarget},
     role_spec::RoleSpec,
+    security_label_stmt::{SecurityLabelStmt, SecurityLabelTarget},
     set_reset_clause::SetResetClause,
     set_rest::SetRest,
     set_rest_more::SetRestMore,

@@ -26,6 +26,7 @@ pub enum RawStmt {
     ReassignOwnedStmt(ReassignOwnedStmt),
     RefreshCollationVersionStmt(QualifiedName),
     RenameStmt(RenameStmt),
+    SecurityLabelStmt(SecurityLabelStmt),
     TransactionStmt(TransactionStmt),
     UnlistenStmt(OneOrAll<Str>),
     VariableResetStmt(VariableTarget),
@@ -51,8 +52,9 @@ impl_from!(NotifyStmt for RawStmt);
 impl_from!(box PrepareStmt for RawStmt);
 impl_from!(ReassignOwnedStmt for RawStmt);
 impl_from!(RenameStmt for RawStmt);
-impl_from!(VariableSetStmt for RawStmt);
+impl_from!(SecurityLabelStmt for RawStmt);
 impl_from!(TransactionStmt for RawStmt);
+impl_from!(VariableSetStmt for RawStmt);
 
 use crate::parser::ast_node::AlterDatabaseSetStmt;
 use crate::parser::ast_node::AlterDatabaseStmt;
@@ -74,6 +76,7 @@ use crate::parser::ast_node::PrepareStmt;
 use crate::parser::ast_node::QualifiedName;
 use crate::parser::ast_node::ReassignOwnedStmt;
 use crate::parser::ast_node::RenameStmt;
+use crate::parser::ast_node::SecurityLabelStmt;
 use crate::parser::ast_node::TransactionStmt;
 use crate::parser::ast_node::VariableSetStmt;
 use crate::parser::ast_node::VariableTarget;
