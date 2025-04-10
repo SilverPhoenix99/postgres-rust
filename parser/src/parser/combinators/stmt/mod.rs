@@ -34,7 +34,7 @@ mod reset_stmt;
 mod revoke_stmt;
 mod rollback_stmt;
 mod savepoint_stmt;
-mod security_stmt;
+mod security_label_stmt;
 mod set_rest;
 mod set_stmt;
 mod show_stmt;
@@ -81,7 +81,7 @@ pub(super) fn stmt() -> impl Combinator<Output = RawStmt> {
         revoke_stmt(),
         rollback_stmt().map(From::from),
         savepoint_stmt().map(From::from),
-        security_stmt(),
+        security_label_stmt().map(From::from),
         set_stmt(),
         show_stmt().map(VariableShowStmt),
         start_transaction_stmt().map(From::from),
@@ -116,6 +116,7 @@ mod tests {
     #[test_case("reset time zone")]
     #[test_case("rollback to test_ident")]
     #[test_case("savepoint test_ident")]
+    #[test_case("security label for 'foo' on type int is 'bar'")]
     #[test_case("set schema 'abc123'")]
     #[test_case("show all")]
     #[test_case("start transaction read only, read write deferrable")]
@@ -169,7 +170,7 @@ use self::{
     revoke_stmt::revoke_stmt,
     rollback_stmt::rollback_stmt,
     savepoint_stmt::savepoint_stmt,
-    security_stmt::security_stmt,
+    security_label_stmt::security_label_stmt,
     set_stmt::set_stmt,
     show_stmt::show_stmt,
     start_transaction_stmt::start_transaction_stmt,
