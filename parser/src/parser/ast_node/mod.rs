@@ -155,6 +155,7 @@ pub enum AccessPrivilege {
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum PrivilegeDefaultsTarget {
     Functions,
+    LargeObjects,
     Schemas,
     Sequences,
     Tables,

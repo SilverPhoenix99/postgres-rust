@@ -102,6 +102,7 @@ fn def_acl_privilege_target() -> impl Combinator<Output = PrivilegeDefaultsTarge
         Kw::Sequences.map(|_| Sequences),
         Kw::Types.map(|_| Types),
         Kw::Schemas.map(|_| Schemas),
+        and(Kw::Large, Kw::Objects).map(|_| LargeObjects)
     }
 }
 
@@ -109,7 +110,6 @@ fn def_acl_privilege_target() -> impl Combinator<Output = PrivilegeDefaultsTarge
 mod tests {
     use super::*;
     use crate::parser::ast_node::AccessPrivilege;
-    use crate::parser::ast_node::AclOption::*;
     use crate::parser::ast_node::DropBehavior;
     use crate::parser::ast_node::PrivilegeDefaultsTarget;
     use crate::parser::ast_node::RoleSpec::*;
@@ -140,8 +140,8 @@ mod tests {
             parser = def_acl_option_list(),
             expected = vec![
                 AclOption::Schemas(vec!["my_schema".into()]),
-                Roles(vec![Public]),
-                Roles(vec![CurrentUser]),
+                AclOption::Roles(vec![Public]),
+                AclOption::Roles(vec![CurrentUser]),
             ]
         }
     }
@@ -164,7 +164,7 @@ mod tests {
         test_parser! {
             source = "for role public,current_role",
             parser = def_acl_option(),
-            expected = Roles(vec![Public, CurrentRole])
+            expected = AclOption::Roles(vec![Public, CurrentRole])
         }
     }
 
@@ -173,7 +173,7 @@ mod tests {
         test_parser! {
             source = "for user my_user,session_user",
             parser = def_acl_option(),
-            expected = Roles(vec![Name("my_user".into()), SessionUser])
+            expected = AclOption::Roles(vec![Name("my_user".into()), SessionUser])
         }
     }
 
@@ -235,12 +235,13 @@ mod tests {
         }
     }
 
-    #[test_case("tables", PrivilegeDefaultsTarget::Tables)]
-    #[test_case("functions", PrivilegeDefaultsTarget::Functions)]
-    #[test_case("sequences", PrivilegeDefaultsTarget::Sequences)]
-    #[test_case("routines", PrivilegeDefaultsTarget::Functions)]
-    #[test_case("types", PrivilegeDefaultsTarget::Types)]
-    #[test_case("schemas", PrivilegeDefaultsTarget::Schemas)]
+    #[test_case("functions", Functions)]
+    #[test_case("large objects", LargeObjects)]
+    #[test_case("routines", Functions)]
+    #[test_case("schemas", Schemas)]
+    #[test_case("sequences", Sequences)]
+    #[test_case("tables", Tables)]
+    #[test_case("types", Types)]
     fn test_def_acl_privilege_target(source: &str, expected: PrivilegeDefaultsTarget) {
         test_parser!(source, def_acl_privilege_target(), expected);
     }
@@ -266,10 +267,12 @@ use crate::parser::ast_node::AlterDefaultPrivilegesStmt;
 use crate::parser::ast_node::GrantStmt;
 use crate::parser::ast_node::PrivilegeDefaultsTarget;
 use crate::parser::ast_node::PrivilegeDefaultsTarget::Functions;
+use crate::parser::ast_node::PrivilegeDefaultsTarget::LargeObjects;
 use crate::parser::ast_node::PrivilegeDefaultsTarget::Schemas;
 use crate::parser::ast_node::PrivilegeDefaultsTarget::Sequences;
 use crate::parser::ast_node::PrivilegeDefaultsTarget::Tables;
 use crate::parser::ast_node::PrivilegeDefaultsTarget::Types;
+use crate::parser::combinators::foundation::and;
 use crate::parser::combinators::foundation::many;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::sequence;
