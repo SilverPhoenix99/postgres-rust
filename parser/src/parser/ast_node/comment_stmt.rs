@@ -58,10 +58,10 @@ pub enum CommentTarget {
     TextSearchDictionary(QualifiedName),
     TextSearchParser(QualifiedName),
     TextSearchTemplate(QualifiedName),
-    Transform { for_type: Type, language: Str },
+    Transform(Transform),
     Trigger { name: Str, table: QualifiedName },
     Type(Type),
-    Typecast { from_type: Type, to_type: Type },
+    Typecast(Typecast),
     View(QualifiedName),
 }
 
@@ -70,6 +70,8 @@ use crate::parser::ast_node::FunctionWithArgs;
 use crate::parser::ast_node::OperatorWithArgs;
 use crate::parser::ast_node::QualifiedName;
 use crate::parser::ast_node::SignedNumber;
+use crate::parser::ast_node::Transform;
 use crate::parser::ast_node::Type;
 use crate::parser::ast_node::TypeName;
+use crate::parser::ast_node::Typecast;
 use postgres_basics::Str;

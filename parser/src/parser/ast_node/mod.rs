@@ -46,6 +46,8 @@ mod set_rest_more;
 mod signed_number;
 mod system_type;
 mod transaction_stmt;
+mod transform;
+mod typecast;
 mod typecast_expr;
 mod unary_expr;
 mod unique_null_treatment;
@@ -114,6 +116,8 @@ pub use self::{
         TypeReference,
     },
     transaction_stmt::{IsolationLevel, TransactionMode, TransactionStmt},
+    transform::Transform,
+    typecast::Typecast,
     typecast_expr::TypecastExpr,
     unary_expr::UnaryExpr,
     unsigned_number::UnsignedNumber,
