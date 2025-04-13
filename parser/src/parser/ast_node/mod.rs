@@ -65,7 +65,7 @@ pub use self::{
     alter_object_schema_stmt::{AlterObjectSchemaStmt, AlterObjectSchemaTarget},
     alter_owner_stmt::{AlterOwnerStmt, AlterOwnerTarget},
     alter_role_set_stmt::AlterRoleSetStmt,
-    alter_role_stmt::{AlterRoleAction, AlterRoleOption, AlterRoleStmt},
+    alter_role_stmt::{AlterRoleOption, AlterRoleStmt},
     alter_system_stmt::AlterSystemStmt,
     alter_user_mapping_stmt::AlterUserMappingStmt,
     binary_expr::BinaryExpr,
@@ -127,6 +127,12 @@ pub(super) use unique_null_treatment::UniqueNullTreatment;
 
 pub type BinaryOperands = Box<(ExprNode, ExprNode)>;
 pub(super) type QualifiedName = Vec<Str>;
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum AddDrop {
+    Add,
+    Drop,
+}
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct RelationExpr {

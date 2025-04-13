@@ -28,7 +28,7 @@ pub(super) fn alter_user_stmt() -> impl Combinator<Output = RawStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::AlterRoleAction::Add;
+    use crate::parser::ast_node::AddDrop::Add;
     use crate::parser::ast_node::AlterRoleStmt;
     use crate::parser::ast_node::GenericOption;
     use crate::parser::ast_node::GenericOptionKind::Unspecified;
