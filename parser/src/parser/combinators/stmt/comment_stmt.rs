@@ -61,7 +61,7 @@ fn comment_target() -> impl Combinator<Output = CommentTarget> {
     match_first! {
         access_method().map(AccessMethod),
         aggregate().map(Aggregate),
-        typecast(),
+        typecast().map(Typecast),
         collation().map(Collation),
         column().map(Column),
         constraint(),
@@ -78,7 +78,11 @@ fn comment_target() -> impl Combinator<Output = CommentTarget> {
         index().map(Index),
         large_object().map(LargeObject),
         materialized_view().map(MaterializedView),
-        operator(),
+        operator().map(|op| match op {
+            Op::WithArgs(op) => Operator(op),
+            Op::Class { name, index_method } => OperatorClass { name, index_method },
+            Op::Family { name, index_method } => OperatorFamily { name, index_method },
+        }),
         language().map(Language),
         policy(),
         procedure().map(Procedure),
@@ -99,20 +103,11 @@ fn comment_target() -> impl Combinator<Output = CommentTarget> {
             TextSearch::Parser(name) => TextSearchParser(name),
             TextSearch::Template(name) => TextSearchTemplate(name),
         }),
-        transform(),
+        transform().map(Transform),
         trigger(),
         type_name().map(Type),
         view().map(View),
     }
-}
-
-fn typecast() -> impl Combinator<Output = CommentTarget> {
-    Cast.and_right(between_paren(
-        typename().and_then(
-            As.and_right(typename()),
-            |from_type, to_type| Typecast { from_type, to_type }
-        )
-    ))
 }
 
 fn constraint() -> impl Combinator<Output = CommentTarget> {
@@ -124,20 +119,6 @@ fn constraint() -> impl Combinator<Output = CommentTarget> {
             Kw::Domain.and_right(simple_typename()) => (domain) DomainConstraint { constraint, domain },
             any_name() => (table) TableConstraint { constraint, table },
         }))
-}
-
-fn operator() -> impl Combinator<Output = CommentTarget> {
-    Kw::Operator.and_right(match_first! {
-        and(
-            Class.and_right(any_name()),
-            Using.and_right(col_id())
-        ).map(|(name, index_method)| OperatorClass { name, index_method }),
-        and(
-            Family.and_right(any_name()),
-            Using.and_right(col_id())
-        ).map(|(name, index_method)| OperatorFamily { name, index_method }),
-        operator_with_argtypes().map(Operator)
-    })
 }
 
 fn policy() -> impl Combinator<Output = CommentTarget> {
@@ -155,15 +136,6 @@ fn rule() -> impl Combinator<Output = CommentTarget> {
         .and_then(
             On.and_right(any_name()),
             |name, table| Rule { name, table }
-        )
-}
-
-fn transform() -> impl Combinator<Output = CommentTarget> {
-    and(Kw::Transform, For)
-        .and_right(typename())
-        .and_then(
-            Kw::Language.and_right(col_id()),
-            |for_type, language| Transform { for_type, language }
         )
 }
 
@@ -197,7 +169,9 @@ mod tests {
         OperatorWithArgs,
         QualifiedOperator,
         SignedNumber::IntegerConst,
+        Transform as TransformAst,
         TypeName::{Int4, Varchar},
+        Typecast as Cast
     };
     use crate::parser::tests::test_parser;
     use test_case::test_case;
@@ -223,10 +197,10 @@ mod tests {
         ))
     )]
     #[test_case("cast (int as varchar)",
-        Typecast {
-            from_type: Int4.into(),
-            to_type: Varchar { max_length: None }.into()
-        }
+        Typecast(Cast::new(
+            Int4,
+            Varchar { max_length: None }
+        ))
     )]
     #[test_case("collation some_collation", Collation(vec!["some_collation".into()]))]
     #[test_case("column some_column", Column(vec!["some_column".into()]))]
@@ -309,12 +283,7 @@ mod tests {
     #[test_case("text search dictionary some_dictionary", TextSearchDictionary(vec!["some_dictionary".into()]))]
     #[test_case("text search parser some_parser", TextSearchParser(vec!["some_parser".into()]))]
     #[test_case("text search template some_template", TextSearchTemplate(vec!["some_template".into()]))]
-    #[test_case("transform for int language some_language",
-        Transform {
-            for_type: Int4.into(),
-            language: "some_language".into()
-        }
-    )]
+    #[test_case("transform for int language some_language", Transform(TransformAst::new(Int4, "some_language")))]
     #[test_case("trigger some_trigger on some_table",
         Trigger {
             name: "some_trigger".into(),
@@ -335,22 +304,14 @@ mod tests {
 }
 
 use crate::lexer::Keyword as Kw;
-use crate::lexer::Keyword::As;
-use crate::lexer::Keyword::Cast;
-use crate::lexer::Keyword::Class;
 use crate::lexer::Keyword::Comment;
-use crate::lexer::Keyword::Family;
-use crate::lexer::Keyword::For;
 use crate::lexer::Keyword::Is;
 use crate::lexer::Keyword::On;
-use crate::lexer::Keyword::Using;
 use crate::parser::ast_node::CommentStmt;
 use crate::parser::ast_node::CommentTarget;
 use crate::parser::ast_node::CommentTarget::*;
 use crate::parser::combinators::any_name;
-use crate::parser::combinators::between_paren;
 use crate::parser::combinators::col_id;
-use crate::parser::combinators::foundation::and;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::match_first_with_state;
 use crate::parser::combinators::foundation::Combinator;
@@ -371,7 +332,7 @@ use crate::parser::combinators::stmt::index;
 use crate::parser::combinators::stmt::language;
 use crate::parser::combinators::stmt::large_object;
 use crate::parser::combinators::stmt::materialized_view;
-use crate::parser::combinators::stmt::operator_with_argtypes;
+use crate::parser::combinators::stmt::operator;
 use crate::parser::combinators::stmt::procedure;
 use crate::parser::combinators::stmt::publication;
 use crate::parser::combinators::stmt::role;
@@ -384,9 +345,11 @@ use crate::parser::combinators::stmt::subscription;
 use crate::parser::combinators::stmt::table;
 use crate::parser::combinators::stmt::tablespace;
 use crate::parser::combinators::stmt::text_search;
+use crate::parser::combinators::stmt::transform;
 use crate::parser::combinators::stmt::type_name;
+use crate::parser::combinators::stmt::typecast;
 use crate::parser::combinators::stmt::view;
 use crate::parser::combinators::stmt::Foreign;
+use crate::parser::combinators::stmt::Operator as Op;
 use crate::parser::combinators::stmt::TextSearch;
 use crate::parser::combinators::string_or_null;
-use crate::parser::combinators::typename;

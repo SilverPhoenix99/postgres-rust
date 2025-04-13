@@ -39,6 +39,7 @@ mod lock_stmt;
 mod materialized_view;
 mod move_stmt;
 mod notify_stmt;
+mod operator;
 mod operator_with_argtypes;
 mod prepare_stmt;
 mod privilege_target;
@@ -66,8 +67,10 @@ mod subscription;
 mod table;
 mod tablespace;
 mod text_search;
+mod transform;
 mod truncate_stmt;
 mod type_name;
+mod typecast;
 mod unlisten_stmt;
 mod vacuum_stmt;
 mod variable_target;
@@ -205,6 +208,7 @@ use self::{
     materialized_view::materialized_view,
     move_stmt::move_stmt,
     notify_stmt::notify_stmt,
+    operator::{operator, Operator},
     operator_with_argtypes::{operator_with_argtypes, operator_with_argtypes_list},
     prepare_stmt::prepare_stmt,
     procedure::procedure,
@@ -230,8 +234,10 @@ use self::{
     table::table,
     tablespace::tablespace,
     text_search::{text_search, TextSearch},
+    transform::transform,
     truncate_stmt::truncate_stmt,
     type_name::type_name,
+    typecast::typecast,
     unlisten_stmt::unlisten_stmt,
     vacuum_stmt::vacuum_stmt,
     variable_target::variable_target,
