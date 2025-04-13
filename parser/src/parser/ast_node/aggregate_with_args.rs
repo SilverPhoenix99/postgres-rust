@@ -21,6 +21,10 @@ impl AggregateWithArgs {
     pub fn order_by(&self) -> &[FunctionParameter] {
         &self.order_by
     }
+
+    pub fn has_args_signature(&self) -> bool {
+        !self.args.is_empty() || !self.order_by.is_empty()
+    }
 }
 
 use crate::parser::ast_node::FunctionParameter;

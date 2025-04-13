@@ -1,3 +1,4 @@
+mod alter_aggregate_stmt;
 mod alter_collation_stmt;
 mod alter_conversion_stmt;
 mod alter_database_stmt;
@@ -14,6 +15,7 @@ mod set_reset_clause;
 pub(super) fn alter_stmt() -> impl Combinator<Output = RawStmt> {
 
     Alter.and_right(match_first! {
+        alter_aggregate_stmt(),
         alter_collation_stmt(),
         alter_conversion_stmt(),
         alter_database_stmt(),
@@ -34,6 +36,7 @@ mod tests {
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 
+    #[test_case("alter aggregate aggregate_name(*) owner to current_user")]
     #[test_case("alter collation some_name refresh version")]
     #[test_case("alter conversion some_conversion rename to new_conversion")]
     #[test_case("alter database the_db refresh collation version")]
@@ -58,6 +61,7 @@ mod tests {
 }
 
 use self::{
+    alter_aggregate_stmt::alter_aggregate_stmt,
     alter_collation_stmt::alter_collation_stmt,
     alter_conversion_stmt::alter_conversion_stmt,
     alter_database_stmt::alter_database_stmt,
