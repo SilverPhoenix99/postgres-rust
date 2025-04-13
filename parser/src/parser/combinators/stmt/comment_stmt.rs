@@ -59,55 +59,51 @@ fn comment_target() -> impl Combinator<Output = CommentTarget> {
     */
 
     match_first! {
-        access_method(),
-        aggregate(),
+        access_method().map(AccessMethod),
+        aggregate().map(Aggregate),
         typecast(),
-        collation(),
-        column(),
+        collation().map(Collation),
+        column().map(Column),
         constraint(),
-        conversion(),
-        database(),
-        domain(),
-        event_trigger(),
-        extension(),
-        foreign(),
-        function(),
-        index(),
-        large_object(),
-        materialized_view(),
+        conversion().map(Conversion),
+        database().map(Database),
+        domain().map(Domain),
+        event_trigger().map(EventTrigger),
+        extension().map(Extension),
+        foreign().map(|foreign| match foreign {
+            Foreign::DataWrapper(name) => ForeignDataWrapper(name),
+            Foreign::Table(name) => ForeignTable(name),
+        }),
+        function().map(Function),
+        index().map(Index),
+        large_object().map(LargeObject),
+        materialized_view().map(MaterializedView),
         operator(),
-        language(),
+        language().map(Language),
         policy(),
-        procedure(),
-        publication(),
-        role(),
-        routine(),
+        procedure().map(Procedure),
+        publication().map(Publication),
+        role().map(Role),
+        routine().map(Routine),
         rule(),
-        schema(),
-        sequence(),
-        foreign_server(),
-        extended_statistics(),
-        subscription(),
-        table(),
-        tablespace(),
-        text_search(),
+        schema().map(Schema),
+        sequence().map(Sequence),
+        server().map(ForeignServer),
+        statistics().map(ExtendedStatistics),
+        subscription().map(Subscription),
+        table().map(Table),
+        tablespace().map(Tablespace),
+        text_search().map(|text_search| match text_search {
+            TextSearch::Configuration(name) => TextSearchConfiguration(name),
+            TextSearch::Dictionary(name) => TextSearchDictionary(name),
+            TextSearch::Parser(name) => TextSearchParser(name),
+            TextSearch::Template(name) => TextSearchTemplate(name),
+        }),
         transform(),
         trigger(),
-        type_(),
-        view()
+        type_name().map(Type),
+        view().map(View),
     }
-}
-
-fn access_method() -> impl Combinator<Output = CommentTarget> {
-    and(Access, Method)
-        .and_right(col_id())
-        .map(AccessMethod)
-}
-
-fn aggregate() -> impl Combinator<Output = CommentTarget> {
-    Kw::Aggregate
-        .and_right(aggregate_with_argtypes())
-        .map(Aggregate)
 }
 
 fn typecast() -> impl Combinator<Output = CommentTarget> {
@@ -119,18 +115,6 @@ fn typecast() -> impl Combinator<Output = CommentTarget> {
     ))
 }
 
-fn collation() -> impl Combinator<Output = CommentTarget> {
-    Kw::Collation
-        .and_right(any_name())
-        .map(Collation)
-}
-
-fn column() -> impl Combinator<Output = CommentTarget> {
-    Kw::Column
-        .and_right(any_name())
-        .map(Column)
-}
-
 fn constraint() -> impl Combinator<Output = CommentTarget> {
     Kw::Constraint
         .and_right(col_id())
@@ -140,71 +124,6 @@ fn constraint() -> impl Combinator<Output = CommentTarget> {
             Kw::Domain.and_right(simple_typename()) => (domain) DomainConstraint { constraint, domain },
             any_name() => (table) TableConstraint { constraint, table },
         }))
-}
-
-fn conversion() -> impl Combinator<Output = CommentTarget> {
-    Kw::Conversion
-        .and_right(any_name())
-        .map(Conversion)
-}
-
-fn database() -> impl Combinator<Output = CommentTarget> {
-    Kw::Database
-        .and_right(col_id())
-        .map(Database)
-}
-
-fn domain() -> impl Combinator<Output = CommentTarget> {
-    Kw::Domain
-        .and_right(typename())
-        .map(Domain)
-}
-
-fn event_trigger() -> impl Combinator<Output = CommentTarget> {
-    and(Event, Kw::Trigger)
-        .and_right(col_id())
-        .map(EventTrigger)
-}
-
-fn extension() -> impl Combinator<Output = CommentTarget> {
-    Kw::Extension
-        .and_right(col_id())
-        .map(Extension)
-}
-
-fn foreign() -> impl Combinator<Output = CommentTarget> {
-    Foreign.and_right(or(
-        and(Data, Wrapper)
-            .and_right(col_id())
-            .map(ForeignDataWrapper),
-        Kw::Table
-            .and_right(any_name())
-            .map(ForeignTable)
-    ))
-}
-
-fn function() -> impl Combinator<Output = CommentTarget> {
-    Kw::Function
-        .and_right(function_with_argtypes())
-        .map(Function)
-}
-
-fn index() -> impl Combinator<Output = CommentTarget> {
-    Kw::Index
-        .and_right(any_name())
-        .map(Index)
-}
-
-fn large_object() -> impl Combinator<Output = CommentTarget> {
-    and(Large, Object)
-        .and_right(signed_number())
-        .map(LargeObject)
-}
-
-fn materialized_view() -> impl Combinator<Output = CommentTarget> {
-    and(Materialized, Kw::View)
-        .and_right(any_name())
-        .map(MaterializedView)
 }
 
 fn operator() -> impl Combinator<Output = CommentTarget> {
@@ -221,15 +140,6 @@ fn operator() -> impl Combinator<Output = CommentTarget> {
     })
 }
 
-fn language() -> impl Combinator<Output = CommentTarget> {
-    or(
-        Kw::Language.skip(),
-        and(Procedural, Kw::Language).skip()
-    )
-        .and_right(col_id())
-        .map(Language)
-}
-
 fn policy() -> impl Combinator<Output = CommentTarget> {
     Kw::Policy
         .and_right(col_id())
@@ -239,30 +149,6 @@ fn policy() -> impl Combinator<Output = CommentTarget> {
         )
 }
 
-fn procedure() -> impl Combinator<Output = CommentTarget> {
-    Kw::Procedure
-        .and_right(function_with_argtypes())
-        .map(Procedure)
-}
-
-fn publication() -> impl Combinator<Output = CommentTarget> {
-    Kw::Publication
-        .and_right(col_id())
-        .map(Publication)
-}
-
-fn role() -> impl Combinator<Output = CommentTarget> {
-    Kw::Role
-        .and_right(col_id())
-        .map(Role)
-}
-
-fn routine() -> impl Combinator<Output = CommentTarget> {
-    Kw::Routine
-        .and_right(function_with_argtypes())
-        .map(Routine)
-}
-
 fn rule() -> impl Combinator<Output = CommentTarget> {
     Kw::Rule
         .and_right(col_id())
@@ -270,66 +156,6 @@ fn rule() -> impl Combinator<Output = CommentTarget> {
             On.and_right(any_name()),
             |name, table| Rule { name, table }
         )
-}
-
-fn schema() -> impl Combinator<Output = CommentTarget> {
-    Kw::Schema
-        .and_right(col_id())
-        .map(Schema)
-}
-
-fn sequence() -> impl Combinator<Output = CommentTarget> {
-    Kw::Sequence
-        .and_right(any_name())
-        .map(Sequence)
-}
-
-fn foreign_server() -> impl Combinator<Output = CommentTarget> {
-    Server
-        .and_right(col_id())
-        .map(ForeignServer)
-}
-
-fn extended_statistics() -> impl Combinator<Output = CommentTarget> {
-    Statistics
-        .and_right(any_name())
-        .map(ExtendedStatistics)
-}
-
-fn subscription() -> impl Combinator<Output = CommentTarget> {
-    Kw::Subscription
-        .and_right(col_id())
-        .map(Subscription)
-}
-
-fn table() -> impl Combinator<Output = CommentTarget> + Sized {
-    Kw::Table
-        .and_right(any_name())
-        .map(Table)
-}
-
-fn tablespace() -> impl Combinator<Output = CommentTarget> + Sized {
-    Kw::Tablespace
-        .and_right(col_id())
-        .map(Tablespace)
-}
-
-fn text_search() -> impl Combinator<Output = CommentTarget> {
-    and(Text, Search)
-        .and_right(match_first! {
-            Configuration
-                .and_right(any_name())
-                .map(TextSearchConfiguration),
-            Dictionary
-                .and_right(any_name())
-                .map(TextSearchDictionary),
-            ParserKw
-                .and_right(any_name())
-                .map(TextSearchParser),
-            Template
-                .and_right(any_name())
-                .map(TextSearchTemplate)
-        })
 }
 
 fn transform() -> impl Combinator<Output = CommentTarget> {
@@ -348,18 +174,6 @@ fn trigger() -> impl Combinator<Output = CommentTarget> {
             On.and_right(any_name()),
             |name, table| Trigger { name, table }
         )
-}
-
-fn type_() -> impl Combinator<Output = CommentTarget> {
-    Kw::Type
-        .and_right(typename())
-        .map(Type)
-}
-
-fn view() -> impl Combinator<Output = CommentTarget> {
-    Kw::View
-        .and_right(any_name())
-        .map(View)
 }
 
 fn comment_text() -> impl Combinator<Output = Option<Box<str>>> {
@@ -521,33 +335,15 @@ mod tests {
 }
 
 use crate::lexer::Keyword as Kw;
-use crate::lexer::Keyword::Access;
 use crate::lexer::Keyword::As;
 use crate::lexer::Keyword::Cast;
 use crate::lexer::Keyword::Class;
 use crate::lexer::Keyword::Comment;
-use crate::lexer::Keyword::Configuration;
-use crate::lexer::Keyword::Data;
-use crate::lexer::Keyword::Dictionary;
-use crate::lexer::Keyword::Event;
 use crate::lexer::Keyword::Family;
 use crate::lexer::Keyword::For;
-use crate::lexer::Keyword::Foreign;
 use crate::lexer::Keyword::Is;
-use crate::lexer::Keyword::Large;
-use crate::lexer::Keyword::Materialized;
-use crate::lexer::Keyword::Method;
-use crate::lexer::Keyword::Object;
 use crate::lexer::Keyword::On;
-use crate::lexer::Keyword::ParserKw;
-use crate::lexer::Keyword::Procedural;
-use crate::lexer::Keyword::Search;
-use crate::lexer::Keyword::Server;
-use crate::lexer::Keyword::Statistics;
-use crate::lexer::Keyword::Template;
-use crate::lexer::Keyword::Text;
 use crate::lexer::Keyword::Using;
-use crate::lexer::Keyword::Wrapper;
 use crate::parser::ast_node::CommentStmt;
 use crate::parser::ast_node::CommentTarget;
 use crate::parser::ast_node::CommentTarget::*;
@@ -557,13 +353,40 @@ use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::and;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::match_first_with_state;
-use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
-use crate::parser::combinators::function_with_argtypes;
-use crate::parser::combinators::signed_number;
 use crate::parser::combinators::simple_typename;
-use crate::parser::combinators::stmt::aggregate_with_argtypes;
+use crate::parser::combinators::stmt::access_method;
+use crate::parser::combinators::stmt::aggregate;
+use crate::parser::combinators::stmt::collation;
+use crate::parser::combinators::stmt::column;
+use crate::parser::combinators::stmt::conversion;
+use crate::parser::combinators::stmt::database;
+use crate::parser::combinators::stmt::domain;
+use crate::parser::combinators::stmt::event_trigger;
+use crate::parser::combinators::stmt::extension;
+use crate::parser::combinators::stmt::foreign;
+use crate::parser::combinators::stmt::function;
+use crate::parser::combinators::stmt::index;
+use crate::parser::combinators::stmt::language;
+use crate::parser::combinators::stmt::large_object;
+use crate::parser::combinators::stmt::materialized_view;
 use crate::parser::combinators::stmt::operator_with_argtypes;
+use crate::parser::combinators::stmt::procedure;
+use crate::parser::combinators::stmt::publication;
+use crate::parser::combinators::stmt::role;
+use crate::parser::combinators::stmt::routine;
+use crate::parser::combinators::stmt::schema;
+use crate::parser::combinators::stmt::sequence;
+use crate::parser::combinators::stmt::server;
+use crate::parser::combinators::stmt::statistics;
+use crate::parser::combinators::stmt::subscription;
+use crate::parser::combinators::stmt::table;
+use crate::parser::combinators::stmt::tablespace;
+use crate::parser::combinators::stmt::text_search;
+use crate::parser::combinators::stmt::type_name;
+use crate::parser::combinators::stmt::view;
+use crate::parser::combinators::stmt::Foreign;
+use crate::parser::combinators::stmt::TextSearch;
 use crate::parser::combinators::string_or_null;
 use crate::parser::combinators::typename;

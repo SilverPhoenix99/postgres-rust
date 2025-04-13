@@ -1,4 +1,6 @@
 mod abort_stmt;
+mod access_method;
+mod aggregate;
 mod aggregate_with_argtypes;
 mod alter_stmt;
 mod analyze_stmt;
@@ -7,42 +9,69 @@ mod begin_stmt;
 mod call_stmt;
 mod close_stmt;
 mod cluster_stmt;
+mod collation;
+mod column;
 mod comment_stmt;
 mod commit_stmt;
+mod conversion;
 mod copy_stmt;
 mod create_stmt;
+mod database;
 mod deallocate_stmt;
 mod discard_stmt;
 mod do_stmt;
+mod domain;
 mod drop_stmt;
 mod end_stmt;
+mod event_trigger;
 mod explain_stmt;
+mod extension;
 mod fetch_stmt;
+mod foreign;
+mod function;
 mod import_stmt;
+mod index;
+mod language;
+mod large_object;
 mod listen_stmt;
 mod load_stmt;
 mod lock_stmt;
+mod materialized_view;
 mod move_stmt;
 mod notify_stmt;
 mod operator_with_argtypes;
 mod prepare_stmt;
 mod privilege_target;
+mod procedure;
+mod publication;
 mod reassign_owner_stmt;
 mod reindex_stmt;
 mod release_savepoint_stmt;
 mod reset_stmt;
 mod revoke_stmt;
+mod role;
 mod rollback_stmt;
+mod routine;
 mod savepoint_stmt;
+mod schema;
 mod security_label_stmt;
+mod sequence;
+mod server;
 mod set_rest;
 mod set_stmt;
 mod show_stmt;
 mod start_transaction_stmt;
+mod statistics;
+mod subscription;
+mod table;
+mod tablespace;
+mod text_search;
 mod truncate_stmt;
+mod type_name;
 mod unlisten_stmt;
 mod vacuum_stmt;
 mod variable_target;
+mod view;
 
 pub(in crate::parser::combinators) use self::begin_stmt::begin_stmt;
 pub(in crate::parser::combinators) use self::end_stmt::end_stmt;
@@ -137,6 +166,8 @@ mod tests {
 #[allow(unused_imports)] // TODO: eventually remove
 use self::{
     abort_stmt::abort_stmt,
+    access_method::access_method,
+    aggregate::aggregate,
     aggregate_with_argtypes::{aggr_args, aggregate_with_argtypes, aggregate_with_argtypes_list},
     alter_stmt::alter_stmt,
     analyze_stmt::analyze_stmt,
@@ -144,40 +175,67 @@ use self::{
     call_stmt::call_stmt,
     close_stmt::close_stmt,
     cluster_stmt::cluster_stmt,
+    collation::collation,
+    column::column,
     comment_stmt::comment_stmt,
     commit_stmt::commit_stmt,
+    conversion::conversion,
     copy_stmt::copy_stmt,
     create_stmt::create_stmt,
     create_stmt::createdb_opt_value,
+    database::database,
     deallocate_stmt::deallocate_stmt,
     discard_stmt::discard_stmt,
     do_stmt::do_stmt,
+    domain::domain,
     drop_stmt::drop_stmt,
+    event_trigger::event_trigger,
     explain_stmt::explain_stmt,
+    extension::extension,
     fetch_stmt::fetch_stmt,
+    foreign::{foreign, Foreign},
+    function::function,
     import_stmt::import_stmt,
+    index::index,
+    language::language,
+    large_object::large_object,
     listen_stmt::listen_stmt,
     load_stmt::load_stmt,
     lock_stmt::lock_stmt,
+    materialized_view::materialized_view,
     move_stmt::move_stmt,
     notify_stmt::notify_stmt,
     operator_with_argtypes::{operator_with_argtypes, operator_with_argtypes_list},
     prepare_stmt::prepare_stmt,
+    procedure::procedure,
+    publication::publication,
     reassign_owner_stmt::reassign_owned_stmt,
     reindex_stmt::reindex_stmt,
     release_savepoint_stmt::release_savepoint_stmt,
     reset_stmt::reset_stmt,
     revoke_stmt::revoke_stmt,
+    role::role,
     rollback_stmt::rollback_stmt,
+    routine::routine,
     savepoint_stmt::savepoint_stmt,
+    schema::schema,
     security_label_stmt::security_label_stmt,
+    sequence::sequence,
+    server::server,
     set_stmt::set_stmt,
     show_stmt::show_stmt,
     start_transaction_stmt::start_transaction_stmt,
+    statistics::statistics,
+    subscription::subscription,
+    table::table,
+    tablespace::tablespace,
+    text_search::{text_search, TextSearch},
     truncate_stmt::truncate_stmt,
+    type_name::type_name,
     unlisten_stmt::unlisten_stmt,
     vacuum_stmt::vacuum_stmt,
     variable_target::variable_target,
+    view::view,
 };
 use crate::lexer::Keyword::Checkpoint;
 use crate::parser::ast_node::RawStmt;
