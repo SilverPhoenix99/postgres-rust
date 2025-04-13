@@ -185,7 +185,7 @@ use crate::lexer::Keyword::All;
 use crate::lexer::Keyword::Rename;
 use crate::lexer::Keyword::To;
 use crate::lexer::Keyword::With;
-use crate::parser::ast_node::AlterRoleAction::Add;
+use crate::parser::ast_node::AddDrop::Add;
 use crate::parser::ast_node::AlterRoleSetStmt;
 use crate::parser::ast_node::AlterRoleStmt;
 use crate::parser::ast_node::OneOrAll;

@@ -19,8 +19,8 @@ pub(super) fn alter_group_stmt() -> impl Combinator<Output = RawStmt> {
             {
                 sequence!(
                     or(
-                        Add.map(|_| AlterRoleAction::Add),
-                        DropKw.map(|_| AlterRoleAction::Remove),
+                        Add.map(|_| AddDrop::Add),
+                        DropKw.map(|_| AddDrop::Drop),
                     ),
                     User.skip(),
                     role_list()
@@ -59,7 +59,7 @@ mod tests {
 
         let expected = AlterRoleStmt::new(
             RoleSpec::Name("some_group".into()),
-            AlterRoleAction::Add,
+            AddDrop::Add,
             vec![RoleMembers(vec![
                 RoleSpec::CurrentRole,
                 RoleSpec::Name("new_user".into())
@@ -76,7 +76,7 @@ mod tests {
 
         let expected = AlterRoleStmt::new(
             RoleSpec::Name("some_group".into()),
-            AlterRoleAction::Remove,
+            AddDrop::Drop,
             vec![RoleMembers(vec![
                 RoleSpec::SessionUser,
                 RoleSpec::Public
@@ -93,7 +93,7 @@ use crate::lexer::Keyword::Group;
 use crate::lexer::Keyword::Rename;
 use crate::lexer::Keyword::To;
 use crate::lexer::Keyword::User;
-use crate::parser::ast_node::AlterRoleAction;
+use crate::parser::ast_node::AddDrop;
 use crate::parser::ast_node::AlterRoleOption::RoleMembers;
 use crate::parser::ast_node::AlterRoleStmt;
 use crate::parser::ast_node::RawStmt;

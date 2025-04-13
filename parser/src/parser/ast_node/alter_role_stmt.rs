@@ -1,9 +1,3 @@
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum AlterRoleAction {
-    Add,
-    Remove,
-}
-
 /// Alias: `AlterOptRoleElem`
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AlterRoleOption {
@@ -23,13 +17,13 @@ pub enum AlterRoleOption {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct AlterRoleStmt {
     role: RoleSpec,
-    action: AlterRoleAction,
+    action: AddDrop,
     options: Vec<AlterRoleOption>,
 }
 
 impl AlterRoleStmt {
     #[inline(always)]
-    pub fn new(role: RoleSpec, action: AlterRoleAction, options: Vec<AlterRoleOption>) -> Self {
+    pub fn new(role: RoleSpec, action: AddDrop, options: Vec<AlterRoleOption>) -> Self {
         Self { role, action, options }
     }
 
@@ -39,7 +33,7 @@ impl AlterRoleStmt {
     }
 
     #[inline(always)]
-    pub fn action(&self) -> AlterRoleAction {
+    pub fn action(&self) -> AddDrop {
         self.action
     }
 
@@ -50,13 +44,14 @@ impl AlterRoleStmt {
 
     #[inline(always)]
     pub fn add(&self) -> bool {
-        self.action == AlterRoleAction::Add
+        self.action == AddDrop::Add
     }
 
     #[inline(always)]
     pub fn remove(&self) -> bool {
-        self.action == AlterRoleAction::Remove
+        self.action == AddDrop::Drop
     }
 }
 
+use crate::parser::ast_node::AddDrop;
 use crate::parser::ast_node::RoleSpec;
