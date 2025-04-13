@@ -64,230 +64,44 @@ fn label_target() -> impl Combinator<Output = SecurityLabelTarget> {
     */
 
     match_first! {
-        access_method(),
-        aggregate(),
-        collation(),
-        column(),
-        conversion(),
-        database(),
-        domain(),
-        event_trigger(),
-        extension(),
-        foreign(),
-        function(),
-        index(),
-        large_object(),
-        materialized_view(),
-        language(),
-        procedure(),
-        publication(),
-        role(),
-        routine(),
-        schema(),
-        sequence(),
-        server(),
-        statistics(),
-        subscription(),
-        table(),
-        tablespace(),
-        text_search(),
-        type_(),
-        view(),
+        access_method().map(AccessMethod),
+        aggregate().map(Aggregate),
+        collation().map(Collation),
+        column().map(Column),
+        conversion().map(Conversion),
+        database().map(Database),
+        domain().map(Domain),
+        event_trigger().map(EventTrigger),
+        extension().map(Extension),
+        foreign().map(|foreign| match foreign {
+            Foreign::DataWrapper(name) => ForeignDataWrapper(name),
+            Foreign::Table(name) => ForeignTable(name),
+        }),
+        function().map(Function),
+        index().map(Index),
+        large_object().map(LargeObject),
+        materialized_view().map(MaterializedView),
+        language().map(Language),
+        procedure().map(Procedure),
+        publication().map(Publication),
+        role().map(Role),
+        routine().map(Routine),
+        schema().map(Schema),
+        sequence().map(Sequence),
+        server().map(ForeignServer),
+        statistics().map(ExtendedStatistics),
+        subscription().map(Subscription),
+        table().map(Table),
+        tablespace().map(Tablespace),
+        text_search().map(|text_search| match text_search {
+            TextSearch::Configuration(name) => TextSearchConfiguration(name),
+            TextSearch::Dictionary(name) => TextSearchDictionary(name),
+            TextSearch::Parser(name) => TextSearchParser(name),
+            TextSearch::Template(name) => TextSearchTemplate(name),
+        }),
+        type_name().map(Type),
+        view().map(View),
     }
-}
-
-fn access_method() -> impl Combinator<Output = SecurityLabelTarget> {
-    and(Access, Method)
-        .and_right(col_id())
-        .map(AccessMethod)
-}
-
-fn aggregate() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Aggregate
-        .and_right(aggregate_with_argtypes())
-        .map(Aggregate)
-}
-
-fn collation() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Collation
-        .and_right(any_name())
-        .map(Collation)
-}
-
-fn column() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Column
-        .and_right(any_name())
-        .map(Column)
-}
-
-fn conversion() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Conversion
-        .and_right(any_name())
-        .map(Conversion)
-}
-
-fn database() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Database
-        .and_right(col_id())
-        .map(Database)
-}
-
-fn domain() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Domain
-        .and_right(typename())
-        .map(Domain)
-}
-
-fn event_trigger() -> impl Combinator<Output = SecurityLabelTarget> {
-    and(Event, Kw::Trigger)
-        .and_right(col_id())
-        .map(EventTrigger)
-}
-
-fn extension() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Extension
-        .and_right(col_id())
-        .map(Extension)
-}
-
-fn foreign() -> impl Combinator<Output = SecurityLabelTarget> {
-    Foreign.and_right(or(
-        and(Data, Wrapper)
-            .and_right(col_id())
-            .map(ForeignDataWrapper),
-        Kw::Table
-            .and_right(any_name())
-            .map(ForeignTable)
-    ))
-}
-
-fn function() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Function
-        .and_right(function_with_argtypes())
-        .map(Function)
-}
-
-fn index() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Index
-        .and_right(any_name())
-        .map(Index)
-}
-
-fn large_object() -> impl Combinator<Output = SecurityLabelTarget> {
-    and(Large, Object)
-        .and_right(signed_number())
-        .map(LargeObject)
-}
-
-fn materialized_view() -> impl Combinator<Output = SecurityLabelTarget> {
-    and(Kw::Materialized, Kw::View)
-        .and_right(any_name())
-        .map(MaterializedView)
-}
-
-fn language() -> impl Combinator<Output = SecurityLabelTarget> {
-    or(
-        Kw::Language.skip(),
-        and(Procedural, Kw::Language).skip()
-    )
-        .and_right(col_id())
-        .map(Language)
-}
-
-fn procedure() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Procedure
-        .and_right(function_with_argtypes())
-        .map(Procedure)
-}
-
-fn publication() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Publication
-        .and_right(col_id())
-        .map(Publication)
-}
-
-fn role() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Role
-        .and_right(col_id())
-        .map(Role)
-}
-
-fn routine() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Routine
-        .and_right(function_with_argtypes())
-        .map(Routine)
-}
-
-fn schema() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Schema
-        .and_right(col_id())
-        .map(Schema)
-}
-
-fn sequence() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Sequence
-        .and_right(any_name())
-        .map(Sequence)
-}
-
-fn server() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Server
-        .and_right(col_id())
-        .map(ForeignServer)
-}
-
-fn statistics() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Statistics
-        .and_right(any_name())
-        .map(ExtendedStatistics)
-}
-
-fn subscription() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Subscription
-        .and_right(col_id())
-        .map(Subscription)
-}
-
-fn table() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Table
-        .and_right(any_name())
-        .map(Table)
-}
-
-fn tablespace() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Tablespace
-        .and_right(col_id())
-        .map(Tablespace)
-}
-
-fn text_search() -> impl Combinator<Output = SecurityLabelTarget> {
-    and(Text, Search)
-        .and_right(match_first! {
-            Configuration
-                .and_right(any_name())
-                .map(TextSearchConfiguration),
-            Dictionary
-                .and_right(any_name())
-                .map(TextSearchDictionary),
-            ParserKw
-                .and_right(any_name())
-                .map(TextSearchParser),
-            Template
-                .and_right(any_name())
-                .map(TextSearchTemplate)
-        })
-}
-
-fn type_() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::Type
-        .and_right(typename())
-        .map(Type)
-}
-
-fn view() -> impl Combinator<Output = SecurityLabelTarget> {
-    Kw::View
-        .and_right(any_name())
-        .map(View)
 }
 
 fn security_label() -> impl Combinator<Output = Option<Box<str>>> {
@@ -391,42 +205,49 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword as Kw;
-use crate::lexer::Keyword::Access;
-use crate::lexer::Keyword::Configuration;
-use crate::lexer::Keyword::Data;
-use crate::lexer::Keyword::Dictionary;
-use crate::lexer::Keyword::Event;
 use crate::lexer::Keyword::For;
-use crate::lexer::Keyword::Foreign;
 use crate::lexer::Keyword::Is;
 use crate::lexer::Keyword::Label;
-use crate::lexer::Keyword::Large;
-use crate::lexer::Keyword::Method;
-use crate::lexer::Keyword::Object;
 use crate::lexer::Keyword::On;
-use crate::lexer::Keyword::ParserKw;
-use crate::lexer::Keyword::Procedural;
-use crate::lexer::Keyword::Search;
 use crate::lexer::Keyword::Security;
-use crate::lexer::Keyword::Template;
-use crate::lexer::Keyword::Text;
-use crate::lexer::Keyword::Wrapper;
 use crate::parser::ast_node::SecurityLabelStmt;
 use crate::parser::ast_node::SecurityLabelTarget;
 use crate::parser::ast_node::SecurityLabelTarget::*;
-use crate::parser::combinators::any_name;
-use crate::parser::combinators::col_id;
-use crate::parser::combinators::foundation::and;
 use crate::parser::combinators::foundation::match_first;
-use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
-use crate::parser::combinators::function_with_argtypes;
 use crate::parser::combinators::non_reserved_word_or_sconst;
-use crate::parser::combinators::signed_number;
-use crate::parser::combinators::stmt::aggregate_with_argtypes;
+use crate::parser::combinators::stmt::access_method;
+use crate::parser::combinators::stmt::aggregate;
+use crate::parser::combinators::stmt::collation;
+use crate::parser::combinators::stmt::column;
+use crate::parser::combinators::stmt::conversion;
+use crate::parser::combinators::stmt::database;
+use crate::parser::combinators::stmt::domain;
+use crate::parser::combinators::stmt::event_trigger;
+use crate::parser::combinators::stmt::extension;
+use crate::parser::combinators::stmt::foreign;
+use crate::parser::combinators::stmt::function;
+use crate::parser::combinators::stmt::index;
+use crate::parser::combinators::stmt::language;
+use crate::parser::combinators::stmt::large_object;
+use crate::parser::combinators::stmt::materialized_view;
+use crate::parser::combinators::stmt::procedure;
+use crate::parser::combinators::stmt::publication;
+use crate::parser::combinators::stmt::role;
+use crate::parser::combinators::stmt::routine;
+use crate::parser::combinators::stmt::schema;
+use crate::parser::combinators::stmt::sequence;
+use crate::parser::combinators::stmt::server;
+use crate::parser::combinators::stmt::statistics;
+use crate::parser::combinators::stmt::subscription;
+use crate::parser::combinators::stmt::table;
+use crate::parser::combinators::stmt::tablespace;
+use crate::parser::combinators::stmt::text_search;
+use crate::parser::combinators::stmt::type_name;
+use crate::parser::combinators::stmt::view;
+use crate::parser::combinators::stmt::Foreign;
+use crate::parser::combinators::stmt::TextSearch;
 use crate::parser::combinators::string_or_null;
-use crate::parser::combinators::typename;
 use postgres_basics::Str;
