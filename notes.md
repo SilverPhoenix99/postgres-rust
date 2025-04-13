@@ -7,6 +7,13 @@
   * Ref: https://doc.rust-lang.org/beta/unstable-book/language-features/rustc-attrs.html
 
 # TO DO
+* Change `ParserResult.result` to be `Vec<ParseResult<RawStmt>>`.
+  * Introduce a fail fast (compile time) flag.
+  * In debug mode: fail fast == false, and returns all errors until EOF.
+  * In release mode: fail fast == true, and returns the first error as the last element of the `Vec`.
+  * Optional: Move `warnings` into `ParserResult`.
+    * E.g.: `Vec<(ParseResult<RawStmt>, Vec<ParserWarningKind>)>`.
+    * `struct { result: ParseResult<RawStmt>, warnings: Vec<ParserWarningKind> }`.
 * Wrap `ParserWarningKind` in a `LocatedErrorReport`.
 * Merge `Parser.move_stmt` into `Parser.fetch_stmt`
 * Test `NumericSpec`.
