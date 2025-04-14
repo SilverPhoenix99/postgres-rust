@@ -4,6 +4,7 @@ mod alter_conversion_stmt;
 mod alter_database_stmt;
 mod alter_default_privileges_stmt;
 mod alter_event_trigger_stmt;
+mod alter_extension_stmt;
 mod alter_generic_option;
 mod alter_group_stmt;
 mod alter_language_stmt;
@@ -21,6 +22,7 @@ pub(super) fn alter_stmt() -> impl Combinator<Output = RawStmt> {
         alter_database_stmt(),
         alter_default_privileges_stmt().map(From::from),
         alter_event_trigger_stmt(),
+        alter_extension_stmt(),
         alter_group_stmt(),
         alter_language_stmt(),
         alter_large_object_stmt(),
@@ -42,6 +44,7 @@ mod tests {
     #[test_case("alter database the_db refresh collation version")]
     #[test_case("alter default privileges in schema some_schema grant all on tables to public")]
     #[test_case("alter event trigger some_trigger owner to current_user")]
+    #[test_case("alter extension foo set schema some_schema")]
     #[test_case("alter group some_group rename to new_group_name")]
     #[test_case("alter language lang owner to session_user")]
     #[test_case("alter large object -127 owner to public")]
@@ -67,6 +70,7 @@ use self::{
     alter_database_stmt::alter_database_stmt,
     alter_default_privileges_stmt::alter_default_privileges_stmt,
     alter_event_trigger_stmt::alter_event_trigger_stmt,
+    alter_extension_stmt::alter_extension_stmt,
     alter_generic_option::alter_generic_options,
     alter_group_stmt::alter_group_stmt,
     alter_language_stmt::alter_language_stmt,
