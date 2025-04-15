@@ -31,6 +31,7 @@ mod extension;
 mod fetch_stmt;
 mod foreign;
 mod function;
+mod if_not_exists;
 mod import_stmt;
 mod index;
 mod language;
@@ -202,6 +203,7 @@ use self::{
     fetch_stmt::fetch_stmt,
     foreign::{foreign, Foreign},
     function::function,
+    if_not_exists::if_not_exists,
     import_stmt::import_stmt,
     index::index,
     language::language,
