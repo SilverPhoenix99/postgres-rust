@@ -1,3 +1,11 @@
+/// Alias: `generic_option_list`
+///
+/// Post-condition: Vec is **Not** empty
+pub(super) fn generic_options() -> impl Combinator<Output = Vec<GenericOption>> {
+
+    many_sep(Comma, generic_option())
+}
+
 /// Alias: `generic_option_elem`
 pub(super) fn generic_option() -> impl Combinator<Output = GenericOption> {
 
@@ -8,8 +16,20 @@ pub(super) fn generic_option() -> impl Combinator<Output = GenericOption> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::tests::{test_parser, DEFAULT_CONFIG};
     use crate::parser::token_stream::TokenStream;
+
+    #[test]
+    fn test_generic_options() {
+        test_parser!(
+            source = "option1 'value1', option2 'value2'",
+            parser = generic_options(),
+            expected = vec![
+                GenericOption::new("option1", "value1"),
+                GenericOption::new("option2", "value2")
+            ]
+        );
+    }
 
     #[test]
     fn test_generic_option() {
@@ -23,8 +43,10 @@ mod tests {
     }
 }
 
+use crate::lexer::OperatorKind::Comma;
 use crate::parser::ast_node::GenericOption;
 use crate::parser::combinators::col_label;
+use crate::parser::combinators::foundation::many_sep;
 use crate::parser::combinators::foundation::string;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;

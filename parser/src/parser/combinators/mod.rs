@@ -54,12 +54,12 @@ pub(super) use stmtmulti::stmtmulti;
 
 #[allow(unused_imports)] // TODO: eventually remove
 use self::{
-    between_paren::between_paren,
     acl::{grantee_list, opt_drop_behavior, opt_grant_option, opt_granted_by},
     all_or_var_name::all_or_var_name,
     any_name::{any_name, any_name_list},
     attrs::attrs,
     bare_col_label::bare_col_label,
+    between_paren::between_paren,
     boolean_or_string::{boolean_or_string, boolean_or_string_list},
     col_id::col_id,
     col_id_list::col_id_list,
@@ -72,7 +72,7 @@ use self::{
     func_name::func_name,
     func_type::func_type,
     function_with_argtypes::{function_with_argtypes, function_with_argtypes_list},
-    generic_option::generic_option,
+    generic_option::{generic_option, generic_options},
     generic_set_tail::generic_set_tail,
     i32_literal_paren::i32_literal_paren,
     name_list::name_list,
