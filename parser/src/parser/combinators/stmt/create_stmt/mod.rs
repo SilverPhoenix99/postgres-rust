@@ -1,3 +1,4 @@
+mod create_access_method_stmt;
 mod create_database_stmt;
 mod create_role_option;
 mod create_role_stmt;
@@ -8,6 +9,7 @@ pub(super) use create_database_stmt::createdb_opt_value;
 pub(super) fn create_stmt() -> impl Combinator<Output = RawStmt> {
 
     Create.and_right(match_first! {
+        create_access_method_stmt().map(From::from),
         create_database_stmt().map(From::from),
         create_role_stmt().map(From::from),
         create_user_stmt(),
@@ -21,6 +23,7 @@ mod tests {
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 
+    #[test_case("create access method foo type table handler bar")]
     #[test_case("create database new_db oid = 1")]
     #[test_case("create role new_role with superuser")]
     #[test_case("create user new_user with password 'password'")]
@@ -37,6 +40,7 @@ mod tests {
 }
 
 use self::{
+    create_access_method_stmt::create_access_method_stmt,
     create_database_stmt::create_database_stmt,
     create_role_option::create_role_options,
     create_role_stmt::create_role_stmt,
