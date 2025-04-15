@@ -21,6 +21,7 @@ pub enum RawStmt {
     ConstraintsSetStmt(ConstraintsSetStmt),
     CreateDatabaseStmt(CreateDatabaseStmt),
     CreateRoleStmt(CreateRoleStmt),
+    CreateUserMappingStmt(CreateUserMappingStmt),
     DeallocateStmt(OneOrAll<Str>),
     DiscardStmt(DiscardStmt),
     ListenStmt(Str),
@@ -57,6 +58,7 @@ impl_from!(CommentStmt for RawStmt);
 impl_from!(ConstraintsSetStmt for RawStmt);
 impl_from!(CreateDatabaseStmt for RawStmt);
 impl_from!(CreateRoleStmt for RawStmt);
+impl_from!(CreateUserMappingStmt for RawStmt);
 impl_from!(DiscardStmt for RawStmt);
 impl_from!(NotifyStmt for RawStmt);
 impl_from!(box PrepareStmt for RawStmt);
@@ -84,6 +86,7 @@ use crate::parser::ast_node::CommentStmt;
 use crate::parser::ast_node::ConstraintsSetStmt;
 use crate::parser::ast_node::CreateDatabaseStmt;
 use crate::parser::ast_node::CreateRoleStmt;
+use crate::parser::ast_node::CreateUserMappingStmt;
 use crate::parser::ast_node::DiscardStmt;
 use crate::parser::ast_node::NotifyStmt;
 use crate::parser::ast_node::OneOrAll;
