@@ -17,6 +17,7 @@ mod comment_stmt;
 mod commit_stmt;
 mod conversion;
 mod copy_stmt;
+mod create_generic_options;
 mod create_stmt;
 mod database;
 mod deallocate_stmt;
@@ -189,6 +190,7 @@ use self::{
     commit_stmt::commit_stmt,
     conversion::conversion,
     copy_stmt::copy_stmt,
+    create_generic_options::create_generic_options,
     create_stmt::create_stmt,
     create_stmt::createdb_opt_value,
     database::database,
