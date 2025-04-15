@@ -22,6 +22,7 @@ mod constraints_set_mode;
 mod constraints_set_stmt;
 mod create_database_stmt;
 mod create_role_stmt;
+mod create_user_mapping_stmt;
 mod default_or_value;
 mod discard_stmt;
 mod drop_behavior;
@@ -87,6 +88,7 @@ pub use self::{
     constraints_set_stmt::ConstraintsSetStmt,
     create_database_stmt::{CreateDatabaseStmt, CreatedbOption, CreatedbOptionKind, CreatedbOptionValue},
     create_role_stmt::{CreateRoleOption, CreateRoleStmt, RoleKind},
+    create_user_mapping_stmt::CreateUserMappingStmt,
     default_or_value::ValueOrDefault,
     discard_stmt::DiscardStmt,
     drop_behavior::DropBehavior,
