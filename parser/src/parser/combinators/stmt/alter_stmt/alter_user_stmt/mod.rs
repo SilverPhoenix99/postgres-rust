@@ -1,4 +1,3 @@
-mod alter_role_option;
 mod in_database;
 mod user_stmt;
 

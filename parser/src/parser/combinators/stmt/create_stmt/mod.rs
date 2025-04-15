@@ -1,4 +1,5 @@
 mod create_database_stmt;
+mod create_role_stmt;
 
 pub(super) use create_database_stmt::createdb_opt_value;
 
@@ -6,6 +7,7 @@ pub(super) fn create_stmt() -> impl Combinator<Output = RawStmt> {
 
     Create.and_right(match_first! {
         create_database_stmt().map(From::from),
+        create_role_stmt().map(From::from),
         parser(|_| todo!())
     })
 }
@@ -18,6 +20,7 @@ mod tests {
     use test_case::test_case;
 
     #[test_case("create database new_db oid = 1")]
+    #[test_case("create role new_role with superuser")]
     fn test_create_stmt(source: &str) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = create_stmt().parse(&mut stream);
@@ -30,7 +33,10 @@ mod tests {
     }
 }
 
-use self::create_database_stmt::create_database_stmt;
+use self::{
+    create_database_stmt::create_database_stmt,
+    create_role_stmt::create_role_stmt
+};
 use crate::lexer::Keyword::Create;
 use crate::parser::ast_node::RawStmt;
 use crate::parser::combinators::foundation::match_first;

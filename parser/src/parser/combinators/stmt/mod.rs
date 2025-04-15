@@ -3,6 +3,7 @@ mod access_method;
 mod aggregate;
 mod aggregate_with_argtypes;
 mod alter_function_option;
+mod alter_role_option;
 mod alter_stmt;
 mod analyze_stmt;
 mod auth_ident;
@@ -174,6 +175,7 @@ use self::{
     aggregate::aggregate,
     aggregate_with_argtypes::{aggr_args, aggregate_with_argtypes, aggregate_with_argtypes_list},
     alter_function_option::alter_function_option,
+    alter_role_option::{alter_role_option, alter_role_options},
     alter_stmt::alter_stmt,
     analyze_stmt::analyze_stmt,
     auth_ident::auth_ident,

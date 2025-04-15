@@ -9,7 +9,7 @@ pub(super) fn alter_role_options() -> impl Combinator<Output = Vec<AlterRoleOpti
 }
 
 /// Alias: `AlterOptRoleElem`
-fn alter_role_option() -> impl Combinator<Output = AlterRoleOption> {
+pub(super) fn alter_role_option() -> impl Combinator<Output = AlterRoleOption> {
 
     /*
           PASSWORD SCONST
@@ -185,7 +185,6 @@ use crate::parser::ast_node::AlterRoleOption::Password;
 use crate::parser::ast_node::AlterRoleOption::RoleMembers;
 use crate::parser::ast_node::AlterRoleOption::SuperUser;
 use crate::parser::ast_node::AlterRoleOption::ValidUntil;
-use crate::parser::combinators::const_numeric::signed_i32_literal;
 use crate::parser::combinators::foundation::identifier;
 use crate::parser::combinators::foundation::located;
 use crate::parser::combinators::foundation::many;
@@ -194,7 +193,8 @@ use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::string;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
-use crate::parser::combinators::role::role_list;
+use crate::parser::combinators::role_list;
+use crate::parser::combinators::signed_i32_literal;
 use crate::parser::result::ScanErrorKind::ScanErr;
 use crate::parser::ParserError;
 use crate::parser::ParserErrorKind::UnencryptedPassword;

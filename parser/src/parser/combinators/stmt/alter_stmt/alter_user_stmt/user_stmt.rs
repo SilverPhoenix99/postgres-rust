@@ -179,7 +179,6 @@ mod tests {
     }
 }
 
-use super::alter_role_option::alter_role_options;
 use super::in_database::in_database;
 use crate::lexer::Keyword::All;
 use crate::lexer::Keyword::Rename;
@@ -200,4 +199,5 @@ use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::role_id;
 use crate::parser::combinators::role_spec;
+use crate::parser::combinators::stmt::alter_role_options;
 use crate::parser::combinators::stmt::alter_stmt::set_reset_clause;
