@@ -2,6 +2,7 @@ mod abort_stmt;
 mod access_method;
 mod aggregate;
 mod aggregate_with_argtypes;
+mod alter_function_option;
 mod alter_stmt;
 mod analyze_stmt;
 mod auth_ident;
@@ -172,6 +173,7 @@ use self::{
     access_method::access_method,
     aggregate::aggregate,
     aggregate_with_argtypes::{aggr_args, aggregate_with_argtypes, aggregate_with_argtypes_list},
+    alter_function_option::alter_function_option,
     alter_stmt::alter_stmt,
     analyze_stmt::analyze_stmt,
     auth_ident::auth_ident,
@@ -226,6 +228,7 @@ use self::{
     security_label_stmt::security_label_stmt,
     sequence::sequence,
     server::server,
+    set_rest::{set_rest, set_rest_more},
     set_stmt::set_stmt,
     show_stmt::show_stmt,
     start_transaction_stmt::start_transaction_stmt,

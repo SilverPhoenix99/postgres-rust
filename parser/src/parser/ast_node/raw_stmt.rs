@@ -7,6 +7,8 @@ pub enum RawStmt {
     AlterEventTrigStmt(AlterEventTrigStmt),
     AlterExtensionContentsStmt(AlterExtensionContentsStmt),
     AlterExtensionStmt(AlterExtensionStmt),
+    AlterFunctionStmt(AlterFunctionStmt),
+    AlterObjectDependsStmt(AlterObjectDependsStmt),
     AlterObjectSchemaStmt(AlterObjectSchemaStmt),
     AlterOwnerStmt(AlterOwnerStmt),
     AlterRoleSetStmt(AlterRoleSetStmt),
@@ -42,6 +44,8 @@ impl_from!(box AlterDefaultPrivilegesStmt for RawStmt);
 impl_from!(AlterEventTrigStmt for RawStmt);
 impl_from!(AlterExtensionContentsStmt for RawStmt);
 impl_from!(AlterExtensionStmt for RawStmt);
+impl_from!(AlterFunctionStmt for RawStmt);
+impl_from!(AlterObjectDependsStmt for RawStmt);
 impl_from!(AlterObjectSchemaStmt for RawStmt);
 impl_from!(AlterOwnerStmt for RawStmt);
 impl_from!(AlterRoleSetStmt for RawStmt);
@@ -66,6 +70,8 @@ use crate::parser::ast_node::AlterDefaultPrivilegesStmt;
 use crate::parser::ast_node::AlterEventTrigStmt;
 use crate::parser::ast_node::AlterExtensionContentsStmt;
 use crate::parser::ast_node::AlterExtensionStmt;
+use crate::parser::ast_node::AlterFunctionStmt;
+use crate::parser::ast_node::AlterObjectDependsStmt;
 use crate::parser::ast_node::AlterObjectSchemaStmt;
 use crate::parser::ast_node::AlterOwnerStmt;
 use crate::parser::ast_node::AlterRoleSetStmt;
