@@ -1,5 +1,5 @@
 pub(super) fn typecast() -> impl Combinator<Output = Typecast> {
-    
+
     /*
         CAST '(' Typename AS Typename ')'
     */
