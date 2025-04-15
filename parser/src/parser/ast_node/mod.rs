@@ -20,6 +20,7 @@ mod case_expr;
 mod comment_stmt;
 mod constraints_set_mode;
 mod constraints_set_stmt;
+mod create_access_method_stmt;
 mod create_database_stmt;
 mod create_role_stmt;
 mod create_user_mapping_stmt;
@@ -86,6 +87,7 @@ pub use self::{
     comment_stmt::{CommentStmt, CommentTarget},
     constraints_set_mode::ConstraintsSetMode,
     constraints_set_stmt::ConstraintsSetStmt,
+    create_access_method_stmt::{AccessMethodKind, CreateAccessMethodStmt},
     create_database_stmt::{CreateDatabaseStmt, CreatedbOption, CreatedbOptionKind, CreatedbOptionValue},
     create_role_stmt::{CreateRoleOption, CreateRoleStmt, RoleKind},
     create_user_mapping_stmt::CreateUserMappingStmt,

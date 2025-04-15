@@ -19,6 +19,7 @@ pub enum RawStmt {
     ClosePortalStmt(OneOrAll<Str>),
     CommentStmt(CommentStmt),
     ConstraintsSetStmt(ConstraintsSetStmt),
+    CreateAccessMethodStmt(CreateAccessMethodStmt),
     CreateDatabaseStmt(CreateDatabaseStmt),
     CreateRoleStmt(CreateRoleStmt),
     CreateUserMappingStmt(CreateUserMappingStmt),
@@ -56,6 +57,7 @@ impl_from!(AlterSystemStmt for RawStmt);
 impl_from!(AlterUserMappingStmt for RawStmt);
 impl_from!(CommentStmt for RawStmt);
 impl_from!(ConstraintsSetStmt for RawStmt);
+impl_from!(CreateAccessMethodStmt for RawStmt);
 impl_from!(CreateDatabaseStmt for RawStmt);
 impl_from!(CreateRoleStmt for RawStmt);
 impl_from!(CreateUserMappingStmt for RawStmt);
@@ -84,6 +86,7 @@ use crate::parser::ast_node::AlterSystemStmt;
 use crate::parser::ast_node::AlterUserMappingStmt;
 use crate::parser::ast_node::CommentStmt;
 use crate::parser::ast_node::ConstraintsSetStmt;
+use crate::parser::ast_node::CreateAccessMethodStmt;
 use crate::parser::ast_node::CreateDatabaseStmt;
 use crate::parser::ast_node::CreateRoleStmt;
 use crate::parser::ast_node::CreateUserMappingStmt;
