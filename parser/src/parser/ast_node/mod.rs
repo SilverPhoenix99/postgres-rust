@@ -5,6 +5,8 @@ mod alter_default_privileges_stmt;
 mod alter_event_trig_stmt;
 mod alter_extension_contents_stmt;
 mod alter_extension_stmt;
+mod alter_function_stmt;
+mod alter_object_depends_stmt;
 mod alter_object_schema_stmt;
 mod alter_owner_stmt;
 mod alter_role_set_stmt;
@@ -68,6 +70,8 @@ pub use self::{
     alter_event_trig_stmt::{AlterEventTrigStmt, EventTriggerState},
     alter_extension_contents_stmt::{AlterExtensionContentsStmt, AlterExtensionContentsTarget},
     alter_extension_stmt::AlterExtensionStmt,
+    alter_function_stmt::{AlterFunctionKind, AlterFunctionOption, AlterFunctionStmt, Volatility},
+    alter_object_depends_stmt::{AlterObjectDependsStmt, AlterObjectDependsTarget},
     alter_object_schema_stmt::{AlterObjectSchemaStmt, AlterObjectSchemaTarget},
     alter_owner_stmt::{AlterOwnerStmt, AlterOwnerTarget},
     alter_role_set_stmt::AlterRoleSetStmt,

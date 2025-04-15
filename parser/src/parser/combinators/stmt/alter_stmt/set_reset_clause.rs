@@ -43,4 +43,4 @@ use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::stmt::reset_stmt::reset_stmt;
-use crate::parser::combinators::stmt::set_rest::set_rest;
+use crate::parser::combinators::stmt::set_rest;

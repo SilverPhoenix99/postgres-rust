@@ -264,5 +264,5 @@ use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::role_spec;
 use crate::parser::combinators::stmt::createdb_opt_value;
 use crate::parser::combinators::stmt::reset_stmt::reset_stmt;
-use crate::parser::combinators::stmt::set_rest::set_rest;
+use crate::parser::combinators::stmt::set_rest;
 use postgres_basics::Str;

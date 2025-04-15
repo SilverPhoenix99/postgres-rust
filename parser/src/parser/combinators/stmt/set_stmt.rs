@@ -121,4 +121,4 @@ use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::qualified_name::qualified_name_list;
-use crate::parser::combinators::stmt::set_rest::set_rest;
+use crate::parser::combinators::stmt::set_rest;
