@@ -1,3 +1,39 @@
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct CreateRoleStmt {
+    name: Str,
+    kind: RoleKind,
+    options: Vec<CreateRoleOption>
+}
+
+impl CreateRoleStmt {
+    pub fn new<T: Into<Str>>(name: T, kind: RoleKind, options: Vec<CreateRoleOption>) -> Self {
+        Self {
+            name: name.into(),
+            kind,
+            options
+        }
+    }
+
+    pub fn name(&self) -> &Str {
+        &self.name
+    }
+
+    pub fn kind(&self) -> RoleKind {
+        self.kind
+    }
+
+    pub fn options(&self) -> &[CreateRoleOption] {
+        &self.options
+    }
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum RoleKind {
+    Role,
+    User,
+    Group,
+}
+
 /// Alias: `CreateOptRoleElem`
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum CreateRoleOption {
@@ -38,3 +74,4 @@ impl From<AlterRoleOption> for CreateRoleOption {
 use crate::parser::ast_node::AlterRoleOption;
 use crate::parser::ast_node::RoleSpec;
 use postgres_basics::NonNegative;
+use postgres_basics::Str;
