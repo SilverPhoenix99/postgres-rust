@@ -24,7 +24,7 @@ pub(in crate::parser::combinators) fn operator_if(
 /// See also
 /// * [`operator_result()`]
 /// * [`operator_if()`]
-pub(in crate::parser::combinators) fn operator_when<F, O>(
+pub(in crate::parser::combinators) fn operator_when<O>(
     mapper: impl Fn(OperatorKind) -> Option<O>
 )
     -> OperatorCondCombi<
