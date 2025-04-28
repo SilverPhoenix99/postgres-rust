@@ -14,12 +14,12 @@ pub(super) fn operator_with_argtypes() -> impl Combinator<Output = OperatorWithA
     */
 
     sequence!(any_operator(), oper_argtypes())
-        .map(|(name, (left_arg, right_arg))|
-            OperatorWithArgs::new(name, left_arg, right_arg)
+        .map(|(name, args)|
+            OperatorWithArgs::new(name, args)
         )
 }
 
-fn oper_argtypes() -> impl Combinator<Output = (Option<Type>, Option<Type>)> {
+fn oper_argtypes() -> impl Combinator<Output = OneOrBoth<Type>> {
 
     /*
           '(' NONE ',' Typename ')'
@@ -31,7 +31,7 @@ fn oper_argtypes() -> impl Combinator<Output = (Option<Type>, Option<Type>)> {
     between_paren(match_first! {
         NoneKw.and(Comma)
             .and_right(typename())
-            .map(|typ| (None, Some(typ))),
+            .map(OneOrBoth::Right),
         typename()
             .and_left(or(
                 close_paren(),
@@ -42,7 +42,10 @@ fn oper_argtypes() -> impl Combinator<Output = (Option<Type>, Option<Type>)> {
                     NoneKw.map(|_| None),
                     typename().map(Some)
                 ),
-                |typ1, typ2| (Some(typ1), typ2)
+                |typ1, typ2| match typ2 {
+                    Some(typ2) => OneOrBoth::Both(typ1, typ2),
+                    None => OneOrBoth::Left(typ1)
+                }
             )
     })
 }
@@ -74,28 +77,28 @@ mod tests {
             source = "=(int, int), =(none, int), =(int, none)",
             parser = operator_with_argtypes_list(),
             expected = vec![
-                OperatorWithArgs::new(QualifiedOperator(vec![], Equals), Some(Int4.into()), Some(Int4.into())),
-                OperatorWithArgs::new(QualifiedOperator(vec![], Equals), None, Some(Int4.into())),
-                OperatorWithArgs::new(QualifiedOperator(vec![], Equals), Some(Int4.into()), None)
+                OperatorWithArgs::new(QualifiedOperator(vec![], Equals), OneOrBoth::Both(Int4.into(), Int4.into())),
+                OperatorWithArgs::new(QualifiedOperator(vec![], Equals), OneOrBoth::Right(Int4.into())),
+                OperatorWithArgs::new(QualifiedOperator(vec![], Equals), OneOrBoth::Left(Int4.into()))
             ]
         )
     }
 
-    #[test_case("= (int,  int)", Some(Int4.into()), Some(Int4.into()))]
-    #[test_case("= (none, int)", None, Some(Int4.into()))]
-    #[test_case("= (int,  none)", Some(Int4.into()), None)]
-    fn test_operator_with_argtypes(source: &str, left: Option<Type>, right: Option<Type>) {
+    #[test_case("= (int,  int)", OneOrBoth::Both(Int4.into(), Int4.into()))]
+    #[test_case("= (none, int)", OneOrBoth::Right(Int4.into()))]
+    #[test_case("= (int,  none)", OneOrBoth::Left(Int4.into()))]
+    fn test_operator_with_argtypes(source: &str, expected: OneOrBoth<Type>) {
         test_parser!(
             source = source,
             parser = operator_with_argtypes(),
-            expected = OperatorWithArgs::new(QualifiedOperator(vec![], Equals), left, right)
+            expected = OperatorWithArgs::new(QualifiedOperator(vec![], Equals), expected)
         )
     }
 
-    #[test_case("(int, int)", (Some(Int4.into()), Some(Int4.into())))]
-    #[test_case("(none, int)", (None, Some(Int4.into())))]
-    #[test_case("(int, none)", (Some(Int4.into()), None))]
-    fn test_oper_argtypes(source: &str, expected: (Option<Type>, Option<Type>)) {
+    #[test_case("(int, int)", OneOrBoth::Both(Int4.into(), Int4.into()))]
+    #[test_case("(none, int)", OneOrBoth::Right(Int4.into()))]
+    #[test_case("(int, none)", OneOrBoth::Left(Int4.into()))]
+    fn test_oper_argtypes(source: &str, expected: OneOrBoth<Type>) {
         test_parser!(source, oper_argtypes(), expected);
     }
 }
@@ -103,6 +106,7 @@ mod tests {
 use crate::lexer::Keyword::NoneKw;
 use crate::lexer::OperatorKind::CloseParenthesis;
 use crate::lexer::OperatorKind::Comma;
+use crate::parser::ast_node::OneOrBoth;
 use crate::parser::ast_node::OperatorWithArgs;
 use crate::parser::ast_node::Type;
 use crate::parser::combinators::between_paren;

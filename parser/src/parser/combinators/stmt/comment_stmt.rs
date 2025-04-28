@@ -165,13 +165,14 @@ mod tests {
     use crate::parser::ast_node::{
         AggregateWithArgs,
         FunctionWithArgs,
+        OneOrBoth,
         Operator::Addition,
         OperatorWithArgs,
         QualifiedOperator,
         SignedNumber::IntegerConst,
         Transform as TransformAst,
         TypeName::{Int4, Varchar},
-        Typecast as Cast
+        Typecast as Cast,
     };
     use crate::parser::tests::test_parser;
     use test_case::test_case;
@@ -244,8 +245,7 @@ mod tests {
     #[test_case("operator +(int, int)", Operator(
         OperatorWithArgs::new(
             QualifiedOperator(vec![], Addition),
-            Some(Int4.into()),
-            Some(Int4.into())
+            OneOrBoth::Both(Int4.into(), Int4.into())
         )
     ))]
     #[test_case("procedural language some_language", Language("some_language".into()))]
