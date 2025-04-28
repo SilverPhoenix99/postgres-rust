@@ -560,7 +560,7 @@ Clipboard.copy grammar.to_bison
 
 grammar.save_bison './tmp/grammar.bison'
 
-grammar = Grammar.load_bison('./tmp/grammar.bison');
+grammar = GrammarTransform::Grammar.load_bison('./grammar/grammar.bison');
 
 # grammar2 = grammar.remove_redundant_rules.
 #   remove_indirect_left_recursion!.

@@ -25,9 +25,10 @@ mod tests {
     use super::*;
     #[allow(unused_imports)]
     use crate::parser::ast_node::{
+        OneOrBoth,
         Operator::Addition,
         QualifiedOperator,
-        TypeName::Int4
+        TypeName::Int4,
     };
     use crate::parser::tests::test_parser;
     use test_case::test_case;
@@ -35,8 +36,7 @@ mod tests {
     #[test_case("operator +(int, int)", Operator::WithArgs(
         OperatorWithArgs::new(
             QualifiedOperator(vec![], Addition),
-            Some(Int4.into()),
-            Some(Int4.into())
+            OneOrBoth::Both(Int4.into(), Int4.into())
         )
     ))]
     #[test_case("operator family some_family using some_method",

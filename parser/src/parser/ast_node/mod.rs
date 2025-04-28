@@ -37,6 +37,7 @@ mod indirection;
 mod notify_stmt;
 mod numeric_spec;
 mod one_or_all;
+mod one_or_both;
 mod operator;
 mod operator_with_args;
 mod prepare_stmt;
@@ -106,6 +107,7 @@ pub use self::{
     notify_stmt::NotifyStmt,
     numeric_spec::NumericSpec,
     one_or_all::OneOrAll,
+    one_or_both::OneOrBoth,
     operator::Operator,
     operator_with_args::OperatorWithArgs,
     prepare_stmt::PrepareStmt,
@@ -143,6 +145,7 @@ pub use self::{
     xml::{XmlElement, XmlNodeKind, XmlParse, XmlProcessingInstruction, XmlRoot},
     zone_value::ZoneValue,
 };
+
 pub(super) use unique_null_treatment::UniqueNullTreatment;
 
 pub type BinaryOperands = Box<(ExprNode, ExprNode)>;
