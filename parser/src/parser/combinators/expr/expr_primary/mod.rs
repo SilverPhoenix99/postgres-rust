@@ -1,4 +1,5 @@
 mod case_expr;
+mod param_expr;
 
 /// Alias: `c_expr`
 pub(super) fn expr_primary() -> impl Combinator<Output = ExprNode> {
@@ -28,36 +29,9 @@ pub(super) fn expr_primary() -> impl Combinator<Output = ExprNode> {
     }
 }
 
-fn param_expr() -> impl Combinator<Output = ExprNode> {
-
-    /*
-        PARAM ( indirection )?
-
-        E.g: $1.foo[0].*
-    */
-
-    sequence!(
-        param(),
-        located(indirection()).optional()
-    )
-        .map_result(|res| {
-            let (index, indirection) = res?;
-            let param = ParamRef { index };
-            let expr = match indirection {
-                None => param,
-                Some(indirection) => {
-                    let indirection = check_indirection(indirection)?;
-                    IndirectionExpr::new(param, indirection).into()
-                },
-            };
-            Ok(expr)
-        })
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::Indirection::FullSlice;
     use crate::parser::tests::test_parser;
     use test_case::test_case;
 
@@ -79,21 +53,12 @@ mod tests {
     fn test_expr_primary(source: &str, expected: ExprNode) {
         test_parser!(source, expr_primary(), expected)
     }
-
-    #[test]
-    fn test_param_expr() {
-        test_parser!(
-            source = "$5[:]",
-            parser = param_expr(),
-            expected = IndirectionExpr::new(
-                ParamRef { index: 5 },
-                vec![FullSlice]
-            ).into()
-        )
-    }
 }
 
-use self::case_expr::case_expr;
+use self::{
+    case_expr::case_expr,
+    param_expr::param_expr,
+};
 use crate::lexer::Keyword::CurrentCatalog;
 use crate::lexer::Keyword::CurrentDate;
 use crate::lexer::Keyword::CurrentRole;
@@ -106,15 +71,8 @@ use crate::lexer::Keyword::SessionUser;
 use crate::lexer::Keyword::SystemUser;
 use crate::lexer::Keyword::User;
 use crate::parser::ast_node::ExprNode;
-use crate::parser::ast_node::ExprNode::ParamRef;
-use crate::parser::ast_node::IndirectionExpr;
-use crate::parser::combinators::expr::check_indirection;
 use crate::parser::combinators::expr::expr_const;
-use crate::parser::combinators::expr::indirection;
-use crate::parser::combinators::foundation::located;
 use crate::parser::combinators::foundation::match_first;
-use crate::parser::combinators::foundation::param;
-use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::opt_precision;
