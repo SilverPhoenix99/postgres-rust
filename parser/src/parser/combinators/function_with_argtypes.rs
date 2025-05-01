@@ -18,7 +18,8 @@ pub(super) fn function_with_argtypes() -> impl Combinator<Output = FunctionWithA
 
         The original production used `indirection` instead of `attrs`,
         but the only valid rule from `indirection` is: `'.' ColLabel`.
-        See [function_with_argtypes](https://github.com/postgres/postgres/blob/97173536ed4b1c29dce0dc4119db136e142f60a2/src/backend/parser/gram.y#L8410).
+        This is why there's no need to call [check_func_name](https://github.com/postgres/postgres/blob/e974f1c2164bc677d55f98edaf99f80c0b6b89d9/src/backend/parser/gram.y#L18976).
+        See [function_with_argtypes](https://github.com/postgres/postgres/blob/e974f1c2164bc677d55f98edaf99f80c0b6b89d9/src/backend/parser/gram.y#L8471).
 
         Refactored production to remove conflicts:
               type_func_name_keyword ( func_args )?
@@ -42,6 +43,7 @@ pub(super) fn function_with_argtypes() -> impl Combinator<Output = FunctionWithA
                 if name.len() == 1 {
                     return Ok(FunctionWithArgs::new(name, None))
                 }
+                // arguments are only allowed when the function name is qualified
                 let args = func_args().parse(stream)?;
                 Ok(FunctionWithArgs::new(name, args))
             })

@@ -1,3 +1,6 @@
+mod case_expr;
+
+/// Alias: `c_expr`
 pub(super) fn expr_primary() -> impl Combinator<Output = ExprNode> {
     match_first! {
         param_expr().map(From::from),
@@ -74,6 +77,7 @@ mod tests {
     }
 }
 
+use self::case_expr::case_expr;
 use crate::lexer::Keyword::CurrentCatalog;
 use crate::lexer::Keyword::CurrentDate;
 use crate::lexer::Keyword::CurrentRole;
@@ -87,7 +91,6 @@ use crate::lexer::Keyword::SystemUser;
 use crate::lexer::Keyword::User;
 use crate::parser::ast_node::ExprNode;
 use crate::parser::ast_node::IndirectionExpr;
-use crate::parser::combinators::expr::case_expr;
 use crate::parser::combinators::expr::expr_const;
 use crate::parser::combinators::expr::indirection;
 use crate::parser::combinators::foundation::match_first;
