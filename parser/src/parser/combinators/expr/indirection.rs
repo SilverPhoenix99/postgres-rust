@@ -63,6 +63,25 @@ fn indirection_el() -> impl Combinator<Output = Indirection> {
     )
 }
 
+pub(super) fn check_indirection(indirection: Located<Vec<Indirection>>) -> ScanResult<Vec<Indirection>> {
+
+    // If present, '.*' must be the last element
+
+    let (indirection, location) = indirection;
+
+    let valid = indirection.iter()
+        .position(|ind| matches!(ind, All))
+        .is_none_or(|index| index == indirection.len() - 1);
+
+    if valid {
+        Ok(indirection)
+    }
+    else {
+        let err = ParserError::new(ImproperUseOfStar, location);
+        Err(err.into())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -70,6 +89,7 @@ mod tests {
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
+    use postgres_basics::Location;
 
     #[test_case(".*", All)]
     #[test_case(".some_property", Property("some_property".into()))]
@@ -94,6 +114,33 @@ mod tests {
         ];
 
         assert_eq!(Ok(expected), indirection().parse(&mut stream));
+    }
+
+    #[test]
+    fn test_check_indirection() {
+        assert_matches!(
+            check_indirection((
+                vec![Property("some_property".into()), All],
+                Location::new(0..0, 0, 0)
+            )),
+            Ok(_)
+        );
+
+        assert_matches!(
+            check_indirection((
+                vec![Property("some_property".into())],
+                Location::new(0..0, 0, 0)
+            )),
+            Ok(_)
+        );
+
+        assert_matches!(
+            check_indirection((
+                vec![All, Property("some_property".into())],
+                Location::new(0..0, 0, 0)
+            )),
+            Err(_)
+        );
     }
 }
 
@@ -120,3 +167,7 @@ use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use crate::parser::result::ScanResult;
+use crate::parser::ParserError;
+use crate::parser::ParserErrorKind::ImproperUseOfStar;
+use postgres_basics::Located;
