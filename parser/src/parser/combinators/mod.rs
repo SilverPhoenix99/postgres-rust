@@ -29,6 +29,7 @@ mod operators;
 mod opt_array_bounds;
 mod opt_asc_desc;
 mod opt_interval;
+mod opt_nulls_order;
 mod opt_precision;
 mod opt_timezone;
 mod opt_transaction;
@@ -83,6 +84,7 @@ use self::{
     opt_array_bounds::opt_array_bounds,
     opt_asc_desc::opt_asc_desc,
     opt_interval::opt_interval,
+    opt_nulls_order::opt_nulls_order,
     opt_precision::opt_precision,
     opt_timezone::opt_timezone,
     opt_transaction::opt_transaction,

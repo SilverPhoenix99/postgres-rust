@@ -1,0 +1,40 @@
+pub(super) fn opt_nulls_order() -> impl Combinator<Output = SortNulls> {
+
+    /*
+          NULLS FIRST
+        | NULLS LAST
+        | // empty
+    */
+
+    Nulls
+        .and_right(or(
+            Kw::First.map(|_| First),
+            Kw::Last.map(|_| Last),
+        ))
+        .optional()
+        .map(Option::unwrap_or_default)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::parser::tests::test_parser;
+    use test_case::test_case;
+
+    #[test_case("nulls first", First)]
+    #[test_case("nulls last", Last)]
+    #[test_case("", SortNulls::Default)]
+    #[test_case("foo", SortNulls::Default)]
+    fn test_opt_nulls_order(source: &str, expected: SortNulls) {
+        test_parser!(source, opt_nulls_order(), expected)
+    }
+}
+
+use crate::lexer::Keyword as Kw;
+use crate::lexer::Keyword::Nulls;
+use crate::parser::ast_node::SortNulls;
+use crate::parser::ast_node::SortNulls::First;
+use crate::parser::ast_node::SortNulls::Last;
+use crate::parser::combinators::foundation::or;
+use crate::parser::combinators::foundation::Combinator;
+use crate::parser::combinators::foundation::CombinatorHelpers;
