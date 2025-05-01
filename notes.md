@@ -5,6 +5,19 @@
   * `backend/utils/mb/stringinfo_mb.c` / `include/mb/stringinfo_mb.h`
 * Check layout of structs and enums with `#![feature(rustc_attrs)]` + `#[rustc_layout(debug)]`.
   * Ref: https://doc.rust-lang.org/beta/unstable-book/language-features/rustc-attrs.html
+* `indirection` and `opt_indirection` functions:
+  * `check_func_name`: only allows `( '.' col_label )[1..]` == `( attrs )[1..]`
+  * `check_indirection`: `*` is only allowed as the last item
+  * `makeColumnRef`:
+    * `*` is only allowed as the last item
+    * splits the name (`.`) from subscripts (`[]`)
+    * examples:
+      * `x` -> `(["x"], [])`
+      * `x.y` -> `(["x", "y"], [])`
+      * `x.y.*[0].foo` -> `(["x", "y", All], [i(0), "foo"])`
+      * `x[0].*` -> `(["x"], [i(0), All])`
+      * `*[foo]` -> `([All], [i("foo")])`
+  * `makeRangeVarFromQualifiedName`: qualified name == `( attrs ){1, 3}`
 
 # TO DO
 * Change `ParserResult.result` to be `Vec<ParseResult<RawStmt>>`.
