@@ -8,8 +8,8 @@ pub(super) fn opt_nulls_order() -> impl Combinator<Output = Option<SortNulls>> {
 
     Nulls
         .and_right(or(
-            Kw::First.map(|_| First),
-            Kw::Last.map(|_| Last),
+            First.map(|_| NullsFirst),
+            Last.map(|_| NullsLast),
         ))
         .optional()
 }
@@ -20,8 +20,8 @@ mod tests {
     use crate::parser::tests::test_parser;
     use test_case::test_case;
 
-    #[test_case("nulls first", Some(First))]
-    #[test_case("nulls last", Some(Last))]
+    #[test_case("nulls first", Some(NullsFirst))]
+    #[test_case("nulls last", Some(NullsLast))]
     #[test_case("", None)]
     #[test_case("foo", None)]
     fn test_opt_nulls_order(source: &str, expected: Option<SortNulls>) {
@@ -29,11 +29,12 @@ mod tests {
     }
 }
 
-use crate::lexer::Keyword as Kw;
+use crate::lexer::Keyword::First;
+use crate::lexer::Keyword::Last;
 use crate::lexer::Keyword::Nulls;
 use crate::parser::ast_node::SortNulls;
-use crate::parser::ast_node::SortNulls::First;
-use crate::parser::ast_node::SortNulls::Last;
+use crate::parser::ast_node::SortNulls::NullsFirst;
+use crate::parser::ast_node::SortNulls::NullsLast;
 use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
