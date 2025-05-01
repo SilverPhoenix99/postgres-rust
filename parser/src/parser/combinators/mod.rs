@@ -27,6 +27,7 @@ mod non_reserved_word;
 mod non_reserved_word_or_sconst;
 mod operators;
 mod opt_array_bounds;
+mod opt_asc_desc;
 mod opt_interval;
 mod opt_precision;
 mod opt_timezone;
@@ -80,6 +81,7 @@ use self::{
     non_reserved_word_or_sconst::non_reserved_word_or_sconst,
     operators::{any_operator, explicit_op, qual_all_op, qual_op, subquery_op},
     opt_array_bounds::opt_array_bounds,
+    opt_asc_desc::opt_asc_desc,
     opt_interval::opt_interval,
     opt_precision::opt_precision,
     opt_timezone::opt_timezone,
