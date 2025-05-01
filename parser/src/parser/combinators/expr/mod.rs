@@ -16,7 +16,7 @@ pub(super) fn b_expr() -> impl Combinator<Output = ExprNode> {
 use self::{
     expr_const::expr_const,
     expr_primary::expr_primary,
-    indirection::indirection,
+    indirection::{check_indirection, indirection},
 };
 use crate::parser::ast_node::ExprNode;
 use crate::parser::combinators::foundation::Combinator;

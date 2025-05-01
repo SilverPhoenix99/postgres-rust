@@ -29,25 +29,36 @@ pub(super) fn expr_primary() -> impl Combinator<Output = ExprNode> {
 }
 
 fn param_expr() -> impl Combinator<Output = ExprNode> {
-    param().and_then(
-        indirection()
-            .optional(),
-        |index, indirection| {
-            let param = ParamRef { index };
-            match indirection {
-                None => param,
-                Some(indirection) => IndirectionExpr::new(param, indirection).into(),
-            }
-        }
+
+    /*
+        PARAM ( indirection )?
+
+        E.g: $1.foo[0].*
+    */
+
+    sequence!(
+        param(),
+        located(indirection()).optional()
     )
+        .map_result(|res| {
+            let (index, indirection) = res?;
+            let param = ParamRef { index };
+            let expr = match indirection {
+                None => param,
+                Some(indirection) => {
+                    let indirection = check_indirection(indirection)?;
+                    IndirectionExpr::new(param, indirection).into()
+                },
+            };
+            Ok(expr)
+        })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser::ast_node::Indirection::FullSlice;
-    use crate::parser::tests::DEFAULT_CONFIG;
-    use crate::parser::token_stream::TokenStream;
+    use crate::parser::tests::test_parser;
     use test_case::test_case;
 
     #[test_case("CURRENT_role", ExprNode::CurrentRole)]
@@ -66,21 +77,19 @@ mod tests {
     #[test_case("localtimestamp", ExprNode::LocalTimestamp { precision: None })]
     #[test_case("localtimestamp(4)", ExprNode::LocalTimestamp { precision: Some(4) })]
     fn test_expr_primary(source: &str, expected: ExprNode) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = expr_primary().parse(&mut stream);
-        assert_eq!(Ok(expected), actual)
+        test_parser!(source, expr_primary(), expected)
     }
 
     #[test]
     fn test_param_expr() {
-        let mut stream = TokenStream::new("$5[:]", DEFAULT_CONFIG);
-
-        let expected = IndirectionExpr::new(
-            ParamRef { index: 5 },
-            vec![FullSlice]
-        );
-
-        assert_eq!(Ok(expected.into()), param_expr().parse(&mut stream))
+        test_parser!(
+            source = "$5[:]",
+            parser = param_expr(),
+            expected = IndirectionExpr::new(
+                ParamRef { index: 5 },
+                vec![FullSlice]
+            ).into()
+        )
     }
 }
 
@@ -99,10 +108,13 @@ use crate::lexer::Keyword::User;
 use crate::parser::ast_node::ExprNode;
 use crate::parser::ast_node::ExprNode::ParamRef;
 use crate::parser::ast_node::IndirectionExpr;
+use crate::parser::combinators::expr::check_indirection;
 use crate::parser::combinators::expr::expr_const;
 use crate::parser::combinators::expr::indirection;
+use crate::parser::combinators::foundation::located;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::param;
+use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::opt_precision;
