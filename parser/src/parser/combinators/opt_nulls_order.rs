@@ -1,4 +1,4 @@
-pub(super) fn opt_nulls_order() -> impl Combinator<Output = SortNulls> {
+pub(super) fn opt_nulls_order() -> impl Combinator<Output = Option<SortNulls>> {
 
     /*
           NULLS FIRST
@@ -12,7 +12,6 @@ pub(super) fn opt_nulls_order() -> impl Combinator<Output = SortNulls> {
             Kw::Last.map(|_| Last),
         ))
         .optional()
-        .map(Option::unwrap_or_default)
 }
 
 #[cfg(test)]
@@ -21,11 +20,11 @@ mod tests {
     use crate::parser::tests::test_parser;
     use test_case::test_case;
 
-    #[test_case("nulls first", First)]
-    #[test_case("nulls last", Last)]
-    #[test_case("", SortNulls::Default)]
-    #[test_case("foo", SortNulls::Default)]
-    fn test_opt_nulls_order(source: &str, expected: SortNulls) {
+    #[test_case("nulls first", Some(First))]
+    #[test_case("nulls last", Some(Last))]
+    #[test_case("", None)]
+    #[test_case("foo", None)]
+    fn test_opt_nulls_order(source: &str, expected: Option<SortNulls>) {
         test_parser!(source, opt_nulls_order(), expected)
     }
 }
