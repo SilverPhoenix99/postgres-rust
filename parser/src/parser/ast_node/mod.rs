@@ -55,6 +55,7 @@ mod set_rest;
 mod set_rest_more;
 mod signed_number;
 mod sort_direction;
+mod sort_nulls;
 mod system_type;
 mod transaction_stmt;
 mod transform;
@@ -127,6 +128,7 @@ pub use self::{
     set_rest_more::SetRestMore,
     signed_number::SignedNumber,
     sort_direction::SortDirection,
+    sort_nulls::SortNulls,
     system_type::{
         FuncType,
         FunctionParameterMode,
