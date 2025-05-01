@@ -1,20 +1,20 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct TypecastExpr {
+    arg: ExprNode,
     type_name: Type,
-    value: ExprNode,
 }
 
 impl TypecastExpr {
-    pub fn new(type_name: Type, value: ExprNode) -> Self {
-        Self { type_name, value }
+    pub fn new(arg: ExprNode, type_name: Type) -> Self {
+        Self { arg, type_name }
+    }
+
+    pub fn arg(&self) -> &ExprNode {
+        &self.arg
     }
 
     pub fn type_name(&self) -> &Type {
         &self.type_name
-    }
-
-    pub fn value(&self) -> &ExprNode {
-        &self.value
     }
 }
 

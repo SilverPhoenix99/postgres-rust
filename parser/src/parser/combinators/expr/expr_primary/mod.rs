@@ -1,4 +1,5 @@
 mod case_expr;
+mod cast_expr;
 mod func_expr;
 mod param_expr;
 
@@ -35,6 +36,7 @@ mod tests {
 
 use self::{
     case_expr::case_expr,
+    cast_expr::cast_expr,
     func_expr::func_expr,
     param_expr::param_expr,
 };

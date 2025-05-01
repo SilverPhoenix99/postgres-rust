@@ -21,6 +21,7 @@ pub(super) fn func_expr() -> impl Combinator<Output = ExprNode> {
             .and_right(opt_precision())
             .map(|precision| LocalTimestamp { precision }),
         case_expr().map(From::from),
+        cast_expr().map(From::from),
     }
 }
 
@@ -52,6 +53,7 @@ mod tests {
     }
 
     #[test_case("case when 1 then 2 end")]
+    #[test_case("cast ('1' as int)")]
     fn test_func_expr_calls(source: &str) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = func_expr().parse(&mut stream);
@@ -76,6 +78,7 @@ use crate::parser::ast_node::ExprNode::SessionUser;
 use crate::parser::ast_node::ExprNode::SystemUser;
 use crate::parser::ast_node::ExprNode::User;
 use crate::parser::combinators::expr::expr_primary::case_expr;
+use crate::parser::combinators::expr::expr_primary::cast_expr;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
