@@ -28,10 +28,17 @@ pub(super) fn expr_primary() -> impl Combinator<Output = ExprNode> {
     }
 }
 
-fn param_expr() -> impl Combinator<Output = IndirectionExpr> {
+fn param_expr() -> impl Combinator<Output = ExprNode> {
     param().and_then(
-        indirection(),
-        |index, indirection| IndirectionExpr::Param { index, indirection }
+        indirection()
+            .optional(),
+        |index, indirection| {
+            let param = ParamRef { index };
+            match indirection {
+                None => param,
+                Some(indirection) => IndirectionExpr::new(param, indirection).into(),
+            }
+        }
     )
 }
 
@@ -68,12 +75,12 @@ mod tests {
     fn test_param_expr() {
         let mut stream = TokenStream::new("$5[:]", DEFAULT_CONFIG);
 
-        let expected = IndirectionExpr::Param {
-            index: 5,
-            indirection: vec![FullSlice]
-        };
+        let expected = IndirectionExpr::new(
+            ParamRef { index: 5 },
+            vec![FullSlice]
+        );
 
-        assert_eq!(Ok(expected), param_expr().parse(&mut stream))
+        assert_eq!(Ok(expected.into()), param_expr().parse(&mut stream))
     }
 }
 
@@ -90,6 +97,7 @@ use crate::lexer::Keyword::SessionUser;
 use crate::lexer::Keyword::SystemUser;
 use crate::lexer::Keyword::User;
 use crate::parser::ast_node::ExprNode;
+use crate::parser::ast_node::ExprNode::ParamRef;
 use crate::parser::ast_node::IndirectionExpr;
 use crate::parser::combinators::expr::expr_const;
 use crate::parser::combinators::expr::indirection;
