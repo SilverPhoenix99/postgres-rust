@@ -55,9 +55,12 @@ pub enum ParserErrorKind {
 
     #[error("missing argument")]
     MissingOperatorArgumentType,
-    
+
     #[error("aggregates cannot have output arguments")]
     AggregateWithOutputParameters,
+
+    #[error(r#"improper use of "*""#)]
+    ImproperUseOfStar
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -99,6 +102,7 @@ impl HasSqlState for ParserErrorKind {
             InvalidZoneValue => SyntaxError,
             MissingOperatorArgumentType => SyntaxError,
             AggregateWithOutputParameters => FeatureNotSupported,
+            ImproperUseOfStar => SyntaxError,
         }
     }
 }
@@ -122,6 +126,7 @@ impl ErrorReport for ParserErrorKind {
             InvalidZoneValue => None,
             MissingOperatorArgumentType => Some("Use NONE to denote the missing argument of a unary operator.".into()),
             AggregateWithOutputParameters => None,
+            ImproperUseOfStar => None,
         }
     }
 
@@ -143,6 +148,7 @@ impl ErrorReport for ParserErrorKind {
             InvalidZoneValue => None,
             MissingOperatorArgumentType => None,
             AggregateWithOutputParameters => None,
+            ImproperUseOfStar => None,
         }
     }
 
@@ -164,6 +170,7 @@ impl ErrorReport for ParserErrorKind {
             InvalidZoneValue => None,
             MissingOperatorArgumentType => None,
             AggregateWithOutputParameters => None,
+            ImproperUseOfStar => None,
         }
     }
 }
