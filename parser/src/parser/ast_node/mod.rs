@@ -66,6 +66,7 @@ mod variable_set_stmt;
 mod variable_target;
 mod xml;
 mod zone_value;
+mod indirection_expr;
 
 pub use self::{
     aggregate_with_args::AggregateWithArgs,
@@ -104,6 +105,7 @@ pub use self::{
     generic_option::{GenericOption, GenericOptionKind},
     grant_stmt::GrantStmt,
     indirection::Indirection,
+    indirection_expr::IndirectionExpr,
     notify_stmt::NotifyStmt,
     numeric_spec::NumericSpec,
     one_or_all::OneOrAll,
@@ -194,14 +196,6 @@ pub enum PrivilegeDefaultsTarget {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum IndirectionExpr {
-    Param {
-        index: i32,
-        indirection: Vec<Indirection>,
-    }
-}
-
-#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ExprNode {
     /* Constants */
     NullConst,
@@ -215,6 +209,7 @@ pub enum ExprNode {
     DefaultExpr,
     Typecast(Box<TypecastExpr>),
     CaseExpr(Box<CaseExpr>),
+    ParamRef { index: i32 },
 
     BinaryExpr(Box<BinaryExpr>),
     UnaryExpr(Box<UnaryExpr>),
