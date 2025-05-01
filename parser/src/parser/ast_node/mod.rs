@@ -34,6 +34,7 @@ mod function_with_args;
 mod generic_option;
 mod grant_stmt;
 mod indirection;
+mod indirection_expr;
 mod notify_stmt;
 mod numeric_spec;
 mod one_or_all;
@@ -53,6 +54,7 @@ mod set_reset_clause;
 mod set_rest;
 mod set_rest_more;
 mod signed_number;
+mod sort_direction;
 mod system_type;
 mod transaction_stmt;
 mod transform;
@@ -66,7 +68,6 @@ mod variable_set_stmt;
 mod variable_target;
 mod xml;
 mod zone_value;
-mod indirection_expr;
 
 pub use self::{
     aggregate_with_args::AggregateWithArgs,
@@ -125,6 +126,7 @@ pub use self::{
     set_rest::SetRest,
     set_rest_more::SetRestMore,
     signed_number::SignedNumber,
+    sort_direction::SortDirection,
     system_type::{
         FuncType,
         FunctionParameterMode,
