@@ -36,8 +36,8 @@ pub enum SortDirection {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SortNulls {
-    First,
-    Last,
+    NullsFirst,
+    NullsLast,
 }
 
 use crate::parser::ast_node::ExprNode;
