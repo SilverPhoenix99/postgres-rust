@@ -28,6 +28,8 @@ pub(super) fn func_expr() -> impl Combinator<Output = ExprNode> {
 mod tests {
     use super::*;
     use crate::parser::tests::test_parser;
+    use crate::parser::tests::DEFAULT_CONFIG;
+    use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
 
     #[test_case("CURRENT_role", ExprNode::CurrentRole)]
@@ -47,6 +49,16 @@ mod tests {
     #[test_case("localtimestamp(4)", ExprNode::LocalTimestamp { precision: Some(4) })]
     fn test_func_expr(source: &str, expected: ExprNode) {
         test_parser!(source, func_expr(), expected)
+    }
+
+    #[test_case("case when 1 then 2 end")]
+    fn test_func_expr_calls(source: &str) {
+        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let actual = func_expr().parse(&mut stream);
+
+        assert_matches!(actual, Ok(_),
+            r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
+        )
     }
 }
 
