@@ -1,3 +1,16 @@
+/// Aliases:
+/// * `opt_sort_clause`
+/// * `json_array_aggregate_order_by_clause_opt`
+pub(super) fn sort_clause() -> impl Combinator<Output = Vec<SortBy>> {
+
+    /*
+        ORDER BY sortby_list
+    */
+
+    and(Order, By)
+        .and_right(sortby_list())
+}
+
 fn sortby_list() -> impl Combinator<Output = Vec<SortBy>> {
 
     /*
@@ -41,6 +54,18 @@ mod tests {
     use crate::parser::ast_node::SortNulls::NullsLast;
     use crate::parser::tests::test_parser;
     use test_case::test_case;
+
+    #[test]
+    fn test_sort_clause() {
+        test_parser!(
+            source = "order by 1, 2",
+            parser = sort_clause(),
+            expected = vec![
+                SortBy::new(Box::new(IntegerConst(1)), None, None),
+                SortBy::new(Box::new(IntegerConst(2)), None, None),
+            ]
+        )
+    }
 
     #[test]
     fn test_sortby_list() {
@@ -87,10 +112,13 @@ mod tests {
 }
 
 use crate::lexer::Keyword as Kw;
+use crate::lexer::Keyword::By;
+use crate::lexer::Keyword::Order;
 use crate::lexer::OperatorKind::Comma;
 use crate::parser::ast_node::SortBy;
 use crate::parser::ast_node::SortDirection::Using;
 use crate::parser::combinators::expr::a_expr;
+use crate::parser::combinators::foundation::and;
 use crate::parser::combinators::foundation::many_sep;
 use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::sequence;
