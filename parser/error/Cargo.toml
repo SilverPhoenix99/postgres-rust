@@ -1,0 +1,10 @@
+[package]
+name = "postgres-parser-error"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+postgres-basics.workspace = true

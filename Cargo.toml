@@ -4,12 +4,14 @@ resolver = "3"
 members = [
     "basics",
     "guc",
-    "parser",
+    "parser/error",
+    "parser/lexer",
+    "parser/parser",
 ]
 
 [workspace.package]
 edition = "2024"
-version = "18.0.0-devel"
+version = "19.0.0-devel"
 
 [workspace.lints.clippy]
 useless_conversion = "deny"
@@ -28,4 +30,6 @@ thiserror = "2"
 
 postgres-basics = { path = "basics" }
 postgres-guc = { path = "guc" }
-postgres-parser = { path = "parser" }
+postgres-parser-error = { path = "parser/error" }
+postgres-parser-lexer = { path = "parser/lexer" }
+postgres-parser = { path = "parser/parser" }
