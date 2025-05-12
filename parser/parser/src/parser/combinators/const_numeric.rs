@@ -61,7 +61,7 @@ mod tests {
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     #[allow(unused_imports)]
-    use postgres_parser_lexer::NumberRadix::Decimal;
+    use postgres_basics::NumberRadix::Decimal;
     use test_case::test_case;
 
     #[test_case( "1.01", SignedNumber::NumericConst { value: "1.01".into(), radix: Decimal, negative: false })]

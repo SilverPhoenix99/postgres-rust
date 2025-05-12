@@ -369,5 +369,5 @@ impl ExprNode {
 }
 
 use postgres_basics::impl_from;
+use postgres_basics::NumberRadix;
 use postgres_basics::Str;
-use postgres_parser_lexer::NumberRadix;

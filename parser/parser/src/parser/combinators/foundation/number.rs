@@ -22,7 +22,7 @@ mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
     #[allow(unused_imports)]
-    use postgres_parser_lexer::NumberRadix::Decimal;
+    use postgres_basics::NumberRadix::Decimal;
     use test_case::test_case;
 
     #[test_case("1.1", UnsignedNumber::NumericConst { value: "1.1".into(), radix: Decimal })]

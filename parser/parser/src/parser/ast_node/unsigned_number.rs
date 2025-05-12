@@ -14,4 +14,4 @@ impl_from!(NonNegative for UnsignedNumber::IntegerConst);
 
 use postgres_basics::impl_from;
 use postgres_basics::NonNegative;
-use postgres_parser_lexer::NumberRadix;
+use postgres_basics::NumberRadix;

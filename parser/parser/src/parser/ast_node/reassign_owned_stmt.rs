@@ -21,4 +21,4 @@ impl ReassignOwnedStmt {
     }
 }
 
-use super::RoleSpec;
+use crate::parser::ast_node::RoleSpec;

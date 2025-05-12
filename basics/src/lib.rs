@@ -50,6 +50,7 @@ mod impl_from;
 mod location;
 mod named;
 mod non_negative;
+mod number_radix;
 mod str;
 
 pub use self::{
@@ -59,6 +60,7 @@ pub use self::{
     location::{Located, Location},
     named::Named,
     non_negative::NonNegative,
+    number_radix::NumberRadix,
     str::Str,
 };
 
