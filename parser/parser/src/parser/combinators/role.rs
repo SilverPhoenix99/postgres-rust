@@ -14,9 +14,12 @@ pub(super) fn role_id() -> impl Combinator<Output = Str> {
     // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
     located(role_spec())
-        .map_result(|result| match result {
-            Ok((role, loc)) => role.into_role_id(loc),
-            Err(err) => Err(err),
+        .map_result(|result| {
+            let (role, loc) = result?;
+            role.into_role_id()
+                .map_err(|err|
+                    ScanErr(ParserError::new(err, loc))
+                )
         })
 }
 
@@ -143,6 +146,7 @@ use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::non_reserved_word;
+use crate::parser::result::ScanErrorKind::ScanErr;
 use crate::parser::ParserError;
 use crate::parser::ParserErrorKind::ReservedRoleSpec;
 use postgres_basics::Str;

@@ -8,8 +8,8 @@ pub struct ParserError(
 );
 
 impl ParserError {
-    pub fn new(source: ParserErrorKind, location: Location) -> Self {
-        Self(LocatedErrorReport::new(source, location))
+    pub fn new<T: Into<ParserErrorKind>>(source: T, location: Location) -> Self {
+        Self(LocatedErrorReport::new(source.into(), location))
     }
 
     pub fn syntax(location: Location) -> Self {
@@ -23,7 +23,7 @@ impl ParserError {
 
 impl From<LexerError> for ParserError {
     fn from(value: LexerError) -> Self {
-        let source = value.source().into();
+        let source = ParserErrorKind::from(value.source());
         Self::new(source, value.location().clone())
     }
 }

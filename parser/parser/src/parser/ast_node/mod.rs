@@ -120,7 +120,7 @@ pub use self::{
     raw_stmt::RawStmt,
     reassign_owned_stmt::ReassignOwnedStmt,
     rename_stmt::{RenameStmt, RenameTarget},
-    role_spec::RoleSpec,
+    role_spec::{RoleSpec, RoleSpecError},
     security_label_stmt::{SecurityLabelStmt, SecurityLabelTarget},
     set_reset_clause::SetResetClause,
     set_rest::SetRest,

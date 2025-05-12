@@ -7,8 +7,14 @@ pub enum RoleSpec {
     Name(Str),
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum RoleSpecError {
+    ReservedRoleSpec(&'static str),
+    ForbiddenRoleSpec(&'static str),
+}
+
 impl RoleSpec {
-    pub(in crate::parser) fn into_role_id(self, location: Location) -> ScanResult<Str> {
+    pub fn into_role_id(self) -> Result<Str, RoleSpecError> {
 
         let err = match self {
             Self::Name(role) => return Ok(role),
@@ -18,13 +24,10 @@ impl RoleSpec {
             Self::SessionUser => ForbiddenRoleSpec("SESSION_USER"),
         };
 
-        Err(ParserError::new(err, location).into())
+        Err(err)
     }
 }
 
-use crate::parser::result::ScanResult;
-use crate::parser::ParserError;
-use crate::parser::ParserErrorKind::ForbiddenRoleSpec;
-use crate::parser::ParserErrorKind::ReservedRoleSpec;
-use postgres_basics::Location;
 use postgres_basics::Str;
+use RoleSpecError::ForbiddenRoleSpec;
+use RoleSpecError::ReservedRoleSpec;
