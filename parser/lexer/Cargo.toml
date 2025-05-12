@@ -1,0 +1,15 @@
+[package]
+name = "postgres-parser-lexer"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+thiserror.workspace = true
+postgres-basics.workspace = true
+postgres-parser-error.workspace = true
+
+[dev-dependencies]
+assert_matches.workspace = true
