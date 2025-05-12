@@ -21,14 +21,6 @@ pub use self::{
 pub(crate) type LexerResult = Result<Located<RawTokenKind>, LexerError>;
 type LexResult<T = RawTokenKind> = Result<T, LexerErrorKind>;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum NumberRadix {
-    Binary = 2,
-    Octal = 8,
-    Decimal = 10,
-    Hexadecimal = 16,
-}
-
 #[derive(Debug)]
 pub struct Lexer<'src> {
     standard_conforming_strings: bool,
@@ -1088,12 +1080,13 @@ use self::{
     },
     Keyword::Nchar,
 };
-use postgres_basics::{
-    ascii::*,
-    CharBuffer,
-    Located,
-    Location,
-    NAMEDATALEN,
-};
+use postgres_basics::ascii::*;
+use postgres_basics::CharBuffer;
+use postgres_basics::Located;
+use postgres_basics::Location;
+use postgres_basics::NumberRadix;
+use postgres_basics::NumberRadix::Decimal;
+use postgres_basics::NumberRadix::Hexadecimal;
+use postgres_basics::NumberRadix::Octal;
+use postgres_basics::NAMEDATALEN;
 use std::iter::FusedIterator;
-use NumberRadix::{Decimal, Hexadecimal, Octal};

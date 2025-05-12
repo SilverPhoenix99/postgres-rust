@@ -34,4 +34,4 @@ impl_from!(i32 for SignedNumber::IntegerConst);
 
 use crate::parser::ast_node::UnsignedNumber;
 use postgres_basics::impl_from;
-use postgres_parser_lexer::NumberRadix;
+use postgres_basics::NumberRadix;
