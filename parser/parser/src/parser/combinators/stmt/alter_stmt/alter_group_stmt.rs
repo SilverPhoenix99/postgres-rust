@@ -13,7 +13,10 @@ pub(super) fn alter_group_stmt() -> impl Combinator<Output = RawStmt> {
                 Rename.and(To)
                     .and_right(role_id())
             } => (new_name) {
-                let group = group.into_role_id(group_loc)?;
+                let group = group.into_role_id()
+                    .map_err(|err|
+                        ScanErr(ParserError::new(err, group_loc))
+                    )?;
                 RenameStmt::new(Role(group), new_name).into()
             },
             {
@@ -102,6 +105,7 @@ use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::role_id;
 use crate::parser::combinators::role_list;
 use crate::parser::combinators::role_spec;
+use crate::parser::ParserError;
 use postgres_parser_lexer::Keyword::Add;
 use postgres_parser_lexer::Keyword::DropKw;
 use postgres_parser_lexer::Keyword::Group;

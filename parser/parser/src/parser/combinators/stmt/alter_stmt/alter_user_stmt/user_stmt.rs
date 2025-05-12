@@ -19,7 +19,10 @@ pub(super) fn user_stmt() -> impl Combinator<Output = RawStmt> {
                 Rename.and(To)
                     .and_right(role_id())
             } => (new_name) {
-                let role_id = role.into_role_id(loc)?;
+                let role_id = role.into_role_id()
+                    .map_err(|err|
+                        ScanErr(ParserError::new(err, loc))
+                    )?;
                 RenameStmt::new(Role(role_id), new_name).into()
             },
             {
@@ -197,6 +200,7 @@ use crate::parser::combinators::role_id;
 use crate::parser::combinators::role_spec;
 use crate::parser::combinators::stmt::alter_role_options;
 use crate::parser::combinators::stmt::alter_stmt::set_reset_clause;
+use crate::parser::ParserError;
 use postgres_parser_lexer::Keyword::All;
 use postgres_parser_lexer::Keyword::Rename;
 use postgres_parser_lexer::Keyword::To;

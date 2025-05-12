@@ -175,7 +175,17 @@ impl ErrorReport for ParserErrorKind {
     }
 }
 
+impl From<RoleSpecError> for ParserErrorKind {
+    fn from(value: RoleSpecError) -> Self {
+        match value {
+            RoleSpecError::ReservedRoleSpec(name) => ReservedRoleSpec(name),
+            RoleSpecError::ForbiddenRoleSpec(name) => ForbiddenRoleSpec(name),
+        }
+    }
+}
+
 use crate::parser::ast_node::QualifiedName;
+use crate::parser::ast_node::RoleSpecError;
 use crate::string_decoders::ExtendedStringError;
 use crate::string_decoders::UnicodeStringError;
 use postgres_basics::elog::ErrorReport;
