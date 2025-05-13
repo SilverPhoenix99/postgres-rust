@@ -117,14 +117,14 @@ fn security_label() -> impl Combinator<Output = Option<Box<str>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::tests::test_parser;
     #[allow(unused_imports)]
-    use crate::parser::ast_node::{
+    use postgres_parser_ast::{
         AggregateWithArgs,
         FunctionWithArgs,
         SignedNumber::IntegerConst,
         TypeName::Int4,
     };
-    use crate::parser::tests::test_parser;
     use test_case::test_case;
 
     #[test]
@@ -205,9 +205,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::SecurityLabelStmt;
-use crate::parser::ast_node::SecurityLabelTarget;
-use crate::parser::ast_node::SecurityLabelTarget::*;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
@@ -246,6 +243,9 @@ use crate::parser::combinators::stmt::Foreign;
 use crate::parser::combinators::stmt::TextSearch;
 use crate::parser::combinators::string_or_null;
 use postgres_basics::Str;
+use postgres_parser_ast::SecurityLabelStmt;
+use postgres_parser_ast::SecurityLabelTarget;
+use postgres_parser_ast::SecurityLabelTarget::*;
 use postgres_parser_lexer::Keyword::For;
 use postgres_parser_lexer::Keyword::Is;
 use postgres_parser_lexer::Keyword::Label;

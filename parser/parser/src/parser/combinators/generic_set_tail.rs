@@ -31,12 +31,12 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::ValueOrDefault;
-use crate::parser::ast_node::VarValue;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::var_list;
+use postgres_parser_ast::ValueOrDefault;
+use postgres_parser_ast::VarValue;
 use postgres_parser_lexer::Keyword::DefaultKw;
 use postgres_parser_lexer::Keyword::To;
 use postgres_parser_lexer::OperatorKind::Equals;

@@ -35,9 +35,9 @@ pub(super) fn alter_language_stmt() -> impl Combinator<Output = RawStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::RoleSpec::Public;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    use postgres_parser_ast::RoleSpec::Public;
 
     #[test]
     fn test_alter_owner() {
@@ -66,17 +66,17 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AlterOwnerStmt;
-use crate::parser::ast_node::AlterOwnerTarget;
-use crate::parser::ast_node::RawStmt;
-use crate::parser::ast_node::RenameStmt;
-use crate::parser::ast_node::RenameTarget;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::match_first_with_state;
 use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::role_spec;
+use postgres_parser_ast::AlterOwnerStmt;
+use postgres_parser_ast::AlterOwnerTarget;
+use postgres_parser_ast::RawStmt;
+use postgres_parser_ast::RenameStmt;
+use postgres_parser_ast::RenameTarget;
 use postgres_parser_lexer::Keyword::Language;
 use postgres_parser_lexer::Keyword::Owner;
 use postgres_parser_lexer::Keyword::Procedural;

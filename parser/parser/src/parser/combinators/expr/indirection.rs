@@ -85,10 +85,10 @@ pub(super) fn check_indirection(indirection: Located<Vec<Indirection>>) -> ScanR
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::ExprNode;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use postgres_basics::Location;
+    use postgres_parser_ast::ExprNode;
     use test_case::test_case;
 
     #[test_case(".*", All)]
@@ -144,14 +144,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::Indirection;
-use crate::parser::ast_node::Indirection::All;
-use crate::parser::ast_node::Indirection::FullSlice;
-use crate::parser::ast_node::Indirection::Index;
-use crate::parser::ast_node::Indirection::Property;
-use crate::parser::ast_node::Indirection::Slice;
-use crate::parser::ast_node::Indirection::SliceFrom;
-use crate::parser::ast_node::Indirection::SliceTo;
 use crate::parser::combinators::col_label;
 use crate::parser::combinators::expr::a_expr;
 use crate::parser::combinators::foundation::between;
@@ -166,6 +158,14 @@ use crate::parser::result::ScanResult;
 use crate::parser::ParserError;
 use crate::parser::ParserErrorKind::ImproperUseOfStar;
 use postgres_basics::Located;
+use postgres_parser_ast::Indirection;
+use postgres_parser_ast::Indirection::All;
+use postgres_parser_ast::Indirection::FullSlice;
+use postgres_parser_ast::Indirection::Index;
+use postgres_parser_ast::Indirection::Property;
+use postgres_parser_ast::Indirection::Slice;
+use postgres_parser_ast::Indirection::SliceFrom;
+use postgres_parser_ast::Indirection::SliceTo;
 use postgres_parser_lexer::OperatorKind::CloseBracket;
 use postgres_parser_lexer::OperatorKind::Colon;
 use postgres_parser_lexer::OperatorKind::Dot;

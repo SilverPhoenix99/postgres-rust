@@ -64,11 +64,10 @@ fn close_paren() -> impl Combinator<Output = ()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::Operator::Equals;
-    use crate::parser::ast_node::QualifiedOperator;
-    use crate::parser::ast_node::Type;
-    use crate::parser::ast_node::TypeName::Int4;
     use crate::parser::tests::test_parser;
+    use postgres_parser_ast::Operator::Equals;
+    use postgres_parser_ast::QualifiedOperator;
+    use postgres_parser_ast::TypeName::Int4;
     use test_case::test_case;
 
     #[test]
@@ -103,9 +102,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::OneOrBoth;
-use crate::parser::ast_node::OperatorWithArgs;
-use crate::parser::ast_node::Type;
 use crate::parser::combinators::between_paren;
 use crate::parser::combinators::foundation::located;
 use crate::parser::combinators::foundation::many_sep;
@@ -119,6 +115,9 @@ use crate::parser::combinators::typename;
 use crate::parser::result::ScanErrorKind::ScanErr;
 use crate::parser::ParserError;
 use crate::parser::ParserErrorKind::MissingOperatorArgumentType;
+use postgres_parser_ast::OneOrBoth;
+use postgres_parser_ast::OperatorWithArgs;
+use postgres_parser_ast::Type;
 use postgres_parser_lexer::Keyword::NoneKw;
 use postgres_parser_lexer::OperatorKind::CloseParenthesis;
 use postgres_parser_lexer::OperatorKind::Comma;

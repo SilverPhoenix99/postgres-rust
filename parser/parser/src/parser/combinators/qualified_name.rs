@@ -54,7 +54,6 @@ pub(super) fn qualified_name() -> impl Combinator<Output = RelationName> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::SchemaName;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
@@ -98,8 +97,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::RelationName;
-use crate::parser::ast_node::SchemaName;
 use crate::parser::combinators::any_name;
 use crate::parser::combinators::foundation::located;
 use crate::parser::combinators::foundation::many_sep;
@@ -108,5 +105,7 @@ use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::error::NameList;
 use crate::parser::ParserError;
 use crate::parser::ParserErrorKind::ImproperQualifiedName;
+use postgres_parser_ast::RelationName;
+use postgres_parser_ast::SchemaName;
 use postgres_parser_lexer::OperatorKind::Comma;
 use std::mem;

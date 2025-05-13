@@ -10,7 +10,7 @@ pub(super) enum TokenValue {
     BitString { value: Box<str>, kind: BitStringKind },
 }
 
-use crate::parser::ast_node::UnsignedNumber;
+use postgres_parser_ast::UnsignedNumber;
 use postgres_parser_lexer::BitStringKind;
 use postgres_parser_lexer::Keyword;
 use postgres_parser_lexer::OperatorKind;

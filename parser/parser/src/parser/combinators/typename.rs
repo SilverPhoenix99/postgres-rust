@@ -40,10 +40,10 @@ fn array_bounds() -> impl Combinator<Output = Vec<Option<i32>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use crate::parser::ast_node::{SetOf, TypeName};
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    #[allow(unused_imports)]
+    use postgres_parser_ast::{SetOf, TypeName};
     use test_case::test_case;
 
     #[test_case("int", Type::new(TypeName::Int4, vec![], SetOf::Record))]
@@ -74,9 +74,9 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::Type;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::opt_array_bounds;
 use crate::parser::combinators::simple_typename;
+use postgres_parser_ast::Type;
 use postgres_parser_lexer::Keyword::Setof;

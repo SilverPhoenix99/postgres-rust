@@ -83,8 +83,8 @@ use self::{
     alter_user_stmt::alter_user_stmt,
     set_reset_clause::set_reset_clause
 };
-use crate::parser::ast_node::RawStmt;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::RawStmt;
 use postgres_parser_lexer::Keyword::Alter;

@@ -48,12 +48,13 @@ fn cast_context() -> impl Combinator<Output = CoercionContext> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use crate::parser::ast_node::FunctionWithArgs;
-    use crate::parser::ast_node::{TypeName, Typecast};
     use crate::parser::tests::test_parser;
+    #[allow(unused_imports)]
+    use postgres_parser_ast::FunctionWithArgs;
+    use postgres_parser_ast::TypeName::Int4;
+    use postgres_parser_ast::TypeName::Int8;
+    use postgres_parser_ast::Typecast;
     use test_case::test_case;
-    use TypeName::{Int4, Int8};
 
     #[test]
     fn test_create_cast_stmt() {
@@ -84,12 +85,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::CastConversion;
-use crate::parser::ast_node::CastConversion::WithFunction;
-use crate::parser::ast_node::CastConversion::WithInout;
-use crate::parser::ast_node::CastConversion::WithoutFunction;
-use crate::parser::ast_node::CoercionContext;
-use crate::parser::ast_node::CreateCastStmt;
 use crate::parser::combinators::foundation::and;
 use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::sequence;
@@ -97,6 +92,12 @@ use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::function_with_argtypes;
 use crate::parser::combinators::stmt::typecast;
+use postgres_parser_ast::CastConversion;
+use postgres_parser_ast::CastConversion::WithFunction;
+use postgres_parser_ast::CastConversion::WithInout;
+use postgres_parser_ast::CastConversion::WithoutFunction;
+use postgres_parser_ast::CoercionContext;
+use postgres_parser_ast::CreateCastStmt;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::As;
 use postgres_parser_lexer::Keyword::Function;

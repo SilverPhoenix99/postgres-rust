@@ -37,10 +37,10 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::QualifiedName;
 use crate::parser::combinators::col_label;
 use crate::parser::combinators::foundation::many_pre;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use postgres_basics::Str;
+use postgres_parser_ast::QualifiedName;
 use postgres_parser_lexer::OperatorKind::Dot;

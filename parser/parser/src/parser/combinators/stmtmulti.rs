@@ -44,10 +44,10 @@ fn transaction_stmt_legacy() -> impl Combinator<Output = TransactionStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use crate::parser::ast_node::TransactionMode::ReadOnly;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    #[allow(unused_imports)]
+    use postgres_parser_ast::TransactionMode::ReadOnly;
     use test_case::test_case;
 
     #[test_case("begin transaction")]
@@ -73,8 +73,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::RawStmt;
-use crate::parser::ast_node::TransactionStmt;
 use crate::parser::combinators::foundation::many;
 use crate::parser::combinators::foundation::many_sep;
 use crate::parser::combinators::foundation::match_first;
@@ -83,4 +81,6 @@ use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::stmt;
 use crate::parser::combinators::stmt::begin_stmt;
 use crate::parser::combinators::stmt::end_stmt;
+use postgres_parser_ast::RawStmt;
+use postgres_parser_ast::TransactionStmt;
 use postgres_parser_lexer::OperatorKind::Semicolon;

@@ -1,0 +1,11 @@
+[package]
+name = "postgres-parser-ast"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+postgres-basics.workspace = true
+thiserror.workspace = true

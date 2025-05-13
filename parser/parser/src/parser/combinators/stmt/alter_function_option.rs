@@ -52,14 +52,14 @@ pub(super) fn alter_function_option() -> impl Combinator<Output = AlterFunctionO
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::tests::test_parser;
     #[allow(unused_imports)]
-    use crate::parser::ast_node::{
+    use postgres_parser_ast::{
         SetRestMore::TimeZone,
         SignedNumber::IntegerConst,
         VariableTarget::All,
         ZoneValue::Local
     };
-    use crate::parser::tests::test_parser;
     use test_case::test_case;
 
     #[test_case("called on null input", Strict(false))]
@@ -85,9 +85,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AlterFunctionOption;
-use crate::parser::ast_node::AlterFunctionOption::*;
-use crate::parser::ast_node::Volatility::*;
 use crate::parser::combinators::any_name;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::match_first;
@@ -98,6 +95,9 @@ use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::signed_number;
 use crate::parser::combinators::stmt::reset_stmt;
 use crate::parser::combinators::stmt::set_rest_more;
+use postgres_parser_ast::AlterFunctionOption;
+use postgres_parser_ast::AlterFunctionOption::*;
+use postgres_parser_ast::Volatility::*;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::Called;
 use postgres_parser_lexer::Keyword::Definer;

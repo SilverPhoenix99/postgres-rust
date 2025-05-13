@@ -106,10 +106,10 @@ fn ident_option() -> impl Combinator<Output = AlterRoleOption> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use crate::parser::ast_node::RoleSpec::Public;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    #[allow(unused_imports)]
+    use postgres_parser_ast::RoleSpec::Public;
     use test_case::test_case;
 
     #[test]
@@ -164,18 +164,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AlterRoleOption;
-use crate::parser::ast_node::AlterRoleOption::BypassRls;
-use crate::parser::ast_node::AlterRoleOption::CanLogin;
-use crate::parser::ast_node::AlterRoleOption::ConnectionLimit;
-use crate::parser::ast_node::AlterRoleOption::CreateDatabase;
-use crate::parser::ast_node::AlterRoleOption::CreateRole;
-use crate::parser::ast_node::AlterRoleOption::Inherit;
-use crate::parser::ast_node::AlterRoleOption::IsReplication;
-use crate::parser::ast_node::AlterRoleOption::Password;
-use crate::parser::ast_node::AlterRoleOption::RoleMembers;
-use crate::parser::ast_node::AlterRoleOption::SuperUser;
-use crate::parser::ast_node::AlterRoleOption::ValidUntil;
 use crate::parser::combinators::foundation::identifier;
 use crate::parser::combinators::foundation::located;
 use crate::parser::combinators::foundation::many;
@@ -190,6 +178,18 @@ use crate::parser::result::ScanErrorKind::ScanErr;
 use crate::parser::ParserError;
 use crate::parser::ParserErrorKind::UnencryptedPassword;
 use crate::parser::ParserErrorKind::UnrecognizedRoleOption;
+use postgres_parser_ast::AlterRoleOption;
+use postgres_parser_ast::AlterRoleOption::BypassRls;
+use postgres_parser_ast::AlterRoleOption::CanLogin;
+use postgres_parser_ast::AlterRoleOption::ConnectionLimit;
+use postgres_parser_ast::AlterRoleOption::CreateDatabase;
+use postgres_parser_ast::AlterRoleOption::CreateRole;
+use postgres_parser_ast::AlterRoleOption::Inherit;
+use postgres_parser_ast::AlterRoleOption::IsReplication;
+use postgres_parser_ast::AlterRoleOption::Password;
+use postgres_parser_ast::AlterRoleOption::RoleMembers;
+use postgres_parser_ast::AlterRoleOption::SuperUser;
+use postgres_parser_ast::AlterRoleOption::ValidUntil;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::Connection;
 use postgres_parser_lexer::Keyword::Encrypted;

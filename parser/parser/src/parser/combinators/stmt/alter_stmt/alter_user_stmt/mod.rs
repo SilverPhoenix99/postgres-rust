@@ -27,14 +27,14 @@ pub(super) fn alter_user_stmt() -> impl Combinator<Output = RawStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::AddDrop::Add;
-    use crate::parser::ast_node::AlterRoleStmt;
-    use crate::parser::ast_node::GenericOption;
-    use crate::parser::ast_node::GenericOptionKind::Unspecified;
-    use crate::parser::ast_node::RoleSpec::CurrentUser;
-    use crate::parser::ast_node::RoleSpec::Public;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    use postgres_parser_ast::AddDrop::Add;
+    use postgres_parser_ast::AlterRoleStmt;
+    use postgres_parser_ast::GenericOption;
+    use postgres_parser_ast::GenericOptionKind::Unspecified;
+    use postgres_parser_ast::RoleSpec::CurrentUser;
+    use postgres_parser_ast::RoleSpec::Public;
 
     #[test]
     fn test_user_mapping() {
@@ -75,8 +75,6 @@ mod tests {
 }
 
 use self::user_stmt::user_stmt;
-use crate::parser::ast_node::AlterUserMappingStmt;
-use crate::parser::ast_node::RawStmt;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::sequence;
@@ -84,6 +82,8 @@ use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::stmt::alter_stmt::alter_generic_options;
 use crate::parser::combinators::stmt::auth_ident;
+use postgres_parser_ast::AlterUserMappingStmt;
+use postgres_parser_ast::RawStmt;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::For;
 use postgres_parser_lexer::Keyword::Mapping;

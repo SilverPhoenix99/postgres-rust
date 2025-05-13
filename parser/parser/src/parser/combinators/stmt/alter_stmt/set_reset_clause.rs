@@ -10,9 +10,10 @@ pub(super) fn set_reset_clause() -> impl Combinator<Output = SetResetClause> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::{SetRest, VariableTarget};
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    use postgres_parser_ast::SetRest;
+    use postgres_parser_ast::VariableTarget;
 
     #[test]
     fn test_set() {
@@ -37,10 +38,10 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::SetResetClause;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::stmt::reset_stmt::reset_stmt;
 use crate::parser::combinators::stmt::set_rest;
+use postgres_parser_ast::SetResetClause;
 use postgres_parser_lexer::Keyword::Set;

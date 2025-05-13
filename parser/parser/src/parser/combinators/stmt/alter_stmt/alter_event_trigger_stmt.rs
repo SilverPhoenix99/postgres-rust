@@ -62,9 +62,9 @@ fn enable_trigger() -> impl Combinator<Output = EventTriggerState> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::RoleSpec;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    use postgres_parser_ast::RoleSpec;
     use test_case::test_case;
 
     #[test]
@@ -110,17 +110,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AlterEventTrigStmt;
-use crate::parser::ast_node::AlterOwnerStmt;
-use crate::parser::ast_node::AlterOwnerTarget;
-use crate::parser::ast_node::EventTriggerState;
-use crate::parser::ast_node::EventTriggerState::Disabled;
-use crate::parser::ast_node::EventTriggerState::FiresAlways;
-use crate::parser::ast_node::EventTriggerState::FiresOnOrigin;
-use crate::parser::ast_node::EventTriggerState::FiresOnReplica;
-use crate::parser::ast_node::RawStmt;
-use crate::parser::ast_node::RenameStmt;
-use crate::parser::ast_node::RenameTarget;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::match_first_with_state;
@@ -129,6 +118,17 @@ use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::role_spec;
+use postgres_parser_ast::AlterEventTrigStmt;
+use postgres_parser_ast::AlterOwnerStmt;
+use postgres_parser_ast::AlterOwnerTarget;
+use postgres_parser_ast::EventTriggerState;
+use postgres_parser_ast::EventTriggerState::Disabled;
+use postgres_parser_ast::EventTriggerState::FiresAlways;
+use postgres_parser_ast::EventTriggerState::FiresOnOrigin;
+use postgres_parser_ast::EventTriggerState::FiresOnReplica;
+use postgres_parser_ast::RawStmt;
+use postgres_parser_ast::RenameStmt;
+use postgres_parser_ast::RenameTarget;
 use postgres_parser_lexer::Keyword::Always;
 use postgres_parser_lexer::Keyword::Disable;
 use postgres_parser_lexer::Keyword::Enable;

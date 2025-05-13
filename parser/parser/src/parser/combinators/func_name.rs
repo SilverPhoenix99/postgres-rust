@@ -73,7 +73,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::QualifiedName;
 use crate::parser::combinators::attrs;
 use crate::parser::combinators::foundation::identifier;
 use crate::parser::combinators::foundation::located;
@@ -82,6 +81,7 @@ use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::error::syntax_err;
+use postgres_parser_ast::QualifiedName;
 use postgres_parser_lexer::KeywordCategory::ColumnName;
 use postgres_parser_lexer::KeywordCategory::TypeFuncName;
 use postgres_parser_lexer::KeywordCategory::Unreserved;

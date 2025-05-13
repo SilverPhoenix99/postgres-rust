@@ -55,7 +55,6 @@ pub(super) fn opt_granted_by() -> impl Combinator<Output = RoleSpec> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::RoleSpec;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
@@ -103,12 +102,12 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::DropBehavior;
-use crate::parser::ast_node::RoleSpec;
 use crate::parser::combinators::foundation::many_sep;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::role_spec;
+use postgres_parser_ast::DropBehavior;
+use postgres_parser_ast::RoleSpec;
 use postgres_parser_lexer::Keyword::By;
 use postgres_parser_lexer::Keyword::Cascade;
 use postgres_parser_lexer::Keyword::Grant;

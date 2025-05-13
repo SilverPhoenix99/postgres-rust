@@ -78,11 +78,11 @@ fn aggr_arg() -> impl Combinator<Output = FunctionParameter> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::FuncType;
-    use crate::parser::ast_node::TypeName::Int4;
-    use crate::parser::ast_node::TypeName::Int8;
-    use crate::parser::ast_node::TypeName::Json;
     use crate::parser::tests::test_parser;
+    use postgres_parser_ast::FuncType;
+    use postgres_parser_ast::TypeName::Int4;
+    use postgres_parser_ast::TypeName::Int8;
+    use postgres_parser_ast::TypeName::Json;
     use test_case::test_case;
 
     #[test]
@@ -198,9 +198,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AggregateWithArgs;
-use crate::parser::ast_node::FunctionParameter;
-use crate::parser::ast_node::FunctionParameterMode as Mode;
 use crate::parser::combinators::between_paren;
 use crate::parser::combinators::foundation::located;
 use crate::parser::combinators::foundation::many_sep;
@@ -213,6 +210,9 @@ use crate::parser::combinators::func_name::func_name;
 use crate::parser::result::ScanErrorKind::ScanErr;
 use crate::parser::ParserError;
 use crate::parser::ParserErrorKind::AggregateWithOutputParameters;
+use postgres_parser_ast::AggregateWithArgs;
+use postgres_parser_ast::FunctionParameter;
+use postgres_parser_ast::FunctionParameterMode as Mode;
 use postgres_parser_lexer::Keyword::By;
 use postgres_parser_lexer::Keyword::Order;
 use postgres_parser_lexer::OperatorKind::Comma;

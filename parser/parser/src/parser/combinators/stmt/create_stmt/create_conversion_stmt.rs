@@ -43,7 +43,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::CreateConversionStmt;
 use crate::parser::combinators::any_name;
 use crate::parser::combinators::foundation::and;
 use crate::parser::combinators::foundation::or;
@@ -51,6 +50,7 @@ use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::string;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::CreateConversionStmt;
 use postgres_parser_lexer::Keyword::Conversion;
 use postgres_parser_lexer::Keyword::DefaultKw;
 use postgres_parser_lexer::Keyword::For;

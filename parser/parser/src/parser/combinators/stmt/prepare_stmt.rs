@@ -27,12 +27,12 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::RawStmt;
-use crate::parser::ast_node::RawStmt::PrepareTransactionStmt;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::string;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::RawStmt;
+use postgres_parser_ast::RawStmt::PrepareTransactionStmt;
 use postgres_parser_lexer::Keyword::Prepare;
 use postgres_parser_lexer::Keyword::Transaction;

@@ -252,16 +252,16 @@ use self::{
     variable_target::variable_target,
     view::view,
 };
-use crate::parser::ast_node::RawStmt;
-use crate::parser::ast_node::RawStmt::CheckPoint;
-use crate::parser::ast_node::RawStmt::ClosePortalStmt;
-use crate::parser::ast_node::RawStmt::DeallocateStmt;
-use crate::parser::ast_node::RawStmt::ListenStmt;
-use crate::parser::ast_node::RawStmt::LoadStmt;
-use crate::parser::ast_node::RawStmt::UnlistenStmt;
-use crate::parser::ast_node::RawStmt::VariableResetStmt;
-use crate::parser::ast_node::RawStmt::VariableShowStmt;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::RawStmt;
+use postgres_parser_ast::RawStmt::CheckPoint;
+use postgres_parser_ast::RawStmt::ClosePortalStmt;
+use postgres_parser_ast::RawStmt::DeallocateStmt;
+use postgres_parser_ast::RawStmt::ListenStmt;
+use postgres_parser_ast::RawStmt::LoadStmt;
+use postgres_parser_ast::RawStmt::UnlistenStmt;
+use postgres_parser_ast::RawStmt::VariableResetStmt;
+use postgres_parser_ast::RawStmt::VariableShowStmt;
 use postgres_parser_lexer::Keyword::Checkpoint;

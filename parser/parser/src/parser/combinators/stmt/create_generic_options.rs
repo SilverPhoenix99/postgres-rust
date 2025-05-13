@@ -28,9 +28,9 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::GenericOption;
 use crate::parser::combinators::between_paren;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::generic_options;
+use postgres_parser_ast::GenericOption;
 use postgres_parser_lexer::Keyword::Options;

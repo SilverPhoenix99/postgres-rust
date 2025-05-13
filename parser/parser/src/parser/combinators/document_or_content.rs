@@ -27,9 +27,9 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::XmlNodeKind;
-use crate::parser::ast_node::XmlNodeKind::Content;
-use crate::parser::ast_node::XmlNodeKind::Document;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::XmlNodeKind;
+use postgres_parser_ast::XmlNodeKind::Content;
+use postgres_parser_ast::XmlNodeKind::Document;
 use postgres_parser_lexer::Keyword as Kw;

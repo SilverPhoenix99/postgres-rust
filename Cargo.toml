@@ -4,6 +4,7 @@ resolver = "3"
 members = [
     "basics",
     "guc",
+    "parser/ast",
     "parser/error",
     "parser/lexer",
     "parser/parser",
@@ -30,6 +31,7 @@ thiserror = "2"
 
 postgres-basics = { path = "basics" }
 postgres-guc = { path = "guc" }
+postgres-parser-ast = { path = "parser/ast" }
 postgres-parser-error = { path = "parser/error" }
 postgres-parser-lexer = { path = "parser/lexer" }
 postgres-parser = { path = "parser/parser" }

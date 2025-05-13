@@ -83,15 +83,15 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::CaseExpr;
-use crate::parser::ast_node::CaseWhen;
-use crate::parser::ast_node::ExprNode;
 use crate::parser::combinators::expr::a_expr;
 use crate::parser::combinators::foundation::and;
 use crate::parser::combinators::foundation::many;
 use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::CaseExpr;
+use postgres_parser_ast::CaseWhen;
+use postgres_parser_ast::ExprNode;
 use postgres_parser_lexer::Keyword::Case;
 use postgres_parser_lexer::Keyword::Else;
 use postgres_parser_lexer::Keyword::Then;

@@ -10,10 +10,10 @@ pub(super) fn import_stmt() -> impl Combinator<Output = RawStmt> {
         .map(|_| todo!())
 }
 
-use crate::parser::ast_node::RawStmt;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::RawStmt;
 use postgres_parser_lexer::Keyword::Foreign;
 use postgres_parser_lexer::Keyword::Import;
 use postgres_parser_lexer::Keyword::Schema;

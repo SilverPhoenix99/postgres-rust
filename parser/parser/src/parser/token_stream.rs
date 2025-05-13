@@ -609,9 +609,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::UnsignedNumber;
-use crate::parser::ast_node::UnsignedNumber::IntegerConst;
-use crate::parser::ast_node::UnsignedNumber::NumericConst;
 use crate::parser::result::EofErrorKind::Eof;
 use crate::parser::result::EofErrorKind::NotEof;
 use crate::parser::result::EofResult;
@@ -637,6 +634,9 @@ use postgres_basics::Located;
 use postgres_basics::Location;
 use postgres_basics::NumberRadix;
 use postgres_basics::NAMEDATALEN;
+use postgres_parser_ast::UnsignedNumber;
+use postgres_parser_ast::UnsignedNumber::IntegerConst;
+use postgres_parser_ast::UnsignedNumber::NumericConst;
 use postgres_parser_error::HasLocation;
 use postgres_parser_lexer::BitStringKind;
 use postgres_parser_lexer::IdentifierKind;

@@ -161,8 +161,9 @@ fn comment_text() -> impl Combinator<Output = Option<Box<str>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::tests::test_parser;
     #[allow(unused_imports)]
-    use crate::parser::ast_node::{
+    use postgres_parser_ast::{
         AggregateWithArgs,
         FunctionWithArgs,
         OneOrBoth,
@@ -174,7 +175,6 @@ mod tests {
         TypeName::{Int4, Varchar},
         Typecast as Cast,
     };
-    use crate::parser::tests::test_parser;
     use test_case::test_case;
 
     #[test]
@@ -303,9 +303,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::CommentStmt;
-use crate::parser::ast_node::CommentTarget;
-use crate::parser::ast_node::CommentTarget::*;
 use crate::parser::combinators::any_name;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::match_first;
@@ -349,6 +346,9 @@ use crate::parser::combinators::stmt::Foreign;
 use crate::parser::combinators::stmt::Operator as Op;
 use crate::parser::combinators::stmt::TextSearch;
 use crate::parser::combinators::string_or_null;
+use postgres_parser_ast::CommentStmt;
+use postgres_parser_ast::CommentTarget;
+use postgres_parser_ast::CommentTarget::*;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::Comment;
 use postgres_parser_lexer::Keyword::Is;

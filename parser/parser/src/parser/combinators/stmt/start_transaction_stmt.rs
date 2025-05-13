@@ -15,11 +15,11 @@ pub(super) fn start_transaction_stmt() -> impl Combinator<Output = TransactionSt
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::TransactionMode::Deferrable;
-    use crate::parser::ast_node::TransactionMode::ReadOnly;
-    use crate::parser::ast_node::TransactionMode::ReadWrite;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    use postgres_parser_ast::TransactionMode::Deferrable;
+    use postgres_parser_ast::TransactionMode::ReadOnly;
+    use postgres_parser_ast::TransactionMode::ReadWrite;
 
     #[test]
     fn test_start_transaction() {
@@ -35,10 +35,10 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::TransactionStmt;
 use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::transaction_mode_list;
+use postgres_parser_ast::TransactionStmt;
 use postgres_parser_lexer::Keyword::Start;
 use postgres_parser_lexer::Keyword::Transaction;

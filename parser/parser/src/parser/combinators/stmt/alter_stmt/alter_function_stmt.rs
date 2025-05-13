@@ -106,14 +106,14 @@ fn alterfunc_opt_list() -> impl Combinator<Output = Vec<AlterFunctionOption>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::tests::test_parser;
     #[allow(unused_imports)]
-    use crate::parser::ast_node::{
+    use postgres_parser_ast::{
         FunctionWithArgs,
         RoleSpec::CurrentUser,
         SetRestMore::ConfigurationParameter,
         ValueOrDefault,
     };
-    use crate::parser::tests::test_parser;
     use test_case::test_case;
 
     #[test_case(
@@ -258,19 +258,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AddDrop;
-use crate::parser::ast_node::AlterFunctionKind;
-use crate::parser::ast_node::AlterFunctionOption;
-use crate::parser::ast_node::AlterFunctionStmt;
-use crate::parser::ast_node::AlterObjectDependsStmt;
-use crate::parser::ast_node::AlterObjectDependsTarget;
-use crate::parser::ast_node::AlterObjectSchemaStmt;
-use crate::parser::ast_node::AlterObjectSchemaTarget;
-use crate::parser::ast_node::AlterOwnerStmt;
-use crate::parser::ast_node::AlterOwnerTarget;
-use crate::parser::ast_node::RawStmt;
-use crate::parser::ast_node::RenameStmt;
-use crate::parser::ast_node::RenameTarget;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::many;
 use crate::parser::combinators::foundation::match_first;
@@ -283,6 +270,19 @@ use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::function_with_argtypes;
 use crate::parser::combinators::role_spec;
 use crate::parser::combinators::stmt::alter_function_option;
+use postgres_parser_ast::AddDrop;
+use postgres_parser_ast::AlterFunctionKind;
+use postgres_parser_ast::AlterFunctionOption;
+use postgres_parser_ast::AlterFunctionStmt;
+use postgres_parser_ast::AlterObjectDependsStmt;
+use postgres_parser_ast::AlterObjectDependsTarget;
+use postgres_parser_ast::AlterObjectSchemaStmt;
+use postgres_parser_ast::AlterObjectSchemaTarget;
+use postgres_parser_ast::AlterOwnerStmt;
+use postgres_parser_ast::AlterOwnerTarget;
+use postgres_parser_ast::RawStmt;
+use postgres_parser_ast::RenameStmt;
+use postgres_parser_ast::RenameTarget;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::Depends;
 use postgres_parser_lexer::Keyword::Extension;

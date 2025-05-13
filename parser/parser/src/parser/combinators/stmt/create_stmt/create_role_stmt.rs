@@ -25,12 +25,12 @@ fn role_kind() -> impl Combinator<Output = RoleKind> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::tests::test_parser;
     #[allow(unused_imports)]
-    use crate::parser::ast_node::{
+    use postgres_parser_ast::{
         CreateRoleOption,
         RoleSpec::Public
     };
-    use crate::parser::tests::test_parser;
     use test_case::test_case;
 
     #[test_case("role test_role with sysid 42",
@@ -58,14 +58,14 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::CreateRoleStmt;
-use crate::parser::ast_node::RoleKind;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::role_id;
 use crate::parser::combinators::stmt::create_stmt::create_role_options;
+use postgres_parser_ast::CreateRoleStmt;
+use postgres_parser_ast::RoleKind;
 use postgres_parser_lexer::Keyword::Group;
 use postgres_parser_lexer::Keyword::Role;
 use postgres_parser_lexer::Keyword::With;

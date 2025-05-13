@@ -27,8 +27,8 @@ pub(super) fn param_expr() -> impl Combinator<Output = ExprNode> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::Indirection::FullSlice;
     use crate::parser::tests::test_parser;
+    use postgres_parser_ast::Indirection::FullSlice;
 
     #[test]
     fn test_param_expr() {
@@ -43,9 +43,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::ExprNode;
-use crate::parser::ast_node::ExprNode::ParamRef;
-use crate::parser::ast_node::IndirectionExpr;
 use crate::parser::combinators::expr::check_indirection;
 use crate::parser::combinators::expr::indirection;
 use crate::parser::combinators::foundation::located;
@@ -53,4 +50,7 @@ use crate::parser::combinators::foundation::param;
 use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::ExprNode;
+use postgres_parser_ast::ExprNode::ParamRef;
+use postgres_parser_ast::IndirectionExpr;
 

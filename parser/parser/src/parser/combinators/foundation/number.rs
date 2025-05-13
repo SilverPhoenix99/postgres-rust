@@ -34,10 +34,10 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::UnsignedNumber;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::result::ScanResult;
 use crate::parser::token_stream::TokenConsumer;
 use crate::parser::token_stream::TokenStream;
 use crate::parser::token_value::TokenValue;
+use postgres_parser_ast::UnsignedNumber;
 use std::mem;

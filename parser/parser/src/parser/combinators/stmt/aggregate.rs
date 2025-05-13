@@ -23,8 +23,8 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AggregateWithArgs;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::stmt::aggregate_with_argtypes;
+use postgres_parser_ast::AggregateWithArgs;
 use postgres_parser_lexer::Keyword::Aggregate;

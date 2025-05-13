@@ -28,11 +28,11 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::OneOrAll;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use postgres_basics::Str;
+use postgres_parser_ast::OneOrAll;
 use postgres_parser_lexer::Keyword::Unlisten;
 use postgres_parser_lexer::OperatorKind::Mul;

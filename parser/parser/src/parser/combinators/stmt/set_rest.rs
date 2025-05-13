@@ -137,15 +137,15 @@ fn opt_encoding() -> impl Combinator<Output = ValueOrDefault<Box<str>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use crate::parser::ast_node::SignedNumber::IntegerConst;
-    #[allow(unused_imports)]
-    use crate::parser::ast_node::TransactionMode::ReadOnly;
-    #[allow(unused_imports)]
-    use crate::parser::ast_node::XmlNodeKind::Document;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use postgres_basics::Str;
+    #[allow(unused_imports)]
+    use postgres_parser_ast::{
+        SignedNumber::IntegerConst,
+        TransactionMode::ReadOnly,
+        XmlNodeKind::Document,
+    };
     use test_case::test_case;
 
     #[test_case("session characteristics as transaction read only", SetRest::SessionTransactionCharacteristics(vec![ReadOnly]))]
@@ -216,17 +216,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::IntervalRange;
-use crate::parser::ast_node::IntervalRange::Full;
-use crate::parser::ast_node::IntervalRange::Hour;
-use crate::parser::ast_node::IntervalRange::HourToMinute;
-use crate::parser::ast_node::SetRest;
-use crate::parser::ast_node::SetRestMore;
-use crate::parser::ast_node::ValueOrDefault;
-use crate::parser::ast_node::ZoneValue;
-use crate::parser::ast_node::ZoneValue::Interval;
-use crate::parser::ast_node::ZoneValue::Local;
-use crate::parser::ast_node::ZoneValue::Numeric;
 use crate::parser::combinators::document_or_content;
 use crate::parser::combinators::foundation::identifier;
 use crate::parser::combinators::foundation::located;
@@ -247,6 +236,17 @@ use crate::parser::combinators::var_name;
 use crate::parser::ParserError;
 use crate::parser::ParserErrorKind::InvalidZoneValue;
 use postgres_basics::Str;
+use postgres_parser_ast::IntervalRange;
+use postgres_parser_ast::IntervalRange::Full;
+use postgres_parser_ast::IntervalRange::Hour;
+use postgres_parser_ast::IntervalRange::HourToMinute;
+use postgres_parser_ast::SetRest;
+use postgres_parser_ast::SetRestMore;
+use postgres_parser_ast::ValueOrDefault;
+use postgres_parser_ast::ZoneValue;
+use postgres_parser_ast::ZoneValue::Interval;
+use postgres_parser_ast::ZoneValue::Local;
+use postgres_parser_ast::ZoneValue::Numeric;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::As;
 use postgres_parser_lexer::Keyword::Authorization;

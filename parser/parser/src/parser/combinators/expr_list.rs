@@ -28,8 +28,8 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::ExprNode;
 use crate::parser::combinators::expr::a_expr;
 use crate::parser::combinators::foundation::many_sep;
 use crate::parser::combinators::foundation::Combinator;
+use postgres_parser_ast::ExprNode;
 use postgres_parser_lexer::OperatorKind::Comma;

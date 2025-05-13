@@ -43,10 +43,10 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::GenericOption;
 use crate::parser::combinators::col_label;
 use crate::parser::combinators::foundation::many_sep;
 use crate::parser::combinators::foundation::string;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::GenericOption;
 use postgres_parser_lexer::OperatorKind::Comma;

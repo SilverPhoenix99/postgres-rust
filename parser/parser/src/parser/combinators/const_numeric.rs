@@ -57,7 +57,6 @@ pub(super) fn signed_i32_literal() -> impl Combinator<Output = i32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::SignedNumber;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     #[allow(unused_imports)]
@@ -91,12 +90,12 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::SignedNumber;
 use crate::parser::combinators::foundation::integer;
 use crate::parser::combinators::foundation::number;
 use crate::parser::combinators::foundation::parser;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::sign;
+use postgres_parser_ast::SignedNumber;
 use postgres_parser_lexer::OperatorKind::Minus;
 use std::ops::Neg;
