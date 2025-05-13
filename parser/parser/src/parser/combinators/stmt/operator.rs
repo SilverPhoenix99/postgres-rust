@@ -23,14 +23,14 @@ pub(super) fn operator() -> impl Combinator<Output = Operator> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::tests::test_parser;
     #[allow(unused_imports)]
-    use crate::parser::ast_node::{
+    use postgres_parser_ast::{
         OneOrBoth,
         Operator::Addition,
         QualifiedOperator,
         TypeName::Int4,
     };
-    use crate::parser::tests::test_parser;
     use test_case::test_case;
 
     #[test_case("operator +(int, int)", Operator::WithArgs(
@@ -56,8 +56,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::OperatorWithArgs;
-use crate::parser::ast_node::QualifiedName;
 use crate::parser::combinators::any_name;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::and;
@@ -66,6 +64,8 @@ use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::stmt::operator_with_argtypes;
 use postgres_basics::Str;
+use postgres_parser_ast::OperatorWithArgs;
+use postgres_parser_ast::QualifiedName;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::Class;
 use postgres_parser_lexer::Keyword::Family;

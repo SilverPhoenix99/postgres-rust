@@ -64,22 +64,22 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::ExprNode;
-use crate::parser::ast_node::ExprNode::CurrentCatalog;
-use crate::parser::ast_node::ExprNode::CurrentDate;
-use crate::parser::ast_node::ExprNode::CurrentRole;
-use crate::parser::ast_node::ExprNode::CurrentTime;
-use crate::parser::ast_node::ExprNode::CurrentTimestamp;
-use crate::parser::ast_node::ExprNode::CurrentUser;
-use crate::parser::ast_node::ExprNode::LocalTime;
-use crate::parser::ast_node::ExprNode::LocalTimestamp;
-use crate::parser::ast_node::ExprNode::SessionUser;
-use crate::parser::ast_node::ExprNode::SystemUser;
-use crate::parser::ast_node::ExprNode::User;
 use crate::parser::combinators::expr::expr_primary::case_expr;
 use crate::parser::combinators::expr::expr_primary::cast_expr;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::opt_precision;
+use postgres_parser_ast::ExprNode;
+use postgres_parser_ast::ExprNode::CurrentCatalog;
+use postgres_parser_ast::ExprNode::CurrentDate;
+use postgres_parser_ast::ExprNode::CurrentRole;
+use postgres_parser_ast::ExprNode::CurrentTime;
+use postgres_parser_ast::ExprNode::CurrentTimestamp;
+use postgres_parser_ast::ExprNode::CurrentUser;
+use postgres_parser_ast::ExprNode::LocalTime;
+use postgres_parser_ast::ExprNode::LocalTimestamp;
+use postgres_parser_ast::ExprNode::SessionUser;
+use postgres_parser_ast::ExprNode::SystemUser;
+use postgres_parser_ast::ExprNode::User;
 use postgres_parser_lexer::Keyword as Kw;

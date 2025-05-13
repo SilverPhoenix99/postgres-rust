@@ -42,11 +42,11 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::NotifyStmt;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::string;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::NotifyStmt;
 use postgres_parser_lexer::Keyword::Notify;
 use postgres_parser_lexer::OperatorKind::Comma;

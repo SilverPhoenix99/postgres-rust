@@ -31,9 +31,9 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::TransactionStmt;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::TransactionStmt;
 use postgres_parser_lexer::Keyword::Release;
 use postgres_parser_lexer::Keyword::Savepoint;

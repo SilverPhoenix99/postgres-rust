@@ -200,16 +200,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::Operator;
-use crate::parser::ast_node::Operator::Addition;
-use crate::parser::ast_node::Operator::Division;
-use crate::parser::ast_node::Operator::Exponentiation;
-use crate::parser::ast_node::Operator::ILike;
-use crate::parser::ast_node::Operator::Modulo;
-use crate::parser::ast_node::Operator::Multiplication;
-use crate::parser::ast_node::Operator::Subtraction;
-use crate::parser::ast_node::Operator::UserDefined;
-use crate::parser::ast_node::QualifiedOperator;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::enclosure;
 use crate::parser::combinators::foundation::many;
@@ -219,6 +209,16 @@ use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::user_defined_operator;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::Operator;
+use postgres_parser_ast::Operator::Addition;
+use postgres_parser_ast::Operator::Division;
+use postgres_parser_ast::Operator::Exponentiation;
+use postgres_parser_ast::Operator::ILike;
+use postgres_parser_ast::Operator::Modulo;
+use postgres_parser_ast::Operator::Multiplication;
+use postgres_parser_ast::Operator::Subtraction;
+use postgres_parser_ast::Operator::UserDefined;
+use postgres_parser_ast::QualifiedOperator;
 use postgres_parser_lexer::Keyword::Ilike;
 use postgres_parser_lexer::Keyword::Like;
 use postgres_parser_lexer::Keyword::Operator as OperatorKw;

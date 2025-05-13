@@ -33,10 +33,10 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::DiscardStmt;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::DiscardStmt;
 use postgres_parser_lexer::Keyword::All;
 use postgres_parser_lexer::Keyword::Discard;
 use postgres_parser_lexer::Keyword::Plans;

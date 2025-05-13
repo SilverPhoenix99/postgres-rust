@@ -53,9 +53,9 @@ fn constraints_set_mode() -> impl Combinator<Output = ConstraintsSetMode> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::SetRest;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    use postgres_parser_ast::SetRest;
     use test_case::test_case;
 
     #[test]
@@ -100,14 +100,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::ConstraintsSetMode;
-use crate::parser::ast_node::ConstraintsSetMode::Deferred;
-use crate::parser::ast_node::ConstraintsSetMode::Immediate;
-use crate::parser::ast_node::ConstraintsSetStmt;
-use crate::parser::ast_node::OneOrAll;
-use crate::parser::ast_node::RawStmt;
-use crate::parser::ast_node::RelationName;
-use crate::parser::ast_node::VariableSetStmt;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::optional;
 use crate::parser::combinators::foundation::or;
@@ -116,6 +108,14 @@ use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::qualified_name::qualified_name_list;
 use crate::parser::combinators::stmt::set_rest;
+use postgres_parser_ast::ConstraintsSetMode;
+use postgres_parser_ast::ConstraintsSetMode::Deferred;
+use postgres_parser_ast::ConstraintsSetMode::Immediate;
+use postgres_parser_ast::ConstraintsSetStmt;
+use postgres_parser_ast::OneOrAll;
+use postgres_parser_ast::RawStmt;
+use postgres_parser_ast::RelationName;
+use postgres_parser_ast::VariableSetStmt;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::All;
 use postgres_parser_lexer::Keyword::Constraints;

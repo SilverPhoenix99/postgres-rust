@@ -10,6 +10,7 @@ workspace = true
 bitvec.workspace = true
 thiserror.workspace = true
 postgres-basics.workspace = true
+postgres-parser-ast.workspace = true
 postgres-parser-error.workspace = true
 postgres-parser-lexer.workspace = true
 

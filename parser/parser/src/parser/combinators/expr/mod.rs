@@ -19,5 +19,5 @@ use self::{
     expr_primary::expr_primary,
     indirection::{check_indirection, indirection},
 };
-use crate::parser::ast_node::ExprNode;
 use crate::parser::combinators::foundation::Combinator;
+use postgres_parser_ast::ExprNode;

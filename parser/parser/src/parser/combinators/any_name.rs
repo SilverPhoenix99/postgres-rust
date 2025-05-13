@@ -55,9 +55,9 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::QualifiedName;
 use crate::parser::combinators::attrs;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::many_sep;
 use crate::parser::combinators::foundation::Combinator;
+use postgres_parser_ast::QualifiedName;
 use postgres_parser_lexer::OperatorKind::Comma;

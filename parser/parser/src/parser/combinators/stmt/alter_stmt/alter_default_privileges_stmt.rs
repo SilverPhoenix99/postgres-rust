@@ -109,11 +109,10 @@ fn def_acl_privilege_target() -> impl Combinator<Output = PrivilegeDefaultsTarge
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::AccessPrivilege;
-    use crate::parser::ast_node::DropBehavior;
-    use crate::parser::ast_node::PrivilegeDefaultsTarget;
-    use crate::parser::ast_node::RoleSpec::*;
     use crate::parser::tests::test_parser;
+    use postgres_parser_ast::AccessPrivilege;
+    use postgres_parser_ast::DropBehavior;
+    use postgres_parser_ast::RoleSpec::*;
     use test_case::test_case;
 
     #[test]
@@ -247,16 +246,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AclOption;
-use crate::parser::ast_node::AlterDefaultPrivilegesStmt;
-use crate::parser::ast_node::GrantStmt;
-use crate::parser::ast_node::PrivilegeDefaultsTarget;
-use crate::parser::ast_node::PrivilegeDefaultsTarget::Functions;
-use crate::parser::ast_node::PrivilegeDefaultsTarget::LargeObjects;
-use crate::parser::ast_node::PrivilegeDefaultsTarget::Schemas;
-use crate::parser::ast_node::PrivilegeDefaultsTarget::Sequences;
-use crate::parser::ast_node::PrivilegeDefaultsTarget::Tables;
-use crate::parser::ast_node::PrivilegeDefaultsTarget::Types;
 use crate::parser::combinators::foundation::and;
 use crate::parser::combinators::foundation::many;
 use crate::parser::combinators::foundation::match_first;
@@ -269,6 +258,16 @@ use crate::parser::combinators::opt_drop_behavior;
 use crate::parser::combinators::opt_grant_option;
 use crate::parser::combinators::privileges;
 use crate::parser::combinators::role_list;
+use postgres_parser_ast::AclOption;
+use postgres_parser_ast::AlterDefaultPrivilegesStmt;
+use postgres_parser_ast::GrantStmt;
+use postgres_parser_ast::PrivilegeDefaultsTarget;
+use postgres_parser_ast::PrivilegeDefaultsTarget::Functions;
+use postgres_parser_ast::PrivilegeDefaultsTarget::LargeObjects;
+use postgres_parser_ast::PrivilegeDefaultsTarget::Schemas;
+use postgres_parser_ast::PrivilegeDefaultsTarget::Sequences;
+use postgres_parser_ast::PrivilegeDefaultsTarget::Tables;
+use postgres_parser_ast::PrivilegeDefaultsTarget::Types;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::DefaultKw;
 use postgres_parser_lexer::Keyword::For;

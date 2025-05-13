@@ -11,7 +11,6 @@ pub(super) fn show_stmt() -> impl Combinator<Output = VariableTarget> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::VariableTarget;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
 
@@ -23,8 +22,8 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::VariableTarget;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::stmt::variable_target;
+use postgres_parser_ast::VariableTarget;
 use postgres_parser_lexer::Keyword::Show;

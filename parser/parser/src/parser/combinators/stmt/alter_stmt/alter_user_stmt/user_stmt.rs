@@ -52,15 +52,17 @@ pub(super) fn user_stmt() -> impl Combinator<Output = RawStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::SetResetClause::Reset;
-    use crate::parser::ast_node::SetResetClause::Set;
-    use crate::parser::ast_node::SetRest::LocalTransactionCharacteristics;
-    use crate::parser::ast_node::SetRest::TransactionSnapshot;
-    use crate::parser::ast_node::TransactionMode::Deferrable;
-    use crate::parser::ast_node::VariableTarget::{SessionAuthorization, TimeZone};
-    use crate::parser::ast_node::{AlterRoleOption, RoleSpec};
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    use postgres_parser_ast::AlterRoleOption;
+    use postgres_parser_ast::RoleSpec;
+    use postgres_parser_ast::SetResetClause::Reset;
+    use postgres_parser_ast::SetResetClause::Set;
+    use postgres_parser_ast::SetRest::LocalTransactionCharacteristics;
+    use postgres_parser_ast::SetRest::TransactionSnapshot;
+    use postgres_parser_ast::TransactionMode::Deferrable;
+    use postgres_parser_ast::VariableTarget::SessionAuthorization;
+    use postgres_parser_ast::VariableTarget::TimeZone;
 
     #[test]
     fn test_all_in_db_set() {
@@ -183,13 +185,6 @@ mod tests {
 }
 
 use super::in_database::in_database;
-use crate::parser::ast_node::AddDrop::Add;
-use crate::parser::ast_node::AlterRoleSetStmt;
-use crate::parser::ast_node::AlterRoleStmt;
-use crate::parser::ast_node::OneOrAll;
-use crate::parser::ast_node::RawStmt;
-use crate::parser::ast_node::RenameStmt;
-use crate::parser::ast_node::RenameTarget::Role;
 use crate::parser::combinators::foundation::located;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::match_first_with_state;
@@ -201,6 +196,13 @@ use crate::parser::combinators::role_spec;
 use crate::parser::combinators::stmt::alter_role_options;
 use crate::parser::combinators::stmt::alter_stmt::set_reset_clause;
 use crate::parser::ParserError;
+use postgres_parser_ast::AddDrop::Add;
+use postgres_parser_ast::AlterRoleSetStmt;
+use postgres_parser_ast::AlterRoleStmt;
+use postgres_parser_ast::OneOrAll;
+use postgres_parser_ast::RawStmt;
+use postgres_parser_ast::RenameStmt;
+use postgres_parser_ast::RenameTarget::Role;
 use postgres_parser_lexer::Keyword::All;
 use postgres_parser_lexer::Keyword::Rename;
 use postgres_parser_lexer::Keyword::To;

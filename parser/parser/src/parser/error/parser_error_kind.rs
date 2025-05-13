@@ -184,8 +184,6 @@ impl From<RoleSpecError> for ParserErrorKind {
     }
 }
 
-use crate::parser::ast_node::QualifiedName;
-use crate::parser::ast_node::RoleSpecError;
 use crate::string_decoders::ExtendedStringError;
 use crate::string_decoders::UnicodeStringError;
 use postgres_basics::elog::ErrorReport;
@@ -195,6 +193,8 @@ use postgres_basics::sql_state::SqlState::FeatureNotSupported;
 use postgres_basics::sql_state::SqlState::InvalidParameterValue;
 use postgres_basics::sql_state::SqlState::ReservedName;
 use postgres_basics::sql_state::SqlState::SyntaxError;
+use postgres_parser_ast::QualifiedName;
+use postgres_parser_ast::RoleSpecError;
 use postgres_parser_lexer::LexerErrorKind;
 use std::borrow::Cow;
 use std::fmt::Display;

@@ -14,7 +14,6 @@ pub(in crate::parser::combinators) fn end_stmt() -> impl Combinator<Output = Tra
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::TransactionStmt::Commit;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
@@ -31,10 +30,10 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::TransactionStmt;
-use crate::parser::ast_node::TransactionStmt::Commit;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::opt_transaction;
 use crate::parser::combinators::opt_transaction_chain;
+use postgres_parser_ast::TransactionStmt;
+use postgres_parser_ast::TransactionStmt::Commit;
 use postgres_parser_lexer::Keyword::End;

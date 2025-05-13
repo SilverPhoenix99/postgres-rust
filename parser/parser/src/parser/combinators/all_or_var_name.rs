@@ -29,10 +29,10 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::OneOrAll;
-use crate::parser::ast_node::QualifiedName;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::var_name;
+use postgres_parser_ast::OneOrAll;
+use postgres_parser_ast::QualifiedName;
 use postgres_parser_lexer::Keyword;

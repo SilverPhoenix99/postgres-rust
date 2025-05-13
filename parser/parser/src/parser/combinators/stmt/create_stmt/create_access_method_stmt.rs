@@ -45,10 +45,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AccessMethodKind;
-use crate::parser::ast_node::AccessMethodKind::Index;
-use crate::parser::ast_node::AccessMethodKind::Table;
-use crate::parser::ast_node::CreateAccessMethodStmt;
 use crate::parser::combinators::any_name;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::and;
@@ -56,6 +52,10 @@ use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::AccessMethodKind;
+use postgres_parser_ast::AccessMethodKind::Index;
+use postgres_parser_ast::AccessMethodKind::Table;
+use postgres_parser_ast::CreateAccessMethodStmt;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::Access;
 use postgres_parser_lexer::Keyword::Handler;

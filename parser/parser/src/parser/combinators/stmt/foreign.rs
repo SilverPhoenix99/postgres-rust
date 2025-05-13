@@ -43,7 +43,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::QualifiedName;
 use crate::parser::combinators::any_name;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::and;
@@ -51,6 +50,7 @@ use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use postgres_basics::Str;
+use postgres_parser_ast::QualifiedName;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::Data;
 use postgres_parser_lexer::Keyword::Wrapper;

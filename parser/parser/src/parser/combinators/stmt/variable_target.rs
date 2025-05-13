@@ -37,16 +37,16 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::OneOrAll;
-use crate::parser::ast_node::VariableTarget;
-use crate::parser::ast_node::VariableTarget::SessionAuthorization;
-use crate::parser::ast_node::VariableTarget::TimeZone;
-use crate::parser::ast_node::VariableTarget::TransactionIsolation;
 use crate::parser::combinators::all_or_var_name;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::OneOrAll;
+use postgres_parser_ast::VariableTarget;
+use postgres_parser_ast::VariableTarget::SessionAuthorization;
+use postgres_parser_ast::VariableTarget::TimeZone;
+use postgres_parser_ast::VariableTarget::TransactionIsolation;
 use postgres_parser_lexer::Keyword::Authorization;
 use postgres_parser_lexer::Keyword::Isolation;
 use postgres_parser_lexer::Keyword::Level;

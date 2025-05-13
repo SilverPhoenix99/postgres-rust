@@ -23,8 +23,8 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::FunctionWithArgs;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::function_with_argtypes;
+use postgres_parser_ast::FunctionWithArgs;
 use postgres_parser_lexer::Keyword::Function;

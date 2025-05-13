@@ -47,9 +47,9 @@ fn alter_generic_option() -> impl Combinator<Output = GenericOptionKind> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::GenericOption;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    use postgres_parser_ast::GenericOption;
     use test_case::test_case;
 
     #[test]
@@ -93,11 +93,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::GenericOptionKind;
-use crate::parser::ast_node::GenericOptionKind::Add;
-use crate::parser::ast_node::GenericOptionKind::Drop;
-use crate::parser::ast_node::GenericOptionKind::Set;
-use crate::parser::ast_node::GenericOptionKind::Unspecified;
 use crate::parser::combinators::between_paren;
 use crate::parser::combinators::col_label;
 use crate::parser::combinators::foundation::many_sep;
@@ -105,6 +100,11 @@ use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::generic_option;
+use postgres_parser_ast::GenericOptionKind;
+use postgres_parser_ast::GenericOptionKind::Add;
+use postgres_parser_ast::GenericOptionKind::Drop;
+use postgres_parser_ast::GenericOptionKind::Set;
+use postgres_parser_ast::GenericOptionKind::Unspecified;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::DropKw;
 use postgres_parser_lexer::Keyword::Options;

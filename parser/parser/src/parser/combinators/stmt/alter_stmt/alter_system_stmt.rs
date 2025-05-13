@@ -39,9 +39,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AlterSystemStmt;
-use crate::parser::ast_node::OneOrAll;
-use crate::parser::ast_node::ValueOrDefault;
 use crate::parser::combinators::all_or_var_name;
 use crate::parser::combinators::foundation::enclosure;
 use crate::parser::combinators::foundation::match_first;
@@ -49,6 +46,9 @@ use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::generic_set_tail;
 use crate::parser::combinators::var_name;
+use postgres_parser_ast::AlterSystemStmt;
+use postgres_parser_ast::OneOrAll;
+use postgres_parser_ast::ValueOrDefault;
 use postgres_parser_lexer::Keyword::Reset;
 use postgres_parser_lexer::Keyword::Set;
 use postgres_parser_lexer::Keyword::SystemKw;

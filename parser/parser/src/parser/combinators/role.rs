@@ -138,7 +138,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::RoleSpec;
 use crate::parser::combinators::foundation::enclosure;
 use crate::parser::combinators::foundation::located;
 use crate::parser::combinators::foundation::many_sep;
@@ -150,6 +149,7 @@ use crate::parser::result::ScanErrorKind::ScanErr;
 use crate::parser::ParserError;
 use crate::parser::ParserErrorKind::ReservedRoleSpec;
 use postgres_basics::Str;
+use postgres_parser_ast::RoleSpec;
 use postgres_parser_lexer::Keyword::CurrentRole;
 use postgres_parser_lexer::Keyword::CurrentUser;
 use postgres_parser_lexer::Keyword::NoneKw;

@@ -18,9 +18,9 @@ pub(super) fn reassign_owned_stmt() -> impl Combinator<Output = ReassignOwnedStm
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::RoleSpec;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    use postgres_parser_ast::RoleSpec;
 
     #[test]
     fn test_reassign_owner_stmt() {
@@ -35,12 +35,12 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::ReassignOwnedStmt;
 use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::role_list;
 use crate::parser::combinators::role_spec;
+use postgres_parser_ast::ReassignOwnedStmt;
 use postgres_parser_lexer::Keyword::By;
 use postgres_parser_lexer::Keyword::OwnedKw;
 use postgres_parser_lexer::Keyword::Reassign;

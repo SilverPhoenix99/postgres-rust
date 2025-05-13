@@ -46,13 +46,13 @@ fn sortby() -> impl Combinator<Output = SortBy> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::ExprNode::IntegerConst;
-    use crate::parser::ast_node::Operator::Less;
-    use crate::parser::ast_node::SortDirection;
-    use crate::parser::ast_node::SortDirection::Ascending;
-    use crate::parser::ast_node::SortNulls::NullsFirst;
-    use crate::parser::ast_node::SortNulls::NullsLast;
     use crate::parser::tests::test_parser;
+    use postgres_parser_ast::ExprNode::IntegerConst;
+    use postgres_parser_ast::Operator::Less;
+    use postgres_parser_ast::SortDirection;
+    use postgres_parser_ast::SortDirection::Ascending;
+    use postgres_parser_ast::SortNulls::NullsFirst;
+    use postgres_parser_ast::SortNulls::NullsLast;
     use test_case::test_case;
 
     #[test]
@@ -111,8 +111,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::SortBy;
-use crate::parser::ast_node::SortDirection::Using;
 use crate::parser::combinators::expr::a_expr;
 use crate::parser::combinators::foundation::and;
 use crate::parser::combinators::foundation::many_sep;
@@ -123,6 +121,8 @@ use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::opt_asc_desc;
 use crate::parser::combinators::opt_nulls_order;
 use crate::parser::combinators::qual_all_op;
+use postgres_parser_ast::SortBy;
+use postgres_parser_ast::SortDirection::Using;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::By;
 use postgres_parser_lexer::Keyword::Order;

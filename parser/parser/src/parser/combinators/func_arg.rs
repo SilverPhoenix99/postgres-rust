@@ -86,13 +86,13 @@ fn is_arg_name(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::FuncType;
-    use crate::parser::ast_node::SetOf;
-    use crate::parser::ast_node::Type;
-    use crate::parser::ast_node::TypeName;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use postgres_basics::Str;
+    use postgres_parser_ast::FuncType;
+    use postgres_parser_ast::SetOf;
+    use postgres_parser_ast::Type;
+    use postgres_parser_ast::TypeName;
     use test_case::test_case;
 
     #[test_case("json", None, FunctionParameterMode::Default, TypeName::Json, SetOf::Record)]
@@ -132,8 +132,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::FunctionParameter;
-use crate::parser::ast_node::FunctionParameterMode;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
@@ -143,6 +141,8 @@ use crate::parser::result::EofResult;
 use crate::parser::token_value::TokenValue;
 use crate::parser::token_value::TokenValue::Identifier;
 use crate::parser::token_value::TokenValue::Keyword;
+use postgres_parser_ast::FunctionParameter;
+use postgres_parser_ast::FunctionParameterMode;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::Double;
 use postgres_parser_lexer::Keyword::Precision;

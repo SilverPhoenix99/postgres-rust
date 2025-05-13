@@ -23,10 +23,10 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::UniqueNullTreatment;
 use crate::parser::combinators::foundation::optional;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::UniqueNullTreatment;
 use postgres_parser_lexer::Keyword::Distinct;
 use postgres_parser_lexer::Keyword::Not;
 use postgres_parser_lexer::Keyword::Nulls;

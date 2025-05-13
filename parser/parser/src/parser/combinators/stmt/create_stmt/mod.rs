@@ -54,8 +54,8 @@ use self::{
     create_role_stmt::create_role_stmt,
     create_user_stmt::create_user_stmt,
 };
-use crate::parser::ast_node::RawStmt;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::RawStmt;
 use postgres_parser_lexer::Keyword::Create;

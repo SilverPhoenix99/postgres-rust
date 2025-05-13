@@ -38,9 +38,9 @@ pub(super) fn alter_group_stmt() -> impl Combinator<Output = RawStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::RoleSpec;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    use postgres_parser_ast::RoleSpec;
 
     #[test]
     fn test_group_rename() {
@@ -90,12 +90,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AddDrop;
-use crate::parser::ast_node::AlterRoleOption::RoleMembers;
-use crate::parser::ast_node::AlterRoleStmt;
-use crate::parser::ast_node::RawStmt;
-use crate::parser::ast_node::RenameStmt;
-use crate::parser::ast_node::RenameTarget::Role;
 use crate::parser::combinators::foundation::located;
 use crate::parser::combinators::foundation::match_first_with_state;
 use crate::parser::combinators::foundation::or;
@@ -106,6 +100,12 @@ use crate::parser::combinators::role_id;
 use crate::parser::combinators::role_list;
 use crate::parser::combinators::role_spec;
 use crate::parser::ParserError;
+use postgres_parser_ast::AddDrop;
+use postgres_parser_ast::AlterRoleOption::RoleMembers;
+use postgres_parser_ast::AlterRoleStmt;
+use postgres_parser_ast::RawStmt;
+use postgres_parser_ast::RenameStmt;
+use postgres_parser_ast::RenameTarget::Role;
 use postgres_parser_lexer::Keyword::Add;
 use postgres_parser_lexer::Keyword::DropKw;
 use postgres_parser_lexer::Keyword::Group;

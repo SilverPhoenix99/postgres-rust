@@ -50,9 +50,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::TransactionStmt;
-use crate::parser::ast_node::TransactionStmt::RollbackPrepared;
-use crate::parser::ast_node::TransactionStmt::RollbackTo;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::string;
@@ -60,6 +57,9 @@ use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::opt_transaction;
 use crate::parser::combinators::opt_transaction_chain;
+use postgres_parser_ast::TransactionStmt;
+use postgres_parser_ast::TransactionStmt::RollbackPrepared;
+use postgres_parser_ast::TransactionStmt::RollbackTo;
 use postgres_parser_lexer::Keyword::Prepared;
 use postgres_parser_lexer::Keyword::Rollback;
 use postgres_parser_lexer::Keyword::Savepoint;

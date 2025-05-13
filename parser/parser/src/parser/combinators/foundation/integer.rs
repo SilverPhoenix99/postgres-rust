@@ -17,10 +17,10 @@ impl Combinator for IntegerCombi {
     }
 }
 
-use crate::parser::ast_node::UnsignedNumber::IntegerConst;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::result::ScanResult;
 use crate::parser::token_stream::TokenConsumer;
 use crate::parser::token_stream::TokenStream;
 use crate::parser::token_value::TokenValue::UnsignedNumber;
 use postgres_basics::NonNegative;
+use postgres_parser_ast::UnsignedNumber::IntegerConst;

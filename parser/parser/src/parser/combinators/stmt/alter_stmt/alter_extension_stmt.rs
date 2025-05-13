@@ -147,15 +147,15 @@ fn alter_extension_target() -> impl Combinator<Output = AlterExtensionContentsTa
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::tests::test_parser;
     #[allow(unused_imports)]
-    use crate::parser::ast_node::{
+    use postgres_parser_ast::{
         AggregateWithArgs,
         FunctionWithArgs,
         Transform as TransformAst,
         TypeName::{Int4, Varchar},
         Typecast as Cast,
     };
-    use crate::parser::tests::test_parser;
     use test_case::test_case;
 
     #[test_case("extension some_extension set schema some_schema",
@@ -265,14 +265,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AddDrop;
-use crate::parser::ast_node::AlterExtensionContentsStmt;
-use crate::parser::ast_node::AlterExtensionContentsTarget;
-use crate::parser::ast_node::AlterExtensionContentsTarget::*;
-use crate::parser::ast_node::AlterExtensionStmt;
-use crate::parser::ast_node::AlterObjectSchemaStmt;
-use crate::parser::ast_node::AlterObjectSchemaTarget;
-use crate::parser::ast_node::RawStmt;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::and;
 use crate::parser::combinators::foundation::many;
@@ -316,6 +308,14 @@ use crate::parser::combinators::stmt::Foreign;
 use crate::parser::combinators::stmt::Operator as Op;
 use crate::parser::combinators::stmt::TextSearch;
 use postgres_basics::Str;
+use postgres_parser_ast::AddDrop;
+use postgres_parser_ast::AlterExtensionContentsStmt;
+use postgres_parser_ast::AlterExtensionContentsTarget;
+use postgres_parser_ast::AlterExtensionContentsTarget::*;
+use postgres_parser_ast::AlterExtensionStmt;
+use postgres_parser_ast::AlterObjectSchemaStmt;
+use postgres_parser_ast::AlterObjectSchemaTarget;
+use postgres_parser_ast::RawStmt;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::Add;
 use postgres_parser_lexer::Keyword::DropKw;

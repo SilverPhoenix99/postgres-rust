@@ -43,9 +43,9 @@ pub(super) fn alter_aggregate_stmt() -> impl Combinator<Output = RawStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::AggregateWithArgs;
-    use crate::parser::ast_node::RoleSpec;
     use crate::parser::tests::test_parser;
+    use postgres_parser_ast::AggregateWithArgs;
+    use postgres_parser_ast::RoleSpec;
 
     #[test]
     fn test_alter_owner() {
@@ -90,19 +90,19 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AlterObjectSchemaStmt;
-use crate::parser::ast_node::AlterObjectSchemaTarget;
-use crate::parser::ast_node::AlterOwnerStmt;
-use crate::parser::ast_node::AlterOwnerTarget;
-use crate::parser::ast_node::RawStmt;
-use crate::parser::ast_node::RenameStmt;
-use crate::parser::ast_node::RenameTarget;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::match_first_with_state;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::role::role_spec;
 use crate::parser::combinators::stmt::aggregate_with_argtypes;
+use postgres_parser_ast::AlterObjectSchemaStmt;
+use postgres_parser_ast::AlterObjectSchemaTarget;
+use postgres_parser_ast::AlterOwnerStmt;
+use postgres_parser_ast::AlterOwnerTarget;
+use postgres_parser_ast::RawStmt;
+use postgres_parser_ast::RenameStmt;
+use postgres_parser_ast::RenameTarget;
 use postgres_parser_lexer::Keyword::Aggregate;
 use postgres_parser_lexer::Keyword::Owner;
 use postgres_parser_lexer::Keyword::Rename;

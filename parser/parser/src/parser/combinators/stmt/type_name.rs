@@ -7,8 +7,8 @@ pub(super) fn type_name() -> impl Combinator<Output = Type> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::TypeName::Int4;
     use crate::parser::tests::test_parser;
+    use postgres_parser_ast::TypeName::Int4;
 
     #[test]
     fn test_type() {
@@ -20,8 +20,8 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::Type;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::typename;
+use postgres_parser_ast::Type;
 use postgres_parser_lexer::Keyword as Kw;

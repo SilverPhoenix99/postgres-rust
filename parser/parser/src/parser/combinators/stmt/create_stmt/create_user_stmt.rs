@@ -39,15 +39,15 @@ fn create_user_role() -> impl Combinator<Output = CreateRoleStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::CreateRoleOption;
-    #[allow(unused_imports)]
-    use crate::parser::ast_node::{
-        GenericOption,
-        RoleSpec
-    };
     use crate::parser::tests::test_parser;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    use postgres_parser_ast::CreateRoleOption;
+    #[allow(unused_imports)]
+    use postgres_parser_ast::{
+        GenericOption,
+        RoleSpec
+    };
     use test_case::test_case;
 
     #[test_case("user new_user with password 'password'")]
@@ -97,10 +97,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::CreateRoleStmt;
-use crate::parser::ast_node::CreateUserMappingStmt;
-use crate::parser::ast_node::RawStmt;
-use crate::parser::ast_node::RoleKind;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::sequence;
@@ -111,6 +107,10 @@ use crate::parser::combinators::stmt::auth_ident;
 use crate::parser::combinators::stmt::create_generic_options;
 use crate::parser::combinators::stmt::create_stmt::create_role_options;
 use crate::parser::combinators::stmt::if_not_exists;
+use postgres_parser_ast::CreateRoleStmt;
+use postgres_parser_ast::CreateUserMappingStmt;
+use postgres_parser_ast::RawStmt;
+use postgres_parser_ast::RoleKind;
 use postgres_parser_lexer::Keyword::For;
 use postgres_parser_lexer::Keyword::Mapping;
 use postgres_parser_lexer::Keyword::Server;

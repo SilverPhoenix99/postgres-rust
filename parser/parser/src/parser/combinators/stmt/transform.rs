@@ -11,8 +11,8 @@ pub(super) fn transform() -> impl Combinator<Output = Transform> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::TypeName::Int4;
     use crate::parser::tests::test_parser;
+    use postgres_parser_ast::TypeName::Int4;
 
     #[test]
     fn test_transform() {
@@ -24,12 +24,12 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::Transform;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::and;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::typename;
+use postgres_parser_ast::Transform;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::For;
 use postgres_parser_lexer::Keyword::Language;

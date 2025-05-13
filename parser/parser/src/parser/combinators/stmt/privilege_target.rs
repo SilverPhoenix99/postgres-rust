@@ -122,11 +122,11 @@ fn signed_number_list() -> impl Combinator<Output = Vec<SignedNumber>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use crate::parser::ast_node::FunctionWithArgs;
-    #[allow(unused_imports)]
-    use crate::parser::ast_node::RelationName;
     use crate::parser::tests::test_parser;
+    #[allow(unused_imports)]
+    use postgres_parser_ast::FunctionWithArgs;
+    #[allow(unused_imports)]
+    use postgres_parser_ast::RelationName;
     use test_case::test_case;
 
     #[test_case("all functions in schema a, b",
@@ -255,29 +255,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::PrivilegeTarget;
-use crate::parser::ast_node::PrivilegeTarget::AllFunctionsInSchema;
-use crate::parser::ast_node::PrivilegeTarget::AllProceduresInSchema;
-use crate::parser::ast_node::PrivilegeTarget::AllRoutinesInSchema;
-use crate::parser::ast_node::PrivilegeTarget::AllSequencesInSchema;
-use crate::parser::ast_node::PrivilegeTarget::AllTablesInSchema;
-use crate::parser::ast_node::PrivilegeTarget::Database;
-use crate::parser::ast_node::PrivilegeTarget::Domain;
-use crate::parser::ast_node::PrivilegeTarget::ForeignDataWrapper;
-use crate::parser::ast_node::PrivilegeTarget::ForeignServer;
-use crate::parser::ast_node::PrivilegeTarget::Function;
-use crate::parser::ast_node::PrivilegeTarget::Language;
-use crate::parser::ast_node::PrivilegeTarget::LargeObject;
-use crate::parser::ast_node::PrivilegeTarget::ParameterAcl;
-use crate::parser::ast_node::PrivilegeTarget::Procedure;
-use crate::parser::ast_node::PrivilegeTarget::Routine;
-use crate::parser::ast_node::PrivilegeTarget::Schema;
-use crate::parser::ast_node::PrivilegeTarget::Sequence;
-use crate::parser::ast_node::PrivilegeTarget::Table;
-use crate::parser::ast_node::PrivilegeTarget::Tablespace;
-use crate::parser::ast_node::PrivilegeTarget::Type;
-use crate::parser::ast_node::QualifiedName;
-use crate::parser::ast_node::SignedNumber;
 use crate::parser::combinators::any_name_list;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::many_sep;
@@ -289,6 +266,29 @@ use crate::parser::combinators::function_with_argtypes_list;
 use crate::parser::combinators::name_list;
 use crate::parser::combinators::qualified_name_list;
 use crate::parser::combinators::signed_number;
+use postgres_parser_ast::PrivilegeTarget;
+use postgres_parser_ast::PrivilegeTarget::AllFunctionsInSchema;
+use postgres_parser_ast::PrivilegeTarget::AllProceduresInSchema;
+use postgres_parser_ast::PrivilegeTarget::AllRoutinesInSchema;
+use postgres_parser_ast::PrivilegeTarget::AllSequencesInSchema;
+use postgres_parser_ast::PrivilegeTarget::AllTablesInSchema;
+use postgres_parser_ast::PrivilegeTarget::Database;
+use postgres_parser_ast::PrivilegeTarget::Domain;
+use postgres_parser_ast::PrivilegeTarget::ForeignDataWrapper;
+use postgres_parser_ast::PrivilegeTarget::ForeignServer;
+use postgres_parser_ast::PrivilegeTarget::Function;
+use postgres_parser_ast::PrivilegeTarget::Language;
+use postgres_parser_ast::PrivilegeTarget::LargeObject;
+use postgres_parser_ast::PrivilegeTarget::ParameterAcl;
+use postgres_parser_ast::PrivilegeTarget::Procedure;
+use postgres_parser_ast::PrivilegeTarget::Routine;
+use postgres_parser_ast::PrivilegeTarget::Schema;
+use postgres_parser_ast::PrivilegeTarget::Sequence;
+use postgres_parser_ast::PrivilegeTarget::Table;
+use postgres_parser_ast::PrivilegeTarget::Tablespace;
+use postgres_parser_ast::PrivilegeTarget::Type;
+use postgres_parser_ast::QualifiedName;
+use postgres_parser_ast::SignedNumber;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::All;
 use postgres_parser_lexer::Keyword::Data;

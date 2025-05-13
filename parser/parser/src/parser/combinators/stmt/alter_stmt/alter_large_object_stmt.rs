@@ -20,10 +20,10 @@ pub(super) fn alter_large_object_stmt() -> impl Combinator<Output = RawStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::RoleSpec;
-    use crate::parser::ast_node::SignedNumber;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    use postgres_parser_ast::RoleSpec;
+    use postgres_parser_ast::SignedNumber;
 
     #[test]
     fn test_alter_large_object() {
@@ -39,14 +39,14 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AlterOwnerStmt;
-use crate::parser::ast_node::AlterOwnerTarget;
-use crate::parser::ast_node::RawStmt;
 use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::role_spec;
 use crate::parser::combinators::signed_number;
+use postgres_parser_ast::AlterOwnerStmt;
+use postgres_parser_ast::AlterOwnerTarget;
+use postgres_parser_ast::RawStmt;
 use postgres_parser_lexer::Keyword::Large;
 use postgres_parser_lexer::Keyword::Object;
 use postgres_parser_lexer::Keyword::Owner;

@@ -28,11 +28,11 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::SortDirection;
-use crate::parser::ast_node::SortDirection::Ascending;
-use crate::parser::ast_node::SortDirection::Descending;
 use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::SortDirection;
+use postgres_parser_ast::SortDirection::Ascending;
+use postgres_parser_ast::SortDirection::Descending;
 use postgres_parser_lexer::Keyword::Asc;
 use postgres_parser_lexer::Keyword::Desc;

@@ -39,8 +39,8 @@ fn create_role_option() -> impl Combinator<Output = CreateRoleOption> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::RoleSpec::Public;
     use crate::parser::tests::test_parser;
+    use postgres_parser_ast::RoleSpec::Public;
     use test_case::test_case;
 
     #[test]
@@ -68,7 +68,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::CreateRoleOption;
 use crate::parser::combinators::foundation::integer;
 use crate::parser::combinators::foundation::many;
 use crate::parser::combinators::foundation::match_first;
@@ -77,6 +76,7 @@ use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::role::role_list;
 use crate::parser::combinators::stmt::alter_role_option;
+use postgres_parser_ast::CreateRoleOption;
 use postgres_parser_lexer::Keyword::Admin;
 use postgres_parser_lexer::Keyword::Group;
 use postgres_parser_lexer::Keyword::Inherit;

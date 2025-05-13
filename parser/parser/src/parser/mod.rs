@@ -1,4 +1,3 @@
-pub mod ast_node;
 mod combinators;
 mod config;
 mod error;
@@ -91,11 +90,11 @@ mod tests {
     pub(super) use test_parser;
 }
 
-use crate::parser::ast_node::RawStmt;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::stmtmulti;
 use crate::parser::error::syntax_err;
 use crate::parser::result::Required;
 use crate::parser::token_stream::TokenStream;
 use postgres_basics::Located;
+use postgres_parser_ast::RawStmt;
 use std::mem;

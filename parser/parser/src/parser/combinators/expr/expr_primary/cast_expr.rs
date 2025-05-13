@@ -16,9 +16,9 @@ pub(super) fn cast_expr() -> impl Combinator<Output = TypecastExpr> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::ExprNode;
-    use crate::parser::ast_node::TypeName::Varchar;
     use crate::parser::tests::test_parser;
+    use postgres_parser_ast::ExprNode;
+    use postgres_parser_ast::TypeName::Varchar;
 
     #[test]
     fn test_cast_expr() {
@@ -33,11 +33,11 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::TypecastExpr;
 use crate::parser::combinators::between_paren;
 use crate::parser::combinators::expr::a_expr;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::typename;
+use postgres_parser_ast::TypecastExpr;
 use postgres_parser_lexer::Keyword::As;
 use postgres_parser_lexer::Keyword::Cast;

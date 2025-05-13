@@ -36,13 +36,13 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::BooleanOrString;
 use crate::parser::combinators::foundation::many_sep;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::string;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::non_reserved_word;
+use postgres_parser_ast::BooleanOrString;
 use postgres_parser_lexer::Keyword::False;
 use postgres_parser_lexer::Keyword::On;
 use postgres_parser_lexer::Keyword::True;

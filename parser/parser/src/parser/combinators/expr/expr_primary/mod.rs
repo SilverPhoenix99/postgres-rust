@@ -40,7 +40,7 @@ use self::{
     func_expr::func_expr,
     param_expr::param_expr,
 };
-use crate::parser::ast_node::ExprNode;
 use crate::parser::combinators::expr::expr_const;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
+use postgres_parser_ast::ExprNode;

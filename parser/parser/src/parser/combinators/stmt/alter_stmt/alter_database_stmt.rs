@@ -115,11 +115,11 @@ fn alterdb_opt_name() -> impl Combinator<Output = AlterdbOptionKind> {
 mod tests {
     #[allow(unused_imports)]
     use super::*;
-    use crate::parser::ast_node::CreatedbOptionValue;
-    use crate::parser::ast_node::RoleSpec;
-    use crate::parser::ast_node::VariableTarget;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    use postgres_parser_ast::CreatedbOptionValue;
+    use postgres_parser_ast::RoleSpec;
+    use postgres_parser_ast::VariableTarget;
     use test_case::test_case;
 
     #[test]
@@ -222,23 +222,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AlterDatabaseSetStmt;
-use crate::parser::ast_node::AlterDatabaseStmt;
-use crate::parser::ast_node::AlterOwnerStmt;
-use crate::parser::ast_node::AlterOwnerTarget;
-use crate::parser::ast_node::AlterdbOption;
-use crate::parser::ast_node::AlterdbOptionKind;
-use crate::parser::ast_node::AlterdbOptionKind::AllowConnections;
-use crate::parser::ast_node::AlterdbOptionKind::ConnectionLimit;
-use crate::parser::ast_node::AlterdbOptionKind::IsTemplate;
-use crate::parser::ast_node::AlterdbOptionKind::Tablespace;
-use crate::parser::ast_node::AlterdbOptionKind::Unknown;
-use crate::parser::ast_node::RawStmt;
-use crate::parser::ast_node::RawStmt::AlterDatabaseRefreshCollStmt;
-use crate::parser::ast_node::RenameStmt;
-use crate::parser::ast_node::RenameTarget;
-use crate::parser::ast_node::SetResetClause;
-use crate::parser::ast_node::SetRest;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::identifier;
 use crate::parser::combinators::foundation::many;
@@ -253,6 +236,23 @@ use crate::parser::combinators::stmt::createdb_opt_value;
 use crate::parser::combinators::stmt::reset_stmt::reset_stmt;
 use crate::parser::combinators::stmt::set_rest;
 use postgres_basics::Str;
+use postgres_parser_ast::AlterDatabaseSetStmt;
+use postgres_parser_ast::AlterDatabaseStmt;
+use postgres_parser_ast::AlterOwnerStmt;
+use postgres_parser_ast::AlterOwnerTarget;
+use postgres_parser_ast::AlterdbOption;
+use postgres_parser_ast::AlterdbOptionKind;
+use postgres_parser_ast::AlterdbOptionKind::AllowConnections;
+use postgres_parser_ast::AlterdbOptionKind::ConnectionLimit;
+use postgres_parser_ast::AlterdbOptionKind::IsTemplate;
+use postgres_parser_ast::AlterdbOptionKind::Tablespace;
+use postgres_parser_ast::AlterdbOptionKind::Unknown;
+use postgres_parser_ast::RawStmt;
+use postgres_parser_ast::RawStmt::AlterDatabaseRefreshCollStmt;
+use postgres_parser_ast::RenameStmt;
+use postgres_parser_ast::RenameTarget;
+use postgres_parser_ast::SetResetClause;
+use postgres_parser_ast::SetRest;
 use postgres_parser_lexer::Keyword as Kw;
 use postgres_parser_lexer::Keyword::Collation;
 use postgres_parser_lexer::Keyword::Connection;

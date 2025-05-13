@@ -85,12 +85,13 @@ fn func_args_list() -> impl Combinator<Output = Vec<FunctionParameter>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use crate::parser::ast_node::FuncType;
-    #[allow(unused_imports)]
-    use crate::parser::ast_node::TypeName;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    #[allow(unused_imports)]
+    use postgres_parser_ast::{
+        FuncType,
+        TypeName,
+    };
     use test_case::test_case;
 
     // type_func_name_keyword ( func_args )?
@@ -126,8 +127,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::FunctionParameter;
-use crate::parser::ast_node::FunctionWithArgs;
 use crate::parser::combinators::attrs;
 use crate::parser::combinators::between_paren;
 use crate::parser::combinators::foundation::identifier;
@@ -137,6 +136,8 @@ use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::func_arg;
+use postgres_parser_ast::FunctionParameter;
+use postgres_parser_ast::FunctionWithArgs;
 use postgres_parser_lexer::KeywordCategory::ColumnName;
 use postgres_parser_lexer::KeywordCategory::TypeFuncName;
 use postgres_parser_lexer::KeywordCategory::Unreserved;

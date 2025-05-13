@@ -22,10 +22,10 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::RoleSpec;
-use crate::parser::ast_node::RoleSpec::CurrentUser;
 use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::role_spec;
+use postgres_parser_ast::RoleSpec;
+use postgres_parser_ast::RoleSpec::CurrentUser;
 use postgres_parser_lexer::Keyword::User;

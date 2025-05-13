@@ -82,8 +82,6 @@ mod tests {
     use crate::parser::result::ScanErrorKind::NoMatch;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
-    use TransactionMode::ReadOnly;
-    use TransactionMode::ReadWrite;
 
     #[test]
     fn test_opt_transaction_mode_list() {
@@ -164,15 +162,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::IsolationLevel;
-use crate::parser::ast_node::IsolationLevel::ReadCommitted;
-use crate::parser::ast_node::IsolationLevel::ReadUncommitted;
-use crate::parser::ast_node::IsolationLevel::RepeatableRead;
-use crate::parser::ast_node::TransactionMode;
-use crate::parser::ast_node::TransactionMode::Deferrable;
-use crate::parser::ast_node::TransactionMode::NotDeferrable;
-use crate::parser::ast_node::TransactionMode::ReadOnly;
-use crate::parser::ast_node::TransactionMode::ReadWrite;
 use crate::parser::combinators::foundation::enclosure;
 use crate::parser::combinators::foundation::many_pre;
 use crate::parser::combinators::foundation::match_first;
@@ -180,5 +169,14 @@ use crate::parser::combinators::foundation::parser;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::result::Optional;
+use postgres_parser_ast::IsolationLevel;
+use postgres_parser_ast::IsolationLevel::ReadCommitted;
+use postgres_parser_ast::IsolationLevel::ReadUncommitted;
+use postgres_parser_ast::IsolationLevel::RepeatableRead;
+use postgres_parser_ast::TransactionMode;
+use postgres_parser_ast::TransactionMode::Deferrable;
+use postgres_parser_ast::TransactionMode::NotDeferrable;
+use postgres_parser_ast::TransactionMode::ReadOnly;
+use postgres_parser_ast::TransactionMode::ReadWrite;
 use postgres_parser_lexer::Keyword;
 use postgres_parser_lexer::OperatorKind::Comma;

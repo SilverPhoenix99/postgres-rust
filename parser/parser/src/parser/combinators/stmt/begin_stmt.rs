@@ -16,10 +16,10 @@ pub(in crate::parser::combinators) fn begin_stmt() -> impl Combinator<Output = T
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::IsolationLevel::*;
-    use crate::parser::ast_node::TransactionMode::{self, *};
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
+    use postgres_parser_ast::IsolationLevel::*;
+    use postgres_parser_ast::TransactionMode::{self, *};
     use test_case::test_case;
     use TransactionStmt::Begin;
 
@@ -35,10 +35,10 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::TransactionStmt;
 use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::opt_transaction;
 use crate::parser::combinators::transaction_mode_list;
+use postgres_parser_ast::TransactionStmt;
 use postgres_parser_lexer::Keyword::Begin;

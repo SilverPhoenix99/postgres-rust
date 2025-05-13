@@ -29,12 +29,12 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::SortNulls;
-use crate::parser::ast_node::SortNulls::NullsFirst;
-use crate::parser::ast_node::SortNulls::NullsLast;
 use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
+use postgres_parser_ast::SortNulls;
+use postgres_parser_ast::SortNulls::NullsFirst;
+use postgres_parser_ast::SortNulls::NullsLast;
 use postgres_parser_lexer::Keyword::First;
 use postgres_parser_lexer::Keyword::Last;
 use postgres_parser_lexer::Keyword::Nulls;

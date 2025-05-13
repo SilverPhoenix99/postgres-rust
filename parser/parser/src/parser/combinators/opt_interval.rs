@@ -115,7 +115,6 @@ fn minute() -> impl Combinator<Output = IntervalRange> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast_node::IntervalRange;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
     use test_case::test_case;
@@ -147,23 +146,25 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::IntervalRange;
-use crate::parser::ast_node::IntervalRange::DayToHour;
-use crate::parser::ast_node::IntervalRange::DayToMinute;
-use crate::parser::ast_node::IntervalRange::DayToSecond;
-use crate::parser::ast_node::IntervalRange::HourToSecond;
-use crate::parser::ast_node::IntervalRange::Minute;
-use crate::parser::ast_node::IntervalRange::MinuteToSecond;
-use crate::parser::ast_node::IntervalRange::Month;
-use crate::parser::ast_node::IntervalRange::Second;
-use crate::parser::ast_node::IntervalRange::Year;
-use crate::parser::ast_node::IntervalRange::YearToMonth;
-use crate::parser::ast_node::IntervalRange::{Day, Hour, HourToMinute};
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::opt_precision;
+use postgres_parser_ast::IntervalRange;
+use postgres_parser_ast::IntervalRange::Day;
+use postgres_parser_ast::IntervalRange::DayToHour;
+use postgres_parser_ast::IntervalRange::DayToMinute;
+use postgres_parser_ast::IntervalRange::DayToSecond;
+use postgres_parser_ast::IntervalRange::Hour;
+use postgres_parser_ast::IntervalRange::HourToMinute;
+use postgres_parser_ast::IntervalRange::HourToSecond;
+use postgres_parser_ast::IntervalRange::Minute;
+use postgres_parser_ast::IntervalRange::MinuteToSecond;
+use postgres_parser_ast::IntervalRange::Month;
+use postgres_parser_ast::IntervalRange::Second;
+use postgres_parser_ast::IntervalRange::Year;
+use postgres_parser_ast::IntervalRange::YearToMonth;
 use postgres_parser_lexer::Keyword::Day as DayKw;
 use postgres_parser_lexer::Keyword::Hour as HourKw;
 use postgres_parser_lexer::Keyword::Minute as MinuteKw;

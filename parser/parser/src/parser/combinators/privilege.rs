@@ -94,15 +94,6 @@ mod tests {
     }
 }
 
-use crate::parser::ast_node::AccessPrivilege;
-use crate::parser::ast_node::AccessPrivilege::All;
-use crate::parser::ast_node::AccessPrivilege::Specific;
-use crate::parser::ast_node::SpecificAccessPrivilege;
-use crate::parser::ast_node::SpecificAccessPrivilege::AlterSystem;
-use crate::parser::ast_node::SpecificAccessPrivilege::Create;
-use crate::parser::ast_node::SpecificAccessPrivilege::Named;
-use crate::parser::ast_node::SpecificAccessPrivilege::References;
-use crate::parser::ast_node::SpecificAccessPrivilege::Select;
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::many_sep;
 use crate::parser::combinators::foundation::match_first;
@@ -110,6 +101,15 @@ use crate::parser::combinators::foundation::sequence;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::paren_name_list;
+use postgres_parser_ast::AccessPrivilege;
+use postgres_parser_ast::AccessPrivilege::All;
+use postgres_parser_ast::AccessPrivilege::Specific;
+use postgres_parser_ast::SpecificAccessPrivilege;
+use postgres_parser_ast::SpecificAccessPrivilege::AlterSystem;
+use postgres_parser_ast::SpecificAccessPrivilege::Create;
+use postgres_parser_ast::SpecificAccessPrivilege::Named;
+use postgres_parser_ast::SpecificAccessPrivilege::References;
+use postgres_parser_ast::SpecificAccessPrivilege::Select;
 use postgres_parser_lexer::Keyword::All as AllKw;
 use postgres_parser_lexer::Keyword::Alter;
 use postgres_parser_lexer::Keyword::Create as CreateKw;
