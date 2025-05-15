@@ -7,4 +7,3 @@ version.workspace = true
 workspace = true
 
 [dependencies]
-lazy_static.workspace = true
