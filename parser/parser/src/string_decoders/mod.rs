@@ -6,11 +6,6 @@ mod unicode_decoder;
 pub use self::{
     basic_decoder::BasicStringDecoder,
     bit_decoder::{BitStringDecoder, BitStringError, VARBITMAXLEN},
-    extended_decoder::{
-        ExtendedStringDecoder,
-        ExtendedStringError,
-        ExtendedStringResult,
-        ExtendedStringWarning
-    },
-    unicode_decoder::{UnicodeStringDecoder, UnicodeStringError}
+    extended_decoder::{ExtendedStringDecoder, ExtendedStringResult},
+    unicode_decoder::UnicodeStringDecoder
 };

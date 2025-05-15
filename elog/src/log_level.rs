@@ -1,4 +1,3 @@
-
 #[repr(u8)]
 #[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum LogLevel {

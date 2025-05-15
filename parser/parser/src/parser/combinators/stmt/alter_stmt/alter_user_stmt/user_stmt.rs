@@ -195,7 +195,7 @@ use crate::parser::combinators::role_id;
 use crate::parser::combinators::role_spec;
 use crate::parser::combinators::stmt::alter_role_options;
 use crate::parser::combinators::stmt::alter_stmt::set_reset_clause;
-use crate::parser::ParserError;
+use elog::parser::ParserError;
 use postgres_parser_ast::AddDrop::Add;
 use postgres_parser_ast::AlterRoleSetStmt;
 use postgres_parser_ast::AlterRoleStmt;

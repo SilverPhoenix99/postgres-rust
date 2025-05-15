@@ -2,12 +2,10 @@
 #[macro_use]
 extern crate assert_matches;
 
-mod error;
 mod keyword;
 mod token_kind;
 
 pub use self::{
-    error::{LexerError, LexerErrorKind},
     keyword::{Keyword, KeywordCategory, KeywordDetails},
     token_kind::{
         BitStringKind,
@@ -729,7 +727,7 @@ mod tests {
     use super::*;
     use crate::token_kind::RawTokenKind;
     use crate::Keyword::{FromKw, Not, Select, StringKw};
-    use postgres_parser_error::HasLocation;
+    use elog::HasLocation;
     use std::ops::Range;
 
     #[test]
@@ -1070,7 +1068,6 @@ mod tests {
 }
 
 use self::{
-    error::LexerErrorKind::*,
     token_kind::{
         BitStringKind::*,
         IdentifierKind::*,
@@ -1080,6 +1077,9 @@ use self::{
     },
     Keyword::Nchar,
 };
+use elog::lexer::LexerError;
+use elog::lexer::LexerErrorKind;
+use elog::lexer::LexerErrorKind::*;
 use postgres_basics::ascii::*;
 use postgres_basics::CharBuffer;
 use postgres_basics::Located;

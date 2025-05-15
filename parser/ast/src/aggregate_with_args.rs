@@ -28,4 +28,4 @@ impl AggregateWithArgs {
 }
 
 use crate::FunctionParameter;
-use crate::QualifiedName;
+use postgres_basics::QualifiedName;

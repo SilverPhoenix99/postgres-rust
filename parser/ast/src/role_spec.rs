@@ -7,12 +7,6 @@ pub enum RoleSpec {
     Name(Str),
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum RoleSpecError {
-    ReservedRoleSpec(&'static str),
-    ForbiddenRoleSpec(&'static str),
-}
-
 impl RoleSpec {
     pub fn into_role_id(self) -> Result<Str, RoleSpecError> {
 
@@ -28,6 +22,7 @@ impl RoleSpec {
     }
 }
 
+use elog::RoleSpecError;
+use elog::RoleSpecError::ForbiddenRoleSpec;
+use elog::RoleSpecError::ReservedRoleSpec;
 use postgres_basics::Str;
-use RoleSpecError::ForbiddenRoleSpec;
-use RoleSpecError::ReservedRoleSpec;

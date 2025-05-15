@@ -29,7 +29,7 @@ pub(super) fn func_name() -> impl Combinator<Output = QualifiedName> {
             .map_result(|result| {
                 let (name, loc) = result?;
                 if name.len() == 1 {
-                    return Err(syntax_err(loc).into())
+                    return Err(ParserError::syntax(loc).into())
                 }
                 Ok(name)
             }),
@@ -80,8 +80,8 @@ use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::or;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
-use crate::parser::error::syntax_err;
-use postgres_parser_ast::QualifiedName;
+use elog::parser::ParserError;
+use postgres_basics::QualifiedName;
 use postgres_parser_lexer::KeywordCategory::ColumnName;
 use postgres_parser_lexer::KeywordCategory::TypeFuncName;
 use postgres_parser_lexer::KeywordCategory::Unreserved;

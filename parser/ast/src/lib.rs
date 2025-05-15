@@ -120,7 +120,7 @@ pub use self::{
     raw_stmt::RawStmt,
     reassign_owned_stmt::ReassignOwnedStmt,
     rename_stmt::{RenameStmt, RenameTarget},
-    role_spec::{RoleSpec, RoleSpecError},
+    role_spec::RoleSpec,
     security_label_stmt::{SecurityLabelStmt, SecurityLabelTarget},
     set_reset_clause::SetResetClause,
     set_rest::SetRest,
@@ -152,7 +152,6 @@ pub use self::{
 };
 
 pub type BinaryOperands = Box<(ExprNode, ExprNode)>;
-pub type QualifiedName = Vec<Str>;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum AddDrop {

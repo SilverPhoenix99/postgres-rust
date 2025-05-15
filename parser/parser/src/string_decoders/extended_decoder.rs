@@ -1,11 +1,3 @@
-mod extended_string_error;
-mod extended_string_warning;
-
-pub use self::{
-    extended_string_error::ExtendedStringError,
-    extended_string_warning::ExtendedStringWarning,
-};
-
 pub struct ExtendedStringDecoder<'src> {
     input: CharBuffer<'src>,
     backslash_quote: BackslashQuote,
@@ -223,13 +215,18 @@ mod tests {
     }
 }
 
-use self::{
-    extended_string_error::ExtendedStringError::*,
-    extended_string_warning::ExtendedStringWarning::*,
-};
-use postgres_basics::ascii::{is_hex_digit, is_oct_digit};
+use elog::extended_string::ExtendedStringError;
+use elog::extended_string::ExtendedStringError::*;
+use elog::extended_string::ExtendedStringWarning;
+use elog::extended_string::ExtendedStringWarning::*;
+use postgres_basics::ascii::is_hex_digit;
+use postgres_basics::ascii::is_oct_digit;
 use postgres_basics::guc::BackslashQuote;
 use postgres_basics::guc::BackslashQuote::SafeEncoding;
-use postgres_basics::UnicodeChar::{SurrogateFirst, SurrogateSecond};
+use postgres_basics::wchar;
+use postgres_basics::CharBuffer;
+use postgres_basics::UnicodeChar;
+use postgres_basics::UnicodeChar::SurrogateFirst;
+use postgres_basics::UnicodeChar::SurrogateSecond;
+use postgres_basics::UnicodeCharError;
 use postgres_basics::UnicodeCharError::LenTooShort;
-use postgres_basics::{wchar, CharBuffer, UnicodeChar, UnicodeCharError};

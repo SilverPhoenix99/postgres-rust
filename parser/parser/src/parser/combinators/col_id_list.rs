@@ -34,5 +34,5 @@ mod tests {
 use crate::parser::combinators::col_id;
 use crate::parser::combinators::foundation::many_sep;
 use crate::parser::combinators::foundation::Combinator;
-use postgres_parser_ast::QualifiedName;
+use postgres_basics::QualifiedName;
 use postgres_parser_lexer::OperatorKind;

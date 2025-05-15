@@ -81,7 +81,7 @@ class ErrCodesGenerator
       '',
       *render_salts,
       '',
-      'use crate::mphf;',
+      'use postgres_basics::mphf;',
       '',
     ].join("\n")
   end

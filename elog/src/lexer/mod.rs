@@ -1,6 +1,6 @@
 mod lexer_error_kind;
 
-pub use lexer_error_kind::LexerErrorKind;
+pub use self::lexer_error_kind::LexerErrorKind;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct LexerError (
@@ -52,10 +52,10 @@ impl ErrorReport for LexerError {
     }
 }
 
-use postgres_basics::elog::ErrorReport;
-use postgres_basics::elog::HasSqlState;
-use postgres_basics::sql_state::SqlState;
+use crate::sql_state::SqlState;
+use crate::ErrorReport;
+use crate::HasLocation;
+use crate::HasSqlState;
+use crate::LocatedErrorReport;
 use postgres_basics::Location;
-use postgres_parser_error::HasLocation;
-use postgres_parser_error::LocatedErrorReport;
 use std::borrow::Cow;

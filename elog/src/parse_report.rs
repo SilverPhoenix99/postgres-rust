@@ -6,4 +6,4 @@ where
 {}
 
 use crate::HasLocation;
-use postgres_basics::elog::SqlReport;
+use crate::SqlReport;

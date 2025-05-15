@@ -38,10 +38,8 @@ macro_rules! fn_info {
 }
 
 pub mod ascii;
-pub mod elog;
 pub mod guc;
 pub mod mphf;
-pub mod sql_state;
 pub mod wchar;
 mod char_buffer;
 mod concealable;
@@ -65,6 +63,7 @@ pub use self::{
 };
 
 pub type Oid = u32;
+pub type QualifiedName = Vec<Str>;
 
 pub const NAMEDATALEN: usize = 64;
 

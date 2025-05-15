@@ -85,5 +85,7 @@ mod tests {
 
 use crate::sql_state::sql_states::MAP;
 use core::fmt;
-use core::fmt::{Display, Formatter, Write};
+use core::fmt::Display;
+use core::fmt::Formatter;
+use core::fmt::Write;
 use std::mem;

@@ -20,9 +20,9 @@ pub enum SetRestMore {
     }
 }
 
-use crate::QualifiedName;
 use crate::ValueOrDefault;
 use crate::VarValue;
 use crate::XmlNodeKind;
 use crate::ZoneValue;
+use postgres_basics::QualifiedName;
 use postgres_basics::Str;

@@ -10,4 +10,4 @@ pub enum VariableTarget {
     },
 }
 
-use crate::QualifiedName;
+use postgres_basics::QualifiedName;

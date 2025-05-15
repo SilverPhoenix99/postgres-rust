@@ -29,10 +29,9 @@ impl ErrorReport for UnicodeStringError {
     }
 }
 
-use postgres_basics::{
-    elog::{ErrorReport, HasSqlState},
-    sql_state::SqlState,
-    sql_state::SqlState::SyntaxError,
-};
+use crate::sql_state::SqlState;
+use crate::sql_state::SqlState::SyntaxError;
+use crate::ErrorReport;
+use crate::HasSqlState;
 use std::borrow::Cow;
 use UnicodeStringError::*;

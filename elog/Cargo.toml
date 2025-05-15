@@ -1,5 +1,5 @@
 [package]
-name = "postgres-parser-error"
+name = "elog"
 edition.workspace = true
 version.workspace = true
 
@@ -7,4 +7,5 @@ version.workspace = true
 workspace = true
 
 [dependencies]
+thiserror.workspace = true
 postgres-basics.workspace = true

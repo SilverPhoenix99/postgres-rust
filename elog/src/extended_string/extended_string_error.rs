@@ -48,16 +48,13 @@ impl ErrorReport for ExtendedStringError {
     }
 }
 
-use postgres_basics::{
-    elog::{ErrorReport, HasSqlState},
-    sql_state::SqlState::{
-        self,
-        CharacterNotInRepertoire,
-        InvalidEscapeSequence,
-        NonstandardUseOfEscapeCharacter,
-        SyntaxError,
-    },
-};
+use crate::sql_state::SqlState;
+use crate::sql_state::SqlState::CharacterNotInRepertoire;
+use crate::sql_state::SqlState::InvalidEscapeSequence;
+use crate::sql_state::SqlState::NonstandardUseOfEscapeCharacter;
+use crate::sql_state::SqlState::SyntaxError;
+use crate::ErrorReport;
+use crate::HasSqlState;
 use std::borrow::Cow;
 use std::str::Utf8Error;
 use ExtendedStringError::*;

@@ -7,9 +7,8 @@ version.workspace = true
 workspace = true
 
 [dependencies]
-thiserror.workspace = true
+elog.workspace = true
 postgres-basics.workspace = true
-postgres-parser-error.workspace = true
 
 [dev-dependencies]
 assert_matches.workspace = true

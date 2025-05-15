@@ -72,6 +72,6 @@ pub enum RenameTarget {
 
 use crate::AggregateWithArgs;
 use crate::FunctionWithArgs;
-use crate::QualifiedName;
 use crate::RelationExpr;
+use postgres_basics::QualifiedName;
 use postgres_basics::Str;

@@ -169,6 +169,6 @@ pub enum FuncType {
 }
 
 use crate::ExprNode;
-use crate::QualifiedName;
 use postgres_basics::impl_from;
 use postgres_basics::Oid;
+use postgres_basics::QualifiedName;

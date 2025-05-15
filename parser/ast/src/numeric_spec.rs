@@ -138,8 +138,8 @@ mod tests {
     }
 }
 
-use postgres_basics::sql_state::SqlState;
-use postgres_basics::sql_state::SqlState::InvalidParameterValue;
+use elog::sql_state::SqlState;
+use elog::sql_state::SqlState::InvalidParameterValue;
 use std::num::NonZero;
 use std::ops::RangeInclusive;
 use NewNumericSpecError::PrecisionOutOfRange;

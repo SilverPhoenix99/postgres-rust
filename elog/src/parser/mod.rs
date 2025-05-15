@@ -1,6 +1,10 @@
 mod parser_error_kind;
+mod warning;
 
-pub use parser_error_kind::{NameList, ParserErrorKind};
+pub use self::{
+    parser_error_kind::{NameList, ParserErrorKind},
+    warning::ParserWarningKind,
+};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ParserError(
@@ -70,20 +74,15 @@ impl HasLocation for ParserError {
     }
 }
 
-pub(super) fn syntax_err(location: Location) -> ParserError {
-    ParserError::syntax(location)
-}
-
-use crate::parser::ParserErrorKind::Syntax;
-use postgres_basics::elog::ErrorReport;
-use postgres_basics::elog::HasSqlState;
-use postgres_basics::sql_state::SqlState;
+use crate::lexer::LexerError;
+use crate::sql_state::SqlState;
+use crate::ErrorReport;
+use crate::HasLocation;
+use crate::HasSqlState;
+use crate::LocatedErrorReport;
 use postgres_basics::Location;
-use postgres_parser_error::HasLocation;
-use postgres_parser_error::LocatedErrorReport;
-use postgres_parser_lexer::LexerError;
 use std::borrow::Cow;
 use std::error::Error;
-use std::fmt::Debug;
 use std::fmt::Display;
 use std::fmt::Formatter;
+use ParserErrorKind::Syntax;

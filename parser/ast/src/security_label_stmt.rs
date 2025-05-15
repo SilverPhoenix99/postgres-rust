@@ -63,7 +63,7 @@ pub enum SecurityLabelTarget {
 
 use crate::AggregateWithArgs;
 use crate::FunctionWithArgs;
-use crate::QualifiedName;
 use crate::SignedNumber;
 use crate::Type;
+use postgres_basics::QualifiedName;
 use postgres_basics::Str;

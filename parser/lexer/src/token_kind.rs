@@ -128,4 +128,4 @@ pub enum RawTokenKind {
 }
 
 use crate::Keyword;
-use crate::NumberRadix;
+use postgres_basics::NumberRadix;

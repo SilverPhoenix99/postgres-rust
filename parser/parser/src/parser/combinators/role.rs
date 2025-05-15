@@ -63,8 +63,8 @@ mod tests {
     use crate::parser::result::ScanResult;
     use crate::parser::tests::DEFAULT_CONFIG;
     use crate::parser::token_stream::TokenStream;
-    use crate::parser::ParserErrorKind;
-    use crate::parser::ParserErrorKind::ForbiddenRoleSpec;
+    use elog::parser::ParserErrorKind;
+    use elog::parser::ParserErrorKind::ForbiddenRoleSpec;
     use std::fmt::Debug;
 
     #[test]
@@ -146,8 +146,8 @@ use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::non_reserved_word;
 use crate::parser::result::ScanErrorKind::ScanErr;
-use crate::parser::ParserError;
-use crate::parser::ParserErrorKind::ReservedRoleSpec;
+use elog::parser::ParserError;
+use elog::parser::ParserErrorKind::ReservedRoleSpec;
 use postgres_basics::Str;
 use postgres_parser_ast::RoleSpec;
 use postgres_parser_lexer::Keyword::CurrentRole;
