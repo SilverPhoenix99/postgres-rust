@@ -99,7 +99,7 @@ use crate::parser::combinators::foundation::CombinatorHelpers;
 use crate::parser::combinators::role_id;
 use crate::parser::combinators::role_list;
 use crate::parser::combinators::role_spec;
-use crate::parser::ParserError;
+use elog::parser::ParserError;
 use postgres_parser_ast::AddDrop;
 use postgres_parser_ast::AlterRoleOption::RoleMembers;
 use postgres_parser_ast::AlterRoleStmt;

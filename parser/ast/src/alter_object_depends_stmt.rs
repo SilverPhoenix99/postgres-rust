@@ -40,5 +40,5 @@ pub enum AlterObjectDependsTarget {
 
 use crate::AddDrop;
 use crate::FunctionWithArgs;
-use crate::QualifiedName;
+use postgres_basics::QualifiedName;
 use postgres_basics::Str;

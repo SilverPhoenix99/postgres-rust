@@ -30,4 +30,5 @@ impl<T: Error> Display for SimpleErrorReport<T> {
 }
 
 use std::error::Error;
-use std::fmt::{Display, Formatter};
+use std::fmt::Display;
+use std::fmt::Formatter;

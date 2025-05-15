@@ -49,4 +49,4 @@ impl CreateConversionStmt {
     }
 }
 
-use crate::QualifiedName;
+use postgres_basics::QualifiedName;

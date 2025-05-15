@@ -28,8 +28,7 @@ end
 # gen:errcodes - Error Codes (SQLSTATE)
 ###############################################################################
 err_codes_input = PG_ROOT / 'src/backend/utils/errcodes.txt'
-err_codes_root = RUST_PROJECT_ROOT / 'basics/src/sql_state'
-err_codes_output = RUST_PROJECT_ROOT / 'basics/src/sql_state/sql_states.rs'
+err_codes_output = RUST_PROJECT_ROOT / 'elog/src/sql_state/sql_states.rs'
 
 CLEAN << err_codes_output
 

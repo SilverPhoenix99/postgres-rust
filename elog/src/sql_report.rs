@@ -6,5 +6,5 @@ where
     T: ErrorReport + HasSqlState
 {}
 
-use crate::elog::ErrorReport;
-use crate::elog::HasSqlState;
+use crate::ErrorReport;
+use crate::HasSqlState;

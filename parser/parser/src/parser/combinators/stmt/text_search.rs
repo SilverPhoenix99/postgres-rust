@@ -54,7 +54,7 @@ use crate::parser::combinators::foundation::and;
 use crate::parser::combinators::foundation::match_first;
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::foundation::CombinatorHelpers;
-use postgres_parser_ast::QualifiedName;
+use postgres_basics::QualifiedName;
 use postgres_parser_lexer::Keyword::Configuration;
 use postgres_parser_lexer::Keyword::Dictionary;
 use postgres_parser_lexer::Keyword::ParserKw;

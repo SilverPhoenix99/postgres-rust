@@ -492,8 +492,7 @@ fn strip_delimiters(kind: StringKind, slice: &str) -> &str {
 mod tests {
     use super::*;
     use crate::parser::tests::DEFAULT_CONFIG;
-    use crate::parser::ParserError;
-    use crate::parser::ParserErrorKind::Syntax;
+    use elog::parser::ParserErrorKind::Syntax;
     use TokenValue::Identifier;
 
     #[test]
@@ -619,16 +618,17 @@ use crate::parser::token_value::TokenValue;
 use crate::parser::uescape_escape::uescape_escape;
 use crate::parser::ParseResult;
 use crate::parser::ParserConfig;
-use crate::parser::ParserError;
-use crate::parser::ParserErrorKind::ExtendedString;
-use crate::parser::ParserErrorKind::InvalidUescapeDelimiter;
-use crate::parser::ParserErrorKind::UescapeDelimiterMissing;
-use crate::parser::ParserErrorKind::UnicodeString;
-use crate::parser::ParserWarningKind;
 use crate::string_decoders::BasicStringDecoder;
 use crate::string_decoders::ExtendedStringDecoder;
 use crate::string_decoders::ExtendedStringResult;
 use crate::string_decoders::UnicodeStringDecoder;
+use elog::parser::ParserError;
+use elog::parser::ParserErrorKind::ExtendedString;
+use elog::parser::ParserErrorKind::InvalidUescapeDelimiter;
+use elog::parser::ParserErrorKind::UescapeDelimiterMissing;
+use elog::parser::ParserErrorKind::UnicodeString;
+use elog::parser::ParserWarningKind;
+use elog::HasLocation;
 use postgres_basics::guc::BackslashQuote;
 use postgres_basics::Located;
 use postgres_basics::Location;
@@ -637,7 +637,6 @@ use postgres_basics::NAMEDATALEN;
 use postgres_parser_ast::UnsignedNumber;
 use postgres_parser_ast::UnsignedNumber::IntegerConst;
 use postgres_parser_ast::UnsignedNumber::NumericConst;
-use postgres_parser_error::HasLocation;
 use postgres_parser_lexer::BitStringKind;
 use postgres_parser_lexer::IdentifierKind;
 use postgres_parser_lexer::Keyword::Uescape;

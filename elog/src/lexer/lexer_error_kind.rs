@@ -71,11 +71,10 @@ impl ErrorReport for LexerErrorKind {
     }
 }
 
-use crate::NumberRadix;
-use postgres_basics::{
-    elog::{ErrorReport, HasSqlState},
-    sql_state::SqlState,
-    sql_state::SqlState::SyntaxError,
-};
+use crate::sql_state::SqlState;
+use crate::sql_state::SqlState::SyntaxError;
+use crate::ErrorReport;
+use crate::HasSqlState;
+use postgres_basics::NumberRadix;
 use std::borrow::Cow;
 use LexerErrorKind::UnsafeUnicodeString;

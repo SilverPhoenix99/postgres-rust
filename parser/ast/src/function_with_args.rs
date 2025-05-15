@@ -34,4 +34,4 @@ use crate::FunctionParameter;
 use crate::FunctionParameterMode::Default;
 use crate::FunctionParameterMode::In;
 use crate::FunctionParameterMode::Variadic;
-use crate::QualifiedName;
+use postgres_basics::QualifiedName;

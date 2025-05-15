@@ -41,7 +41,7 @@ impl<T> Required<T> for ScanResult<T> {
     fn required(self) -> ParseResult<T> {
         self.map_err(|err| match err {
             ScanErr(err) => err,
-            NoMatch(loc) | ScanEof(loc) => syntax_err(loc)
+            NoMatch(loc) | ScanEof(loc) => ParserError::syntax(loc)
         })
     }
 }
@@ -50,7 +50,7 @@ impl<T> Required<T> for EofResult<T> {
     fn required(self) -> ParseResult<T> {
         self.map_err(|err| match err {
             NotEof(err) => err,
-            Eof(loc) => syntax_err(loc)
+            Eof(loc) => ParserError::syntax(loc)
         })
     }
 }
@@ -127,14 +127,13 @@ mod tests {
     // TODO
 }
 
-use crate::parser::error::syntax_err;
 use crate::parser::result::EofErrorKind::Eof;
 use crate::parser::result::EofErrorKind::NotEof;
 use crate::parser::result::ScanErrorKind::Eof as ScanEof;
 use crate::parser::result::ScanErrorKind::NoMatch;
 use crate::parser::result::ScanErrorKind::ScanErr;
 use crate::parser::ParseResult;
-use crate::parser::ParserError;
+use elog::lexer::LexerError;
+use elog::parser::ParserError;
 use postgres_basics::impl_from;
 use postgres_basics::Location;
-use postgres_parser_lexer::LexerError;

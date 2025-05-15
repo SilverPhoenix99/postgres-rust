@@ -41,11 +41,11 @@ impl From<SetRestMore> for SetRest {
     }
 }
 
-use crate::QualifiedName;
 use crate::SetRestMore;
 use crate::TransactionMode;
 use crate::ValueOrDefault;
 use crate::VarValue;
 use crate::XmlNodeKind;
 use crate::ZoneValue;
+use postgres_basics::QualifiedName;
 use postgres_basics::Str;

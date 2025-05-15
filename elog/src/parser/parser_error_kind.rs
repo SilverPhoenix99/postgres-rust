@@ -184,18 +184,18 @@ impl From<RoleSpecError> for ParserErrorKind {
     }
 }
 
-use crate::string_decoders::ExtendedStringError;
-use crate::string_decoders::UnicodeStringError;
-use postgres_basics::elog::ErrorReport;
-use postgres_basics::elog::HasSqlState;
-use postgres_basics::sql_state::SqlState;
-use postgres_basics::sql_state::SqlState::FeatureNotSupported;
-use postgres_basics::sql_state::SqlState::InvalidParameterValue;
-use postgres_basics::sql_state::SqlState::ReservedName;
-use postgres_basics::sql_state::SqlState::SyntaxError;
-use postgres_parser_ast::QualifiedName;
-use postgres_parser_ast::RoleSpecError;
-use postgres_parser_lexer::LexerErrorKind;
+use crate::extended_string::ExtendedStringError;
+use crate::lexer::LexerErrorKind;
+use crate::sql_state::SqlState;
+use crate::sql_state::SqlState::FeatureNotSupported;
+use crate::sql_state::SqlState::InvalidParameterValue;
+use crate::sql_state::SqlState::ReservedName;
+use crate::sql_state::SqlState::SyntaxError;
+use crate::ErrorReport;
+use crate::HasSqlState;
+use crate::RoleSpecError;
+use crate::UnicodeStringError;
+use postgres_basics::QualifiedName;
 use std::borrow::Cow;
 use std::fmt::Display;
 use std::fmt::Formatter;

@@ -1,17 +1,11 @@
 mod combinators;
 mod config;
-mod error;
 mod result;
 mod token_stream;
 mod token_value;
 mod uescape_escape;
-mod warning;
 
-pub use self::{
-    config::ParserConfig,
-    error::{ParserError, ParserErrorKind},
-    warning::ParserWarningKind,
-};
+pub use self::config::ParserConfig;
 
 pub(crate) type ParseResult<T> = Result<T, ParserError>;
 
@@ -44,7 +38,7 @@ impl<'src> Parser<'src> {
         // Discard the previous result, and mark the current location as a Syntax error.
         if !self.buffer.eof() {
             let loc = self.buffer.current_location();
-            result = Err(syntax_err(loc));
+            result = Err(ParserError::syntax(loc));
         }
 
         ParserResult {
@@ -92,9 +86,10 @@ mod tests {
 
 use crate::parser::combinators::foundation::Combinator;
 use crate::parser::combinators::stmtmulti;
-use crate::parser::error::syntax_err;
 use crate::parser::result::Required;
 use crate::parser::token_stream::TokenStream;
+use elog::parser::ParserError;
+use elog::parser::ParserWarningKind;
 use postgres_basics::Located;
 use postgres_parser_ast::RawStmt;
 use std::mem;

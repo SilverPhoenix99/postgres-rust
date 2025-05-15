@@ -3,9 +3,9 @@ resolver = "3"
 
 members = [
     "basics",
+    "elog",
     "guc",
     "parser/ast",
-    "parser/error",
     "parser/lexer",
     "parser/parser",
 ]
@@ -29,9 +29,9 @@ lazy_static = "1"
 test-case = "3"
 thiserror = "2"
 
+elog = { path = "elog" }
 postgres-basics = { path = "basics" }
 postgres-guc = { path = "guc" }
 postgres-parser-ast = { path = "parser/ast" }
-postgres-parser-error = { path = "parser/error" }
 postgres-parser-lexer = { path = "parser/lexer" }
 postgres-parser = { path = "parser/parser" }
