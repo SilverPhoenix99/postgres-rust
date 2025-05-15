@@ -9,7 +9,7 @@ PG_ROOT = RUST_PROJECT_ROOT.parent / 'postgres'
 # gen:keywords - Keywords
 ###############################################################################
 keywords_input = PG_ROOT / 'src/include/parser/kwlist.h'
-keywords_output = RUST_PROJECT_ROOT / 'parser/src/lexer/keyword/keywords.rs'
+keywords_output = RUST_PROJECT_ROOT / 'parser/lexer/src/keyword/keywords.rs'
 
 CLEAN << keywords_output
 
