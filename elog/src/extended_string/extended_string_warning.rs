@@ -12,7 +12,12 @@ pub enum ExtendedStringWarning {
 }
 
 impl ErrorReport for ExtendedStringWarning {
-    fn hint(&self) -> Option<Cow<'static, str>> {
+
+    fn sql_state(&self) -> SqlState {
+        SqlState::NonstandardUseOfEscapeCharacter
+    }
+
+    fn hint(&self) -> Option<Str> {
         match self {
             Self::NonstandardEscape => Some(r"Use the escape string syntax for escapes, e.g., E'\r\n'.".into()),
             Self::NonstandardQuoteEscape => {
@@ -25,5 +30,6 @@ impl ErrorReport for ExtendedStringWarning {
     }
 }
 
-use std::borrow::Cow;
+use crate::sql_state::SqlState;
 use crate::ErrorReport;
+use pg_basics::Str;

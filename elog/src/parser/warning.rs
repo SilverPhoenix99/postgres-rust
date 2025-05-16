@@ -7,17 +7,16 @@ pub enum ParserWarningKind {
     ExtendedStringWarning(#[from] ExtendedStringWarning)
 }
 
-impl HasSqlState for ParserWarningKind {
+impl ErrorReport for ParserWarningKind {
+
     fn sql_state(&self) -> SqlState {
         match self {
             Self::DeprecatedGlobalTemporaryTable => SqlState::Warning,
-            Self::ExtendedStringWarning(_) => SqlState::NonstandardUseOfEscapeCharacter,
+            Self::ExtendedStringWarning(warn) => warn.sql_state(),
         }
     }
-}
 
-impl ErrorReport for ParserWarningKind {
-    fn hint(&self) -> Option<Cow<'static, str>> {
+    fn hint(&self) -> Option<Str> {
         match self {
             Self::DeprecatedGlobalTemporaryTable => None,
             Self::ExtendedStringWarning(err) => err.hint(),
@@ -28,5 +27,4 @@ impl ErrorReport for ParserWarningKind {
 use crate::extended_string::ExtendedStringWarning;
 use crate::sql_state::SqlState;
 use crate::ErrorReport;
-use crate::HasSqlState;
-use std::borrow::Cow;
+use pg_basics::Str;

@@ -4,7 +4,7 @@ impl<T> Required<T> for EofResult<T> {
     fn required(self) -> ParseResult<T> {
         self.map_err(|err| match err {
             NotEof(err) => err,
-            Eof(loc) => ParserError::syntax(loc)
+            Eof(loc) => syntax(loc)
         })
     }
 }
@@ -13,7 +13,7 @@ impl<T> TryMatch<T> for EofResult<T> {
     fn try_match(self) -> ParseResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
-            Err(Eof(loc)) => Err(ParserError::syntax(loc)),
+            Err(Eof(loc)) => Err(syntax(loc)),
             Err(NotEof(err)) => Err(err),
         }
     }
@@ -36,4 +36,4 @@ use crate::result::EofErrorKind::NotEof;
 use crate::result::Optional;
 use crate::result::Required;
 use crate::result::TryMatch;
-use pg_elog::parser::ParserError;
+use pg_elog::syntax;

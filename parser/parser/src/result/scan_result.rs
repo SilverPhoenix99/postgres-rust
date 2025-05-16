@@ -4,7 +4,7 @@ impl<T> Required<T> for ScanResult<T> {
     fn required(self) -> ParseResult<T> {
         self.map_err(|err| match err {
             ScanErr(err) => err,
-            NoMatch(loc) | Eof(loc) => ParserError::syntax(loc)
+            NoMatch(loc) | Eof(loc) => syntax(loc)
         })
     }
 }
@@ -14,7 +14,7 @@ impl<T> TryMatch<T> for ScanResult<T> {
         match self {
             Ok(ok) => Ok(Some(ok)),
             Err(NoMatch(_)) => Ok(None),
-            Err(Eof(loc)) => Err(ParserError::syntax(loc)),
+            Err(Eof(loc)) => Err(syntax(loc)),
             Err(ScanErr(err)) => Err(err),
         }
     }
@@ -52,4 +52,4 @@ use crate::result::ScanErrorKind::Eof;
 use crate::result::ScanErrorKind::NoMatch;
 use crate::result::ScanErrorKind::ScanErr;
 use crate::result::TryMatch;
-use pg_elog::parser::ParserError;
+use pg_elog::syntax;

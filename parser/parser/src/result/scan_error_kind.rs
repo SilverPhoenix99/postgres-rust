@@ -1,15 +1,26 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub(crate) enum ScanErrorKind {
     /// When an unrecoverable error occurs.
-    ScanErr(ParserError),
+    ScanErr(PgError),
     /// When there are no more tokens.
     Eof(Location),
     /// When the token didn't match.
     NoMatch(Location),
 }
 
-impl_from!(LexerError for ScanErrorKind::ScanErr);
-impl_from!(ParserError for ScanErrorKind::ScanErr);
+impl_from!(PgError for ScanErrorKind::ScanErr);
+
+impl From<LexerError> for ScanErrorKind {
+    fn from(value: LexerError) -> Self {
+        ScanErr(value.into())
+    }
+}
+
+impl From<ParserError> for ScanErrorKind {
+    fn from(value: ParserError) -> Self {
+        ScanErr(value.into())
+    }
+}
 
 impl From<EofErrorKind> for ScanErrorKind {
     fn from(value: EofErrorKind) -> Self {
@@ -25,5 +36,6 @@ use crate::result::EofErrorKind;
 use crate::result::ScanErrorKind::ScanErr;
 use pg_basics::impl_from;
 use pg_basics::Location;
-use pg_elog::lexer::LexerError;
-use pg_elog::parser::ParserError;
+use pg_elog::LexerError;
+use pg_elog::ParserError;
+use pg_elog::PgError;

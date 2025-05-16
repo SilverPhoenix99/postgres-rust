@@ -54,7 +54,7 @@ fn close_paren() -> impl Combinator<Output = ()> {
 
     located(CloseParenthesis).map_result(|res| match res {
         Ok((_, loc)) => {
-            let err = ParserError::new(MissingOperatorArgumentType, loc);
+            let err = PgError::new(MissingOperatorArgumentType, loc);
             Err(ScanErr(err))
         }
         Err(err) => Err(err)
@@ -116,8 +116,8 @@ use crate::result::ScanErrorKind::ScanErr;
 use pg_ast::OneOrBoth;
 use pg_ast::OperatorWithArgs;
 use pg_ast::Type;
-use pg_elog::parser::ParserError;
-use pg_elog::parser::ParserErrorKind::MissingOperatorArgumentType;
+use pg_elog::ParserErrorKind::MissingOperatorArgumentType;
+use pg_elog::PgError;
 use pg_lexer::Keyword::NoneKw;
 use pg_lexer::OperatorKind::CloseParenthesis;
 use pg_lexer::OperatorKind::Comma;

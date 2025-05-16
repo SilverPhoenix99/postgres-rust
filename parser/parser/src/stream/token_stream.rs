@@ -226,8 +226,9 @@ impl TokenConsumer<TokenValue, bool> for TokenStream<'_> {
 mod tests {
     use super::*;
     use crate::tests::DEFAULT_CONFIG;
-    use pg_elog::parser::ParserError;
-    use pg_elog::parser::ParserErrorKind::Syntax;
+    use pg_elog::syntax;
+    use pg_elog::ParserErrorKind::Syntax;
+    use pg_elog::PgErrorKind;
     use TokenValue::Identifier;
 
     #[test]
@@ -260,7 +261,7 @@ mod tests {
         let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
         let actual: ScanResult<()> = buffer.consume(|_| {
-            let err = ParserError::syntax(Location::new(0..0, 0, 0));
+            let err = syntax(Location::new(0..0, 0, 0));
             Err(err)
         });
 
@@ -269,7 +270,7 @@ mod tests {
             unreachable!("already checked for Err(ScanErr(_))")
         };
 
-        assert_eq!(&Syntax, actual.source());
+        assert_eq!(&PgErrorKind::Parser(Syntax), actual.source());
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
     }
 
@@ -360,8 +361,8 @@ use pg_basics::guc::BackslashQuote;
 use pg_basics::Located;
 use pg_basics::Location;
 use pg_basics::NumberRadix;
-use pg_elog::parser::ParserWarningKind;
 use pg_elog::HasLocation;
+use pg_elog::ParserWarningKind;
 use pg_lexer::Lexer;
 use pg_lexer::RawTokenKind;
 use std::collections::VecDeque;

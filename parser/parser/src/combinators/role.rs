@@ -18,7 +18,7 @@ pub(super) fn role_id() -> impl Combinator<Output = Str> {
             let (role, loc) = result?;
             role.into_role_id()
                 .map_err(|err|
-                    ScanErr(ParserError::new(err, loc))
+                    ScanErr(PgError::new(err, loc))
                 )
         })
 }
@@ -44,7 +44,7 @@ pub(super) fn role_spec() -> impl Combinator<Output = RoleSpec> {
         // "none" is a ColumnName keyword, so it must be checked before the next option
         located(NoneKw).map_result(|result| match result {
             Ok((_, loc)) => Err(ScanErr(
-                ParserError::new(ReservedRoleSpec("none"), loc)
+                PgError::new(ReservedRoleSpec("none"), loc)
             )),
             Err(err) => Err(err)
         }),
@@ -59,14 +59,13 @@ pub(super) fn role_spec() -> impl Combinator<Output = RoleSpec> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::result::ScanErrorKind::NoMatch;
-    use crate::result::ScanErrorKind::ScanErr;
     use crate::result::ScanResult;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use pg_elog::parser::ParserErrorKind;
-    use pg_elog::parser::ParserErrorKind::ForbiddenRoleSpec;
+    use pg_elog::{PgErrorKind, RoleSpecErrorKind};
+    use pg_elog::RoleSpecErrorKind::ForbiddenRoleSpec;
     use std::fmt::Debug;
+    use crate::result::ScanErrorKind::NoMatch;
 
     #[test]
     fn test_role_list() {
@@ -129,12 +128,13 @@ mod tests {
         assert_err(ReservedRoleSpec("none"), role_spec().parse(&mut stream));
     }
 
-    fn assert_err<T: Debug>(expected: ParserErrorKind, actual: ScanResult<T>) {
+    fn assert_err<T: Debug>(expected: RoleSpecErrorKind, actual: ScanResult<T>) {
         assert_matches!(actual, Err(ScanErr(_)));
         let ScanErr(actual) = actual.unwrap_err() else {
             unreachable!("already checked for Err(ScanErr(_))");
         };
 
+        let expected = PgErrorKind::RoleSpecError(expected);
         assert_eq!(&expected, actual.source());
     }
 }
@@ -149,8 +149,8 @@ use crate::combinators::non_reserved_word;
 use crate::result::ScanErrorKind::ScanErr;
 use pg_ast::RoleSpec;
 use pg_basics::Str;
-use pg_elog::parser::ParserError;
-use pg_elog::parser::ParserErrorKind::ReservedRoleSpec;
+use pg_elog::PgError;
+use pg_elog::RoleSpecErrorKind::ReservedRoleSpec;
 use pg_lexer::Keyword::CurrentRole;
 use pg_lexer::Keyword::CurrentUser;
 use pg_lexer::Keyword::NoneKw;

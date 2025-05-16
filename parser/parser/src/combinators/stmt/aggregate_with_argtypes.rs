@@ -70,7 +70,7 @@ fn aggr_arg() -> impl Combinator<Output = FunctionParameter> {
            return Ok(param)
         }
 
-        let err = ParserError::new(AggregateWithOutputParameters, loc);
+        let err = PgError::new(AggregateWithOutputParameters, loc);
         Err(ScanErr(err))
     })
 }
@@ -211,8 +211,8 @@ use crate::result::ScanErrorKind::ScanErr;
 use pg_ast::AggregateWithArgs;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionParameterMode as Mode;
-use pg_elog::parser::ParserError;
-use pg_elog::parser::ParserErrorKind::AggregateWithOutputParameters;
+use pg_elog::ParserErrorKind::AggregateWithOutputParameters;
+use pg_elog::PgError;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Order;
 use pg_lexer::OperatorKind::Comma;

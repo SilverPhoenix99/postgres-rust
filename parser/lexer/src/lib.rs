@@ -1054,7 +1054,7 @@ mod tests {
     ) {
         let expected_loc = Location::new(range, line, col);
 
-        assert_matches!(actual, Some(Err(err)) if err.source() == expected_err && expected_loc.eq(err.location()));
+        assert_matches!(actual, Some(Err(err)) if err.source() == &expected_err && expected_loc.eq(err.location()));
     }
 
     fn assert_kw(expected: Keyword, actual: Option<LexerResult>) {
@@ -1086,7 +1086,7 @@ use pg_basics::NumberRadix::Decimal;
 use pg_basics::NumberRadix::Hexadecimal;
 use pg_basics::NumberRadix::Octal;
 use pg_basics::NAMEDATALEN;
-use pg_elog::lexer::LexerError;
-use pg_elog::lexer::LexerErrorKind;
-use pg_elog::lexer::LexerErrorKind::*;
+use pg_elog::LexerError;
+use pg_elog::LexerErrorKind;
+use pg_elog::LexerErrorKind::*;
 use std::iter::FusedIterator;

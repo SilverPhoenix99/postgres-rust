@@ -63,7 +63,7 @@ impl BufferedLexer<'_> {
                     .decode()
                     .map(str::into_string)
                     .map_err(|err|
-                        ParserError::new(UnicodeString(err), loc.clone())
+                        PgError::new(err, loc.clone())
                     )?
             }
         };
@@ -153,7 +153,7 @@ impl BufferedLexer<'_> {
                 }
 
                 result.map_err(|err|
-                    ParserError::new(ExtendedString(err), loc.clone())
+                    PgError::new(err, loc.clone())
                 )?
             }
             Unicode => {
@@ -163,7 +163,7 @@ impl BufferedLexer<'_> {
                 UnicodeStringDecoder::new(&buffer, false, escape)
                     .decode()
                     .map_err(|err|
-                        ParserError::new(UnicodeString(err), loc.clone())
+                        PgError::new(err, loc.clone())
                     )?
             }
             Dollar => unreachable!("`$` strings don't have any escapes"),
@@ -191,7 +191,7 @@ impl BufferedLexer<'_> {
             Ok((_, loc))
             | Err(Eof(loc)) => {
                 return Err(
-                    ParserError::new(UescapeDelimiterMissing, loc.clone())
+                    PgError::new(UescapeDelimiterMissing, loc.clone())
                 )
             },
 
@@ -214,7 +214,7 @@ impl BufferedLexer<'_> {
         let loc = Location::new(range, loc.line(), loc.col());
 
         uescape_escape(&buffer).ok_or_else(||
-            ParserError::new(InvalidUescapeDelimiter, loc)
+            PgError::new(InvalidUescapeDelimiter, loc)
         )
     }
 
@@ -250,12 +250,10 @@ use pg_basics::guc::BackslashQuote;
 use pg_basics::Located;
 use pg_basics::Location;
 use pg_basics::NAMEDATALEN;
-use pg_elog::parser::ParserError;
-use pg_elog::parser::ParserErrorKind::ExtendedString;
-use pg_elog::parser::ParserErrorKind::InvalidUescapeDelimiter;
-use pg_elog::parser::ParserErrorKind::UescapeDelimiterMissing;
-use pg_elog::parser::ParserErrorKind::UnicodeString;
-use pg_elog::parser::ParserWarningKind;
+use pg_elog::ParserErrorKind::InvalidUescapeDelimiter;
+use pg_elog::ParserErrorKind::UescapeDelimiterMissing;
+use pg_elog::ParserWarningKind;
+use pg_elog::PgError;
 use pg_lexer::BitStringKind;
 use pg_lexer::IdentifierKind;
 use pg_lexer::Keyword::Uescape;
