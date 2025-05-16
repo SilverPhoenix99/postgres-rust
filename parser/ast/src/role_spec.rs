@@ -22,7 +22,7 @@ impl RoleSpec {
     }
 }
 
-use elog::RoleSpecError;
-use elog::RoleSpecError::ForbiddenRoleSpec;
-use elog::RoleSpecError::ReservedRoleSpec;
-use postgres_basics::Str;
+use pg_basics::Str;
+use pg_elog::RoleSpecError;
+use pg_elog::RoleSpecError::ForbiddenRoleSpec;
+use pg_elog::RoleSpecError::ReservedRoleSpec;

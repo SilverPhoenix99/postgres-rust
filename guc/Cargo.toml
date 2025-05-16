@@ -1,5 +1,5 @@
 [package]
-name = "postgres-guc"
+name = "pg-guc"
 edition.workspace = true
 version.workspace = true
 
@@ -9,4 +9,4 @@ workspace = true
 [dependencies]
 bitflags.workspace = true
 lazy_static.workspace = true
-postgres-basics.workspace = true
+pg-basics.workspace = true

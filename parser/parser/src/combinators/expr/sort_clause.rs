@@ -47,12 +47,12 @@ fn sortby() -> impl Combinator<Output = SortBy> {
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use postgres_parser_ast::ExprNode::IntegerConst;
-    use postgres_parser_ast::Operator::Less;
-    use postgres_parser_ast::SortDirection;
-    use postgres_parser_ast::SortDirection::Ascending;
-    use postgres_parser_ast::SortNulls::NullsFirst;
-    use postgres_parser_ast::SortNulls::NullsLast;
+    use pg_ast::ExprNode::IntegerConst;
+    use pg_ast::Operator::Less;
+    use pg_ast::SortDirection;
+    use pg_ast::SortDirection::Ascending;
+    use pg_ast::SortNulls::NullsFirst;
+    use pg_ast::SortNulls::NullsLast;
     use test_case::test_case;
 
     #[test]
@@ -121,9 +121,9 @@ use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::opt_asc_desc;
 use crate::combinators::opt_nulls_order;
 use crate::combinators::qual_all_op;
-use postgres_parser_ast::SortBy;
-use postgres_parser_ast::SortDirection::Using;
-use postgres_parser_lexer::Keyword as Kw;
-use postgres_parser_lexer::Keyword::By;
-use postgres_parser_lexer::Keyword::Order;
-use postgres_parser_lexer::OperatorKind::Comma;
+use pg_ast::SortBy;
+use pg_ast::SortDirection::Using;
+use pg_lexer::Keyword as Kw;
+use pg_lexer::Keyword::By;
+use pg_lexer::Keyword::Order;
+use pg_lexer::OperatorKind::Comma;

@@ -60,7 +60,7 @@ mod tests {
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
     #[allow(unused_imports)]
-    use postgres_basics::NumberRadix::Decimal;
+    use pg_basics::NumberRadix::Decimal;
     use test_case::test_case;
 
     #[test_case( "1.01", SignedNumber::NumericConst { value: "1.01".into(), radix: Decimal, negative: false })]
@@ -96,6 +96,6 @@ use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::sign;
-use postgres_parser_ast::SignedNumber;
-use postgres_parser_lexer::OperatorKind::Minus;
+use pg_ast::SignedNumber;
+use pg_lexer::OperatorKind::Minus;
 use std::ops::Neg;

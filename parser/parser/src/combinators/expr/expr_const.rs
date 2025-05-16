@@ -32,11 +32,11 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
+    use pg_ast::ExprNode::*;
     #[allow(unused_imports)]
-    use postgres_basics::NumberRadix::Decimal;
-    use postgres_parser_ast::ExprNode::*;
+    use pg_ast::TypeName::*;
     #[allow(unused_imports)]
-    use postgres_parser_ast::TypeName::*;
+    use pg_basics::NumberRadix::Decimal;
     use test_case::test_case;
 
     #[test_case("123", IntegerConst(123))]
@@ -60,13 +60,13 @@ use crate::combinators::foundation::number;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_parser_ast::ExprNode;
-use postgres_parser_ast::ExprNode::BinaryStringConst;
-use postgres_parser_ast::ExprNode::BooleanConst;
-use postgres_parser_ast::ExprNode::HexStringConst;
-use postgres_parser_ast::ExprNode::NullConst;
-use postgres_parser_ast::ExprNode::StringConst;
-use postgres_parser_lexer::BitStringKind::*;
-use postgres_parser_lexer::Keyword::False;
-use postgres_parser_lexer::Keyword::Null;
-use postgres_parser_lexer::Keyword::True;
+use pg_ast::ExprNode;
+use pg_ast::ExprNode::BinaryStringConst;
+use pg_ast::ExprNode::BooleanConst;
+use pg_ast::ExprNode::HexStringConst;
+use pg_ast::ExprNode::NullConst;
+use pg_ast::ExprNode::StringConst;
+use pg_lexer::BitStringKind::*;
+use pg_lexer::Keyword::False;
+use pg_lexer::Keyword::Null;
+use pg_lexer::Keyword::True;

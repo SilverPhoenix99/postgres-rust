@@ -163,7 +163,7 @@ mod tests {
     use super::*;
     use crate::tests::test_parser;
     #[allow(unused_imports)]
-    use postgres_parser_ast::{
+    use pg_ast::{
         AggregateWithArgs,
         FunctionWithArgs,
         OneOrBoth,
@@ -346,10 +346,10 @@ use crate::combinators::stmt::Foreign;
 use crate::combinators::stmt::Operator as Op;
 use crate::combinators::stmt::TextSearch;
 use crate::combinators::string_or_null;
-use postgres_parser_ast::CommentStmt;
-use postgres_parser_ast::CommentTarget;
-use postgres_parser_ast::CommentTarget::*;
-use postgres_parser_lexer::Keyword as Kw;
-use postgres_parser_lexer::Keyword::Comment;
-use postgres_parser_lexer::Keyword::Is;
-use postgres_parser_lexer::Keyword::On;
+use pg_ast::CommentStmt;
+use pg_ast::CommentTarget;
+use pg_ast::CommentTarget::*;
+use pg_lexer::Keyword as Kw;
+use pg_lexer::Keyword::Comment;
+use pg_lexer::Keyword::Is;
+use pg_lexer::Keyword::On;

@@ -29,7 +29,7 @@ mod tests {
 
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_parser_ast::XmlNodeKind;
-use postgres_parser_ast::XmlNodeKind::Content;
-use postgres_parser_ast::XmlNodeKind::Document;
-use postgres_parser_lexer::Keyword as Kw;
+use pg_ast::XmlNodeKind;
+use pg_ast::XmlNodeKind::Content;
+use pg_ast::XmlNodeKind::Document;
+use pg_lexer::Keyword as Kw;

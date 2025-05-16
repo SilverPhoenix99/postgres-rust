@@ -1,5 +1,5 @@
 [package]
-name = "postgres-parser-ast"
+name = "pg-ast"
 edition.workspace = true
 version.workspace = true
 
@@ -8,5 +8,5 @@ workspace = true
 
 [dependencies]
 thiserror.workspace = true
-elog.workspace = true
-postgres-basics.workspace = true
+pg-basics.workspace = true
+pg-elog.workspace = true

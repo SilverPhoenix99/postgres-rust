@@ -20,5 +20,5 @@ impl From<Box<str>> for BooleanOrString {
     }
 }
 
-use postgres_basics::impl_from;
-use postgres_basics::Str;
+use pg_basics::impl_from;
+use pg_basics::Str;

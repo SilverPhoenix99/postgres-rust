@@ -43,4 +43,5 @@ mod tests {
     use test_case::test_case;
 }
 
-use postgres_basics::ascii::{is_hex_digit, is_whitespace};
+use pg_basics::ascii::is_hex_digit;
+use pg_basics::ascii::is_whitespace;

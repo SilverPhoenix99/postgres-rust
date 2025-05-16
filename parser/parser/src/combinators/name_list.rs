@@ -13,5 +13,5 @@ pub(super) fn name_list() -> impl Combinator<Output = Vec<Str>> {
 use crate::combinators::col_id;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::Combinator;
-use postgres_basics::Str;
-use postgres_parser_lexer::OperatorKind::Comma;
+use pg_basics::Str;
+use pg_lexer::OperatorKind::Comma;

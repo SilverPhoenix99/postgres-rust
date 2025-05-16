@@ -42,9 +42,9 @@ mod tests {
     use crate::stream::TokenStream;
     use crate::tests::test_parser;
     use crate::tests::DEFAULT_CONFIG;
-    use postgres_parser_ast::CreateRoleOption;
+    use pg_ast::CreateRoleOption;
     #[allow(unused_imports)]
-    use postgres_parser_ast::{
+    use pg_ast::{
         GenericOption,
         RoleSpec
     };
@@ -107,12 +107,12 @@ use crate::combinators::stmt::auth_ident;
 use crate::combinators::stmt::create_generic_options;
 use crate::combinators::stmt::create_stmt::create_role_options;
 use crate::combinators::stmt::if_not_exists;
-use postgres_parser_ast::CreateRoleStmt;
-use postgres_parser_ast::CreateUserMappingStmt;
-use postgres_parser_ast::RawStmt;
-use postgres_parser_ast::RoleKind;
-use postgres_parser_lexer::Keyword::For;
-use postgres_parser_lexer::Keyword::Mapping;
-use postgres_parser_lexer::Keyword::Server;
-use postgres_parser_lexer::Keyword::User;
-use postgres_parser_lexer::Keyword::With;
+use pg_ast::CreateRoleStmt;
+use pg_ast::CreateUserMappingStmt;
+use pg_ast::RawStmt;
+use pg_ast::RoleKind;
+use pg_lexer::Keyword::For;
+use pg_lexer::Keyword::Mapping;
+use pg_lexer::Keyword::Server;
+use pg_lexer::Keyword::User;
+use pg_lexer::Keyword::With;

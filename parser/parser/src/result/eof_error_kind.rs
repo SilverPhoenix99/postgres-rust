@@ -7,7 +7,7 @@ pub(crate) enum EofErrorKind {
 impl_from!(LexerError for EofErrorKind::NotEof);
 impl_from!(ParserError for EofErrorKind::NotEof);
 
-use elog::lexer::LexerError;
-use elog::parser::ParserError;
-use postgres_basics::impl_from;
-use postgres_basics::Location;
+use pg_basics::impl_from;
+use pg_basics::Location;
+use pg_elog::lexer::LexerError;
+use pg_elog::parser::ParserError;

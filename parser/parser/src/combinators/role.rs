@@ -64,8 +64,8 @@ mod tests {
     use crate::result::ScanResult;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use elog::parser::ParserErrorKind;
-    use elog::parser::ParserErrorKind::ForbiddenRoleSpec;
+    use pg_elog::parser::ParserErrorKind;
+    use pg_elog::parser::ParserErrorKind::ForbiddenRoleSpec;
     use std::fmt::Debug;
 
     #[test]
@@ -147,12 +147,12 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::non_reserved_word;
 use crate::result::ScanErrorKind::ScanErr;
-use elog::parser::ParserError;
-use elog::parser::ParserErrorKind::ReservedRoleSpec;
-use postgres_basics::Str;
-use postgres_parser_ast::RoleSpec;
-use postgres_parser_lexer::Keyword::CurrentRole;
-use postgres_parser_lexer::Keyword::CurrentUser;
-use postgres_parser_lexer::Keyword::NoneKw;
-use postgres_parser_lexer::Keyword::SessionUser;
-use postgres_parser_lexer::OperatorKind::Comma;
+use pg_ast::RoleSpec;
+use pg_basics::Str;
+use pg_elog::parser::ParserError;
+use pg_elog::parser::ParserErrorKind::ReservedRoleSpec;
+use pg_lexer::Keyword::CurrentRole;
+use pg_lexer::Keyword::CurrentUser;
+use pg_lexer::Keyword::NoneKw;
+use pg_lexer::Keyword::SessionUser;
+use pg_lexer::OperatorKind::Comma;

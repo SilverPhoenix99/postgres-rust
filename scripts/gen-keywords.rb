@@ -102,7 +102,7 @@ class KeywordsGenerator
       '',
       'use super::KeywordCategory::*;',
       'use super::KeywordDetails;',
-      'use postgres_basics::mphf;',
+      'use pg_basics::mphf;',
       'use Keyword::*;',
       ''
     ].join("\n")

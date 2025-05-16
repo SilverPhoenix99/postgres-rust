@@ -59,5 +59,5 @@ use crate::combinators::attrs;
 use crate::combinators::col_id;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::Combinator;
-use postgres_basics::QualifiedName;
-use postgres_parser_lexer::OperatorKind::Comma;
+use pg_basics::QualifiedName;
+use pg_lexer::OperatorKind::Comma;

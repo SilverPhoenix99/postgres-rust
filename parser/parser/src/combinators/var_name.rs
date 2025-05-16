@@ -11,5 +11,5 @@ pub(super) fn var_name() -> impl Combinator<Output = QualifiedName> {
 use crate::combinators::col_id;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::Combinator;
-use postgres_basics::QualifiedName;
-use postgres_parser_lexer::OperatorKind::Dot;
+use pg_basics::QualifiedName;
+use pg_lexer::OperatorKind::Dot;

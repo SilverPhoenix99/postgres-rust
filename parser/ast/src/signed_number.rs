@@ -33,5 +33,5 @@ impl From<UnsignedNumber> for SignedNumber {
 impl_from!(i32 for SignedNumber::IntegerConst);
 
 use crate::UnsignedNumber;
-use postgres_basics::impl_from;
-use postgres_basics::NumberRadix;
+use pg_basics::impl_from;
+use pg_basics::NumberRadix;

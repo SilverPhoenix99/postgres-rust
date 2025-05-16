@@ -26,7 +26,7 @@ mod tests {
 use crate::combinators::foundation::optional;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_parser_ast::UniqueNullTreatment;
-use postgres_parser_lexer::Keyword::Distinct;
-use postgres_parser_lexer::Keyword::Not;
-use postgres_parser_lexer::Keyword::Nulls;
+use pg_ast::UniqueNullTreatment;
+use pg_lexer::Keyword::Distinct;
+use pg_lexer::Keyword::Not;
+use pg_lexer::Keyword::Nulls;

@@ -36,10 +36,10 @@ mod tests {
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_parser_ast::DiscardStmt;
-use postgres_parser_lexer::Keyword::All;
-use postgres_parser_lexer::Keyword::Discard;
-use postgres_parser_lexer::Keyword::Plans;
-use postgres_parser_lexer::Keyword::Sequences;
-use postgres_parser_lexer::Keyword::Temp;
-use postgres_parser_lexer::Keyword::Temporary;
+use pg_ast::DiscardStmt;
+use pg_lexer::Keyword::All;
+use pg_lexer::Keyword::Discard;
+use pg_lexer::Keyword::Plans;
+use pg_lexer::Keyword::Sequences;
+use pg_lexer::Keyword::Temp;
+use pg_lexer::Keyword::Temporary;

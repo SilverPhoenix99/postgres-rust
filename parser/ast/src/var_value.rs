@@ -34,5 +34,5 @@ impl From<BooleanOrString> for VarValue {
 
 use crate::BooleanOrString;
 use crate::SignedNumber;
-use postgres_basics::impl_from;
-use postgres_basics::Str;
+use pg_basics::impl_from;
+use pg_basics::Str;

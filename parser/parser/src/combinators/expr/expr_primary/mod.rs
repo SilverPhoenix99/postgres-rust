@@ -43,4 +43,4 @@ use self::{
 use crate::combinators::expr::expr_const;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
-use postgres_parser_ast::ExprNode;
+use pg_ast::ExprNode;

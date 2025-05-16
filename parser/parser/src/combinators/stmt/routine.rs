@@ -26,5 +26,5 @@ mod tests {
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::function_with_argtypes;
-use postgres_parser_ast::FunctionWithArgs;
-use postgres_parser_lexer::Keyword::Routine;
+use pg_ast::FunctionWithArgs;
+use pg_lexer::Keyword::Routine;

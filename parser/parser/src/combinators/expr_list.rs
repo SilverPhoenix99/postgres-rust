@@ -31,5 +31,5 @@ mod tests {
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::Combinator;
-use postgres_parser_ast::ExprNode;
-use postgres_parser_lexer::OperatorKind::Comma;
+use pg_ast::ExprNode;
+use pg_lexer::OperatorKind::Comma;

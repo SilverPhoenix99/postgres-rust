@@ -119,7 +119,7 @@ mod tests {
     use super::*;
     use crate::tests::test_parser;
     #[allow(unused_imports)]
-    use postgres_parser_ast::{
+    use pg_ast::{
         AggregateWithArgs,
         FunctionWithArgs,
         SignedNumber::IntegerConst,
@@ -242,12 +242,12 @@ use crate::combinators::stmt::view;
 use crate::combinators::stmt::Foreign;
 use crate::combinators::stmt::TextSearch;
 use crate::combinators::string_or_null;
-use postgres_basics::Str;
-use postgres_parser_ast::SecurityLabelStmt;
-use postgres_parser_ast::SecurityLabelTarget;
-use postgres_parser_ast::SecurityLabelTarget::*;
-use postgres_parser_lexer::Keyword::For;
-use postgres_parser_lexer::Keyword::Is;
-use postgres_parser_lexer::Keyword::Label;
-use postgres_parser_lexer::Keyword::On;
-use postgres_parser_lexer::Keyword::Security;
+use pg_ast::SecurityLabelStmt;
+use pg_ast::SecurityLabelTarget;
+use pg_ast::SecurityLabelTarget::*;
+use pg_basics::Str;
+use pg_lexer::Keyword::For;
+use pg_lexer::Keyword::Is;
+use pg_lexer::Keyword::Label;
+use pg_lexer::Keyword::On;
+use pg_lexer::Keyword::Security;

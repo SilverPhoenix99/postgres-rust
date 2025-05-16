@@ -54,7 +54,7 @@ mod tests {
     use super::*;
     use crate::tests::test_parser;
     #[allow(unused_imports)]
-    use postgres_parser_ast::{
+    use pg_ast::{
         SetRestMore::TimeZone,
         SignedNumber::IntegerConst,
         VariableTarget::All,
@@ -95,16 +95,16 @@ use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::signed_number;
 use crate::combinators::stmt::reset_stmt;
 use crate::combinators::stmt::set_rest_more;
-use postgres_parser_ast::AlterFunctionOption;
-use postgres_parser_ast::AlterFunctionOption::*;
-use postgres_parser_ast::Volatility::*;
-use postgres_parser_lexer::Keyword as Kw;
-use postgres_parser_lexer::Keyword::Called;
-use postgres_parser_lexer::Keyword::Definer;
-use postgres_parser_lexer::Keyword::External;
-use postgres_parser_lexer::Keyword::Input;
-use postgres_parser_lexer::Keyword::Invoker;
-use postgres_parser_lexer::Keyword::Not;
-use postgres_parser_lexer::Keyword::Null;
-use postgres_parser_lexer::Keyword::On;
-use postgres_parser_lexer::Keyword::Returns;
+use pg_ast::AlterFunctionOption;
+use pg_ast::AlterFunctionOption::*;
+use pg_ast::Volatility::*;
+use pg_lexer::Keyword as Kw;
+use pg_lexer::Keyword::Called;
+use pg_lexer::Keyword::Definer;
+use pg_lexer::Keyword::External;
+use pg_lexer::Keyword::Input;
+use pg_lexer::Keyword::Invoker;
+use pg_lexer::Keyword::Not;
+use pg_lexer::Keyword::Null;
+use pg_lexer::Keyword::On;
+use pg_lexer::Keyword::Returns;

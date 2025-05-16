@@ -13,4 +13,4 @@ pub(super) fn opt_type_modifiers() -> impl Combinator<Output = TypeModifiers> {
 use crate::combinators::expr_list_paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_parser_ast::TypeModifiers;
+use pg_ast::TypeModifiers;

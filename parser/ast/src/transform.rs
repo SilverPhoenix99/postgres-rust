@@ -22,4 +22,4 @@ impl Transform {
 }
 
 use crate::Type;
-use postgres_basics::Str;
+use pg_basics::Str;

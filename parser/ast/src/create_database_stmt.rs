@@ -109,5 +109,5 @@ impl From<VarValue> for CreatedbOptionValue {
 
 use crate::SignedNumber;
 use crate::VarValue;
-use postgres_basics::impl_from;
-use postgres_basics::Str;
+use pg_basics::impl_from;
+use pg_basics::Str;

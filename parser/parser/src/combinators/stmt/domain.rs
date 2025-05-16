@@ -12,7 +12,7 @@ pub(super) fn domain() -> impl Combinator<Output=Type> {
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use postgres_parser_ast::TypeName::Int4;
+    use pg_ast::TypeName::Int4;
 
     #[test]
     fn test_domain() {
@@ -27,5 +27,5 @@ mod tests {
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::typename;
-use postgres_parser_ast::Type;
-use postgres_parser_lexer::Keyword::Domain;
+use pg_ast::Type;
+use pg_lexer::Keyword::Domain;

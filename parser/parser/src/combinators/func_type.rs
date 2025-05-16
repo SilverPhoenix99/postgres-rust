@@ -45,7 +45,7 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use postgres_parser_ast::SetOf;
+    use pg_ast::SetOf;
 
     #[test]
     fn test_ref_func_type() {
@@ -65,7 +65,7 @@ mod tests {
         let mut stream = TokenStream::new("setof some_.qualified_name[]", DEFAULT_CONFIG);
         let actual = func_type().parse(&mut stream);
 
-        let expected = postgres_parser_ast::Type::new(
+        let expected = pg_ast::Type::new(
             Generic {
                 name: vec!["some_".into(), "qualified_name".into()],
                 type_modifiers: vec![]
@@ -81,10 +81,10 @@ mod tests {
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::typename;
-use postgres_parser_ast::FuncType;
-use postgres_parser_ast::FuncType::Reference;
-use postgres_parser_ast::TypeName::Generic;
-use postgres_parser_ast::TypeReference;
-use postgres_parser_lexer::Keyword::Type;
-use postgres_parser_lexer::OperatorKind::Percent;
+use pg_ast::FuncType;
+use pg_ast::FuncType::Reference;
+use pg_ast::TypeName::Generic;
+use pg_ast::TypeReference;
+use pg_lexer::Keyword::Type;
+use pg_lexer::OperatorKind::Percent;
 use std::hint::unreachable_unchecked;

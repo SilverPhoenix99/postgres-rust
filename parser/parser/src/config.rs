@@ -22,4 +22,4 @@ impl ParserConfig {
     }
 }
 
-use postgres_basics::guc::BackslashQuote;
+use pg_basics::guc::BackslashQuote;

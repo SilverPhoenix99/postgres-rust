@@ -1,5 +1,5 @@
 pub(super) fn aggregate() -> impl Combinator<Output = AggregateWithArgs> {
-    
+
     /*
         AGGREGATE aggregate_with_argtypes
     */
@@ -26,5 +26,5 @@ mod tests {
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::stmt::aggregate_with_argtypes;
-use postgres_parser_ast::AggregateWithArgs;
-use postgres_parser_lexer::Keyword::Aggregate;
+use pg_ast::AggregateWithArgs;
+use pg_lexer::Keyword::Aggregate;

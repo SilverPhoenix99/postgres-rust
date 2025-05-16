@@ -1,5 +1,5 @@
 pub(super) fn event_trigger() -> impl Combinator<Output = Str> {
-    
+
     /*
         EVENT TRIGGER ColId
     */
@@ -27,6 +27,6 @@ use crate::combinators::col_id;
 use crate::combinators::foundation::and;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_basics::Str;
-use postgres_parser_lexer::Keyword::Event;
-use postgres_parser_lexer::Keyword::Trigger;
+use pg_basics::Str;
+use pg_lexer::Keyword::Event;
+use pg_lexer::Keyword::Trigger;

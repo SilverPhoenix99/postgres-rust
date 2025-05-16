@@ -50,10 +50,10 @@ mod tests {
     use super::*;
     use crate::tests::test_parser;
     #[allow(unused_imports)]
-    use postgres_parser_ast::FunctionWithArgs;
-    use postgres_parser_ast::TypeName::Int4;
-    use postgres_parser_ast::TypeName::Int8;
-    use postgres_parser_ast::Typecast;
+    use pg_ast::FunctionWithArgs;
+    use pg_ast::TypeName::Int4;
+    use pg_ast::TypeName::Int8;
+    use pg_ast::Typecast;
     use test_case::test_case;
 
     #[test]
@@ -92,15 +92,15 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::function_with_argtypes;
 use crate::combinators::stmt::typecast;
-use postgres_parser_ast::CastConversion;
-use postgres_parser_ast::CastConversion::WithFunction;
-use postgres_parser_ast::CastConversion::WithInout;
-use postgres_parser_ast::CastConversion::WithoutFunction;
-use postgres_parser_ast::CoercionContext;
-use postgres_parser_ast::CreateCastStmt;
-use postgres_parser_lexer::Keyword as Kw;
-use postgres_parser_lexer::Keyword::As;
-use postgres_parser_lexer::Keyword::Function;
-use postgres_parser_lexer::Keyword::Inout;
-use postgres_parser_lexer::Keyword::With;
-use postgres_parser_lexer::Keyword::Without;
+use pg_ast::CastConversion;
+use pg_ast::CastConversion::WithFunction;
+use pg_ast::CastConversion::WithInout;
+use pg_ast::CastConversion::WithoutFunction;
+use pg_ast::CoercionContext;
+use pg_ast::CreateCastStmt;
+use pg_lexer::Keyword as Kw;
+use pg_lexer::Keyword::As;
+use pg_lexer::Keyword::Function;
+use pg_lexer::Keyword::Inout;
+use pg_lexer::Keyword::With;
+use pg_lexer::Keyword::Without;

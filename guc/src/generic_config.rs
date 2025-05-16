@@ -33,5 +33,8 @@ pub struct GenericConfig {
     sourceline: i32,
 }
 
-use crate::{GucContext, GucSource, GucStack, GucStatus};
-use postgres_basics::Oid;
+use crate::GucContext;
+use crate::GucSource;
+use crate::GucStack;
+use crate::GucStatus;
+use pg_basics::Oid;

@@ -32,9 +32,9 @@ mod tests {
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_parser_ast::SortNulls;
-use postgres_parser_ast::SortNulls::NullsFirst;
-use postgres_parser_ast::SortNulls::NullsLast;
-use postgres_parser_lexer::Keyword::First;
-use postgres_parser_lexer::Keyword::Last;
-use postgres_parser_lexer::Keyword::Nulls;
+use pg_ast::SortNulls;
+use pg_ast::SortNulls::NullsFirst;
+use pg_ast::SortNulls::NullsLast;
+use pg_lexer::Keyword::First;
+use pg_lexer::Keyword::Last;
+use pg_lexer::Keyword::Nulls;

@@ -12,6 +12,6 @@ impl Default for UnsignedNumber {
 
 impl_from!(NonNegative for UnsignedNumber::IntegerConst);
 
-use postgres_basics::impl_from;
-use postgres_basics::NonNegative;
-use postgres_basics::NumberRadix;
+use pg_basics::impl_from;
+use pg_basics::NonNegative;
+use pg_basics::NumberRadix;

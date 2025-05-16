@@ -33,4 +33,4 @@ pub enum GenericOptionKind {
     Drop(Str)
 }
 
-use postgres_basics::Str;
+use pg_basics::Str;

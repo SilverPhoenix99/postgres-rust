@@ -47,5 +47,5 @@ use crate::ValueOrDefault;
 use crate::VarValue;
 use crate::XmlNodeKind;
 use crate::ZoneValue;
-use postgres_basics::QualifiedName;
-use postgres_basics::Str;
+use pg_basics::QualifiedName;
+use pg_basics::Str;

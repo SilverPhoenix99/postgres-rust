@@ -17,4 +17,4 @@ pub enum Indirection {
 }
 
 use crate::ExprNode;
-use postgres_basics::Str;
+use pg_basics::Str;

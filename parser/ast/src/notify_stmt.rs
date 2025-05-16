@@ -39,4 +39,4 @@ impl NotifyStmt {
     }
 }
 
-use postgres_basics::Str;
+use pg_basics::Str;

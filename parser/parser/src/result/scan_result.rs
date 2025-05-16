@@ -52,4 +52,4 @@ use crate::result::ScanErrorKind::Eof;
 use crate::result::ScanErrorKind::NoMatch;
 use crate::result::ScanErrorKind::ScanErr;
 use crate::result::TryMatch;
-use elog::parser::ParserError;
+use pg_elog::parser::ParserError;

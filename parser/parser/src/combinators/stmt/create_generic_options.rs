@@ -1,6 +1,6 @@
 /// Post-condition: Vec **May** be empty.
 pub(super) fn create_generic_options() -> impl Combinator<Output = Vec<GenericOption>> {
-    
+
     /*
         OPTIONS '(' generic_option_list ')'
     */
@@ -32,5 +32,5 @@ use crate::combinators::between_paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::generic_options;
-use postgres_parser_ast::GenericOption;
-use postgres_parser_lexer::Keyword::Options;
+use pg_ast::GenericOption;
+use pg_lexer::Keyword::Options;

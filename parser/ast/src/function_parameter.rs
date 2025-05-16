@@ -31,4 +31,4 @@ impl From<FuncType> for FunctionParameter {
 
 use crate::FuncType;
 use crate::FunctionParameterMode;
-use postgres_basics::Str;
+use pg_basics::Str;

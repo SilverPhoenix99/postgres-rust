@@ -97,4 +97,4 @@ pub enum RelationPersistence {
     Temp      = b't',
 }
 
-use postgres_basics::Str;
+use pg_basics::Str;

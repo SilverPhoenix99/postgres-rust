@@ -13,7 +13,7 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use postgres_parser_lexer::OperatorKind::Dot;
+    use pg_lexer::OperatorKind::Dot;
 
     #[test]
     /// All these methods are similar, so no point in repeating tests:
@@ -34,5 +34,5 @@ mod tests {
 use crate::combinators::col_id;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::Combinator;
-use postgres_basics::QualifiedName;
-use postgres_parser_lexer::OperatorKind;
+use pg_basics::QualifiedName;
+use pg_lexer::OperatorKind;

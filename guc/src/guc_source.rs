@@ -72,4 +72,4 @@ impl Named for GucSource {
     }
 }
 
-use postgres_basics::Named;
+use pg_basics::Named;

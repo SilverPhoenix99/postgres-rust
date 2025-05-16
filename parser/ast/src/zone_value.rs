@@ -12,4 +12,4 @@ pub enum ZoneValue {
 
 use crate::IntervalRange;
 use crate::SignedNumber;
-use postgres_basics::Str;
+use pg_basics::Str;

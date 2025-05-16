@@ -1,5 +1,5 @@
 pub(super) fn table() -> impl Combinator<Output = QualifiedName> {
-     
+
     /*
         TABLE any_name
     */
@@ -26,5 +26,5 @@ mod tests {
 use crate::combinators::any_name;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_basics::QualifiedName;
-use postgres_parser_lexer::Keyword::Table;
+use pg_basics::QualifiedName;
+use pg_lexer::Keyword::Table;

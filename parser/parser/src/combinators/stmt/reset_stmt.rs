@@ -25,5 +25,5 @@ mod tests {
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::stmt::variable_target;
-use postgres_parser_ast::VariableTarget;
-use postgres_parser_lexer::Keyword::Reset;
+use pg_ast::VariableTarget;
+use pg_lexer::Keyword::Reset;

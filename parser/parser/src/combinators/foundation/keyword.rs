@@ -116,8 +116,8 @@ impl<F, O> Debug for KeywordCondCombi<F, O> {
 mod tests {
     use super::*;
     use crate::tests::DEFAULT_CONFIG;
-    use postgres_parser_lexer::Keyword::Abort;
-    use postgres_parser_lexer::KeywordCategory::Unreserved;
+    use pg_lexer::Keyword::Abort;
+    use pg_lexer::KeywordCategory::Unreserved;
 
     #[test]
     fn test_keyword() {
@@ -148,8 +148,8 @@ use crate::stream::ConsumerResult;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue;
-use postgres_parser_lexer::Keyword;
-use postgres_parser_lexer::KeywordCategory;
+use pg_lexer::Keyword;
+use pg_lexer::KeywordCategory;
 use std::fmt::Debug;
 use std::fmt::Formatter;
 use std::marker::PhantomData;

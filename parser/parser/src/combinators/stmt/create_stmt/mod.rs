@@ -57,5 +57,5 @@ use self::{
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_parser_ast::RawStmt;
-use postgres_parser_lexer::Keyword::Create;
+use pg_ast::RawStmt;
+use pg_lexer::Keyword::Create;

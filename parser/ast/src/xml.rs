@@ -61,4 +61,4 @@ pub struct XmlSerialize {
 
 use crate::ExprNode;
 use crate::Type;
-use postgres_basics::Str;
+use pg_basics::Str;

@@ -139,13 +139,13 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use postgres_basics::Str;
     #[allow(unused_imports)]
-    use postgres_parser_ast::{
+    use pg_ast::{
         SignedNumber::IntegerConst,
         TransactionMode::ReadOnly,
         XmlNodeKind::Document,
     };
+    use pg_basics::Str;
     use test_case::test_case;
 
     #[test_case("session characteristics as transaction read only", SetRest::SessionTransactionCharacteristics(vec![ReadOnly]))]
@@ -233,32 +233,32 @@ use crate::combinators::opt_interval;
 use crate::combinators::signed_number;
 use crate::combinators::transaction_mode_list;
 use crate::combinators::var_name;
-use elog::parser::ParserError;
-use elog::parser::ParserErrorKind::InvalidZoneValue;
-use postgres_basics::Str;
-use postgres_parser_ast::IntervalRange;
-use postgres_parser_ast::IntervalRange::Full;
-use postgres_parser_ast::IntervalRange::Hour;
-use postgres_parser_ast::IntervalRange::HourToMinute;
-use postgres_parser_ast::SetRest;
-use postgres_parser_ast::SetRestMore;
-use postgres_parser_ast::ValueOrDefault;
-use postgres_parser_ast::ZoneValue;
-use postgres_parser_ast::ZoneValue::Interval;
-use postgres_parser_ast::ZoneValue::Local;
-use postgres_parser_ast::ZoneValue::Numeric;
-use postgres_parser_lexer::Keyword as Kw;
-use postgres_parser_lexer::Keyword::As;
-use postgres_parser_lexer::Keyword::Authorization;
-use postgres_parser_lexer::Keyword::Characteristics;
-use postgres_parser_lexer::Keyword::Current;
-use postgres_parser_lexer::Keyword::DefaultKw;
-use postgres_parser_lexer::Keyword::FromKw;
-use postgres_parser_lexer::Keyword::Names;
-use postgres_parser_lexer::Keyword::OptionKw;
-use postgres_parser_lexer::Keyword::Session;
-use postgres_parser_lexer::Keyword::Snapshot;
-use postgres_parser_lexer::Keyword::Time;
-use postgres_parser_lexer::Keyword::Transaction;
-use postgres_parser_lexer::Keyword::Xml;
-use postgres_parser_lexer::Keyword::Zone;
+use pg_ast::IntervalRange;
+use pg_ast::IntervalRange::Full;
+use pg_ast::IntervalRange::Hour;
+use pg_ast::IntervalRange::HourToMinute;
+use pg_ast::SetRest;
+use pg_ast::SetRestMore;
+use pg_ast::ValueOrDefault;
+use pg_ast::ZoneValue;
+use pg_ast::ZoneValue::Interval;
+use pg_ast::ZoneValue::Local;
+use pg_ast::ZoneValue::Numeric;
+use pg_basics::Str;
+use pg_elog::parser::ParserError;
+use pg_elog::parser::ParserErrorKind::InvalidZoneValue;
+use pg_lexer::Keyword as Kw;
+use pg_lexer::Keyword::As;
+use pg_lexer::Keyword::Authorization;
+use pg_lexer::Keyword::Characteristics;
+use pg_lexer::Keyword::Current;
+use pg_lexer::Keyword::DefaultKw;
+use pg_lexer::Keyword::FromKw;
+use pg_lexer::Keyword::Names;
+use pg_lexer::Keyword::OptionKw;
+use pg_lexer::Keyword::Session;
+use pg_lexer::Keyword::Snapshot;
+use pg_lexer::Keyword::Time;
+use pg_lexer::Keyword::Transaction;
+use pg_lexer::Keyword::Xml;
+use pg_lexer::Keyword::Zone;
