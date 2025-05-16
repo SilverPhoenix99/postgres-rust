@@ -13,6 +13,21 @@ pub(super) fn opt_timezone() -> impl Combinator<Output = bool> {
         .map(|tz| tz.unwrap_or(false))
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tests::test_parser;
+    use test_case::test_case;
+
+    #[test_case("with time zone", true)]
+    #[test_case("without time zone", false)]
+    #[test_case("something else", false)]
+    #[test_case("", false)]
+    fn test_opt_timezone(source: &str, expected: bool) {
+        test_parser!(source, opt_timezone(), expected);
+    }
+}
+
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
