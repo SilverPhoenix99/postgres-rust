@@ -1,0 +1,30 @@
+pub(super) fn sequence() -> impl Combinator<Output = QualifiedName> {
+
+    /*
+        SEQUENCE any_name
+    */
+
+    Sequence
+        .and_right(any_name())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tests::test_parser;
+
+    #[test]
+    fn test_sequence() {
+        test_parser!(
+            source = "sequence foo",
+            parser = sequence(),
+            expected = vec!["foo".into()]
+        )
+    }
+}
+
+use crate::combinators::any_name;
+use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::CombinatorHelpers;
+use postgres_basics::QualifiedName;
+use postgres_parser_lexer::Keyword::Sequence;
