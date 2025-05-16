@@ -24,7 +24,8 @@ pub enum ExtendedStringError {
     InvalidUnicodeEscape(u32),
 }
 
-impl HasSqlState for ExtendedStringError {
+impl ErrorReport for ExtendedStringError {
+
     fn sql_state(&self) -> SqlState {
         match self {
             Utf8(_) => CharacterNotInRepertoire,
@@ -34,10 +35,8 @@ impl HasSqlState for ExtendedStringError {
             InvalidUnicodeEscape(_) => InvalidEscapeSequence,
         }
     }
-}
 
-impl ErrorReport for ExtendedStringError {
-    fn hint(&self) -> Option<Cow<'static, str>> {
+    fn hint(&self) -> Option<Str> {
         match self {
             NonstandardUseOfBackslashQuote => Some(
                 r"Use '' to write quotes in strings. \' is insecure in client-only encodings.".into()
@@ -54,7 +53,6 @@ use crate::sql_state::SqlState::InvalidEscapeSequence;
 use crate::sql_state::SqlState::NonstandardUseOfEscapeCharacter;
 use crate::sql_state::SqlState::SyntaxError;
 use crate::ErrorReport;
-use crate::HasSqlState;
-use std::borrow::Cow;
+use pg_basics::Str;
 use std::str::Utf8Error;
 use ExtendedStringError::*;

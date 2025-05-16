@@ -1,19 +1,23 @@
-pub trait ErrorReport {
+pub trait ErrorReport: Error {
+
+    fn sql_state(&self) -> SqlState;
 
     #[inline(always)]
-    fn hint(&self) -> Option<Cow<'static, str>> {
+    fn hint(&self) -> Option<Str> {
         None
     }
 
     #[inline(always)]
-    fn detail(&self) -> Option<Cow<'static, str>> {
+    fn detail(&self) -> Option<Str> {
         None
     }
 
     #[inline(always)]
-    fn detail_log(&self) -> Option<Cow<'static, str>> {
+    fn detail_log(&self) -> Option<Str> {
         None
     }
 }
 
-use std::borrow::Cow;
+use crate::sql_state::SqlState;
+use pg_basics::Str;
+use std::error::Error;

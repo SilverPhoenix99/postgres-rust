@@ -1,3 +1,5 @@
+pub type LexerError = LocatedErrorReport<LexerErrorKind>;
+
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
 pub enum LexerErrorKind {
 
@@ -50,16 +52,15 @@ pub enum LexerErrorKind {
     UnsafeUnicodeString,
 }
 
-impl HasSqlState for LexerErrorKind {
+impl ErrorReport for LexerErrorKind {
+
     #[inline(always)]
     fn sql_state(&self) -> SqlState {
         SyntaxError
     }
-}
 
-impl ErrorReport for LexerErrorKind {
     #[inline(always)]
-    fn detail(&self) -> Option<Cow<'static, str>> {
+    fn detail(&self) -> Option<Str> {
         if UnsafeUnicodeString.eq(self) {
             Some(
                 r#"String constants with Unicode escapes cannot be used when "standard_conforming_strings" is off."#.into()
@@ -71,10 +72,10 @@ impl ErrorReport for LexerErrorKind {
     }
 }
 
-use crate::sql_state::SqlState;
-use crate::sql_state::SqlState::SyntaxError;
 use crate::ErrorReport;
-use crate::HasSqlState;
+use crate::LexerErrorKind::UnsafeUnicodeString;
+use crate::LocatedErrorReport;
+use crate::SqlState;
+use crate::SqlState::SyntaxError;
 use pg_basics::NumberRadix;
-use std::borrow::Cow;
-use LexerErrorKind::UnsafeUnicodeString;
+use pg_basics::Str;

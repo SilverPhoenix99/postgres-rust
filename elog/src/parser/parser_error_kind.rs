@@ -5,10 +5,6 @@ pub enum ParserErrorKind {
     #[error("syntax error")]
     Syntax,
 
-    /// Still a syntax error, but thrown by the lexer
-    #[error("{0}")]
-    Lexer(#[from] LexerErrorKind),
-
     /// When UESCAPE isn't followed by a simple 1 char string.
     #[error("UESCAPE must be followed by a simple string literal")]
     UescapeDelimiterMissing,
@@ -16,20 +12,6 @@ pub enum ParserErrorKind {
     /// When UESCAPE's delimiter string is invalid (len > 1, or invalid char).
     #[error("invalid Unicode escape character")]
     InvalidUescapeDelimiter,
-
-    #[error("{0}")]
-    ExtendedString(#[from] ExtendedStringError),
-
-    #[error("{0}")]
-    UnicodeString(#[from] UnicodeStringError),
-
-    /// When "none" or "public" was incorrectly used as a role.
-    #[error(r#"role name "{0}" is reserved"#)]
-    ReservedRoleSpec(&'static str),
-
-    /// When a role is disallowed
-    #[error(r"{0} cannot be used as a role name here")]
-    ForbiddenRoleSpec(&'static str),
 
     /// When the float precision is < 1
     #[error("precision for type float must be at least 1 bit")]
@@ -83,20 +65,16 @@ impl Display for NameList {
     }
 }
 
-impl HasSqlState for ParserErrorKind {
+impl ErrorReport for ParserErrorKind {
+
     fn sql_state(&self) -> SqlState {
         match self {
-            ExtendedString(err) => err.sql_state(),
             FloatPrecisionOverflow(_) => InvalidParameterValue,
             FloatPrecisionUnderflow(_) => InvalidParameterValue,
-            ForbiddenRoleSpec(_) => ReservedName,
             InvalidUescapeDelimiter => SyntaxError,
-            Lexer(err) => err.sql_state(),
-            ReservedRoleSpec(_) => ReservedName,
             Syntax => SyntaxError,
             UescapeDelimiterMissing => SyntaxError,
             UnencryptedPassword => FeatureNotSupported,
-            UnicodeString(err) => err.sql_state(),
             UnrecognizedRoleOption(_) => SyntaxError,
             ImproperQualifiedName(_) => SyntaxError,
             InvalidZoneValue => SyntaxError,
@@ -105,20 +83,13 @@ impl HasSqlState for ParserErrorKind {
             ImproperUseOfStar => SyntaxError,
         }
     }
-}
 
-impl ErrorReport for ParserErrorKind {
-    fn hint(&self) -> Option<Cow<'static, str>> {
+    fn hint(&self) -> Option<Str> {
         match self {
-            ExtendedString(err) => err.hint(),
-            Lexer(err) => err.hint(),
-            UnicodeString(err) => err.hint(),
             UnencryptedPassword => Some("Remove UNENCRYPTED to store the password in encrypted form instead.".into()),
             FloatPrecisionOverflow(_) => None,
             FloatPrecisionUnderflow(_) => None,
-            ForbiddenRoleSpec(_) => None,
             InvalidUescapeDelimiter => None,
-            ReservedRoleSpec(_) => None,
             Syntax => None,
             UescapeDelimiterMissing => None,
             UnrecognizedRoleOption(_) => None,
@@ -129,74 +100,15 @@ impl ErrorReport for ParserErrorKind {
             ImproperUseOfStar => None,
         }
     }
-
-    fn detail(&self) -> Option<Cow<'static, str>> {
-        match self {
-            ExtendedString(err) => err.detail(),
-            Lexer(err) => err.detail(),
-            UnicodeString(err) => err.detail(),
-            FloatPrecisionOverflow(_) => None,
-            FloatPrecisionUnderflow(_) => None,
-            ForbiddenRoleSpec(_) => None,
-            InvalidUescapeDelimiter => None,
-            ReservedRoleSpec(_) => None,
-            Syntax => None,
-            UescapeDelimiterMissing => None,
-            UnencryptedPassword => None,
-            UnrecognizedRoleOption(_) => None,
-            ImproperQualifiedName(_) => None,
-            InvalidZoneValue => None,
-            MissingOperatorArgumentType => None,
-            AggregateWithOutputParameters => None,
-            ImproperUseOfStar => None,
-        }
-    }
-
-    fn detail_log(&self) -> Option<Cow<'static, str>> {
-        match self {
-            ExtendedString(err) => err.detail_log(),
-            Lexer(err) => err.detail_log(),
-            UnicodeString(err) => err.detail_log(),
-            FloatPrecisionOverflow(_) => None,
-            FloatPrecisionUnderflow(_) => None,
-            ForbiddenRoleSpec(_) => None,
-            InvalidUescapeDelimiter => None,
-            ReservedRoleSpec(_) => None,
-            Syntax => None,
-            UescapeDelimiterMissing => None,
-            UnencryptedPassword => None,
-            UnrecognizedRoleOption(_) => None,
-            ImproperQualifiedName(_) => None,
-            InvalidZoneValue => None,
-            MissingOperatorArgumentType => None,
-            AggregateWithOutputParameters => None,
-            ImproperUseOfStar => None,
-        }
-    }
 }
 
-impl From<RoleSpecError> for ParserErrorKind {
-    fn from(value: RoleSpecError) -> Self {
-        match value {
-            RoleSpecError::ReservedRoleSpec(name) => ReservedRoleSpec(name),
-            RoleSpecError::ForbiddenRoleSpec(name) => ForbiddenRoleSpec(name),
-        }
-    }
-}
-
-use crate::extended_string::ExtendedStringError;
-use crate::lexer::LexerErrorKind;
 use crate::sql_state::SqlState;
 use crate::sql_state::SqlState::FeatureNotSupported;
 use crate::sql_state::SqlState::InvalidParameterValue;
-use crate::sql_state::SqlState::ReservedName;
 use crate::sql_state::SqlState::SyntaxError;
 use crate::ErrorReport;
-use crate::HasSqlState;
-use crate::RoleSpecError;
-use crate::UnicodeStringError;
 use pg_basics::QualifiedName;
-use std::borrow::Cow;
+use pg_basics::Str;
 use std::fmt::Display;
 use std::fmt::Formatter;
 use ParserErrorKind::*;

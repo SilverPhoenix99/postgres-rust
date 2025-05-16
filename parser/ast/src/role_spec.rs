@@ -8,7 +8,7 @@ pub enum RoleSpec {
 }
 
 impl RoleSpec {
-    pub fn into_role_id(self) -> Result<Str, RoleSpecError> {
+    pub fn into_role_id(self) -> Result<Str, RoleSpecErrorKind> {
 
         let err = match self {
             Self::Name(role) => return Ok(role),
@@ -23,6 +23,6 @@ impl RoleSpec {
 }
 
 use pg_basics::Str;
-use pg_elog::RoleSpecError;
-use pg_elog::RoleSpecError::ForbiddenRoleSpec;
-use pg_elog::RoleSpecError::ReservedRoleSpec;
+use pg_elog::RoleSpecErrorKind;
+use pg_elog::RoleSpecErrorKind::ForbiddenRoleSpec;
+use pg_elog::RoleSpecErrorKind::ReservedRoleSpec;

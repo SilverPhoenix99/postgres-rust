@@ -60,7 +60,7 @@ fn password_option() -> impl Combinator<Output = AlterRoleOption> {
         sequence!(located(Unencrypted.skip()), Kw::Password.skip(), string())
             .map_result(|res| match res {
                 Ok(((_, loc), _, _)) => {
-                    let err = ParserError::new(UnencryptedPassword, loc);
+                    let err = PgError::new(UnencryptedPassword, loc);
                     Err(ScanErr(err))
                 },
                 Err(err) => Err(err)
@@ -96,7 +96,7 @@ fn ident_option() -> impl Combinator<Output = AlterRoleOption> {
                 "noinherit" => Ok(Inherit(false)),
                 _ => {
                     let kind = UnrecognizedRoleOption(ident);
-                    let err = ParserError::new(kind, loc);
+                    let err = PgError::new(kind, loc);
                     Err(ScanErr(err))
                 }
             }
@@ -187,9 +187,9 @@ use pg_ast::AlterRoleOption::Password;
 use pg_ast::AlterRoleOption::RoleMembers;
 use pg_ast::AlterRoleOption::SuperUser;
 use pg_ast::AlterRoleOption::ValidUntil;
-use pg_elog::parser::ParserError;
-use pg_elog::parser::ParserErrorKind::UnencryptedPassword;
-use pg_elog::parser::ParserErrorKind::UnrecognizedRoleOption;
+use pg_elog::ParserErrorKind::UnencryptedPassword;
+use pg_elog::ParserErrorKind::UnrecognizedRoleOption;
+use pg_elog::PgError;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Connection;
 use pg_lexer::Keyword::Encrypted;

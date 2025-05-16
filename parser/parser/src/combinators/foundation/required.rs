@@ -27,7 +27,8 @@ mod tests {
     use super::*;
     use crate::result::ScanErrorKind::ScanErr;
     use crate::tests::DEFAULT_CONFIG;
-    use pg_elog::parser::ParserErrorKind;
+    use pg_elog::ParserErrorKind::Syntax;
+    use pg_elog::PgErrorKind;
     use pg_lexer::Keyword;
     use std::hint::unreachable_unchecked;
 
@@ -47,7 +48,7 @@ mod tests {
 
         assert_matches!(actual, Err(ScanErr(_)));
         let ScanErr(err) = actual.unwrap_err() else { unsafe { unreachable_unchecked() } };
-        assert_eq!(&ParserErrorKind::Syntax, err.source())
+        assert_eq!(&PgErrorKind::Parser(Syntax), err.source())
     }
 
     #[test]
@@ -58,7 +59,7 @@ mod tests {
 
         assert_matches!(actual, Err(ScanErr(_)));
         let ScanErr(err) = actual.unwrap_err() else { unsafe { unreachable_unchecked() } };
-        assert_eq!(&ParserErrorKind::Syntax, err.source())
+        assert_eq!(&PgErrorKind::Parser(Syntax), err.source())
     }
 }
 

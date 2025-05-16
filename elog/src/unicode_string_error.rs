@@ -14,14 +14,13 @@ pub enum UnicodeStringError {
     InvalidUnicodeEscape(u32),
 }
 
-impl HasSqlState for UnicodeStringError {
+impl ErrorReport for UnicodeStringError {
+
     fn sql_state(&self) -> SqlState {
         SyntaxError
     }
-}
-
-impl ErrorReport for UnicodeStringError {
-    fn hint(&self) -> Option<Cow<'static, str>> {
+    
+    fn hint(&self) -> Option<Str> {
         match self {
             InvalidUnicodeEscape(_) => Some(r"Unicode escapes must be \XXXX or \+XXXXXX.".into()),
             _ => None,
@@ -32,6 +31,5 @@ impl ErrorReport for UnicodeStringError {
 use crate::sql_state::SqlState;
 use crate::sql_state::SqlState::SyntaxError;
 use crate::ErrorReport;
-use crate::HasSqlState;
-use std::borrow::Cow;
+use pg_basics::Str;
 use UnicodeStringError::*;
