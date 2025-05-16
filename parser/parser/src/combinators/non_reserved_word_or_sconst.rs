@@ -24,5 +24,5 @@ use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::non_reserved_word;
-use postgres_basics::Str;
-use postgres_basics::Str::Boxed;
+use pg_basics::Str;
+use pg_basics::Str::Boxed;

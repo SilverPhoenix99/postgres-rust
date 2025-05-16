@@ -30,4 +30,4 @@ pub enum TransactionStmt {
     RollbackPrepared(Box<str>),
 }
 
-use postgres_basics::Str;
+use pg_basics::Str;

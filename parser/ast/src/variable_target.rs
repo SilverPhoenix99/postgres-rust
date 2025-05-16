@@ -10,4 +10,4 @@ pub enum VariableTarget {
     },
 }
 
-use postgres_basics::QualifiedName;
+use pg_basics::QualifiedName;

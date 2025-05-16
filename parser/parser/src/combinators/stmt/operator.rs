@@ -25,7 +25,7 @@ mod tests {
     use super::*;
     use crate::tests::test_parser;
     #[allow(unused_imports)]
-    use postgres_parser_ast::{
+    use pg_ast::{
         OneOrBoth,
         Operator::Addition,
         QualifiedOperator,
@@ -63,10 +63,10 @@ use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::stmt::operator_with_argtypes;
-use postgres_basics::QualifiedName;
-use postgres_basics::Str;
-use postgres_parser_ast::OperatorWithArgs;
-use postgres_parser_lexer::Keyword as Kw;
-use postgres_parser_lexer::Keyword::Class;
-use postgres_parser_lexer::Keyword::Family;
-use postgres_parser_lexer::Keyword::Using;
+use pg_ast::OperatorWithArgs;
+use pg_basics::QualifiedName;
+use pg_basics::Str;
+use pg_lexer::Keyword as Kw;
+use pg_lexer::Keyword::Class;
+use pg_lexer::Keyword::Family;
+use pg_lexer::Keyword::Using;

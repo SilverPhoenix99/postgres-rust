@@ -88,11 +88,11 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use postgres_basics::Str;
-    use postgres_parser_ast::FuncType;
-    use postgres_parser_ast::SetOf;
-    use postgres_parser_ast::Type;
-    use postgres_parser_ast::TypeName;
+    use pg_ast::FuncType;
+    use pg_ast::SetOf;
+    use pg_ast::Type;
+    use pg_ast::TypeName;
+    use pg_basics::Str;
     use test_case::test_case;
 
     #[test_case("json", None, FunctionParameterMode::Default, TypeName::Json, SetOf::Record)]
@@ -141,10 +141,10 @@ use crate::result::EofResult;
 use crate::stream::TokenValue;
 use crate::stream::TokenValue::Identifier;
 use crate::stream::TokenValue::Keyword;
-use postgres_parser_ast::FunctionParameter;
-use postgres_parser_ast::FunctionParameterMode;
-use postgres_parser_lexer::Keyword as Kw;
-use postgres_parser_lexer::Keyword::Double;
-use postgres_parser_lexer::Keyword::Precision;
-use postgres_parser_lexer::KeywordCategory::TypeFuncName;
-use postgres_parser_lexer::KeywordCategory::Unreserved;
+use pg_ast::FunctionParameter;
+use pg_ast::FunctionParameterMode;
+use pg_lexer::Keyword as Kw;
+use pg_lexer::Keyword::Double;
+use pg_lexer::Keyword::Precision;
+use pg_lexer::KeywordCategory::TypeFuncName;
+use pg_lexer::KeywordCategory::Unreserved;

@@ -16,8 +16,8 @@ pub(super) fn typecast() -> impl Combinator<Output = Typecast> {
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use postgres_parser_ast::TypeName::Int4;
-    use postgres_parser_ast::TypeName::Int8;
+    use pg_ast::TypeName::Int4;
+    use pg_ast::TypeName::Int8;
 
     #[test]
     fn test_typecast() {
@@ -33,6 +33,6 @@ use crate::combinators::between_paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::typename;
-use postgres_parser_ast::Typecast;
-use postgres_parser_lexer::Keyword::As;
-use postgres_parser_lexer::Keyword::Cast;
+use pg_ast::Typecast;
+use pg_lexer::Keyword::As;
+use pg_lexer::Keyword::Cast;

@@ -108,7 +108,7 @@ mod tests {
     use super::*;
     use crate::tests::test_parser;
     #[allow(unused_imports)]
-    use postgres_parser_ast::{
+    use pg_ast::{
         FunctionWithArgs,
         RoleSpec::CurrentUser,
         SetRestMore::ConfigurationParameter,
@@ -270,27 +270,27 @@ use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::function_with_argtypes;
 use crate::combinators::role_spec;
 use crate::combinators::stmt::alter_function_option;
-use postgres_parser_ast::AddDrop;
-use postgres_parser_ast::AlterFunctionKind;
-use postgres_parser_ast::AlterFunctionOption;
-use postgres_parser_ast::AlterFunctionStmt;
-use postgres_parser_ast::AlterObjectDependsStmt;
-use postgres_parser_ast::AlterObjectDependsTarget;
-use postgres_parser_ast::AlterObjectSchemaStmt;
-use postgres_parser_ast::AlterObjectSchemaTarget;
-use postgres_parser_ast::AlterOwnerStmt;
-use postgres_parser_ast::AlterOwnerTarget;
-use postgres_parser_ast::RawStmt;
-use postgres_parser_ast::RenameStmt;
-use postgres_parser_ast::RenameTarget;
-use postgres_parser_lexer::Keyword as Kw;
-use postgres_parser_lexer::Keyword::Depends;
-use postgres_parser_lexer::Keyword::Extension;
-use postgres_parser_lexer::Keyword::No;
-use postgres_parser_lexer::Keyword::On;
-use postgres_parser_lexer::Keyword::Owner;
-use postgres_parser_lexer::Keyword::Rename;
-use postgres_parser_lexer::Keyword::Restrict;
-use postgres_parser_lexer::Keyword::Schema;
-use postgres_parser_lexer::Keyword::Set;
-use postgres_parser_lexer::Keyword::To;
+use pg_ast::AddDrop;
+use pg_ast::AlterFunctionKind;
+use pg_ast::AlterFunctionOption;
+use pg_ast::AlterFunctionStmt;
+use pg_ast::AlterObjectDependsStmt;
+use pg_ast::AlterObjectDependsTarget;
+use pg_ast::AlterObjectSchemaStmt;
+use pg_ast::AlterObjectSchemaTarget;
+use pg_ast::AlterOwnerStmt;
+use pg_ast::AlterOwnerTarget;
+use pg_ast::RawStmt;
+use pg_ast::RenameStmt;
+use pg_ast::RenameTarget;
+use pg_lexer::Keyword as Kw;
+use pg_lexer::Keyword::Depends;
+use pg_lexer::Keyword::Extension;
+use pg_lexer::Keyword::No;
+use pg_lexer::Keyword::On;
+use pg_lexer::Keyword::Owner;
+use pg_lexer::Keyword::Rename;
+use pg_lexer::Keyword::Restrict;
+use pg_lexer::Keyword::Schema;
+use pg_lexer::Keyword::Set;
+use pg_lexer::Keyword::To;

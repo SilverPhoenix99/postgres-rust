@@ -20,7 +20,7 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use postgres_parser_ast::RoleSpec;
+    use pg_ast::RoleSpec;
 
     #[test]
     fn test_reassign_owner_stmt() {
@@ -40,8 +40,8 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_list;
 use crate::combinators::role_spec;
-use postgres_parser_ast::ReassignOwnedStmt;
-use postgres_parser_lexer::Keyword::By;
-use postgres_parser_lexer::Keyword::OwnedKw;
-use postgres_parser_lexer::Keyword::Reassign;
-use postgres_parser_lexer::Keyword::To;
+use pg_ast::ReassignOwnedStmt;
+use pg_lexer::Keyword::By;
+use pg_lexer::Keyword::OwnedKw;
+use pg_lexer::Keyword::Reassign;
+use pg_lexer::Keyword::To;

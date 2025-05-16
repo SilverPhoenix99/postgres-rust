@@ -56,5 +56,5 @@ use crate::FunctionWithArgs;
 use crate::SetRestMore;
 use crate::SignedNumber;
 use crate::VariableTarget;
-use postgres_basics::QualifiedName;
-use postgres_basics::Str;
+use pg_basics::QualifiedName;
+use pg_basics::Str;

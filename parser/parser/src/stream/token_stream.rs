@@ -226,8 +226,8 @@ impl TokenConsumer<TokenValue, bool> for TokenStream<'_> {
 mod tests {
     use super::*;
     use crate::tests::DEFAULT_CONFIG;
-    use elog::parser::ParserError;
-    use elog::parser::ParserErrorKind::Syntax;
+    use pg_elog::parser::ParserError;
+    use pg_elog::parser::ParserErrorKind::Syntax;
     use TokenValue::Identifier;
 
     #[test]
@@ -353,15 +353,15 @@ use crate::result::ScanResult;
 use crate::stream::buffered_lexer::BufferedLexer;
 use crate::stream::token_value::TokenValue;
 use crate::ParserConfig;
-use elog::parser::ParserWarningKind;
-use elog::HasLocation;
-use postgres_basics::guc::BackslashQuote;
-use postgres_basics::Located;
-use postgres_basics::Location;
-use postgres_basics::NumberRadix;
-use postgres_parser_ast::UnsignedNumber;
-use postgres_parser_ast::UnsignedNumber::IntegerConst;
-use postgres_parser_ast::UnsignedNumber::NumericConst;
-use postgres_parser_lexer::Lexer;
-use postgres_parser_lexer::RawTokenKind;
+use pg_ast::UnsignedNumber;
+use pg_ast::UnsignedNumber::IntegerConst;
+use pg_ast::UnsignedNumber::NumericConst;
+use pg_basics::guc::BackslashQuote;
+use pg_basics::Located;
+use pg_basics::Location;
+use pg_basics::NumberRadix;
+use pg_elog::parser::ParserWarningKind;
+use pg_elog::HasLocation;
+use pg_lexer::Lexer;
+use pg_lexer::RawTokenKind;
 use std::collections::VecDeque;

@@ -28,5 +28,5 @@ mod tests {
 use crate::combinators::col_id;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_basics::Str;
-use postgres_parser_lexer::Keyword::Listen;
+use pg_basics::Str;
+use pg_lexer::Keyword::Listen;

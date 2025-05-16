@@ -26,5 +26,5 @@ mod tests {
 use crate::combinators::any_name;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_basics::QualifiedName;
-use postgres_parser_lexer::Keyword::Collation;
+use pg_basics::QualifiedName;
+use pg_lexer::Keyword::Collation;

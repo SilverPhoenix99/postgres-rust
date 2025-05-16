@@ -29,9 +29,9 @@ lazy_static = "1"
 test-case = "3"
 thiserror = "2"
 
-elog = { path = "elog" }
-postgres-basics = { path = "basics" }
-postgres-guc = { path = "guc" }
-postgres-parser-ast = { path = "parser/ast" }
-postgres-parser-lexer = { path = "parser/lexer" }
-postgres-parser = { path = "parser/parser" }
+pg-ast = { path = "parser/ast" }
+pg-basics = { path = "basics" }
+pg-elog = { path = "elog" }
+pg-guc = { path = "guc" }
+pg-lexer = { path = "parser/lexer" }
+pg-parser = { path = "parser/parser" }

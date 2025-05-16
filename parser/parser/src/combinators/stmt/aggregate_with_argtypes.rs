@@ -79,10 +79,10 @@ fn aggr_arg() -> impl Combinator<Output = FunctionParameter> {
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use postgres_parser_ast::FuncType;
-    use postgres_parser_ast::TypeName::Int4;
-    use postgres_parser_ast::TypeName::Int8;
-    use postgres_parser_ast::TypeName::Json;
+    use pg_ast::FuncType;
+    use pg_ast::TypeName::Int4;
+    use pg_ast::TypeName::Int8;
+    use pg_ast::TypeName::Json;
     use test_case::test_case;
 
     #[test]
@@ -208,12 +208,12 @@ use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::func_arg::func_arg;
 use crate::combinators::func_name::func_name;
 use crate::result::ScanErrorKind::ScanErr;
-use elog::parser::ParserError;
-use elog::parser::ParserErrorKind::AggregateWithOutputParameters;
-use postgres_parser_ast::AggregateWithArgs;
-use postgres_parser_ast::FunctionParameter;
-use postgres_parser_ast::FunctionParameterMode as Mode;
-use postgres_parser_lexer::Keyword::By;
-use postgres_parser_lexer::Keyword::Order;
-use postgres_parser_lexer::OperatorKind::Comma;
-use postgres_parser_lexer::OperatorKind::Mul;
+use pg_ast::AggregateWithArgs;
+use pg_ast::FunctionParameter;
+use pg_ast::FunctionParameterMode as Mode;
+use pg_elog::parser::ParserError;
+use pg_elog::parser::ParserErrorKind::AggregateWithOutputParameters;
+use pg_lexer::Keyword::By;
+use pg_lexer::Keyword::Order;
+use pg_lexer::OperatorKind::Comma;
+use pg_lexer::OperatorKind::Mul;

@@ -11,4 +11,4 @@ pub(super) fn opt_varying() -> impl Combinator<Output = bool> {
 
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_parser_lexer::Keyword::Varying;
+use pg_lexer::Keyword::Varying;

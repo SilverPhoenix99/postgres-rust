@@ -36,6 +36,6 @@ mod tests {
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_parser_lexer::Keyword::And;
-use postgres_parser_lexer::Keyword::Chain;
-use postgres_parser_lexer::Keyword::No;
+use pg_lexer::Keyword::And;
+use pg_lexer::Keyword::Chain;
+use pg_lexer::Keyword::No;

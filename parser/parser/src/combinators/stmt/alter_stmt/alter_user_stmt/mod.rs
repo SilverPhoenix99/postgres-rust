@@ -29,12 +29,12 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use postgres_parser_ast::AddDrop::Add;
-    use postgres_parser_ast::AlterRoleStmt;
-    use postgres_parser_ast::GenericOption;
-    use postgres_parser_ast::GenericOptionKind::Unspecified;
-    use postgres_parser_ast::RoleSpec::CurrentUser;
-    use postgres_parser_ast::RoleSpec::Public;
+    use pg_ast::AddDrop::Add;
+    use pg_ast::AlterRoleStmt;
+    use pg_ast::GenericOption;
+    use pg_ast::GenericOptionKind::Unspecified;
+    use pg_ast::RoleSpec::CurrentUser;
+    use pg_ast::RoleSpec::Public;
 
     #[test]
     fn test_user_mapping() {
@@ -82,10 +82,10 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::stmt::alter_stmt::alter_generic_options;
 use crate::combinators::stmt::auth_ident;
-use postgres_parser_ast::AlterUserMappingStmt;
-use postgres_parser_ast::RawStmt;
-use postgres_parser_lexer::Keyword as Kw;
-use postgres_parser_lexer::Keyword::For;
-use postgres_parser_lexer::Keyword::Mapping;
-use postgres_parser_lexer::Keyword::Server;
-use postgres_parser_lexer::Keyword::User;
+use pg_ast::AlterUserMappingStmt;
+use pg_ast::RawStmt;
+use pg_lexer::Keyword as Kw;
+use pg_lexer::Keyword::For;
+use pg_lexer::Keyword::Mapping;
+use pg_lexer::Keyword::Server;
+use pg_lexer::Keyword::User;

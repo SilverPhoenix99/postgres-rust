@@ -51,7 +51,7 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use postgres_parser_ast::RoleSpec::CurrentUser;
+    use pg_ast::RoleSpec::CurrentUser;
 
     #[test]
     fn test_collation_owner() {
@@ -115,19 +115,19 @@ use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_spec;
-use postgres_parser_ast::AlterObjectSchemaStmt;
-use postgres_parser_ast::AlterObjectSchemaTarget;
-use postgres_parser_ast::AlterOwnerStmt;
-use postgres_parser_ast::AlterOwnerTarget;
-use postgres_parser_ast::RawStmt;
-use postgres_parser_ast::RawStmt::RefreshCollationVersionStmt;
-use postgres_parser_ast::RenameStmt;
-use postgres_parser_ast::RenameTarget;
-use postgres_parser_lexer::Keyword::Collation;
-use postgres_parser_lexer::Keyword::Owner;
-use postgres_parser_lexer::Keyword::Refresh;
-use postgres_parser_lexer::Keyword::Rename;
-use postgres_parser_lexer::Keyword::Schema;
-use postgres_parser_lexer::Keyword::Set;
-use postgres_parser_lexer::Keyword::To;
-use postgres_parser_lexer::Keyword::Version;
+use pg_ast::AlterObjectSchemaStmt;
+use pg_ast::AlterObjectSchemaTarget;
+use pg_ast::AlterOwnerStmt;
+use pg_ast::AlterOwnerTarget;
+use pg_ast::RawStmt;
+use pg_ast::RawStmt::RefreshCollationVersionStmt;
+use pg_ast::RenameStmt;
+use pg_ast::RenameTarget;
+use pg_lexer::Keyword::Collation;
+use pg_lexer::Keyword::Owner;
+use pg_lexer::Keyword::Refresh;
+use pg_lexer::Keyword::Rename;
+use pg_lexer::Keyword::Schema;
+use pg_lexer::Keyword::Set;
+use pg_lexer::Keyword::To;
+use pg_lexer::Keyword::Version;

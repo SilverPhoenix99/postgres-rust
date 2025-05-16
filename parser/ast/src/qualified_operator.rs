@@ -8,4 +8,4 @@ impl From<Operator> for QualifiedOperator {
 }
 
 use crate::Operator;
-use postgres_basics::Str;
+use pg_basics::Str;

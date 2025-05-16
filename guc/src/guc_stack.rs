@@ -20,5 +20,8 @@ pub struct GucStack {
     masked: ConfigVar,
 }
 
-use crate::{ConfigVar, GucContext, GucSource, GucStackState};
-use postgres_basics::Oid;
+use crate::ConfigVar;
+use crate::GucContext;
+use crate::GucSource;
+use crate::GucStackState;
+use pg_basics::Oid;

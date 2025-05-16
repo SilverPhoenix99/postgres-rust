@@ -32,7 +32,7 @@ where
 mod tests {
     use super::*;
     use crate::tests::DEFAULT_CONFIG;
-    use postgres_parser_lexer::Keyword;
+    use pg_lexer::Keyword;
 
     #[test]
     fn test_optional() {

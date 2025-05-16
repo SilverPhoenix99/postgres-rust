@@ -30,4 +30,4 @@ where
 use crate::combinators::foundation::Combinator;
 use crate::result::ScanResult;
 use crate::stream::TokenStream;
-use postgres_basics::Located;
+use pg_basics::Located;

@@ -1,5 +1,5 @@
 [package]
-name = "postgres-parser"
+name = "pg-parser"
 edition.workspace = true
 version.workspace = true
 
@@ -8,10 +8,10 @@ workspace = true
 
 [dependencies]
 bitvec.workspace = true
-elog.workspace = true
-postgres-basics.workspace = true
-postgres-parser-ast.workspace = true
-postgres-parser-lexer.workspace = true
+pg-ast.workspace = true
+pg-basics.workspace = true
+pg-elog.workspace = true
+pg-lexer.workspace = true
 
 [dev-dependencies]
 assert_matches.workspace = true

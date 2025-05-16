@@ -17,9 +17,9 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use postgres_parser_ast::TransactionMode::Deferrable;
-    use postgres_parser_ast::TransactionMode::ReadOnly;
-    use postgres_parser_ast::TransactionMode::ReadWrite;
+    use pg_ast::TransactionMode::Deferrable;
+    use pg_ast::TransactionMode::ReadOnly;
+    use pg_ast::TransactionMode::ReadWrite;
 
     #[test]
     fn test_start_transaction() {
@@ -39,6 +39,6 @@ use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::transaction_mode_list;
-use postgres_parser_ast::TransactionStmt;
-use postgres_parser_lexer::Keyword::Start;
-use postgres_parser_lexer::Keyword::Transaction;
+use pg_ast::TransactionStmt;
+use pg_lexer::Keyword::Start;
+use pg_lexer::Keyword::Transaction;

@@ -12,8 +12,8 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use postgres_parser_ast::SetRest;
-    use postgres_parser_ast::VariableTarget;
+    use pg_ast::SetRest;
+    use pg_ast::VariableTarget;
 
     #[test]
     fn test_set() {
@@ -43,5 +43,5 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::stmt::reset_stmt::reset_stmt;
 use crate::combinators::stmt::set_rest;
-use postgres_parser_ast::SetResetClause;
-use postgres_parser_lexer::Keyword::Set;
+use pg_ast::SetResetClause;
+use pg_lexer::Keyword::Set;

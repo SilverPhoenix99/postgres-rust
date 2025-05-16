@@ -26,5 +26,5 @@ mod tests {
 use crate::combinators::col_id;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_parser_ast::TransactionStmt;
-use postgres_parser_lexer::Keyword::Savepoint;
+use pg_ast::TransactionStmt;
+use pg_lexer::Keyword::Savepoint;

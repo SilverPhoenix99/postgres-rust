@@ -56,4 +56,4 @@ impl Named for GucContext {
     }
 }
 
-use postgres_basics::Named;
+use pg_basics::Named;

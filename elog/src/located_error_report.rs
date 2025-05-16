@@ -34,6 +34,6 @@ impl<T: Error> Display for LocatedErrorReport<T> {
 }
 
 use crate::HasLocation;
-use postgres_basics::Location;
+use pg_basics::Location;
 use std::error::Error;
 use std::fmt::Display;

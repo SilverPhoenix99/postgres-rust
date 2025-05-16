@@ -65,9 +65,9 @@ fn close_paren() -> impl Combinator<Output = ()> {
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use postgres_parser_ast::Operator::Equals;
-    use postgres_parser_ast::QualifiedOperator;
-    use postgres_parser_ast::TypeName::Int4;
+    use pg_ast::Operator::Equals;
+    use pg_ast::QualifiedOperator;
+    use pg_ast::TypeName::Int4;
     use test_case::test_case;
 
     #[test]
@@ -113,11 +113,11 @@ use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::operators::any_operator;
 use crate::combinators::typename;
 use crate::result::ScanErrorKind::ScanErr;
-use elog::parser::ParserError;
-use elog::parser::ParserErrorKind::MissingOperatorArgumentType;
-use postgres_parser_ast::OneOrBoth;
-use postgres_parser_ast::OperatorWithArgs;
-use postgres_parser_ast::Type;
-use postgres_parser_lexer::Keyword::NoneKw;
-use postgres_parser_lexer::OperatorKind::CloseParenthesis;
-use postgres_parser_lexer::OperatorKind::Comma;
+use pg_ast::OneOrBoth;
+use pg_ast::OperatorWithArgs;
+use pg_ast::Type;
+use pg_elog::parser::ParserError;
+use pg_elog::parser::ParserErrorKind::MissingOperatorArgumentType;
+use pg_lexer::Keyword::NoneKw;
+use pg_lexer::OperatorKind::CloseParenthesis;
+use pg_lexer::OperatorKind::Comma;

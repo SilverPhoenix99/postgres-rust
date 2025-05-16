@@ -727,7 +727,7 @@ mod tests {
     use super::*;
     use crate::token_kind::RawTokenKind;
     use crate::Keyword::{FromKw, Not, Select, StringKw};
-    use elog::HasLocation;
+    use pg_elog::HasLocation;
     use std::ops::Range;
 
     #[test]
@@ -1077,16 +1077,16 @@ use self::{
     },
     Keyword::Nchar,
 };
-use elog::lexer::LexerError;
-use elog::lexer::LexerErrorKind;
-use elog::lexer::LexerErrorKind::*;
-use postgres_basics::ascii::*;
-use postgres_basics::CharBuffer;
-use postgres_basics::Located;
-use postgres_basics::Location;
-use postgres_basics::NumberRadix;
-use postgres_basics::NumberRadix::Decimal;
-use postgres_basics::NumberRadix::Hexadecimal;
-use postgres_basics::NumberRadix::Octal;
-use postgres_basics::NAMEDATALEN;
+use pg_basics::ascii::*;
+use pg_basics::CharBuffer;
+use pg_basics::Located;
+use pg_basics::Location;
+use pg_basics::NumberRadix;
+use pg_basics::NumberRadix::Decimal;
+use pg_basics::NumberRadix::Hexadecimal;
+use pg_basics::NumberRadix::Octal;
+use pg_basics::NAMEDATALEN;
+use pg_elog::lexer::LexerError;
+use pg_elog::lexer::LexerErrorKind;
+use pg_elog::lexer::LexerErrorKind::*;
 use std::iter::FusedIterator;

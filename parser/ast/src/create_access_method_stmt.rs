@@ -34,5 +34,5 @@ pub enum AccessMethodKind {
     Table
 }
 
-use postgres_basics::QualifiedName;
-use postgres_basics::Str;
+use pg_basics::QualifiedName;
+use pg_basics::Str;

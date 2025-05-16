@@ -149,7 +149,7 @@ mod tests {
     use super::*;
     use crate::tests::test_parser;
     #[allow(unused_imports)]
-    use postgres_parser_ast::{
+    use pg_ast::{
         AggregateWithArgs,
         FunctionWithArgs,
         Transform as TransformAst,
@@ -307,16 +307,16 @@ use crate::combinators::stmt::view;
 use crate::combinators::stmt::Foreign;
 use crate::combinators::stmt::Operator as Op;
 use crate::combinators::stmt::TextSearch;
-use postgres_basics::Str;
-use postgres_parser_ast::AddDrop;
-use postgres_parser_ast::AlterExtensionContentsStmt;
-use postgres_parser_ast::AlterExtensionContentsTarget;
-use postgres_parser_ast::AlterExtensionContentsTarget::*;
-use postgres_parser_ast::AlterExtensionStmt;
-use postgres_parser_ast::AlterObjectSchemaStmt;
-use postgres_parser_ast::AlterObjectSchemaTarget;
-use postgres_parser_ast::RawStmt;
-use postgres_parser_lexer::Keyword as Kw;
-use postgres_parser_lexer::Keyword::Add;
-use postgres_parser_lexer::Keyword::DropKw;
-use postgres_parser_lexer::Keyword::To;
+use pg_ast::AddDrop;
+use pg_ast::AlterExtensionContentsStmt;
+use pg_ast::AlterExtensionContentsTarget;
+use pg_ast::AlterExtensionContentsTarget::*;
+use pg_ast::AlterExtensionStmt;
+use pg_ast::AlterObjectSchemaStmt;
+use pg_ast::AlterObjectSchemaTarget;
+use pg_ast::RawStmt;
+use pg_basics::Str;
+use pg_lexer::Keyword as Kw;
+use pg_lexer::Keyword::Add;
+use pg_lexer::Keyword::DropKw;
+use pg_lexer::Keyword::To;

@@ -25,4 +25,4 @@ impl Named for ConfigType {
     }
 }
 
-use postgres_basics::Named;
+use pg_basics::Named;

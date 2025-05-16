@@ -43,7 +43,7 @@ mod tests {
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
     #[allow(unused_imports)]
-    use postgres_parser_ast::{SetOf, TypeName};
+    use pg_ast::{SetOf, TypeName};
     use test_case::test_case;
 
     #[test_case("int", Type::new(TypeName::Int4, vec![], SetOf::Record))]
@@ -78,5 +78,5 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::opt_array_bounds;
 use crate::combinators::simple_typename;
-use postgres_parser_ast::Type;
-use postgres_parser_lexer::Keyword::Setof;
+use pg_ast::Type;
+use pg_lexer::Keyword::Setof;

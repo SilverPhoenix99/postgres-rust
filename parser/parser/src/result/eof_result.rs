@@ -36,4 +36,4 @@ use crate::result::EofErrorKind::NotEof;
 use crate::result::Optional;
 use crate::result::Required;
 use crate::result::TryMatch;
-use elog::parser::ParserError;
+use pg_elog::parser::ParserError;

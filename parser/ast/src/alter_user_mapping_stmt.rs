@@ -29,4 +29,4 @@ impl AlterUserMappingStmt {
 
 use crate::GenericOptionKind;
 use crate::RoleSpec;
-use postgres_basics::Str;
+use pg_basics::Str;

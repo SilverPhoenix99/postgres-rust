@@ -94,12 +94,12 @@ mod tests {
     }
 }
 
-use elog::UnicodeStringError;
-use elog::UnicodeStringError::*;
-use postgres_basics::wchar;
-use postgres_basics::CharBuffer;
-use postgres_basics::UnicodeChar;
-use postgres_basics::UnicodeChar::SurrogateFirst;
-use postgres_basics::UnicodeChar::SurrogateSecond;
-use postgres_basics::UnicodeCharError;
-use postgres_basics::UnicodeCharError::LenTooShort;
+use pg_basics::wchar;
+use pg_basics::CharBuffer;
+use pg_basics::UnicodeChar;
+use pg_basics::UnicodeChar::SurrogateFirst;
+use pg_basics::UnicodeChar::SurrogateSecond;
+use pg_basics::UnicodeCharError;
+use pg_basics::UnicodeCharError::LenTooShort;
+use pg_elog::UnicodeStringError;
+use pg_elog::UnicodeStringError::*;

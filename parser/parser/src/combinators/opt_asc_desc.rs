@@ -31,8 +31,8 @@ mod tests {
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_parser_ast::SortDirection;
-use postgres_parser_ast::SortDirection::Ascending;
-use postgres_parser_ast::SortDirection::Descending;
-use postgres_parser_lexer::Keyword::Asc;
-use postgres_parser_lexer::Keyword::Desc;
+use pg_ast::SortDirection;
+use pg_ast::SortDirection::Ascending;
+use pg_ast::SortDirection::Descending;
+use pg_lexer::Keyword::Asc;
+use pg_lexer::Keyword::Desc;

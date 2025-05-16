@@ -11,5 +11,5 @@ pub(super) fn schema() -> impl Combinator<Output = Str> {
 use crate::combinators::col_id;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_basics::Str;
-use postgres_parser_lexer::Keyword::Schema;
+use pg_basics::Str;
+use pg_lexer::Keyword::Schema;

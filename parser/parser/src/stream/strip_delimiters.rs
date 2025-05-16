@@ -1,5 +1,4 @@
 pub(super) fn strip_delimiters(kind: StringKind, slice: &str) -> &str {
-    use postgres_parser_lexer::StringKind::*;
 
     let range = match kind {
         Dollar => {
@@ -25,4 +24,5 @@ pub(super) fn strip_delimiters(kind: StringKind, slice: &str) -> &str {
     &slice[range]
 }
 
-use postgres_parser_lexer::StringKind;
+use pg_lexer::StringKind;
+use pg_lexer::StringKind::*;

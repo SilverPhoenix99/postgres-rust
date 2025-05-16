@@ -195,7 +195,7 @@ use crate::ErrorReport;
 use crate::HasSqlState;
 use crate::RoleSpecError;
 use crate::UnicodeStringError;
-use postgres_basics::QualifiedName;
+use pg_basics::QualifiedName;
 use std::borrow::Cow;
 use std::fmt::Display;
 use std::fmt::Formatter;

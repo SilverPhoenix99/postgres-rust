@@ -35,4 +35,4 @@ impl CreateUserMappingStmt {
 
 use crate::GenericOption;
 use crate::RoleSpec;
-use postgres_basics::Str;
+use pg_basics::Str;

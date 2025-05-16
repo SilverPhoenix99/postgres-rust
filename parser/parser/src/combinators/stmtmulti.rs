@@ -47,7 +47,7 @@ mod tests {
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
     #[allow(unused_imports)]
-    use postgres_parser_ast::TransactionMode::ReadOnly;
+    use pg_ast::TransactionMode::ReadOnly;
     use test_case::test_case;
 
     #[test_case("begin transaction")]
@@ -81,6 +81,6 @@ use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::stmt;
 use crate::combinators::stmt::begin_stmt;
 use crate::combinators::stmt::end_stmt;
-use postgres_parser_ast::RawStmt;
-use postgres_parser_ast::TransactionStmt;
-use postgres_parser_lexer::OperatorKind::Semicolon;
+use pg_ast::RawStmt;
+use pg_ast::TransactionStmt;
+use pg_lexer::OperatorKind::Semicolon;

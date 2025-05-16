@@ -27,8 +27,8 @@ mod tests {
     use super::*;
     use crate::result::ScanErrorKind::ScanErr;
     use crate::tests::DEFAULT_CONFIG;
-    use elog::parser::ParserErrorKind;
-    use postgres_parser_lexer::Keyword;
+    use pg_elog::parser::ParserErrorKind;
+    use pg_lexer::Keyword;
     use std::hint::unreachable_unchecked;
 
     #[test]

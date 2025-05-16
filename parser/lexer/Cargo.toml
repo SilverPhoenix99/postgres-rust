@@ -1,5 +1,5 @@
 [package]
-name = "postgres-parser-lexer"
+name = "pg-lexer"
 edition.workspace = true
 version.workspace = true
 
@@ -7,8 +7,8 @@ version.workspace = true
 workspace = true
 
 [dependencies]
-elog.workspace = true
-postgres-basics.workspace = true
+pg-basics.workspace = true
+pg-elog.workspace = true
 
 [dev-dependencies]
 assert_matches.workspace = true

@@ -22,8 +22,8 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use postgres_parser_ast::RoleSpec;
-    use postgres_parser_ast::SignedNumber;
+    use pg_ast::RoleSpec;
+    use pg_ast::SignedNumber;
 
     #[test]
     fn test_alter_large_object() {
@@ -44,10 +44,10 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_spec;
 use crate::combinators::signed_number;
-use postgres_parser_ast::AlterOwnerStmt;
-use postgres_parser_ast::AlterOwnerTarget;
-use postgres_parser_ast::RawStmt;
-use postgres_parser_lexer::Keyword::Large;
-use postgres_parser_lexer::Keyword::Object;
-use postgres_parser_lexer::Keyword::Owner;
-use postgres_parser_lexer::Keyword::To;
+use pg_ast::AlterOwnerStmt;
+use pg_ast::AlterOwnerTarget;
+use pg_ast::RawStmt;
+use pg_lexer::Keyword::Large;
+use pg_lexer::Keyword::Object;
+use pg_lexer::Keyword::Owner;
+use pg_lexer::Keyword::To;

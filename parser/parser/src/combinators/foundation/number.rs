@@ -22,7 +22,7 @@ mod tests {
     use super::*;
     use crate::tests::DEFAULT_CONFIG;
     #[allow(unused_imports)]
-    use postgres_basics::NumberRadix::Decimal;
+    use pg_basics::NumberRadix::Decimal;
     use test_case::test_case;
 
     #[test_case("1.1", UnsignedNumber::NumericConst { value: "1.1".into(), radix: Decimal })]
@@ -39,5 +39,5 @@ use crate::result::ScanResult;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue;
-use postgres_parser_ast::UnsignedNumber;
+use pg_ast::UnsignedNumber;
 use std::mem;

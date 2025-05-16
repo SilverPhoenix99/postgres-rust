@@ -12,7 +12,7 @@ pub(super) fn transform() -> impl Combinator<Output = Transform> {
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use postgres_parser_ast::TypeName::Int4;
+    use pg_ast::TypeName::Int4;
 
     #[test]
     fn test_transform() {
@@ -29,7 +29,7 @@ use crate::combinators::foundation::and;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::typename;
-use postgres_parser_ast::Transform;
-use postgres_parser_lexer::Keyword as Kw;
-use postgres_parser_lexer::Keyword::For;
-use postgres_parser_lexer::Keyword::Language;
+use pg_ast::Transform;
+use pg_lexer::Keyword as Kw;
+use pg_lexer::Keyword::For;
+use pg_lexer::Keyword::Language;

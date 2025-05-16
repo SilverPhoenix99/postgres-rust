@@ -75,6 +75,6 @@ use crate::sql_state::SqlState;
 use crate::sql_state::SqlState::SyntaxError;
 use crate::ErrorReport;
 use crate::HasSqlState;
-use postgres_basics::NumberRadix;
+use pg_basics::NumberRadix;
 use std::borrow::Cow;
 use LexerErrorKind::UnsafeUnicodeString;

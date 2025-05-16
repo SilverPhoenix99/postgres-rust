@@ -56,4 +56,4 @@ pub enum AlterdbOptionKind {
 }
 
 use crate::CreatedbOptionValue;
-use postgres_basics::Str;
+use pg_basics::Str;

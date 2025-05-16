@@ -113,4 +113,4 @@ lazy_static! {
 }
 
 use lazy_static::lazy_static;
-use postgres_basics::guc::BackslashQuote;
+use pg_basics::guc::BackslashQuote;

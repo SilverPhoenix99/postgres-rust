@@ -26,4 +26,4 @@ use crate::combinators::foundation::or;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_parser_lexer::Keyword::Null;
+use pg_lexer::Keyword::Null;

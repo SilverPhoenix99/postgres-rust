@@ -12,7 +12,7 @@ pub(super) fn large_object() -> impl Combinator<Output = SignedNumber> {
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use postgres_parser_ast::SignedNumber::IntegerConst;
+    use pg_ast::SignedNumber::IntegerConst;
 
     #[test]
     fn test_large_object() {
@@ -28,6 +28,6 @@ use crate::combinators::foundation::and;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::signed_number;
-use postgres_parser_ast::SignedNumber;
-use postgres_parser_lexer::Keyword::Large;
-use postgres_parser_lexer::Keyword::Object;
+use pg_ast::SignedNumber;
+use pg_lexer::Keyword::Large;
+use pg_lexer::Keyword::Object;

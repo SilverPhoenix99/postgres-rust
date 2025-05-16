@@ -6,6 +6,6 @@ pub(super) fn sign() -> impl Combinator<Output = OperatorKind> {
 
 use crate::combinators::foundation::operator_if;
 use crate::combinators::foundation::Combinator;
-use postgres_parser_lexer::OperatorKind;
-use postgres_parser_lexer::OperatorKind::Minus;
-use postgres_parser_lexer::OperatorKind::Plus;
+use pg_lexer::OperatorKind;
+use pg_lexer::OperatorKind::Minus;
+use pg_lexer::OperatorKind::Plus;

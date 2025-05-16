@@ -23,7 +23,7 @@ impl From<EofErrorKind> for ScanErrorKind {
 
 use crate::result::EofErrorKind;
 use crate::result::ScanErrorKind::ScanErr;
-use elog::lexer::LexerError;
-use elog::parser::ParserError;
-use postgres_basics::impl_from;
-use postgres_basics::Location;
+use pg_basics::impl_from;
+use pg_basics::Location;
+use pg_elog::lexer::LexerError;
+use pg_elog::parser::ParserError;

@@ -22,5 +22,5 @@ use crate::result::ScanResult;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::UnsignedNumber;
-use postgres_basics::NonNegative;
-use postgres_parser_ast::UnsignedNumber::IntegerConst;
+use pg_ast::UnsignedNumber::IntegerConst;
+use pg_basics::NonNegative;

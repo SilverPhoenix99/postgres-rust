@@ -40,7 +40,7 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use postgres_parser_ast::RoleSpec;
+    use pg_ast::RoleSpec;
 
     #[test]
     fn test_group_rename() {
@@ -99,16 +99,16 @@ use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_id;
 use crate::combinators::role_list;
 use crate::combinators::role_spec;
-use elog::parser::ParserError;
-use postgres_parser_ast::AddDrop;
-use postgres_parser_ast::AlterRoleOption::RoleMembers;
-use postgres_parser_ast::AlterRoleStmt;
-use postgres_parser_ast::RawStmt;
-use postgres_parser_ast::RenameStmt;
-use postgres_parser_ast::RenameTarget::Role;
-use postgres_parser_lexer::Keyword::Add;
-use postgres_parser_lexer::Keyword::DropKw;
-use postgres_parser_lexer::Keyword::Group;
-use postgres_parser_lexer::Keyword::Rename;
-use postgres_parser_lexer::Keyword::To;
-use postgres_parser_lexer::Keyword::User;
+use pg_ast::AddDrop;
+use pg_ast::AlterRoleOption::RoleMembers;
+use pg_ast::AlterRoleStmt;
+use pg_ast::RawStmt;
+use pg_ast::RenameStmt;
+use pg_ast::RenameTarget::Role;
+use pg_elog::parser::ParserError;
+use pg_lexer::Keyword::Add;
+use pg_lexer::Keyword::DropKw;
+use pg_lexer::Keyword::Group;
+use pg_lexer::Keyword::Rename;
+use pg_lexer::Keyword::To;
+use pg_lexer::Keyword::User;

@@ -20,4 +20,4 @@ use self::{
     indirection::{check_indirection, indirection},
 };
 use crate::combinators::foundation::Combinator;
-use postgres_parser_ast::ExprNode;
+use pg_ast::ExprNode;

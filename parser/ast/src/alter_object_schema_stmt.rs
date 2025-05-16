@@ -52,5 +52,5 @@ use crate::AggregateWithArgs;
 use crate::FunctionWithArgs;
 use crate::OperatorWithArgs;
 use crate::RelationExpr;
-use postgres_basics::QualifiedName;
-use postgres_basics::Str;
+use pg_basics::QualifiedName;
+use pg_basics::Str;

@@ -204,6 +204,7 @@ fn push_char(buffer: &mut Vec<u8>, c: char) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pg_basics::guc::BackslashQuote;
 
     #[test]
     fn test_extended_string() {
@@ -215,18 +216,18 @@ mod tests {
     }
 }
 
-use elog::extended_string::ExtendedStringError;
-use elog::extended_string::ExtendedStringError::*;
-use elog::extended_string::ExtendedStringWarning;
-use elog::extended_string::ExtendedStringWarning::*;
-use postgres_basics::ascii::is_hex_digit;
-use postgres_basics::ascii::is_oct_digit;
-use postgres_basics::guc::BackslashQuote;
-use postgres_basics::guc::BackslashQuote::SafeEncoding;
-use postgres_basics::wchar;
-use postgres_basics::CharBuffer;
-use postgres_basics::UnicodeChar;
-use postgres_basics::UnicodeChar::SurrogateFirst;
-use postgres_basics::UnicodeChar::SurrogateSecond;
-use postgres_basics::UnicodeCharError;
-use postgres_basics::UnicodeCharError::LenTooShort;
+use pg_basics::ascii::is_hex_digit;
+use pg_basics::ascii::is_oct_digit;
+use pg_basics::guc::BackslashQuote;
+use pg_basics::guc::BackslashQuote::SafeEncoding;
+use pg_basics::wchar;
+use pg_basics::CharBuffer;
+use pg_basics::UnicodeChar;
+use pg_basics::UnicodeChar::SurrogateFirst;
+use pg_basics::UnicodeChar::SurrogateSecond;
+use pg_basics::UnicodeCharError;
+use pg_basics::UnicodeCharError::LenTooShort;
+use pg_elog::extended_string::ExtendedStringError;
+use pg_elog::extended_string::ExtendedStringError::*;
+use pg_elog::extended_string::ExtendedStringWarning;
+use pg_elog::extended_string::ExtendedStringWarning::*;

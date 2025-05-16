@@ -1,5 +1,5 @@
 [package]
-name = "postgres-basics"
+name = "pg-basics"
 edition.workspace = true
 version.workspace = true
 

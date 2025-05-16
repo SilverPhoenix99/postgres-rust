@@ -13,4 +13,4 @@ pub(super) fn paren_name_list() -> impl Combinator<Output = Vec<Str>> {
 use crate::combinators::between_paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::name_list;
-use postgres_basics::Str;
+use pg_basics::Str;

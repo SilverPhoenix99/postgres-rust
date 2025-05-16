@@ -22,4 +22,4 @@ impl AlterDatabaseSetStmt {
 }
 
 use crate::SetResetClause;
-use postgres_basics::Str;
+use pg_basics::Str;

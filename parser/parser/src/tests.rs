@@ -30,5 +30,5 @@ macro_rules! test_parser {
 
 pub(crate) use test_parser;
 
-use postgres_basics::guc::BackslashQuote::SafeEncoding;
 use crate::ParserConfig;
+use pg_basics::guc::BackslashQuote::SafeEncoding;

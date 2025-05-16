@@ -88,7 +88,7 @@ mod tests {
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
     #[allow(unused_imports)]
-    use postgres_parser_ast::{
+    use pg_ast::{
         FuncType,
         TypeName,
     };
@@ -136,9 +136,9 @@ use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::func_arg;
-use postgres_parser_ast::FunctionParameter;
-use postgres_parser_ast::FunctionWithArgs;
-use postgres_parser_lexer::KeywordCategory::ColumnName;
-use postgres_parser_lexer::KeywordCategory::TypeFuncName;
-use postgres_parser_lexer::KeywordCategory::Unreserved;
-use postgres_parser_lexer::OperatorKind::Comma;
+use pg_ast::FunctionParameter;
+use pg_ast::FunctionWithArgs;
+use pg_lexer::KeywordCategory::ColumnName;
+use pg_lexer::KeywordCategory::TypeFuncName;
+use pg_lexer::KeywordCategory::Unreserved;
+use pg_lexer::OperatorKind::Comma;

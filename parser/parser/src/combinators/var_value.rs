@@ -42,5 +42,5 @@ use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::signed_number;
-use postgres_parser_ast::VarValue;
-use postgres_parser_lexer::OperatorKind::Comma;
+use pg_ast::VarValue;
+use pg_lexer::OperatorKind::Comma;

@@ -49,7 +49,7 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use postgres_parser_ast::GenericOption;
+    use pg_ast::GenericOption;
     use test_case::test_case;
 
     #[test]
@@ -100,12 +100,12 @@ use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::generic_option;
-use postgres_parser_ast::GenericOptionKind;
-use postgres_parser_ast::GenericOptionKind::Add;
-use postgres_parser_ast::GenericOptionKind::Drop;
-use postgres_parser_ast::GenericOptionKind::Set;
-use postgres_parser_ast::GenericOptionKind::Unspecified;
-use postgres_parser_lexer::Keyword as Kw;
-use postgres_parser_lexer::Keyword::DropKw;
-use postgres_parser_lexer::Keyword::Options;
-use postgres_parser_lexer::OperatorKind::Comma;
+use pg_ast::GenericOptionKind;
+use pg_ast::GenericOptionKind::Add;
+use pg_ast::GenericOptionKind::Drop;
+use pg_ast::GenericOptionKind::Set;
+use pg_ast::GenericOptionKind::Unspecified;
+use pg_lexer::Keyword as Kw;
+use pg_lexer::Keyword::DropKw;
+use pg_lexer::Keyword::Options;
+use pg_lexer::OperatorKind::Comma;

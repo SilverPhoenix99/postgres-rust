@@ -80,7 +80,7 @@ use crate::ErrorReport;
 use crate::HasLocation;
 use crate::HasSqlState;
 use crate::LocatedErrorReport;
-use postgres_basics::Location;
+use pg_basics::Location;
 use std::borrow::Cow;
 use std::error::Error;
 use std::fmt::Display;

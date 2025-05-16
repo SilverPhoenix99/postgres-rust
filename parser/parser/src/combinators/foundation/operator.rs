@@ -104,7 +104,7 @@ use crate::stream::ConsumerResult;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Operator;
-use postgres_parser_lexer::OperatorKind;
+use pg_lexer::OperatorKind;
 use std::fmt::Debug;
 use std::fmt::Formatter;
 use std::marker::PhantomData;

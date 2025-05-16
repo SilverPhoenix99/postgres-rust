@@ -20,5 +20,5 @@ mod tests {
 
 use crate::combinators::foundation::between;
 use crate::combinators::foundation::Combinator;
-use postgres_parser_lexer::OperatorKind::CloseParenthesis;
-use postgres_parser_lexer::OperatorKind::OpenParenthesis;
+use pg_lexer::OperatorKind::CloseParenthesis;
+use pg_lexer::OperatorKind::OpenParenthesis;

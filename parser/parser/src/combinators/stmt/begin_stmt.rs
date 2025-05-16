@@ -18,8 +18,8 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use postgres_parser_ast::IsolationLevel::*;
-    use postgres_parser_ast::TransactionMode::{self, *};
+    use pg_ast::IsolationLevel::*;
+    use pg_ast::TransactionMode::{self, *};
     use test_case::test_case;
     use TransactionStmt::Begin;
 
@@ -40,5 +40,5 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::opt_transaction;
 use crate::combinators::transaction_mode_list;
-use postgres_parser_ast::TransactionStmt;
-use postgres_parser_lexer::Keyword::Begin;
+use pg_ast::TransactionStmt;
+use pg_lexer::Keyword::Begin;

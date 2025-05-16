@@ -27,7 +27,7 @@ mod tests {
     use super::*;
     use crate::tests::test_parser;
     #[allow(unused_imports)]
-    use postgres_parser_ast::{
+    use pg_ast::{
         CreateRoleOption,
         RoleSpec::Public
     };
@@ -64,8 +64,8 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_id;
 use crate::combinators::stmt::create_stmt::create_role_options;
-use postgres_parser_ast::CreateRoleStmt;
-use postgres_parser_ast::RoleKind;
-use postgres_parser_lexer::Keyword::Group;
-use postgres_parser_lexer::Keyword::Role;
-use postgres_parser_lexer::Keyword::With;
+use pg_ast::CreateRoleStmt;
+use pg_ast::RoleKind;
+use pg_lexer::Keyword::Group;
+use pg_lexer::Keyword::Role;
+use pg_lexer::Keyword::With;

@@ -49,5 +49,5 @@ use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use postgres_parser_ast::GenericOption;
-use postgres_parser_lexer::OperatorKind::Comma;
+use pg_ast::GenericOption;
+use pg_lexer::OperatorKind::Comma;
