@@ -1,4 +1,4 @@
-pub struct UnicodeStringDecoder<'src> {
+pub(in crate::stream) struct UnicodeStringDecoder<'src> {
     input: CharBuffer<'src>,
     quote: char,
     escape: char,

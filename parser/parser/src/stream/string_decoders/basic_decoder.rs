@@ -1,4 +1,4 @@
-pub struct BasicStringDecoder<'src> {
+pub(in crate::stream) struct BasicStringDecoder<'src> {
     source: &'src str,
     is_ident: bool
 }
