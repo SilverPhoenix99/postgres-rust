@@ -1,0 +1,32 @@
+pub(super) fn access_method() -> impl Combinator<Output = Str> {
+
+    /*
+        ACCESS METHOD ColId
+    */
+
+    and(Access, Method)
+        .and_right(col_id())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tests::test_parser;
+
+    #[test]
+    fn test_access_method() {
+        test_parser!(
+            source = "access method foo",
+            parser = access_method(),
+            expected = "foo".into()
+        )
+    }
+}
+
+use crate::combinators::col_id;
+use crate::combinators::foundation::and;
+use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::CombinatorHelpers;
+use postgres_basics::Str;
+use postgres_parser_lexer::Keyword::Access;
+use postgres_parser_lexer::Keyword::Method;
