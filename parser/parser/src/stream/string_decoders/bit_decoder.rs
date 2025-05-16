@@ -2,12 +2,12 @@ const BITS_PER_BYTE: usize = 8;
 pub const VARBITMAXLEN: usize = i32::MAX as usize - BITS_PER_BYTE + 1;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub enum BitStringError {
+pub(in crate::stream) enum BitStringError {
     BitStringTooLong,
     InvalidBinaryDigit,
 }
 
-pub struct BitStringDecoder<'src> {
+pub(in crate::stream) struct BitStringDecoder<'src> {
     source: &'src str,
     bits_per_char: u8
 }

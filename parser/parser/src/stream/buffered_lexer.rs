@@ -34,11 +34,7 @@ impl BufferedLexer<'_> {
     }
 
     pub fn parse_identifier(&mut self, slice: &str, loc: Location, kind: IdentifierKind) -> EofResult<Located<TokenValue>> {
-        use elog::parser::ParserError;
-        use elog::parser::ParserErrorKind::UnicodeString;
-        use postgres_basics::NAMEDATALEN;
-        use postgres_parser_lexer::IdentifierKind::*;
-        use crate::string_decoders::{BasicStringDecoder, UnicodeStringDecoder};
+        use IdentifierKind::*;
 
         /*
             An identifier is truncated to 64 chars.
@@ -115,11 +111,7 @@ impl BufferedLexer<'_> {
     }
 
     pub fn parse_string(&mut self, slice: &str, loc: Location, kind: StringKind) -> EofResult<Located<TokenValue>> {
-        use elog::parser::ParserError;
-        use elog::parser::ParserErrorKind::{ExtendedString, UnicodeString};
-        use postgres_parser_lexer::StringKind::*;
-        use crate::stream::strip_delimiters;
-        use crate::string_decoders::{BasicStringDecoder, ExtendedStringDecoder, ExtendedStringResult, UnicodeStringDecoder};
+        use StringKind::*;
 
         /*
               'String' ( SCONST )*
@@ -128,7 +120,7 @@ impl BufferedLexer<'_> {
             | u&'String' ( SCONST )* ( UESCAPE ( SCONST )+ )?
         */
 
-        let slice = strip_delimiters::strip_delimiters(kind, slice);
+        let slice = strip_delimiters(kind, slice);
         let mut buffer = slice.to_owned();
 
         if kind == Dollar {
@@ -182,19 +174,13 @@ impl BufferedLexer<'_> {
     }
 
     fn uescape(&mut self) -> ParseResult<char> {
-        use elog::parser::ParserError;
-        use elog::parser::ParserErrorKind::{InvalidUescapeDelimiter, UescapeDelimiterMissing};
-        use postgres_parser_lexer::Keyword::Uescape;
-        use postgres_parser_lexer::RawTokenKind::{Keyword as Kw, StringLiteral};
-        use postgres_parser_lexer::StringKind::*;
-        use crate::stream::strip_delimiters;
-        use crate::stream::uescape_escape::uescape_escape;
+        use StringKind::*;
 
         /*
             ( UESCAPE ( SCONST )+ )?
         */
 
-        let Ok((Kw(Uescape), _)) = self.peek() else { return Ok('\\') };
+        let Ok((Keyword(Uescape), _)) = self.peek() else { return Ok('\\') };
         let _ = self.next();
 
         let (kind, loc) = match self.peek() {
@@ -214,7 +200,7 @@ impl BufferedLexer<'_> {
         let _ = self.next();
 
         let slice = loc.slice(self.lexer.source());
-        let slice = strip_delimiters::strip_delimiters(kind, slice);
+        let slice = strip_delimiters(kind, slice);
 
         let mut buffer = slice.to_owned();
 
@@ -235,7 +221,7 @@ impl BufferedLexer<'_> {
     fn next_concatenable_string(&mut self) -> Option<Located<&str>> {
 
         let (kind, loc) = {
-            let Ok((RawTokenKind::StringLiteral(kind), loc)) = self.peek() else { return None };
+            let Ok((StringLiteral(kind), loc)) = self.peek() else { return None };
             if !kind.is_concatenable() {
                 return None
             }
@@ -253,14 +239,28 @@ use crate::parser::ParseResult;
 use crate::result::EofErrorKind::Eof;
 use crate::result::EofErrorKind::NotEof;
 use crate::result::EofResult;
+use crate::stream::string_decoders::BasicStringDecoder;
+use crate::stream::string_decoders::ExtendedStringDecoder;
+use crate::stream::string_decoders::ExtendedStringResult;
+use crate::stream::string_decoders::UnicodeStringDecoder;
 use crate::stream::strip_delimiters::strip_delimiters;
 use crate::stream::token_value::TokenValue;
+use crate::stream::uescape_escape::uescape_escape;
+use elog::parser::ParserError;
+use elog::parser::ParserErrorKind::ExtendedString;
+use elog::parser::ParserErrorKind::InvalidUescapeDelimiter;
+use elog::parser::ParserErrorKind::UescapeDelimiterMissing;
+use elog::parser::ParserErrorKind::UnicodeString;
 use elog::parser::ParserWarningKind;
 use postgres_basics::guc::BackslashQuote;
 use postgres_basics::Located;
 use postgres_basics::Location;
+use postgres_basics::NAMEDATALEN;
 use postgres_parser_lexer::BitStringKind;
 use postgres_parser_lexer::IdentifierKind;
+use postgres_parser_lexer::Keyword::Uescape;
 use postgres_parser_lexer::Lexer;
 use postgres_parser_lexer::RawTokenKind;
+use postgres_parser_lexer::RawTokenKind::Keyword;
+use postgres_parser_lexer::RawTokenKind::StringLiteral;
 use postgres_parser_lexer::StringKind;

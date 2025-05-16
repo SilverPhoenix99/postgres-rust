@@ -1,9 +1,9 @@
-pub struct ExtendedStringDecoder<'src> {
+pub(in crate::stream) struct ExtendedStringDecoder<'src> {
     input: CharBuffer<'src>,
     backslash_quote: BackslashQuote,
 }
 
-pub struct ExtendedStringResult {
+pub(in crate::stream) struct ExtendedStringResult {
     pub result: Result<Box<str>, ExtendedStringError>,
     pub warning: Option<ExtendedStringWarning>,
 }
