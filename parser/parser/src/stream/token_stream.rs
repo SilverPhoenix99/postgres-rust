@@ -105,6 +105,14 @@ impl<'src> TokenStream<'src> {
         (first, second)
     }
 
+    pub fn peek2_option(&mut self) -> Option<(&TokenValue, &TokenValue)> {
+
+        match self.peek2() {
+            (Ok(first), Ok(second)) => Some((first, second)),
+            (Err(_), _) | (_, Err(_)) => None,
+        }
+    }
+
     fn fill_buf(&mut self) {
         while self.buf.len() < 2 {
             let result = self.lex_next();

@@ -42,7 +42,28 @@ pub enum ParserErrorKind {
     AggregateWithOutputParameters,
 
     #[error(r#"improper use of "*""#)]
-    ImproperUseOfStar
+    ImproperUseOfStar,
+
+    #[error("frame start cannot be UNBOUNDED FOLLOWING")]
+    InvalidUnboundedFollowingFrame,
+
+    #[error("frame starting from following row cannot end with current row")]
+    InvalidOffsetFollowingFrame,
+    
+    #[error("frame end cannot be UNBOUNDED PRECEDING")]
+    InvalidUnboundedPrecedingFrame,
+    
+    #[error("frame starting from current row cannot have preceding rows")]
+    InvalidCurrentRowFrame,
+    
+    #[error("frame starting from following row cannot have preceding rows")]
+    InvalidStartFollowingEndPrecedingFrame,
+}
+
+impl ParserErrorKind {
+    pub fn at(self, location: Location) -> ParserError {
+        ParserError::new(self, location)
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -69,35 +90,47 @@ impl ErrorReport for ParserErrorKind {
 
     fn sql_state(&self) -> SqlState {
         match self {
-            FloatPrecisionOverflow(_) => InvalidParameterValue,
-            FloatPrecisionUnderflow(_) => InvalidParameterValue,
-            InvalidUescapeDelimiter => SyntaxError,
-            Syntax => SyntaxError,
-            UescapeDelimiterMissing => SyntaxError,
-            UnencryptedPassword => FeatureNotSupported,
-            UnrecognizedRoleOption(_) => SyntaxError,
-            ImproperQualifiedName(_) => SyntaxError,
-            InvalidZoneValue => SyntaxError,
-            MissingOperatorArgumentType => SyntaxError,
-            AggregateWithOutputParameters => FeatureNotSupported,
-            ImproperUseOfStar => SyntaxError,
+            Self::FloatPrecisionOverflow(_) => InvalidParameterValue,
+            Self::FloatPrecisionUnderflow(_) => InvalidParameterValue,
+            Self::InvalidUescapeDelimiter => SyntaxError,
+            Self::Syntax => SyntaxError,
+            Self::UescapeDelimiterMissing => SyntaxError,
+            Self::UnencryptedPassword => FeatureNotSupported,
+            Self::UnrecognizedRoleOption(_) => SyntaxError,
+            Self::ImproperQualifiedName(_) => SyntaxError,
+            Self::InvalidZoneValue => SyntaxError,
+            Self::MissingOperatorArgumentType => SyntaxError,
+            Self::AggregateWithOutputParameters => FeatureNotSupported,
+            Self::ImproperUseOfStar => SyntaxError,
+            Self::InvalidUnboundedFollowingFrame => WindowingError,
+            Self::InvalidOffsetFollowingFrame => WindowingError,
+            Self::InvalidUnboundedPrecedingFrame => WindowingError,
+            Self::InvalidCurrentRowFrame => WindowingError,
+            Self::InvalidStartFollowingEndPrecedingFrame => WindowingError,
         }
     }
 
     fn hint(&self) -> Option<Str> {
         match self {
-            UnencryptedPassword => Some("Remove UNENCRYPTED to store the password in encrypted form instead.".into()),
-            FloatPrecisionOverflow(_) => None,
-            FloatPrecisionUnderflow(_) => None,
-            InvalidUescapeDelimiter => None,
-            Syntax => None,
-            UescapeDelimiterMissing => None,
-            UnrecognizedRoleOption(_) => None,
-            ImproperQualifiedName(_) => None,
-            InvalidZoneValue => None,
-            MissingOperatorArgumentType => Some("Use NONE to denote the missing argument of a unary operator.".into()),
-            AggregateWithOutputParameters => None,
-            ImproperUseOfStar => None,
+            Self::UnencryptedPassword
+                => Some("Remove UNENCRYPTED to store the password in encrypted form instead.".into()),
+            Self::FloatPrecisionOverflow(_) => None,
+            Self::FloatPrecisionUnderflow(_) => None,
+            Self::InvalidUescapeDelimiter => None,
+            Self::Syntax => None,
+            Self::UescapeDelimiterMissing => None,
+            Self::UnrecognizedRoleOption(_) => None,
+            Self::ImproperQualifiedName(_) => None,
+            Self::InvalidZoneValue => None,
+            Self::MissingOperatorArgumentType
+                => Some("Use NONE to denote the missing argument of a unary operator.".into()),
+            Self::AggregateWithOutputParameters => None,
+            Self::ImproperUseOfStar => None,
+            Self::InvalidUnboundedFollowingFrame => None,
+            Self::InvalidOffsetFollowingFrame => None,
+            Self::InvalidUnboundedPrecedingFrame => None,
+            Self::InvalidCurrentRowFrame => None,
+            Self::InvalidStartFollowingEndPrecedingFrame => None,
         }
     }
 }
@@ -106,9 +139,11 @@ use crate::sql_state::SqlState;
 use crate::sql_state::SqlState::FeatureNotSupported;
 use crate::sql_state::SqlState::InvalidParameterValue;
 use crate::sql_state::SqlState::SyntaxError;
+use crate::sql_state::SqlState::WindowingError;
 use crate::ErrorReport;
+use crate::ParserError;
+use pg_basics::Location;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
 use std::fmt::Display;
 use std::fmt::Formatter;
-use ParserErrorKind::*;

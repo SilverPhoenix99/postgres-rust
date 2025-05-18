@@ -29,6 +29,7 @@ mod create_user_mapping_stmt;
 mod default_or_value;
 mod discard_stmt;
 mod drop_behavior;
+mod frame_extent;
 mod function_parameter;
 mod function_with_args;
 mod generic_option;
@@ -66,6 +67,8 @@ mod unsigned_number;
 mod var_value;
 mod variable_set_stmt;
 mod variable_target;
+mod window_frame;
+mod window_specification;
 mod xml;
 mod zone_value;
 
@@ -101,6 +104,7 @@ pub use self::{
     default_or_value::ValueOrDefault,
     discard_stmt::DiscardStmt,
     drop_behavior::DropBehavior,
+    frame_extent::{CurrentRowEnd, FollowingEnd, FrameExtent, PrecedingEnd},
     function_parameter::FunctionParameter,
     function_with_args::FunctionWithArgs,
     generic_option::{GenericOption, GenericOptionKind},
@@ -147,6 +151,8 @@ pub use self::{
     var_value::VarValue,
     variable_set_stmt::VariableSetStmt,
     variable_target::VariableTarget,
+    window_frame::{WindowExclusion, WindowFrame, WindowFrameKind},
+    window_specification::WindowSpecification,
     xml::{XmlElement, XmlNodeKind, XmlParse, XmlProcessingInstruction, XmlRoot},
     zone_value::ZoneValue,
 };
