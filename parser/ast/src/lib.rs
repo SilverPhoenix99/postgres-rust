@@ -42,6 +42,7 @@ mod one_or_all;
 mod one_or_both;
 mod operator;
 mod operator_with_args;
+mod over_clause;
 mod prepare_stmt;
 mod privilege_target;
 mod qualified_operator;
@@ -117,6 +118,7 @@ pub use self::{
     one_or_both::OneOrBoth,
     operator::Operator,
     operator_with_args::OperatorWithArgs,
+    over_clause::OverClause,
     prepare_stmt::PrepareStmt,
     privilege_target::PrivilegeTarget,
     qualified_operator::QualifiedOperator,
