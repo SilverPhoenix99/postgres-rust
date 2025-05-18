@@ -67,8 +67,8 @@ mod unsigned_number;
 mod var_value;
 mod variable_set_stmt;
 mod variable_target;
+mod window_definition;
 mod window_frame;
-mod window_specification;
 mod xml;
 mod zone_value;
 
@@ -151,8 +151,8 @@ pub use self::{
     var_value::VarValue,
     variable_set_stmt::VariableSetStmt,
     variable_target::VariableTarget,
+    window_definition::WindowDefinition,
     window_frame::{WindowExclusion, WindowFrame, WindowFrameKind},
-    window_specification::WindowSpecification,
     xml::{XmlElement, XmlNodeKind, XmlParse, XmlProcessingInstruction, XmlRoot},
     zone_value::ZoneValue,
 };
