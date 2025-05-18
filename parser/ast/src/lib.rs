@@ -30,6 +30,7 @@ mod default_or_value;
 mod discard_stmt;
 mod drop_behavior;
 mod frame_extent;
+mod func_arg_expr;
 mod function_parameter;
 mod function_with_args;
 mod generic_option;
@@ -106,6 +107,7 @@ pub use self::{
     discard_stmt::DiscardStmt,
     drop_behavior::DropBehavior,
     frame_extent::{CurrentRowEnd, FollowingEnd, FrameExtent, PrecedingEnd},
+    func_arg_expr::FuncArgExpr,
     function_parameter::FunctionParameter,
     function_with_args::FunctionWithArgs,
     generic_option::{GenericOption, GenericOptionKind},
