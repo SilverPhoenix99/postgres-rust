@@ -5,7 +5,7 @@ mod opt_frame_clause;
 mod opt_partition_clause;
 mod opt_window_exclusion_clause;
 
-pub(super) fn window_specification() -> impl Combinator<Output = WindowSpecification> {
+pub(super) fn window_specification() -> impl Combinator<Output = WindowDefinition> {
 
     /*
         '(' opt_existing_window_name opt_partition_clause ( sort_clause )? opt_frame_clause ')'
@@ -21,7 +21,7 @@ pub(super) fn window_specification() -> impl Combinator<Output = WindowSpecifica
             opt_frame_clause()
         )
         .map(|(name, partition, order, frame)|
-            WindowSpecification::new(name, partition, order, frame)
+            WindowDefinition::new(name, partition, order, frame)
         )
     )
 }
@@ -40,4 +40,4 @@ use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::sort_clause;
-use pg_ast::WindowSpecification;
+use pg_ast::WindowDefinition;

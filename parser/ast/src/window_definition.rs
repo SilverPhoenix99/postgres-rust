@@ -1,12 +1,12 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct WindowSpecification {
+pub struct WindowDefinition {
     name: Option<Str>,
     partition_clause: Vec<ExprNode>,
     order_clause: Vec<SortBy>,
     frame_clause: Option<WindowFrame>,
 }
 
-impl WindowSpecification {
+impl WindowDefinition {
     pub fn new(
         name: Option<Str>,
         partition_clause: Vec<ExprNode>,
