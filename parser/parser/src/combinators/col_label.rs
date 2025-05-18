@@ -4,7 +4,7 @@
 pub(super) fn col_label() -> impl Combinator<Output = Str> {
     match_first!(
         identifier().map(From::from),
-        keyword_if(|_| true).map(From::from)
+        any_keyword().map(From::from)
     )
 }
 
@@ -25,8 +25,8 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::any_keyword;
 use crate::combinators::foundation::identifier;
-use crate::combinators::foundation::keyword_if;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

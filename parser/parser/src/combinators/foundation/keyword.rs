@@ -17,6 +17,15 @@ where
     keyword_result(move |kw| Ok(pred(kw).then_some(kw)))
 }
 
+pub(in crate::combinators) fn any_keyword()
+    -> KeywordCondCombi<
+        impl Fn(Keyword) -> ConsumerResult<Keyword>,
+        Keyword
+    >
+{
+    keyword_if(|_| true)
+}
+
 /// Maps the keyword before consuming it.
 ///
 /// * If the `mapper` returns `Some(_)`, then the keyword is consumed.

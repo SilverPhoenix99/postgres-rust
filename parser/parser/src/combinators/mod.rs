@@ -43,6 +43,7 @@ mod qualified_name;
 mod role;
 mod sign;
 mod simple_typename;
+mod sort_clause;
 mod stmt;
 mod stmtmulti;
 mod string_or_null;
@@ -51,6 +52,7 @@ mod type_function_name;
 mod typename;
 mod var_name;
 mod var_value;
+mod window_specification;
 
 pub(super) use stmtmulti::stmtmulti;
 
@@ -98,6 +100,7 @@ use self::{
     role::{role_id, role_list, role_spec},
     sign::sign,
     simple_typename::simple_typename,
+    sort_clause::sort_clause,
     stmt::{begin_stmt, end_stmt, stmt},
     string_or_null::string_or_null,
     transaction_mode_list::transaction_mode_list,
