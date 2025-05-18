@@ -23,6 +23,16 @@ impl WindowFrame {
     }
 }
 
+impl Default for WindowFrame {
+    fn default() -> Self {
+        Self {
+            kind: WindowFrameKind::Range,
+            frame_extent: FrameExtent::Unbounded { end: Some(PrecedingEnd::CurrentRow) },
+            window_exclusion: None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WindowFrameKind {
     Range,
@@ -38,3 +48,4 @@ pub enum WindowExclusion {
 }
 
 use crate::FrameExtent;
+use crate::PrecedingEnd;
