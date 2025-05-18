@@ -52,7 +52,7 @@ mod type_function_name;
 mod typename;
 mod var_name;
 mod var_value;
-mod window_definition;
+mod window_specification;
 
 pub(super) use stmtmulti::stmtmulti;
 
@@ -108,5 +108,5 @@ use self::{
     typename::typename,
     var_name::var_name,
     var_value::{var_list, var_value},
-    window_definition::window_specification,
+    window_specification::window_specification,
 };
