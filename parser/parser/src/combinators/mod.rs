@@ -16,6 +16,7 @@ mod expr;
 mod expr_list;
 mod expr_list_paren;
 mod func_arg;
+mod func_arg_expr;
 mod func_name;
 mod func_type;
 mod function_with_argtypes;
@@ -73,6 +74,7 @@ use self::{
     expr_list::expr_list,
     expr_list_paren::expr_list_paren,
     func_arg::func_arg,
+    func_arg_expr::{func_arg_expr, func_arg_list},
     func_name::func_name,
     func_type::func_type,
     function_with_argtypes::{function_with_argtypes, function_with_argtypes_list},
