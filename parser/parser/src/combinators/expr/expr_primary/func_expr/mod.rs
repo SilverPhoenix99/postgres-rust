@@ -1,3 +1,4 @@
+mod filter_clause;
 mod over_clause;
 
 pub(super) fn func_expr() -> impl Combinator<Output = ExprNode> {
