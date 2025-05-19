@@ -39,7 +39,7 @@ fn sortby() -> impl Combinator<Output = SortBy> {
         opt_nulls_order()
     )
         .map(|(expr, direction, nulls)|
-            SortBy::new(Box::new(expr), direction, nulls)
+            SortBy::new(expr, direction, nulls)
         )
 }
 
@@ -61,8 +61,8 @@ mod tests {
             source = "order by 1, 2",
             parser = sort_clause(),
             expected = vec![
-                SortBy::new(Box::new(IntegerConst(1)), None, None),
-                SortBy::new(Box::new(IntegerConst(2)), None, None),
+                SortBy::new(IntegerConst(1), None, None),
+                SortBy::new(IntegerConst(2), None, None),
             ]
         )
     }
@@ -73,36 +73,36 @@ mod tests {
             source = "1, 2 nulls last, 3 using <, 4 asc",
             parser = sortby_list(),
             expected = vec![
-                SortBy::new(Box::new(IntegerConst(1)), None, None),
-                SortBy::new(Box::new(IntegerConst(2)), None, Some(NullsLast)),
-                SortBy::new(Box::new(IntegerConst(3)), Some(Using(Less.into())), None),
-                SortBy::new(Box::new(IntegerConst(4)), Some(Ascending), None),
+                SortBy::new(IntegerConst(1), None, None),
+                SortBy::new(IntegerConst(2), None, Some(NullsLast)),
+                SortBy::new(IntegerConst(3), Some(Using(Less.into())), None),
+                SortBy::new(IntegerConst(4), Some(Ascending), None),
             ]
         )
     }
 
     #[test_case("1 using < nulls first", SortBy::new(
-        Box::new(IntegerConst(1)),
+        IntegerConst(1),
         Some(Using(Less.into())),
         Some(NullsFirst)
     ))]
     #[test_case("2 asc nulls last", SortBy::new(
-        Box::new(IntegerConst(2)),
+        IntegerConst(2),
         Some(Ascending),
         Some(NullsLast)
     ))]
     #[test_case("3 desc", SortBy::new(
-        Box::new(IntegerConst(3)),
+        IntegerConst(3),
         Some(SortDirection::Descending),
         None
     ))]
     #[test_case("4", SortBy::new(
-        Box::new(IntegerConst(4)),
+        IntegerConst(4),
         None,
         None
     ))]
     #[test_case("5 nulls first", SortBy::new(
-        Box::new(IntegerConst(5)),
+        IntegerConst(5),
         None,
         Some(NullsFirst)
     ))]

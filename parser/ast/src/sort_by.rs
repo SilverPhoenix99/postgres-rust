@@ -1,13 +1,13 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SortBy {
-    expr: Box<ExprNode>,
+    expr: ExprNode,
     direction: Option<SortDirection>,
     nulls: Option<SortNulls>
 }
 
 impl SortBy {
     pub fn new(
-        expr: Box<ExprNode>,
+        expr: ExprNode,
         direction: Option<SortDirection>,
         nulls: Option<SortNulls>
     ) -> Self {
