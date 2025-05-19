@@ -1,9 +1,9 @@
 pub(super) fn within_group_clause() -> impl Combinator<Output = Vec<SortBy>> {
-    
+
     /*
         WITHIN GROUP_P '(' sort_clause ')'
     */
-    
+
     and(Within, Group)
         .and_right(between_paren(
             sort_clause()
@@ -22,7 +22,7 @@ mod tests {
             source = "within group (order by 1)",
             parser = within_group_clause(),
             expected = vec![
-                SortBy::new(Box::new(IntegerConst(1)), None, None)
+                SortBy::new(IntegerConst(1), None, None)
             ]
         );
     }
