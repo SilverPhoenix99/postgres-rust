@@ -14,7 +14,7 @@
     * examples:
       * `x` -> `(["x"], [])`
       * `x.y` -> `(["x", "y"], [])`
-      * `x.y.*[0].foo` -> `(["x", "y", All], [i(0), "foo"])`
+      * `x.y.*[0].foo.bar` -> `(["x", "y", All], [i(0), "foo", "bar"])`
       * `x[0].*` -> `(["x"], [i(0), All])`
       * `*[foo]` -> `([All], [i("foo")])`
   * `makeRangeVarFromQualifiedName`: qualified name == `( attrs ){1, 3}`
