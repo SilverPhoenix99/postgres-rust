@@ -1,5 +1,6 @@
 mod case_expr;
 mod cast_expr;
+mod func_application;
 mod func_expr;
 mod param_expr;
 
