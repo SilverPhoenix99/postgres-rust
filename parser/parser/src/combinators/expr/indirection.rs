@@ -33,32 +33,27 @@ fn indirection_el() -> impl Combinator<Output = Indirection> {
             col_label().map(Property),
         )),
 
-        between(
-            OpenBracket.skip(),
-            match_first!(
+        between_brackets(match_first!(
+            Colon
+                .and_right(
+                    a_expr().map(SliceTo)
+                        .optional()
+                )
+                .map(|expr| expr.unwrap_or(FullSlice)),
 
-                Colon
-                    .and_right(
-                        a_expr().map(SliceTo)
-                            .optional()
-                    )
-                    .map(|expr| expr.unwrap_or(FullSlice)),
-
-                sequence!(
-                    a_expr(),
-                    optional(
-                        Colon.and_right(
-                            a_expr().optional()
-                        ),
-                    ))
-                    .map(|(left, right)| match right {
-                        None => Index(left),
-                        Some(None) => SliceFrom(left),
-                        Some(Some(right)) => Slice(left, right),
-                    })
-            ),
-            CloseBracket.skip()
-        )
+            sequence!(
+                a_expr(),
+                optional(
+                    Colon.and_right(
+                        a_expr().optional()
+                    ),
+                ))
+                .map(|(left, right)| match right {
+                    None => Index(left),
+                    Some(None) => SliceFrom(left),
+                    Some(Some(right)) => Slice(left, right),
+                })
+        ))
     )
 }
 
@@ -145,9 +140,9 @@ mod tests {
     }
 }
 
+use crate::combinators::between_brackets;
 use crate::combinators::col_label;
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::between;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::optional;
@@ -167,8 +162,6 @@ use pg_ast::Indirection::SliceTo;
 use pg_basics::Located;
 use pg_elog::ParserError;
 use pg_elog::ParserErrorKind::ImproperUseOfStar;
-use pg_lexer::OperatorKind::CloseBracket;
 use pg_lexer::OperatorKind::Colon;
 use pg_lexer::OperatorKind::Dot;
 use pg_lexer::OperatorKind::Mul;
-use pg_lexer::OperatorKind::OpenBracket;

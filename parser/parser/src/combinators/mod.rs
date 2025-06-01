@@ -5,6 +5,7 @@ mod all_or_var_name;
 mod any_name;
 mod attrs;
 mod bare_col_label;
+mod between_brackets;
 mod between_paren;
 mod boolean_or_string;
 mod col_id;
@@ -64,6 +65,7 @@ use self::{
     any_name::{any_name, any_name_list},
     attrs::attrs,
     bare_col_label::bare_col_label,
+    between_brackets::between_brackets,
     between_paren::between_paren,
     boolean_or_string::{boolean_or_string, boolean_or_string_list},
     col_id::col_id,

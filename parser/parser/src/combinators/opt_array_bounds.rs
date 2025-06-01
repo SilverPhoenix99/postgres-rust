@@ -8,20 +8,12 @@ pub(super) fn opt_array_bounds() -> impl Combinator<Output = Option<Vec<Option<i
     match_first!{
         Array
             .and_right(
-                between(
-                    OpenBracket,
-                    i32_literal(),
-                    CloseBracket
-                )
+                between_brackets(i32_literal())
                 .optional()
             )
             .map(|dim| Some(vec![dim])),
         many(
-            between(
-                OpenBracket,
-                i32_literal().optional(),
-                CloseBracket
-            )
+            between_brackets(i32_literal().optional())
         )
         .optional()
     }
@@ -46,12 +38,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between;
+use crate::combinators::between_brackets;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::i32_literal;
 use pg_lexer::Keyword::Array;
-use pg_lexer::OperatorKind::CloseBracket;
-use pg_lexer::OperatorKind::OpenBracket;
