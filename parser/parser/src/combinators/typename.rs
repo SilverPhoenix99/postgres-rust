@@ -64,7 +64,7 @@ mod tests {
         let expected = Type::new(
             TypeName::Generic {
                 name: vec!["some_".into(), "qualified_name".into()],
-                type_modifiers: vec![],
+                type_modifiers: None,
             },
             vec![],
             SetOf::Table,

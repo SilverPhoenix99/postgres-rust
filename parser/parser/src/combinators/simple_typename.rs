@@ -68,9 +68,9 @@ fn bit() -> impl Combinator<Output = TypeName> {
                 return Varbit(modifiers)
             }
 
-            if modifiers.is_empty() {
+            if modifiers.is_none() {
                 // BitWithoutLength: `bit` defaults to `bit(1)`
-                modifiers = vec![IntegerConst(1)];
+                modifiers = Some(vec![IntegerConst(1)]);
             }
 
             Bit(modifiers)
@@ -229,12 +229,12 @@ mod tests {
     #[test_case("float(17)",                      Float4)]
     #[test_case("float(44)",                      Float8)]
     #[test_case("double precision",               Float8)]
-    #[test_case("decimal",                        Numeric(vec![]))]
-    #[test_case("decimal(10)",                    Numeric(vec![IntegerConst(10)]))]
-    #[test_case("dec",                            Numeric(vec![]))]
-    #[test_case("dec(20)",                        Numeric(vec![IntegerConst(20)]))]
-    #[test_case("numeric",                        Numeric(vec![]))]
-    #[test_case("numeric(30)",                    Numeric(vec![IntegerConst(30)]))]
+    #[test_case("decimal",                        Numeric(None))]
+    #[test_case("decimal(10)",                    Numeric(Some(vec![IntegerConst(10)])))]
+    #[test_case("dec",                            Numeric(None))]
+    #[test_case("dec(20)",                        Numeric(Some(vec![IntegerConst(20)])))]
+    #[test_case("numeric",                        Numeric(None))]
+    #[test_case("numeric(30)",                    Numeric(Some(vec![IntegerConst(30)])))]
     #[test_case("time",                           Time { precision: None })]
     #[test_case("time(5)",                        Time { precision: Some(5) })]
     #[test_case("time without time zone",         Time { precision: None })]
@@ -259,9 +259,9 @@ mod tests {
     #[test_case("national char varying(5)",       Varchar { max_length: Some(5) })]
     #[test_case("national character varying",     Varchar { max_length: None })]
     #[test_case("national character varying(3)",  Varchar { max_length: Some(3) })]
-    #[test_case("bit",                            Bit(vec![IntegerConst(1)]))]
-    #[test_case("bit(77)",                        Bit(vec![IntegerConst(77)]))]
-    #[test_case("bit varying",                    Varbit(vec![]))]
+    #[test_case("bit",                            Bit(Some(vec![IntegerConst(1)])))]
+    #[test_case("bit(77)",                        Bit(Some(vec![IntegerConst(77)])))]
+    #[test_case("bit varying",                    Varbit(None))]
     #[test_case("char",                           Bpchar { length: Some(1) })]
     #[test_case("char(4)",                        Bpchar { length: Some(4) })]
     #[test_case("character",                      Bpchar { length: Some(1) })]
@@ -275,12 +275,12 @@ mod tests {
     #[test_case("interval",                       IntervalRange::default().into())]
     #[test_case("interval day",                   IntervalRange::Day.into())]
     #[test_case("interval(5)",                    IntervalRange::Full { precision: Some(5) }.into())]
-    #[test_case("identif.attrib",                 TypeName::Generic { name: vec!["identif".into(), "attrib".into()], type_modifiers: vec![] })]
-    #[test_case("identif(33)",                    TypeName::Generic { name: vec!["identif".into()], type_modifiers: vec![IntegerConst(33)] })]
-    #[test_case("double",                         TypeName::Generic { name: vec!["double".into()], type_modifiers: vec![] })]
-    #[test_case("double.unreserved",              TypeName::Generic { name: vec!["double".into(), "unreserved".into()], type_modifiers: vec![] })]
-    #[test_case("double.unreserved(55)",          TypeName::Generic { name: vec!["double".into(), "unreserved".into()], type_modifiers: vec![IntegerConst(55)] })]
-    #[test_case("full.type_func_name",            TypeName::Generic { name: vec!["full".into(), "type_func_name".into()], type_modifiers: vec![] })]
+    #[test_case("identif.attrib",                 TypeName::Generic { name: vec!["identif".into(), "attrib".into()], type_modifiers: None })]
+    #[test_case("identif(33)",                    TypeName::Generic { name: vec!["identif".into()], type_modifiers: Some(vec![IntegerConst(33)]) })]
+    #[test_case("double",                         TypeName::Generic { name: vec!["double".into()], type_modifiers: None })]
+    #[test_case("double.unreserved",              TypeName::Generic { name: vec!["double".into(), "unreserved".into()], type_modifiers: None })]
+    #[test_case("double.unreserved(55)",          TypeName::Generic { name: vec!["double".into(), "unreserved".into()], type_modifiers: Some(vec![IntegerConst(55)]) })]
+    #[test_case("full.type_func_name",            TypeName::Generic { name: vec!["full".into(), "type_func_name".into()], type_modifiers: None })]
     fn test_simple_typename(source: &str, expected: TypeName) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = simple_typename().parse(&mut stream);

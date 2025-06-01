@@ -71,7 +71,7 @@ pub enum TypeName {
     Int8,
     Float4,
     Float8,
-    Numeric(TypeModifiers),
+    Numeric(Option<TypeModifiers>),
     /// Blank-Padded Character string
     Bpchar {
         length: Option<i32>
@@ -81,8 +81,8 @@ pub enum TypeName {
         /// If limited, the maximum is 10MB == 10,485,760.
         max_length: Option<i32>
     },
-    Bit(TypeModifiers),
-    Varbit(TypeModifiers),
+    Bit(Option<TypeModifiers>),
+    Varbit(Option<TypeModifiers>),
     Time {
         precision: Option<i32>
     },
@@ -100,7 +100,7 @@ pub enum TypeName {
     /// Non-builtin types
     Generic {
         name: QualifiedName,
-        type_modifiers: TypeModifiers
+        type_modifiers: Option<TypeModifiers>
     },
 }
 

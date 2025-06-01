@@ -14,7 +14,7 @@ pub(super) fn func_type() -> impl Combinator<Output = FuncType> {
 
         // Also, Type references (`%TYPE`):
         // 1. don't have modifiers;
-        let ref_allowed = type_modifiers.is_empty()
+        let ref_allowed = type_modifiers.is_none()
             // 2. don't have array bounds;
             && typ.array_bounds().is_empty()
             // 3. must have a qualified name.
@@ -68,7 +68,7 @@ mod tests {
         let expected = pg_ast::Type::new(
             Generic {
                 name: vec!["some_".into(), "qualified_name".into()],
-                type_modifiers: vec![]
+                type_modifiers: None
             },
             vec![None],
             SetOf::Table
