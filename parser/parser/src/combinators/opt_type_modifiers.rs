@@ -1,5 +1,4 @@
-/// Post-condition: Vec **May** be empty.
-pub(super) fn opt_type_modifiers() -> impl Combinator<Output = TypeModifiers> {
+pub(super) fn opt_type_modifiers() -> impl Combinator<Output = Option<TypeModifiers>> {
 
     /*
         ( '(' expr_list ')' )?
@@ -7,7 +6,6 @@ pub(super) fn opt_type_modifiers() -> impl Combinator<Output = TypeModifiers> {
 
     expr_list_paren()
         .optional()
-        .map(Option::unwrap_or_default)
 }
 
 use crate::combinators::expr_list_paren;
