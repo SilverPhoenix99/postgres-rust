@@ -1,11 +1,8 @@
 /// Alias: `AlterOptRoleList`
-///
-/// Post-condition: Vec **May** be empty.
-pub(super) fn alter_role_options() -> impl Combinator<Output = Vec<AlterRoleOption>> {
+pub(super) fn alter_role_options() -> impl Combinator<Output = Option<Vec<AlterRoleOption>>> {
 
     many(alter_role_option())
         .optional()
-        .map(Option::unwrap_or_default)
 }
 
 /// Alias: `AlterOptRoleElem`
@@ -118,7 +115,7 @@ mod tests {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = alter_role_options().parse(&mut stream);
 
-        let expected = vec![Inherit(true), Password(None)];
+        let expected = Some(vec![Inherit(true), Password(None)]);
 
         assert_eq!(Ok(expected), actual);
     }

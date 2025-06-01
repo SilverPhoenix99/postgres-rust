@@ -57,7 +57,7 @@ mod tests {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = alter_user_stmt().parse(&mut stream);
 
-        let expected = AlterRoleStmt::new(Public, Add, vec![]);
+        let expected = AlterRoleStmt::new(Public, Add, None);
 
         assert_eq!(Ok(expected.into()), actual);
     }
@@ -68,7 +68,7 @@ mod tests {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = alter_user_stmt().parse(&mut stream);
 
-        let expected = AlterRoleStmt::new(Public, Add, vec![]);
+        let expected = AlterRoleStmt::new(Public, Add, None);
 
         assert_eq!(Ok(expected.into()), actual);
     }

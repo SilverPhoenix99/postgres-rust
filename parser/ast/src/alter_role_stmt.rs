@@ -18,12 +18,12 @@ pub enum AlterRoleOption {
 pub struct AlterRoleStmt {
     role: RoleSpec,
     action: AddDrop,
-    options: Vec<AlterRoleOption>,
+    options: Option<Vec<AlterRoleOption>>,
 }
 
 impl AlterRoleStmt {
     #[inline(always)]
-    pub fn new(role: RoleSpec, action: AddDrop, options: Vec<AlterRoleOption>) -> Self {
+    pub fn new(role: RoleSpec, action: AddDrop, options: Option<Vec<AlterRoleOption>>) -> Self {
         Self { role, action, options }
     }
 
@@ -38,8 +38,8 @@ impl AlterRoleStmt {
     }
 
     #[inline(always)]
-    pub fn options(&self) -> &[AlterRoleOption] {
-        &self.options
+    pub fn options(&self) -> Option<&[AlterRoleOption]> {
+        self.options.as_deref()
     }
 
     #[inline(always)]
