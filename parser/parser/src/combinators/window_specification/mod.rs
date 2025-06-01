@@ -15,9 +15,7 @@ pub(super) fn window_specification() -> impl Combinator<Output = WindowDefinitio
         sequence!(
             opt_existing_window_name(),
             opt_partition_clause(),
-            sort_clause()
-                .optional()
-                .map(Option::unwrap_or_default),
+            sort_clause().optional(),
             opt_frame_clause()
         )
         .map(|(name, partition, order, frame)|

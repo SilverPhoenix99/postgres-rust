@@ -1,16 +1,16 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WindowDefinition {
     name: Option<Str>,
-    partition_clause: Vec<ExprNode>,
-    order_clause: Vec<SortBy>,
+    partition_clause: Option<Vec<ExprNode>>,
+    order_clause: Option<Vec<SortBy>>,
     frame_clause: Option<WindowFrame>,
 }
 
 impl WindowDefinition {
     pub fn new(
         name: Option<Str>,
-        partition_clause: Vec<ExprNode>,
-        order_by: Vec<SortBy>,
+        partition_clause: Option<Vec<ExprNode>>,
+        order_by: Option<Vec<SortBy>>,
         frame_clause: Option<WindowFrame>,
     ) -> Self {
         Self { name, partition_clause, order_clause: order_by, frame_clause }
@@ -20,12 +20,12 @@ impl WindowDefinition {
         self.name.as_ref()
     }
 
-    pub fn partition_clause(&self) -> &[ExprNode] {
-        &self.partition_clause
+    pub fn partition_clause(&self) -> Option<&[ExprNode]> {
+        self.partition_clause.as_deref()
     }
 
-    pub fn order_clause(&self) -> &[SortBy] {
-        &self.order_clause
+    pub fn order_clause(&self) -> Option<&[SortBy]> {
+        self.order_clause.as_deref()
     }
 
     pub fn frame_clause(&self) -> Option<&WindowFrame> {
