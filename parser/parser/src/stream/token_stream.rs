@@ -28,8 +28,13 @@ impl<'src> TokenStream<'src> {
         self.lexer.lexer.source()
     }
 
-    pub fn warnings(&mut self) -> &mut Vec<Located<ParserWarningKind>> {
-        &mut self.lexer.warnings
+    pub fn warnings(&mut self) -> Option<&mut Vec<Located<ParserWarningKind>>> {
+        if self.lexer.warnings.is_empty() {
+            None
+        }
+        else {
+            Some(&mut self.lexer.warnings)
+        }
     }
 
     #[inline(always)]

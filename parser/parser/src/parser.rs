@@ -1,8 +1,8 @@
 pub(crate) type ParseResult<T> = Result<T, PgError>;
 
 pub struct ParserResult {
-    pub result: ParseResult<Vec<RawStmt>>,
-    pub warnings: Vec<Located<ParserWarningKind>>,
+    pub result: ParseResult<Option<Vec<RawStmt>>>,
+    pub warnings: Option<Vec<Located<ParserWarningKind>>>,
 }
 
 pub struct Parser<'src> {
@@ -31,11 +31,13 @@ impl<'src> Parser<'src> {
             let loc = self.buffer.current_location();
             result = Err(syntax(loc));
         }
+        
+        let warnings = match self.buffer.warnings() {
+            None => None,
+            Some(warnings) => Some(mem::take(warnings))
+        };
 
-        ParserResult {
-            result,
-            warnings: mem::take(self.buffer.warnings()),
-        }
+        ParserResult { result, warnings }
     }
 }
 
