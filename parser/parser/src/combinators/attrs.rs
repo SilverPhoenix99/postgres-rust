@@ -6,10 +6,12 @@ where
         prefix ( '.' col_label )*
     */
 
-    many_pre(
-        prefix,
-        Dot.and_right(col_label())
-    )
+    enclosure! {
+        many_pre(
+            prefix,
+            Dot.and_right(col_label())
+        )
+    }
 }
 
 #[cfg(test)]
@@ -37,6 +39,7 @@ mod tests {
 }
 
 use crate::combinators::col_label;
+use crate::combinators::foundation::enclosure;
 use crate::combinators::foundation::many_pre;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

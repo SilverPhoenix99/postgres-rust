@@ -5,9 +5,14 @@ pub(super) fn comment_stmt() -> impl Combinator<Output = CommentStmt> {
           COMMENT ON comment_target IS comment_text
     */
 
-    Comment.and(On)
-        .and_right(comment_target())
-        .and_then(comment_text(), CommentStmt::new)
+    sequence!(
+        and(Comment, On).skip(),
+        comment_target(),
+        comment_text()
+    )
+        .map(|(_, target, comment)|
+            CommentStmt::new(target, comment)
+        )
 }
 
 fn comment_target() -> impl Combinator<Output = CommentTarget> {
@@ -305,8 +310,10 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
+use crate::combinators::foundation::and;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
+use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::simple_typename;

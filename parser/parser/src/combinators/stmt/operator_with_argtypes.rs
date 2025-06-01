@@ -29,19 +29,16 @@ fn oper_argtypes() -> impl Combinator<Output = OneOrBoth<Type>> {
     */
 
     between_paren(match_first! {
-        NoneKw.and(Comma)
-            .and_right(typename())
-            .map(OneOrBoth::Right),
-        typename()
-            .and_left(or(
+        sequence!(NoneKw, Comma, typename())
+            .map(|(.., typ)| OneOrBoth::Right(typ)),
+        typename().and_then(
+            match_first!(
                 close_paren(),
-                Comma.skip()
-            ))
-            .and_then(
-                or(
+                Comma.and_right(or(
                     NoneKw.map(|_| None),
                     typename().map(Some)
-                ),
+                )
+            )),
                 |typ1, typ2| match typ2 {
                     Some(typ2) => OneOrBoth::Both(typ1, typ2),
                     None => OneOrBoth::Left(typ1)
@@ -50,14 +47,12 @@ fn oper_argtypes() -> impl Combinator<Output = OneOrBoth<Type>> {
     })
 }
 
-fn close_paren() -> impl Combinator<Output = ()> {
+fn close_paren<T>() -> impl Combinator<Output = T> {
 
-    located(CloseParenthesis).map_result(|res| match res {
-        Ok((_, loc)) => {
-            let err = PgError::new(MissingOperatorArgumentType, loc);
-            Err(ScanErr(err))
-        }
-        Err(err) => Err(err)
+    located(CloseParenthesis).map_result(|res| {
+        let (_, loc) = res?;
+        let err = PgError::new(MissingOperatorArgumentType, loc);
+        Err(ScanErr(err))
     })
 }
 

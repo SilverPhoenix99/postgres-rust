@@ -3,14 +3,16 @@ pub(super) fn cast_expr() -> impl Combinator<Output = TypecastExpr> {
         CAST '(' a_expr AS Typename ')'
     */
 
-    Cast
-        .and_right(between_paren(
-            a_expr()
-                .and_then(
-                    As.and_right(typename()),
-                    TypecastExpr::new
-                )
-        ))
+    Cast.and_right(between_paren(
+        sequence!(
+            a_expr(),
+            As,
+            typename()
+        )
+            .map(|(arg, _, type_name)|
+                TypecastExpr::new(arg, type_name)
+            )
+    ))
 }
 
 #[cfg(test)]
@@ -35,6 +37,7 @@ mod tests {
 
 use crate::combinators::between_paren;
 use crate::combinators::expr::a_expr;
+use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::typename;

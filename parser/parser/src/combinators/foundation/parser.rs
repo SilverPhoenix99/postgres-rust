@@ -1,8 +1,9 @@
 /// Used to wrap combinators causing type names being too large.
 macro_rules! enclosure {
-    ($expr:expr) => {
-        $crate::combinators::foundation::parser(move |stream| $expr.parse(stream))
-    };
+    ($expr:expr) => {{
+        let p = $expr;
+        $crate::combinators::foundation::parser(move |stream| p.parse(stream))
+    }};
 }
 
 pub(in crate::combinators) use enclosure;

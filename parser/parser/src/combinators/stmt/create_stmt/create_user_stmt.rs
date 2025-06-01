@@ -5,7 +5,7 @@ pub(super) fn create_user_stmt() -> impl Combinator<Output = RawStmt> {
         | USER RoleId opt_with OptRoleList => CreateRoleStmt
     */
 
-    User.and_right(or(
+    User.and_right(match_first!(
         create_user_mapping().map(From::from),
         create_user_role().map(From::from)
     ))
@@ -98,7 +98,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
