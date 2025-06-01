@@ -9,7 +9,7 @@ pub(super) fn typename() -> impl Combinator<Output = Type> {
         if setof.is_ok() {
             simple_typename().required()
                 .and_then(
-                    array_bounds(),
+                    opt_array_bounds(),
                     |typename, array_bounds| {
                         typename.returning_table()
                             .with_array_bounds(array_bounds)
@@ -20,7 +20,7 @@ pub(super) fn typename() -> impl Combinator<Output = Type> {
         else {
             simple_typename()
                 .and_then(
-                    array_bounds(),
+                    opt_array_bounds(),
                     |typename, array_bounds| {
                         typename.with_array_bounds(array_bounds)
                     }
@@ -28,13 +28,6 @@ pub(super) fn typename() -> impl Combinator<Output = Type> {
                 .parse(stream)
         }
     })
-}
-
-/// Post-condition: Vec **May** be empty.
-fn array_bounds() -> impl Combinator<Output = Vec<Option<i32>>> {
-    opt_array_bounds()
-        .optional()
-        .map(Option::unwrap_or_default)
 }
 
 #[cfg(test)]
@@ -46,11 +39,11 @@ mod tests {
     use pg_ast::{SetOf, TypeName};
     use test_case::test_case;
 
-    #[test_case("int", Type::new(TypeName::Int4, vec![], SetOf::Record))]
-    #[test_case("int[]", Type::new(TypeName::Int4, vec![None], SetOf::Record))]
-    #[test_case("setof int", Type::new(TypeName::Int4, vec![], SetOf::Table))]
-    #[test_case("setof int[]", Type::new(TypeName::Int4, vec![None], SetOf::Table))]
-    #[test_case("setof double precision[10][]", Type::new(TypeName::Float8, vec![Some(10), None], SetOf::Table))]
+    #[test_case("int", Type::new(TypeName::Int4, None, SetOf::Record))]
+    #[test_case("int[]", Type::new(TypeName::Int4, Some(vec![None]), SetOf::Record))]
+    #[test_case("setof int", Type::new(TypeName::Int4, None, SetOf::Table))]
+    #[test_case("setof int[]", Type::new(TypeName::Int4, Some(vec![None]), SetOf::Table))]
+    #[test_case("setof double precision[10][]", Type::new(TypeName::Float8, Some(vec![Some(10), None]), SetOf::Table))]
     fn test_typename(source: &str, expected: Type) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         assert_eq!(Ok(expected), typename().parse(&mut stream));
@@ -66,7 +59,7 @@ mod tests {
                 name: vec!["some_".into(), "qualified_name".into()],
                 type_modifiers: None,
             },
-            vec![],
+            None,
             SetOf::Table,
         );
 
