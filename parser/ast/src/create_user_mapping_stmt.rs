@@ -2,12 +2,17 @@
 pub struct CreateUserMappingStmt {
     user: RoleSpec,
     server: Str,
-    options: Vec<GenericOption>,
+    options: Option<Vec<GenericOption>>,
     if_not_exists: bool
 }
 
 impl CreateUserMappingStmt {
-    pub fn new<T: Into<Str>>(user: RoleSpec, server: T, options: Vec<GenericOption>, if_not_exists: bool) -> Self {
+    pub fn new<T: Into<Str>>(
+        user: RoleSpec,
+        server: T,
+        options: Option<Vec<GenericOption>>,
+        if_not_exists: bool
+    ) -> Self {
         Self {
             user,
             server: server.into(),
@@ -24,8 +29,8 @@ impl CreateUserMappingStmt {
         &self.server
     }
 
-    pub fn options(&self) -> &[GenericOption] {
-        &self.options
+    pub fn options(&self) -> Option<&[GenericOption]> {
+        self.options.as_deref()
     }
 
     pub fn if_not_exists(&self) -> bool {
