@@ -16,7 +16,7 @@ impl Transform {
         &self.for_type
     }
 
-    pub fn language(&self) -> &Str {
+    pub fn language(&self) -> &str {
         &self.language
     }
 }

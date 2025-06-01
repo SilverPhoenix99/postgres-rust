@@ -13,12 +13,12 @@ impl SchemaName {
         }
     }
 
-    pub fn name(&self) -> &Str {
+    pub fn name(&self) -> &str {
         &self.name
     }
 
-    pub fn catalog(&self) -> Option<&Str> {
-        self.catalog.as_ref()
+    pub fn catalog(&self) -> Option<&str> {
+        self.catalog.as_deref()
     }
 }
 
@@ -37,7 +37,7 @@ impl RelationName {
         }
     }
 
-    pub fn name(&self) -> &Str {
+    pub fn name(&self) -> &str {
         &self.name
     }
 
@@ -45,9 +45,9 @@ impl RelationName {
         self.schema.as_ref()
     }
 
-    pub fn catalog(&self) -> Option<&Str> {
+    pub fn catalog(&self) -> Option<&str> {
         if let Some(schema) = self.schema.as_ref() {
-            return schema.catalog.as_ref()
+            return schema.catalog.as_deref()
         }
         None
     }
