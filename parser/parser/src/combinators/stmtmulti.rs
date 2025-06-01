@@ -1,4 +1,4 @@
-pub(crate) fn stmtmulti() -> impl Combinator<Output = Vec<RawStmt>> {
+pub(crate) fn stmtmulti() -> impl Combinator<Output = Option<Vec<RawStmt>>> {
 
     // This production is slightly cheating, not because it's more efficient,
     // but helps simplify capturing the combinator.
@@ -10,11 +10,6 @@ pub(crate) fn stmtmulti() -> impl Combinator<Output = Vec<RawStmt>> {
     semicolons().optional()
         .and_right(
             many_sep(semicolons(), toplevel_stmt()).optional()
-        )
-        .map(|stmts|
-            stmts.into_iter()
-                .flatten()
-                .collect()
         )
 }
 
