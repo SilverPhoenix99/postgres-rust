@@ -1,53 +1,75 @@
-fn func_application_args() -> impl Combinator<Output = FuncArgsKind> {
+pub(super) fn func_application_args() -> impl Combinator<Output = FuncArgsKind> {
 
     /*
-          '*'
-        | ALL      func_arg_list ( sort_clause )?
-        | DISTINCT func_arg_list ( sort_clause )?
-        | variadic_func_arg_list ( sort_clause )?
+        '(' (
+              '*'
+            | ALL      func_arg_list ( sort_clause )?
+            | DISTINCT func_arg_list ( sort_clause )?
+            | variadic_func_arg_list ( sort_clause )?
+        )? ')'
     */
 
-    match_first! {
-        Mul
-            .map(|_| Star { order_within_group: None }),
-        Kw::All
-            .and_right(and(
-                func_arg_list(),
-                sort_clause().optional()
-            ))
-            .map(|(args, order)|
+    between_paren(
+        match_first! {
+            star_args(),
+            all_args(),
+            distinct_args(),
+            simple_args(),
+        }
+            .optional()
+            .map(|args| {
+                args.unwrap_or(Empty { order_within_group: None })
+            })
+    )
+}
+
+fn star_args() -> impl Combinator<Output = FuncArgsKind> {
+    Mul.map(|_| Star { order_within_group: None })
+}
+
+fn all_args() -> impl Combinator<Output = FuncArgsKind> {
+
+    Kw::All
+        .and_right(and(
+            func_arg_list(),
+            sort_clause().optional()
+        ))
+        .map(|(args, order)|
+            All {
+                args,
+                order: order.map(FuncArgsOrder::OrderBy)
+            }
+        )
+}
+
+fn distinct_args() -> impl Combinator<Output = FuncArgsKind> {
+
+    Kw::Distinct
+        .and_right(and(
+            func_arg_list(),
+            sort_clause().optional()
+        ))
+        .map(|(args, order)|
+            Distinct { args, order }
+        )
+}
+
+fn simple_args() -> impl Combinator<Output = FuncArgsKind> {
+
+    and(
+        variadic_func_args(),
+        sort_clause().optional()
+    )
+        .map(|((args, variadic), order)| {
+            if variadic {
+                Variadic { args, order }
+            }
+            else {
                 All {
                     args,
                     order: order.map(FuncArgsOrder::OrderBy)
                 }
-            ),
-        Kw::Distinct
-            .and_right(and(
-                func_arg_list(),
-                sort_clause().optional()
-            ))
-            .map(|(args, order)|
-                Distinct { args, order }
-            ),
-        and(
-            variadic_func_args(),
-            sort_clause().optional()
-        )
-            .map(|((args, variadic), order)| {
-                if variadic {
-                    Variadic { args, order }
-                }
-                else {
-                    All {
-                        args,
-                        order: order.map(FuncArgsOrder::OrderBy)
-                    }
-                }
-            }),
-    }
-        .optional()
-        .map(|args| {
-            args.unwrap_or(Empty { order_within_group: None })
+            }
         })
 }
 
@@ -142,24 +164,24 @@ mod tests {
     use pg_ast::FuncArgExpr::Unnamed;
     use test_case::test_case;
 
-    #[test_case("*", Star { order_within_group: None })]
-    #[test_case("all 1, 2", All {
+    #[test_case("(*)", Star { order_within_group: None })]
+    #[test_case("(all 1, 2)", All {
         args: vec![Unnamed(IntegerConst(1)), Unnamed(IntegerConst(2))],
         order: None
     })]
-    #[test_case("distinct 1, 2", Distinct {
+    #[test_case("(distinct 1, 2)", Distinct {
         args: vec![Unnamed(IntegerConst(1)), Unnamed(IntegerConst(2))],
         order: None
     })]
-    #[test_case("1, 2, 3", All {
+    #[test_case("(1, 2, 3)", All {
         args: vec![Unnamed(IntegerConst(1)), Unnamed(IntegerConst(2)), Unnamed(IntegerConst(3))],
         order: None
     })]
-    #[test_case("variadic 1", Variadic {
+    #[test_case("(variadic 1)", Variadic {
         args: vec![Unnamed(IntegerConst(1))],
         order: None
     })]
-    #[test_case("", Empty { order_within_group: None })]
+    #[test_case("()", Empty { order_within_group: None })]
     fn test_func_application_args(source: &str, expected: FuncArgsKind) {
         test_parser!(source, func_application_args(), expected);
     }
@@ -223,6 +245,7 @@ mod tests {
     }
 }
 
+use crate::combinators::between_paren;
 use crate::combinators::foundation::and;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many_sep;
