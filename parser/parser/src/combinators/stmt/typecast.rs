@@ -5,10 +5,14 @@ pub(super) fn typecast() -> impl Combinator<Output = Typecast> {
     */
 
     Cast.and_right(between_paren(
-        typename().and_then(
-            As.and_right(typename()),
-            Typecast::new
+        sequence!(
+            typename(),
+            As,
+            typename()
         )
+            .map(|(from_type, _, to_type)|
+                Typecast::new(from_type, to_type)
+            )
     ))
 }
 
@@ -30,6 +34,7 @@ mod tests {
 }
 
 use crate::combinators::between_paren;
+use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::typename;

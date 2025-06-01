@@ -4,7 +4,7 @@ pub(super) fn func_arg_list() -> impl Combinator<Output = Vec<FuncArgExpr>> {
         func_arg_expr ( COMMA func_arg_expr )*
     */
 
-    many_sep(Comma, func_arg_expr())
+    enclosure! { many_sep(Comma, func_arg_expr()) }
 }
 
 pub(super) fn func_arg_expr() -> impl Combinator<Output = FuncArgExpr> {
@@ -60,6 +60,7 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
+use crate::combinators::foundation::enclosure;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::parser;

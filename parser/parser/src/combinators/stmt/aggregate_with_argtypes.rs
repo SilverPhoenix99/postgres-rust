@@ -28,19 +28,21 @@ pub(super) fn aggr_args() -> impl Combinator<Output = (Vec<FunctionParameter>, V
         | '(' aggr_args_list ( ORDER BY aggr_args_list )? ')'
     */
 
-    between_paren(
-        match_first! {
-            Mul
-                .map(|_| (Vec::new(), Vec::new())),
-            order_by_aggr_args().map(|args| (Vec::new(), args)),
-            sequence!(
-                aggr_args_list(),
-                order_by_aggr_args()
-                    .optional()
-                    .map(Option::unwrap_or_default)
-            )
-        }
-    )
+    enclosure! {
+        between_paren(
+            match_first! {
+                Mul
+                    .map(|_| (Vec::new(), Vec::new())),
+                order_by_aggr_args().map(|args| (Vec::new(), args)),
+                sequence!(
+                    aggr_args_list(),
+                    order_by_aggr_args()
+                        .optional()
+                        .map(Option::unwrap_or_default)
+                )
+            }
+        )
+    }
 }
 
 fn order_by_aggr_args() -> impl Combinator<Output = Vec<FunctionParameter>> {
@@ -199,14 +201,15 @@ mod tests {
 }
 
 use crate::combinators::between_paren;
+use crate::combinators::foundation::enclosure;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use crate::combinators::func_arg::func_arg;
-use crate::combinators::func_name::func_name;
+use crate::combinators::func_arg;
+use crate::combinators::func_name;
 use crate::result::ScanErrorKind::ScanErr;
 use pg_ast::AggregateWithArgs;
 use pg_ast::FunctionParameter;

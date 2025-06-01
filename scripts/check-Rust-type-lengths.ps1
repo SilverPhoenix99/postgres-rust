@@ -1,5 +1,5 @@
 
-# Make sure this runs in the <repo-root>/parser directory.
+# Make sure this runs in the <repo-root>/parser/parser directory.
 
 # Parser combinators can generate long Rust type names.
 # This is an ad-hoc script to check them.
@@ -49,9 +49,16 @@ function Indent {
 
 function ParseTypes {
 
+    $ErrorActionPreference = 'Stop'
+
     cargo rustc -- --emit=llvm-ir -Awarnings
 
-    Get-ChildItem ..\target\debug\deps\*.ll `
+    if (!$Global:target_directory) {
+        $j = cargo metadata --format-version=1 --no-deps | ConvertFrom-Json
+        $Global:target_directory = $j.target_directory
+    }
+
+    Get-ChildItem "$($Global:target_directory)/debug/deps/*.ll" `
         | Sort-Object LastWriteTime -Descending `
         | Select-Object -First 1 `
         | Get-Content `

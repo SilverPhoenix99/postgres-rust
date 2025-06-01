@@ -5,36 +5,34 @@ pub(super) fn typename() -> impl Combinator<Output = Type> {
         ( SETOF )? SimpleTypename opt_array_bounds
     */
 
-    Setof.chain_result(|setof, stream| {
-        if setof.is_ok() {
-            simple_typename().required()
-                .and_then(
-                    opt_array_bounds(),
-                    |typename, array_bounds| {
-                        typename.returning_table()
-                            .with_array_bounds(array_bounds)
-                    }
-                )
-                .parse(stream)
-        }
-        else {
-            simple_typename()
-                .and_then(
-                    opt_array_bounds(),
-                    |typename, array_bounds| {
-                        typename.with_array_bounds(array_bounds)
-                    }
-                )
-                .parse(stream)
-        }
-    })
+    match_first! {
+        sequence!(Setof, record_typename())
+            .map(|(_, typename)| {
+                typename.returning_table()
+            }),
+        record_typename(),
+    }
 }
+
+fn record_typename() -> impl Combinator<Output = Type> {
+
+    /*
+        SimpleTypename opt_array_bounds
+    */
+
+    sequence!(simple_typename(), opt_array_bounds())
+        .map(|(typename, array_bounds)| {
+            typename.with_array_bounds(array_bounds)
+        })
+}
+
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
+    use pg_ast::Type;
     #[allow(unused_imports)]
     use pg_ast::{SetOf, TypeName};
     use test_case::test_case;
@@ -67,6 +65,8 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::opt_array_bounds;

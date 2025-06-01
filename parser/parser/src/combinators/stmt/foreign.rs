@@ -9,13 +9,15 @@ pub(super) fn foreign() -> impl Combinator<Output = Foreign> {
         FOREIGN any_name
     */
 
-    Kw::Foreign.and_right(or(
-        and(Data, Wrapper)
-            .and_right(col_id())
-            .map(Foreign::DataWrapper),
+    Kw::Foreign.and_right(match_first!(
+        sequence!(Data, Wrapper, col_id())
+            .map(|(.., name)|
+                Foreign::DataWrapper(name)
+            ),
         Kw::Table
-            .and_right(any_name())
-            .map(Foreign::Table)
+            .and_then(any_name(), |_, name|
+                Foreign::Table(name)
+            )
     ))
 }
 
@@ -45,8 +47,8 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::and;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use pg_basics::QualifiedName;
