@@ -1,11 +1,11 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct AlterExtensionStmt {
     name: Str,
-    options: Vec<Str>,
+    options: Option<Vec<Str>>,
 }
 
 impl AlterExtensionStmt {
-    pub fn new<T: Into<Str>>(name: T, options: Vec<Str>) -> Self {
+    pub fn new<T: Into<Str>>(name: T, options: Option<Vec<Str>>) -> Self {
         Self {
             name: name.into(),
             options,
@@ -16,8 +16,8 @@ impl AlterExtensionStmt {
         &self.name
     }
 
-    pub fn options(&self) -> &[Str] {
-        &self.options
+    pub fn options(&self) -> Option<&[Str]> {
+        self.options.as_deref()
     }
 }
 

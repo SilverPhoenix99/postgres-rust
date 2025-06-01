@@ -26,7 +26,7 @@ pub(super) fn alter_extension_stmt() -> impl Combinator<Output = RawStmt> {
                 Kw::Update
                     .and_right(alter_extension_options())
             } => (options) {
-                AlterExtensionStmt::new(extension,options).into()
+                AlterExtensionStmt::new(extension, options).into()
             },
             {
                 and(
@@ -44,9 +44,7 @@ pub(super) fn alter_extension_stmt() -> impl Combinator<Output = RawStmt> {
 
 /// Alias: `alter_extension_opt_list`
 /// Includes: `alter_extension_opt_item`
-///
-/// Post-condition: Vec **May** be empty.
-fn alter_extension_options() -> impl Combinator<Output = Vec<Str>> {
+fn alter_extension_options() -> impl Combinator<Output = Option<Vec<Str>>> {
 
     /*
         ( TO NonReservedWord_or_Sconst )*
@@ -54,7 +52,6 @@ fn alter_extension_options() -> impl Combinator<Output = Vec<Str>> {
 
     many(To.and_right(non_reserved_word_or_sconst()))
         .optional()
-        .map(Option::unwrap_or_default)
 }
 
 fn alter_extension_target() -> impl Combinator<Output = AlterExtensionContentsTarget> {
@@ -167,7 +164,7 @@ mod tests {
     #[test_case("extension some_extension update to 'option1'",
         AlterExtensionStmt::new(
             "some_extension",
-            vec!["option1".into()]
+            Some(vec!["option1".into()])
         ).into()
     )]
     #[test_case("extension some_extension add aggregate some_aggregate(*)",
@@ -197,13 +194,13 @@ mod tests {
         test_parser!(
             source = r#"to "ident" to 'string' to reassign to trim to natural"#,
             parser = alter_extension_options(),
-            expected = vec![
+            expected = Some(vec![
                 "ident".into(),
                 "string".into(),
                 "reassign".into(),
                 "trim".into(),
                 "natural".into()
-            ]
+            ])
         );
     }
 
