@@ -15,12 +15,12 @@ impl SecurityLabelStmt {
         &self.target
     }
 
-    pub fn provider(&self) -> Option<&Str> {
-        self.provider.as_ref()
+    pub fn provider(&self) -> Option<&str> {
+        self.provider.as_deref()
     }
 
-    pub fn label(&self) -> Option<&Box<str>> {
-        self.label.as_ref()
+    pub fn label(&self) -> Option<&str> {
+        self.label.as_deref()
     }
 }
 

@@ -16,8 +16,8 @@ impl WindowDefinition {
         Self { name, partition_clause, order_clause: order_by, frame_clause }
     }
 
-    pub fn name(&self) -> Option<&Str> {
-        self.name.as_ref()
+    pub fn name(&self) -> Option<&str> {
+        self.name.as_deref()
     }
 
     pub fn partition_clause(&self) -> Option<&[ExprNode]> {
