@@ -22,7 +22,7 @@ mod tests {
     #[test_case("over foo", Some(WindowName("foo".into())))]
     #[test_case("over (foo)", Some(
         OverClause::WindowDefinition(
-            WindowDefinition::new(Some("foo".into()), vec![], vec![], None)
+            WindowDefinition::new(Some("foo".into()), None, None, None)
         )
     ))]
     fn test_over_clause(source: &str, expected: Option<OverClause>) {
