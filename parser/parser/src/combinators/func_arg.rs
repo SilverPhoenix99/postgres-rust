@@ -115,7 +115,7 @@ mod tests {
         let expected = FunctionParameter::new(
             arg_name,
             mode,
-            FuncType::Type(Type::new(type_name, vec![], set_of))
+            FuncType::Type(Type::new(type_name, None, set_of))
         );
 
         assert_eq!(Ok(expected), actual);

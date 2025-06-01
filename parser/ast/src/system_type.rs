@@ -5,15 +5,15 @@ pub struct Type {
     name: TypeName,
     /// If the type is a table (i.e., set) of records, or just a single record.
     mult: SetOf,
-    array_bounds: Vec<Option<i32>>,
+    array_bounds: Option<Vec<Option<i32>>>,
 }
 
 impl Type {
-    pub fn new(name: TypeName, array_bounds: Vec<Option<i32>>, mult: SetOf) -> Self {
+    pub fn new(name: TypeName, array_bounds: Option<Vec<Option<i32>>>, mult: SetOf) -> Self {
         Self { name, array_bounds, mult }
     }
 
-    pub fn with_array_bounds(self, array_bounds: Vec<Option<i32>>) -> Self {
+    pub fn with_array_bounds(self, array_bounds: Option<Vec<Option<i32>>>) -> Self {
         Self::new(self.name, array_bounds, self.mult)
     }
 
@@ -25,15 +25,15 @@ impl Type {
         &self.name
     }
 
-    pub fn array_bounds(&self) -> &[Option<i32>] {
-        &self.array_bounds
+    pub fn array_bounds(&self) -> Option<&[Option<i32>]> {
+        self.array_bounds.as_deref()
     }
 
     pub fn mult(&self) -> SetOf {
         self.mult
     }
 
-    pub fn deconstruct(self) -> (TypeName, Vec<Option<i32>>, SetOf) {
+    pub fn deconstruct(self) -> (TypeName, Option<Vec<Option<i32>>>, SetOf) {
         (self.name, self.array_bounds, self.mult)
     }
 }
@@ -107,7 +107,7 @@ pub enum TypeName {
 impl_from!(IntervalRange for TypeName::Interval);
 
 impl TypeName {
-    pub fn with_array_bounds(self, array_bounds: Vec<Option<i32>>) -> Type {
+    pub fn with_array_bounds(self, array_bounds: Option<Vec<Option<i32>>>) -> Type {
         Type::from(self).with_array_bounds(array_bounds)
     }
 
@@ -126,7 +126,7 @@ pub enum SetOf {
 
 impl From<TypeName> for Type {
     fn from(value: TypeName) -> Self {
-        Type::new(value, Vec::new(), SetOf::Record)
+        Type::new(value, None, SetOf::Record)
     }
 }
 

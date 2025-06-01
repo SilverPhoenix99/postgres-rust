@@ -16,7 +16,7 @@ pub(super) fn func_type() -> impl Combinator<Output = FuncType> {
         // 1. don't have modifiers;
         let ref_allowed = type_modifiers.is_none()
             // 2. don't have array bounds;
-            && typ.array_bounds().is_empty()
+            && typ.array_bounds().is_none()
             // 3. must have a qualified name.
             && name.len() > 1;
 
@@ -70,7 +70,7 @@ mod tests {
                 name: vec!["some_".into(), "qualified_name".into()],
                 type_modifiers: None
             },
-            vec![None],
+            Some(vec![None]),
             SetOf::Table
         );
 
