@@ -1,4 +1,3 @@
-/// Post-condition: Vec is **Not** empty
 pub(super) fn expr_list_paren() -> impl Combinator<Output = Vec<ExprNode>> {
 
     /*

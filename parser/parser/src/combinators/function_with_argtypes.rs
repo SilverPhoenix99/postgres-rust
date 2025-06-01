@@ -1,4 +1,3 @@
-/// Post-condition: Vec is **Not** empty
 pub(super) fn function_with_argtypes_list() -> impl Combinator<Output = Vec<FunctionWithArgs>> {
 
     /*
@@ -66,7 +65,6 @@ fn func_args() -> impl Combinator<Output = Option<Option<Vec<FunctionParameter>>
         .optional()
 }
 
-/// Post-condition: Vec is **Not** empty
 fn func_args_list() -> impl Combinator<Output = Vec<FunctionParameter>> {
 
     /*

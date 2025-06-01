@@ -1,4 +1,3 @@
-/// Post-condition: Vec is **Not** empty
 pub(super) fn role_list() -> impl Combinator<Output = Vec<RoleSpec>> {
 
     /*

@@ -1,4 +1,3 @@
-/// Post-condition: Vec is **Not** empty
 pub(super) fn any_name_list() -> impl Combinator<Output = Vec<QualifiedName>> {
 
     /*
@@ -8,8 +7,6 @@ pub(super) fn any_name_list() -> impl Combinator<Output = Vec<QualifiedName>> {
     many_sep(Comma, any_name())
 }
 
-/// Post-condition: Vec is **Not** empty
-///
 /// Alias: `handler_name`
 pub(super) fn any_name() -> impl Combinator<Output = QualifiedName> {
 

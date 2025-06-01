@@ -1,5 +1,3 @@
-/// Post-condition: Vec is **Not** empty
-///
 /// Alias: `columnList`
 pub(super) fn name_list() -> impl Combinator<Output = Vec<Str>> {
 

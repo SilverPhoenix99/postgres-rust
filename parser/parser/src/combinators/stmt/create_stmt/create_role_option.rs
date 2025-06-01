@@ -1,6 +1,4 @@
 /// Alias: `OptRoleList`
-///
-/// Post-condition: Vec is **Not** empty
 pub(super) fn create_role_options() -> impl Combinator<Output = Vec<CreateRoleOption>> {
 
     many(create_role_option())

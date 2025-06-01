@@ -1,4 +1,3 @@
-/// Post-condition: Vec is **Not** empty
 pub(super) fn func_arg_list() -> impl Combinator<Output = Vec<FuncArgExpr>> {
 
     /*

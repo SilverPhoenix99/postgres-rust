@@ -1,4 +1,3 @@
-/// Post-condition: Vec is **Not** empty
 pub(super) fn col_id_list(separator: OperatorKind) -> impl Combinator<Output = QualifiedName> {
 
     /*
