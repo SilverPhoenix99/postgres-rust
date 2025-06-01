@@ -147,7 +147,7 @@ mod tests {
         let expected = AlterRoleStmt::new(
             RoleSpec::Public,
             Add,
-            vec![AlterRoleOption::Password(Some("abc123".into()))],
+            Some(vec![AlterRoleOption::Password(Some("abc123".into()))]),
         );
 
         assert_eq!(Ok(expected.into()), actual);
@@ -162,7 +162,7 @@ mod tests {
         let expected = AlterRoleStmt::new(
             RoleSpec::Public,
             Add,
-            vec![AlterRoleOption::Inherit(false)],
+            Some(vec![AlterRoleOption::Inherit(false)]),
         );
 
         assert_eq!(Ok(expected.into()), actual);
@@ -174,11 +174,7 @@ mod tests {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = user_stmt().parse(&mut stream);
 
-        let expected = AlterRoleStmt::new(
-            RoleSpec::Public,
-            Add,
-            vec![]
-        );
+        let expected = AlterRoleStmt::new(RoleSpec::Public, Add, None);
 
         assert_eq!(Ok(expected.into()), actual);
     }

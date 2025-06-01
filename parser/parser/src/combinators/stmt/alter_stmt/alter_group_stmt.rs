@@ -29,7 +29,7 @@ pub(super) fn alter_group_stmt() -> impl Combinator<Output = RawStmt> {
                     role_list()
                 )
             } => ((action, _, roles)) {
-                let options = vec![RoleMembers(roles)];
+                let options = Some(vec![RoleMembers(roles)]);
                 AlterRoleStmt::new(group, action, options).into()
             }
         }})
@@ -63,10 +63,10 @@ mod tests {
         let expected = AlterRoleStmt::new(
             RoleSpec::Name("some_group".into()),
             AddDrop::Add,
-            vec![RoleMembers(vec![
+            Some(vec![RoleMembers(vec![
                 RoleSpec::CurrentRole,
                 RoleSpec::Name("new_user".into())
-            ])]
+            ])])
         );
 
         assert_eq!(Ok(expected.into()), alter_group_stmt().parse(&mut stream));
@@ -80,10 +80,10 @@ mod tests {
         let expected = AlterRoleStmt::new(
             RoleSpec::Name("some_group".into()),
             AddDrop::Drop,
-            vec![RoleMembers(vec![
+            Some(vec![RoleMembers(vec![
                 RoleSpec::SessionUser,
                 RoleSpec::Public
-            ])]
+            ])])
         );
 
         assert_eq!(Ok(expected.into()), alter_group_stmt().parse(&mut stream));
