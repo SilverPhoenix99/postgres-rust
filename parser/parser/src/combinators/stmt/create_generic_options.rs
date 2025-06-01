@@ -1,5 +1,4 @@
-/// Post-condition: Vec **May** be empty.
-pub(super) fn create_generic_options() -> impl Combinator<Output = Vec<GenericOption>> {
+pub(super) fn create_generic_options() -> impl Combinator<Output = Option<Vec<GenericOption>>> {
 
     /*
         OPTIONS '(' generic_option_list ')'
@@ -7,7 +6,6 @@ pub(super) fn create_generic_options() -> impl Combinator<Output = Vec<GenericOp
 
     Options.and_right(between_paren(generic_options()))
         .optional()
-        .map(Option::unwrap_or_default)
 }
 
 #[cfg(test)]
@@ -17,13 +15,13 @@ mod tests {
     use test_case::test_case;
 
     #[test_case("options (option1 'value1', option2 'value2')",
-        vec![
+        Some(vec![
             GenericOption::new("option1", "value1"),
             GenericOption::new("option2", "value2")
-        ]
+        ])
     )]
-    #[test_case("", vec![])]
-    fn test_create_generic_options(source: &str, expected: Vec<GenericOption>) {
+    #[test_case("", None)]
+    fn test_create_generic_options(source: &str, expected: Option<Vec<GenericOption>>) {
         test_parser!(source, create_generic_options(), expected);
     }
 }

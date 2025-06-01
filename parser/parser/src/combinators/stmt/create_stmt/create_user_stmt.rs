@@ -67,7 +67,7 @@ mod tests {
         CreateUserMappingStmt::new(
             RoleSpec::Name("test_user".into()),
             "test_server",
-            vec![GenericOption::new("foo", "42")],
+            Some(vec![GenericOption::new("foo", "42")]),
             true
         )
     )]
@@ -75,7 +75,7 @@ mod tests {
         CreateUserMappingStmt::new(
             RoleSpec::Name("foo".into()),
             "bar",
-            vec![],
+            None,
             false
         )
     )]
