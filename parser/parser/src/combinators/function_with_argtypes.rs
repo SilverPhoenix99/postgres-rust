@@ -50,25 +50,19 @@ pub(super) fn function_with_argtypes() -> impl Combinator<Output = FunctionWithA
     }
 }
 
-/// Post-condition: Vec **May** be empty.
-///
 /// # Return
 /// The combinator returns `Option<_>` over a possibly missing arguments list:
 /// * `None` if there's no arguments specified, i.e., `(` didn't match;
 /// * `Some(_)` if there are parenthesis, but the arguments list might still be empty. E.g.s:
-///     * `"()"`: An empty list returns `Some([])`;
-///     * `"(arg1, arg2)"`: If arguments exist, then it returns them `Some([arg1, arg2])`.
-fn func_args() -> impl Combinator<Output = Option<Vec<FunctionParameter>>> {
+///     * `"()"`: An empty list returns `Some(None)`;
+///     * `"(arg1, arg2)"`: If arguments exist, then it returns them `Some(Some([arg1, arg2]))`.
+fn func_args() -> impl Combinator<Output = Option<Option<Vec<FunctionParameter>>>> {
 
     /*
         ( '(' ( func_args_list )? ')' )?
     */
 
-    between_paren(
-        func_args_list()
-            .optional()
-            .map(Option::unwrap_or_default)
-    )
+    between_paren(func_args_list().optional())
         .optional()
 }
 
@@ -96,19 +90,19 @@ mod tests {
 
     // type_func_name_keyword ( func_args )?
     #[test_case("collation", FunctionWithArgs::new(vec!["collation".into()], None))]
-    #[test_case("current_schema()", FunctionWithArgs::new(vec!["current_schema".into()], Some(vec![])))]
+    #[test_case("current_schema()", FunctionWithArgs::new(vec!["current_schema".into()], Some(None)))]
     // unreserved_keyword ( attrs )? ( func_args )?
-    #[test_case("double.trouble()", FunctionWithArgs::new(vec!["double".into(), "trouble".into()], Some(vec![])))]
+    #[test_case("double.trouble()", FunctionWithArgs::new(vec!["double".into(), "trouble".into()], Some(None)))]
     #[test_case("double.double", FunctionWithArgs::new(vec!["double".into(), "double".into()], None))]
-    #[test_case("double()", FunctionWithArgs::new(vec!["double".into()], Some(vec![])))]
+    #[test_case("double()", FunctionWithArgs::new(vec!["double".into()], Some(None)))]
     #[test_case("double", FunctionWithArgs::new(vec!["double".into()], None))]
     // IDENT ( attrs )? ( func_args )?
-    #[test_case("ident.qualified_()", FunctionWithArgs::new(vec!["ident".into(), "qualified_".into()], Some(vec![])))]
+    #[test_case("ident.qualified_()", FunctionWithArgs::new(vec!["ident".into(), "qualified_".into()], Some(None)))]
     #[test_case("qualif.ident", FunctionWithArgs::new(vec!["qualif".into(), "ident".into()], None))]
-    #[test_case("ident()", FunctionWithArgs::new(vec!["ident".into()], Some(vec![])))]
+    #[test_case("ident()", FunctionWithArgs::new(vec!["ident".into()], Some(None)))]
     #[test_case("ident", FunctionWithArgs::new(vec!["ident".into()], None))]
     // col_name_keyword ( attrs ( func_args )? )?
-    #[test_case("float.point()", FunctionWithArgs::new(vec!["float".into(), "point".into()], Some(vec![])))]
+    #[test_case("float.point()", FunctionWithArgs::new(vec!["float".into(), "point".into()], Some(None)))]
     #[test_case("float.boat", FunctionWithArgs::new(vec!["float".into(), "boat".into()], None))]
     #[test_case("float", FunctionWithArgs::new(vec!["float".into()], None))]
     fn test_function_with_argtypes(source: &str, expected: FunctionWithArgs) {
@@ -118,9 +112,12 @@ mod tests {
     }
 
     #[test_case("", None)]
-    #[test_case("()", Some(vec![]))]
-    #[test_case("(json, int)", Some(vec![FuncType::Type(TypeName::Json.into()).into(), FuncType::Type(TypeName::Int4.into()).into()]))]
-    fn test_func_args(source: &str, expected: Option<Vec<FunctionParameter>>) {
+    #[test_case("()", Some(None))]
+    #[test_case("(json, int)", Some(Some(vec![
+        FuncType::Type(TypeName::Json.into()).into(),
+        FuncType::Type(TypeName::Int4.into()).into()
+    ])))]
+    fn test_func_args(source: &str, expected: Option<Option<Vec<FunctionParameter>>>) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = func_args().parse(&mut stream);
         assert_eq!(Ok(expected), actual);

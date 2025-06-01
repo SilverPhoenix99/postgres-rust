@@ -122,7 +122,7 @@ mod tests {
             AlterObjectDependsTarget::Function(
                 FunctionWithArgs::new(
                     vec!["my_func".into()],
-                    Some(vec![])
+                    Some(None)
                 )
             ),
             "my_extension",
@@ -135,7 +135,7 @@ mod tests {
             AlterObjectDependsTarget::Procedure(
                 FunctionWithArgs::new(
                     vec!["my_func".into()],
-                    Some(vec![])
+                    Some(None)
                 )
             ),
             "my_extension",
