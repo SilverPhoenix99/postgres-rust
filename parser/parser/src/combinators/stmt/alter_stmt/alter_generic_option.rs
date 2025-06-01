@@ -9,7 +9,6 @@ pub(super) fn alter_generic_options() -> impl Combinator<Output = Vec<GenericOpt
     ))
 }
 
-/// Post-condition: Vec is **Not** empty
 fn alter_generic_option_list() -> impl Combinator<Output = Vec<GenericOptionKind>> {
 
     /*

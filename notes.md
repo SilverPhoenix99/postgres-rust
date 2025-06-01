@@ -1,5 +1,8 @@
 
 # Notes
+* Where a `Vec` can be empty, use `Option<Vec>`.
+  * A lot of productions return non-empty Vecs, so Option makes it clearer when Vecs can be empty.
+  * `Option<Vec>` has no overhead.
 * Don't implement these. They're just Rust's `String`/`Vec`:
   * `common/stringinfo.c` / `include/lib/stringinfo.h` 
   * `backend/utils/mb/stringinfo_mb.c` / `include/mb/stringinfo_mb.h`
@@ -20,9 +23,6 @@
   * `makeRangeVarFromQualifiedName`: qualified name == `( attrs ){1, 3}`
 
 # TO DO
-* Where a `Vec` can be empty, use `Option<Vec>`.
-  * A lot of productions return non-empty Vecs, so Option makes it clearer when Vecs can be empty.
-  * `Option<Vec>` has no overhead.
 * Change `ParserResult.result` to be `Vec<ParseResult<RawStmt>>`.
   * Introduce a fail fast (compile time) flag.
   * In debug mode: fail fast == false, and returns all errors until EOF.

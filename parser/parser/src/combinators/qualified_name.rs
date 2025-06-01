@@ -1,4 +1,3 @@
-/// Post-condition: Vec is **Not** empty
 pub(super) fn qualified_name_list() -> impl Combinator<Output = Vec<RelationName>> {
 
     /*

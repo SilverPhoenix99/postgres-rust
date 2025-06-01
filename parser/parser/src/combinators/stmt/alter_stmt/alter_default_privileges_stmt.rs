@@ -14,8 +14,6 @@ pub(super) fn alter_default_privileges_stmt() -> impl Combinator<Output = AlterD
     )
 }
 
-/// Post-condition: Vec is **Not** empty
-///
 /// Alias: `DefACLOptionList`
 fn def_acl_option_list() -> impl Combinator<Output = Vec<AclOption>> {
 

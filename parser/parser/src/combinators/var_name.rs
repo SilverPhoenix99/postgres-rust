@@ -1,4 +1,3 @@
-/// Post-condition: Vec is **Not** empty
 pub(super) fn var_name() -> impl Combinator<Output = QualifiedName> {
 
     /*

@@ -15,7 +15,6 @@ pub(super) fn privileges() -> impl Combinator<Output = AccessPrivilege> {
     )
 }
 
-/// Post-condition: Vec is **Not** empty
 pub(super) fn privilege_list() -> impl Combinator<Output = Vec<SpecificAccessPrivilege>> {
 
     /*

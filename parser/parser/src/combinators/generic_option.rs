@@ -1,6 +1,4 @@
 /// Alias: `generic_option_list`
-///
-/// Post-condition: Vec is **Not** empty
 pub(super) fn generic_options() -> impl Combinator<Output = Vec<GenericOption>> {
 
     many_sep(Comma, generic_option())

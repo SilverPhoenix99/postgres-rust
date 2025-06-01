@@ -1,4 +1,3 @@
-/// Post-condition: Vec is **Not** empty
 pub(super) fn attrs<F>(prefix: F) -> impl Combinator<Output = QualifiedName>
 where
     F: Combinator<Output = Str>

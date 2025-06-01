@@ -1,5 +1,3 @@
-/// Post-condition: Vec is **Not** empty
-///
 /// Alias: `transaction_mode_list_or_empty`
 pub(super) fn transaction_mode_list() -> impl Combinator<Output = Vec<TransactionMode>> {
 
