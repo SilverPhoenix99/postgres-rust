@@ -29,7 +29,7 @@ mod tests {
             parser = cast_expr(),
             expected = TypecastExpr::new(
                 ExprNode::IntegerConst(1),
-                Varchar { max_length: None }.into()
+                Varchar { max_length: None }
             )
         )
     }

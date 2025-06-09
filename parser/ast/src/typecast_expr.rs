@@ -5,8 +5,15 @@ pub struct TypecastExpr {
 }
 
 impl TypecastExpr {
-    pub fn new(arg: ExprNode, type_name: Type) -> Self {
-        Self { arg, type_name }
+    pub fn new<E, T>(arg: E, type_name: T) -> Self
+    where
+        E: Into<ExprNode>,
+        T: Into<Type>
+    {
+        Self {
+            arg: arg.into(),
+            type_name: type_name.into(),
+        }
     }
 
     pub fn arg(&self) -> &ExprNode {
