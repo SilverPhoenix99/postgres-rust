@@ -9,7 +9,7 @@ pub(super) fn opt_array_bounds() -> impl Combinator<Output = Option<Vec<Option<i
         Array
             .and_right(
                 between_brackets(i32_literal())
-                .optional()
+                    .optional()
             )
             .map(|dim| Some(vec![dim])),
         many(
