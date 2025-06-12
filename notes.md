@@ -4,7 +4,7 @@
   * A lot of productions return non-empty Vecs, so Option makes it clearer when Vecs can be empty.
   * `Option<Vec>` has no overhead.
 * Don't implement these. They're just Rust's `String`/`Vec`:
-  * `common/stringinfo.c` / `include/lib/stringinfo.h` 
+  * `common/stringinfo.c` / `include/lib/stringinfo.h`
   * `backend/utils/mb/stringinfo_mb.c` / `include/mb/stringinfo_mb.h`
 * Check layout of structs and enums with `#![feature(rustc_attrs)]` + `#[rustc_layout(debug)]`.
   * Ref: https://doc.rust-lang.org/beta/unstable-book/language-features/rustc-attrs.html
@@ -12,13 +12,14 @@
   * `check_func_name`: only allows `( '.' col_label )[1..]` == `( attrs )[1..]`
   * `check_indirection`: `*` is only allowed as the last item
   * `makeColumnRef`:
-    * `*` is only allowed as the last item
     * splits the name (`.`) from subscripts (`[]`)
+    * `*` is only allowed as the last item of the whole source list, if there are no indexes.
+    * `*` is allowed in any position after an index, and can show multiple times.
     * examples:
       * `x` -> `(["x"], [])`
       * `x.y` -> `(["x", "y"], [])`
-      * `x.y.*[0].foo.bar` -> `(["x", "y", All], [i(0), "foo", "bar"])`
-      * `x[0].*` -> `(["x"], [i(0), All])`
+      * `x.y.*` -> `(["x", "y", All], [])`
+      * `x.y[0].*.foo.bar.*` -> `(["x", "y"], [i(0), All, "foo", "bar", All])`
       * `*[foo]` -> `([All], [i("foo")])`
   * `makeRangeVarFromQualifiedName`: qualified name == `( attrs ){1, 3}`
 
