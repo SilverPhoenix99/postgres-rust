@@ -1,7 +1,9 @@
-pub type LexerError = LocatedError<LexerErrorKind>;
+pub type LocatedError = crate::LocatedError<Error>;
+pub type Result<T> = core::result::Result<T, Error>;
+pub type LocatedResult<T> = core::result::Result<T, LocatedError>;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
-pub enum LexerErrorKind {
+pub enum Error {
 
     #[error("Unexpected character {0:?}", *(.unknown))]
     UnexpectedChar { unknown: char },
@@ -52,7 +54,7 @@ pub enum LexerErrorKind {
     UnsafeUnicodeString,
 }
 
-impl Error for LexerErrorKind {
+impl crate::Error for Error {
 
     #[inline(always)]
     fn sql_state(&self) -> SqlState {
@@ -72,9 +74,7 @@ impl Error for LexerErrorKind {
     }
 }
 
-use crate::Error;
-use crate::LexerErrorKind::UnsafeUnicodeString;
-use crate::LocatedError;
+use self::Error::UnsafeUnicodeString;
 use crate::SqlState;
 use crate::SqlState::SyntaxError;
 use pg_basics::NumberRadix;

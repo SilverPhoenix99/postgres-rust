@@ -1,7 +1,10 @@
+pub mod lexer {
+    pub use crate::error::lexer::*;
+}
+
 mod error;
 mod extended_string;
 mod has_location;
-mod lexer;
 mod log_level;
 mod parser;
 mod pg_error;
@@ -13,7 +16,6 @@ pub use self::{
     error::{Error, LocatedError},
     extended_string::{ExtendedStringError, ExtendedStringWarning},
     has_location::HasLocation,
-    lexer::{LexerError, LexerErrorKind},
     log_level::LogLevel,
     parser::{NameList, ParserError, ParserErrorKind, ParserWarningKind},
     pg_error::{syntax, PgError, PgErrorKind},

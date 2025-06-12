@@ -16,18 +16,18 @@ pub use self::{
     },
 };
 
-pub(crate) type LexerResult = Result<Located<RawTokenKind>, LexerError>;
-type LexResult<T = RawTokenKind> = Result<T, LexerErrorKind>;
+pub(crate) type LocatedResult = lexer::LocatedResult<Located<RawTokenKind>>;
+type Result<T = RawTokenKind> = lexer::Result<T>;
 
 #[derive(Debug)]
 pub struct Lexer<'src> {
     standard_conforming_strings: bool,
     buffer: CharBuffer<'src>,
-    peeked: Option<Option<LexerResult>>,
+    peeked: Option<Option<LocatedResult>>,
 }
 
 impl Iterator for Lexer<'_> {
-    type Item = LexerResult;
+    type Item = LocatedResult;
 
     /// The token is always a full match,
     /// never a substring that's more interesting than the whole match.
@@ -67,7 +67,7 @@ impl<'src> Lexer<'src> {
         self.buffer.current_location()
     }
 
-    pub fn peek(&mut self) -> Option<LexerResult> {
+    pub fn peek(&mut self) -> Option<LocatedResult> {
 
         if let Some(result) = self.peeked.as_ref() {
             return result.clone()
@@ -78,7 +78,7 @@ impl<'src> Lexer<'src> {
         result
     }
 
-    fn advance(&mut self) -> Option<LexerResult> {
+    fn advance(&mut self) -> Option<LocatedResult> {
 
         let concatenable_whitespace = match self.skip_trivia() {
             Ok(concatenable_whitespace) => concatenable_whitespace,
@@ -98,13 +98,13 @@ impl<'src> Lexer<'src> {
         match token {
             Ok(kind) => Some(Ok((kind, location))),
             Err(err_code) => {
-                let report = LexerError::new(err_code, location);
+                let report = LocatedError::new(err_code, location);
                 Some(Err(report))
             }
         }
     }
 
-    fn lex_token(&mut self, concatenable_string: bool) -> LexResult {
+    fn lex_token(&mut self, concatenable_string: bool) -> Result {
         match self.buffer.consume_one().expect("eof should have already been filtered out") {
             '(' => Ok(Operator(OpenParenthesis)),
             ')' => Ok(Operator(CloseParenthesis)),
@@ -172,7 +172,7 @@ impl<'src> Lexer<'src> {
                 // https://github.com/postgres/postgres/blob/1d80d6b50e6401828fc445151375f9bde3f99ac6/src/backend/parser/scan.l#L539
 
                 if let Some('\'') = self.buffer.peek() {
-                    return Ok(Keyword(Nchar))
+                    return Ok(Kw(Nchar))
                 }
                 self.lex_identifier()
             }
@@ -219,7 +219,7 @@ impl<'src> Lexer<'src> {
     }
 
     #[inline] // Only called from a single place
-    fn lex_operator(&mut self) -> LexResult {
+    fn lex_operator(&mut self) -> Result {
         self.buffer.push_back(); // so it's easier to consume
 
         // All trivia have already been consumed, so it never starts as a comment ("/*" or "--").
@@ -293,7 +293,7 @@ impl<'src> Lexer<'src> {
     }
 
     #[inline] // Only called from a single place
-    fn lex_param(&mut self) -> LexResult {
+    fn lex_param(&mut self) -> Result {
         // $ has already been consumed, so no need to worry about it here
 
         let start_index = self.buffer.current_index();
@@ -331,7 +331,7 @@ impl<'src> Lexer<'src> {
     }
 
     #[inline] // Only called from a single place
-    fn lex_dec_float(&mut self) -> LexResult {
+    fn lex_dec_float(&mut self) -> Result {
 
         // \. {dec_digits} {dec_real}
 
@@ -343,7 +343,7 @@ impl<'src> Lexer<'src> {
         Ok(NumberLiteral(Decimal))
     }
 
-    fn lex_dec_integer(&mut self) -> LexResult {
+    fn lex_dec_integer(&mut self) -> Result {
 
         //   {dec_digits} (?= \.\. <dot_dot>)
         // | {dec_digits} (\. {dec_digits}?)? R
@@ -368,7 +368,7 @@ impl<'src> Lexer<'src> {
         Ok(NumberLiteral(Decimal))
     }
 
-    fn lex_dec_real(&mut self) -> LexResult<()> {
+    fn lex_dec_real(&mut self) -> Result<()> {
 
         // Returns:
         //   Ok(true)  - When the pattern matched successfully after '[Ee]'.
@@ -427,21 +427,21 @@ impl<'src> Lexer<'src> {
     }
 
     #[inline(always)]
-    fn lex_hex_integer(&mut self) -> LexResult {
+    fn lex_hex_integer(&mut self) -> Result {
         self.lex_prefixed_int(is_hex_digit, Hexadecimal)
     }
 
     #[inline(always)]
-    fn lex_oct_integer(&mut self) -> LexResult {
+    fn lex_oct_integer(&mut self) -> Result {
         self.lex_prefixed_int(is_oct_digit, Octal)
     }
 
     #[inline(always)]
-    fn lex_bin_integer(&mut self) -> LexResult {
+    fn lex_bin_integer(&mut self) -> Result {
         self.lex_prefixed_int(is_bin_digit, NumberRadix::Binary)
     }
 
-    fn lex_prefixed_int(&mut self, is_digit: impl Fn(char) -> bool, radix: NumberRadix) -> LexResult {
+    fn lex_prefixed_int(&mut self, is_digit: impl Fn(char) -> bool, radix: NumberRadix) -> Result {
 
         self.buffer.consume_one(); // ignore [xXoObB]
 
@@ -469,7 +469,7 @@ impl<'src> Lexer<'src> {
     }
 
     #[inline] // Only called from a single place
-    fn lex_bit_string(&mut self, kind: BitStringKind) -> LexResult {
+    fn lex_bit_string(&mut self, kind: BitStringKind) -> Result {
 
         // No content validation to simplify the lexer.
 
@@ -490,7 +490,7 @@ impl<'src> Lexer<'src> {
         }
     }
 
-    fn lex_quote_ident(&mut self, ident_kind: IdentifierKind) -> LexResult {
+    fn lex_quote_ident(&mut self, ident_kind: IdentifierKind) -> Result {
 
         let start_index = self.buffer.current_index();
 
@@ -518,7 +518,7 @@ impl<'src> Lexer<'src> {
         }
     }
 
-    fn lex_quote_string(&mut self, kind: StringKind) -> LexResult {
+    fn lex_quote_string(&mut self, kind: StringKind) -> Result {
 
         loop {
             let Some(c) = self.buffer.consume_one() else {
@@ -538,7 +538,7 @@ impl<'src> Lexer<'src> {
         }
     }
 
-    fn lex_extended_string(&mut self, concatenable: bool) -> LexResult {
+    fn lex_extended_string(&mut self, concatenable: bool) -> Result {
 
         // To keep the lexer simple, parsing escapes will be done at a later point.
         // This way the lexer doesn't need to work with Strings,
@@ -565,7 +565,7 @@ impl<'src> Lexer<'src> {
     }
 
     #[inline]
-    fn lex_identifier(&mut self) -> LexResult {
+    fn lex_identifier(&mut self) -> Result {
 
         // To prevent re-consuming it, {ident_start} was already consumed.
         let start_index = self.buffer.current_index() - 1;
@@ -575,13 +575,13 @@ impl<'src> Lexer<'src> {
         let ident = self.buffer.slice(start_index);
 
         if let Some(kw) = Keyword::find(ident) {
-            return Ok(Keyword(kw))
+            return Ok(Kw(kw))
         }
 
         Ok(Identifier(IdentifierKind::Basic))
     }
 
-    fn lex_dollar_string(&mut self) -> LexResult {
+    fn lex_dollar_string(&mut self) -> Result {
 
         // The delimiter always contains '$' as the last char,
         // even if the delimiter is empty (i.e., '$$'),
@@ -634,7 +634,7 @@ impl<'src> Lexer<'src> {
     }
 
     #[inline] // Only called from a single place
-    fn skip_trivia(&mut self) -> Result<bool, LexerError> {
+    fn skip_trivia(&mut self) -> lexer::LocatedResult<bool> {
 
         // Postgres:
         //   Returns Ok(true) if the whitespace contains \n and no block comments.
@@ -693,7 +693,7 @@ impl<'src> Lexer<'src> {
         true
     }
 
-    fn skip_block_comment(&mut self) -> Result<bool, LexerError> {
+    fn skip_block_comment(&mut self) -> lexer::LocatedResult<bool> {
 
         let start_index = self.buffer.current_index();
 
@@ -713,7 +713,7 @@ impl<'src> Lexer<'src> {
 
             if self.buffer.eof() {
                 let loc = self.buffer.location_starting_at(start_index);
-                let report = LexerError::new(UnterminatedBlockComment, loc);
+                let report = LocatedError::new(UnterminatedBlockComment, loc);
                 return Err(report)
             }
 
@@ -929,7 +929,7 @@ mod tests {
         assert_tok(StringLiteral(StringKind::Basic { concatenable: false }), 0..2, 1, 1, lex.next());
         assert_tok(StringLiteral(StringKind::Basic { concatenable: true }), 3..17, 2, 1, lex.next());
         assert_tok(StringLiteral(StringKind::Basic { concatenable: false }), 18..23, 2, 16, lex.next());
-        assert_tok(Keyword(Nchar), 24..25, 3, 1, lex.next());
+        assert_tok(Kw(Nchar), 24..25, 3, 1, lex.next());
         assert_tok(StringLiteral(StringKind::Basic { concatenable: false }), 25..35, 3, 2, lex.next());
         assert_eq!(None, lex.next());
     }
@@ -945,7 +945,7 @@ mod tests {
 
         assert_tok(StringLiteral(Extended { concatenable: false }), 0..12, 1, 1, lex.next());
         assert_tok(StringLiteral(Extended { concatenable: false }), 13..26, 2, 1, lex.next());
-        assert_tok(Keyword(Nchar), 27..28, 3, 1, lex.next());
+        assert_tok(Kw(Nchar), 27..28, 3, 1, lex.next());
         assert_tok(StringLiteral(Extended { concatenable: false }), 28..38, 3, 2, lex.next());
         assert_eq!(None, lex.next());
     }
@@ -1033,7 +1033,7 @@ mod tests {
         range: Range<u32>,
         line: u32,
         col: u32,
-        actual: Option<LexerResult>
+        actual: Option<LocatedResult>
     ) {
         let expected_loc = Location::new(range, line, col);
         let expected = (expected_kind, expected_loc);
@@ -1046,38 +1046,76 @@ mod tests {
     }
 
     fn assert_err(
-        expected_err: LexerErrorKind,
+        expected_err: lexer::Error,
         range: Range<u32>,
         line: u32,
         col: u32,
-        actual: Option<LexerResult>
+        actual: Option<LocatedResult>
     ) {
         let expected_loc = Location::new(range, line, col);
 
         assert_matches!(actual, Some(Err(err)) if err.source() == &expected_err && expected_loc.eq(err.location()));
     }
 
-    fn assert_kw(expected: Keyword, actual: Option<LexerResult>) {
+    fn assert_kw(expected: Keyword, actual: Option<LocatedResult>) {
 
         let (actual, _) = actual
             .expect("should have been Some(Ok(_))")
             .expect("should have been Ok((Keyword(_), _))");
 
-        assert_matches!(actual, Keyword(kw) if expected == kw)
+        assert_matches!(actual, Kw(kw) if expected == kw)
     }
 }
 
-use self::{
-    token_kind::{
-        BitStringKind::*,
-        IdentifierKind::*,
-        OperatorKind::*,
-        RawTokenKind::*,
-        StringKind::*,
-    },
-    Keyword::Nchar,
-};
-use pg_basics::ascii::*;
+use self::Keyword::Nchar;
+use crate::BitStringKind::Binary;
+use crate::BitStringKind::Hex;
+use crate::IdentifierKind::Quoted;
+use crate::OperatorKind::Circumflex;
+use crate::OperatorKind::CloseBracket;
+use crate::OperatorKind::CloseParenthesis;
+use crate::OperatorKind::Colon;
+use crate::OperatorKind::ColonEquals;
+use crate::OperatorKind::Comma;
+use crate::OperatorKind::Div;
+use crate::OperatorKind::Dot;
+use crate::OperatorKind::DotDot;
+use crate::OperatorKind::Equals;
+use crate::OperatorKind::EqualsGreater;
+use crate::OperatorKind::Greater;
+use crate::OperatorKind::GreaterEquals;
+use crate::OperatorKind::Less;
+use crate::OperatorKind::LessEquals;
+use crate::OperatorKind::Minus;
+use crate::OperatorKind::Mul;
+use crate::OperatorKind::NotEquals;
+use crate::OperatorKind::OpenBracket;
+use crate::OperatorKind::OpenParenthesis;
+use crate::OperatorKind::Percent;
+use crate::OperatorKind::Plus;
+use crate::OperatorKind::Semicolon;
+use crate::OperatorKind::Typecast;
+use crate::RawTokenKind::BitStringLiteral;
+use crate::RawTokenKind::Identifier;
+use crate::RawTokenKind::Keyword as Kw;
+use crate::RawTokenKind::NumberLiteral;
+use crate::RawTokenKind::Operator;
+use crate::RawTokenKind::Param;
+use crate::RawTokenKind::StringLiteral;
+use crate::RawTokenKind::UserDefinedOperator;
+use crate::StringKind::Dollar;
+use crate::StringKind::Extended;
+use pg_basics::ascii::is_bin_digit;
+use pg_basics::ascii::is_decimal_digit;
+use pg_basics::ascii::is_dollar_quote_cont;
+use pg_basics::ascii::is_hex_digit;
+use pg_basics::ascii::is_ident_cont;
+use pg_basics::ascii::is_ident_start;
+use pg_basics::ascii::is_new_line;
+use pg_basics::ascii::is_oct_digit;
+use pg_basics::ascii::is_op;
+use pg_basics::ascii::is_pg_op;
+use pg_basics::ascii::is_whitespace;
 use pg_basics::CharBuffer;
 use pg_basics::Located;
 use pg_basics::Location;
@@ -1086,7 +1124,20 @@ use pg_basics::NumberRadix::Decimal;
 use pg_basics::NumberRadix::Hexadecimal;
 use pg_basics::NumberRadix::Octal;
 use pg_basics::NAMEDATALEN;
-use pg_elog::LexerError;
-use pg_elog::LexerErrorKind;
-use pg_elog::LexerErrorKind::*;
+use pg_elog::lexer;
+use pg_elog::lexer::Error::EmptyDelimitedIdentifier;
+use pg_elog::lexer::Error::InvalidInteger;
+use pg_elog::lexer::Error::OperatorTooLong;
+use pg_elog::lexer::Error::ParameterNumberTooLarge;
+use pg_elog::lexer::Error::TrailingJunkAfterNumericLiteral;
+use pg_elog::lexer::Error::TrailingJunkAfterParameter;
+use pg_elog::lexer::Error::UnexpectedChar;
+use pg_elog::lexer::Error::UnsafeUnicodeString;
+use pg_elog::lexer::Error::UnterminatedBitString;
+use pg_elog::lexer::Error::UnterminatedBlockComment;
+use pg_elog::lexer::Error::UnterminatedDollarQuotedString;
+use pg_elog::lexer::Error::UnterminatedHexString;
+use pg_elog::lexer::Error::UnterminatedQuotedIdentifier;
+use pg_elog::lexer::Error::UnterminatedQuotedString;
+use pg_elog::lexer::LocatedError;
 use std::iter::FusedIterator;

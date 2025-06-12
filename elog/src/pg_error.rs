@@ -10,7 +10,7 @@ where
 
 #[derive(Debug, Clone, Eq, PartialEq, thiserror::Error)]
 pub enum PgErrorKind {
-    #[error("{0}")] Lexer(#[from] LexerErrorKind),
+    #[error("{0}")] Lexer(#[from] lexer::Error),
     #[error("{0}")] Parser(#[from] ParserErrorKind),
     #[error("{0}")] ExtendedString(#[from] ExtendedStringError),
     #[error("{0}")] UnicodeString(#[from] UnicodeStringError),
@@ -59,8 +59,8 @@ impl Error for PgErrorKind {
     }
 }
 
-impl From<LexerError> for PgError {
-    fn from(value: LexerError) -> Self {
+impl From<lexer::LocatedError> for PgError {
+    fn from(value: lexer::LocatedError) -> Self {
         let (source, location) = value.into();
         let source = PgErrorKind::Lexer(source);
         Self::new(source, location)
@@ -75,10 +75,9 @@ impl From<ParserError> for PgError {
     }
 }
 
+use crate::lexer;
 use crate::Error;
 use crate::ExtendedStringError;
-use crate::LexerError;
-use crate::LexerErrorKind;
 use crate::LocatedError;
 use crate::ParserError;
 use crate::ParserErrorKind;
