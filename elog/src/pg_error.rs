@@ -12,7 +12,7 @@ where
 pub enum PgErrorKind {
     #[error("{0}")] Lexer(#[from] lexer::Error),
     #[error("{0}")] Parser(#[from] ParserErrorKind),
-    #[error("{0}")] ExtendedString(#[from] ExtendedStringError),
+    #[error("{0}")] ExtendedString(#[from] extended_string::Error),
     #[error("{0}")] UnicodeString(#[from] UnicodeStringError),
     #[error("{0}")] RoleSpecError(#[from] role_spec::Error),
 }
@@ -75,10 +75,10 @@ impl From<ParserError> for PgError {
     }
 }
 
+use crate::extended_string;
 use crate::lexer;
 use crate::role_spec;
 use crate::Error;
-use crate::ExtendedStringError;
 use crate::LocatedError;
 use crate::ParserError;
 use crate::ParserErrorKind;

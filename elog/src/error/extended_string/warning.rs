@@ -1,5 +1,5 @@
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
-pub enum ExtendedStringWarning {
+pub enum Warning {
 
     #[error("nonstandard use of escape in a string literal")]
     NonstandardEscape,
@@ -11,7 +11,7 @@ pub enum ExtendedStringWarning {
     NonstandardBackslashEscape,
 }
 
-impl Error for ExtendedStringWarning {
+impl Error for Warning {
 
     fn sql_state(&self) -> SqlState {
         SqlState::NonstandardUseOfEscapeCharacter

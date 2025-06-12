@@ -4,8 +4,8 @@ pub(in crate::stream) struct ExtendedStringDecoder<'src> {
 }
 
 pub(in crate::stream) struct ExtendedStringResult {
-    pub result: Result<Box<str>, ExtendedStringError>,
-    pub warning: Option<ExtendedStringWarning>,
+    pub result: Result,
+    pub warning: Option<Warning>,
 }
 
 impl<'src> ExtendedStringDecoder<'src> {
@@ -32,7 +32,7 @@ impl<'src> ExtendedStringDecoder<'src> {
         // UNICODE: [\\]U[0-9A-Fa-f]{8} => consume_unicode_char(8) (Ok(None) is an error here)
 
         let mut out = Vec::<u8>::with_capacity(self.input.source().len());
-        let mut warning: Option<ExtendedStringWarning> = None;
+        let mut warning: Option<Warning> = None;
 
         while let Some(c) = self.input.consume_one() {
 
@@ -145,7 +145,7 @@ impl<'src> ExtendedStringDecoder<'src> {
         ExtendedStringResult { result, warning }
     }
 
-    fn consume_unicode(&mut self, unicode_len: u32) -> Result<char, ExtendedStringError> {
+    fn consume_unicode(&mut self, unicode_len: u32) -> Result<char> {
 
         let start_index = self.input.current_index() - 2; // include `\u`
 
@@ -227,7 +227,13 @@ use pg_basics::UnicodeChar::SurrogateFirst;
 use pg_basics::UnicodeChar::SurrogateSecond;
 use pg_basics::UnicodeCharError;
 use pg_basics::UnicodeCharError::LenTooShort;
-use pg_elog::ExtendedStringError;
-use pg_elog::ExtendedStringError::*;
-use pg_elog::ExtendedStringWarning;
-use pg_elog::ExtendedStringWarning::*;
+use pg_elog::extended_string::Error::InvalidUnicodeEscape;
+use pg_elog::extended_string::Error::InvalidUnicodeSurrogatePair;
+use pg_elog::extended_string::Error::InvalidUnicodeValue;
+use pg_elog::extended_string::Error::NonstandardUseOfBackslashQuote;
+use pg_elog::extended_string::Error::Utf8;
+use pg_elog::extended_string::Result;
+use pg_elog::extended_string::Warning;
+use pg_elog::extended_string::Warning::NonstandardBackslashEscape;
+use pg_elog::extended_string::Warning::NonstandardEscape;
+use pg_elog::extended_string::Warning::NonstandardQuoteEscape;

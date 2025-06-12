@@ -1,9 +1,7 @@
+pub(super) mod extended_string;
 pub(super) mod lexer;
+pub(super) mod located_error;
 pub(super) mod role_spec;
-
-mod located_error;
-
-pub use located_error::LocatedError;
 
 pub trait Error: core::error::Error {
 
