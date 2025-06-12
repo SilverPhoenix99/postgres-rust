@@ -1,4 +1,4 @@
-pub type PgError = LocatedErrorReport<PgErrorKind>;
+pub type PgError = LocatedError<PgErrorKind>;
 
 #[inline]
 pub fn syntax<T>(location: Location) -> T
@@ -17,7 +17,7 @@ pub enum PgErrorKind {
     #[error("{0}")] RoleSpecError(#[from] RoleSpecErrorKind),
 }
 
-impl ErrorReport for PgErrorKind {
+impl Error for PgErrorKind {
     fn sql_state(&self) -> SqlState {
         match self {
             Self::Lexer(err) => err.sql_state(),
@@ -75,11 +75,11 @@ impl From<ParserError> for PgError {
     }
 }
 
-use crate::ErrorReport;
+use crate::Error;
 use crate::ExtendedStringError;
 use crate::LexerError;
 use crate::LexerErrorKind;
-use crate::LocatedErrorReport;
+use crate::LocatedError;
 use crate::ParserError;
 use crate::ParserErrorKind;
 use crate::ParserErrorKind::Syntax;

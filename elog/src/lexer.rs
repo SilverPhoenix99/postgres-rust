@@ -1,4 +1,4 @@
-pub type LexerError = LocatedErrorReport<LexerErrorKind>;
+pub type LexerError = LocatedError<LexerErrorKind>;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
 pub enum LexerErrorKind {
@@ -52,7 +52,7 @@ pub enum LexerErrorKind {
     UnsafeUnicodeString,
 }
 
-impl ErrorReport for LexerErrorKind {
+impl Error for LexerErrorKind {
 
     #[inline(always)]
     fn sql_state(&self) -> SqlState {
@@ -72,9 +72,9 @@ impl ErrorReport for LexerErrorKind {
     }
 }
 
-use crate::ErrorReport;
+use crate::Error;
 use crate::LexerErrorKind::UnsafeUnicodeString;
-use crate::LocatedErrorReport;
+use crate::LocatedError;
 use crate::SqlState;
 use crate::SqlState::SyntaxError;
 use pg_basics::NumberRadix;

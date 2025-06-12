@@ -11,7 +11,7 @@ pub enum ExtendedStringWarning {
     NonstandardBackslashEscape,
 }
 
-impl ErrorReport for ExtendedStringWarning {
+impl Error for ExtendedStringWarning {
 
     fn sql_state(&self) -> SqlState {
         SqlState::NonstandardUseOfEscapeCharacter
@@ -31,5 +31,5 @@ impl ErrorReport for ExtendedStringWarning {
 }
 
 use crate::sql_state::SqlState;
-use crate::ErrorReport;
+use crate::Error;
 use pg_basics::Str;

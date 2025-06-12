@@ -1,15 +1,15 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct LocatedErrorReport<T>
+pub struct LocatedError<T>
 where
-    T: ErrorReport
+    T: Error
 {
     source: T,
     location: Location,
 }
 
-impl<T> LocatedErrorReport<T>
+impl<T> LocatedError<T>
 where
-    T: ErrorReport
+    T: Error
 {
     pub fn new<S: Into<T>>(source: S, location: Location) -> Self {
         Self {
@@ -23,18 +23,18 @@ where
     }
 }
 
-impl<T> Error for LocatedErrorReport<T>
+impl<T> core::error::Error for LocatedError<T>
 where
-    T: ErrorReport + 'static
+    T: Error + 'static
 {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
+    fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         Some(&self.source)
     }
 }
 
-impl<T> Display for LocatedErrorReport<T>
+impl<T> Display for LocatedError<T>
 where
-    T: ErrorReport
+    T: Error
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 
@@ -47,18 +47,18 @@ where
     }
 }
 
-impl<T> HasLocation for LocatedErrorReport<T>
+impl<T> HasLocation for LocatedError<T>
 where
-    T: ErrorReport
+    T: Error
 {
     fn location(&self) -> &Location {
         &self.location
     }
 }
 
-impl<T> ErrorReport for LocatedErrorReport<T>
+impl<T> Error for LocatedError<T>
 where
-    T: ErrorReport + 'static
+    T: Error + 'static
 {
     #[inline(always)]
     fn sql_state(&self) -> SqlState {
@@ -81,20 +81,20 @@ where
     }
 }
 
-impl<T> From<LocatedErrorReport<T>> for Located<T>
+impl<T> From<LocatedError<T>> for Located<T>
 where
-    T: ErrorReport
+    T: Error
 {
-    fn from(value: LocatedErrorReport<T>) -> Self {
+    fn from(value: LocatedError<T>) -> Self {
         (value.source, value.location)
     }
 }
 
 use crate::sql_state::SqlState;
-use crate::ErrorReport;
+use crate::Error;
 use crate::HasLocation;
+use pg_basics::Located;
+use pg_basics::Location;
 use pg_basics::Str;
-use pg_basics::{Located, Location};
-use std::error::Error;
 use std::fmt::Display;
 use std::fmt::Formatter;
