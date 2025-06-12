@@ -37,7 +37,7 @@ impl TryFrom<u32> for SqlState {
             return Err(UnknownSqlState)
         }
 
-        // SAFETY: value is in MAP => known SQL States
+        // SAFETY: value is in MAP => known SQL State
         let code = unsafe { mem::transmute::<u32, SqlState>(value) };
         Ok(code)
     }

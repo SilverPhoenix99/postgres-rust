@@ -14,7 +14,7 @@ pub enum PgErrorKind {
     #[error("{0}")] Parser(#[from] ParserErrorKind),
     #[error("{0}")] ExtendedString(#[from] ExtendedStringError),
     #[error("{0}")] UnicodeString(#[from] UnicodeStringError),
-    #[error("{0}")] RoleSpecError(#[from] RoleSpecErrorKind),
+    #[error("{0}")] RoleSpecError(#[from] role_spec::Error),
 }
 
 impl Error for PgErrorKind {
@@ -76,13 +76,13 @@ impl From<ParserError> for PgError {
 }
 
 use crate::lexer;
+use crate::role_spec;
 use crate::Error;
 use crate::ExtendedStringError;
 use crate::LocatedError;
 use crate::ParserError;
 use crate::ParserErrorKind;
 use crate::ParserErrorKind::Syntax;
-use crate::RoleSpecErrorKind;
 use crate::SqlState;
 use crate::UnicodeStringError;
 use pg_basics::Location;
