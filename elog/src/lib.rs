@@ -11,13 +11,16 @@ pub mod role_spec {
     pub use crate::error::role_spec::*;
 }
 
+pub mod unicode_string {
+    pub use crate::error::unicode_string::*;
+}
+
 mod error;
 mod has_location;
 mod log_level;
 mod parser;
 mod pg_error;
 mod sql_state;
-mod unicode_string_error;
 
 pub use self::{
     error::located_error::LocatedError,
@@ -27,5 +30,4 @@ pub use self::{
     parser::{NameList, ParserError, ParserErrorKind, ParserWarningKind},
     pg_error::{syntax, PgError, PgErrorKind},
     sql_state::{SqlState, SqlStateCategory, UnknownSqlState},
-    unicode_string_error::UnicodeStringError,
 };

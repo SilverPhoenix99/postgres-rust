@@ -1,5 +1,7 @@
+pub type Result<T = Box<str>> = core::result::Result<T, Error>;
+
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
-pub enum UnicodeStringError {
+pub enum Error {
 
     /// When the result of parsing the `\XXXX`|`\+XXXXXX` escape gives back invalid UTF-16/UTF-32.
     #[error("invalid Unicode escape value")]
@@ -14,7 +16,7 @@ pub enum UnicodeStringError {
     InvalidUnicodeEscape(u32),
 }
 
-impl Error for UnicodeStringError {
+impl crate::Error for Error {
 
     fn sql_state(&self) -> SqlState {
         SyntaxError
@@ -22,7 +24,7 @@ impl Error for UnicodeStringError {
     
     fn hint(&self) -> Option<Str> {
         match self {
-            InvalidUnicodeEscape(_) => Some(r"Unicode escapes must be \XXXX or \+XXXXXX.".into()),
+            Self::InvalidUnicodeEscape(_) => Some(r"Unicode escapes must be \XXXX or \+XXXXXX.".into()),
             _ => None,
         }
     }
@@ -30,6 +32,4 @@ impl Error for UnicodeStringError {
 
 use crate::sql_state::SqlState;
 use crate::sql_state::SqlState::SyntaxError;
-use crate::Error;
 use pg_basics::Str;
-use UnicodeStringError::*;
