@@ -4211,8 +4211,10 @@ a_expr_1 :
   | NOT_LA BETWEEN opt_asymmetric b_expr AND a_expr
   | BETWEEN SYMMETRIC b_expr AND a_expr
   | NOT_LA BETWEEN SYMMETRIC b_expr AND a_expr
-  | IN_P in_expr
-  | NOT_LA IN_P in_expr
+  | IN_P select_with_parens
+  | IN_P '(' expr_list ')'
+  | NOT_LA IN_P select_with_parens
+  | NOT_LA IN_P '(' expr_list ')'
   | subquery_Op sub_type select_with_parens
   | subquery_Op sub_type '(' a_expr ')'
   | IS DOCUMENT_P
@@ -4679,11 +4681,6 @@ trim_list :
     a_expr FROM expr_list
   | FROM expr_list
   | expr_list
-;
-
-in_expr :
-    select_with_parens
-  | '(' expr_list ')'
 ;
 
 case_expr :
