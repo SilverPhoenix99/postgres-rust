@@ -6,6 +6,6 @@ pub use self::{
     warning::ParserWarningKind,
 };
 
-pub type ParserError = LocatedErrorReport<ParserErrorKind>;
+pub type ParserError = LocatedError<ParserErrorKind>;
 
-use crate::LocatedErrorReport;
+use crate::LocatedError;

@@ -1,4 +1,4 @@
-pub type RoleSpecError = LocatedErrorReport<RoleSpecErrorKind>;
+pub type RoleSpecError = LocatedError<RoleSpecErrorKind>;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
 pub enum RoleSpecErrorKind {
@@ -11,7 +11,7 @@ pub enum RoleSpecErrorKind {
     ForbiddenRoleSpec(&'static str),
 }
 
-impl ErrorReport for RoleSpecErrorKind {
+impl Error for RoleSpecErrorKind {
 
     fn sql_state(&self) -> SqlState {
         ReservedName
@@ -20,5 +20,5 @@ impl ErrorReport for RoleSpecErrorKind {
 
 use crate::sql_state::SqlState;
 use crate::sql_state::SqlState::ReservedName;
-use crate::ErrorReport;
-use crate::LocatedErrorReport;
+use crate::Error;
+use crate::LocatedError;

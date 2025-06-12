@@ -7,7 +7,7 @@ pub enum ParserWarningKind {
     ExtendedStringWarning(#[from] ExtendedStringWarning)
 }
 
-impl ErrorReport for ParserWarningKind {
+impl Error for ParserWarningKind {
 
     fn sql_state(&self) -> SqlState {
         match self {
@@ -26,5 +26,5 @@ impl ErrorReport for ParserWarningKind {
 
 use crate::extended_string::ExtendedStringWarning;
 use crate::sql_state::SqlState;
-use crate::ErrorReport;
+use crate::Error;
 use pg_basics::Str;

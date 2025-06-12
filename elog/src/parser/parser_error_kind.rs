@@ -86,7 +86,7 @@ impl Display for NameList {
     }
 }
 
-impl ErrorReport for ParserErrorKind {
+impl Error for ParserErrorKind {
 
     fn sql_state(&self) -> SqlState {
         match self {
@@ -140,7 +140,7 @@ use crate::sql_state::SqlState::FeatureNotSupported;
 use crate::sql_state::SqlState::InvalidParameterValue;
 use crate::sql_state::SqlState::SyntaxError;
 use crate::sql_state::SqlState::WindowingError;
-use crate::ErrorReport;
+use crate::Error;
 use crate::ParserError;
 use pg_basics::Location;
 use pg_basics::QualifiedName;

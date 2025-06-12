@@ -1,4 +1,8 @@
-pub trait ErrorReport: Error {
+mod located_error;
+
+pub use located_error::LocatedError;
+
+pub trait Error: core::error::Error {
 
     fn sql_state(&self) -> SqlState;
 
@@ -18,6 +22,5 @@ pub trait ErrorReport: Error {
     }
 }
 
-use crate::sql_state::SqlState;
+use crate::SqlState;
 use pg_basics::Str;
-use std::error::Error;

@@ -24,7 +24,7 @@ pub enum ExtendedStringError {
     InvalidUnicodeEscape(u32),
 }
 
-impl ErrorReport for ExtendedStringError {
+impl Error for ExtendedStringError {
 
     fn sql_state(&self) -> SqlState {
         match self {
@@ -52,7 +52,7 @@ use crate::sql_state::SqlState::CharacterNotInRepertoire;
 use crate::sql_state::SqlState::InvalidEscapeSequence;
 use crate::sql_state::SqlState::NonstandardUseOfEscapeCharacter;
 use crate::sql_state::SqlState::SyntaxError;
-use crate::ErrorReport;
+use crate::Error;
 use pg_basics::Str;
 use std::str::Utf8Error;
 use ExtendedStringError::*;
