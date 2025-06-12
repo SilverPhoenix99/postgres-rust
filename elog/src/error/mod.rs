@@ -1,3 +1,5 @@
+pub(super) mod lexer;
+
 mod located_error;
 
 pub use located_error::LocatedError;

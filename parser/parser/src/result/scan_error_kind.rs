@@ -10,8 +10,8 @@ pub(crate) enum ScanErrorKind {
 
 impl_from!(PgError for ScanErrorKind::ScanErr);
 
-impl From<LexerError> for ScanErrorKind {
-    fn from(value: LexerError) -> Self {
+impl From<lexer::LocatedError> for ScanErrorKind {
+    fn from(value: lexer::LocatedError) -> Self {
         ScanErr(value.into())
     }
 }
@@ -36,6 +36,6 @@ use crate::result::EofErrorKind;
 use crate::result::ScanErrorKind::ScanErr;
 use pg_basics::impl_from;
 use pg_basics::Location;
-use pg_elog::LexerError;
+use pg_elog::lexer;
 use pg_elog::ParserError;
 use pg_elog::PgError;
