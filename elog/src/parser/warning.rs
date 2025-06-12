@@ -4,7 +4,7 @@ pub enum ParserWarningKind {
     DeprecatedGlobalTemporaryTable,
 
     #[error("{0}")]
-    ExtendedStringWarning(#[from] ExtendedStringWarning)
+    ExtendedStringWarning(#[from] Warning)
 }
 
 impl Error for ParserWarningKind {
@@ -24,7 +24,7 @@ impl Error for ParserWarningKind {
     }
 }
 
-use crate::extended_string::ExtendedStringWarning;
+use crate::extended_string::Warning;
 use crate::sql_state::SqlState;
 use crate::Error;
 use pg_basics::Str;
