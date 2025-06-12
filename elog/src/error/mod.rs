@@ -1,4 +1,5 @@
 pub(super) mod lexer;
+pub(super) mod role_spec;
 
 mod located_error;
 

@@ -1,7 +1,8 @@
-pub type RoleSpecError = LocatedError<RoleSpecErrorKind>;
+pub type LocatedError = crate::LocatedError<Error>;
+pub type Result<T = Str> = core::result::Result<T, Error>;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
-pub enum RoleSpecErrorKind {
+pub enum Error {
     /// When "none" or "public" was incorrectly used as a role.
     #[error(r#"role name "{0}" is reserved"#)]
     ReservedRoleSpec(&'static str),
@@ -11,14 +12,12 @@ pub enum RoleSpecErrorKind {
     ForbiddenRoleSpec(&'static str),
 }
 
-impl Error for RoleSpecErrorKind {
+impl crate::Error for Error {
 
     fn sql_state(&self) -> SqlState {
-        ReservedName
+        SqlState::ReservedName
     }
 }
 
-use crate::sql_state::SqlState;
-use crate::sql_state::SqlState::ReservedName;
-use crate::Error;
-use crate::LocatedError;
+use crate::SqlState;
+use pg_basics::Str;

@@ -8,14 +8,14 @@ pub enum RoleSpec {
 }
 
 impl RoleSpec {
-    pub fn into_role_id(self) -> Result<Str, RoleSpecErrorKind> {
+    pub fn into_role_id(self) -> Result {
 
         let err = match self {
             Self::Name(role) => return Ok(role),
-            Self::Public => ReservedRoleSpec("public"),
-            Self::CurrentRole => ForbiddenRoleSpec("CURRENT_ROLE"),
-            Self::CurrentUser => ForbiddenRoleSpec("CURRENT_USER"),
-            Self::SessionUser => ForbiddenRoleSpec("SESSION_USER"),
+            Self::Public => Error::ReservedRoleSpec("public"),
+            Self::CurrentRole => Error::ForbiddenRoleSpec("CURRENT_ROLE"),
+            Self::CurrentUser => Error::ForbiddenRoleSpec("CURRENT_USER"),
+            Self::SessionUser => Error::ForbiddenRoleSpec("SESSION_USER"),
         };
 
         Err(err)
@@ -23,6 +23,5 @@ impl RoleSpec {
 }
 
 use pg_basics::Str;
-use pg_elog::RoleSpecErrorKind;
-use pg_elog::RoleSpecErrorKind::ForbiddenRoleSpec;
-use pg_elog::RoleSpecErrorKind::ReservedRoleSpec;
+use pg_elog::role_spec::Error;
+use pg_elog::role_spec::Result;

@@ -58,13 +58,14 @@ pub(super) fn role_spec() -> impl Combinator<Output = RoleSpec> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::result::ScanErrorKind::NoMatch;
     use crate::result::ScanResult;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use pg_elog::{PgErrorKind, RoleSpecErrorKind};
-    use pg_elog::RoleSpecErrorKind::ForbiddenRoleSpec;
+    use pg_elog::role_spec::Error;
+    use pg_elog::role_spec::Error::{ForbiddenRoleSpec, ReservedRoleSpec};
+    use pg_elog::PgErrorKind;
     use std::fmt::Debug;
-    use crate::result::ScanErrorKind::NoMatch;
 
     #[test]
     fn test_role_list() {
@@ -127,7 +128,7 @@ mod tests {
         assert_err(ReservedRoleSpec("none"), role_spec().parse(&mut stream));
     }
 
-    fn assert_err<T: Debug>(expected: RoleSpecErrorKind, actual: ScanResult<T>) {
+    fn assert_err<T: Debug>(expected: Error, actual: ScanResult<T>) {
         assert_matches!(actual, Err(ScanErr(_)));
         let ScanErr(actual) = actual.unwrap_err() else {
             unreachable!("already checked for Err(ScanErr(_))");
@@ -148,8 +149,8 @@ use crate::combinators::non_reserved_word;
 use crate::result::ScanErrorKind::ScanErr;
 use pg_ast::RoleSpec;
 use pg_basics::Str;
+use pg_elog::role_spec::Error::ReservedRoleSpec;
 use pg_elog::PgError;
-use pg_elog::RoleSpecErrorKind::ReservedRoleSpec;
 use pg_lexer::Keyword::CurrentRole;
 use pg_lexer::Keyword::CurrentUser;
 use pg_lexer::Keyword::NoneKw;
