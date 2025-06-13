@@ -214,7 +214,7 @@ use crate::result::ScanErrorKind::ScanErr;
 use pg_ast::AggregateWithArgs;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionParameterMode as Mode;
-use pg_elog::ParserErrorKind::AggregateWithOutputParameters;
+use pg_elog::parser::Error::AggregateWithOutputParameters;
 use pg_elog::PgError;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Order;

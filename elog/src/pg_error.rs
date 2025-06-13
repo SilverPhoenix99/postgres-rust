@@ -11,7 +11,7 @@ where
 #[derive(Debug, Clone, Eq, PartialEq, thiserror::Error)]
 pub enum PgErrorKind {
     #[error("{0}")] Lexer(#[from] lexer::Error),
-    #[error("{0}")] Parser(#[from] ParserErrorKind),
+    #[error("{0}")] Parser(#[from] parser::Error),
     #[error("{0}")] ExtendedString(#[from] extended_string::Error),
     #[error("{0}")] UnicodeString(#[from] unicode_string::Error),
     #[error("{0}")] RoleSpecError(#[from] role_spec::Error),
@@ -67,8 +67,8 @@ impl From<lexer::LocatedError> for PgError {
     }
 }
 
-impl From<ParserError> for PgError {
-    fn from(value: ParserError) -> Self {
+impl From<parser::LocatedError> for PgError {
+    fn from(value: parser::LocatedError) -> Self {
         let (source, location) = value.into();
         let source = PgErrorKind::Parser(source);
         Self::new(source, location)
@@ -77,13 +77,12 @@ impl From<ParserError> for PgError {
 
 use crate::extended_string;
 use crate::lexer;
+use crate::parser;
+use crate::parser::Error::Syntax;
 use crate::role_spec;
 use crate::unicode_string;
 use crate::Error;
 use crate::LocatedError;
-use crate::ParserError;
-use crate::ParserErrorKind;
-use crate::ParserErrorKind::Syntax;
 use crate::SqlState;
 use pg_basics::Location;
 use pg_basics::Str;

@@ -36,11 +36,11 @@ fn float() -> impl Combinator<Output = TypeName> {
                 None | Some(25..=53) => Ok(Float8),
                 Some(1..=24) => Ok(Float4),
                 Some(num @ ..=0) => {
-                    let err = ParserError::new(FloatPrecisionUnderflow(num), loc);
+                    let err = FloatPrecisionUnderflow(num).at(loc);
                     Err(err.into())
                 },
                 Some(num @ 54..) => {
-                    let err = ParserError::new(FloatPrecisionOverflow(num), loc);
+                    let err = FloatPrecisionOverflow(num).at(loc);
                     Err(err.into())
                 },
             }
@@ -331,9 +331,8 @@ use pg_ast::TypeName::Timestamp;
 use pg_ast::TypeName::TimestampTz;
 use pg_ast::TypeName::Varbit;
 use pg_ast::TypeName::Varchar;
-use pg_elog::ParserError;
-use pg_elog::ParserErrorKind::FloatPrecisionOverflow;
-use pg_elog::ParserErrorKind::FloatPrecisionUnderflow;
+use pg_elog::parser::Error::FloatPrecisionOverflow;
+use pg_elog::parser::Error::FloatPrecisionUnderflow;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Bigint;
 use pg_lexer::Keyword::Boolean;

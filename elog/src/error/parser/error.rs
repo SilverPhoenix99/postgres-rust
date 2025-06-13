@@ -1,5 +1,5 @@
 #[derive(Debug, Default, Clone, Eq, PartialEq, thiserror::Error)]
-pub enum ParserErrorKind {
+pub enum Error {
     /// When a production fails.
     #[default]
     #[error("syntax error")]
@@ -60,9 +60,9 @@ pub enum ParserErrorKind {
     InvalidStartFollowingEndPrecedingFrame,
 }
 
-impl ParserErrorKind {
-    pub fn at(self, location: Location) -> ParserError {
-        ParserError::new(self, location)
+impl Error {
+    pub fn at(self, location: Location) -> LocatedError {
+        LocatedError::new(self, location)
     }
 }
 
@@ -86,7 +86,7 @@ impl Display for NameList {
     }
 }
 
-impl Error for ParserErrorKind {
+impl crate::Error for Error {
 
     fn sql_state(&self) -> SqlState {
         match self {
@@ -135,13 +135,12 @@ impl Error for ParserErrorKind {
     }
 }
 
+use crate::parser::LocatedError;
 use crate::sql_state::SqlState;
 use crate::sql_state::SqlState::FeatureNotSupported;
 use crate::sql_state::SqlState::InvalidParameterValue;
 use crate::sql_state::SqlState::SyntaxError;
 use crate::sql_state::SqlState::WindowingError;
-use crate::Error;
-use crate::ParserError;
 use pg_basics::Location;
 use pg_basics::QualifiedName;
 use pg_basics::Str;

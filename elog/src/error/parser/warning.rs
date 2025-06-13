@@ -1,13 +1,13 @@
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
-pub enum ParserWarningKind {
+pub enum Warning {
     #[error("GLOBAL is deprecated in temporary table creation")]
     DeprecatedGlobalTemporaryTable,
 
     #[error("{0}")]
-    ExtendedStringWarning(#[from] Warning)
+    ExtendedStringWarning(#[from] extended_string::Warning)
 }
 
-impl Error for ParserWarningKind {
+impl Error for Warning {
 
     fn sql_state(&self) -> SqlState {
         match self {
@@ -24,7 +24,7 @@ impl Error for ParserWarningKind {
     }
 }
 
-use crate::extended_string::Warning;
+use crate::extended_string;
 use crate::sql_state::SqlState;
 use crate::Error;
 use pg_basics::Str;

@@ -43,7 +43,7 @@ pub(super) fn qualified_name() -> impl Combinator<Output = RelationName> {
                     ))
                 },
                 _ => {
-                    let err = ParserError::new(ImproperQualifiedName(NameList(qn)), loc);
+                    let err = ImproperQualifiedName(NameList(qn)).at(loc);
                     Err(err.into())
                 }
             }
@@ -103,8 +103,7 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::RelationName;
 use pg_ast::SchemaName;
-use pg_elog::NameList;
-use pg_elog::ParserError;
-use pg_elog::ParserErrorKind::ImproperQualifiedName;
+use pg_elog::parser::Error::ImproperQualifiedName;
+use pg_elog::parser::NameList;
 use pg_lexer::OperatorKind::Comma;
 use std::mem;
