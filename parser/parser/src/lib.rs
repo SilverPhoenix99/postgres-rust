@@ -6,19 +6,20 @@ extern crate assert_matches;
 
 mod combinators;
 mod config;
+mod error;
 mod parser;
 mod result;
 mod stream;
 mod tests;
 
 mod eof {
-    pub(crate) use crate::result::eof::error::*;
-    pub(crate) use crate::result::eof::result::*;
+    pub(crate) use crate::error::eof::error::*;
+    pub(crate) use crate::error::eof::result::*;
 }
 
 mod scan {
-    pub(crate) use crate::result::scan::error::*;
-    pub(crate) use crate::result::scan::result::*;
+    pub(crate) use crate::error::scan::error::*;
+    pub(crate) use crate::error::scan::result::*;
 }
 
 pub use self::{
