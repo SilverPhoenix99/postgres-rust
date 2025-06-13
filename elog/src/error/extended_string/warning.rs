@@ -17,14 +17,14 @@ impl LogMessage for Warning {
         SqlState::NonstandardUseOfEscapeCharacter
     }
 
-    fn hint(&self) -> Option<Str> {
+    fn hint(&self) -> Option<&str> {
         match self {
-            Self::NonstandardEscape => Some(r"Use the escape string syntax for escapes, e.g., E'\r\n'.".into()),
+            Self::NonstandardEscape => Some(r"Use the escape string syntax for escapes, e.g., E'\r\n'."),
             Self::NonstandardQuoteEscape => {
-                Some("Use '' to write quotes in strings, or use the escape string syntax (E'...').".into())
+                Some("Use '' to write quotes in strings, or use the escape string syntax (E'...').")
             },
             Self::NonstandardBackslashEscape => {
-                Some(r"Use the escape string syntax for backslashes, e.g., E'\\'.".into())
+                Some(r"Use the escape string syntax for backslashes, e.g., E'\\'.")
             },
         }
     }
@@ -32,4 +32,3 @@ impl LogMessage for Warning {
 
 use crate::sql_state::SqlState;
 use crate::LogMessage;
-use pg_basics::Str;

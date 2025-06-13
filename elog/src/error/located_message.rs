@@ -66,17 +66,17 @@ where
     }
 
     #[inline(always)]
-    fn hint(&self) -> Option<Str> {
+    fn hint(&self) -> Option<&str> {
         self.source.hint()
     }
 
     #[inline(always)]
-    fn detail(&self) -> Option<Str> {
+    fn detail(&self) -> Option<&str> {
         self.source.detail()
     }
 
     #[inline(always)]
-    fn detail_log(&self) -> Option<Str> {
+    fn detail_log(&self) -> Option<&str> {
         self.source.detail_log()
     }
 }
@@ -98,4 +98,3 @@ use core::fmt::Formatter;
 use core::fmt::Result;
 use pg_basics::Located;
 use pg_basics::Location;
-use pg_basics::Str;

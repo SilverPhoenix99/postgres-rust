@@ -26,7 +26,7 @@ mod create_conversion_stmt;
 mod create_database_stmt;
 mod create_role_stmt;
 mod create_user_mapping_stmt;
-mod default_or_value;
+mod value_or_default;
 mod discard_stmt;
 mod drop_behavior;
 mod frame_extent;
@@ -104,7 +104,6 @@ pub use self::{
     create_database_stmt::{CreateDatabaseStmt, CreatedbOption, CreatedbOptionKind, CreatedbOptionValue},
     create_role_stmt::{CreateRoleOption, CreateRoleStmt, RoleKind},
     create_user_mapping_stmt::CreateUserMappingStmt,
-    default_or_value::ValueOrDefault,
     discard_stmt::DiscardStmt,
     drop_behavior::DropBehavior,
     frame_extent::{CurrentRowEnd, FollowingEnd, FrameExtent, PrecedingEnd},
@@ -154,6 +153,7 @@ pub use self::{
     unary_expr::UnaryExpr,
     unique_null_treatment::UniqueNullTreatment,
     unsigned_number::UnsignedNumber,
+    value_or_default::ValueOrDefault,
     var_value::VarValue,
     variable_set_stmt::VariableSetStmt,
     variable_target::VariableTarget,

@@ -30,7 +30,7 @@ pub(super) fn func_type() -> impl Combinator<Output = FuncType> {
             return Ok(FuncType::Type(typ))
         }
 
-        let (Generic { name, .. }, _, mult) = typ.deconstruct() else {
+        let (Generic { name, .. }, _, mult) = typ.into() else {
             // SAFETY: already checked that it's `Generic` above.
             unsafe { unreachable_unchecked() }
         };

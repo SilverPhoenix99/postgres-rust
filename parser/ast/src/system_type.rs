@@ -32,9 +32,11 @@ impl Type {
     pub fn mult(&self) -> SetOf {
         self.mult
     }
+}
 
-    pub fn deconstruct(self) -> (TypeName, Option<Vec<Option<i32>>>, SetOf) {
-        (self.name, self.array_bounds, self.mult)
+impl From<Type> for (TypeName, Option<Vec<Option<i32>>>, SetOf) {
+    fn from(value: Type) -> Self {
+        (value.name, value.array_bounds, value.mult)
     }
 }
 

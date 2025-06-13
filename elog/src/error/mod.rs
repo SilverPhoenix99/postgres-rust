@@ -36,7 +36,7 @@ impl LogMessage for Error {
         }
     }
 
-    fn hint(&self) -> Option<Str> {
+    fn hint(&self) -> Option<&str> {
         match self {
             Lexer(err) => err.hint(),
             Parser(err) => err.hint(),
@@ -46,7 +46,7 @@ impl LogMessage for Error {
         }
     }
 
-    fn detail(&self) -> Option<Str> {
+    fn detail(&self) -> Option<&str> {
         match self {
             Lexer(err) => err.detail(),
             Parser(err) => err.detail(),
@@ -56,7 +56,7 @@ impl LogMessage for Error {
         }
     }
 
-    fn detail_log(&self) -> Option<Str> {
+    fn detail_log(&self) -> Option<&str> {
         match self {
             Lexer(err) => err.detail_log(),
             Parser(err) => err.detail_log(),
@@ -90,4 +90,3 @@ use crate::LocatedMessage;
 use crate::LogMessage;
 use crate::SqlState;
 use pg_basics::Location;
-use pg_basics::Str;

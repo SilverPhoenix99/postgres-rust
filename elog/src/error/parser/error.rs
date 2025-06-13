@@ -112,10 +112,10 @@ impl LogMessage for Error {
         }
     }
 
-    fn hint(&self) -> Option<Str> {
+    fn hint(&self) -> Option<&str> {
         match self {
             Self::UnencryptedPassword
-                => Some("Remove UNENCRYPTED to store the password in encrypted form instead.".into()),
+                => Some("Remove UNENCRYPTED to store the password in encrypted form instead."),
             Self::FloatPrecisionOverflow(_) => None,
             Self::FloatPrecisionUnderflow(_) => None,
             Self::InvalidUescapeDelimiter => None,
@@ -125,7 +125,7 @@ impl LogMessage for Error {
             Self::ImproperQualifiedName(_) => None,
             Self::InvalidZoneValue => None,
             Self::MissingOperatorArgumentType
-                => Some("Use NONE to denote the missing argument of a unary operator.".into()),
+                => Some("Use NONE to denote the missing argument of a unary operator."),
             Self::AggregateWithOutputParameters => None,
             Self::ImproperUseOfStar => None,
             Self::InvalidUnboundedFollowingFrame => None,
@@ -149,4 +149,3 @@ use core::fmt::Formatter;
 use core::fmt::Result;
 use pg_basics::Location;
 use pg_basics::QualifiedName;
-use pg_basics::Str;

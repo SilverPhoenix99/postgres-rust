@@ -23,7 +23,7 @@ impl CreateAccessMethodStmt {
         self.kind
     }
 
-    pub fn handler(&self) -> &QualifiedName {
+    pub fn handler(&self) -> &[Str] {
         &self.handler
     }
 }

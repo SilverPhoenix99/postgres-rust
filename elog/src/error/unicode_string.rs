@@ -22,9 +22,9 @@ impl LogMessage for Error {
         SyntaxError
     }
     
-    fn hint(&self) -> Option<Str> {
+    fn hint(&self) -> Option<&str> {
         match self {
-            Self::InvalidUnicodeEscape(_) => Some(r"Unicode escapes must be \XXXX or \+XXXXXX.".into()),
+            Self::InvalidUnicodeEscape(_) => Some(r"Unicode escapes must be \XXXX or \+XXXXXX."),
             _ => None,
         }
     }
@@ -33,4 +33,3 @@ impl LogMessage for Error {
 use crate::sql_state::SqlState;
 use crate::sql_state::SqlState::SyntaxError;
 use crate::LogMessage;
-use pg_basics::Str;

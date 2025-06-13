@@ -38,12 +38,12 @@ impl LogMessage for Error {
         }
     }
 
-    fn hint(&self) -> Option<Str> {
+    fn hint(&self) -> Option<&str> {
         match self {
             Self::NonstandardUseOfBackslashQuote => Some(
-                r"Use '' to write quotes in strings. \' is insecure in client-only encodings.".into()
+                r"Use '' to write quotes in strings. \' is insecure in client-only encodings."
             ),
-            Self::InvalidUnicodeEscape(_) => Some(r"Unicode escapes must be \uXXXX or \UXXXXXXXX.".into()),
+            Self::InvalidUnicodeEscape(_) => Some(r"Unicode escapes must be \uXXXX or \UXXXXXXXX."),
             _ => None,
         }
     }
@@ -56,4 +56,3 @@ use crate::sql_state::SqlState::NonstandardUseOfEscapeCharacter;
 use crate::sql_state::SqlState::SyntaxError;
 use crate::LogMessage;
 use core::str::Utf8Error;
-use pg_basics::Str;

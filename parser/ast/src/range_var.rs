@@ -46,10 +46,7 @@ impl RelationName {
     }
 
     pub fn catalog(&self) -> Option<&str> {
-        if let Some(schema) = self.schema.as_ref() {
-            return schema.catalog.as_deref()
-        }
-        None
+        self.schema().and_then(SchemaName::catalog)
     }
 }
 

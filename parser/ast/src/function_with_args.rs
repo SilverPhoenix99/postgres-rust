@@ -12,23 +12,15 @@ impl FunctionWithArgs {
         Self { name, args }
     }
 
-    pub fn name(&self) -> &QualifiedName {
+    pub fn name(&self) -> &[Str] {
         &self.name
     }
 
-    pub fn args(&self) -> &Option<Option<Vec<FunctionParameter>>> {
-        &self.args
-    }
-
-    pub fn input_arguments(&self) -> Option<Option<&[FunctionParameter]>> {
-
-        match &self.args {
-            Some(Some(args)) => Some(Some(args)),
-            Some(None) => Some(None),
-            None => None,
-        }
+    pub fn args(&self) -> Option<Option<&[FunctionParameter]>> {
+        self.args.as_ref().map(Option::as_deref)
     }
 }
 
 use crate::FunctionParameter;
 use pg_basics::QualifiedName;
+use pg_basics::Str;
