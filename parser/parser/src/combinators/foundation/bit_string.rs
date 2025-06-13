@@ -48,5 +48,5 @@ use crate::scan::Result;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::BitString;
+use core::mem;
 use pg_lexer::BitStringKind;
-use std::mem;

@@ -727,8 +727,8 @@ mod tests {
     use super::*;
     use crate::token_kind::RawTokenKind;
     use crate::Keyword::{FromKw, Not, Select, StringKw};
+    use core::ops::Range;
     use pg_elog::HasLocation;
-    use std::ops::Range;
 
     #[test]
     fn test_empty_string() {
@@ -1105,6 +1105,7 @@ use crate::RawTokenKind::StringLiteral;
 use crate::RawTokenKind::UserDefinedOperator;
 use crate::StringKind::Dollar;
 use crate::StringKind::Extended;
+use core::iter::FusedIterator;
 use pg_basics::ascii::is_bin_digit;
 use pg_basics::ascii::is_decimal_digit;
 use pg_basics::ascii::is_dollar_quote_cont;
@@ -1140,4 +1141,3 @@ use pg_elog::lexer::Error::UnterminatedHexString;
 use pg_elog::lexer::Error::UnterminatedQuotedIdentifier;
 use pg_elog::lexer::Error::UnterminatedQuotedString;
 use pg_elog::lexer::LocatedError;
-use std::iter::FusedIterator;

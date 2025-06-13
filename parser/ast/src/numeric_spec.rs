@@ -138,9 +138,9 @@ mod tests {
     }
 }
 
+use core::num::NonZero;
+use core::ops::RangeInclusive;
 use pg_elog::SqlState;
 use pg_elog::SqlState::InvalidParameterValue;
-use std::num::NonZero;
-use std::ops::RangeInclusive;
 use NewNumericSpecError::PrecisionOutOfRange;
 use NewNumericSpecError::ScaleOutOfRange;

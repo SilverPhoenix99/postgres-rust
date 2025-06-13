@@ -318,6 +318,7 @@ impl LineBuffer {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::UnicodeChar::Utf8;
 
     #[test]
     fn test_remainder() {
@@ -508,11 +509,12 @@ mod tests {
     }
 }
 
-use crate::{
-    wchar::is_utf16_surrogate_first,
-    wchar::is_utf16_surrogate_second,
-    Location
-};
-use std::cmp::min;
-use UnicodeChar::*;
-use UnicodeCharError::*;
+use crate::wchar::is_utf16_surrogate_first;
+use crate::wchar::is_utf16_surrogate_second;
+use crate::Location;
+use crate::UnicodeChar::SurrogateFirst;
+use crate::UnicodeChar::SurrogateSecond;
+use crate::UnicodeChar::Utf8;
+use crate::UnicodeCharError::InvalidUnicodeValue;
+use crate::UnicodeCharError::LenTooShort;
+use core::cmp::min;

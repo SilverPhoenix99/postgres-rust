@@ -15,8 +15,11 @@ edition = "2024"
 version = "19.0.0-devel"
 
 [workspace.lints.clippy]
-useless_conversion = "deny"
+alloc_instead_of_core = "forbid"
 items_after_test_module = "allow"
+std_instead_of_alloc = "forbid"
+std_instead_of_core = "forbid"
+useless_conversion = "deny"
 
 [workspace.lints.rust]
 unused_imports = "deny"

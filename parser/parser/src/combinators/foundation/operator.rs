@@ -93,7 +93,7 @@ where
 }
 
 impl<F, T> Debug for OperatorCondCombi<F, T> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str("OperatorCondCombi")
     }
 }
@@ -104,7 +104,8 @@ use crate::stream::ConsumerResult;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Operator;
+use core::fmt;
+use core::fmt::Debug;
+use core::fmt::Formatter;
+use core::marker::PhantomData;
 use pg_lexer::OperatorKind;
-use std::fmt::Debug;
-use std::fmt::Formatter;
-use std::marker::PhantomData;

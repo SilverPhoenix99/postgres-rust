@@ -68,7 +68,7 @@ impl KeywordDetails {
 
 impl Display for KeywordDetails {
     #[inline(always)]
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         f.write_str(self.text)
     }
 }
@@ -102,9 +102,12 @@ mod tests {
     }
 }
 
-use super::{
-    Keyword,
-    KeywordCategory,
-    KeywordCategory::{ColumnName, Reserved, TypeFuncName, Unreserved},
-};
-use std::fmt::{Display, Formatter};
+use super::Keyword;
+use super::KeywordCategory;
+use super::KeywordCategory::ColumnName;
+use super::KeywordCategory::Reserved;
+use super::KeywordCategory::TypeFuncName;
+use super::KeywordCategory::Unreserved;
+use core::fmt::Display;
+use core::fmt::Formatter;
+use core::fmt::Result;

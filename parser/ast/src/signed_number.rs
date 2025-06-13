@@ -4,7 +4,7 @@ pub enum SignedNumber {
     NumericConst { value: Box<str>, radix: NumberRadix, negative: bool },
 }
 
-impl std::ops::Neg for SignedNumber {
+impl core::ops::Neg for SignedNumber {
     type Output = Self;
 
     fn neg(self) -> Self::Output {

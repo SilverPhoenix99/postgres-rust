@@ -56,4 +56,4 @@ mod tests {
 }
 
 use crate::Position;
-use std::ops::Range;
+use core::ops::Range;

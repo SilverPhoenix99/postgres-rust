@@ -66,7 +66,7 @@ macro_rules! match_first_with_state {
                 Err(NoMatch(loc)) => Err(NoMatch(loc)),
                 Err(Eof(loc)) => Err(NoMatch(loc)),
                 // SAFETY: Ok and ScanErr are matched above
-                _ => unsafe { std::hint::unreachable_unchecked() }
+                _ => unsafe { core::hint::unreachable_unchecked() }
             }
         }
     };

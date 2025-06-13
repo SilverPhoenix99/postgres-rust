@@ -146,4 +146,4 @@ impl MphfHash for String {
     }
 }
 
-use std::num::Wrapping;
+use core::num::Wrapping;

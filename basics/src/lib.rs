@@ -95,4 +95,4 @@ mod tests {
     }
 }
 
-use std::any::type_name_of_val;
+use core::any::type_name_of_val;

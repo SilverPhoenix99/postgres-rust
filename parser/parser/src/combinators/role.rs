@@ -62,10 +62,10 @@ mod tests {
     use crate::scan::Result;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
+    use core::fmt::Debug;
     use pg_elog::role_spec::Error;
     use pg_elog::role_spec::Error::ForbiddenRoleSpec;
     use pg_elog::PgErrorKind;
-    use std::fmt::Debug;
 
     #[test]
     fn test_role_list() {

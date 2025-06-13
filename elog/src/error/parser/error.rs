@@ -70,7 +70,7 @@ impl Error {
 pub struct NameList(pub QualifiedName);
 
 impl Display for NameList {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
 
         if self.0.is_empty() {
             return f.write_str("")
@@ -141,8 +141,9 @@ use crate::sql_state::SqlState::FeatureNotSupported;
 use crate::sql_state::SqlState::InvalidParameterValue;
 use crate::sql_state::SqlState::SyntaxError;
 use crate::sql_state::SqlState::WindowingError;
+use core::fmt::Display;
+use core::fmt::Formatter;
+use core::fmt::Result;
 use pg_basics::Location;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
-use std::fmt::Display;
-use std::fmt::Formatter;

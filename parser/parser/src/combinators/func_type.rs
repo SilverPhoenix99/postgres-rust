@@ -81,10 +81,10 @@ mod tests {
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::typename;
+use core::hint::unreachable_unchecked;
 use pg_ast::FuncType;
 use pg_ast::FuncType::Reference;
 use pg_ast::TypeName::Generic;
 use pg_ast::TypeReference;
 use pg_lexer::Keyword::Type;
 use pg_lexer::OperatorKind::Percent;
-use std::hint::unreachable_unchecked;

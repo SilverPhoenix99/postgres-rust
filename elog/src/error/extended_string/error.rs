@@ -54,5 +54,5 @@ use crate::sql_state::SqlState::CharacterNotInRepertoire;
 use crate::sql_state::SqlState::InvalidEscapeSequence;
 use crate::sql_state::SqlState::NonstandardUseOfEscapeCharacter;
 use crate::sql_state::SqlState::SyntaxError;
+use core::str::Utf8Error;
 use pg_basics::Str;
-use std::str::Utf8Error;
