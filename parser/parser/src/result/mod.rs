@@ -1,6 +1,3 @@
-pub(super) mod eof;
-pub(super) mod scan;
-
 mod maybe_match;
 mod optional;
 mod required;
