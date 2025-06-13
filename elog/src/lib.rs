@@ -10,7 +10,6 @@ pub mod lexer {
 pub mod parser {
     pub use crate::error::parser::error::*;
     pub use crate::error::parser::warning::*;
-    pub use crate::error::parser::LocatedError;
 }
 
 pub mod role_spec {
@@ -28,7 +27,7 @@ mod pg_error;
 mod sql_state;
 
 pub use self::{
-    error::located_error::LocatedError,
+    error::located_message::LocatedMessage,
     error::Error,
     has_location::HasLocation,
     log_level::LogLevel,

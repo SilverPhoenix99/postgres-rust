@@ -1,4 +1,4 @@
-pub type LocatedError = crate::LocatedError<Error>;
+pub type LocatedError = crate::LocatedMessage<Error>;
 pub type Result<T = Str> = core::result::Result<T, Error>;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]

@@ -1,3 +1,5 @@
+pub type LocatedError = LocatedMessage<Error>;
+
 #[derive(Debug, Default, Clone, Eq, PartialEq, thiserror::Error)]
 pub enum Error {
     /// When a production fails.
@@ -135,12 +137,12 @@ impl crate::Error for Error {
     }
 }
 
-use crate::parser::LocatedError;
 use crate::sql_state::SqlState;
 use crate::sql_state::SqlState::FeatureNotSupported;
 use crate::sql_state::SqlState::InvalidParameterValue;
 use crate::sql_state::SqlState::SyntaxError;
 use crate::sql_state::SqlState::WindowingError;
+use crate::LocatedMessage;
 use core::fmt::Display;
 use core::fmt::Formatter;
 use core::fmt::Result;
