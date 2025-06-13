@@ -9,8 +9,8 @@ impl ConstraintsSetStmt {
         Self { constraints, mode }
     }
 
-    pub fn constraints(&self) -> &OneOrAll<Vec<RelationName>> {
-        &self.constraints
+    pub fn constraints(&self) -> OneOrAll<&[RelationName]> {
+        self.constraints.as_deref()
     }
 
     pub fn mode(&self) -> ConstraintsSetMode {

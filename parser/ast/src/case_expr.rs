@@ -10,16 +10,16 @@ impl CaseExpr {
         Self { target, when_clauses, default }
     }
 
-    pub fn target(&self) -> &Option<ExprNode> {
-        &self.target
+    pub fn target(&self) -> Option<&ExprNode> {
+        self.target.as_ref()
     }
 
     pub fn when_clauses(&self) -> &[CaseWhen] {
         &self.when_clauses
     }
 
-    pub fn default(&self) -> &Option<ExprNode> {
-        &self.default
+    pub fn default(&self) -> Option<&ExprNode> {
+        self.default.as_ref()
     }
 }
 

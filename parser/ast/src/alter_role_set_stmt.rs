@@ -10,12 +10,12 @@ impl AlterRoleSetStmt {
         Self { role, database, set_stmt }
     }
 
-    pub fn role(&self) -> &OneOrAll<RoleSpec> {
-        &self.role
+    pub fn role(&self) -> OneOrAll<&RoleSpec> {
+        self.role.as_ref()
     }
 
-    pub fn database(&self) -> &Option<Str> {
-        &self.database
+    pub fn database(&self) -> Option<&str> {
+        self.database.as_deref()
     }
 
     pub fn set_stmt(&self) -> &SetResetClause {

@@ -16,7 +16,7 @@ impl LogMessage for Warning {
         }
     }
 
-    fn hint(&self) -> Option<Str> {
+    fn hint(&self) -> Option<&str> {
         match self {
             Self::DeprecatedGlobalTemporaryTable => None,
             Self::ExtendedStringWarning(err) => err.hint(),
@@ -27,4 +27,3 @@ impl LogMessage for Warning {
 use crate::extended_string;
 use crate::sql_state::SqlState;
 use crate::LogMessage;
-use pg_basics::Str;

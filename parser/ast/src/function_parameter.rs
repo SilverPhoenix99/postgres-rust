@@ -10,8 +10,8 @@ impl FunctionParameter {
         Self { name, mode, arg_type }
     }
 
-    pub fn name(&self) -> &Option<Str> {
-        &self.name
+    pub fn name(&self) -> Option<&str> {
+        self.name.as_deref()
     }
 
     pub fn mode(&self) -> FunctionParameterMode {

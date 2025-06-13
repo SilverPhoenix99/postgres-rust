@@ -32,10 +32,7 @@ impl NotifyStmt {
 
     #[inline(always)]
     pub fn payload(&self) -> Option<&str> {
-        match self.payload.as_ref() {
-            None => None,
-            Some(payload) => Some(payload.as_ref())
-        }
+        self.payload.as_deref()
     }
 }
 

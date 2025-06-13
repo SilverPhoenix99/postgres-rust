@@ -13,8 +13,8 @@ impl OperatorWithArgs {
         &self.name
     }
 
-    pub fn args(&self) -> &OneOrBoth<Type> {
-        &self.args
+    pub fn args(&self) -> OneOrBoth<&Type> {
+        self.args.as_ref()
     }
 }
 

@@ -28,7 +28,7 @@ impl CreateConversionStmt {
         }
     }
 
-    pub fn name(&self) -> &QualifiedName {
+    pub fn name(&self) -> &[Str] {
         &self.name
     }
 
@@ -40,7 +40,7 @@ impl CreateConversionStmt {
         &self.to_encoding
     }
 
-    pub fn function(&self) -> &QualifiedName {
+    pub fn function(&self) -> &[Str] {
         &self.function
     }
 
@@ -50,3 +50,4 @@ impl CreateConversionStmt {
 }
 
 use pg_basics::QualifiedName;
+use pg_basics::Str;

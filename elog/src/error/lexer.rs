@@ -62,10 +62,10 @@ impl LogMessage for Error {
     }
 
     #[inline(always)]
-    fn detail(&self) -> Option<Str> {
+    fn detail(&self) -> Option<&str> {
         if UnsafeUnicodeString.eq(self) {
             Some(
-                r#"String constants with Unicode escapes cannot be used when "standard_conforming_strings" is off."#.into()
+                r#"String constants with Unicode escapes cannot be used when "standard_conforming_strings" is off."#
             )
         }
         else {
@@ -80,4 +80,3 @@ use crate::LogMessage;
 use crate::SqlState;
 use crate::SqlState::SyntaxError;
 use pg_basics::NumberRadix;
-use pg_basics::Str;
