@@ -171,7 +171,7 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_list;
 use crate::combinators::signed_i32_literal;
-use crate::result::ScanErrorKind::ScanErr;
+use crate::scan::Error::ScanErr;
 use pg_ast::AlterRoleOption;
 use pg_ast::AlterRoleOption::BypassRls;
 use pg_ast::AlterRoleOption::CanLogin;

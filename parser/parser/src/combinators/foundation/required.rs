@@ -15,17 +15,17 @@ where
 {
     type Output = P::Output;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
         self.0.parse(stream)
             .required()
-            .map_err(ScanErrorKind::from)
+            .map_err(Error::from)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::result::ScanErrorKind::ScanErr;
+    use crate::scan::Error::ScanErr;
     use crate::tests::DEFAULT_CONFIG;
     use pg_elog::parser::Error::Syntax;
     use pg_elog::PgErrorKind;
@@ -65,6 +65,6 @@ mod tests {
 
 use crate::combinators::foundation::Combinator;
 use crate::result::Required;
-use crate::result::ScanErrorKind;
-use crate::result::ScanResult;
+use crate::scan::Error;
+use crate::scan::Result;
 use crate::stream::TokenStream;

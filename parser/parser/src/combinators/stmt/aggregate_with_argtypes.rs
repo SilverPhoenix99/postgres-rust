@@ -210,7 +210,7 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::func_arg;
 use crate::combinators::func_name;
-use crate::result::ScanErrorKind::ScanErr;
+use crate::scan::Error::ScanErr;
 use pg_ast::AggregateWithArgs;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionParameterMode as Mode;

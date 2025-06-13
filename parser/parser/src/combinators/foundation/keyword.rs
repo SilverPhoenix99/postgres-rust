@@ -72,7 +72,7 @@ pub(in crate::combinators) fn keyword_result<O>(
 impl Combinator for Keyword {
     type Output = Keyword;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
         stream.consume(|tok| match tok {
             TokenValue::Keyword(kw) if kw == self => Some(*kw),
             _ => None
@@ -84,7 +84,7 @@ impl Combinator for Keyword {
 impl Combinator for KeywordCategory {
     type Output = Keyword;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
         stream.consume(|tok| match tok {
             TokenValue::Keyword(kw) if kw.category() == *self => Some(*kw),
             _ => None
@@ -105,7 +105,7 @@ where
 {
     type Output = O;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
         stream.consume(|tok| {
             match tok {
                 TokenValue::Keyword(kw) => (self.mapper)(*kw),
@@ -152,7 +152,7 @@ mod tests {
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::result::ScanResult;
+use crate::scan::Result;
 use crate::stream::ConsumerResult;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;

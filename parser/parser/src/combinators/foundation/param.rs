@@ -8,7 +8,7 @@ pub(in crate::combinators) struct ParamCombi;
 impl Combinator for ParamCombi {
     type Output = i32;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
         stream.consume(|tok| match tok {
             Param { index } => Some(*index),
             _ => None
@@ -29,7 +29,7 @@ mod tests {
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::result::ScanResult;
+use crate::scan::Result;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Param;

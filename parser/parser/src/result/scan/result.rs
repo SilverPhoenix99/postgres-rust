@@ -1,6 +1,6 @@
-pub(crate) type ScanResult<T> = Result<T, ScanErrorKind>;
+pub(crate) type Result<T> = core::result::Result<T, scan::Error>;
 
-impl<T> Required<T> for ScanResult<T> {
+impl<T> Required<T> for Result<T> {
     fn required(self) -> ParseResult<T> {
         self.map_err(|err| match err {
             ScanErr(err) => err,
@@ -9,7 +9,7 @@ impl<T> Required<T> for ScanResult<T> {
     }
 }
 
-impl<T> TryMatch<T> for ScanResult<T> {
+impl<T> TryMatch<T> for Result<T> {
     fn try_match(self) -> ParseResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
@@ -20,7 +20,7 @@ impl<T> TryMatch<T> for ScanResult<T> {
     }
 }
 
-impl<T> Optional<T> for ScanResult<T> {
+impl<T> Optional<T> for Result<T> {
     fn optional(self) -> ParseResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
@@ -30,7 +30,7 @@ impl<T> Optional<T> for ScanResult<T> {
     }
 }
 
-impl<T> MaybeMatch<T> for ScanResult<T> {
+impl<T> MaybeMatch<T> for Result<T> {
     fn maybe_match(self) -> eof::Result<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
@@ -48,9 +48,9 @@ use crate::parser::ParseResult;
 use crate::result::MaybeMatch;
 use crate::result::Optional;
 use crate::result::Required;
-use crate::result::ScanErrorKind;
-use crate::result::ScanErrorKind::Eof as ScanEof;
-use crate::result::ScanErrorKind::NoMatch;
-use crate::result::ScanErrorKind::ScanErr;
 use crate::result::TryMatch;
+use crate::scan;
+use crate::scan::Error::Eof as ScanEof;
+use crate::scan::Error::NoMatch;
+use crate::scan::Error::ScanErr;
 use pg_elog::syntax;

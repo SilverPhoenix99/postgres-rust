@@ -107,7 +107,7 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::operators::any_operator;
 use crate::combinators::typename;
-use crate::result::ScanErrorKind::ScanErr;
+use crate::scan::Error::ScanErr;
 use pg_ast::OneOrBoth;
 use pg_ast::OperatorWithArgs;
 use pg_ast::Type;

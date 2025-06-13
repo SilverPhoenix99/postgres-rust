@@ -15,7 +15,7 @@ impl Combinator for BitStringCombi {
     /// Note that it doesn't validate the content.
     /// That needs to be done in a separate stage,
     /// when we know the actual type from the catalog.
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
         stream.consume(|tok| {
             let BitString { kind, value } = tok else { return None };
             let value = mem::take(value);
@@ -44,7 +44,7 @@ mod tests {
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::result::ScanResult;
+use crate::scan::Result;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::BitString;
