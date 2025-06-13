@@ -1,5 +1,5 @@
-pub type LocatedError = crate::LocatedError<Error>;
 pub type Result<T> = core::result::Result<T, Error>;
+pub type LocatedError = LocatedMessage<Error>;
 pub type LocatedResult<T> = core::result::Result<T, LocatedError>;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
@@ -75,6 +75,7 @@ impl crate::Error for Error {
 }
 
 use self::Error::UnsafeUnicodeString;
+use crate::LocatedMessage;
 use crate::SqlState;
 use crate::SqlState::SyntaxError;
 use pg_basics::NumberRadix;

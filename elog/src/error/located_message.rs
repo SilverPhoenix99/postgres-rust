@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct LocatedError<T>
+pub struct LocatedMessage<T>
 where
     T: Error
 {
@@ -7,7 +7,7 @@ where
     location: Location,
 }
 
-impl<T> LocatedError<T>
+impl<T> LocatedMessage<T>
 where
     T: Error
 {
@@ -23,7 +23,7 @@ where
     }
 }
 
-impl<T> core::error::Error for LocatedError<T>
+impl<T> core::error::Error for LocatedMessage<T>
 where
     T: Error + 'static
 {
@@ -32,7 +32,7 @@ where
     }
 }
 
-impl<T> Display for LocatedError<T>
+impl<T> Display for LocatedMessage<T>
 where
     T: Error
 {
@@ -47,7 +47,7 @@ where
     }
 }
 
-impl<T> HasLocation for LocatedError<T>
+impl<T> HasLocation for LocatedMessage<T>
 where
     T: Error
 {
@@ -56,7 +56,7 @@ where
     }
 }
 
-impl<T> Error for LocatedError<T>
+impl<T> Error for LocatedMessage<T>
 where
     T: Error + 'static
 {
@@ -81,11 +81,11 @@ where
     }
 }
 
-impl<T> From<LocatedError<T>> for Located<T>
+impl<T> From<LocatedMessage<T>> for Located<T>
 where
     T: Error
 {
-    fn from(value: LocatedError<T>) -> Self {
+    fn from(value: LocatedMessage<T>) -> Self {
         (value.source, value.location)
     }
 }

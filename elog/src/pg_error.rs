@@ -1,4 +1,4 @@
-pub type PgError = LocatedError<PgErrorKind>;
+pub type PgError = LocatedMessage<PgErrorKind>;
 
 #[inline]
 pub fn syntax<T>(location: Location) -> T
@@ -82,7 +82,7 @@ use crate::parser::Error::Syntax;
 use crate::role_spec;
 use crate::unicode_string;
 use crate::Error;
-use crate::LocatedError;
+use crate::LocatedMessage;
 use crate::SqlState;
 use pg_basics::Location;
 use pg_basics::Str;
