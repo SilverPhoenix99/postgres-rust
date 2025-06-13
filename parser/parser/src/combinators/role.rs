@@ -17,7 +17,7 @@ pub(super) fn role_id() -> impl Combinator<Output = Str> {
             let (role, loc) = result?;
             role.into_role_id()
                 .map_err(|err|
-                    ScanErr(PgError::new(err, loc))
+                    ScanErr(LocatedError::new(err, loc))
                 )
         })
 }
@@ -43,7 +43,7 @@ pub(super) fn role_spec() -> impl Combinator<Output = RoleSpec> {
         // "none" is a ColumnName keyword, so it must be checked before the next option
         located(NoneKw).map_result(|result| match result {
             Ok((_, loc)) => Err(ScanErr(
-                PgError::new(ReservedRoleSpec("none"), loc)
+                LocatedError::new(ReservedRoleSpec("none"), loc)
             )),
             Err(err) => Err(err)
         }),
@@ -150,7 +150,7 @@ use crate::scan::Error::ScanErr;
 use pg_ast::RoleSpec;
 use pg_basics::Str;
 use pg_elog::role_spec::Error::ReservedRoleSpec;
-use pg_elog::PgError;
+use pg_elog::LocatedError;
 use pg_lexer::Keyword::CurrentRole;
 use pg_lexer::Keyword::CurrentUser;
 use pg_lexer::Keyword::NoneKw;

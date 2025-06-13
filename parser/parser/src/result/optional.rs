@@ -1,6 +1,6 @@
 pub(crate) trait Optional<T> {
     /// See [`optional()`](crate::combinators::foundation::optional::optional).
-    fn optional(self) -> ParseResult<Option<T>>;
+    fn optional(self) -> LocatedResult<Option<T>>;
 }
 
-use crate::parser::ParseResult;
+use pg_elog::LocatedResult;

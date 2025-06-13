@@ -63,7 +63,7 @@ impl BufferedLexer<'_> {
                     .decode()
                     .map(str::into_string)
                     .map_err(|err|
-                        PgError::new(err, loc.clone())
+                        LocatedError::new(err, loc.clone())
                     )?
             }
         };
@@ -153,7 +153,7 @@ impl BufferedLexer<'_> {
                 }
 
                 result.map_err(|err|
-                    PgError::new(err, loc.clone())
+                    LocatedError::new(err, loc.clone())
                 )?
             }
             Unicode => {
@@ -163,7 +163,7 @@ impl BufferedLexer<'_> {
                 UnicodeStringDecoder::new(&buffer, false, escape)
                     .decode()
                     .map_err(|err|
-                        PgError::new(err, loc.clone())
+                        LocatedError::new(err, loc.clone())
                     )?
             }
             Dollar => unreachable!("`$` strings don't have any escapes"),
@@ -173,7 +173,7 @@ impl BufferedLexer<'_> {
         Ok((value, loc))
     }
 
-    fn uescape(&mut self) -> ParseResult<char> {
+    fn uescape(&mut self) -> LocatedResult<char> {
         use StringKind::Basic;
 
         /*
@@ -191,7 +191,7 @@ impl BufferedLexer<'_> {
             Ok((_, loc))
             | Err(Eof(loc)) => {
                 return Err(
-                    PgError::new(UescapeDelimiterMissing, loc.clone())
+                    LocatedError::new(UescapeDelimiterMissing, loc.clone())
                 )
             },
 
@@ -214,7 +214,7 @@ impl BufferedLexer<'_> {
         let loc = Location::new(range, loc.line(), loc.col());
 
         uescape_escape(&buffer).ok_or_else(||
-            PgError::new(InvalidUescapeDelimiter, loc)
+            LocatedError::new(InvalidUescapeDelimiter, loc)
         )
     }
 
@@ -238,7 +238,6 @@ impl BufferedLexer<'_> {
 use crate::eof;
 use crate::eof::Error::Eof;
 use crate::eof::Error::NotEof;
-use crate::parser::ParseResult;
 use crate::stream::string_decoders::BasicStringDecoder;
 use crate::stream::string_decoders::ExtendedStringDecoder;
 use crate::stream::string_decoders::ExtendedStringResult;
@@ -253,7 +252,8 @@ use pg_basics::NAMEDATALEN;
 use pg_elog::parser::Error::InvalidUescapeDelimiter;
 use pg_elog::parser::Error::UescapeDelimiterMissing;
 use pg_elog::parser::Warning;
-use pg_elog::PgError;
+use pg_elog::LocatedError;
+use pg_elog::LocatedResult;
 use pg_lexer::BitStringKind;
 use pg_lexer::IdentifierKind;
 use pg_lexer::IdentifierKind::Quoted;

@@ -1,7 +1,5 @@
-pub(crate) type ParseResult<T> = Result<T, PgError>;
-
 pub struct ParserResult {
-    pub result: ParseResult<Option<Vec<RawStmt>>>,
+    pub result: LocatedResult<Option<Vec<RawStmt>>>,
     pub warnings: Option<Vec<Located<Warning>>>,
 }
 
@@ -31,7 +29,7 @@ impl<'src> Parser<'src> {
             let loc = self.buffer.current_location();
             result = Err(syntax(loc));
         }
-        
+
         let warnings = match self.buffer.warnings() {
             None => None,
             Some(warnings) => Some(mem::take(warnings))
@@ -51,4 +49,4 @@ use pg_ast::RawStmt;
 use pg_basics::Located;
 use pg_elog::parser::Warning;
 use pg_elog::syntax;
-use pg_elog::PgError;
+use pg_elog::LocatedResult;
