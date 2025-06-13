@@ -1,7 +1,7 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub(crate) enum Error {
     /// When an unrecoverable error occurs.
-    ScanErr(PgError),
+    ScanErr(LocatedError),
     /// When there are no more tokens.
     Eof(Location),
     /// When the token didn't match.
@@ -10,7 +10,7 @@ pub(crate) enum Error {
 
 impl<T> From<T> for Error
 where
-    T: Into<PgError>
+    T: Into<LocatedError>
 {
     fn from(value: T) -> Self {
         ScanErr(value.into())
@@ -29,4 +29,4 @@ impl From<eof::Error> for Error {
 use crate::eof;
 use crate::scan::Error::ScanErr;
 use pg_basics::Location;
-use pg_elog::PgError;
+use pg_elog::LocatedError;

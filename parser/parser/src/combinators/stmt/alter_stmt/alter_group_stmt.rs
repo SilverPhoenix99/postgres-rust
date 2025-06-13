@@ -15,7 +15,7 @@ pub(super) fn alter_group_stmt() -> impl Combinator<Output = RawStmt> {
             } => (new_name) {
                 let group = group.into_role_id()
                     .map_err(|err|
-                        PgError::new(err, group_loc)
+                        LocatedError::new(err, group_loc)
                     )?;
                 RenameStmt::new(Role(group), new_name).into()
             },
@@ -105,7 +105,7 @@ use pg_ast::AlterRoleStmt;
 use pg_ast::RawStmt;
 use pg_ast::RenameStmt;
 use pg_ast::RenameTarget::Role;
-use pg_elog::PgError;
+use pg_elog::LocatedError;
 use pg_lexer::Keyword::Add;
 use pg_lexer::Keyword::DropKw;
 use pg_lexer::Keyword::Group;
