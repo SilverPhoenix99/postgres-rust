@@ -1,5 +1,5 @@
-mod eof_error_kind;
-mod eof_result;
+pub(super) mod eof;
+
 mod maybe_match;
 mod optional;
 mod required;
@@ -8,8 +8,6 @@ mod scan_result;
 mod try_match;
 
 pub(crate) use self::{
-    eof_error_kind::EofErrorKind,
-    eof_result::EofResult,
     maybe_match::MaybeMatch,
     optional::Optional,
     required::Required,

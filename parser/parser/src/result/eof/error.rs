@@ -1,10 +1,10 @@
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum EofErrorKind {
+pub(crate) enum Error {
     NotEof(PgError),
     Eof(Location),
 }
 
-impl<T> From<T> for EofErrorKind
+impl<T> From<T> for Error
 where
     T: Into<PgError>
 {

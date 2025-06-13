@@ -1,7 +1,7 @@
 #[derive(Debug)]
 pub(crate) struct TokenStream<'src> {
     lexer: BufferedLexer<'src>,
-    buf: VecDeque<EofResult<Located<TokenValue>>>
+    buf: VecDeque<eof::Result<Located<TokenValue>>>
 }
 
 impl<'src> TokenStream<'src> {
@@ -70,14 +70,14 @@ impl<'src> TokenStream<'src> {
     }
 
     #[inline(always)]
-    pub fn peek(&mut self) -> EofResult<&TokenValue> {
+    pub fn peek(&mut self) -> eof::Result<&TokenValue> {
         match self.peek_mut() {
             Ok((tok, _)) => Ok(tok),
             Err(err) => Err(err.clone()),
         }
     }
 
-    fn peek_mut(&mut self) -> &mut EofResult<Located<TokenValue>> {
+    fn peek_mut(&mut self) -> &mut eof::Result<Located<TokenValue>> {
 
         self.fill_buf();
 
@@ -86,7 +86,7 @@ impl<'src> TokenStream<'src> {
         self.buf.front_mut().unwrap()
     }
 
-    pub fn peek2(&mut self) -> (EofResult<&TokenValue>, EofResult<&TokenValue>) {
+    pub fn peek2(&mut self) -> (eof::Result<&TokenValue>, eof::Result<&TokenValue>) {
 
         self.fill_buf();
 
@@ -125,7 +125,7 @@ impl<'src> TokenStream<'src> {
         }
     }
 
-    fn lex_next(&mut self) -> EofResult<Located<TokenValue>> {
+    fn lex_next(&mut self) -> eof::Result<Located<TokenValue>> {
         use RawTokenKind::*;
 
         let (tok, loc) = self.lexer.next()?;
@@ -357,10 +357,10 @@ mod tests {
     }
 }
 
+use crate::eof;
+use crate::eof::Error::Eof;
+use crate::eof::Error::NotEof;
 use crate::parser::ParseResult;
-use crate::result::EofErrorKind::Eof;
-use crate::result::EofErrorKind::NotEof;
-use crate::result::EofResult;
 use crate::result::ScanErrorKind::NoMatch;
 use crate::result::ScanErrorKind::ScanErr;
 use crate::result::ScanResult;

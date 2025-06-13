@@ -1,6 +1,6 @@
-pub(crate) type EofResult<T> = Result<T, EofErrorKind>;
+pub(crate) type Result<T> = core::result::Result<T, Error>;
 
-impl<T> Required<T> for EofResult<T> {
+impl<T> Required<T> for Result<T> {
     fn required(self) -> ParseResult<T> {
         self.map_err(|err| match err {
             NotEof(err) => err,
@@ -9,7 +9,7 @@ impl<T> Required<T> for EofResult<T> {
     }
 }
 
-impl<T> TryMatch<T> for EofResult<T> {
+impl<T> TryMatch<T> for Result<T> {
     fn try_match(self) -> ParseResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
@@ -19,7 +19,7 @@ impl<T> TryMatch<T> for EofResult<T> {
     }
 }
 
-impl<T> Optional<T> for EofResult<T> {
+impl<T> Optional<T> for Result<T> {
     fn optional(self) -> ParseResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
@@ -29,10 +29,10 @@ impl<T> Optional<T> for EofResult<T> {
     }
 }
 
+use crate::eof::Error;
+use crate::eof::Error::Eof;
+use crate::eof::Error::NotEof;
 use crate::parser::ParseResult;
-use crate::result::EofErrorKind;
-use crate::result::EofErrorKind::Eof;
-use crate::result::EofErrorKind::NotEof;
 use crate::result::Optional;
 use crate::result::Required;
 use crate::result::TryMatch;
