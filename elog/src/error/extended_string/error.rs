@@ -26,7 +26,7 @@ pub enum Error {
     InvalidUnicodeEscape(u32),
 }
 
-impl crate::Error for Error {
+impl LogMessage for Error {
 
     fn sql_state(&self) -> SqlState {
         match self {
@@ -54,5 +54,6 @@ use crate::sql_state::SqlState::CharacterNotInRepertoire;
 use crate::sql_state::SqlState::InvalidEscapeSequence;
 use crate::sql_state::SqlState::NonstandardUseOfEscapeCharacter;
 use crate::sql_state::SqlState::SyntaxError;
+use crate::LogMessage;
 use core::str::Utf8Error;
 use pg_basics::Str;

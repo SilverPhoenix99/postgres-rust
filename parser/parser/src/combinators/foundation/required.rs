@@ -29,7 +29,6 @@ mod tests {
     use crate::tests::DEFAULT_CONFIG;
     use core::hint::unreachable_unchecked;
     use pg_elog::parser::Error::Syntax;
-    use pg_elog::PgErrorKind;
     use pg_lexer::Keyword;
 
     #[test]
@@ -48,7 +47,7 @@ mod tests {
 
         assert_matches!(actual, Err(ScanErr(_)));
         let ScanErr(err) = actual.unwrap_err() else { unsafe { unreachable_unchecked() } };
-        assert_eq!(&PgErrorKind::Parser(Syntax), err.source())
+        assert_eq!(&pg_elog::Error::Parser(Syntax), err.source())
     }
 
     #[test]
@@ -59,7 +58,7 @@ mod tests {
 
         assert_matches!(actual, Err(ScanErr(_)));
         let ScanErr(err) = actual.unwrap_err() else { unsafe { unreachable_unchecked() } };
-        assert_eq!(&PgErrorKind::Parser(Syntax), err.source())
+        assert_eq!(&pg_elog::Error::Parser(Syntax), err.source())
     }
 }
 

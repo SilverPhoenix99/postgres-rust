@@ -241,7 +241,7 @@ mod tests {
     use crate::tests::DEFAULT_CONFIG;
     use pg_elog::parser::Error::Syntax;
     use pg_elog::syntax;
-    use pg_elog::PgErrorKind;
+    use pg_elog::Error::Parser;
     use TokenValue::Identifier;
 
     #[test]
@@ -283,7 +283,7 @@ mod tests {
             unreachable!("already checked for Err(ScanErr(_))")
         };
 
-        assert_eq!(&PgErrorKind::Parser(Syntax), actual.source());
+        assert_eq!(&Parser(Syntax), actual.source());
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
     }
 
@@ -365,7 +365,7 @@ use crate::scan;
 use crate::scan::Error::NoMatch;
 use crate::scan::Error::ScanErr;
 use crate::stream::buffered_lexer::BufferedLexer;
-use crate::stream::token_value::TokenValue;
+use crate::stream::TokenValue;
 use crate::ParserConfig;
 use alloc::collections::VecDeque;
 use pg_ast::UnsignedNumber;

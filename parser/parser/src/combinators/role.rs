@@ -65,7 +65,7 @@ mod tests {
     use core::fmt::Debug;
     use pg_elog::role_spec::Error;
     use pg_elog::role_spec::Error::ForbiddenRoleSpec;
-    use pg_elog::PgErrorKind;
+    use pg_elog::Error::RoleSpecError;
 
     #[test]
     fn test_role_list() {
@@ -134,7 +134,7 @@ mod tests {
             unreachable!("already checked for Err(ScanErr(_))");
         };
 
-        let expected = PgErrorKind::RoleSpecError(expected);
+        let expected = RoleSpecError(expected);
         assert_eq!(&expected, actual.source());
     }
 }

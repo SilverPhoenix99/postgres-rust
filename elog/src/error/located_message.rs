@@ -1,7 +1,7 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct LocatedMessage<T>
 where
-    T: Error
+    T: LogMessage
 {
     source: T,
     location: Location,
@@ -9,7 +9,7 @@ where
 
 impl<T> LocatedMessage<T>
 where
-    T: Error
+    T: LogMessage
 {
     pub fn new<S: Into<T>>(source: S, location: Location) -> Self {
         Self {
@@ -25,7 +25,7 @@ where
 
 impl<T> core::error::Error for LocatedMessage<T>
 where
-    T: Error + 'static
+    T: LogMessage + 'static
 {
     fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         Some(&self.source)
@@ -34,7 +34,7 @@ where
 
 impl<T> Display for LocatedMessage<T>
 where
-    T: Error
+    T: LogMessage
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
 
@@ -49,16 +49,16 @@ where
 
 impl<T> HasLocation for LocatedMessage<T>
 where
-    T: Error
+    T: LogMessage
 {
     fn location(&self) -> &Location {
         &self.location
     }
 }
 
-impl<T> Error for LocatedMessage<T>
+impl<T> LogMessage for LocatedMessage<T>
 where
-    T: Error + 'static
+    T: LogMessage + 'static
 {
     #[inline(always)]
     fn sql_state(&self) -> SqlState {
@@ -83,7 +83,7 @@ where
 
 impl<T> From<LocatedMessage<T>> for Located<T>
 where
-    T: Error
+    T: LogMessage
 {
     fn from(value: LocatedMessage<T>) -> Self {
         (value.source, value.location)
@@ -91,8 +91,8 @@ where
 }
 
 use crate::sql_state::SqlState;
-use crate::Error;
 use crate::HasLocation;
+use crate::LogMessage;
 use core::fmt::Display;
 use core::fmt::Formatter;
 use core::fmt::Result;

@@ -12,12 +12,13 @@ pub enum Error {
     ForbiddenRoleSpec(&'static str),
 }
 
-impl crate::Error for Error {
+impl LogMessage for Error {
 
     fn sql_state(&self) -> SqlState {
         SqlState::ReservedName
     }
 }
 
+use crate::LogMessage;
 use crate::SqlState;
 use pg_basics::Str;
