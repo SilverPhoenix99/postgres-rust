@@ -17,16 +17,16 @@ where
     }
 }
 
-impl From<EofErrorKind> for ScanErrorKind {
-    fn from(value: EofErrorKind) -> Self {
+impl From<eof::Error> for ScanErrorKind {
+    fn from(value: eof::Error) -> Self {
         match value {
-            EofErrorKind::NotEof(err) => ScanErr(err),
-            EofErrorKind::Eof(loc) => Self::Eof(loc)
+            eof::Error::NotEof(err) => ScanErr(err),
+            eof::Error::Eof(loc) => Self::Eof(loc)
         }
     }
 }
 
-use crate::result::EofErrorKind;
+use crate::eof;
 use crate::result::ScanErrorKind::ScanErr;
 use pg_basics::Location;
 use pg_elog::PgError;

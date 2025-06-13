@@ -9,6 +9,11 @@ mod result;
 mod stream;
 mod tests;
 
+mod eof {
+    pub(crate) use crate::result::eof::error::*;
+    pub(crate) use crate::result::eof::result::*;
+}
+
 pub use self::{
     config::ParserConfig,
     parser::{Parser, ParserResult}

@@ -1,7 +1,7 @@
 #[derive(Debug)]
 pub(super) struct BufferedLexer<'src> {
     pub lexer: Lexer<'src>,
-    pub peek: Option<EofResult<Located<RawTokenKind>>>,
+    pub peek: Option<eof::Result<Located<RawTokenKind>>>,
     pub backslash_quote: BackslashQuote,
     /// All the warnings that have been collected while parsing.
     pub warnings: Vec<Located<Warning>>
@@ -9,7 +9,7 @@ pub(super) struct BufferedLexer<'src> {
 
 impl BufferedLexer<'_> {
 
-    pub fn next(&mut self) -> EofResult<Located<RawTokenKind>> {
+    pub fn next(&mut self) -> eof::Result<Located<RawTokenKind>> {
         match self.peek() {
             Ok(_) => self.peek.take().unwrap(),
             Err(err) => {
@@ -19,7 +19,7 @@ impl BufferedLexer<'_> {
         }
     }
 
-    fn peek(&mut self) -> &EofResult<Located<RawTokenKind>> {
+    fn peek(&mut self) -> &eof::Result<Located<RawTokenKind>> {
 
         self.peek.get_or_insert_with(|| {
             match self.lexer.next() {
@@ -33,8 +33,8 @@ impl BufferedLexer<'_> {
         })
     }
 
-    pub fn parse_identifier(&mut self, slice: &str, loc: Location, kind: IdentifierKind) -> EofResult<Located<TokenValue>> {
-        use IdentifierKind::*;
+    pub fn parse_identifier(&mut self, slice: &str, loc: Location, kind: IdentifierKind) -> eof::Result<Located<TokenValue>> {
+        use IdentifierKind::{Basic, Unicode};
 
         /*
             An identifier is truncated to 64 chars.
@@ -84,7 +84,7 @@ impl BufferedLexer<'_> {
         Ok((ident, loc))
     }
 
-    pub fn parse_bit_string(&mut self, slice: &str, loc: Location, kind: BitStringKind) -> EofResult<Located<TokenValue>> {
+    pub fn parse_bit_string(&mut self, slice: &str, loc: Location, kind: BitStringKind) -> eof::Result<Located<TokenValue>> {
 
         /*
             b'0101' ( SCONST )*
@@ -110,8 +110,8 @@ impl BufferedLexer<'_> {
         Ok((value, loc))
     }
 
-    pub fn parse_string(&mut self, slice: &str, loc: Location, kind: StringKind) -> EofResult<Located<TokenValue>> {
-        use StringKind::*;
+    pub fn parse_string(&mut self, slice: &str, loc: Location, kind: StringKind) -> eof::Result<Located<TokenValue>> {
+        use StringKind::{Basic, Unicode};
 
         /*
               'String' ( SCONST )*
@@ -174,7 +174,7 @@ impl BufferedLexer<'_> {
     }
 
     fn uescape(&mut self) -> ParseResult<char> {
-        use StringKind::*;
+        use StringKind::Basic;
 
         /*
             ( UESCAPE ( SCONST )+ )?
@@ -235,10 +235,10 @@ impl BufferedLexer<'_> {
     }
 }
 
+use crate::eof;
+use crate::eof::Error::Eof;
+use crate::eof::Error::NotEof;
 use crate::parser::ParseResult;
-use crate::result::EofErrorKind::Eof;
-use crate::result::EofErrorKind::NotEof;
-use crate::result::EofResult;
 use crate::stream::string_decoders::BasicStringDecoder;
 use crate::stream::string_decoders::ExtendedStringDecoder;
 use crate::stream::string_decoders::ExtendedStringResult;
@@ -256,9 +256,12 @@ use pg_elog::parser::Warning;
 use pg_elog::PgError;
 use pg_lexer::BitStringKind;
 use pg_lexer::IdentifierKind;
+use pg_lexer::IdentifierKind::Quoted;
 use pg_lexer::Keyword::Uescape;
 use pg_lexer::Lexer;
 use pg_lexer::RawTokenKind;
 use pg_lexer::RawTokenKind::Keyword;
 use pg_lexer::RawTokenKind::StringLiteral;
 use pg_lexer::StringKind;
+use pg_lexer::StringKind::Dollar;
+use pg_lexer::StringKind::Extended;

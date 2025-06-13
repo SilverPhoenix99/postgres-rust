@@ -4,7 +4,7 @@ impl<T> Required<T> for ScanResult<T> {
     fn required(self) -> ParseResult<T> {
         self.map_err(|err| match err {
             ScanErr(err) => err,
-            NoMatch(loc) | Eof(loc) => syntax(loc)
+            NoMatch(loc) | ScanEof(loc) => syntax(loc)
         })
     }
 }
@@ -14,7 +14,7 @@ impl<T> TryMatch<T> for ScanResult<T> {
         match self {
             Ok(ok) => Ok(Some(ok)),
             Err(NoMatch(_)) => Ok(None),
-            Err(Eof(loc)) => Err(syntax(loc)),
+            Err(ScanEof(loc)) => Err(syntax(loc)),
             Err(ScanErr(err)) => Err(err),
         }
     }
@@ -24,31 +24,32 @@ impl<T> Optional<T> for ScanResult<T> {
     fn optional(self) -> ParseResult<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
-            Err(NoMatch(_) | Eof(_)) => Ok(None),
+            Err(NoMatch(_) | ScanEof(_)) => Ok(None),
             Err(ScanErr(err)) => Err(err),
         }
     }
 }
 
 impl<T> MaybeMatch<T> for ScanResult<T> {
-    fn maybe_match(self) -> EofResult<Option<T>> {
+    fn maybe_match(self) -> eof::Result<Option<T>> {
         match self {
             Ok(ok) => Ok(Some(ok)),
             Err(NoMatch(_)) => Ok(None),
-            Err(Eof(loc)) => Err(EofErrorKind::Eof(loc)),
-            Err(ScanErr(err)) => Err(EofErrorKind::NotEof(err)),
+            Err(ScanEof(loc)) => Err(Eof(loc)),
+            Err(ScanErr(err)) => Err(NotEof(err)),
         }
     }
 }
 
+use crate::eof;
+use crate::eof::Error::Eof;
+use crate::eof::Error::NotEof;
 use crate::parser::ParseResult;
-use crate::result::EofErrorKind;
-use crate::result::EofResult;
 use crate::result::MaybeMatch;
 use crate::result::Optional;
 use crate::result::Required;
 use crate::result::ScanErrorKind;
-use crate::result::ScanErrorKind::Eof;
+use crate::result::ScanErrorKind::Eof as ScanEof;
 use crate::result::ScanErrorKind::NoMatch;
 use crate::result::ScanErrorKind::ScanErr;
 use crate::result::TryMatch;
