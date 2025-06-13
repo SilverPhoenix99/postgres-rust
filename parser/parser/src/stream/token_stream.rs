@@ -28,7 +28,7 @@ impl<'src> TokenStream<'src> {
         self.lexer.lexer.source()
     }
 
-    pub fn warnings(&mut self) -> Option<&mut Vec<Located<ParserWarningKind>>> {
+    pub fn warnings(&mut self) -> Option<&mut Vec<Located<Warning>>> {
         if self.lexer.warnings.is_empty() {
             None
         }
@@ -239,8 +239,8 @@ impl TokenConsumer<TokenValue, bool> for TokenStream<'_> {
 mod tests {
     use super::*;
     use crate::tests::DEFAULT_CONFIG;
+    use pg_elog::parser::Error::Syntax;
     use pg_elog::syntax;
-    use pg_elog::ParserErrorKind::Syntax;
     use pg_elog::PgErrorKind;
     use TokenValue::Identifier;
 
@@ -374,8 +374,8 @@ use pg_basics::guc::BackslashQuote;
 use pg_basics::Located;
 use pg_basics::Location;
 use pg_basics::NumberRadix;
+use pg_elog::parser::Warning;
 use pg_elog::HasLocation;
-use pg_elog::ParserWarningKind;
 use pg_lexer::Lexer;
 use pg_lexer::RawTokenKind;
 use std::collections::VecDeque;

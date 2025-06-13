@@ -118,7 +118,7 @@ fn zone_value_interval() -> impl Combinator<Output = IntervalRange> {
             match res {
                 Ok((ok @ (Full { .. } | Hour | HourToMinute), _)) => Ok(ok),
                 Ok((_, loc)) => {
-                    let err = ParserError::new(InvalidZoneValue, loc);
+                    let err = InvalidZoneValue.at(loc);
                     Err(err.into())
                 },
                 Err(err) => Err(err),
@@ -245,8 +245,7 @@ use pg_ast::ZoneValue::Interval;
 use pg_ast::ZoneValue::Local;
 use pg_ast::ZoneValue::Numeric;
 use pg_basics::Str;
-use pg_elog::ParserError;
-use pg_elog::ParserErrorKind::InvalidZoneValue;
+use pg_elog::parser::Error::InvalidZoneValue;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Authorization;

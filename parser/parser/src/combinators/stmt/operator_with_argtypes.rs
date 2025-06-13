@@ -111,7 +111,7 @@ use crate::result::ScanErrorKind::ScanErr;
 use pg_ast::OneOrBoth;
 use pg_ast::OperatorWithArgs;
 use pg_ast::Type;
-use pg_elog::ParserErrorKind::MissingOperatorArgumentType;
+use pg_elog::parser::Error::MissingOperatorArgumentType;
 use pg_elog::PgError;
 use pg_lexer::Keyword::NoneKw;
 use pg_lexer::OperatorKind::CloseParenthesis;

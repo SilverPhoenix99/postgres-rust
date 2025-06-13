@@ -71,7 +71,7 @@ pub(super) fn check_indirection(indirection: Located<Vec<Indirection>>) -> ScanR
         Ok(indirection)
     }
     else {
-        let err = ParserError::new(ImproperUseOfStar, location);
+        let err = ImproperUseOfStar.at(location);
         Err(err.into())
     }
 }
@@ -160,8 +160,7 @@ use pg_ast::Indirection::Slice;
 use pg_ast::Indirection::SliceFrom;
 use pg_ast::Indirection::SliceTo;
 use pg_basics::Located;
-use pg_elog::ParserError;
-use pg_elog::ParserErrorKind::ImproperUseOfStar;
+use pg_elog::parser::Error::ImproperUseOfStar;
 use pg_lexer::OperatorKind::Colon;
 use pg_lexer::OperatorKind::Dot;
 use pg_lexer::OperatorKind::Mul;

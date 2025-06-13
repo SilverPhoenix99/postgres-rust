@@ -7,6 +7,12 @@ pub mod lexer {
     pub use crate::error::lexer::*;
 }
 
+pub mod parser {
+    pub use crate::error::parser::error::*;
+    pub use crate::error::parser::warning::*;
+    pub use crate::error::parser::LocatedError;
+}
+
 pub mod role_spec {
     pub use crate::error::role_spec::*;
 }
@@ -18,7 +24,6 @@ pub mod unicode_string {
 mod error;
 mod has_location;
 mod log_level;
-mod parser;
 mod pg_error;
 mod sql_state;
 
@@ -27,7 +32,6 @@ pub use self::{
     error::Error,
     has_location::HasLocation,
     log_level::LogLevel,
-    parser::{NameList, ParserError, ParserErrorKind, ParserWarningKind},
     pg_error::{syntax, PgError, PgErrorKind},
     sql_state::{SqlState, SqlStateCategory, UnknownSqlState},
 };

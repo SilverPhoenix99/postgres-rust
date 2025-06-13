@@ -4,7 +4,7 @@ pub(super) struct BufferedLexer<'src> {
     pub peek: Option<EofResult<Located<RawTokenKind>>>,
     pub backslash_quote: BackslashQuote,
     /// All the warnings that have been collected while parsing.
-    pub warnings: Vec<Located<ParserWarningKind>>
+    pub warnings: Vec<Located<Warning>>
 }
 
 impl BufferedLexer<'_> {
@@ -250,9 +250,9 @@ use pg_basics::guc::BackslashQuote;
 use pg_basics::Located;
 use pg_basics::Location;
 use pg_basics::NAMEDATALEN;
-use pg_elog::ParserErrorKind::InvalidUescapeDelimiter;
-use pg_elog::ParserErrorKind::UescapeDelimiterMissing;
-use pg_elog::ParserWarningKind;
+use pg_elog::parser::Error::InvalidUescapeDelimiter;
+use pg_elog::parser::Error::UescapeDelimiterMissing;
+use pg_elog::parser::Warning;
 use pg_elog::PgError;
 use pg_lexer::BitStringKind;
 use pg_lexer::IdentifierKind;
