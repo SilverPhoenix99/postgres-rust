@@ -8,7 +8,7 @@ macro_rules! match_first {
         $crate::combinators::foundation::parser(|stream| {
             #[allow(unused_imports)]
             use $crate::combinators::foundation::Combinator;
-            use $crate::result::ScanErrorKind::ScanErr;
+            use $crate::scan::Error::ScanErr;
 
             let p = $head;
             let result = p.parse(stream);
@@ -42,7 +42,7 @@ macro_rules! match_first_with_state {
     ) => {
         $($move)? |$state, $stream| {
             use $crate::combinators::foundation::Combinator;
-            use $crate::result::ScanErrorKind::{Eof, NoMatch, ScanErr};
+            use $crate::scan::Error::{Eof, NoMatch, ScanErr};
 
             let p = $head;
             let result = p.parse($stream);
@@ -99,7 +99,7 @@ where
 {
     type Output = L::Output;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
 
         if let Some(ok) = self.left.parse(stream).optional()? {
             return Ok(ok)
@@ -111,5 +111,5 @@ where
 
 use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
-use crate::result::ScanResult;
+use crate::scan::Result;
 use crate::stream::TokenStream;

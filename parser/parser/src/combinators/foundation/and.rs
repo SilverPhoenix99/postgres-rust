@@ -43,7 +43,7 @@ where
 {
     type Output = (L::Output, R::Output);
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
 
         let first = self.left.parse(stream)?;
         let second = self.right.parse(stream).required()?;
@@ -53,5 +53,5 @@ where
 
 use crate::combinators::foundation::Combinator;
 use crate::result::Required;
-use crate::result::ScanResult;
+use crate::scan::Result;
 use crate::stream::TokenStream;

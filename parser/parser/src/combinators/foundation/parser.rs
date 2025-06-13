@@ -10,7 +10,7 @@ pub(in crate::combinators) use enclosure;
 
 pub(in crate::combinators) fn parser<F, T>(parser: F) -> ClosureCombi<F, T>
 where
-    F: Fn(&mut TokenStream) -> ScanResult<T>
+    F: Fn(&mut TokenStream) -> Result<T>
 {
     ClosureCombi {
         parser,
@@ -25,18 +25,18 @@ pub(in crate::combinators) struct ClosureCombi<F, T> {
 
 impl<F, T> Combinator for ClosureCombi<F, T>
 where
-    F: Fn(&mut TokenStream) -> ScanResult<T>
+    F: Fn(&mut TokenStream) -> Result<T>
 {
     type Output = T;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
         (self.parser)(stream)
     }
 }
 
 impl<F, T> Debug for ClosureCombi<F, T>
 where
-    F: Fn(&mut TokenStream) -> ScanResult<T>
+    F: Fn(&mut TokenStream) -> Result<T>
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("ClosureCombi")
@@ -44,7 +44,7 @@ where
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::result::ScanResult;
+use crate::scan::Result;
 use crate::stream::TokenStream;
 use std::fmt::Debug;
 use std::fmt::Formatter;

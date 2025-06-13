@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub(crate) enum ScanErrorKind {
+pub(crate) enum Error {
     /// When an unrecoverable error occurs.
     ScanErr(PgError),
     /// When there are no more tokens.
@@ -8,7 +8,7 @@ pub(crate) enum ScanErrorKind {
     NoMatch(Location),
 }
 
-impl<T> From<T> for ScanErrorKind
+impl<T> From<T> for Error
 where
     T: Into<PgError>
 {
@@ -17,7 +17,7 @@ where
     }
 }
 
-impl From<eof::Error> for ScanErrorKind {
+impl From<eof::Error> for Error {
     fn from(value: eof::Error) -> Self {
         match value {
             eof::Error::NotEof(err) => ScanErr(err),
@@ -27,6 +27,6 @@ impl From<eof::Error> for ScanErrorKind {
 }
 
 use crate::eof;
-use crate::result::ScanErrorKind::ScanErr;
+use crate::scan::Error::ScanErr;
 use pg_basics::Location;
 use pg_elog::PgError;

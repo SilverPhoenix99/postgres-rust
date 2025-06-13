@@ -56,7 +56,7 @@ where
 {
     type Output = Vec<P::Output>;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
 
         let mut elements = vec![self.0.parse(stream)?];
 
@@ -82,7 +82,7 @@ where
 {
     type Output = Vec<P::Output>;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
 
         let mut elements = vec![self.first.parse(stream)?];
 
@@ -108,7 +108,7 @@ where
 {
     type Output = Vec<P::Output>;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
 
         let mut elements = vec![self.parser.parse(stream)?];
 
@@ -127,5 +127,5 @@ where
 use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
 use crate::result::Required;
-use crate::result::ScanResult;
+use crate::scan::Result;
 use crate::stream::TokenStream;

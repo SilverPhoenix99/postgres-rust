@@ -67,7 +67,7 @@ use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use crate::result::ScanErrorKind::NoMatch;
+use crate::scan::Error::NoMatch;
 use crate::stream::TokenValue::Keyword as Kw;
 use pg_ast::ExprNode;
 use pg_lexer::Keyword::Current;

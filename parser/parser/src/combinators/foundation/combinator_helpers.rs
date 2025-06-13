@@ -86,7 +86,7 @@ where
 
     /// See [`map_err()`](map_err).
     #[inline]
-    fn map_err(self, mapper: impl Fn(ScanErrorKind) -> ScanErrorKind)
+    fn map_err(self, mapper: impl Fn(Error) -> Error)
         -> impl Combinator<Output = Self::Output>
     {
         map_err(self, mapper)
@@ -94,7 +94,7 @@ where
 
     /// See [`map_result()`](map_result).
     #[inline]
-    fn map_result<O>(self, mapper: impl Fn(ScanResult<Self::Output>) -> ScanResult<O>)
+    fn map_result<O>(self, mapper: impl Fn(Result<Self::Output>) -> Result<O>)
         -> impl Combinator<Output = O>
     {
         map_result(self, mapper)
@@ -123,7 +123,7 @@ where
 
     /// This is similar to [`CombinatorHelpers::map_result()`],
     /// but includes the stream as an argument to the closure.
-    fn chain_result<O>(self, mapper: impl Fn(ScanResult<Self::Output>, &mut TokenStream) -> ScanResult<O>)
+    fn chain_result<O>(self, mapper: impl Fn(Result<Self::Output>, &mut TokenStream) -> Result<O>)
         -> impl Combinator<Output = O>
     {
         parser(move |stream| {
@@ -134,11 +134,11 @@ where
 
     /// This is similar to [`CombinatorHelpers::map()`],
     /// but includes the stream as an argument to the closure.
-    fn chain<O>(self, mapper: impl Fn(Self::Output, &mut TokenStream) -> ScanResult<O>)
+    fn chain<O>(self, mapper: impl Fn(Self::Output, &mut TokenStream) -> Result<O>)
         -> impl Combinator<Output = O>
     {
-        fn inner<I, O>(mapper: impl Fn(I, &mut TokenStream) -> ScanResult<O>)
-            -> impl Fn(ScanResult<I>, &mut TokenStream) -> ScanResult<O>
+        fn inner<I, O>(mapper: impl Fn(I, &mut TokenStream) -> Result<O>)
+            -> impl Fn(Result<I>, &mut TokenStream) -> Result<O>
         {
             move |result, stream| mapper(result?, stream)
         }
@@ -149,11 +149,11 @@ where
 
     /// This is similar to [`CombinatorHelpers::map_err()`],
     /// but includes the stream as an argument to the closure.
-    fn chain_err(self, mapper: impl Fn(ScanErrorKind, &mut TokenStream) -> ScanResult<Self::Output>)
+    fn chain_err(self, mapper: impl Fn(Error, &mut TokenStream) -> Result<Self::Output>)
         -> impl Combinator<Output = Self::Output>
     {
-        fn inner<I>(mapper: impl Fn(ScanErrorKind, &mut TokenStream) -> ScanResult<I>)
-            -> impl Fn(ScanResult<I>, &mut TokenStream) -> ScanResult<I>
+        fn inner<I>(mapper: impl Fn(Error, &mut TokenStream) -> Result<I>)
+            -> impl Fn(Result<I>, &mut TokenStream) -> Result<I>
         {
             move |result, stream|
                 match result {
@@ -188,6 +188,6 @@ use crate::combinators::foundation::OrCombi;
 use crate::combinators::foundation::RequiredCombi;
 use crate::combinators::foundation::SkipCombi;
 use crate::combinators::foundation::TryMatchCombi;
-use crate::result::ScanErrorKind;
-use crate::result::ScanResult;
+use crate::scan::Error;
+use crate::scan::Result;
 use crate::stream::TokenStream;

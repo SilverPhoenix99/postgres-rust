@@ -168,7 +168,7 @@ fn parse_number(value: &str, radix: NumberRadix) -> UnsignedNumber {
 }
 
 pub(crate) trait TokenConsumer<TOut, FRes> {
-    fn consume<F>(&mut self, f: F) -> ScanResult<TOut>
+    fn consume<F>(&mut self, f: F) -> scan::Result<TOut>
     where
         F: Fn(&mut TokenValue) -> FRes;
 }
@@ -178,7 +178,7 @@ pub(crate) trait TokenConsumer<TOut, FRes> {
 pub(crate) type ConsumerResult<T> = ParseResult<Option<T>>;
 
 impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenStream<'_> {
-    fn consume<F>(&mut self, mapper: F) -> ScanResult<TOut>
+    fn consume<F>(&mut self, mapper: F) -> scan::Result<TOut>
     where
         F: Fn(&mut TokenValue) -> ConsumerResult<TOut>
     {
@@ -207,7 +207,7 @@ impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenStream<'_> {
 
 impl<TOut> TokenConsumer<TOut, Option<TOut>> for TokenStream<'_> {
     #[inline(always)]
-    fn consume<F>(&mut self, mapper: F) -> ScanResult<TOut>
+    fn consume<F>(&mut self, mapper: F) -> scan::Result<TOut>
     where
         F: Fn(&mut TokenValue) -> Option<TOut>
     {
@@ -216,7 +216,7 @@ impl<TOut> TokenConsumer<TOut, Option<TOut>> for TokenStream<'_> {
 }
 
 impl TokenConsumer<TokenValue, bool> for TokenStream<'_> {
-    fn consume<P>(&mut self, pred: P) -> ScanResult<TokenValue>
+    fn consume<P>(&mut self, pred: P) -> scan::Result<TokenValue>
     where
         P: Fn(&mut TokenValue) -> bool
     {
@@ -273,7 +273,7 @@ mod tests {
     fn test_consume_returning_err() {
         let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
-        let actual: ScanResult<()> = buffer.consume(|_| {
+        let actual: scan::Result<()> = buffer.consume(|_| {
             let err = syntax(Location::new(0..0, 0, 0));
             Err(err)
         });
@@ -300,7 +300,7 @@ mod tests {
     fn test_consume_returning_none() {
         let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
-        let result: ScanResult<()> = buffer.consume(|_| None);
+        let result: scan::Result<()> = buffer.consume(|_| None);
         assert_matches!(result, Err(NoMatch(_)));
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
     }
@@ -318,7 +318,7 @@ mod tests {
     fn test_consume_returning_false() {
         let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
 
-        let result: ScanResult<TokenValue> = buffer.consume(|_| false);
+        let result: scan::Result<TokenValue> = buffer.consume(|_| false);
         assert_matches!(result, Err(NoMatch(_)));
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
     }
@@ -361,9 +361,9 @@ use crate::eof;
 use crate::eof::Error::Eof;
 use crate::eof::Error::NotEof;
 use crate::parser::ParseResult;
-use crate::result::ScanErrorKind::NoMatch;
-use crate::result::ScanErrorKind::ScanErr;
-use crate::result::ScanResult;
+use crate::scan;
+use crate::scan::Error::NoMatch;
+use crate::scan::Error::ScanErr;
 use crate::stream::buffered_lexer::BufferedLexer;
 use crate::stream::token_value::TokenValue;
 use crate::ParserConfig;

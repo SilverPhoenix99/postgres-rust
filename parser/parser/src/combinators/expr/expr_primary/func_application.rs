@@ -100,7 +100,7 @@ fn variadic_func_args() -> impl Combinator<Output = (Vec<FuncArgExpr>, bool)> {
 fn sanitize_variadic_args(
     args: Vec<(FuncArgExpr, Option<Location>)>
 )
-    -> ScanResult<(Vec<FuncArgExpr>, bool)>
+    -> Result<(Vec<FuncArgExpr>, bool)>
 {
     let (args, variadics): (Vec<_>, Vec<_>) = args.into_iter()
         .enumerate()
@@ -264,7 +264,7 @@ use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::func_arg_expr;
 use crate::combinators::func_arg_list;
 use crate::combinators::sort_clause;
-use crate::result::ScanResult;
+use crate::scan::Result;
 use pg_ast::FuncArgExpr;
 use pg_ast::FuncArgsKind;
 use pg_ast::FuncArgsKind::All;

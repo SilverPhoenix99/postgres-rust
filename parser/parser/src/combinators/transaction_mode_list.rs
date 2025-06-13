@@ -77,7 +77,7 @@ fn isolation_level() -> impl Combinator<Output = IsolationLevel> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::result::ScanErrorKind::NoMatch;
+    use crate::scan::Error::NoMatch;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
 

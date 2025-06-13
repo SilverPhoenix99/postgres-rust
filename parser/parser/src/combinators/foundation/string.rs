@@ -14,7 +14,7 @@ pub(in crate::combinators) struct StringCombi;
 impl Combinator for StringCombi {
     type Output = Box<str>;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
         stream.consume(|tok| {
             let TokenValue::String(value) = tok else { return None };
             Some(mem::take(value))
@@ -47,7 +47,7 @@ mod tests {
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::result::ScanResult;
+use crate::scan::Result;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue;

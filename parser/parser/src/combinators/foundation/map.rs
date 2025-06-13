@@ -2,7 +2,7 @@
 pub(in crate::combinators) fn map_result<P, M, O>(parser: P, mapper: M) -> MapResultCombi<P, M, O>
 where
     P: Combinator,
-    M: Fn(ScanResult<P::Output>) -> ScanResult<O>
+    M: Fn(Result<P::Output>) -> Result<O>
 {
     MapResultCombi {
         parser,
@@ -19,7 +19,7 @@ where
 {
     // Reduces size of type names:
     fn inner<I, O>(mapper: impl Fn(I) -> O)
-        -> impl Fn(ScanResult<I>)-> ScanResult<O>
+        -> impl Fn(Result<I>)-> Result<O>
     {
         move |result| result.map(&mapper)
     }
@@ -32,14 +32,14 @@ where
 }
 
 /// Maps the `Err(_)` value of a parser combinator into another type.
-pub(in crate::combinators) fn map_err<P>(parser: P, mapper: impl Fn(ScanErrorKind) -> ScanErrorKind)
+pub(in crate::combinators) fn map_err<P>(parser: P, mapper: impl Fn(Error) -> Error)
     -> impl Combinator<Output = P::Output>
 where
     P: Combinator
 {
     // Reduces size of type names:
-    fn inner<I>(mapper: impl Fn(ScanErrorKind) -> ScanErrorKind)
-        -> impl Fn(ScanResult<I>) -> ScanResult<I>
+    fn inner<I>(mapper: impl Fn(Error) -> Error)
+        -> impl Fn(Result<I>) -> Result<I>
     {
         move |result| result.map_err(&mapper)
     }
@@ -61,11 +61,11 @@ pub(in crate::combinators) struct MapResultCombi<P, M, O> {
 impl<P, M, O> Combinator for MapResultCombi<P, M, O>
 where
     P: Combinator,
-    M: Fn(ScanResult<P::Output>) -> ScanResult<O>
+    M: Fn(Result<P::Output>) -> Result<O>
 {
     type Output = O;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
         (self.mapper)(self.parser.parse(stream))
     }
 }
@@ -73,7 +73,7 @@ where
 impl<P, M, O> Debug for MapResultCombi<P, M, O>
 where
     P: Combinator + Debug,
-    M: Fn(ScanResult<P::Output>) -> ScanResult<O>
+    M: Fn(Result<P::Output>) -> Result<O>
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("MapResultCombi")
@@ -83,8 +83,8 @@ where
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::result::ScanErrorKind;
-use crate::result::ScanResult;
+use crate::scan::Error;
+use crate::scan::Result;
 use crate::stream::TokenStream;
 use std::fmt::Debug;
 use std::fmt::Formatter;

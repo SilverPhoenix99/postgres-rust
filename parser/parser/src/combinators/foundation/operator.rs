@@ -61,7 +61,7 @@ pub(in crate::combinators) fn operator_result<O>(
 impl Combinator for OperatorKind {
     type Output = OperatorKind;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
         stream.consume(|tok| match tok {
             Operator(op) if op == self => Some(*op),
             _ => None,
@@ -82,7 +82,7 @@ where
 {
     type Output = O;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<O> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<O> {
         stream.consume(|tok|
             match tok {
                 Operator(op) => (self.mapper)(*op),
@@ -99,7 +99,7 @@ impl<F, T> Debug for OperatorCondCombi<F, T> {
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::result::ScanResult;
+use crate::scan::Result;
 use crate::stream::ConsumerResult;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;

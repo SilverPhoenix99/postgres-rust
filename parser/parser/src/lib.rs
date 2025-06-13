@@ -14,6 +14,11 @@ mod eof {
     pub(crate) use crate::result::eof::result::*;
 }
 
+mod scan {
+    pub(crate) use crate::result::scan::error::*;
+    pub(crate) use crate::result::scan::result::*;
+}
+
 pub use self::{
     config::ParserConfig,
     parser::{Parser, ParserResult}

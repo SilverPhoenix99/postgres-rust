@@ -21,10 +21,10 @@ where
 {
     type Output = Option<P::Output>;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
         self.0.parse(stream)
             .optional()
-            .map_err(ScanErrorKind::from)
+            .map_err(Error::from)
     }
 }
 
@@ -61,6 +61,6 @@ mod tests {
 
 use crate::combinators::foundation::Combinator;
 use crate::result::Optional as Opt;
-use crate::result::ScanErrorKind;
-use crate::result::ScanResult;
+use crate::scan::Error;
+use crate::scan::Result;
 use crate::stream::TokenStream;

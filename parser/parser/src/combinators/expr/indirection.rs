@@ -57,7 +57,7 @@ fn indirection_el() -> impl Combinator<Output = Indirection> {
     )
 }
 
-pub(super) fn check_indirection(indirection: Located<Vec<Indirection>>) -> ScanResult<Vec<Indirection>> {
+pub(super) fn check_indirection(indirection: Located<Vec<Indirection>>) -> Result<Vec<Indirection>> {
 
     // If present, '.*' must be the last element
 
@@ -150,7 +150,7 @@ use crate::combinators::foundation::or;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use crate::result::ScanResult;
+use crate::scan::Result;
 use pg_ast::Indirection;
 use pg_ast::Indirection::All;
 use pg_ast::Indirection::FullSlice;

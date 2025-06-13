@@ -19,7 +19,7 @@ where
 {
     type Output = Located<P::Output>;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> ScanResult<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
 
         let loc = stream.current_location();
         self.parser.parse(stream)
@@ -28,6 +28,6 @@ where
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::result::ScanResult;
+use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_basics::Located;
