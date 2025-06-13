@@ -88,7 +88,7 @@ impl Display for NameList {
     }
 }
 
-impl crate::Error for Error {
+impl LogMessage for Error {
 
     fn sql_state(&self) -> SqlState {
         match self {
@@ -143,6 +143,7 @@ use crate::sql_state::SqlState::InvalidParameterValue;
 use crate::sql_state::SqlState::SyntaxError;
 use crate::sql_state::SqlState::WindowingError;
 use crate::LocatedMessage;
+use crate::LogMessage;
 use core::fmt::Display;
 use core::fmt::Formatter;
 use core::fmt::Result;

@@ -54,7 +54,7 @@ pub enum Error {
     UnsafeUnicodeString,
 }
 
-impl crate::Error for Error {
+impl LogMessage for Error {
 
     #[inline(always)]
     fn sql_state(&self) -> SqlState {
@@ -76,6 +76,7 @@ impl crate::Error for Error {
 
 use self::Error::UnsafeUnicodeString;
 use crate::LocatedMessage;
+use crate::LogMessage;
 use crate::SqlState;
 use crate::SqlState::SyntaxError;
 use pg_basics::NumberRadix;

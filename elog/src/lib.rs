@@ -23,14 +23,15 @@ pub mod unicode_string {
 mod error;
 mod has_location;
 mod log_level;
+mod log_message;
 mod pg_error;
 mod sql_state;
 
 pub use self::{
     error::located_message::LocatedMessage,
-    error::Error,
     has_location::HasLocation,
     log_level::LogLevel,
-    pg_error::{syntax, PgError, PgErrorKind},
+    log_message::LogMessage,
+    pg_error::{syntax, Error, PgError},
     sql_state::{SqlState, SqlStateCategory, UnknownSqlState},
 };

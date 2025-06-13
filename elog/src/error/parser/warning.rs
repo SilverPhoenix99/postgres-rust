@@ -7,7 +7,7 @@ pub enum Warning {
     ExtendedStringWarning(#[from] extended_string::Warning)
 }
 
-impl Error for Warning {
+impl LogMessage for Warning {
 
     fn sql_state(&self) -> SqlState {
         match self {
@@ -26,5 +26,5 @@ impl Error for Warning {
 
 use crate::extended_string;
 use crate::sql_state::SqlState;
-use crate::Error;
+use crate::LogMessage;
 use pg_basics::Str;

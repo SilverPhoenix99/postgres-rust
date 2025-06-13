@@ -1,4 +1,4 @@
-pub type PgError = LocatedMessage<PgErrorKind>;
+pub type PgError = LocatedMessage<Error>;
 
 #[inline]
 pub fn syntax<T>(location: Location) -> T
@@ -9,7 +9,7 @@ where
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, thiserror::Error)]
-pub enum PgErrorKind {
+pub enum Error {
     #[error("{0}")] Lexer(#[from] lexer::Error),
     #[error("{0}")] Parser(#[from] parser::Error),
     #[error("{0}")] ExtendedString(#[from] extended_string::Error),
@@ -17,11 +17,11 @@ pub enum PgErrorKind {
     #[error("{0}")] RoleSpecError(#[from] role_spec::Error),
 }
 
-impl Error for PgErrorKind {
+impl LogMessage for Error {
     fn sql_state(&self) -> SqlState {
         match self {
-            Self::Lexer(err) => err.sql_state(),
-            Self::Parser(err) => err.sql_state(),
+            Lexer(err) => err.sql_state(),
+            Parser(err) => err.sql_state(),
             Self::ExtendedString(err ) => err.sql_state(),
             Self::UnicodeString(err) => err.sql_state(),
             Self::RoleSpecError(err) => err.sql_state(),
@@ -30,8 +30,8 @@ impl Error for PgErrorKind {
 
     fn hint(&self) -> Option<Str> {
         match self {
-            Self::Lexer(err) => err.hint(),
-            Self::Parser(err) => err.hint(),
+            Lexer(err) => err.hint(),
+            Parser(err) => err.hint(),
             Self::ExtendedString(err) => err.hint(),
             Self::UnicodeString(err) => err.hint(),
             Self::RoleSpecError(err) => err.hint(),
@@ -40,8 +40,8 @@ impl Error for PgErrorKind {
 
     fn detail(&self) -> Option<Str> {
         match self {
-            Self::Lexer(err) => err.detail(),
-            Self::Parser(err) => err.detail(),
+            Lexer(err) => err.detail(),
+            Parser(err) => err.detail(),
             Self::ExtendedString(err) => err.detail(),
             Self::UnicodeString(err) => err.detail(),
             Self::RoleSpecError(err) => err.detail(),
@@ -50,8 +50,8 @@ impl Error for PgErrorKind {
 
     fn detail_log(&self) -> Option<Str> {
         match self {
-            Self::Lexer(err) => err.detail_log(),
-            Self::Parser(err) => err.detail_log(),
+            Lexer(err) => err.detail_log(),
+            Parser(err) => err.detail_log(),
             Self::ExtendedString(err) => err.detail_log(),
             Self::UnicodeString(err) => err.detail_log(),
             Self::RoleSpecError(err) => err.detail_log(),
@@ -62,7 +62,7 @@ impl Error for PgErrorKind {
 impl From<lexer::LocatedError> for PgError {
     fn from(value: lexer::LocatedError) -> Self {
         let (source, location) = value.into();
-        let source = PgErrorKind::Lexer(source);
+        let source = Lexer(source);
         Self::new(source, location)
     }
 }
@@ -70,19 +70,21 @@ impl From<lexer::LocatedError> for PgError {
 impl From<parser::LocatedError> for PgError {
     fn from(value: parser::LocatedError) -> Self {
         let (source, location) = value.into();
-        let source = PgErrorKind::Parser(source);
+        let source = Parser(source);
         Self::new(source, location)
     }
 }
 
+use self::Error::Lexer;
+use self::Error::Parser;
 use crate::extended_string;
 use crate::lexer;
 use crate::parser;
 use crate::parser::Error::Syntax;
 use crate::role_spec;
 use crate::unicode_string;
-use crate::Error;
 use crate::LocatedMessage;
+use crate::LogMessage;
 use crate::SqlState;
 use pg_basics::Location;
 use pg_basics::Str;

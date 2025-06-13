@@ -16,7 +16,7 @@ pub enum Error {
     InvalidUnicodeEscape(u32),
 }
 
-impl crate::Error for Error {
+impl LogMessage for Error {
 
     fn sql_state(&self) -> SqlState {
         SyntaxError
@@ -32,4 +32,5 @@ impl crate::Error for Error {
 
 use crate::sql_state::SqlState;
 use crate::sql_state::SqlState::SyntaxError;
+use crate::LogMessage;
 use pg_basics::Str;
