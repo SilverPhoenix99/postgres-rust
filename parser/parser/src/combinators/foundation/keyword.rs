@@ -116,7 +116,7 @@ where
 }
 
 impl<F, O> Debug for KeywordCondCombi<F, O> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str("KeywordCondCombi")
     }
 }
@@ -157,8 +157,9 @@ use crate::stream::ConsumerResult;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue;
+use core::fmt;
+use core::fmt::Debug;
+use core::fmt::Formatter;
+use core::marker::PhantomData;
 use pg_lexer::Keyword;
 use pg_lexer::KeywordCategory;
-use std::fmt::Debug;
-use std::fmt::Formatter;
-use std::marker::PhantomData;

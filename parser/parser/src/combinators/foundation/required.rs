@@ -27,10 +27,10 @@ mod tests {
     use super::*;
     use crate::scan::Error::ScanErr;
     use crate::tests::DEFAULT_CONFIG;
+    use core::hint::unreachable_unchecked;
     use pg_elog::parser::Error::Syntax;
     use pg_elog::PgErrorKind;
     use pg_lexer::Keyword;
-    use std::hint::unreachable_unchecked;
 
     #[test]
     fn test_required() {

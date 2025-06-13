@@ -5,4 +5,5 @@ pub struct Opaque {
     _marker: PhantomData<(*mut u8, PhantomPinned)>,
 }
 
-use std::marker::{PhantomData, PhantomPinned};
+use core::marker::PhantomData;
+use core::marker::PhantomPinned;

@@ -38,7 +38,7 @@ impl<F, T> Debug for ClosureCombi<F, T>
 where
     F: Fn(&mut TokenStream) -> Result<T>
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str("ClosureCombi")
     }
 }
@@ -46,6 +46,7 @@ where
 use crate::combinators::foundation::Combinator;
 use crate::scan::Result;
 use crate::stream::TokenStream;
-use std::fmt::Debug;
-use std::fmt::Formatter;
-use std::marker::PhantomData;
+use core::fmt;
+use core::fmt::Debug;
+use core::fmt::Formatter;
+use core::marker::PhantomData;

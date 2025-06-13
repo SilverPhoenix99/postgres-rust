@@ -36,7 +36,7 @@ impl<T> Display for LocatedError<T>
 where
     T: Error
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
 
         let sql_state= self.source.sql_state();
         let source = &self.source;
@@ -93,8 +93,9 @@ where
 use crate::sql_state::SqlState;
 use crate::Error;
 use crate::HasLocation;
+use core::fmt::Display;
+use core::fmt::Formatter;
+use core::fmt::Result;
 use pg_basics::Located;
 use pg_basics::Location;
 use pg_basics::Str;
-use std::fmt::Display;
-use std::fmt::Formatter;

@@ -47,5 +47,5 @@ impl From<Keyword> for Str {
 use crate::keyword::keywords::ENTRIES;
 use crate::keyword::keywords::MAP;
 use crate::keyword::keywords::MAX_KEYWORD_LENGTH;
+use core::fmt::Debug;
 use pg_basics::Str;
-use std::fmt::Debug;

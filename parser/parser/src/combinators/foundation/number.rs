@@ -39,5 +39,5 @@ use crate::scan::Result;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue;
+use core::mem;
 use pg_ast::UnsignedNumber;
-use std::mem;

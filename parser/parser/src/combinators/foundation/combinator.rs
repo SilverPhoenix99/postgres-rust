@@ -6,4 +6,4 @@ pub(crate) trait Combinator: Debug {
 
 use crate::scan::Result;
 use crate::stream::TokenStream;
-use std::fmt::Debug;
+use core::fmt::Debug;

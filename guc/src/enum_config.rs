@@ -42,4 +42,4 @@ where
 
 use crate::ConfigMetadata;
 use crate::GenericConfig;
-use std::fmt::Debug;
+use core::fmt::Debug;

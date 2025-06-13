@@ -96,6 +96,6 @@ use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::sign;
+use core::ops::Neg;
 use pg_ast::SignedNumber;
 use pg_lexer::OperatorKind::Minus;
-use std::ops::Neg;

@@ -75,7 +75,7 @@ where
     P: Combinator + Debug,
     M: Fn(Result<P::Output>) -> Result<O>
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.debug_struct("MapResultCombi")
             .field("parser", &self.parser)
             .finish()
@@ -86,6 +86,7 @@ use crate::combinators::foundation::Combinator;
 use crate::scan::Error;
 use crate::scan::Result;
 use crate::stream::TokenStream;
-use std::fmt::Debug;
-use std::fmt::Formatter;
-use std::marker::PhantomData;
+use core::fmt;
+use core::fmt::Debug;
+use core::fmt::Formatter;
+use core::marker::PhantomData;

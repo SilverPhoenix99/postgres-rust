@@ -66,5 +66,5 @@ impl PartialOrd for Str {
 }
 
 use crate::impl_from;
-use std::cmp::Ordering;
-use std::ops::Deref;
+use core::cmp::Ordering;
+use core::ops::Deref;

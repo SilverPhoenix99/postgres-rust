@@ -33,4 +33,4 @@ use crate::scan::Result;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::UserDefinedOperator;
-use std::mem;
+use core::mem;
