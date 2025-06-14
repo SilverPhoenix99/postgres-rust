@@ -31,7 +31,7 @@ fn func_call_args() -> impl Combinator<Output = FuncArgsKind> {
 }
 
 fn star_args() -> impl Combinator<Output = FuncArgsKind> {
-    Mul.map(|_| Star { order_within_group: None })
+    Mul.map(|_| Wildcard { order_within_group: None })
 }
 
 fn all_args() -> impl Combinator<Output = FuncArgsKind> {
@@ -171,7 +171,7 @@ mod tests {
     use pg_ast::FuncArgExpr::Unnamed;
     use test_case::test_case;
 
-    #[test_case("(*)", Star { order_within_group: None })]
+    #[test_case("(*)", Wildcard { order_within_group: None })]
     #[test_case("(all 1, 2)", All {
         args: vec![Unnamed(IntegerConst(1)), Unnamed(IntegerConst(2))],
         order: None
@@ -270,8 +270,8 @@ use pg_ast::FuncArgsKind;
 use pg_ast::FuncArgsKind::All;
 use pg_ast::FuncArgsKind::Distinct;
 use pg_ast::FuncArgsKind::Empty;
-use pg_ast::FuncArgsKind::Star;
 use pg_ast::FuncArgsKind::Variadic;
+use pg_ast::FuncArgsKind::Wildcard;
 use pg_ast::FuncArgsOrder;
 use pg_basics::Location;
 use pg_elog::syntax;
