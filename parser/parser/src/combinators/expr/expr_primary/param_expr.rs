@@ -28,7 +28,7 @@ pub(super) fn param_expr() -> impl Combinator<Output = ExprNode> {
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use pg_ast::Indirection::FullSlice;
+    use pg_ast::Indirection::Slice;
 
     #[test]
     fn test_param_expr() {
@@ -37,7 +37,7 @@ mod tests {
             parser = param_expr(),
             expected = IndirectionExpr::new(
                 ParamRef { index: 5 },
-                vec![FullSlice]
+                vec![Slice(None, None)]
             ).into()
         )
     }

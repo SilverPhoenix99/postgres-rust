@@ -1,19 +1,21 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Indirection {
+
     /// `.*`
     All,
+
     /// `.ColLabel`
     Property(Str),
+
     /// `[expr]`
     Index(ExprNode),
-    /// `[:]`
-    FullSlice,
-    /// `[ expr : ]`
-    SliceFrom(ExprNode),
-    /// `[ : expr ]`
-    SliceTo(ExprNode),
-    /// `[ expr : expr ]`
-    Slice(ExprNode, ExprNode),
+
+    /// Slice notation:
+    /// * `[:]`
+    /// * `[ expr : ]`
+    /// * `[ : expr ]`
+    /// * `[ expr : expr ]`
+    Slice(Option<ExprNode>, Option<ExprNode>),
 }
 
 use crate::ExprNode;
