@@ -3,7 +3,8 @@ pub enum FuncArgsKind {
     Empty {
         order_within_group: Option<Vec<SortBy>>,
     },
-    Star {
+    /// `*` in SQL
+    Wildcard {
         order_within_group: Option<Vec<SortBy>>,
     },
     All {
