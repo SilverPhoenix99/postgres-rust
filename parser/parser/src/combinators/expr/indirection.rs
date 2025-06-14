@@ -36,10 +36,11 @@ fn indirection_el() -> impl Combinator<Output = Indirection> {
         between_brackets(match_first!(
             Colon
                 .and_right(
-                    a_expr().map(SliceTo)
+                    a_expr()
+                        .map(|index| Slice(None, Some(index)))
                         .optional()
                 )
-                .map(|expr| expr.unwrap_or(FullSlice)),
+                .map(|expr| expr.unwrap_or(Slice(None, None))),
 
             sequence!(
                 a_expr(),
@@ -50,8 +51,8 @@ fn indirection_el() -> impl Combinator<Output = Indirection> {
                 ))
                 .map(|(left, right)| match right {
                     None => Index(left),
-                    Some(None) => SliceFrom(left),
-                    Some(Some(right)) => Slice(left, right),
+                    Some(None) => Slice(Some(left), None),
+                    Some(Some(right)) => Slice(Some(left), Some(right)),
                 })
         ))
     )
@@ -81,19 +82,21 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use pg_ast::ExprNode;
+    #[allow(unused_imports)]
+    use pg_ast::ExprNode::IntegerConst;
     use pg_ast::Indirection;
-    use pg_ast::Indirection::{FullSlice, Property};
+    use pg_ast::Indirection::Property;
+    use pg_ast::Indirection::Slice;
     use pg_basics::Location;
     use test_case::test_case;
 
     #[test_case(".*", All)]
     #[test_case(".some_property", Property("some_property".into()))]
-    #[test_case("[:]", FullSlice)]
-    #[test_case("[:1]", SliceTo(ExprNode::IntegerConst(1)))]
-    #[test_case("[2]", Index(ExprNode::IntegerConst(2)))]
-    #[test_case("[3:]", SliceFrom(ExprNode::IntegerConst(3)))]
-    #[test_case("[4:5]", Slice(ExprNode::IntegerConst(4), ExprNode::IntegerConst(5)))]
+    #[test_case("[:]", Slice(None, None))]
+    #[test_case("[:1]", Slice(None, Some(IntegerConst(1))))]
+    #[test_case("[2]", Index(IntegerConst(2)))]
+    #[test_case("[3:]", Slice(Some(IntegerConst(3)), None))]
+    #[test_case("[4:5]", Slice(Some(IntegerConst(4)), Some(IntegerConst(5))))]
     fn test_indirection_el(source: &str, expected: Indirection) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         assert_eq!(Ok(expected), indirection_el().parse(&mut stream));
@@ -105,7 +108,7 @@ mod tests {
 
         let expected = vec![
             Property("some_property".into()),
-            FullSlice,
+            Slice(None, None),
             All,
         ];
 
@@ -153,12 +156,9 @@ use crate::combinators::foundation::CombinatorHelpers;
 use crate::scan::Result;
 use pg_ast::Indirection;
 use pg_ast::Indirection::All;
-use pg_ast::Indirection::FullSlice;
 use pg_ast::Indirection::Index;
 use pg_ast::Indirection::Property;
 use pg_ast::Indirection::Slice;
-use pg_ast::Indirection::SliceFrom;
-use pg_ast::Indirection::SliceTo;
 use pg_basics::Located;
 use pg_elog::parser::Error::ImproperUseOfStar;
 use pg_lexer::OperatorKind::Colon;
