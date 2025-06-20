@@ -4,7 +4,7 @@ where
 {
     /// See [`optional()`](optional::optional).
     #[inline]
-    fn optional(self) -> OptionalCombi<Self> {
+    fn optional(self) -> impl Combinator<Output = Option<Self::Output>> {
         optional(self)
     }
 
@@ -170,24 +170,23 @@ where
 impl<T: Combinator> CombinatorHelpers for T {}
 
 use crate::combinators::foundation::and;
+use crate::combinators::foundation::and::AndCombi;
 use crate::combinators::foundation::map;
 use crate::combinators::foundation::map_err;
 use crate::combinators::foundation::map_result;
 use crate::combinators::foundation::maybe_match;
+use crate::combinators::foundation::maybe_match::MaybeMatchCombi;
 use crate::combinators::foundation::optional;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::or::OrCombi;
 use crate::combinators::foundation::parser;
 use crate::combinators::foundation::required;
+use crate::combinators::foundation::required::RequiredCombi;
 use crate::combinators::foundation::skip;
+use crate::combinators::foundation::skip::SkipCombi;
 use crate::combinators::foundation::try_match;
-use crate::combinators::foundation::AndCombi;
+use crate::combinators::foundation::try_match::TryMatchCombi;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::MaybeMatchCombi;
-use crate::combinators::foundation::OptionalCombi;
-use crate::combinators::foundation::OrCombi;
-use crate::combinators::foundation::RequiredCombi;
-use crate::combinators::foundation::SkipCombi;
-use crate::combinators::foundation::TryMatchCombi;
 use crate::scan::Error;
 use crate::scan::Result;
 use crate::stream::TokenStream;

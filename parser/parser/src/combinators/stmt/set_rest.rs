@@ -16,7 +16,7 @@ pub(super) fn set_rest() -> impl Combinator<Output = SetRest> {
                 .map(|user| SetRest::SessionAuthorization { user })
         }),
         Transaction.and_right(match_first! {
-            Snapshot.and_right(string())
+            Snapshot.and_right(parser(string))
                 .map(SetRest::TransactionSnapshot),
             transaction_mode_list()
                 .map(SetRest::LocalTransactionCharacteristics)
@@ -47,14 +47,14 @@ pub(super) fn set_rest_more() -> impl Combinator<Output = SetRestMore> {
             .and_right(session_auth_user())
             .map(|user| SetRestMore::SessionAuthorization { user }),
         sequence!(Transaction, Snapshot)
-            .and_right(string())
+            .and_right(parser(string))
             .map(SetRestMore::TransactionSnapshot),
         sequence!(Time, Zone)
             .and_right(zone_value())
             .map(SetRestMore::TimeZone),
-        Kw::Catalog.and_right(string())
+        Kw::Catalog.and_right(parser(string))
             .map(SetRestMore::Catalog),
-        Kw::Schema.and_right(string())
+        Kw::Schema.and_right(parser(string))
             .map(SetRestMore::Schema),
         Names.and_right(opt_encoding())
             .map(SetRestMore::ClientEncoding),
@@ -63,7 +63,7 @@ pub(super) fn set_rest_more() -> impl Combinator<Output = SetRestMore> {
         sequence!(Xml, OptionKw)
             .and_right(document_or_content())
             .map(SetRestMore::XmlOption),
-        var_name().chain(match_first_with_state!(|name, stream| {
+        parser(var_name).chain(match_first_with_state!(|name, stream| {
             sequence!(FromKw, Current) => (_) SetRestMore::FromCurrent { name },
             generic_set_tail() => (value) SetRestMore::ConfigurationParameter { name, value }
         }))
@@ -96,12 +96,12 @@ fn zone_value() -> impl Combinator<Output = ZoneValue> {
     match_first! {
         DefaultKw.or(Kw::Local).map(|_| Local),
         signed_number().map(Numeric),
-        or(string(), identifier()).map(|name| ZoneValue::String(name.into())),
+        or(parser(string), parser(identifier)).map(|name| ZoneValue::String(name.into())),
         Kw::Interval.and_right(match_first! {
-            string().and_then(zone_value_interval(), |value, range|
+            parser(string).and_then(zone_value_interval(), |value, range|
                 Interval { value, range }
             ),
-            i32_literal_paren().and_then(string(), |precision, value|
+            i32_literal_paren().and_then(parser(string), |precision, value|
                 Interval {
                     value,
                     range: Full { precision: Some(precision) }
@@ -113,23 +113,23 @@ fn zone_value() -> impl Combinator<Output = ZoneValue> {
 
 fn zone_value_interval() -> impl Combinator<Output = IntervalRange> {
 
-    located(opt_interval())
-        .map_result(|res| {
-            match res {
-                Ok((ok @ (Full { .. } | Hour | HourToMinute), _)) => Ok(ok),
-                Ok((_, loc)) => {
-                    let err = InvalidZoneValue.at(loc);
-                    Err(err.into())
-                },
-                Err(err) => Err(err),
+    parser(|stream| {
+        let res = located!(stream, opt_interval().parse(stream))?;
+
+        match res {
+            (ok @ (Full { .. } | Hour | HourToMinute), _) => Ok(ok),
+            (_, loc) => {
+                let err = InvalidZoneValue.at(loc);
+                Err(err.into())
             }
-        })
+        }
+    })
 }
 
 fn opt_encoding() -> impl Combinator<Output = ValueOrDefault<Box<str>>> {
 
     DefaultKw.map(|_| ValueOrDefault::Default)
-        .or(string().map(ValueOrDefault::Value))
+        .or(parser(string).map(ValueOrDefault::Value))
         .optional()
         .map(|value| value.unwrap_or(ValueOrDefault::Default))
 }
@@ -222,6 +222,7 @@ use crate::combinators::foundation::located;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
@@ -232,7 +233,7 @@ use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::opt_interval;
 use crate::combinators::signed_number;
 use crate::combinators::transaction_mode_list;
-use crate::combinators::var_name;
+use crate::combinators::v2::var_name;
 use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Full;
 use pg_ast::IntervalRange::Hour;

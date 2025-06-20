@@ -11,7 +11,9 @@ pub(super) fn indirection() -> impl Combinator<Output = Vec<Indirection>> {
         ( indirection_el )+
     */
 
-    many(indirection_el())
+    parser(|stream|
+        many!(indirection_el().parse(stream))
+    )
 }
 
 fn indirection_el() -> impl Combinator<Output = Indirection> {
@@ -30,7 +32,7 @@ fn indirection_el() -> impl Combinator<Output = Indirection> {
 
         Dot.and_right(or(
             Mul.map(|_| All),
-            col_label().map(Property),
+            parser(col_label).map(Property),
         )),
 
         between_brackets(match_first!(
@@ -144,15 +146,16 @@ mod tests {
 }
 
 use crate::combinators::between_brackets;
-use crate::combinators::col_label;
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::optional;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
+use crate::combinators::v2::col_label;
 use crate::scan::Result;
 use pg_ast::Indirection;
 use pg_ast::Indirection::All;

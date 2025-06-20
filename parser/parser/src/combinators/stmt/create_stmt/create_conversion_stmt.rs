@@ -11,8 +11,8 @@ pub(super) fn create_conversion_stmt() -> impl Combinator<Output = CreateConvers
             Conversion.map(|_| false)
         ),
         any_name(),
-        For.and_right(string()),
-        To.and_right(string()),
+        For.and_right(parser(string)),
+        To.and_right(parser(string)),
         FromKw.and_right(any_name())
     )
         .map(|(is_default, name, for_encoding, to_encoding, function)| {
@@ -46,6 +46,7 @@ mod tests {
 use crate::combinators::any_name;
 use crate::combinators::foundation::and;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;

@@ -1,3 +1,4 @@
+
 /// Aliases:
 /// * `AlterExtensionContentsStmt`
 /// * `AlterExtensionStmt`
@@ -24,7 +25,7 @@ pub(super) fn alter_extension_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 Kw::Update
-                    .and_right(alter_extension_options())
+                    .and_right(parser(alter_extension_options))
             } => (options) {
                 AlterExtensionStmt::new(extension, options).into()
             },
@@ -44,14 +45,21 @@ pub(super) fn alter_extension_stmt() -> impl Combinator<Output = RawStmt> {
 
 /// Alias: `alter_extension_opt_list`
 /// Includes: `alter_extension_opt_item`
-fn alter_extension_options() -> impl Combinator<Output = Option<Vec<Str>>> {
+fn alter_extension_options(stream: &mut TokenStream) -> Result<Option<Vec<Str>>> {
 
     /*
         ( TO NonReservedWord_or_Sconst )*
     */
 
-    many(To.and_right(non_reserved_word_or_sconst()))
+    many!({
+        seq!(
+            To.parse(stream),
+            non_reserved_word_or_sconst().parse(stream)
+        )
+        .map(|(_, option)| option)
+    })
         .optional()
+        .map_err(From::from)
 }
 
 fn alter_extension_target() -> impl Combinator<Output = AlterExtensionContentsTarget> {
@@ -191,9 +199,9 @@ mod tests {
 
     #[test]
     fn test_alter_extension_options() {
-        test_parser!(
+        test_parser!(v2,
             source = r#"to "ident" to 'string' to reassign to trim to natural"#,
-            parser = alter_extension_options(),
+            parser = alter_extension_options,
             expected = Some(vec![
                 "ident".into(),
                 "string".into(),
@@ -268,6 +276,8 @@ use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::non_reserved_word_or_sconst;
@@ -304,6 +314,9 @@ use crate::combinators::stmt::view;
 use crate::combinators::stmt::Foreign;
 use crate::combinators::stmt::Operator as Op;
 use crate::combinators::stmt::TextSearch;
+use crate::result::Optional;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::AddDrop;
 use pg_ast::AlterExtensionContentsStmt;
 use pg_ast::AlterExtensionContentsTarget;

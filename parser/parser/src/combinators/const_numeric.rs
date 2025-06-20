@@ -22,10 +22,11 @@ pub(super) fn signed_number() -> impl Combinator<Output = SignedNumber> {
     })
 }
 
-
 /// Alias: `ICONST`
 pub(super) fn i32_literal() -> impl Combinator<Output = i32> {
-    integer().map(i32::from)
+    parser(|stream|
+        integer(stream).map(i32::from)
+    )
 }
 
 /// Alias: `SignedIconst`

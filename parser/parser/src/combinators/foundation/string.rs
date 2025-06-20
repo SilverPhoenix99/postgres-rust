@@ -2,30 +2,17 @@
 /// * `SCONST`
 /// * `USCONST`
 /// * `file_name`
-pub(in crate::combinators) fn string() -> StringCombi {
-    StringCombi
-}
-
-// (SCONST)* as long as they're concatenable.
-// Internally used on productions that don't use UESCAPE.
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub(in crate::combinators) struct StringCombi;
-
-impl Combinator for StringCombi {
-    type Output = Box<str>;
-
-    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
-        stream.consume(|tok| {
-            let TokenValue::String(value) = tok else { return None };
-            Some(mem::take(value))
-        })
-    }
+pub(in crate::combinators) fn string(stream: &mut TokenStream<'_>) -> Result<Box<str>> {
+    stream.consume(|tok| {
+        let TokenValue::String(value) = tok else { return None };
+        Some(mem::take(value))
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::stream;
     use test_case::test_case;
 
     #[test_case("$dollar$a $ string$dollar$", "a $ string")]
@@ -39,14 +26,12 @@ mod tests {
     #[test_case("u&'*002a extended unicode *002a' UESCAPE e'*'", "* extended unicode *")]
     #[test_case("u&'unicode esc!0061pe concatenation' UESCAPE ''\n''\n'!'", "unicode escape concatenation")]
     fn test_string(source: &str, expected: &str) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let parser = string();
-        let actual = parser.parse(&mut stream);
+        let mut stream = stream(source);
+        let actual = string(&mut stream);
         assert_eq!(expected, actual.unwrap().as_ref())
     }
 }
 
-use crate::combinators::foundation::Combinator;
 use crate::scan::Result;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;

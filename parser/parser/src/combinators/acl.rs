@@ -4,17 +4,27 @@ pub(super) fn grantee_list() -> impl Combinator<Output = Vec<RoleSpec>> {
         grantee ( ',' grantee )*
     */
 
-    many_sep(Comma, grantee())
+    parser(|stream|
+        many!(
+            sep = Comma.parse(stream),
+            grantee(stream)
+        )
+    )
 }
 
-fn grantee() -> impl Combinator<Output = RoleSpec> {
+fn grantee(stream: &mut TokenStream) -> Result<RoleSpec> {
 
     /*
         ( GROUP )? role_spec
     */
 
-    Group.maybe_match()
-        .and_right(role_spec())
+    seq!(
+        Group.parse(stream)
+            .maybe_match()
+            .map_err(Error::from),
+        role_spec().parse(stream)
+    )
+        .map(|(.., role)| role)
 }
 
 /// Alias: `opt_grant_grant_option`
@@ -74,8 +84,8 @@ mod tests {
     fn test_grantee() {
         let source = "current_user group public";
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(RoleSpec::CurrentUser), grantee().parse(&mut stream));
-        assert_eq!(Ok(RoleSpec::Public), grantee().parse(&mut stream));
+        assert_eq!(Ok(RoleSpec::CurrentUser), grantee(&mut stream));
+        assert_eq!(Ok(RoleSpec::Public), grantee(&mut stream));
     }
 
     #[test]
@@ -101,10 +111,16 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
+use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_spec;
+use crate::result::MaybeMatch;
+use crate::scan::Error;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::DropBehavior;
 use pg_ast::RoleSpec;
 use pg_lexer::Keyword::By;

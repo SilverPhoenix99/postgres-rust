@@ -14,38 +14,39 @@ pub(super) fn user_stmt() -> impl Combinator<Output = RawStmt> {
             .map(|(_, dbname, set_stmt)|
                 AlterRoleSetStmt::new(OneOrAll::All, dbname, set_stmt).into()
             ),
-        located(role_spec()).chain(match_first_with_state!(|(role, loc), stream| {
-            {
-                Rename.and(To)
-                    .and_right(role_id())
-            } => (new_name) {
-                let role_id = role.into_role_id()
-                    .map_err(|err|
-                        LocatedError::new(err, loc)
-                    )?;
-                RenameStmt::new(Role(role_id), new_name).into()
-            },
-            {
-                sequence!(in_database(), set_reset_clause())
-            } => ((dbname, set_stmt)) {
-                AlterRoleSetStmt::new(OneOrAll::One(role), Some(dbname), set_stmt).into()
-            },
-            {
-                With.and_right(alter_role_options())
-            } => (options) {
-                AlterRoleStmt::new(role, Add, options).into()
-            },
-            {
-                set_reset_clause()
-            } => (set_stmt) {
-                AlterRoleSetStmt::new(OneOrAll::One(role), None, set_stmt).into()
-            },
-            {
-                alter_role_options()
-            } => (options) {
-                AlterRoleStmt::new(role, Add, options).into()
-            }
-        }))
+        parser(|stream| located!(stream, role_spec().parse(stream)))
+            .chain(match_first_with_state!(|(role, loc), stream| {
+                {
+                    Rename.and(To)
+                        .and_right(role_id())
+                } => (new_name) {
+                    let role_id = role.into_role_id()
+                        .map_err(|err|
+                            LocatedError::new(err, loc)
+                        )?;
+                    RenameStmt::new(Role(role_id), new_name).into()
+                },
+                {
+                    sequence!(in_database(), set_reset_clause())
+                } => ((dbname, set_stmt)) {
+                    AlterRoleSetStmt::new(OneOrAll::One(role), Some(dbname), set_stmt).into()
+                },
+                {
+                    With.and_right(alter_role_options())
+                } => (options) {
+                    AlterRoleStmt::new(role, Add, options).into()
+                },
+                {
+                    set_reset_clause()
+                } => (set_stmt) {
+                    AlterRoleSetStmt::new(OneOrAll::One(role), None, set_stmt).into()
+                },
+                {
+                    alter_role_options()
+                } => (options) {
+                    AlterRoleStmt::new(role, Add, options).into()
+                }
+            }))
     }
 }
 
@@ -184,6 +185,7 @@ use super::in_database::in_database;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

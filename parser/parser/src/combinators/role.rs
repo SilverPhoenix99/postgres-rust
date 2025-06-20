@@ -4,7 +4,12 @@ pub(super) fn role_list() -> impl Combinator<Output = Vec<RoleSpec>> {
         role_spec ( ',' role_spec )*
     */
 
-    enclosure! { many_sep(Comma, role_spec()) }
+    parser(|stream| {
+        many!(
+            sep = Comma.parse(stream),
+            role_spec().parse(stream)
+        )
+    })
 }
 
 /// Alias: `RoleId`
@@ -12,14 +17,13 @@ pub(super) fn role_id() -> impl Combinator<Output = Str> {
 
     // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
-    located(role_spec())
-        .map_result(|result| {
-            let (role, loc) = result?;
-            role.into_role_id()
-                .map_err(|err|
-                    ScanErr(LocatedError::new(err, loc))
-                )
-        })
+    parser(|stream| {
+        let (role, loc) = located!(stream, role_spec().parse(stream))?;
+        role.into_role_id()
+            .map_err(|err|
+                ScanErr(LocatedError::new(err, loc))
+            )
+    })
 }
 
 /// Alias: `RoleSpec`
@@ -41,12 +45,13 @@ pub(super) fn role_spec() -> impl Combinator<Output = RoleSpec> {
         SessionUser.map(|_| RoleSpec::SessionUser),
 
         // "none" is a ColumnName keyword, so it must be checked before the next option
-        located(NoneKw).map_result(|result| match result {
-            Ok((_, loc)) => Err(ScanErr(
-                LocatedError::new(ReservedRoleSpec("none"), loc)
-            )),
-            Err(err) => Err(err)
-        }),
+        parser(|stream| located!(stream, NoneKw.parse(stream)))
+            .map_result(|result| match result {
+                Ok((_, loc)) => Err(ScanErr(
+                    LocatedError::new(ReservedRoleSpec("none"), loc)
+                )),
+                Err(err) => Err(err)
+            }),
 
         non_reserved_word().map(|ident| match ident.as_ref() {
             "public" => RoleSpec::Public,
@@ -139,10 +144,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::enclosure;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::non_reserved_word;

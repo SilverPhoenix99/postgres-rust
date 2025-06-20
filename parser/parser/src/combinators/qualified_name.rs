@@ -4,57 +4,56 @@ pub(super) fn qualified_name_list() -> impl Combinator<Output = Vec<RelationName
         qualified_name ( ',' qualified_name )*
     */
 
-    many_sep(Comma, qualified_name())
+    parser(|stream|
+        many!(sep = Comma.parse(stream), qualified_name(stream))
+    )
 }
 
-pub(super) fn qualified_name() -> impl Combinator<Output = RelationName> {
+pub(super) fn qualified_name(stream: &mut TokenStream) -> Result<RelationName> {
 
     /*
         (col_id attrs){1,3}
     */
 
-    located(any_name())
-        .map_result(|result| {
-            let (mut qn, loc) = result?;
+    let (mut qn, loc) = located!(stream, any_name(stream))?;
 
-            match qn.as_mut_slice() {
-                [relation] => {
-                    let relation = mem::take(relation);
-                    Ok(RelationName::new(relation, None))
-                },
-                [schema, relation] => {
-                    let schema = mem::take(schema);
-                    let relation = mem::take(relation);
-                    Ok(RelationName::new(
-                        relation,
-                        Some(SchemaName::new(schema, None))
-                    ))
-                },
-                [catalog, schema, relation] => {
-                    let catalog = mem::take(catalog);
-                    let schema = mem::take(schema);
-                    let relation = mem::take(relation);
-                    Ok(RelationName::new(
-                        relation,
-                        Some(SchemaName::new(
-                            schema,
-                            Some(catalog)
-                        ))
-                    ))
-                },
-                _ => {
-                    let err = ImproperQualifiedName(NameList(qn)).at(loc);
-                    Err(err.into())
-                }
-            }
-        })
+    match qn.as_mut_slice() {
+        [relation] => {
+            let relation = mem::take(relation);
+            Ok(RelationName::new(relation, None))
+        },
+        [schema, relation] => {
+            let schema = mem::take(schema);
+            let relation = mem::take(relation);
+            Ok(RelationName::new(
+                relation,
+                Some(SchemaName::new(schema, None))
+            ))
+        },
+        [catalog, schema, relation] => {
+            let catalog = mem::take(catalog);
+            let schema = mem::take(schema);
+            let relation = mem::take(relation);
+            Ok(RelationName::new(
+                relation,
+                Some(SchemaName::new(
+                    schema,
+                    Some(catalog)
+                ))
+            ))
+        },
+        _ => {
+            let err = ImproperQualifiedName(NameList(qn)).at(loc);
+            Err(err.into())
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::{test_parser, DEFAULT_CONFIG};
 
     #[test]
     fn test_qualified_name_list() {
@@ -81,26 +80,27 @@ mod tests {
 
     #[test]
     fn test_qualified_name() {
-        let source = "some_catalog.some_schema.some_relation";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        let expected = RelationName::new(
-            "some_relation",
-            Some(SchemaName::new(
-                "some_schema",
-                Some("some_catalog".into())
-            ))
-        );
-
-        assert_eq!(Ok(expected), qualified_name().parse(&mut stream));
+        test_parser!(v2,
+            source = "some_catalog.some_schema.some_relation",
+            parser = qualified_name,
+            expected = RelationName::new(
+                "some_relation",
+                Some(SchemaName::new(
+                    "some_schema",
+                    Some("some_catalog".into())
+                ))
+            )
+        )
     }
 }
 
-use crate::combinators::any_name;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
+use crate::combinators::v2::any_name;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use core::mem;
 use pg_ast::RelationName;
 use pg_ast::SchemaName;

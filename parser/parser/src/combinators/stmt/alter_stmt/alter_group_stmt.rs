@@ -7,7 +7,9 @@ pub(super) fn alter_group_stmt() -> impl Combinator<Output = RawStmt> {
     */
 
     Group
-        .and_right(located(role_spec()))
+        .and_right(
+            parser(|stream| located!(stream, role_spec().parse(stream)))
+        )
         .chain(match_first_with_state!{|(group, group_loc), stream| {
             {
                 Rename.and(To)
@@ -93,6 +95,7 @@ mod tests {
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

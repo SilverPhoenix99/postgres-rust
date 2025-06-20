@@ -15,7 +15,7 @@ pub(super) fn expr_const() -> impl Combinator<Output = ExprNode> {
 
     match_first! {
         number().map(From::from),
-        string().map(StringConst),
+        parser(string).map(StringConst),
         bit_string()
             .map(|(kind, value)| match kind {
                 Binary => BinaryStringConst(value),
@@ -57,6 +57,7 @@ mod tests {
 use crate::combinators::foundation::bit_string;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::number;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

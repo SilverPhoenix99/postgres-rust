@@ -16,24 +16,32 @@ pub(super) fn func_name() -> impl Combinator<Output = QualifiedName> {
             | IDENT ( attrs )?
     */
 
-    match_first! {
-        TypeFuncName
-            .map(|kw| vec![kw.into()]),
-        attrs(
-            or(
-                Unreserved.map(From::from),
-                identifier().map(From::from)
-            )
-        ),
-        located(attrs(ColumnName.map(From::from)))
-            .map_result(|result| {
-                let (name, loc) = result?;
+    parser(|stream|
+        choice!(stream,
+            {
+                TypeFuncName.parse(stream)
+                    .map(|kw| vec![kw.into()])
+            },
+            {
+                attrs!(stream,
+                    choice!(stream,
+                        Unreserved.parse(stream).map(Str::from),
+                        identifier(stream).map(Str::from)
+                    )
+                )
+            },
+            {
+                let (name, loc) = located!(stream,
+                    attrs(ColumnName.map(From::from)).parse(stream)
+                )?;
+
                 if name.len() == 1 {
                     return Err(syntax(loc))
                 }
                 Ok(name)
-            }),
-    }
+            },
+        )
+    )
 }
 
 #[cfg(test)]
@@ -74,13 +82,15 @@ mod tests {
 }
 
 use crate::combinators::attrs;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
+use crate::combinators::v2::attrs;
 use pg_basics::QualifiedName;
+use pg_basics::Str;
 use pg_elog::syntax;
 use pg_lexer::KeywordCategory::ColumnName;
 use pg_lexer::KeywordCategory::TypeFuncName;

@@ -12,10 +12,12 @@ pub(super) fn opt_array_bounds() -> impl Combinator<Output = Option<Vec<Option<i
                     .optional()
             )
             .map(|dim| Some(vec![dim])),
-        many(
-            between_brackets(i32_literal().optional())
+        parser(|stream|
+            many!(
+                between_brackets(i32_literal().optional()).parse(stream)
+            )
         )
-        .optional()
+            .optional()
     }
 }
 
@@ -41,6 +43,7 @@ mod tests {
 use crate::combinators::between_brackets;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::i32_literal;

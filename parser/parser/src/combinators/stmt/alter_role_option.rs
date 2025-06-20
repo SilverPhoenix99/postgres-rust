@@ -1,8 +1,11 @@
 /// Alias: `AlterOptRoleList`
 pub(super) fn alter_role_options() -> impl Combinator<Output = Option<Vec<AlterRoleOption>>> {
 
-    many(alter_role_option())
-        .optional()
+    parser(|stream|
+        many!(alter_role_option().parse(stream))
+            .optional()
+            .map_err(ScanErr)
+    )
 }
 
 /// Alias: `AlterOptRoleElem`
@@ -20,104 +23,133 @@ pub(super) fn alter_role_option() -> impl Combinator<Output = AlterRoleOption> {
         | IDENT
     */
 
-    match_first! {
-        password_option(),
-        sequence!(Connection, Limit)
-            .and_right(signed_i32_literal())
-            .map(ConnectionLimit),
-        sequence!(Valid, Until)
-            .and_right(string())
-            .map(ValidUntil),
-        // Supported but not documented for roles, for use by ALTER GROUP.
-        User.and_right(role_list())
-            .map(RoleMembers),
-        Kw::Inherit
-            .map(|_| Inherit(true)),
-        ident_option()
-    }
-}
-
-fn password_option() -> impl Combinator<Output = AlterRoleOption> {
-
-    match_first! {
-        Kw::Password
-            .and_right(match_first! {
-                string().map(Some),
-                Null.map(|_| None)
-            })
-            .map(Password),
-        /*
-         * These days, passwords are always stored in encrypted
-         * form, so there is no difference between PASSWORD and
-         * ENCRYPTED PASSWORD.
-         */
-        sequence!(Encrypted, Kw::Password)
-            .and_right(string())
-            .map(|pw| Password(Some(pw))),
-        sequence!(located(Unencrypted.skip()), Kw::Password.skip(), string())
-            .map_result(|res| match res {
-                Ok(((_, loc), _, _)) => {
-                    let err = LocatedError::new(UnencryptedPassword, loc);
-                    Err(ScanErr(err))
-                },
-                Err(err) => Err(err)
-            })
-    }
-}
-
-fn ident_option() -> impl Combinator<Output = AlterRoleOption> {
-
-    located(identifier())
-        .map_result(|ident| {
-
-            let (ident, loc) = match ident {
-                Ok(ok) => ok,
-                Err(err) => return Err(err)
-            };
-
-            match &*ident {
-                "superuser" => Ok(SuperUser(true)),
-                "nosuperuser" => Ok(SuperUser(false)),
-                "createrole" => Ok(CreateRole(true)),
-                "nocreaterole" => Ok(CreateRole(false)),
-                "replication" => Ok(IsReplication(true)),
-                "noreplication" => Ok(IsReplication(false)),
-                "createdb" => Ok(CreateDatabase(true)),
-                "nocreatedb" => Ok(CreateDatabase(false)),
-                "login" => Ok(CanLogin(true)),
-                "nologin" => Ok(CanLogin(false)),
-                "bypassrls" => Ok(BypassRls(true)),
-                "nobypassrls" => Ok(BypassRls(false)),
-                // Note that INHERIT is a keyword, so it's handled by main parser,
-                // but NOINHERIT is handled here.
-                "noinherit" => Ok(Inherit(false)),
-                _ => {
-                    let kind = UnrecognizedRoleOption(ident);
-                    let err = LocatedError::new(kind, loc);
-                    Err(ScanErr(err))
-                }
+    parser(|stream| {
+        choice!(stream,
+            {
+                password_option(stream)
+            },
+            {
+                seq!(
+                    Connection.parse(stream),
+                    Limit.parse(stream),
+                    signed_i32_literal().parse(stream),
+                )
+                .map(|(.., limit)| ConnectionLimit(limit))
+            },
+            {
+                seq!(
+                    Valid.parse(stream),
+                    Until.parse(stream),
+                    string(stream)
+                )
+                .map(|(.., valid)| ValidUntil(valid))
+            },
+            {
+                // Supported but not documented for roles, for use by ALTER GROUP.
+                seq!(
+                    User.parse(stream),
+                    role_list().parse(stream)
+                )
+                .map(|(_, role_list)| RoleMembers(role_list))
+            },
+            {
+                Kw::Inherit
+                    .parse(stream)
+                    .map(|_| Inherit(true))
+            },
+            {
+                ident_option(stream)
             }
-        })
+        )
+    })
+}
+
+fn password_option(stream: &mut TokenStream) -> Result<AlterRoleOption> {
+
+    choice!(stream,
+        {
+            seq!(
+                Kw::Password.parse(stream),
+                choice!(stream,
+                    string(stream).map(Some),
+                    Null.parse(stream).map(|_| None)
+                )
+            )
+            .map(|(_, pw)| Password(pw))
+        },
+        {
+            /*
+             * These days, passwords are always stored in encrypted
+             * form, so there is no difference between PASSWORD and
+             * ENCRYPTED PASSWORD.
+             */
+            seq!(
+                Encrypted.parse(stream),
+                Kw::Password.parse(stream),
+                string(stream)
+            )
+            .map(|(.., pw)|
+                Password(Some(pw))
+            )
+        },
+        {
+            let (_, loc) = located!(stream,
+                seq!(
+                    Unencrypted.parse(stream),
+                    Kw::Password.parse(stream),
+                    string(stream)
+                )
+            )?;
+
+            let err = LocatedError::new(UnencryptedPassword, loc);
+            Err::<AlterRoleOption, _>(ScanErr(err))
+        }
+    )
+}
+
+fn ident_option(stream: &mut TokenStream) -> Result<AlterRoleOption> {
+
+    let (ident, loc) = located!(stream, identifier(stream))?;
+
+    match &*ident {
+        "superuser" => Ok(SuperUser(true)),
+        "nosuperuser" => Ok(SuperUser(false)),
+        "createrole" => Ok(CreateRole(true)),
+        "nocreaterole" => Ok(CreateRole(false)),
+        "replication" => Ok(IsReplication(true)),
+        "noreplication" => Ok(IsReplication(false)),
+        "createdb" => Ok(CreateDatabase(true)),
+        "nocreatedb" => Ok(CreateDatabase(false)),
+        "login" => Ok(CanLogin(true)),
+        "nologin" => Ok(CanLogin(false)),
+        "bypassrls" => Ok(BypassRls(true)),
+        "nobypassrls" => Ok(BypassRls(false)),
+        // Note that INHERIT is a keyword, so it's handled by main parser,
+        // but NOINHERIT is handled here.
+        "noinherit" => Ok(Inherit(false)),
+        _ => {
+            let kind = UnrecognizedRoleOption(ident);
+            let err = LocatedError::new(kind, loc);
+            Err(ScanErr(err))
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::RoleSpec::Public;
     use test_case::test_case;
 
     #[test]
     fn test_alter_role_options() {
-        let source = "inherit password null";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = alter_role_options().parse(&mut stream);
-
-        let expected = Some(vec![Inherit(true), Password(None)]);
-
-        assert_eq!(Ok(expected), actual);
+        test_parser!(
+            source = "inherit password null",
+            parser = alter_role_options(),
+            expected = Some(vec![Inherit(true), Password(None)])
+        )
     }
 
     #[test_case("password null", Password(None))]
@@ -127,18 +159,14 @@ mod tests {
     #[test_case("inherit", Inherit(true))]
     #[test_case("noinherit", Inherit(false))]
     fn test_alter_role_option(source: &str, expected: AlterRoleOption) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = alter_role_option().parse(&mut stream);
-        assert_eq!(Ok(expected), actual);
+        test_parser!(source, alter_role_option(), expected)
     }
 
     #[test_case("password 'password1'", Some("password1".into()))]
     #[test_case("password null", None)]
     #[test_case("encrypted password 'epw123'", Some("epw123".into()))]
     fn test_password_option(source: &str, expected: Option<Box<str>>) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = password_option().parse(&mut stream);
-        assert_eq!(Ok(Password(expected)), actual);
+        test_parser!(v2, source, password_option, Password(expected))
     }
 
     #[test_case("superuser", SuperUser(true))]
@@ -155,23 +183,24 @@ mod tests {
     #[test_case("nobypassrls", BypassRls(false))]
     #[test_case("noinherit", Inherit(false))]
     fn test_ident_option(source: &str, expected: AlterRoleOption) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = ident_option().parse(&mut stream);
-        assert_eq!(Ok(expected), actual);
+        test_parser!(v2, source, ident_option, expected)
     }
 }
 
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::sequence;
+use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_list;
 use crate::combinators::signed_i32_literal;
+use crate::result::Optional;
 use crate::scan::Error::ScanErr;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::AlterRoleOption;
 use pg_ast::AlterRoleOption::BypassRls;
 use pg_ast::AlterRoleOption::CanLogin;

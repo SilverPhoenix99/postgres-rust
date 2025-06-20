@@ -29,7 +29,9 @@ fn float() -> impl Combinator<Output = TypeName> {
     */
 
     Float
-        .and_right(located(opt_precision()))
+        .and_right(parser(|stream|
+            located!(stream, opt_precision().parse(stream))
+        ))
         .map_result(|result| {
             let (precision, loc) = result?;
             match precision {
@@ -203,7 +205,7 @@ fn generic_type() -> impl Combinator<Output = TypeName> {
             }),
         attrs(or(
             TypeFuncName.map(From::from),
-            identifier().map(From::from)
+            parser(identifier).map(From::from)
         ))
             .and_then(enclosure!{ opt_type_modifiers() }, |name, type_modifiers|
                 Generic { name, type_modifiers }

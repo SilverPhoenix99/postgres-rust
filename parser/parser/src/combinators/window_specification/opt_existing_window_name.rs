@@ -11,7 +11,7 @@ pub(super) fn opt_existing_window_name() -> impl Combinator<Output = Option<Str>
 
         // ColId:
         Some((Identifier(_), _)) => {
-            let name = identifier().parse(stream)?;
+            let name = identifier(stream)?;
             Ok(Some(name.into()))
         },
         Some((Kw(kw), _)) if matches!(kw.category(), Unreserved | ColumnName) => {

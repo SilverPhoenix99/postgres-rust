@@ -1,7 +1,7 @@
 /// Alias: `NonReservedWord_or_Sconst`
 pub(super) fn non_reserved_word_or_sconst() -> impl Combinator<Output = Str> {
 
-    non_reserved_word().or(string().map(Boxed))
+    non_reserved_word().or(parser(string).map(Boxed))
 }
 
 #[cfg(test)]
@@ -20,6 +20,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

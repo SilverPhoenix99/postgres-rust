@@ -62,10 +62,10 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
             .and_right(name_list())
             .map(Language),
         sequence!(Large, Object)
-            .and_right(signed_number_list())
+            .and_right(parser(signed_number_list))
             .map(LargeObject),
         Parameter
-            .and_right(parameter_name_list())
+            .and_right(parser(parameter_name_list))
             .map(ParameterAcl),
         Kw::Procedure
             .and_right(function_with_argtypes_list())
@@ -91,32 +91,41 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
     }
 }
 
-fn parameter_name_list() -> impl Combinator<Output = Vec<QualifiedName>> {
+fn parameter_name_list(stream: &mut TokenStream) -> Result<Vec<QualifiedName>> {
 
     /*
         parameter_name ( ',' parameter_name )*
     */
 
-    many_sep(Comma, parameter_name())
+    many!(
+        sep = Comma.parse(stream),
+        parameter_name(stream)
+    )
 }
 
-fn parameter_name() -> impl Combinator<Output = QualifiedName> {
+fn parameter_name(stream: &mut TokenStream) -> Result<QualifiedName> {
 
     /*
         ColId ( '.' ColId )*
     */
 
-    many_sep(Dot, col_id())
+    many!(
+        sep = Dot.parse(stream),
+        col_id(stream)
+    )
 }
 
 /// Alias: `NumericOnly_list`
-fn signed_number_list() -> impl Combinator<Output = Vec<SignedNumber>> {
+fn signed_number_list(stream: &mut TokenStream) -> Result<Vec<SignedNumber>> {
 
     /*
         signed_number ( ',' signed_number )*
     */
 
-    many_sep(Comma, signed_number())
+    many!(
+        sep = Comma.parse(stream),
+        signed_number().parse(stream)
+    )
 }
 
 #[cfg(test)]
@@ -222,9 +231,9 @@ mod tests {
 
     #[test]
     fn test_parameter_name_list() {
-        test_parser!(
+        test_parser!(v2,
             source = "a.b.c, d.e.f",
-            parser = parameter_name_list(),
+            parser = parameter_name_list,
             expected = vec![
                 vec!["a".into(), "b".into(), "c".into()],
                 vec!["d".into(), "e".into(), "f".into()]
@@ -234,18 +243,18 @@ mod tests {
 
     #[test]
     fn test_parameter_name() {
-        test_parser!(
+        test_parser!(v2,
             source = "a.b.c",
-            parser = parameter_name(),
+            parser = parameter_name,
             expected = vec!["a".into(), "b".into(), "c".into()]
         )
     }
 
     #[test]
     fn test_signed_number_list() {
-        test_parser!(
+        test_parser!(v2,
             source = "1, 2, 3",
-            parser = signed_number_list(),
+            parser = signed_number_list,
             expected = vec![
                 SignedNumber::IntegerConst(1),
                 SignedNumber::IntegerConst(2),
@@ -256,9 +265,9 @@ mod tests {
 }
 
 use crate::combinators::any_name_list;
-use crate::combinators::col_id;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
@@ -266,6 +275,9 @@ use crate::combinators::function_with_argtypes_list;
 use crate::combinators::name_list;
 use crate::combinators::qualified_name_list;
 use crate::combinators::signed_number;
+use crate::combinators::v2::col_id;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::PrivilegeTarget;
 use pg_ast::PrivilegeTarget::AllFunctionsInSchema;
 use pg_ast::PrivilegeTarget::AllProceduresInSchema;

@@ -4,7 +4,12 @@ pub(super) fn function_with_argtypes_list() -> impl Combinator<Output = Vec<Func
         function_with_argtypes ( ',' function_with_argtypes )*
     */
 
-    many_sep(Comma, function_with_argtypes())
+    parser(|stream|
+        many!(
+            sep = Comma.parse(stream),
+            function_with_argtypes().parse(stream)
+        )
+    )
 }
 
 pub(super) fn function_with_argtypes() -> impl Combinator<Output = FunctionWithArgs> {
@@ -33,7 +38,7 @@ pub(super) fn function_with_argtypes() -> impl Combinator<Output = FunctionWithA
 
         attrs(or(
             Unreserved.map(From::from),
-            identifier().map(From::from)
+            parser(identifier).map(From::from)
         ))
             .and_then(func_args(), FunctionWithArgs::new),
 
@@ -61,17 +66,17 @@ fn func_args() -> impl Combinator<Output = Option<Option<Vec<FunctionParameter>>
         ( '(' ( func_args_list )? ')' )?
     */
 
-    between_paren(func_args_list().optional())
+    between_paren(parser(func_args_list).optional())
         .optional()
 }
 
-fn func_args_list() -> impl Combinator<Output = Vec<FunctionParameter>> {
+fn func_args_list(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
 
     /*
         func_arg ( ',' func_arg )*
     */
 
-    many_sep(Comma, func_arg())
+    many!(sep = Comma.parse(stream), func_arg().parse(stream))
 }
 
 #[cfg(test)]
@@ -125,12 +130,15 @@ mod tests {
 use crate::combinators::attrs;
 use crate::combinators::between_paren;
 use crate::combinators::foundation::identifier;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::func_arg;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionWithArgs;
 use pg_lexer::KeywordCategory::ColumnName;
