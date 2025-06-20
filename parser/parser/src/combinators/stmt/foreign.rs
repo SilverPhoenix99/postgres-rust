@@ -15,7 +15,7 @@ pub(super) fn foreign() -> impl Combinator<Output = Foreign> {
                 Foreign::DataWrapper(name)
             ),
         Kw::Table
-            .and_then(any_name(), |_, name|
+            .and_then(parser(any_name), |_, name|
                 Foreign::Table(name)
             )
     ))
@@ -48,6 +48,7 @@ mod tests {
 use crate::combinators::any_name;
 use crate::combinators::col_id;
 use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

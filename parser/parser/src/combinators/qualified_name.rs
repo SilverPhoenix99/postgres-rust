@@ -94,11 +94,11 @@ mod tests {
     }
 }
 
+use crate::combinators::any_name;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::v2::any_name;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use core::mem;

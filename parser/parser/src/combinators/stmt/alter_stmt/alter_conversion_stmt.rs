@@ -7,7 +7,7 @@ pub(super) fn alter_conversion_stmt() -> impl Combinator<Output = RawStmt> {
     */
 
     Conversion
-        .and_right(any_name())
+        .and_right(parser(any_name))
         .chain(match_first_with_state!{|conversion, stream| {
             {
                 Owner.and(To)
@@ -95,6 +95,7 @@ mod tests {
 use crate::combinators::any_name;
 use crate::combinators::col_id;
 use crate::combinators::foundation::match_first_with_state;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_spec;

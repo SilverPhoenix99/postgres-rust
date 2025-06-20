@@ -233,7 +233,7 @@ use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::opt_interval;
 use crate::combinators::signed_number;
 use crate::combinators::transaction_mode_list;
-use crate::combinators::v2::var_name;
+use crate::combinators::var_name;
 use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Full;
 use pg_ast::IntervalRange::Hour;

@@ -4,7 +4,7 @@ pub(super) fn column() -> impl Combinator<Output = QualifiedName> {
     */
 
     Column
-        .and_right(any_name())
+        .and_right(parser(any_name))
 }
 
 #[cfg(test)]
@@ -23,6 +23,7 @@ mod tests {
 }
 
 use crate::combinators::any_name;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use pg_basics::QualifiedName;

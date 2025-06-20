@@ -45,7 +45,7 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
             .and_right(name_list())
             .map(Database),
         Kw::Domain
-            .and_right(any_name_list())
+            .and_right(parser(any_name_list))
             .map(Domain),
         Foreign.and_right(match_first! {
             sequence!(Data, Wrapper)
@@ -83,7 +83,7 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
             .and_right(name_list())
             .map(Tablespace),
         Kw::Type
-            .and_right(any_name_list())
+            .and_right(parser(any_name_list))
             .map(Type),
         Kw::Table.optional()
             .and_right(qualified_name_list())

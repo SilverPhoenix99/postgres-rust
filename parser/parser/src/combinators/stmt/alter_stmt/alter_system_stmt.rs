@@ -39,14 +39,14 @@ mod tests {
     }
 }
 
-use crate::combinators::v2::all_or_var_name;
+use crate::combinators::all_or_var_name;
 use crate::combinators::foundation::enclosure;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::generic_set_tail;
-use crate::combinators::v2::var_name;
+use crate::combinators::var_name;
 use pg_ast::AlterSystemStmt;
 use pg_ast::OneOrAll;
 use pg_ast::ValueOrDefault;

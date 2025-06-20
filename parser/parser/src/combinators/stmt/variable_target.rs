@@ -37,12 +37,12 @@ mod tests {
     }
 }
 
+use crate::combinators::all_or_var_name;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use crate::combinators::v2::all_or_var_name;
 use pg_ast::OneOrAll;
 use pg_ast::VariableTarget;
 use pg_ast::VariableTarget::SessionAuthorization;

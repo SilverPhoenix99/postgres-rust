@@ -5,7 +5,7 @@ pub(in crate::combinators) fn all_or_var_name(stream: &mut TokenStream) -> Resul
           ALL
         | var_name
     */
-    
+
     choice!(stream,
         Keyword::All.parse(stream).map(|_| OneOrAll::All),
         var_name(stream).map(OneOrAll::One)
@@ -30,7 +30,7 @@ mod tests {
 
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::v2::var_name;
+use crate::combinators::var_name;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::OneOrAll;

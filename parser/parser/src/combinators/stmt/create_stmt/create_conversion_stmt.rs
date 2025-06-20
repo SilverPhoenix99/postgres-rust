@@ -10,10 +10,10 @@ pub(super) fn create_conversion_stmt() -> impl Combinator<Output = CreateConvers
             and(DefaultKw, Conversion).map(|_| true),
             Conversion.map(|_| false)
         ),
-        any_name(),
+        parser(any_name),
         For.and_right(parser(string)),
         To.and_right(parser(string)),
-        FromKw.and_right(any_name())
+        FromKw.and_right(parser(any_name))
     )
         .map(|(is_default, name, for_encoding, to_encoding, function)| {
             CreateConversionStmt::new(

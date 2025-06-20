@@ -153,13 +153,13 @@ mod tests {
     }
 }
 
+use crate::combinators::any_name;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::signed_number;
 use crate::combinators::stmt::reset_stmt;
 use crate::combinators::stmt::set_rest_more;
-use crate::combinators::v2::any_name;
 use crate::combinators::v2::col_id;
 use crate::scan::Result;
 use crate::stream::TokenStream;
