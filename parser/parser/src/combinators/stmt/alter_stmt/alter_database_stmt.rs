@@ -68,8 +68,8 @@ pub(super) fn alter_database_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 or(
-                    With.and_right(alterdb_opt_list()),
-                    alterdb_opt_list()
+                    With.and_right(parser(alterdb_opt_list)),
+                    parser(alterdb_opt_list)
                 )
             } => (options) {
                 AlterDatabaseStmt::new(name, options).into()
@@ -77,9 +77,9 @@ pub(super) fn alter_database_stmt() -> impl Combinator<Output = RawStmt> {
         }})
 }
 
-fn alterdb_opt_list() -> impl Combinator<Output = Vec<AlterdbOption>> {
+fn alterdb_opt_list(stream: &mut TokenStream) -> Result<Vec<AlterdbOption>> {
 
-    many(alterdb_opt_item())
+    many!(alterdb_opt_item().parse(stream))
 }
 
 fn alterdb_opt_item() -> impl Combinator<Output = AlterdbOption> {
@@ -103,7 +103,7 @@ fn alterdb_opt_name() -> impl Combinator<Output = AlterdbOptionKind> {
     match_first! {
         Connection.and(Limit).map(|_| ConnectionLimit),
         Kw::Tablespace.map(|_| Tablespace),
-        identifier().map(|ident| match ident.as_ref() {
+        parser(identifier).map(|ident| match ident.as_ref() {
             "allow_connections" => AllowConnections,
             "is_template" => IsTemplate,
             _ => Unknown(ident)
@@ -228,6 +228,7 @@ use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
@@ -235,6 +236,8 @@ use crate::combinators::role_spec;
 use crate::combinators::stmt::createdb_opt_value;
 use crate::combinators::stmt::reset_stmt::reset_stmt;
 use crate::combinators::stmt::set_rest;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::AlterDatabaseSetStmt;
 use pg_ast::AlterDatabaseStmt;
 use pg_ast::AlterOwnerStmt;

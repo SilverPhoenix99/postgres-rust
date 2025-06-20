@@ -1,10 +1,12 @@
 /// Alias: `NonReservedWord`
 pub(super) fn non_reserved_word() -> impl Combinator<Output = Str> {
-    match_first!(
-        identifier().map(From::from),
-        Unreserved.map(From::from),
-        ColumnName.map(From::from),
-        TypeFuncName.map(From::from),
+    parser(|stream|
+        choice!(stream,
+            identifier(stream).map(Str::from),
+            Unreserved.parse(stream).map(Str::from),
+            ColumnName.parse(stream).map(Str::from),
+            TypeFuncName.parse(stream).map(Str::from),
+        )
     )
 }
 
@@ -26,10 +28,10 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_basics::Str;
 use pg_lexer::KeywordCategory::ColumnName;
 use pg_lexer::KeywordCategory::TypeFuncName;

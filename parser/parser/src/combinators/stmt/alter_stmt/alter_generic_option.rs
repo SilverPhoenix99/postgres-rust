@@ -5,21 +5,21 @@ pub(super) fn alter_generic_options() -> impl Combinator<Output = Vec<GenericOpt
     */
 
     Options.and_right(between_paren(
-        alter_generic_option_list(),
+        parser(alter_generic_option_list),
     ))
 }
 
-fn alter_generic_option_list() -> impl Combinator<Output = Vec<GenericOptionKind>> {
+fn alter_generic_option_list(stream: &mut TokenStream) -> Result<Vec<GenericOptionKind>> {
 
     /*
         alter_generic_option ( ',' alter_generic_option )*
     */
 
-    many_sep(Comma, alter_generic_option())
+    many!(sep = Comma.parse(stream), alter_generic_option(stream))
 }
 
 /// Alias: `alter_generic_option_elem`
-fn alter_generic_option() -> impl Combinator<Output = GenericOptionKind> {
+fn alter_generic_option(stream: &mut TokenStream) -> Result<GenericOptionKind> {
 
     /*
           SET generic_option_elem
@@ -28,25 +28,39 @@ fn alter_generic_option() -> impl Combinator<Output = GenericOptionKind> {
         | generic_option_elem
     */
 
-    match_first! {
-        Kw::Set
-            .and_right(generic_option())
-            .map(Set),
-        Kw::Add
-            .and_right(generic_option())
-            .map(Add),
-        DropKw
-            .and_right(col_label())
-            .map(Drop),
+    choice!(stream,
+        {
+            seq!(
+                Kw::Set.parse(stream),
+                generic_option().parse(stream)
+            )
+            .map(|(.., opt)| Set(opt))
+        },
+        {
+            seq!(
+                Kw::Add.parse(stream),
+                generic_option().parse(stream)
+            )
+            .map(|(.., opt)| Add(opt))
+        },
+        {
+            seq!(
+                DropKw.parse(stream),
+                col_label(stream)
+            )
+            .map(|(.., opt)| Drop(opt))
+        },
         generic_option()
+            .parse(stream)
             .map(Unspecified)
-    }
+    )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::stream::TokenStream;
+    use crate::tests::test_parser;
     use crate::tests::DEFAULT_CONFIG;
     use pg_ast::GenericOption;
     use test_case::test_case;
@@ -67,18 +81,16 @@ mod tests {
 
     #[test]
     fn test_alter_generic_option_list() {
-        let source = "foo 'bar', drop x, add y '1', set z '2'";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = alter_generic_option_list().parse(&mut stream);
-
-        let expected = vec![
-            Unspecified(GenericOption::new("foo", "bar")),
-            Drop("x".into()),
-            Add(GenericOption::new("y", "1")),
-            Set(GenericOption::new("z", "2"))
-        ];
-
-        assert_eq!(Ok(expected), actual);
+        test_parser!(v2,
+            source = "foo 'bar', drop x, add y '1', set z '2'",
+            parser = alter_generic_option_list,
+            expected = vec![
+                Unspecified(GenericOption::new("foo", "bar")),
+                Drop("x".into()),
+                Add(GenericOption::new("y", "1")),
+                Set(GenericOption::new("z", "2"))
+            ]
+        )
     }
 
     #[test_case("set some_opt 'foo'", Set(GenericOption::new("some_opt", "foo")))]
@@ -86,19 +98,21 @@ mod tests {
     #[test_case("drop some_opt", Drop("some_opt".into()))]
     #[test_case("some_opt 'foo'", Unspecified(GenericOption::new("some_opt", "foo")))]
     fn test_alter_generic_option(source: &str, expected: GenericOptionKind) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = alter_generic_option().parse(&mut stream);
-        assert_eq!(Ok(expected), actual);
+        test_parser!(v2, source, alter_generic_option, expected)
     }
 }
 
 use crate::combinators::between_paren;
-use crate::combinators::col_label;
-use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::many;
+use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::generic_option;
+use crate::combinators::v2::col_label;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::GenericOptionKind;
 use pg_ast::GenericOptionKind::Add;
 use pg_ast::GenericOptionKind::Drop;

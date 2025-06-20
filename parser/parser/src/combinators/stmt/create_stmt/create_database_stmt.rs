@@ -5,44 +5,51 @@ pub(super) fn create_database_stmt() -> impl Combinator<Output = CreateDatabaseS
         Database.skip(),
         col_id(),
         With.optional().skip(),
-        createdb_opt_list()
+        parser(createdb_opt_list)
     ).map(|(_, name, _, options)|
         CreateDatabaseStmt::new(name, options)
     )
 }
 
-fn createdb_opt_list() -> impl Combinator<Output = Vec<CreatedbOption>> {
+fn createdb_opt_list(stream: &mut TokenStream) -> Result<Vec<CreatedbOption>> {
 
-    many(createdb_opt_item())
+    many!(createdb_opt_item(stream))
 }
 
-fn createdb_opt_item() -> impl Combinator<Output = CreatedbOption> {
+fn createdb_opt_item(stream: &mut TokenStream) -> Result<CreatedbOption> {
 
     /*
           createdb_opt_name ( '=' )? DEFAULT
         | createdb_opt_name ( '=' )? var_value
     */
 
-    sequence!(
-        createdb_opt_name(),
-        Equals.optional().skip(),
-        createdb_opt_value()
-    ).map(|(kind, _, value)|
-        CreatedbOption::new(kind, value)
+    seq!(
+        createdb_opt_name(stream),
+        Equals.parse(stream).optional().map_err(ScanErr),
+        createdb_opt_value().parse(stream)
     )
+        .map(|(kind, _, value)|
+            CreatedbOption::new(kind, value)
+        )
 }
 
-fn createdb_opt_name() -> impl Combinator<Output = CreatedbOptionKind> {
+fn createdb_opt_name(stream: &mut TokenStream) -> Result<CreatedbOptionKind> {
 
-    match_first! {
-        Connection.and(Limit).map(|_| ConnectionLimit),
-        Kw::Encoding.map(|_| Encoding),
-        LocationKw.map(|_| Location),
-        Kw::Owner.map(|_| Owner),
-        Kw::Tablespace.map(|_| Tablespace),
-        Kw::Template.map(|_| Template),
+    choice!(stream,
+        {
+            seq!(
+                Connection.parse(stream),
+                Limit.parse(stream)
+            )
+            .map(|_| ConnectionLimit)
+        },
+        Kw::Encoding.parse(stream).map(|_| Encoding),
+        LocationKw.parse(stream).map(|_| Location),
+        Kw::Owner.parse(stream).map(|_| Owner),
+        Kw::Tablespace.parse(stream).map(|_| Tablespace),
+        Kw::Template.parse(stream).map(|_| Template),
         // Unless quoted, identifiers are lower case
-        identifier().map(|ident| match ident.as_ref() {
+        identifier(stream).map(|ident| match ident.as_ref() {
             "allow_connections" => AllowConnections,
             "builtin_locale" => BuiltinLocale,
             "collation_version" => CollationVersion,
@@ -57,7 +64,7 @@ fn createdb_opt_name() -> impl Combinator<Output = CreatedbOptionKind> {
             "strategy" => Strategy,
             _ => Unknown(ident)
         })
-    }
+    )
 }
 
 pub(in crate::combinators::stmt) fn createdb_opt_value() -> impl Combinator<Output = CreatedbOptionValue> {
@@ -77,47 +84,40 @@ pub(in crate::combinators::stmt) fn createdb_opt_value() -> impl Combinator<Outp
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use test_case::test_case;
 
     #[test]
     fn test_create_database_stmt() {
-        let source = "database db_name with connection limit = 753 allow_connections 'on'";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = create_database_stmt().parse(&mut stream);
-
-        let expected = CreateDatabaseStmt::new(
-            "db_name",
-            vec![
-                CreatedbOption::new(ConnectionLimit, 753),
-                CreatedbOption::new(AllowConnections, "on"),
-            ]
-        );
-
-        assert_eq!(Ok(expected), actual);
+        test_parser!(
+            source = "database db_name with connection limit = 753 allow_connections 'on'",
+            parser = create_database_stmt(),
+            expected = CreateDatabaseStmt::new(
+                "db_name",
+                vec![
+                    CreatedbOption::new(ConnectionLimit, 753),
+                    CreatedbOption::new(AllowConnections, "on"),
+                ]
+            )
+        )
     }
 
     #[test]
     fn test_createdb_opt_list() {
-        let source = "connection limit = 753 allow_connections 'on'";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = createdb_opt_list().parse(&mut stream);
-
-        let expected = vec![
-            CreatedbOption::new(ConnectionLimit, 753),
-            CreatedbOption::new(AllowConnections, "on"),
-        ];
-
-        assert_eq!(Ok(expected), actual);
+        test_parser!(v2,
+            source = "connection limit = 753 allow_connections 'on'",
+            parser = createdb_opt_list,
+            expected = vec![
+                CreatedbOption::new(ConnectionLimit, 753),
+                CreatedbOption::new(AllowConnections, "on"),
+            ]
+        )
     }
 
     #[test_case("allow_connections DEFAULT", CreatedbOption::new(AllowConnections, CreatedbOptionValue::Default))]
     #[test_case("oid = 54321", CreatedbOption::new(Oid, 54321))]
     fn test_createdb_opt_item(source: &str, expected: CreatedbOption) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = createdb_opt_item().parse(&mut stream);
-        assert_eq!(Ok(expected), actual);
+        test_parser!(v2, source, createdb_opt_item, expected)
     }
 
     #[test_case("allow_connections", AllowConnections)]
@@ -140,9 +140,7 @@ mod tests {
     #[test_case("template", Template)]
     #[test_case("foo", Unknown("foo".into()))]
     fn test_createdb_opt_name(source: &str, expected: CreatedbOptionKind) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = createdb_opt_name().parse(&mut stream);
-        assert_eq!(Ok(expected), actual);
+        test_parser!(v2, source, createdb_opt_name, expected)
     }
 
     #[test_case("default", CreatedbOptionValue::Default)]
@@ -153,20 +151,25 @@ mod tests {
     #[test_case("'value'", "value".into())]
     #[test_case("+123", 123.into())]
     fn test_createdb_opt_value(source: &str, expected: CreatedbOptionValue) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = createdb_opt_value().parse(&mut stream);
-        assert_eq!(Ok(expected), actual);
+        test_parser!(source, createdb_opt_value(), expected)
     }
 }
 
 use crate::combinators::col_id;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::var_value;
+use crate::result::Optional;
+use crate::scan::Error::ScanErr;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::CreateDatabaseStmt;
 use pg_ast::CreatedbOption;
 use pg_ast::CreatedbOptionKind;

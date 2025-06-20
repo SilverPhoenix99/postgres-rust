@@ -6,43 +6,36 @@ where
         prefix ( '.' col_label )*
     */
 
-    enclosure! {
-        many_pre(
-            prefix,
-            Dot.and_right(col_label())
-        )
-    }
+    parser(move |stream|
+        v2::attrs!(stream, prefix.parse(stream))
+    )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::combinators;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
 
     #[test]
     fn test_attrs() {
-        let source = ".qualified_.name_";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let parser = combinators::foundation::parser(|_| Ok("*some*".into()));
-        let actual = attrs(parser).parse(&mut stream);
+        let parser = parser(|_| Ok("*some*".into()));
 
-        let expected: QualifiedName = vec![
-            "*some*".into(),
-            "qualified_".into(),
-            "name_".into()
-        ];
-
-        assert_eq!(Ok(expected), actual);
+        test_parser!(
+            source = ".qualified_.name_",
+            parser = attrs(parser),
+            expected = vec![
+                "*some*".into(),
+                "qualified_".into(),
+                "name_".into()
+            ]
+        )
     }
 }
 
-use crate::combinators::col_label;
-use crate::combinators::foundation::enclosure;
-use crate::combinators::foundation::many_pre;
+use crate::combinators::foundation::many;
+use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
+use crate::combinators::v2;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
-use pg_lexer::OperatorKind::Dot;

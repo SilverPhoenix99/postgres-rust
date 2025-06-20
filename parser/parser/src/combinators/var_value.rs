@@ -1,6 +1,11 @@
 pub(super) fn var_list() -> impl Combinator<Output = Vec<VarValue>> {
 
-    many_sep(Comma, var_value())
+    parser(|stream|
+        many!(
+            sep = Comma.parse(stream),
+            var_value().parse(stream)
+        )
+    )
 }
 
 pub(super) fn var_value() -> impl Combinator<Output = VarValue> {
@@ -37,8 +42,9 @@ mod tests {
 }
 
 use crate::combinators::boolean_or_string;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::signed_number;

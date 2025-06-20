@@ -1,11 +1,13 @@
 /// Alias: `OptRoleList`
 pub(super) fn create_role_options() -> impl Combinator<Output = Vec<CreateRoleOption>> {
 
-    many(create_role_option())
+    parser(|stream|
+        many!(create_role_option(stream))
+    )
 }
 
 /// Alias: `CreateOptRoleElem`
-fn create_role_option() -> impl Combinator<Output = CreateRoleOption> {
+fn create_role_option(stream: &mut TokenStream) -> Result<CreateRoleOption> {
 
     /*
           SYSID ICONST
@@ -16,22 +18,49 @@ fn create_role_option() -> impl Combinator<Output = CreateRoleOption> {
         | alter_role_option
     */
 
-    match_first! {
-        Sysid
-            .and_right(integer())
-            .map(CreateRoleOption::SysId),
-        Admin
-            .and_right(role_list())
-            .map(CreateRoleOption::AdminMembers),
-        Role
-            .and_right(role_list())
-            .map(CreateRoleOption::AddRoleTo),
-        Inherit
-            .and(or(Role, Group))
-            .and_right(role_list())
-            .map(CreateRoleOption::AddRoleTo),
-        alter_role_option().map(From::from)
-    }
+    choice!(stream,
+        {
+            seq!(
+                Sysid.parse(stream),
+                integer(stream)
+            )
+            .map(|(.., opt)|
+                CreateRoleOption::SysId(opt)
+            )
+        },
+        {
+            seq!(
+                Admin.parse(stream),
+                role_list().parse(stream)
+            )
+            .map(|(.., opt)|
+                CreateRoleOption::AdminMembers(opt)
+            )
+        },
+        {
+            seq!(
+                Role.parse(stream),
+                role_list().parse(stream)
+            )
+            .map(|(.., opt)|
+                CreateRoleOption::AddRoleTo(opt)
+            )
+        },
+        {
+            seq!(
+                Inherit.parse(stream),
+                choice!(stream,
+                    Role.parse(stream),
+                    Group.parse(stream),
+                ),
+                role_list().parse(stream)
+            )
+            .map(|(.., opt): (_, Keyword, _)|
+                CreateRoleOption::AddRoleTo(opt)
+            )
+        },
+        alter_role_option().parse(stream).map(CreateRoleOption::from)
+    )
 }
 
 #[cfg(test)]
@@ -62,19 +91,22 @@ mod tests {
     #[test_case("inherit group public", CreateRoleOption::AddRoleTo(vec![Public]))]
     #[test_case("password null", CreateRoleOption::Password(None))]
     fn test_create_role_option(source: &str, expected: CreateRoleOption) {
-        test_parser!(source, create_role_option(), expected);
+        test_parser!(v2, source, create_role_option, expected);
     }
 }
 
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::integer;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role::role_list;
 use crate::combinators::stmt::alter_role_option;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::CreateRoleOption;
+use pg_lexer::Keyword;
 use pg_lexer::Keyword::Admin;
 use pg_lexer::Keyword::Group;
 use pg_lexer::Keyword::Inherit;

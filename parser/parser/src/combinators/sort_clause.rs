@@ -8,16 +8,19 @@ pub(super) fn sort_clause() -> impl Combinator<Output = Vec<SortBy>> {
     */
 
     and(Order, By)
-        .and_right(sortby_list())
+        .and_right(parser(sortby_list))
 }
 
-fn sortby_list() -> impl Combinator<Output = Vec<SortBy>> {
+fn sortby_list(stream: &mut TokenStream) -> Result<Vec<SortBy>> {
 
     /*
         sortby ( ',' sortby )*
     */
 
-    many_sep(Comma, sortby())
+    many!(
+        sep = Comma.parse(stream),
+        sortby().parse(stream)
+    )
 }
 
 fn sortby() -> impl Combinator<Output = SortBy> {
@@ -69,9 +72,9 @@ mod tests {
 
     #[test]
     fn test_sortby_list() {
-        test_parser!(
+        test_parser!(v2,
             source = "1, 2 nulls last, 3 using <, 4 asc",
-            parser = sortby_list(),
+            parser = sortby_list,
             expected = vec![
                 SortBy::new(IntegerConst(1), None, None),
                 SortBy::new(IntegerConst(2), None, Some(NullsLast)),
@@ -113,14 +116,17 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::and;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::opt_asc_desc;
 use crate::combinators::opt_nulls_order;
 use crate::combinators::qual_all_op;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::SortBy;
 use pg_ast::SortDirection::Using;
 use pg_lexer::Keyword as Kw;

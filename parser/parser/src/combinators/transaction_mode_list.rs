@@ -5,22 +5,21 @@ pub(super) fn transaction_mode_list() -> impl Combinator<Output = Vec<Transactio
         transaction_mode ( (',')? transaction_mode )*
     */
 
-    enclosure! {
-        many_pre(
-            transaction_mode(),
-            parser(|stream| {
-                let result = Comma.parse(stream).optional()?;
-                if result.is_some() {
-                    transaction_mode().required()
-                        .parse(stream)
-                }
-                else {
-                    transaction_mode()
-                        .parse(stream)
-                }
-            })
+    parser(|stream|
+        many!(
+            pre = transaction_mode().parse(stream),
+            choice!(stream,
+                {
+                    seq!(
+                        Comma.parse(stream),
+                        transaction_mode().parse(stream),
+                    )
+                    .map(|(_, mode)| mode)
+                },
+                transaction_mode().parse(stream),
+            )
         )
-    }
+    )
 }
 
 /// Alias: `transaction_mode_item`
@@ -160,13 +159,13 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::enclosure;
-use crate::combinators::foundation::many_pre;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use crate::result::Optional;
 use pg_ast::IsolationLevel;
 use pg_ast::IsolationLevel::ReadCommitted;
 use pg_ast::IsolationLevel::ReadUncommitted;

@@ -7,7 +7,7 @@ pub(super) fn alter_default_privileges_stmt() -> impl Combinator<Output = AlterD
 
     sequence!(
         DefaultKw.and(Privileges).skip(),
-        def_acl_option_list().optional(),
+        parser(def_acl_option_list).optional(),
         def_acl_action()
     ).map(|(_, options, action)|
         AlterDefaultPrivilegesStmt::new(options.unwrap_or_default(), action)
@@ -15,9 +15,9 @@ pub(super) fn alter_default_privileges_stmt() -> impl Combinator<Output = AlterD
 }
 
 /// Alias: `DefACLOptionList`
-fn def_acl_option_list() -> impl Combinator<Output = Vec<AclOption>> {
+fn def_acl_option_list(stream: &mut TokenStream) -> Result<Vec<AclOption>> {
 
-    many(def_acl_option())
+    many!(def_acl_option().parse(stream))
 }
 
 /// Alias: `DefACLOption`
@@ -132,15 +132,15 @@ mod tests {
 
     #[test]
     fn test_acl_option_list() {
-        test_parser! {
+        test_parser!(v2,
             source = "in schema my_schema for role public for user current_user",
-            parser = def_acl_option_list(),
+            parser = def_acl_option_list,
             expected = vec![
                 AclOption::Schemas(vec!["my_schema".into()]),
                 AclOption::Roles(vec![Public]),
                 AclOption::Roles(vec![CurrentUser]),
             ]
-        }
+        )
     }
 
     #[test]
@@ -247,6 +247,7 @@ mod tests {
 use crate::combinators::foundation::and;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
@@ -256,6 +257,8 @@ use crate::combinators::opt_drop_behavior;
 use crate::combinators::opt_grant_option;
 use crate::combinators::privileges;
 use crate::combinators::role_list;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::AclOption;
 use pg_ast::AlterDefaultPrivilegesStmt;
 use pg_ast::GrantStmt;

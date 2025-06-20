@@ -1,131 +1,82 @@
+/// # `many!(P)`
+///
 /// Does `( P )+`.
 ///
-/// # Return
+/// ## Return
 /// If `Ok`, then the returned `Vec<_>` is **Never** empty.
 ///
 /// Returns `Err(NoMatch)` or `Err(Eof)`, if empty.
-pub(in crate::combinators) fn many<P>(parser: P) -> ManyCombi<P>
-where
-    P: Combinator
-{
-    ManyCombi(parser)
-}
-
+///
+/// # `many!(pre = P, Q)`
+///
 /// Does `P ( Q )*`, where both `P` and `Q` are the same type, with different parsers.
 ///
-/// If `P` and `Q` are the same parser, then use [`many()`](many) to prevent cloning parsers.
+/// If `P` and `Q` are the same parser, then use `many!(P)`.
 ///
-/// # Return
+/// ## Return
 /// If `Ok`, then the returned `Vec<_>` is **Never** empty.
 ///
 /// Returns `Err(NoMatch)` or `Err(Eof)`, if empty.
-pub(in crate::combinators) fn many_pre<P, Q>(first: P, follow: Q) -> ManyPrefixedCombi<P, Q>
-where
-    P: Combinator,
-    Q: Combinator<Output=P::Output>
-{
-    ManyPrefixedCombi { first, follow }
-}
-
+///
+/// # `many!(sep = S, P)`
+///
 /// Does `P ( S P )*`, i.e., `P` separated by `S`.
 ///
 /// `S` is discarded.
 ///
 /// To do `P ( S Q )*`, where `P` and `Q` are different parsers returning the same type,
-/// then use [`many_pre`](many_pre), where `S` needs to be discarded in the `follow` parser.
+/// then use the following, where `S` needs to be discarded in the `follow` parser:
 ///
-/// # Return
+/// ```many!(pre = P, seq!(S, Q))```
+///
+/// ## Return
 /// If `Ok`, then the returned `Vec<_>` is **Never** empty.
 ///
 /// Returns `Err(NoMatch)` or `Err(Eof)`, if empty.
-pub(in crate::combinators) fn many_sep<S, P>(separator: S, parser: P) -> ManySepCombi<S, P>
-where
-    S: Combinator,
-    P: Combinator,
-{
-    ManySepCombi { parser, separator }
+macro_rules! many {
+
+    (pre = $prefix:expr, $combinator:expr) => {
+        (|| -> $crate::scan::Result<_> {
+            use $crate::result::Optional;
+
+            let mut elements = vec![$prefix?];
+
+            while let Some(element) = $combinator.optional()? {
+                elements.push(element)
+            }
+
+            Ok(elements)
+        })()
+    };
+
+    (sep = $separator:expr, $combinator:expr) => {
+        (|| -> $crate::scan::Result<_> {
+            use $crate::result::{Optional, Required};
+
+            let mut elements = vec![$combinator?];
+
+            while $separator.optional()?.is_some() {
+                let element = $combinator.required()?;
+                elements.push(element);
+            }
+
+            Ok(elements)
+        })()
+    };
+
+    ($combinator:expr) => {
+        (|| -> $crate::scan::Result<_> {
+            use $crate::result::Optional;
+
+            let mut elements = vec![$combinator?];
+
+            while let Some(element) = $combinator.optional()? {
+                elements.push(element);
+            }
+
+            Ok(elements)
+        })()
+    };
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
-#[derive(Debug)]
-pub(in crate::combinators) struct ManyCombi<P>(P);
-
-impl<P> Combinator for ManyCombi<P>
-where
-    P: Combinator
-{
-    type Output = Vec<P::Output>;
-
-    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
-
-        let mut elements = vec![self.0.parse(stream)?];
-
-        while let Some(element) = self.0.parse(stream).optional()? {
-            elements.push(element);
-        }
-
-        Ok(elements)
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-#[derive(Debug)]
-pub(in crate::combinators) struct ManyPrefixedCombi<P, Q> {
-    first: P,
-    follow: Q
-}
-
-impl<P, Q> Combinator for ManyPrefixedCombi<P, Q>
-where
-    P: Combinator,
-    Q: Combinator<Output=P::Output>
-{
-    type Output = Vec<P::Output>;
-
-    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
-
-        let mut elements = vec![self.first.parse(stream)?];
-
-        while let Some(element) = self.follow.parse(stream).optional()? {
-            elements.push(element)
-        }
-
-        Ok(elements)
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-#[derive(Debug)]
-pub(in crate::combinators) struct ManySepCombi<S, P> {
-    separator: S,
-    parser: P,
-}
-
-impl<S, P> Combinator for ManySepCombi<S, P>
-where
-    S: Combinator,
-    P: Combinator,
-{
-    type Output = Vec<P::Output>;
-
-    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
-
-        let mut elements = vec![self.parser.parse(stream)?];
-
-        while self.separator.parse(stream).optional()?.is_some() {
-
-            let element = self.parser.parse(stream)
-                .required()?;
-
-            elements.push(element);
-        }
-
-        Ok(elements)
-    }
-}
-
-use crate::combinators::foundation::Combinator;
-use crate::result::Optional;
-use crate::result::Required;
-use crate::scan::Result;
-use crate::stream::TokenStream;
+pub(in crate::combinators) use many;

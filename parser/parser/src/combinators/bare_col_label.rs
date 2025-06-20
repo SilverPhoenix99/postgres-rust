@@ -1,7 +1,7 @@
 /// Alias: `BareColLabel`
 pub(super) fn bare_col_label() -> impl Combinator<Output = Str> {
     match_first!(
-        identifier().map(From::from),
+        parser(identifier).map(From::from),
         keyword_if(|kw| kw.details().bare()).map(From::from)
     )
 }
@@ -25,6 +25,7 @@ mod tests {
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::keyword_if;
 use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use pg_basics::Str;

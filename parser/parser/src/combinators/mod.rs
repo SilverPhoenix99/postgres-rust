@@ -1,7 +1,6 @@
 pub(super) mod foundation;
 
 mod acl;
-mod all_or_var_name;
 mod any_name;
 mod attrs;
 mod bare_col_label;
@@ -10,7 +9,6 @@ mod between_paren;
 mod boolean_or_string;
 mod col_id;
 mod col_id_list;
-mod col_label;
 mod const_numeric;
 mod document_or_content;
 mod expr;
@@ -52,7 +50,7 @@ mod string_or_null;
 mod transaction_mode_list;
 mod type_function_name;
 mod typename;
-mod var_name;
+mod v2;
 mod var_value;
 mod window_specification;
 
@@ -61,7 +59,6 @@ pub(super) use stmtmulti::stmtmulti;
 #[allow(unused_imports)] // TODO: eventually remove
 use self::{
     acl::{grantee_list, opt_drop_behavior, opt_grant_option, opt_granted_by},
-    all_or_var_name::all_or_var_name,
     any_name::{any_name, any_name_list},
     attrs::attrs,
     bare_col_label::bare_col_label,
@@ -70,7 +67,6 @@ use self::{
     boolean_or_string::{boolean_or_string, boolean_or_string_list},
     col_id::col_id,
     col_id_list::col_id_list,
-    col_label::col_label,
     const_numeric::{i32_literal, signed_i32_literal, signed_number},
     document_or_content::document_or_content,
     expr_list::expr_list,
@@ -110,7 +106,6 @@ use self::{
     transaction_mode_list::transaction_mode_list,
     type_function_name::type_function_name,
     typename::typename,
-    var_name::var_name,
     var_value::{var_list, var_value},
     window_specification::window_specification,
 };

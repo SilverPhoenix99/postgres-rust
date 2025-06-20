@@ -4,7 +4,12 @@ pub(super) fn operator_with_argtypes_list() -> impl Combinator<Output = Vec<Oper
         operator_with_argtypes ( ',' operator_with_argtypes )*
     */
 
-    many_sep(Comma, operator_with_argtypes())
+    parser(|stream|
+        many!(
+            sep = Comma.parse(stream),
+            operator_with_argtypes().parse(stream)
+        )
+    )
 }
 
 pub(super) fn operator_with_argtypes() -> impl Combinator<Output = OperatorWithArgs> {
@@ -49,11 +54,14 @@ fn oper_argtypes() -> impl Combinator<Output = OneOrBoth<Type>> {
 
 fn close_paren<T>() -> impl Combinator<Output = T> {
 
-    located(CloseParenthesis).map_result(|res| {
-        let (_, loc) = res?;
-        let err = LocatedError::new(MissingOperatorArgumentType, loc);
-        Err(ScanErr(err))
-    })
+    parser(|stream|
+        located!(stream, CloseParenthesis.parse(stream))
+    )
+        .map_result(|res| {
+            let (_, loc) = res?;
+            let err = LocatedError::new(MissingOperatorArgumentType, loc);
+            Err(ScanErr(err))
+        })
 }
 
 #[cfg(test)]
@@ -99,9 +107,10 @@ mod tests {
 
 use crate::combinators::between_paren;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

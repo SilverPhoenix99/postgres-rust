@@ -143,7 +143,12 @@ fn variadic_args() -> impl Combinator<Output = Vec<(FuncArgExpr, Option<Location
         ( VARIADIC )? func_arg_expr ( ',' ( VARIADIC )? func_arg_expr )*
     */
 
-    enclosure! { many_sep(Comma, variadic_arg()) }
+    parser(|stream|
+        many!(
+            sep = Comma.parse(stream),
+            variadic_arg().parse(stream)
+        )
+    )
 }
 
 fn variadic_arg() -> impl Combinator<Output = (FuncArgExpr, Option<Location>)> {
@@ -153,7 +158,7 @@ fn variadic_arg() -> impl Combinator<Output = (FuncArgExpr, Option<Location>)> {
     */
 
     or(
-        located(Kw::Variadic)
+        parser(|stream| located!(stream, Kw::Variadic.parse(stream)))
             .and_then(func_arg_expr(), |(_, loc), arg|
                 (arg, Some(loc))
             ),
@@ -253,11 +258,11 @@ mod tests {
 }
 
 use crate::combinators::between_paren;
-use crate::combinators::foundation::enclosure;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

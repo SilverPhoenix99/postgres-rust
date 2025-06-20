@@ -7,7 +7,7 @@ pub(super) fn commit_stmt() -> impl Combinator<Output = TransactionStmt> {
 
     Commit.and_right(match_first!{
             Prepared
-                .and_right(string())
+                .and_right(parser(string))
                 .map(CommitPrepared),
             opt_transaction()
                 .and_right(opt_transaction_chain())
@@ -41,6 +41,7 @@ mod tests {
 }
 
 use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

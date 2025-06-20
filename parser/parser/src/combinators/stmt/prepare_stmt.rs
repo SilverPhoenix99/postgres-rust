@@ -8,7 +8,7 @@ pub(super) fn prepare_stmt() -> impl Combinator<Output = RawStmt> {
     Prepare
         .and_right(or(
             Transaction
-                .and_then(string(), |_, tx_id| PrepareTransactionStmt(tx_id)),
+                .and_then(parser(string), |_, tx_id| PrepareTransactionStmt(tx_id)),
             col_id().map(|_name| todo!())
         ))
 }
@@ -29,6 +29,7 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

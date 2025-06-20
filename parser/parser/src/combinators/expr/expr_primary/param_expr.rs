@@ -8,7 +8,7 @@ pub(super) fn param_expr() -> impl Combinator<Output = ExprNode> {
 
     sequence!(
         param(),
-        located(indirection()).optional()
+        parser(|stream| located!(stream, indirection().parse(stream))).optional()
     )
         .map_result(|res| {
             let (index, indirection) = res?;
@@ -47,6 +47,7 @@ use crate::combinators::expr::check_indirection;
 use crate::combinators::expr::indirection;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::param;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

@@ -4,7 +4,12 @@ pub(super) fn aggregate_with_argtypes_list() -> impl Combinator<Output = Vec<Agg
         aggr_func ( ',' aggr_func )*
     */
 
-    many_sep(Comma, aggregate_with_argtypes())
+    parser(|stream|
+        many!(
+            sep = Comma.parse(stream),
+            aggregate_with_argtypes().parse(stream)
+        )
+    )
 }
 
 pub(super) fn aggregate_with_argtypes() -> impl Combinator<Output = AggregateWithArgs> {
@@ -28,53 +33,59 @@ pub(super) fn aggr_args() -> impl Combinator<Output = (Vec<FunctionParameter>, V
         | '(' aggr_args_list ( ORDER BY aggr_args_list )? ')'
     */
 
-    enclosure! {
-        between_paren(
-            match_first! {
-                Mul
-                    .map(|_| (Vec::new(), Vec::new())),
-                order_by_aggr_args().map(|args| (Vec::new(), args)),
-                sequence!(
-                    aggr_args_list(),
-                    order_by_aggr_args()
+    between_paren(parser(|stream| {
+        choice!(stream,
+            Mul
+                .parse(stream)
+                .map(|_| (Vec::new(), Vec::new())),
+            order_by_aggr_args(stream)
+                .map(|args| (Vec::new(), args)),
+            {
+                seq!(
+                    aggr_args_list(stream),
+                    order_by_aggr_args(stream)
                         .optional()
                         .map(Option::unwrap_or_default)
+                        .map_err(ScanErr)
                 )
             }
         )
-    }
+    }))
 }
 
-fn order_by_aggr_args() -> impl Combinator<Output = Vec<FunctionParameter>> {
+fn order_by_aggr_args(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
 
     /*
         ORDER BY aggr_args_list
     */
 
-    Order.and(By)
-        .and_right(aggr_args_list())
+    seq!(
+        Order.parse(stream),
+        By.parse(stream),
+        aggr_args_list(stream)
+    )
+        .map(|(.., args)| args)
 }
 
-fn aggr_args_list() -> impl Combinator<Output = Vec<FunctionParameter>> {
+fn aggr_args_list(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
 
     /*
         aggr_arg ( ',' aggr_arg )*
     */
 
-    many_sep(Comma, aggr_arg())
+    many!(sep = Comma.parse(stream), aggr_arg(stream))
 }
 
-fn aggr_arg() -> impl Combinator<Output = FunctionParameter> {
+fn aggr_arg(stream: &mut TokenStream) -> Result<FunctionParameter> {
 
-    located(func_arg()).map_result(|res| {
-        let (param, loc) = res?;
-        if matches!(param.mode(), Mode::Default | Mode::In | Mode::Variadic) {
-           return Ok(param)
-        }
+    let (param, loc) = located!(stream, func_arg().parse(stream))?;
 
-        let err = LocatedError::new(AggregateWithOutputParameters, loc);
-        Err(ScanErr(err))
-    })
+    if matches!(param.mode(), Mode::Default | Mode::In | Mode::Variadic) {
+        return Ok(param)
+    }
+
+    let err = LocatedError::new(AggregateWithOutputParameters, loc);
+    Err(ScanErr(err))
 }
 
 #[cfg(test)]
@@ -152,9 +163,9 @@ mod tests {
 
     #[test]
     fn test_order_by_aggr_args() {
-        test_parser!(
+        test_parser!(v2,
             source = "ORDER BY bigint, var2 json",
-            parser = order_by_aggr_args(),
+            parser = order_by_aggr_args,
             expected = vec![
                 FuncType::Type(Int8.into()).into(),
                 FunctionParameter::new(
@@ -168,9 +179,9 @@ mod tests {
 
     #[test]
     fn test_aggr_arg_list() {
-        test_parser!(
+        test_parser!(v2,
             source = "tis json, tis_an int",
-            parser = aggr_args_list(),
+            parser = aggr_args_list,
             expected = vec![
                 FunctionParameter::new(
                     Some("tis".into()),
@@ -188,9 +199,9 @@ mod tests {
 
     #[test]
     fn test_aggr_arg() {
-        test_parser!(
+        test_parser!(v2,
             source = "tis json",
-            parser = aggr_arg(),
+            parser = aggr_arg,
             expected = FunctionParameter::new(
                 Some("tis".into()),
                 Mode::Default,
@@ -201,16 +212,19 @@ mod tests {
 }
 
 use crate::combinators::between_paren;
-use crate::combinators::foundation::enclosure;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::sequence;
+use crate::combinators::foundation::many;
+use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::func_arg;
 use crate::combinators::func_name;
+use crate::result::Optional;
 use crate::scan::Error::ScanErr;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::AggregateWithArgs;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionParameterMode as Mode;

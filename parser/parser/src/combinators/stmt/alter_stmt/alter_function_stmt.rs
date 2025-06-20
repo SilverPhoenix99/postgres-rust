@@ -68,7 +68,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
                 sequence!(Set, Schema)
                     .and_right(or(
                         col_id(),
-                        string()
+                        parser(string)
                             .map(From::from)
                             .and_left(Restrict.optional())
                     ))
@@ -81,7 +81,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
                 AlterObjectSchemaStmt::new(target, new_schema).into()
             },
             {
-                alterfunc_opt_list()
+                parser(alterfunc_opt_list)
                     .and_left(Restrict.optional())
             } => (options) {
                 AlterFunctionStmt::new(func_type, func_sig, options).into()
@@ -98,9 +98,9 @@ fn func_type() -> impl Combinator<Output = AlterFunctionKind> {
     }
 }
 
-fn alterfunc_opt_list() -> impl Combinator<Output = Vec<AlterFunctionOption>> {
+fn alterfunc_opt_list(stream: &mut TokenStream) -> Result<Vec<AlterFunctionOption>> {
 
-    many(alter_function_option())
+    many!(alter_function_option(stream))
 }
 
 #[cfg(test)]
@@ -247,9 +247,9 @@ mod tests {
 
     #[test]
     fn test_alterfunc_opt_list() {
-        test_parser!(
+        test_parser!(v2,
             source = "COST 100 LEAKPROOF true",
-            parser = alterfunc_opt_list(),
+            parser = alterfunc_opt_list,
             expected = vec![
                 AlterFunctionOption::Cost(100.into()),
                 AlterFunctionOption::Leakproof(true)
@@ -263,6 +263,7 @@ use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
@@ -270,6 +271,8 @@ use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::function_with_argtypes;
 use crate::combinators::role_spec;
 use crate::combinators::stmt::alter_function_option;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::AddDrop;
 use pg_ast::AlterFunctionKind;
 use pg_ast::AlterFunctionOption;

@@ -10,7 +10,7 @@ pub(super) fn rollback_stmt() -> impl Combinator<Output = TransactionStmt> {
     Rollback.and_right(
         match_first!{
             Prepared
-                .and_right(string())
+                .and_right(parser(string))
                 .map(RollbackPrepared),
             opt_transaction().and_right(
                 match_first!{
@@ -52,6 +52,7 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

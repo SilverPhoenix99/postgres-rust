@@ -1,22 +1,11 @@
 /// Aliases:
 /// * `IDENT`
 /// * `UIDENT`
-pub(in crate::combinators) fn identifier() -> IdentifierCombi {
-    IdentifierCombi
-}
-
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub(in crate::combinators) struct IdentifierCombi;
-
-impl Combinator for IdentifierCombi {
-    type Output = Box<str>;
-
-    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
-        stream.consume(|tok| {
-            let Identifier(ident) = tok else { return None };
-            Some(mem::take(ident))
-        })
-    }
+pub(in crate::combinators) fn identifier(stream: &mut TokenStream) -> Result<Box<str>> {
+    stream.consume(|tok| {
+        let Identifier(ident) = tok else { return None };
+        Some(mem::take(ident))
+    })
 }
 
 #[cfg(test)]
@@ -31,13 +20,11 @@ mod tests {
     #[test_case(r#"u&"d!0061ta" UESCAPE '!'"#, "data")]
     fn test_identifier(source: &str, expected: &str) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let parser = identifier();
-        let actual = parser.parse(&mut stream);
+        let actual = identifier(&mut stream);
         assert_eq!(expected, actual.unwrap().as_ref())
     }
 }
 
-use crate::combinators::foundation::Combinator;
 use crate::scan::Result;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;

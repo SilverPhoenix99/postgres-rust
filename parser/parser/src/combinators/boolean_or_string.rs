@@ -1,7 +1,12 @@
 /// Alias: `copy_generic_opt_arg_list`
 pub(super) fn boolean_or_string_list() -> impl Combinator<Output = Vec<BooleanOrString>> {
 
-    many_sep(Comma, boolean_or_string())
+    parser(|stream|
+        many!(
+            sep = Comma.parse(stream),
+            boolean_or_string().parse(stream)
+        )
+    )
 }
 
 /// Alias: `opt_boolean_or_string`
@@ -11,7 +16,7 @@ pub(super) fn boolean_or_string() -> impl Combinator<Output = BooleanOrString> {
         True.map(|_| true.into()),
         False.map(|_| false.into()),
         On.map(|kw| kw.text().into()),
-        string().map(From::from),
+        parser(string).map(From::from),
         // `Off` is handled by this production:
         non_reserved_word().map(From::from),
     )
@@ -36,8 +41,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

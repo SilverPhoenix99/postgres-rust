@@ -21,7 +21,12 @@ pub(super) fn privilege_list() -> impl Combinator<Output = Vec<SpecificAccessPri
         privilege ( ',' privilege )*
     */
 
-    many_sep(Comma, privilege())
+    parser(|stream|
+        many!(
+            sep = Comma.parse(stream),
+            privilege().parse(stream)
+        )
+    )
 }
 
 fn privilege() -> impl Combinator<Output = SpecificAccessPrivilege> {
@@ -94,8 +99,9 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

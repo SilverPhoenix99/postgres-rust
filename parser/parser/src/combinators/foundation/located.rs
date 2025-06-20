@@ -1,33 +1,8 @@
-pub(in crate::combinators) fn located<P>(parser: P) -> LocCombi<P>
-where
-    P: Combinator
-{
-    LocCombi { parser }
+macro_rules! located {
+    ($stream:expr, $parser:expr) => {{
+        let loc = $stream.current_location();
+        $parser.map(|ok| (ok, loc))
+    }};
 }
 
-#[derive(Debug)]
-pub(in crate::combinators) struct LocCombi<P>
-where
-    P: Combinator
-{
-    parser: P,
-}
-
-impl<P> Combinator for LocCombi<P>
-where
-    P: Combinator
-{
-    type Output = Located<P::Output>;
-
-    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
-
-        let loc = stream.current_location();
-        self.parser.parse(stream)
-            .map(|ok| (ok, loc))
-    }
-}
-
-use crate::combinators::foundation::Combinator;
-use crate::scan::Result;
-use crate::stream::TokenStream;
-use pg_basics::Located;
+pub(in crate::combinators) use located;
