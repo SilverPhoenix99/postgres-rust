@@ -195,13 +195,13 @@ fn generic_type() -> impl Combinator<Output = TypeName> {
                 }
 
                 let prefix = parser(move |_| Ok(kw.into()));
-                attrs(prefix)
+                attrs!(prefix)
                     .and_then(enclosure! { opt_type_modifiers() }, |name, type_modifiers|
                         Generic { name, type_modifiers }
                     )
                     .parse(stream)
             }),
-        attrs(or(
+        attrs!(or(
             TypeFuncName.map(From::from),
             parser(identifier).map(From::from)
         ))
@@ -295,6 +295,7 @@ mod tests {
 }
 
 use crate::combinators::attrs;
+use crate::combinators::foundation::enclosure;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::match_first;
@@ -303,7 +304,6 @@ use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use crate::combinators::foundation::enclosure;
 use crate::combinators::i32_literal_paren;
 use crate::combinators::opt_interval;
 use crate::combinators::opt_precision;

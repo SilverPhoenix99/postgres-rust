@@ -31,13 +31,13 @@ pub(super) fn function_with_argtypes() -> impl Combinator<Output = FunctionWithA
         TypeFuncName.map(|kw| vec![From::from(kw)])
             .and_then(func_args(), FunctionWithArgs::new),
 
-        attrs(or(
+        attrs!(or(
             Unreserved.map(From::from),
             parser(identifier).map(From::from)
         ))
             .and_then(func_args(), FunctionWithArgs::new),
 
-        attrs(ColumnName.map(From::from))
+        attrs!(ColumnName.map(From::from))
             .chain(|name, stream| {
                 if name.len() == 1 {
                     return Ok(FunctionWithArgs::new(name, None))

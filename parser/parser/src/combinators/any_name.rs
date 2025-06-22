@@ -48,9 +48,9 @@ mod tests {
     }
 }
 
+use crate::combinators::attrs;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::v2::attrs;
 use crate::combinators::v2::col_id;
 use crate::scan::Result;
 use crate::stream::TokenStream;

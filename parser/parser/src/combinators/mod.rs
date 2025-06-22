@@ -9,7 +9,6 @@ mod between_brackets;
 mod between_paren;
 mod boolean_or_string;
 mod col_id;
-mod col_id_list;
 mod const_numeric;
 mod document_or_content;
 mod expr;
@@ -69,7 +68,6 @@ use self::{
     between_paren::between_paren,
     boolean_or_string::{boolean_or_string, boolean_or_string_list},
     col_id::col_id,
-    col_id_list::col_id_list,
     const_numeric::{i32_literal, signed_i32_literal, signed_number},
     document_or_content::document_or_content,
     expr_list::expr_list,

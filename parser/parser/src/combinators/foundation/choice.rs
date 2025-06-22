@@ -2,7 +2,7 @@ macro_rules! choice {
     ($head:expr, $($tail:expr),+ $(,)?) => {
         $crate::combinators::foundation::parser(|stream| {
             #[allow(unused_imports)]
-            use $crate::combinators::foundation::{ClosureHelpers, CombinatorHelpers};
+            use $crate::combinators::foundation::{Combinator, ClosureHelpers, CombinatorHelpers};
             use $crate::result::MaybeMatch;
             use $crate::scan::Error;
 
