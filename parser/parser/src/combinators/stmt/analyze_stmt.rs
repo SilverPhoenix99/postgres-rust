@@ -11,7 +11,6 @@ pub(super) fn analyze_stmt() -> impl Combinator<Output = RawStmt> {
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::RawStmt;
 use pg_lexer::Keyword::Analyse;
 use pg_lexer::Keyword::Analyze;

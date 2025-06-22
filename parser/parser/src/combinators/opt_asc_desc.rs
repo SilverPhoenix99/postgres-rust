@@ -30,7 +30,6 @@ mod tests {
 
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::SortDirection;
 use pg_ast::SortDirection::Ascending;
 use pg_ast::SortDirection::Descending;

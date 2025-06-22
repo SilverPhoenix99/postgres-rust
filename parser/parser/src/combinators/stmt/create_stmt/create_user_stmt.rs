@@ -16,7 +16,7 @@ fn create_user_mapping() -> impl Combinator<Output = CreateUserMappingStmt> {
     sequence!(
         Mapping.and_right(if_not_exists()),
         For.and_right(auth_ident()),
-        Server.and_right(parser(col_id)),
+        Server.and_right(col_id),
         create_generic_options()
     )
         .map(|(if_not_exists, user, server, options)|
@@ -27,7 +27,7 @@ fn create_user_mapping() -> impl Combinator<Output = CreateUserMappingStmt> {
 fn create_user_role() -> impl Combinator<Output = CreateRoleStmt> {
 
     sequence!(
-        parser(role_id),
+        role_id,
         With.optional(),
         create_role_options()
     )
@@ -99,10 +99,8 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_id;
 use crate::combinators::stmt::auth_ident;
 use crate::combinators::stmt::create_generic_options;

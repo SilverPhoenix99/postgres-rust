@@ -33,7 +33,6 @@ mod tests {
 
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::var_list;
 use pg_ast::ValueOrDefault;
 use pg_ast::VarValue;

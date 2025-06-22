@@ -37,7 +37,6 @@ mod tests {
 use crate::combinators::foundation::and;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::WindowExclusion;
 use pg_ast::WindowExclusion::CurrentRow;
 use pg_ast::WindowExclusion::Group;

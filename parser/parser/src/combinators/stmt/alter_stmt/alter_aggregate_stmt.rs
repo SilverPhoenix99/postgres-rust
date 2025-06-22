@@ -103,7 +103,6 @@ use crate::combinators::col_id;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role::role_spec;
 use crate::combinators::stmt::aggregate_with_argtypes;
 use crate::scan::Result;

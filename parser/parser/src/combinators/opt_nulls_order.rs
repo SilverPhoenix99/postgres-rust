@@ -31,7 +31,6 @@ mod tests {
 
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::SortNulls;
 use pg_ast::SortNulls::NullsFirst;
 use pg_ast::SortNulls::NullsLast;

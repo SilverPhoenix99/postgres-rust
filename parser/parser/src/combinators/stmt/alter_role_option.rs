@@ -179,7 +179,6 @@ use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_list;
 use crate::combinators::signed_i32_literal;
 use crate::scan::Error::ScanErr;

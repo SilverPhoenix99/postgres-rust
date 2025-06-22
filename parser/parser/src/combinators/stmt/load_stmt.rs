@@ -6,7 +6,7 @@ pub(super) fn load_stmt() -> impl Combinator<Output = Box<str>> {
     */
 
     Load
-        .and_right(parser(string))
+        .and_right(string)
 }
 
 #[cfg(test)]
@@ -22,8 +22,6 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_lexer::Keyword::Load;

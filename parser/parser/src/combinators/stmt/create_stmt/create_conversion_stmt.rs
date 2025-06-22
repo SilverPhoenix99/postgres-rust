@@ -10,10 +10,10 @@ pub(super) fn create_conversion_stmt() -> impl Combinator<Output = CreateConvers
             and(DefaultKw, Conversion).map(|_| true),
             Conversion.map(|_| false)
         ),
-        parser(any_name),
-        For.and_right(parser(string)),
-        To.and_right(parser(string)),
-        FromKw.and_right(parser(any_name))
+        any_name,
+        For.and_right(string),
+        To.and_right(string),
+        FromKw.and_right(any_name)
     )
         .map(|(is_default, name, for_encoding, to_encoding, function)| {
             CreateConversionStmt::new(
@@ -46,11 +46,9 @@ mod tests {
 use crate::combinators::any_name;
 use crate::combinators::foundation::and;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::CreateConversionStmt;
 use pg_lexer::Keyword::Conversion;
 use pg_lexer::Keyword::DefaultKw;

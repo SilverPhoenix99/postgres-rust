@@ -24,7 +24,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_lexer::Keyword::Transaction;

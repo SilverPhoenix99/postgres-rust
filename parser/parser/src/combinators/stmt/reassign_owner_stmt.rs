@@ -7,9 +7,9 @@ pub(super) fn reassign_owned_stmt() -> impl Combinator<Output = ReassignOwnedStm
 
     sequence!(
         Reassign.and(OwnedKw).and(By).skip(),
-        parser(role_list),
+        role_list,
         To.skip(),
-        parser(role_spec)
+        role_spec
     ).map(|(|_, roles, _, new_owner)| {
         ReassignOwnedStmt::new(roles, new_owner)
     })
@@ -35,9 +35,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::{parser, sequence};
+use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_list;
 use crate::combinators::role_spec;
 use pg_ast::ReassignOwnedStmt;

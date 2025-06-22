@@ -7,7 +7,7 @@ pub(super) fn notify_stmt() -> impl Combinator<Output = NotifyStmt> {
 
     sequence!(
         Notify.skip(),
-        parser(col_id),
+        col_id,
         Comma
             .and_right(parser(string))
             .optional()
@@ -47,7 +47,6 @@ use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::NotifyStmt;
 use pg_lexer::Keyword::Notify;
 use pg_lexer::OperatorKind::Comma;

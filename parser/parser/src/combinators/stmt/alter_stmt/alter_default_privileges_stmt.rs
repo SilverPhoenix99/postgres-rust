@@ -7,7 +7,7 @@ pub(super) fn alter_default_privileges_stmt() -> impl Combinator<Output = AlterD
 
     sequence!(
         DefaultKw.and(Privileges).skip(),
-        parser(def_acl_option_list).optional(),
+        def_acl_option_list.optional(),
         def_acl_action()
     ).map(|(_, options, action)|
         AlterDefaultPrivilegesStmt::new(options.unwrap_or_default(), action)
@@ -40,7 +40,7 @@ fn def_acl_option() -> impl Combinator<Output = AclOption> {
         sequence!(
             For.and(Role.or(User))
                 .skip(),
-            parser(role_list)
+            role_list
         ).map(|(_, roles)|
             AclOption::Roles(roles)
         )
@@ -247,10 +247,8 @@ mod tests {
 use crate::combinators::foundation::and;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::grantee_list;
 use crate::combinators::name_list;
 use crate::combinators::opt_drop_behavior;

@@ -1,7 +1,7 @@
 /// Production: `'(' ICONST ')'`
 pub(super) fn i32_literal_paren() -> impl Combinator<Output = i32> {
 
-    between_paren(parser(integer)).map(From::from)
+    between_paren(integer).map(From::from)
 }
 
 #[cfg(test)]
@@ -19,6 +19,4 @@ mod tests {
 
 use crate::combinators::between_paren;
 use crate::combinators::foundation::integer;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;

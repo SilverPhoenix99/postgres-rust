@@ -20,16 +20,16 @@ pub(super) fn text_search() -> impl Combinator<Output = TextSearch> {
     and(Text, Search)
         .and_right(match_first! {
             Configuration
-                .and_right(parser(any_name))
+                .and_right(any_name)
                 .map(TextSearch::Configuration),
             Dictionary
-                .and_right(parser(any_name))
+                .and_right(any_name)
                 .map(TextSearch::Dictionary),
             ParserKw
-                .and_right(parser(any_name))
+                .and_right(any_name)
                 .map(TextSearch::Parser),
             Template
-                .and_right(parser(any_name))
+                .and_right(any_name)
                 .map(TextSearch::Template)
         })
 }
@@ -52,9 +52,7 @@ mod tests {
 use crate::combinators::any_name;
 use crate::combinators::foundation::and;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_basics::QualifiedName;
 use pg_lexer::Keyword::Configuration;
 use pg_lexer::Keyword::Dictionary;

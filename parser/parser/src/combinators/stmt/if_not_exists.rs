@@ -21,7 +21,6 @@ mod tests {
 
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_lexer::Keyword::Exists;
 use pg_lexer::Keyword::If;
 use pg_lexer::Keyword::Not;

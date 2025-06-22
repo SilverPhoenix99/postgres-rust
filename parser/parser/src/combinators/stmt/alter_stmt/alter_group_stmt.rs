@@ -13,7 +13,7 @@ pub(super) fn alter_group_stmt() -> impl Combinator<Output = RawStmt> {
         .chain(match_first_with_state!{|(group, group_loc), stream| {
             {
                 Rename.and(To)
-                    .and_right(parser(role_id))
+                    .and_right(role_id)
             } => (new_name) {
                 let group = group.into_role_id()
                     .map_err(|err|
@@ -28,7 +28,7 @@ pub(super) fn alter_group_stmt() -> impl Combinator<Output = RawStmt> {
                         DropKw.map(|_| AddDrop::Drop),
                     ),
                     User.skip(),
-                    parser(role_list)
+                    role_list
                 )
             } => ((action, _, roles)) {
                 let options = Some(vec![RoleMembers(roles)]);
@@ -92,12 +92,11 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::{located, parser};
+use crate::combinators::foundation::located;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_id;
 use crate::combinators::role_list;
 use crate::combinators::role_spec;

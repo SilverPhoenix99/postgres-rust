@@ -3,7 +3,6 @@ mod between;
 mod bit_string;
 mod choice;
 mod combinator;
-mod combinator_helpers;
 mod identifier;
 mod integer;
 mod keyword;
@@ -32,7 +31,6 @@ pub(in crate::combinators) use self::{
     between::{between, BetweenCombi},
     bit_string::{bit_string, BitStringCombi},
     choice::choice,
-    combinator_helpers::CombinatorHelpers,
     identifier::identifier,
     integer::integer,
     keyword::{any_keyword, keyword_if, keyword_result, keyword_when, KeywordCondCombi},

@@ -13,8 +13,8 @@ pub(super) fn filter_clause() -> impl Combinator<Output = Option<ExprNode>> {
 
 #[cfg(test)]
 mod tests {
-    use crate::tests::test_parser;
     use super::*;
+    use crate::tests::test_parser;
 
     #[test]
     fn test_filter_clause() {
@@ -29,7 +29,6 @@ mod tests {
 use crate::combinators::between_paren;
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::ExprNode;
 use pg_lexer::Keyword::Filter;
 use pg_lexer::Keyword::Where;

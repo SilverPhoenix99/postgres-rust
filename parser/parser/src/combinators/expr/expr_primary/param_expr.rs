@@ -49,7 +49,6 @@ use crate::combinators::foundation::located;
 use crate::combinators::foundation::param;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::ParamRef;
 use pg_ast::IndirectionExpr;

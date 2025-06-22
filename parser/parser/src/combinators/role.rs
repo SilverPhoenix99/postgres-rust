@@ -144,7 +144,6 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::non_reserved_word;
 use crate::scan::Error::ScanErr;
 use crate::scan::Result;

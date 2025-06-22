@@ -35,7 +35,6 @@ mod tests {
 
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::DiscardStmt;
 use pg_lexer::Keyword::All;
 use pg_lexer::Keyword::Discard;

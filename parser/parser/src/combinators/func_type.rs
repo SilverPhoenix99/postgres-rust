@@ -79,7 +79,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::typename;
 use core::hint::unreachable_unchecked;
 use pg_ast::FuncType;

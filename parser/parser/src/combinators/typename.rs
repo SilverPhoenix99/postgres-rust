@@ -68,7 +68,6 @@ mod tests {
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::opt_array_bounds;
 use crate::combinators::simple_typename;
 use pg_ast::Type;

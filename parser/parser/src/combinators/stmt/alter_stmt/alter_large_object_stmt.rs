@@ -8,7 +8,7 @@ pub(super) fn alter_large_object_stmt() -> impl Combinator<Output = RawStmt> {
         Large.and(Object).skip(),
         signed_number(),
         Owner.and(To),
-        parser(role_spec)
+        role_spec
     ).map(|(_, oid, _, new_owner)|
         AlterOwnerStmt::new(
             AlterOwnerTarget::LargeObject(oid),
@@ -39,9 +39,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::{parser, sequence};
+use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_spec;
 use crate::combinators::signed_number;
 use pg_ast::AlterOwnerStmt;

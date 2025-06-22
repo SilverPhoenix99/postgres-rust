@@ -14,7 +14,7 @@ pub(super) fn boolean_or_string() -> impl Combinator<Output = BooleanOrString> {
         True.map(|_| true.into()),
         False.map(|_| false.into()),
         On.map(|kw| kw.text().into()),
-        parser(string).map(From::from),
+        string.map(From::from),
         // `Off` is handled by this production:
         non_reserved_word().map(From::from),
     )
@@ -41,10 +41,8 @@ mod tests {
 
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::non_reserved_word;
 use pg_ast::BooleanOrString;
 use pg_lexer::Keyword::False;

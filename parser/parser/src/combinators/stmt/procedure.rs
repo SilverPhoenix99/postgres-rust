@@ -24,7 +24,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::function_with_argtypes;
 use pg_ast::FunctionWithArgs;
 use pg_lexer::Keyword::Procedure;

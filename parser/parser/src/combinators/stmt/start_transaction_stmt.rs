@@ -6,7 +6,7 @@ pub(super) fn start_transaction_stmt() -> impl Combinator<Output = TransactionSt
 
     sequence!(
         Start.and(Transaction).skip(),
-        parser(transaction_mode_list).optional()
+        transaction_mode_list.optional()
     ).map(|(_, tx_modes)|
         TransactionStmt::Start(tx_modes.unwrap_or_default())
     )
@@ -35,9 +35,8 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
-use crate::combinators::foundation::{parser, sequence};
 use crate::combinators::transaction_mode_list;
 use pg_ast::TransactionStmt;
 use pg_lexer::Keyword::Start;

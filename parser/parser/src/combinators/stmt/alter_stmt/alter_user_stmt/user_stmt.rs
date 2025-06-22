@@ -18,7 +18,7 @@ pub(super) fn user_stmt() -> impl Combinator<Output = RawStmt> {
             .chain(match_first_with_state!(|(role, loc), stream| {
                 {
                     Rename.and(To)
-                        .and_right(parser(role_id))
+                        .and_right(role_id)
                 } => (new_name) {
                     let role_id = role.into_role_id()
                         .map_err(|err|
@@ -182,12 +182,11 @@ mod tests {
 }
 
 use super::in_database::in_database;
-use crate::combinators::foundation::{located, parser};
+use crate::combinators::foundation::located;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_id;
 use crate::combinators::role_spec;
 use crate::combinators::stmt::alter_role_options;

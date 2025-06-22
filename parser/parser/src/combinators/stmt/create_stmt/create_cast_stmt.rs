@@ -89,7 +89,6 @@ use crate::combinators::foundation::and;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::function_with_argtypes;
 use crate::combinators::stmt::typecast;
 use pg_ast::CastConversion;

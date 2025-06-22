@@ -84,9 +84,8 @@ use self::{
     alter_user_stmt::alter_user_stmt,
     set_reset_clause::set_reset_clause
 };
-use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::foundation::choice;
+use crate::combinators::foundation::Combinator;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::RawStmt;

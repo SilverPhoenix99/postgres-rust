@@ -78,7 +78,6 @@ use crate::combinators::foundation::integer;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role::role_list;
 use crate::combinators::stmt::alter_role_option;
 use crate::scan::Result;

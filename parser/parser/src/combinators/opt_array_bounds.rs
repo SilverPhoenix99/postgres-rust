@@ -42,6 +42,5 @@ use crate::combinators::between_brackets;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::i32_literal;
 use pg_lexer::Keyword::Array;

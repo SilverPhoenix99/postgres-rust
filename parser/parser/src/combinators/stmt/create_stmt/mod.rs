@@ -56,6 +56,5 @@ use self::{
 };
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::RawStmt;
 use pg_lexer::Keyword::Create;

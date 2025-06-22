@@ -88,7 +88,6 @@ use crate::combinators::foundation::and;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::CaseExpr;
 use pg_ast::CaseWhen;
 use pg_ast::ExprNode;

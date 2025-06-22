@@ -9,14 +9,14 @@ pub(super) fn alter_event_trigger_stmt() -> impl Combinator<Output = RawStmt> {
 
     sequence!(
         Event.and(Trigger).skip(),
-        parser(col_id),
+        col_id,
     ).chain(match_first_with_state!(|(_, trigger), stream| {
         { enable_trigger() } => (state) {
             AlterEventTrigStmt::new(trigger, state).into()
         },
         {
             Owner.and(To)
-                .and_right(parser(role_spec))
+                .and_right(role_spec)
         } => (new_owner) {
             AlterOwnerStmt::new(
                 AlterOwnerTarget::EventTrigger(trigger),
@@ -25,7 +25,7 @@ pub(super) fn alter_event_trigger_stmt() -> impl Combinator<Output = RawStmt> {
         },
         {
             Rename.and(To)
-                .and_right(parser(col_id))
+                .and_right(col_id)
         } => (new_name) {
             RenameStmt::new(
                 RenameTarget::EventTrigger(trigger),
@@ -114,10 +114,8 @@ use crate::combinators::col_id;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_spec;
 use pg_ast::AlterEventTrigStmt;
 use pg_ast::AlterOwnerStmt;

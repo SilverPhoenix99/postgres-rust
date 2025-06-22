@@ -45,7 +45,7 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
             .and_right(name_list())
             .map(Database),
         Kw::Domain
-            .and_right(parser(any_name_list))
+            .and_right(any_name_list)
             .map(Domain),
         Foreign.and_right(match_first! {
             sequence!(Data, Wrapper)
@@ -62,10 +62,10 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
             .and_right(name_list())
             .map(Language),
         sequence!(Large, Object)
-            .and_right(parser(signed_number_list))
+            .and_right(signed_number_list)
             .map(LargeObject),
         Parameter
-            .and_right(parser(parameter_name_list))
+            .and_right(parameter_name_list)
             .map(ParameterAcl),
         Kw::Procedure
             .and_right(function_with_argtypes_list())
@@ -83,7 +83,7 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
             .and_right(name_list())
             .map(Tablespace),
         Kw::Type
-            .and_right(parser(any_name_list))
+            .and_right(any_name_list)
             .map(Type),
         Kw::Table.optional()
             .and_right(qualified_name_list())
@@ -262,10 +262,8 @@ use crate::combinators::any_name_list;
 use crate::combinators::col_id;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::function_with_argtypes_list;
 use crate::combinators::name_list;
 use crate::combinators::qualified_name_list;

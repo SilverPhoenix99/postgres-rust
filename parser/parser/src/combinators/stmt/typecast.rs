@@ -36,7 +36,6 @@ mod tests {
 use crate::combinators::between_paren;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::typename;
 use pg_ast::Typecast;
 use pg_lexer::Keyword::As;

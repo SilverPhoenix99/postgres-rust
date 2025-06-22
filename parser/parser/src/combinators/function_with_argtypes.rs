@@ -33,7 +33,7 @@ pub(super) fn function_with_argtypes() -> impl Combinator<Output = FunctionWithA
 
         attrs!(or(
             Unreserved.map(From::from),
-            parser(identifier).map(From::from)
+            identifier.map(From::from)
         ))
             .and_then(func_args(), FunctionWithArgs::new),
 
@@ -61,7 +61,7 @@ fn func_args() -> impl Combinator<Output = Option<Option<Vec<FunctionParameter>>
         ( '(' ( func_args_list )? ')' )?
     */
 
-    between_paren(parser(func_args_list).optional())
+    between_paren(func_args_list.optional())
         .optional()
 }
 
@@ -128,9 +128,7 @@ use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::func_arg;
 use crate::scan::Result;
 use crate::stream::TokenStream;

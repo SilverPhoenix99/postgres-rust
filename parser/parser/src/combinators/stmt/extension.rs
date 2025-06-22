@@ -5,7 +5,7 @@ pub(super) fn extension() -> impl Combinator<Output = Str> {
     */
 
     Extension
-        .and_right(parser(col_id))
+        .and_right(col_id)
 }
 
 #[cfg(test)]
@@ -24,7 +24,6 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::{parser, Combinator};
-use crate::combinators::foundation::CombinatorHelpers;
+use crate::combinators::foundation::Combinator;
 use pg_basics::Str;
 use pg_lexer::Keyword::Extension;

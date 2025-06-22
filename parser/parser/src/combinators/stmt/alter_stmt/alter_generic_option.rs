@@ -4,9 +4,9 @@ pub(super) fn alter_generic_options() -> impl Combinator<Output = Vec<GenericOpt
         OPTIONS '(' alter_generic_option_list ')'
     */
 
-    Options.and_right(between_paren(
-        parser(alter_generic_option_list),
-    ))
+    Options.and_right(
+        between_paren(alter_generic_option_list)
+    )
 }
 
 fn alter_generic_option_list(stream: &mut TokenStream) -> Result<Vec<GenericOptionKind>> {
@@ -95,10 +95,8 @@ use crate::combinators::between_paren;
 use crate::combinators::col_label;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::generic_option;
 use crate::scan::Result;
 use crate::stream::TokenStream;

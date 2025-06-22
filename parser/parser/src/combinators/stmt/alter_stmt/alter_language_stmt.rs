@@ -9,11 +9,11 @@ pub(super) fn alter_language_stmt() -> impl Combinator<Output = RawStmt> {
         Procedural.and(Language).skip(),
         Language.skip()
     )
-        .and_right(parser(col_id))
+        .and_right(col_id)
         .chain(match_first_with_state!(|name, stream| {
             {
                 Owner.and(To)
-                    .and_right(parser(role_spec))
+                    .and_right(role_spec)
             } => (role) {
                 AlterOwnerStmt::new(
                     AlterOwnerTarget::Language(name),
@@ -22,7 +22,7 @@ pub(super) fn alter_language_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 Rename.and(To)
-                    .and_right(parser(col_id))
+                    .and_right(col_id)
             } => (new_name) {
                 RenameStmt::new(
                     RenameTarget::Language(name),
@@ -69,9 +69,7 @@ mod tests {
 use crate::combinators::col_id;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_spec;
 use pg_ast::AlterOwnerStmt;
 use pg_ast::AlterOwnerTarget;

@@ -26,7 +26,6 @@ mod tests {
 
 use crate::combinators::foundation::and;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::signed_number;
 use pg_ast::SignedNumber;
 use pg_lexer::Keyword::Large;

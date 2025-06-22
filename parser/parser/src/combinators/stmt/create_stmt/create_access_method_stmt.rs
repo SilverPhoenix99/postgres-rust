@@ -6,9 +6,9 @@ pub(super) fn create_access_method_stmt() -> impl Combinator<Output = CreateAcce
     */
 
     sequence!(
-        and(Access, Method).and_right(parser(col_id)),
+        and(Access, Method).and_right(col_id),
         Type.and_right(am_type()),
-        Handler.and_right(parser(any_name))
+        Handler.and_right(any_name)
     )
         .map(|(name, kind, handler)|
             CreateAccessMethodStmt::new(name, kind, handler)
@@ -49,10 +49,8 @@ use crate::combinators::any_name;
 use crate::combinators::col_id;
 use crate::combinators::foundation::and;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::AccessMethodKind;
 use pg_ast::AccessMethodKind::Index;
 use pg_ast::AccessMethodKind::Table;

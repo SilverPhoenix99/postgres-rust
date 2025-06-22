@@ -3,9 +3,9 @@ pub(super) fn create_database_stmt() -> impl Combinator<Output = CreateDatabaseS
 
     sequence!(
         Database.skip(),
-        parser(col_id),
+        col_id,
         With.optional().skip(),
-        parser(createdb_opt_list)
+        createdb_opt_list
     ).map(|(_, name, _, options)|
         CreateDatabaseStmt::new(name, options)
     )
@@ -158,11 +158,9 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::var_value;
 use crate::scan::Result;
 use crate::stream::TokenStream;

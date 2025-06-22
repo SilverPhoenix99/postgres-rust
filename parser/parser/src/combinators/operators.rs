@@ -217,7 +217,6 @@ use crate::combinators::foundation::seq;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::user_defined_operator;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::Operator;
 use pg_ast::Operator::Addition;
 use pg_ast::Operator::Division;

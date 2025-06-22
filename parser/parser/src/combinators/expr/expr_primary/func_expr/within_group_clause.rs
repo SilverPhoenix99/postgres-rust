@@ -31,7 +31,6 @@ mod tests {
 use crate::combinators::between_paren;
 use crate::combinators::foundation::and;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::sort_clause;
 use pg_ast::SortBy;
 use pg_lexer::Keyword::Group;

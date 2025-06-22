@@ -10,14 +10,14 @@ pub(super) fn rollback_stmt() -> impl Combinator<Output = TransactionStmt> {
     Rollback.and_right(
         match_first!{
             Prepared
-                .and_right(parser(string))
+                .and_right(string)
                 .map(RollbackPrepared),
-            parser(opt_transaction).and_right(
+            opt_transaction.and_right(
                 match_first!{
                     To.and(Savepoint.optional())
-                        .and_right(parser(col_id))
+                        .and_right(col_id)
                         .map(RollbackTo),
-                    parser(opt_transaction_chain)
+                    opt_transaction_chain
                         .map(|chain| TransactionStmt::Rollback { chain })
                 }
             )
@@ -52,10 +52,8 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::opt_transaction;
 use crate::combinators::opt_transaction_chain;
 use pg_ast::TransactionStmt;

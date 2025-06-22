@@ -72,7 +72,6 @@ use crate::combinators::expr::expr_primary::case_expr;
 use crate::combinators::expr::expr_primary::cast_expr;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::opt_precision;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::CurrentCatalog;

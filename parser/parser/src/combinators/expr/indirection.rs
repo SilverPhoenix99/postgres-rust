@@ -30,7 +30,7 @@ fn indirection_el() -> impl Combinator<Output = Indirection> {
 
         Dot.and_right(or(
             Mul.map(|_| All),
-            parser(col_label).map(Property),
+            col_label.map(Property),
         )),
 
         between_brackets(match_first!(
@@ -150,10 +150,8 @@ use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::optional;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::scan::Result;
 use pg_ast::Indirection;
 use pg_ast::Indirection::All;

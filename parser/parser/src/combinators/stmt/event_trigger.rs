@@ -5,7 +5,7 @@ pub(super) fn event_trigger() -> impl Combinator<Output = Str> {
     */
 
     and(Event, Trigger)
-        .and_right(parser(col_id))
+        .and_right(col_id)
 }
 
 #[cfg(test)]
@@ -24,9 +24,8 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::{and, parser};
+use crate::combinators::foundation::and;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_basics::Str;
 use pg_lexer::Keyword::Event;
 use pg_lexer::Keyword::Trigger;

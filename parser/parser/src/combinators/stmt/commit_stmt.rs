@@ -7,10 +7,10 @@ pub(super) fn commit_stmt() -> impl Combinator<Output = TransactionStmt> {
 
     Commit.and_right(match_first!{
             Prepared
-                .and_right(parser(string))
+                .and_right(string)
                 .map(CommitPrepared),
-            parser(opt_transaction)
-                .and_right(parser(opt_transaction_chain))
+            opt_transaction
+                .and_right(opt_transaction_chain)
                 .map(|chain| TransactionStmt::Commit { chain })
         })
 }
@@ -41,10 +41,8 @@ mod tests {
 }
 
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::opt_transaction;
 use crate::combinators::opt_transaction_chain;
 use pg_ast::TransactionStmt;

@@ -31,7 +31,6 @@ mod tests {
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_lexer::Keyword::Time;
 use pg_lexer::Keyword::With;
 use pg_lexer::Keyword::Without;

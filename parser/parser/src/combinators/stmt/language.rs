@@ -8,7 +8,7 @@ pub(super) fn language() -> impl Combinator<Output = Str> {
         Language.skip(),
         and(Procedural, Language).skip()
     )
-        .and_right(parser(col_id))
+        .and_right(col_id)
 }
 
 #[cfg(test)]
@@ -36,10 +36,9 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::{and, parser};
+use crate::combinators::foundation::and;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_basics::Str;
 use pg_lexer::Keyword::Language;
 use pg_lexer::Keyword::Procedural;

@@ -32,7 +32,6 @@ mod tests {
 
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::var_name;
 use crate::scan::Result;
 use crate::stream::TokenStream;

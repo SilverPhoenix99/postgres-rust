@@ -40,7 +40,6 @@ use crate::combinators::boolean_or_string;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::signed_number;
 use pg_ast::VarValue;
 use pg_lexer::OperatorKind::Comma;

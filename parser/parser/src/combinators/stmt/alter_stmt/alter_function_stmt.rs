@@ -22,7 +22,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
         .chain(match_first_with_state!{|(func_type, func_sig), stream| {
             {
                 sequence!(Depends, On, Extension)
-                    .and_right(parser(col_id))
+                    .and_right(col_id)
             } => (extension) {
                 let target = match func_type {
                     AlterFunctionKind::Function => AlterObjectDependsTarget::Function(func_sig),
@@ -33,7 +33,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 sequence!(No, Depends, On, Extension)
-                    .and_right(parser(col_id))
+                    .and_right(col_id)
             } => (extension) {
                 let target = match func_type {
                     AlterFunctionKind::Function => AlterObjectDependsTarget::Function(func_sig),
@@ -44,7 +44,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 sequence!(Owner, To)
-                    .and_right(parser(role_spec))
+                    .and_right(role_spec)
             } => (new_owner) {
                 let target = match func_type {
                     AlterFunctionKind::Function => AlterOwnerTarget::Function(func_sig),
@@ -55,7 +55,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 sequence!(Rename, To)
-                    .and_right(parser(col_id))
+                    .and_right(col_id)
             } => (new_name) {
                 let target = match func_type {
                     AlterFunctionKind::Function => RenameTarget::Function(func_sig),
@@ -67,8 +67,8 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
             {
                 sequence!(Set, Schema)
                     .and_right(or(
-                        parser(col_id),
-                        parser(string)
+                        col_id,
+                        string
                             .map(From::from)
                             .and_left(Restrict.optional())
                     ))
@@ -81,7 +81,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
                 AlterObjectSchemaStmt::new(target, new_schema).into()
             },
             {
-                parser(alterfunc_opt_list)
+                alterfunc_opt_list
                     .and_left(Restrict.optional())
             } => (options) {
                 AlterFunctionStmt::new(func_type, func_sig, options).into()
@@ -263,11 +263,9 @@ use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::function_with_argtypes;
 use crate::combinators::role_spec;
 use crate::combinators::stmt::alter_function_option;

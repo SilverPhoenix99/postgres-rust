@@ -12,7 +12,7 @@ pub(super) fn variable_target() -> impl Combinator<Output = VariableTarget> {
         sequence!(Time, Zone).map(|_| TimeZone),
         sequence!(Transaction, Isolation, Level).map(|_| TransactionIsolation),
         sequence!(Session, Authorization).map(|_| SessionAuthorization),
-        parser(all_or_var_name).map(|reset| match reset {
+        all_or_var_name.map(|reset| match reset {
             OneOrAll::All => VariableTarget::All,
             OneOrAll::One(name) => VariableTarget::Variable{ name }
         })
@@ -39,10 +39,8 @@ mod tests {
 
 use crate::combinators::all_or_var_name;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::OneOrAll;
 use pg_ast::VariableTarget;
 use pg_ast::VariableTarget::SessionAuthorization;

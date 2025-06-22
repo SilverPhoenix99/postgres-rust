@@ -33,8 +33,7 @@ mod tests {
 use crate::combinators::col_id;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
-use crate::combinators::window_specification::window_specification;
+use crate::combinators::window_specification;
 use pg_ast::OverClause;
 use pg_ast::OverClause::WindowDefinition;
 use pg_ast::OverClause::WindowName;

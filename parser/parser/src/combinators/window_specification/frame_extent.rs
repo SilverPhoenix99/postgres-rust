@@ -175,7 +175,6 @@ use crate::combinators::foundation::located;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::CurrentRowEnd;
 use pg_ast::FollowingEnd;
 use pg_ast::FrameExtent;

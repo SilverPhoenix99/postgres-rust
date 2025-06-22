@@ -21,7 +21,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::typename;
 use pg_ast::Type;
 use pg_lexer::Keyword as Kw;

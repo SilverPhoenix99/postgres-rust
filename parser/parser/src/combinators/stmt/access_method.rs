@@ -5,7 +5,7 @@ pub(super) fn access_method() -> impl Combinator<Output = Str> {
     */
 
     and(Access, Method)
-        .and_right(parser(col_id))
+        .and_right(col_id)
 }
 
 #[cfg(test)]
@@ -25,9 +25,7 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::and;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_basics::Str;
 use pg_lexer::Keyword::Access;
 use pg_lexer::Keyword::Method;

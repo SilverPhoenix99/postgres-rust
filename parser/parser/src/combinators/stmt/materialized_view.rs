@@ -5,7 +5,7 @@ pub(super) fn materialized_view() -> impl Combinator<Output = QualifiedName> {
     */
 
     and(Materialized, View)
-        .and_right(parser(any_name))
+        .and_right(any_name)
 }
 
 #[cfg(test)]
@@ -25,9 +25,7 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::foundation::and;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_basics::QualifiedName;
 use pg_lexer::Keyword::Materialized;
 use pg_lexer::Keyword::View;

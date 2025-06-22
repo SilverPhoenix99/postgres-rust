@@ -42,7 +42,7 @@ fn privilege() -> impl Combinator<Output = SpecificAccessPrivilege> {
             .and_then(paren_name_list().optional(), |_, columns| References(columns)),
         SelectKw
             .and_then(paren_name_list().optional(), |_, columns| Select(columns)),
-        parser(col_id)
+        col_id
             .and_then(paren_name_list().optional(), Named)
     }
 }
@@ -94,11 +94,10 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::{many, parser};
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::paren_name_list;
 use pg_ast::AccessPrivilege;
 use pg_ast::AccessPrivilege::All;

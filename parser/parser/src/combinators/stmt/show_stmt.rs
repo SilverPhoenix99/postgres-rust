@@ -23,7 +23,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::stmt::variable_target;
 use pg_ast::VariableTarget;
 use pg_lexer::Keyword::Show;

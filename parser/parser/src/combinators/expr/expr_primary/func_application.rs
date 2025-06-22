@@ -259,7 +259,6 @@ use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::func_arg_expr;
 use crate::combinators::func_arg_list;
 use crate::combinators::sort_clause;

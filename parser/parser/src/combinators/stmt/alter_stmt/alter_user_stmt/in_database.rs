@@ -29,7 +29,6 @@ use crate::combinators::col_id;
 use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_basics::Str;
 use pg_lexer::Keyword::Database;
 use pg_lexer::Keyword::In;

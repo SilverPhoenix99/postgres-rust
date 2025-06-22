@@ -87,7 +87,6 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
 use pg_elog::syntax;

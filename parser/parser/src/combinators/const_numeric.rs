@@ -24,9 +24,7 @@ pub(super) fn signed_number() -> impl Combinator<Output = SignedNumber> {
 
 /// Alias: `ICONST`
 pub(super) fn i32_literal() -> impl Combinator<Output = i32> {
-    parser(|stream|
-        integer(stream).map(i32::from)
-    )
+    integer.map(i32::from)
 }
 
 /// Alias: `SignedIconst`
@@ -95,7 +93,6 @@ use crate::combinators::foundation::integer;
 use crate::combinators::foundation::number;
 use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::sign;
 use core::ops::Neg;
 use pg_ast::SignedNumber;

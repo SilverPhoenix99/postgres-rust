@@ -134,7 +134,6 @@ mod tests {
 
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::func_type;
 use crate::combinators::type_function_name;
 use crate::eof::Result;

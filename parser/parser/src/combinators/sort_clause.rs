@@ -8,7 +8,7 @@ pub(super) fn sort_clause() -> impl Combinator<Output = Vec<SortBy>> {
     */
 
     and(Order, By)
-        .and_right(parser(sortby_list))
+        .and_right(sortby_list)
 }
 
 fn sortby_list(stream: &mut TokenStream) -> Result<Vec<SortBy>> {
@@ -115,10 +115,8 @@ use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::and;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::opt_asc_desc;
 use crate::combinators::opt_nulls_order;
 use crate::combinators::qual_all_op;

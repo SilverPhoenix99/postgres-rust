@@ -39,7 +39,6 @@ use crate::combinators::between_paren;
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::typename;
 use pg_ast::TypecastExpr;
 use pg_lexer::Keyword::As;

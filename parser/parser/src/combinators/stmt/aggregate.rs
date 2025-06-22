@@ -5,7 +5,7 @@ pub(super) fn aggregate() -> impl Combinator<Output = AggregateWithArgs> {
     */
 
     Aggregate
-        .and_right(parser(aggregate_with_argtypes))
+        .and_right(aggregate_with_argtypes)
 }
 
 #[cfg(test)]
@@ -23,8 +23,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::{parser, Combinator};
-use crate::combinators::foundation::CombinatorHelpers;
+use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::aggregate_with_argtypes;
 use pg_ast::AggregateWithArgs;
 use pg_lexer::Keyword::Aggregate;

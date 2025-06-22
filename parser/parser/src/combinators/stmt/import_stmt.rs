@@ -6,13 +6,12 @@ pub(super) fn import_stmt() -> impl Combinator<Output = RawStmt> {
     */
 
     Import.and(Foreign).and(Schema)
-        .and_right(parser(col_id))
+        .and_right(col_id)
         .map(|_| todo!())
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::{parser, Combinator};
-use crate::combinators::foundation::CombinatorHelpers;
+use crate::combinators::foundation::Combinator;
 use pg_ast::RawStmt;
 use pg_lexer::Keyword::Foreign;
 use pg_lexer::Keyword::Import;

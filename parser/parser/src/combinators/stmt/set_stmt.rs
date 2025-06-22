@@ -15,10 +15,10 @@ pub(super) fn set_stmt() -> impl Combinator<Output = RawStmt> {
                 ConstraintsSetStmt::new(constraints, mode)
             )
             .map(From::from),
-        Local.and_right(parser(set_rest))
+        Local.and_right(set_rest)
             .map(VariableSetStmt::local)
             .map(From::from),
-        optional(Session).and_right(parser(set_rest))
+        optional(Session).and_right(set_rest)
             .map(VariableSetStmt::session)
             .map(From::from),
     })
@@ -100,12 +100,11 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::{match_first, parser};
+use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::optional;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::qualified_name::qualified_name_list;
 use crate::combinators::stmt::set_rest;
 use pg_ast::ConstraintsSetMode;

@@ -105,7 +105,6 @@ use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::operators::any_operator;
 use crate::combinators::typename;
 use crate::scan::Error::ScanErr;

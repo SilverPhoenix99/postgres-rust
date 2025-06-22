@@ -5,11 +5,10 @@ pub(super) fn schema() -> impl Combinator<Output = Str> {
     */
 
     Schema
-        .and_right(parser(col_id))
+        .and_right(col_id)
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::{parser, Combinator};
-use crate::combinators::foundation::CombinatorHelpers;
+use crate::combinators::foundation::Combinator;
 use pg_basics::Str;
 use pg_lexer::Keyword::Schema;
