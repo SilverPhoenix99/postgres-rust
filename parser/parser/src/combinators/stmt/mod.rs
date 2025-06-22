@@ -113,7 +113,7 @@ pub(super) fn stmt(stream: &mut TokenStream) -> Result<RawStmt> {
         reassign_owned_stmt(),
         reindex_stmt(),
         release_savepoint_stmt(),
-        reset_stmt().map(VariableResetStmt),
+        reset_stmt.map(VariableResetStmt),
         revoke_stmt(),
         rollback_stmt(),
         savepoint_stmt(),

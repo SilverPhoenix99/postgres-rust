@@ -72,7 +72,7 @@ pub(super) fn alter_function_option(stream: &mut TokenStream) -> Result<AlterFun
         seq!(Kw::Set, set_rest_more)
             .right()
             .map(Set),
-        reset_stmt().map(Reset)
+        reset_stmt.map(Reset)
     );
 
     parser.parse(stream)

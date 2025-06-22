@@ -3,7 +3,7 @@ pub(super) fn set_reset_clause() -> impl Combinator<Output = SetResetClause> {
 
     match_first! {
         Set.and_right(set_rest).map(SetResetClause::Set),
-        reset_stmt().map(SetResetClause::Reset)
+        reset_stmt.map(SetResetClause::Reset)
     }
 }
 

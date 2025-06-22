@@ -46,7 +46,7 @@ pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
                     )
                     .right::<_, Change>()
                 },
-                reset_stmt()
+                reset_stmt
                     .map(Change::ResetOption),
                 seq!(With, alterdb_opt_list)
                     .right()
