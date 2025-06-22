@@ -117,7 +117,7 @@ fn comment_target() -> impl Combinator<Output = CommentTarget> {
 
 fn constraint() -> impl Combinator<Output = CommentTarget> {
     Kw::Constraint
-        .and_right(col_id())
+        .and_right(parser(col_id))
         .and_left(On)
         .chain(match_first_with_state!(|constraint, stream| {
             // See https://github.com/postgres/postgres/blob/cdc168ad4b22ea4183f966688b245cabb5935d1f/src/backend/parser/gram.y#L7230-L7232
@@ -128,7 +128,7 @@ fn constraint() -> impl Combinator<Output = CommentTarget> {
 
 fn policy() -> impl Combinator<Output = CommentTarget> {
     Kw::Policy
-        .and_right(col_id())
+        .and_right(parser(col_id))
         .and_then(
             On.and_right(parser(any_name)),
             |name, table| Policy { name, table }
@@ -137,7 +137,7 @@ fn policy() -> impl Combinator<Output = CommentTarget> {
 
 fn rule() -> impl Combinator<Output = CommentTarget> {
     Kw::Rule
-        .and_right(col_id())
+        .and_right(parser(col_id))
         .and_then(
             On.and_right(parser(any_name)),
             |name, table| Rule { name, table }
@@ -146,7 +146,7 @@ fn rule() -> impl Combinator<Output = CommentTarget> {
 
 fn trigger() -> impl Combinator<Output = CommentTarget> {
     Kw::Trigger
-        .and_right(col_id())
+        .and_right(parser(col_id))
         .and_then(
             On.and_right(parser(any_name)),
             |name, table| Trigger { name, table }

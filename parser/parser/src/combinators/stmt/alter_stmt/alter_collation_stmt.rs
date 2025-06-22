@@ -27,7 +27,7 @@ pub(super) fn alter_collation_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 Rename.and(To)
-                    .and_right(col_id())
+                    .and_right(parser(col_id))
             } => (new_name) {
                 RenameStmt::new(
                     RenameTarget::Collation(name),
@@ -36,7 +36,7 @@ pub(super) fn alter_collation_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 Set.and(Schema)
-                    .and_right(col_id())
+                    .and_right(parser(col_id))
             } => (new_schema) {
                 AlterObjectSchemaStmt::new(
                     AlterObjectSchemaTarget::Collation(name),

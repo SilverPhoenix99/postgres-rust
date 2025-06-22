@@ -6,7 +6,7 @@
 /// See also
 /// * [`operator_result()`]
 /// * [`operator_when()`]
-pub(crate) fn operator_if(
+pub(in crate::combinators) fn operator_if(
     pred: impl Fn(OperatorKind) -> bool
 )
     -> OperatorCondCombi<

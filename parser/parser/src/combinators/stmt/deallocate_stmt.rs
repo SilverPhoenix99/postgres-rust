@@ -10,7 +10,7 @@ pub(super) fn deallocate_stmt() -> impl Combinator<Output = OneOrAll<Str>> {
         .and(Prepare.optional())
         .and_right(or(
             All.map(|_| OneOrAll::All),
-            col_id().map(OneOrAll::One)
+            parser(col_id).map(OneOrAll::One)
         ))
 }
 
@@ -32,7 +32,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::{or, parser};
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::OneOrAll;

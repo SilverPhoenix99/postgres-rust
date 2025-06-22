@@ -22,7 +22,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
         .chain(match_first_with_state!{|(func_type, func_sig), stream| {
             {
                 sequence!(Depends, On, Extension)
-                    .and_right(col_id())
+                    .and_right(parser(col_id))
             } => (extension) {
                 let target = match func_type {
                     AlterFunctionKind::Function => AlterObjectDependsTarget::Function(func_sig),
@@ -33,7 +33,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 sequence!(No, Depends, On, Extension)
-                    .and_right(col_id())
+                    .and_right(parser(col_id))
             } => (extension) {
                 let target = match func_type {
                     AlterFunctionKind::Function => AlterObjectDependsTarget::Function(func_sig),
@@ -55,7 +55,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 sequence!(Rename, To)
-                    .and_right(col_id())
+                    .and_right(parser(col_id))
             } => (new_name) {
                 let target = match func_type {
                     AlterFunctionKind::Function => RenameTarget::Function(func_sig),
@@ -67,7 +67,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
             {
                 sequence!(Set, Schema)
                     .and_right(or(
-                        col_id(),
+                        parser(col_id),
                         parser(string)
                             .map(From::from)
                             .and_left(Restrict.optional())

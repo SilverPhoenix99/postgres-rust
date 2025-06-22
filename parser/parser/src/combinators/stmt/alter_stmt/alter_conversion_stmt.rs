@@ -20,7 +20,7 @@ pub(super) fn alter_conversion_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 Rename.and(To)
-                    .and_right(col_id())
+                    .and_right(parser(col_id))
             } => (new_name) {
                 RenameStmt::new(
                     RenameTarget::Conversion(conversion),
@@ -29,7 +29,7 @@ pub(super) fn alter_conversion_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 Set.and(Schema)
-                    .and_right(col_id())
+                    .and_right(parser(col_id))
             } => (new_schema) {
                 AlterObjectSchemaStmt::new(
                     AlterObjectSchemaTarget::Conversion(conversion),

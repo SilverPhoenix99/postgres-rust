@@ -209,6 +209,7 @@ mod tests {
     }
 }
 
+use crate::combinators::col_id;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
@@ -217,7 +218,6 @@ use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::user_defined_operator;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use crate::combinators::v2::col_id;
 use pg_ast::Operator;
 use pg_ast::Operator::Addition;
 use pg_ast::Operator::Division;

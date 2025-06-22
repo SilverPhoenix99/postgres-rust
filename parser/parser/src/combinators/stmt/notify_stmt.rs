@@ -7,7 +7,7 @@ pub(super) fn notify_stmt() -> impl Combinator<Output = NotifyStmt> {
 
     sequence!(
         Notify.skip(),
-        col_id(),
+        parser(col_id),
         Comma
             .and_right(parser(string))
             .optional()

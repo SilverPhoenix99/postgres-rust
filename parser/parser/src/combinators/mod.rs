@@ -9,6 +9,7 @@ mod between_brackets;
 mod between_paren;
 mod boolean_or_string;
 mod col_id;
+mod col_label;
 mod const_numeric;
 mod document_or_content;
 mod expr;
@@ -50,7 +51,6 @@ mod string_or_null;
 mod transaction_mode_list;
 mod type_function_name;
 mod typename;
-mod v2;
 mod var_name;
 mod var_value;
 mod window_specification;
@@ -68,6 +68,7 @@ use self::{
     between_paren::between_paren,
     boolean_or_string::{boolean_or_string, boolean_or_string_list},
     col_id::col_id,
+    col_label::col_label,
     const_numeric::{i32_literal, signed_i32_literal, signed_number},
     document_or_content::document_or_content,
     expr_list::expr_list,

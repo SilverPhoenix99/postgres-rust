@@ -259,6 +259,7 @@ mod tests {
 }
 
 use crate::combinators::any_name_list;
+use crate::combinators::col_id;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::parser;
@@ -269,7 +270,6 @@ use crate::combinators::function_with_argtypes_list;
 use crate::combinators::name_list;
 use crate::combinators::qualified_name_list;
 use crate::combinators::signed_number;
-use crate::combinators::v2::col_id;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::PrivilegeTarget;

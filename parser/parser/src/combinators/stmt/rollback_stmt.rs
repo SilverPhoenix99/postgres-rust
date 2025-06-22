@@ -15,7 +15,7 @@ pub(super) fn rollback_stmt() -> impl Combinator<Output = TransactionStmt> {
             opt_transaction().and_right(
                 match_first!{
                     To.and(Savepoint.optional())
-                        .and_right(col_id())
+                        .and_right(parser(col_id))
                         .map(RollbackTo),
                     opt_transaction_chain()
                         .map(|chain| TransactionStmt::Rollback { chain })

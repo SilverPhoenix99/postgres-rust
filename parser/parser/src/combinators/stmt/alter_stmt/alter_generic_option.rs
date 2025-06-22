@@ -92,6 +92,7 @@ mod tests {
 }
 
 use crate::combinators::between_paren;
+use crate::combinators::col_label;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::parser;
@@ -99,7 +100,6 @@ use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::generic_option;
-use crate::combinators::v2::col_label;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::GenericOptionKind;

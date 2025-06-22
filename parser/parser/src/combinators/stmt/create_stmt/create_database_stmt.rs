@@ -3,7 +3,7 @@ pub(super) fn create_database_stmt() -> impl Combinator<Output = CreateDatabaseS
 
     sequence!(
         Database.skip(),
-        col_id(),
+        parser(col_id),
         With.optional().skip(),
         parser(createdb_opt_list)
     ).map(|(_, name, _, options)|

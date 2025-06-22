@@ -6,7 +6,7 @@ pub(super) fn savepoint_stmt() -> impl Combinator<Output = TransactionStmt> {
     */
 
     Savepoint
-        .and_right(col_id())
+        .and_right(parser(col_id))
         .map(TransactionStmt::Savepoint)
 }
 
@@ -24,7 +24,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::{parser, Combinator};
 use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::TransactionStmt;
 use pg_lexer::Keyword::Savepoint;

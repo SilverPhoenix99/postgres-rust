@@ -6,7 +6,7 @@ pub(super) fn listen_stmt() -> impl Combinator<Output = Str> {
     */
 
     Listen
-        .and_right(col_id())
+        .and_right(parser(col_id))
 }
 
 #[cfg(test)]
@@ -26,7 +26,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::{parser, Combinator};
 use crate::combinators::foundation::CombinatorHelpers;
 use pg_basics::Str;
 use pg_lexer::Keyword::Listen;

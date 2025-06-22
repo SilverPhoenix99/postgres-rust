@@ -66,7 +66,7 @@ pub(super) fn alter_function_option(stream: &mut TokenStream) -> Result<AlterFun
         seq!(Kw::Support, any_name)
             .right()
             .map(Support),
-        seq!(Kw::Parallel, col_id)
+        seq!(Kw::Parallel, parser(col_id))
             .right()
             .map(Parallel),
         seq!(Kw::Set, set_rest_more())
@@ -115,13 +115,13 @@ mod tests {
 }
 
 use crate::combinators::any_name;
-use crate::combinators::foundation::choice;
+use crate::combinators::col_id::col_id;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::{choice, parser};
 use crate::combinators::signed_number;
 use crate::combinators::stmt::reset_stmt;
 use crate::combinators::stmt::set_rest_more;
-use crate::combinators::v2::col_id;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::AlterFunctionOption;

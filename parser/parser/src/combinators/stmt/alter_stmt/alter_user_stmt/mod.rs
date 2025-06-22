@@ -14,7 +14,7 @@ pub(super) fn alter_user_stmt() -> impl Combinator<Output = RawStmt> {
 
     match_first! {
         User.and_right(match_first! {
-            sequence!(Mapping, For, auth_ident(), Server, col_id(), alter_generic_options()).map(
+            sequence!(Mapping, For, auth_ident(), Server, parser(col_id), alter_generic_options()).map(
                 |(_, _, user, _, servername, options)|
                     AlterUserMappingStmt::new(user, servername, options).into()
             ),
@@ -77,6 +77,7 @@ mod tests {
 use self::user_stmt::user_stmt;
 use crate::combinators::col_id;
 use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

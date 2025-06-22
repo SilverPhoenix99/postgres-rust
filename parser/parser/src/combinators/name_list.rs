@@ -8,8 +8,8 @@ pub(super) fn name_list() -> impl Combinator<Output = Vec<Str>> {
     many!(sep = Comma, col_id)
 }
 
+use crate::combinators::col_id;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::v2::col_id;
 use pg_basics::Str;
 use pg_lexer::OperatorKind::Comma;

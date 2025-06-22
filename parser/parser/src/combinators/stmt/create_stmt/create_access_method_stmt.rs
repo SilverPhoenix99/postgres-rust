@@ -6,7 +6,7 @@ pub(super) fn create_access_method_stmt() -> impl Combinator<Output = CreateAcce
     */
 
     sequence!(
-        and(Access, Method).and_right(col_id()),
+        and(Access, Method).and_right(parser(col_id)),
         Type.and_right(am_type()),
         Handler.and_right(parser(any_name))
     )

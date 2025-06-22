@@ -9,7 +9,7 @@ pub(super) fn unlisten_stmt() -> impl Combinator<Output = OneOrAll<Str>> {
     Unlisten
         .and_right(match_first!{
             Mul.map(|_| OneOrAll::All),
-            col_id().map(OneOrAll::One)
+            parser(col_id).map(OneOrAll::One)
         })
 }
 
@@ -29,7 +29,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::{match_first, parser};
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::OneOrAll;

@@ -42,11 +42,11 @@ mod tests {
     }
 }
 
+use crate::combinators::col_label;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use crate::combinators::v2::col_label;
 use pg_ast::GenericOption;
 use pg_lexer::OperatorKind::Comma;

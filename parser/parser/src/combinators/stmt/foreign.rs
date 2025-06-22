@@ -10,7 +10,7 @@ pub(super) fn foreign() -> impl Combinator<Output = Foreign> {
     */
 
     Kw::Foreign.and_right(match_first!(
-        sequence!(Data, Wrapper, col_id())
+        sequence!(Data, Wrapper, parser(col_id))
             .map(|(.., name)|
                 Foreign::DataWrapper(name)
             ),

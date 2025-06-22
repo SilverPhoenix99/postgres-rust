@@ -3,7 +3,7 @@ pub(super) fn transform() -> impl Combinator<Output = Transform> {
     and(Kw::Transform, For)
         .and_right(typename())
         .and_then(
-            Language.and_right(col_id()),
+            Language.and_right(parser(col_id)),
             Transform::new
         )
 }
@@ -25,7 +25,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::and;
+use crate::combinators::foundation::{and, parser};
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::typename;

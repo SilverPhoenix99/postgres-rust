@@ -12,11 +12,11 @@ pub(super) fn alter_extension_stmt() -> impl Combinator<Output = RawStmt> {
         )
     */
 
-    Kw::Extension.and_right(col_id())
+    Kw::Extension.and_right(parser(col_id))
         .chain(match_first_with_state!{|extension, stream| {
             {
                 Kw::Set.and(Kw::Schema)
-                    .and_right(col_id())
+                    .and_right(parser(col_id))
             } => (schema) {
                 AlterObjectSchemaStmt::new(
                     AlterObjectSchemaTarget::Extension(extension),

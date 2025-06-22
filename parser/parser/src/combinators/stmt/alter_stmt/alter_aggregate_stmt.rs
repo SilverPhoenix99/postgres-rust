@@ -21,7 +21,7 @@ pub(super) fn alter_aggregate_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 Rename.and(To)
-                    .and_right(col_id())
+                    .and_right(parser(col_id))
             } => (new_name) {
                 RenameStmt::new(
                     RenameTarget::Aggregate(aggregate),
@@ -30,7 +30,7 @@ pub(super) fn alter_aggregate_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 Set.and(Schema)
-                    .and_right(col_id())
+                    .and_right(parser(col_id))
             } => (new_schema) {
                 AlterObjectSchemaStmt::new(
                     AlterObjectSchemaTarget::Aggregate(aggregate),
@@ -92,6 +92,7 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::match_first_with_state;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role::role_spec;

@@ -8,7 +8,7 @@ pub(super) fn release_savepoint_stmt() -> impl Combinator<Output = TransactionSt
 
     Release
         .and(Savepoint.optional())
-        .and_right(col_id())
+        .and_right(parser(col_id))
         .map(TransactionStmt::Release)
 }
 
@@ -32,7 +32,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::{parser, Combinator};
 use crate::combinators::foundation::CombinatorHelpers;
 use pg_ast::TransactionStmt;
 use pg_lexer::Keyword::Release;

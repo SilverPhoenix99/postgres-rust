@@ -9,7 +9,7 @@ pub(super) fn alter_event_trigger_stmt() -> impl Combinator<Output = RawStmt> {
 
     sequence!(
         Event.and(Trigger).skip(),
-        col_id(),
+        parser(col_id),
     ).chain(match_first_with_state!(|(_, trigger), stream| {
         { enable_trigger() } => (state) {
             AlterEventTrigStmt::new(trigger, state).into()
@@ -25,7 +25,7 @@ pub(super) fn alter_event_trigger_stmt() -> impl Combinator<Output = RawStmt> {
         },
         {
             Rename.and(To)
-                .and_right(col_id())
+                .and_right(parser(col_id))
         } => (new_name) {
             RenameStmt::new(
                 RenameTarget::EventTrigger(trigger),
@@ -114,6 +114,7 @@ use crate::combinators::col_id;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

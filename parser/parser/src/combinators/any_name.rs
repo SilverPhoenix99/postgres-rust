@@ -49,9 +49,9 @@ mod tests {
 }
 
 use crate::combinators::attrs;
+use crate::combinators::col_id;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::v2::col_id;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_basics::QualifiedName;

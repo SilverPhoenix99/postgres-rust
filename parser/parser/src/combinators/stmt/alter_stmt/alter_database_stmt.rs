@@ -20,7 +20,7 @@ pub(super) fn alter_database_stmt() -> impl Combinator<Output = RawStmt> {
     */
 
     Database
-        .and_right(col_id())
+        .and_right(parser(col_id))
         .chain(match_first_with_state! {|name, stream| {
             {
                 sequence!(Refresh, Collation, Version)
@@ -36,7 +36,7 @@ pub(super) fn alter_database_stmt() -> impl Combinator<Output = RawStmt> {
                 ).into()
             },
             {
-                Rename.and(To).and_right(col_id())
+                Rename.and(To).and_right(parser(col_id))
             } => (new_name) {
                 RenameStmt::new(
                     RenameTarget::Database(name),
@@ -45,7 +45,7 @@ pub(super) fn alter_database_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 Set.and_right(or(
-                    Kw::Tablespace.and_right(col_id()).map(SetOption::Tablespace),
+                    Kw::Tablespace.and_right(parser(col_id)).map(SetOption::Tablespace),
                     set_rest().map(SetOption::SetRest)
                 ))
             } => (set_option) {

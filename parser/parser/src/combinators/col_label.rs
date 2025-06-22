@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `ColLabel`
 /// * `attr_name`
-pub(crate) fn col_label(stream: &mut TokenStream) -> Result<Str> {
+pub(in crate::combinators) fn col_label(stream: &mut TokenStream) -> Result<Str> {
 
     let parser = choice!(
         identifier,

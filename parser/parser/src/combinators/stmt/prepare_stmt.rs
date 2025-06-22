@@ -9,7 +9,7 @@ pub(super) fn prepare_stmt() -> impl Combinator<Output = RawStmt> {
         .and_right(or(
             Transaction
                 .and_then(parser(string), |_, tx_id| PrepareTransactionStmt(tx_id)),
-            col_id().map(|_name| todo!())
+            parser(col_id).map(|_name| todo!())
         ))
 }
 

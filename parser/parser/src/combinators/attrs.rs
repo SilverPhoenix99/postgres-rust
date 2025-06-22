@@ -6,7 +6,7 @@ macro_rules! attrs {
             use $crate::combinators::foundation::{Combinator, ClosureHelpers, CombinatorHelpers};
             use $crate::combinators::foundation::many;
             use $crate::combinators::foundation::seq;
-            use $crate::combinators::v2::col_label;
+            use $crate::combinators::col_label;
             use pg_lexer::OperatorKind::Dot;
 
             let combinator = many!(
