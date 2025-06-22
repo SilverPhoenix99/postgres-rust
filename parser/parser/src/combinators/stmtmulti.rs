@@ -32,10 +32,8 @@ fn toplevel_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
 
 /// Alias: `TransactionStmtLegacy`
 fn transaction_stmt_legacy(stream: &mut TokenStream) -> Result<TransactionStmt> {
-    choice!(
-        begin_stmt,
-        end_stmt()
-    )
+
+    choice!(begin_stmt, end_stmt)
         .parse(stream)
 }
 

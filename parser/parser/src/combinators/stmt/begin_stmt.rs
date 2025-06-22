@@ -6,9 +6,10 @@ pub(in crate::combinators) fn begin_stmt(stream: &mut TokenStream) -> Result<Tra
     */
 
     seq!(
-        Begin.and(parser(opt_transaction)).skip(),
+        Begin,
+        opt_transaction,
         transaction_mode_list.optional()
-    ).map(|(_, tx_modes)|
+    ).map(|(.., tx_modes)|
         TransactionStmt::Begin(tx_modes.unwrap_or_default())
     )
         .parse(stream)
@@ -35,9 +36,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::{parser, seq};
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
+use crate::combinators::foundation::seq;
 use crate::combinators::opt_transaction;
 use crate::combinators::transaction_mode_list;
 use crate::scan::Result;
