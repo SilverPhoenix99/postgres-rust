@@ -2,7 +2,7 @@
 pub(super) fn set_reset_clause() -> impl Combinator<Output = SetResetClause> {
 
     match_first! {
-        Set.and_right(set_rest()).map(SetResetClause::Set),
+        Set.and_right(parser(set_rest)).map(SetResetClause::Set),
         reset_stmt().map(SetResetClause::Reset)
     }
 }
@@ -38,7 +38,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::{match_first, parser};
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::stmt::reset_stmt::reset_stmt;

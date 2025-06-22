@@ -26,6 +26,7 @@ pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> Result<RawStmt> 
                     .map(|(.., new_schema)| Change::Schema(new_schema))
             )
         ))
+        .parse(stream)
         .map(|(aggregate, change)| match change {
             Change::Owner(new_owner) => {
                 AlterOwnerStmt::new(
@@ -46,7 +47,6 @@ pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> Result<RawStmt> 
                 ).into()
             },
         })
-        .parse(stream)
 }
 
 #[cfg(test)]

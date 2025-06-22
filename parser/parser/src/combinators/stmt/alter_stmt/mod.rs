@@ -20,7 +20,7 @@ pub(super) fn alter_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
         alter_aggregate_stmt,
         alter_collation_stmt,
         alter_conversion_stmt,
-        alter_database_stmt(),
+        alter_database_stmt,
         alter_default_privileges_stmt(),
         alter_event_trigger_stmt(),
         alter_extension_stmt(),

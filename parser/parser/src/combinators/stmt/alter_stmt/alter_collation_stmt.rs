@@ -29,6 +29,7 @@ pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> Result<RawStmt> 
                     .map(|(.., schema)| Change::Schema(schema))
             )
         ))
+        .parse(stream)
         .map(|(name, change)| match change {
             Change::RefreshVersion => {
                 RefreshCollationVersionStmt(name)
@@ -52,7 +53,6 @@ pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> Result<RawStmt> 
                 ).into()
             }
         })
-        .parse(stream)
 }
 
 #[cfg(test)]
