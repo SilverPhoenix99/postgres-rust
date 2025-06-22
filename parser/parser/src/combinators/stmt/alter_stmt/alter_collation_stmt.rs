@@ -21,7 +21,7 @@ pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> Result<RawStmt> 
             choice!(
                 seq!(Refresh, Version)
                     .map(|_| Change::RefreshVersion),
-                seq!(Owner, To, role_spec())
+                seq!(Owner, To, role_spec)
                     .map(|(.., role)| Change::Owner(role)),
                 seq!(Rename, To, col_id)
                     .map(|(.., name)| Change::Name(name)),

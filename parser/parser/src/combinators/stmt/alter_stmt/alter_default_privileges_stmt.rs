@@ -40,7 +40,7 @@ fn def_acl_option() -> impl Combinator<Output = AclOption> {
         sequence!(
             For.and(Role.or(User))
                 .skip(),
-            role_list()
+            parser(role_list)
         ).map(|(_, roles)|
             AclOption::Roles(roles)
         )

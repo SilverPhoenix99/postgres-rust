@@ -5,7 +5,7 @@ pub(super) fn create_role_stmt() -> impl Combinator<Output = CreateRoleStmt> {
 
     sequence!(
         role_kind(),
-        role_id(),
+        parser(role_id),
         With.optional(),
         create_role_options()
     )
@@ -58,7 +58,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::{match_first, parser};
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

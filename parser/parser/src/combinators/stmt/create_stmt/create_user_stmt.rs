@@ -27,7 +27,7 @@ fn create_user_mapping() -> impl Combinator<Output = CreateUserMappingStmt> {
 fn create_user_role() -> impl Combinator<Output = CreateRoleStmt> {
 
     sequence!(
-        role_id(),
+        parser(role_id),
         With.optional(),
         create_role_options()
     )

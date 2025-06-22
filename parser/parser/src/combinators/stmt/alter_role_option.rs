@@ -36,7 +36,7 @@ pub(super) fn alter_role_option() -> impl Combinator<Output = AlterRoleOption> {
         },
         {
             // Supported but not documented for roles, for use by ALTER GROUP.
-            seq!(User, role_list())
+            seq!(User, role_list)
                 .right()
                 .map(RoleMembers)
         },

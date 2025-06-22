@@ -44,7 +44,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 sequence!(Owner, To)
-                    .and_right(role_spec())
+                    .and_right(parser(role_spec))
             } => (new_owner) {
                 let target = match func_type {
                     AlterFunctionKind::Function => AlterOwnerTarget::Function(func_sig),

@@ -13,7 +13,7 @@ pub(super) fn alter_language_stmt() -> impl Combinator<Output = RawStmt> {
         .chain(match_first_with_state!(|name, stream| {
             {
                 Owner.and(To)
-                    .and_right(role_spec())
+                    .and_right(parser(role_spec))
             } => (role) {
                 AlterOwnerStmt::new(
                     AlterOwnerTarget::Language(name),

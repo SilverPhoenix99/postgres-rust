@@ -20,16 +20,16 @@ fn create_role_option(stream: &mut TokenStream) -> Result<CreateRoleOption> {
         seq!(Sysid, integer)
             .right()
             .map(CreateRoleOption::SysId),
-        seq!(Admin, role_list())
+        seq!(Admin, role_list)
             .right()
             .map(CreateRoleOption::AdminMembers),
-        seq!(Role, role_list())
+        seq!(Role, role_list)
             .right()
             .map(CreateRoleOption::AddRoleTo),
         seq!(
             Inherit,
             choice!(Role, Group),
-            role_list()
+            role_list
         )
             .map(|(.., opt): (_, Keyword, _)|
                 CreateRoleOption::AddRoleTo(opt)

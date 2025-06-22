@@ -13,7 +13,7 @@ fn grantee(stream: &mut TokenStream) -> Result<RoleSpec> {
         ( GROUP )? role_spec
     */
 
-    let parser = seq!(Group.maybe_match(), role_spec())
+    let parser = seq!(Group.maybe_match(), role_spec)
         .right();
 
     parser.parse(stream)
@@ -50,7 +50,7 @@ pub(super) fn opt_granted_by() -> impl Combinator<Output = RoleSpec> {
     */
 
     Granted.and(By)
-        .and_right(role_spec())
+        .and_right(parser(role_spec))
 }
 
 #[cfg(test)]
@@ -103,7 +103,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::many;
+use crate::combinators::foundation::{many, parser};
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

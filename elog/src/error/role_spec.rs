@@ -12,6 +12,12 @@ pub enum Error {
     ForbiddenRoleSpec(&'static str),
 }
 
+impl Error {
+    pub fn at(self, location: Location) -> LocatedError {
+        LocatedError::new(self, location)
+    }
+}
+
 impl LogMessage for Error {
 
     fn sql_state(&self) -> SqlState {
@@ -21,4 +27,5 @@ impl LogMessage for Error {
 
 use crate::LogMessage;
 use crate::SqlState;
+use pg_basics::Location;
 use pg_basics::Str;

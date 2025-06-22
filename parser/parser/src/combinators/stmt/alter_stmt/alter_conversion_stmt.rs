@@ -16,7 +16,7 @@ pub(super) fn alter_conversion_stmt(stream: &mut TokenStream) -> Result<RawStmt>
         .and_right(seq!(
             any_name,
             choice!(
-                seq!(Owner, To, role_spec())
+                seq!(Owner, To, role_spec)
                     .map(|(.., new_owner)| Change::Owner(new_owner)),
                 seq!(Rename, To, col_id)
                     .map(|(.., new_name)| Change::Name(new_name)),

@@ -16,7 +16,7 @@ pub(super) fn alter_event_trigger_stmt() -> impl Combinator<Output = RawStmt> {
         },
         {
             Owner.and(To)
-                .and_right(role_spec())
+                .and_right(parser(role_spec))
         } => (new_owner) {
             AlterOwnerStmt::new(
                 AlterOwnerTarget::EventTrigger(trigger),

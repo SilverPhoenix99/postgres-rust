@@ -22,7 +22,7 @@ pub enum Error {
     #[error("{0}")] Parser(#[from] parser::error::Error),
     #[error("{0}")] ExtendedString(#[from] extended_string::error::Error),
     #[error("{0}")] UnicodeString(#[from] unicode_string::Error),
-    #[error("{0}")] RoleSpecError(#[from] role_spec::Error),
+    #[error("{0}")] Role(#[from] role_spec::Error),
 }
 
 impl LogMessage for Error {
@@ -32,7 +32,7 @@ impl LogMessage for Error {
             Parser(err) => err.sql_state(),
             Self::ExtendedString(err ) => err.sql_state(),
             Self::UnicodeString(err) => err.sql_state(),
-            Self::RoleSpecError(err) => err.sql_state(),
+            Role(err) => err.sql_state(),
         }
     }
 
@@ -42,7 +42,7 @@ impl LogMessage for Error {
             Parser(err) => err.hint(),
             Self::ExtendedString(err) => err.hint(),
             Self::UnicodeString(err) => err.hint(),
-            Self::RoleSpecError(err) => err.hint(),
+            Role(err) => err.hint(),
         }
     }
 
@@ -52,7 +52,7 @@ impl LogMessage for Error {
             Parser(err) => err.detail(),
             Self::ExtendedString(err) => err.detail(),
             Self::UnicodeString(err) => err.detail(),
-            Self::RoleSpecError(err) => err.detail(),
+            Role(err) => err.detail(),
         }
     }
 
@@ -62,7 +62,7 @@ impl LogMessage for Error {
             Parser(err) => err.detail_log(),
             Self::ExtendedString(err) => err.detail_log(),
             Self::UnicodeString(err) => err.detail_log(),
-            Self::RoleSpecError(err) => err.detail_log(),
+            Role(err) => err.detail_log(),
         }
     }
 }
@@ -83,8 +83,17 @@ impl From<parser::error::LocatedError> for LocatedError {
     }
 }
 
+impl From<role_spec::LocatedError> for LocatedError {
+    fn from(value: role_spec::LocatedError) -> Self {
+        let (source, location) = value.into();
+        let source = Role(source);
+        Self::new(source, location)
+    }
+}
+
 use self::Error::Lexer;
 use self::Error::Parser;
+use self::Error::Role;
 use crate::parser::Error::Syntax;
 use crate::LocatedMessage;
 use crate::LogMessage;

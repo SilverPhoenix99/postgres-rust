@@ -28,7 +28,7 @@ pub(super) fn alter_database_stmt() -> impl Combinator<Output = RawStmt> {
                 AlterDatabaseRefreshCollStmt(name)
             },
             {
-                Owner.and(To).and_right(role_spec())
+                Owner.and(To).and_right(parser(role_spec))
             } => (new_owner) {
                 AlterOwnerStmt::new(
                     AlterOwnerTarget::Database(name),
