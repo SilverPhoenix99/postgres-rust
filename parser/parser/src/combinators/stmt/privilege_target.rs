@@ -225,7 +225,7 @@ mod tests {
 
     #[test]
     fn test_parameter_name_list() {
-        test_parser!(v2,
+        test_parser!(
             source = "a.b.c, d.e.f",
             parser = parameter_name_list,
             expected = vec![
@@ -237,7 +237,7 @@ mod tests {
 
     #[test]
     fn test_parameter_name() {
-        test_parser!(v2,
+        test_parser!(
             source = "a.b.c",
             parser = parameter_name,
             expected = vec!["a".into(), "b".into(), "c".into()]
@@ -246,7 +246,7 @@ mod tests {
 
     #[test]
     fn test_signed_number_list() {
-        test_parser!(v2,
+        test_parser!(
             source = "1, 2, 3",
             parser = signed_number_list,
             expected = vec![

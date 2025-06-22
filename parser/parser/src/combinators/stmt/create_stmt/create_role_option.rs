@@ -69,7 +69,7 @@ mod tests {
     #[test_case("inherit group public", CreateRoleOption::AddRoleTo(vec![Public]))]
     #[test_case("password null", CreateRoleOption::Password(None))]
     fn test_create_role_option(source: &str, expected: CreateRoleOption) {
-        test_parser!(v2, source, create_role_option, expected);
+        test_parser!(source, create_role_option, expected);
     }
 }
 

@@ -151,7 +151,7 @@ mod tests {
     #[test_case("password null", None)]
     #[test_case("encrypted password 'epw123'", Some("epw123".into()))]
     fn test_password_option(source: &str, expected: Option<Box<str>>) {
-        test_parser!(v2, source, password_option, Password(expected))
+        test_parser!(source, password_option, Password(expected))
     }
 
     #[test_case("superuser", SuperUser(true))]
@@ -168,7 +168,7 @@ mod tests {
     #[test_case("nobypassrls", BypassRls(false))]
     #[test_case("noinherit", Inherit(false))]
     fn test_ident_option(source: &str, expected: AlterRoleOption) {
-        test_parser!(v2, source, ident_option, expected)
+        test_parser!(source, ident_option, expected)
     }
 }
 

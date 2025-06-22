@@ -247,7 +247,7 @@ mod tests {
 
     #[test]
     fn test_alterfunc_opt_list() {
-        test_parser!(v2,
+        test_parser!(
             source = "COST 100 LEAKPROOF true",
             parser = alterfunc_opt_list,
             expected = vec![

@@ -18,7 +18,6 @@ pub(in crate::combinators) fn begin_stmt(stream: &mut TokenStream) -> Result<Tra
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::combinators::foundation::ClosureHelpers;
     use crate::tests::test_parser;
     use pg_ast::IsolationLevel::*;
     use pg_ast::TransactionMode::{self, *};

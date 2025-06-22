@@ -69,7 +69,7 @@ mod tests {
 
     #[test]
     fn test_sortby_list() {
-        test_parser!(v2,
+        test_parser!(
             source = "1, 2 nulls last, 3 using <, 4 asc",
             parser = sortby_list,
             expected = vec![

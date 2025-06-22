@@ -196,7 +196,7 @@ mod tests {
 
     #[test]
     fn test_alter_extension_options() {
-        test_parser!(v2,
+        test_parser!(
             source = r#"to "ident" to 'string' to reassign to trim to natural"#,
             parser = alter_extension_options,
             expected = Some(vec![

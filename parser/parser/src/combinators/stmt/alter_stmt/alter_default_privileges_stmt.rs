@@ -132,7 +132,7 @@ mod tests {
 
     #[test]
     fn test_acl_option_list() {
-        test_parser!(v2,
+        test_parser!(
             source = "in schema my_schema for role public for user current_user",
             parser = def_acl_option_list,
             expected = vec![

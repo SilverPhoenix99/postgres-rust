@@ -24,7 +24,7 @@ mod tests {
 
     #[test]
     fn test_any_name_list() {
-        test_parser!(v2,
+        test_parser!(
             source = "qual.name_, second.qualif",
             parser = any_name_list,
             expected = vec![
@@ -36,7 +36,7 @@ mod tests {
 
     #[test]
     fn test_any_name() {
-        test_parser!(v2,
+        test_parser!(
             source = "some_.qualified_.name_",
             parser = any_name,
             expected = vec![

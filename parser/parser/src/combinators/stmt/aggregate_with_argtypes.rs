@@ -153,7 +153,7 @@ mod tests {
 
     #[test]
     fn test_order_by_aggr_args() {
-        test_parser!(v2,
+        test_parser!(
             source = "ORDER BY bigint, var2 json",
             parser = order_by_aggr_args,
             expected = vec![
@@ -169,7 +169,7 @@ mod tests {
 
     #[test]
     fn test_aggr_arg_list() {
-        test_parser!(v2,
+        test_parser!(
             source = "tis json, tis_an int",
             parser = aggr_args_list,
             expected = vec![
@@ -189,7 +189,7 @@ mod tests {
 
     #[test]
     fn test_aggr_arg() {
-        test_parser!(v2,
+        test_parser!(
             source = "tis json",
             parser = aggr_arg,
             expected = FunctionParameter::new(

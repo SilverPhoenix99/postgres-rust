@@ -27,7 +27,7 @@ mod tests {
     #[test_case("abort transaction and chain", true)]
     #[test_case("abort transaction and no chain", false)]
     fn test_abort(source: &str, expected: bool) {
-        test_parser!(v2, source, abort_stmt, TransactionStmt::Rollback { chain: expected })
+        test_parser!(source, abort_stmt, TransactionStmt::Rollback { chain: expected })
     }
 }
 

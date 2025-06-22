@@ -70,7 +70,7 @@ mod tests {
 
     #[test]
     fn test_alter_generic_option_list() {
-        test_parser!(v2,
+        test_parser!(
             source = "foo 'bar', drop x, add y '1', set z '2'",
             parser = alter_generic_option_list,
             expected = vec![
@@ -87,7 +87,7 @@ mod tests {
     #[test_case("drop some_opt", Drop("some_opt".into()))]
     #[test_case("some_opt 'foo'", Unspecified(GenericOption::new("some_opt", "foo")))]
     fn test_alter_generic_option(source: &str, expected: GenericOptionKind) {
-        test_parser!(v2, source, alter_generic_option, expected)
+        test_parser!(source, alter_generic_option, expected)
     }
 }
 

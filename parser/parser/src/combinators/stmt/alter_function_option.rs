@@ -110,7 +110,7 @@ mod tests {
     #[test_case("set time zone local", Set(TimeZone(Local)))]
     #[test_case("reset all", Reset(All))]
     fn test_common_func_opt_item(source: &str, expected: AlterFunctionOption) {
-        test_parser!(v2, source, alter_function_option, expected);
+        test_parser!(source, alter_function_option, expected);
     }
 }
 

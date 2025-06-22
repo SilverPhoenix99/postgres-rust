@@ -102,7 +102,7 @@ mod tests {
 
     #[test]
     fn test_createdb_opt_list() {
-        test_parser!(v2,
+        test_parser!(
             source = "connection limit = 753 allow_connections 'on'",
             parser = createdb_opt_list,
             expected = vec![
@@ -115,7 +115,7 @@ mod tests {
     #[test_case("allow_connections DEFAULT", CreatedbOption::new(AllowConnections, CreatedbOptionValue::Default))]
     #[test_case("oid = 54321", CreatedbOption::new(Oid, 54321))]
     fn test_createdb_opt_item(source: &str, expected: CreatedbOption) {
-        test_parser!(v2, source, createdb_opt_item, expected)
+        test_parser!(source, createdb_opt_item, expected)
     }
 
     #[test_case("allow_connections", AllowConnections)]
@@ -138,7 +138,7 @@ mod tests {
     #[test_case("template", Template)]
     #[test_case("foo", Unknown("foo".into()))]
     fn test_createdb_opt_name(source: &str, expected: CreatedbOptionKind) {
-        test_parser!(v2, source, createdb_opt_name, expected)
+        test_parser!(source, createdb_opt_name, expected)
     }
 
     #[test_case("default", CreatedbOptionValue::Default)]

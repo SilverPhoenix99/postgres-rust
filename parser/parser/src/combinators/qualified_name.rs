@@ -78,7 +78,7 @@ mod tests {
 
     #[test]
     fn test_qualified_name() {
-        test_parser!(v2,
+        test_parser!(
             source = "some_catalog.some_schema.some_relation",
             parser = qualified_name,
             expected = RelationName::new(

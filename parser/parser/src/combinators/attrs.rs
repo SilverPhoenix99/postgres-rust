@@ -3,7 +3,7 @@ macro_rules! attrs {
     ($prefix:expr) => {
         $crate::combinators::foundation::parser(|stream| {
             #[allow(unused_imports)]
-            use $crate::combinators::foundation::{Combinator, ClosureHelpers, CombinatorHelpers};
+            use $crate::combinators::foundation::{ClosureHelpers, Combinator, CombinatorHelpers};
             use $crate::combinators::foundation::many;
             use $crate::combinators::foundation::seq;
             use $crate::combinators::col_label;
@@ -25,7 +25,6 @@ pub(in crate::combinators) use attrs;
 mod tests {
     use super::*;
     use crate::combinators::foundation::parser;
-    use crate::combinators::foundation::Combinator;
     use crate::tests::test_parser;
 
     #[test]
