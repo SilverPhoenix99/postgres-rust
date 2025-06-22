@@ -19,7 +19,7 @@ mod tests {
         test_parser!(
             source = "domain int",
             parser = domain(),
-            expected = Int4.into()
+            expected = Int4
         )
     }
 }

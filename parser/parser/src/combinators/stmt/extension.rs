@@ -18,7 +18,7 @@ mod tests {
         test_parser!(
             source = "extension foo",
             parser = extension(),
-            expected = "foo".into()
+            expected = "foo"
         )
     }
 }

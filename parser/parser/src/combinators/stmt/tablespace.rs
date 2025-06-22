@@ -18,7 +18,7 @@ mod tests {
         test_parser!(
             source = "tablespace foo",
             parser = tablespace(),
-            expected = "foo".into()
+            expected = "foo"
         )
     }
 }

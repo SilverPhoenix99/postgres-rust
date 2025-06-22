@@ -15,7 +15,7 @@ mod tests {
         test_parser!(
             source = "type int",
             parser = type_name(),
-            expected = Int4.into()
+            expected = Int4
         )
     }
 }

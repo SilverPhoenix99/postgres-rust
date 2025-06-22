@@ -18,7 +18,7 @@ mod tests {
         test_parser!(
             source = "server foo",
             parser = server(),
-            expected = "foo".into()
+            expected = "foo"
         )
     }
 }

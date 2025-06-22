@@ -38,7 +38,7 @@ mod tests {
             expected = IndirectionExpr::new(
                 ParamRef { index: 5 },
                 vec![Slice(None, None)]
-            ).into()
+            )
         )
     }
 }

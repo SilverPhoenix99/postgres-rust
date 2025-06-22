@@ -18,7 +18,7 @@ mod tests {
         test_parser!(
             source = "access method foo",
             parser = access_method(),
-            expected = "foo".into()
+            expected = "foo"
         )
     }
 }

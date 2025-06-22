@@ -18,7 +18,7 @@ mod tests {
         test_parser!(
             source = "database foo",
             parser = database(),
-            expected = "foo".into()
+            expected = "foo"
         )
     }
 }

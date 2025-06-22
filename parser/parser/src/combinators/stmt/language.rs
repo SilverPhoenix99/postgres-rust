@@ -21,7 +21,7 @@ mod tests {
         test_parser!(
             source = "language foo",
             parser = language(),
-            expected = "foo".into()
+            expected = "foo"
         );
     }
 
@@ -30,7 +30,7 @@ mod tests {
     test_parser!(
             source = "procedural language foo",
             parser = language(),
-            expected = "foo".into()
+            expected = "foo"
         );
     }
 }

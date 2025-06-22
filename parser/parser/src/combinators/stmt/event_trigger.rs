@@ -18,7 +18,7 @@ mod tests {
         test_parser!(
             source = "event trigger foo",
             parser = event_trigger(),
-            expected = "foo".into()
+            expected = "foo"
         )
     }
 }

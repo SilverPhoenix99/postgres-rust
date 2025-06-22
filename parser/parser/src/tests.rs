@@ -23,7 +23,7 @@ macro_rules! test_parser {
         let mut stream = stream($source);
         let actual = $parser.parse(&mut stream);
 
-        let expected = $expected;
+        let expected = $expected.into();
 
         assert_eq!(Ok(expected), actual);
     }};

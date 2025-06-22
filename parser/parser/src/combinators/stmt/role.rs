@@ -18,7 +18,7 @@ mod tests {
         test_parser!(
             source = "role foo",
             parser = role(),
-            expected = "foo".into()
+            expected = "foo"
         )
     }
 }

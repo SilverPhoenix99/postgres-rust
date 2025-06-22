@@ -18,7 +18,7 @@ mod tests {
         test_parser!(
             source = "subscription foo",
             parser = subscription(),
-            expected = "foo".into()
+            expected = "foo"
         )
     }
 }

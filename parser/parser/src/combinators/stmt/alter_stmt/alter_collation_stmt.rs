@@ -29,92 +29,81 @@ pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> Result<RawStmt> 
                     .map(|(.., schema)| Change::Schema(schema))
             )
         ))
-            .map(|(name, change)| match change {
-                Change::RefreshVersion => {
-                    RefreshCollationVersionStmt(name)
-                }
-                Change::Owner(new_owner) => {
-                    AlterOwnerStmt::new(
-                        AlterOwnerTarget::Collation(name),
-                        new_owner
-                    ).into()
-                }
-                Change::Name(new_name) => {
-                    RenameStmt::new(
-                        RenameTarget::Collation(name),
-                        new_name
-                    ).into()
-                }
-                Change::Schema(new_schema) => {
-                    AlterObjectSchemaStmt::new(
-                        AlterObjectSchemaTarget::Collation(name),
-                        new_schema
-                    ).into()
-                }
-            })
-            .parse(stream)
+        .map(|(name, change)| match change {
+            Change::RefreshVersion => {
+                RefreshCollationVersionStmt(name)
+            }
+            Change::Owner(new_owner) => {
+                AlterOwnerStmt::new(
+                    AlterOwnerTarget::Collation(name),
+                    new_owner
+                ).into()
+            }
+            Change::Name(new_name) => {
+                RenameStmt::new(
+                    RenameTarget::Collation(name),
+                    new_name
+                ).into()
+            }
+            Change::Schema(new_schema) => {
+                AlterObjectSchemaStmt::new(
+                    AlterObjectSchemaTarget::Collation(name),
+                    new_schema
+                ).into()
+            }
+        })
+        .parse(stream)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use pg_ast::RoleSpec::CurrentUser;
 
     #[test]
     fn test_collation_owner() {
-        let source = "collation collation_name owner to current_user";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        let actual = alter_collation_stmt(&mut stream);
-
-        let expected = AlterOwnerStmt::new(
-            AlterOwnerTarget::Collation(vec!["collation_name".into()]),
-            CurrentUser
-        );
-
-        assert_eq!(Ok(expected.into()), actual);
+        test_parser!(
+            source = "collation collation_name owner to current_user",
+            parser = alter_collation_stmt,
+            expected = AlterOwnerStmt::new(
+                AlterOwnerTarget::Collation(vec!["collation_name".into()]),
+                CurrentUser
+            )
+        )
     }
 
     #[test]
     fn test_collation_refresh_version() {
-        let source = "collation collation_name refresh version";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        let actual = alter_collation_stmt(&mut stream);
-        let expected = RefreshCollationVersionStmt(vec!["collation_name".into()]);
-        assert_eq!(Ok(expected), actual);
+        test_parser!(
+            source = "collation collation_name refresh version",
+            parser = alter_collation_stmt,
+            expected = RefreshCollationVersionStmt(vec!["collation_name".into()])
+        )
     }
 
     #[test]
     fn test_collation_rename() {
-        let source = "collation collation_name rename to something_else";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        let actual = alter_collation_stmt(&mut stream);
-
-        let expected = RenameStmt::new(
-            RenameTarget::Collation(vec!["collation_name".into()]),
-            "something_else"
-        );
-
-        assert_eq!(Ok(expected.into()), actual);
+        test_parser!(
+            source = "collation collation_name rename to something_else",
+            parser = alter_collation_stmt,
+            expected = RenameStmt::new(
+                RenameTarget::Collation(vec!["collation_name".into()]),
+                "something_else"
+            )
+        )
     }
 
     #[test]
     fn test_collation_set_schema() {
-        let source = "collation collation_name set schema some_schema";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        let actual = alter_collation_stmt(&mut stream);
-
-        let expected = AlterObjectSchemaStmt::new(
-            AlterObjectSchemaTarget::Collation(vec!["collation_name".into()]),
-            "some_schema"
-        );
-
-        assert_eq!(Ok(expected.into()), actual);
+        test_parser!(
+            source = "collation collation_name set schema some_schema",
+            parser = alter_collation_stmt,
+            expected = AlterObjectSchemaStmt::new(
+                AlterObjectSchemaTarget::Collation(vec!["collation_name".into()]),
+                "some_schema"
+            )
+        )
     }
 }
 

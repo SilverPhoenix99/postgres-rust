@@ -14,8 +14,8 @@ pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> Result<RawStmt> 
         )
     */
 
-    Aggregate.and_right(
-        seq!(
+    Aggregate
+        .and_right(seq!(
             aggregate_with_argtypes(),
             choice!(
                 seq!(Owner, To, role_spec())
@@ -25,28 +25,27 @@ pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> Result<RawStmt> 
                 seq!(Set, Schema, col_id)
                     .map(|(.., new_schema)| Change::Schema(new_schema))
             )
-        )
-            .map(|(aggregate, change)| match change {
-                Change::Owner(new_owner) => {
-                    AlterOwnerStmt::new(
-                        AlterOwnerTarget::Aggregate(aggregate),
-                        new_owner
-                    ).into()
-                },
-                Change::Name(new_name) => {
-                    RenameStmt::new(
-                        RenameTarget::Aggregate(aggregate),
-                        new_name
-                    ).into()
-                },
-                Change::Schema(new_schema) => {
-                    AlterObjectSchemaStmt::new(
-                        AlterObjectSchemaTarget::Aggregate(aggregate),
-                        new_schema
-                    ).into()
-                },
-            })
-    )
+        ))
+        .map(|(aggregate, change)| match change {
+            Change::Owner(new_owner) => {
+                AlterOwnerStmt::new(
+                    AlterOwnerTarget::Aggregate(aggregate),
+                    new_owner
+                ).into()
+            },
+            Change::Name(new_name) => {
+                RenameStmt::new(
+                    RenameTarget::Aggregate(aggregate),
+                    new_name
+                ).into()
+            },
+            Change::Schema(new_schema) => {
+                AlterObjectSchemaStmt::new(
+                    AlterObjectSchemaTarget::Aggregate(aggregate),
+                    new_schema
+                ).into()
+            },
+        })
         .parse(stream)
 }
 
@@ -67,7 +66,7 @@ mod tests {
                     AggregateWithArgs::new(vec!["aggregate_name".into()], vec![], vec![])
                 ),
                 RoleSpec::CurrentUser
-            ).into()
+            )
         )
     }
 
@@ -81,7 +80,7 @@ mod tests {
                     AggregateWithArgs::new(vec!["aggregate_name".into()], vec![], vec![])
                 ),
                 "different_name"
-            ).into()
+            )
         )
     }
 
@@ -95,7 +94,7 @@ mod tests {
                     AggregateWithArgs::new(vec!["aggregate_name".into()], vec![], vec![])
                 ),
                 "new_schema"
-            ).into()
+            )
         )
     }
 }

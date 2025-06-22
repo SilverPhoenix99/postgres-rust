@@ -18,7 +18,7 @@ mod tests {
         test_parser!(
             source = "publication foo",
             parser = publication(),
-            expected = "foo".into()
+            expected = "foo"
         )
     }
 }
