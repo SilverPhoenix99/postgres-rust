@@ -2,6 +2,7 @@ mod and;
 mod between;
 mod bit_string;
 mod choice;
+mod closure_helpers;
 mod combinator;
 mod combinator_helpers;
 mod identifier;
@@ -28,28 +29,29 @@ pub(crate) use self::combinator::Combinator;
 
 #[allow(unused_imports)] // TODO: eventually remove
 pub(in crate::combinators) use self::{
-    and::{and, sequence},
-    between::between,
-    bit_string::bit_string,
+    and::{and, sequence, AndCombi},
+    between::{between, BetweenCombi},
+    bit_string::{bit_string, BitStringCombi},
     choice::choice,
+    closure_helpers::ClosureHelpers,
     combinator_helpers::CombinatorHelpers,
     identifier::identifier,
     integer::integer,
-    keyword::{any_keyword, keyword_if, keyword_result, keyword_when},
+    keyword::{any_keyword, keyword_if, keyword_result, keyword_when, KeywordCondCombi},
     located::located,
     many::many,
-    map::{map, map_err, map_result},
-    maybe_match::maybe_match,
-    number::number,
-    operator::{operator_if, operator_result, operator_when},
-    optional::optional,
-    or::{match_first, match_first_with_state, or},
+    map::{map, map_err, map_result, MapResultCombi},
+    maybe_match::{maybe_match, MaybeMatchCombi},
+    number::{number, NumberCombi},
+    operator::{operator_if, operator_result, operator_when, OperatorCondCombi},
+    optional::{optional, OptionalCombi},
+    or::{match_first, match_first_with_state, or, OrCombi},
     param::param,
-    parser::{enclosure, parser},
-    required::required,
+    parser::{enclosure, parser, ClosureCombi},
+    required::{required, RequiredCombi},
     seq::seq,
-    skip::skip,
+    skip::{skip, SkipCombi},
     string::string,
-    try_match::try_match,
-    user_defined_operator::user_defined_operator,
+    try_match::{try_match, TryMatchCombi},
+    user_defined_operator::{user_defined_operator, UserOpCombi},
 };

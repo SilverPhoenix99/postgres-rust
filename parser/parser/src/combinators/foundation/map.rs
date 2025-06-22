@@ -12,14 +12,15 @@ where
 }
 
 /// Maps the `Ok(_)` value of a parser combinator into another type.
-pub(in crate::combinators) fn map<P, O>(parser: P, mapper: impl Fn(P::Output) -> O)
-    -> impl Combinator<Output = O>
+pub(in crate::combinators) fn map<P, M, O>(parser: P, mapper: M)
+    -> MapResultCombi<P, impl Fn(Result<P::Output>) -> Result<O>, O>
 where
-    P: Combinator
+    P: Combinator,
+    M: Fn(P::Output) -> O
 {
     // Reduces size of type names:
     fn inner<I, O>(mapper: impl Fn(I) -> O)
-        -> impl Fn(Result<I>)-> Result<O>
+        -> impl Fn(Result<I>) -> Result<O>
     {
         move |result| result.map(&mapper)
     }
@@ -32,10 +33,11 @@ where
 }
 
 /// Maps the `Err(_)` value of a parser combinator into another type.
-pub(in crate::combinators) fn map_err<P>(parser: P, mapper: impl Fn(Error) -> Error)
-    -> impl Combinator<Output = P::Output>
+pub(in crate::combinators) fn map_err<P, M>(parser: P, mapper: M)
+    -> MapResultCombi<P, impl Fn(Result<P::Output>) -> Result<P::Output>, P::Output>
 where
-    P: Combinator
+    P: Combinator,
+    M: Fn(Error) -> Error
 {
     // Reduces size of type names:
     fn inner<I>(mapper: impl Fn(Error) -> Error)

@@ -1,9 +1,7 @@
 /// Alias: `OptRoleList`
 pub(super) fn create_role_options() -> impl Combinator<Output = Vec<CreateRoleOption>> {
 
-    parser(|stream|
-        many!(create_role_option(stream))
-    )
+    many!(create_role_option)
 }
 
 /// Alias: `CreateOptRoleElem`
@@ -18,49 +16,29 @@ fn create_role_option(stream: &mut TokenStream) -> Result<CreateRoleOption> {
         | alter_role_option
     */
 
-    choice!(stream,
-        {
-            seq!(
-                Sysid.parse(stream),
-                integer(stream)
-            )
-            .map(|(.., opt)|
-                CreateRoleOption::SysId(opt)
-            )
-        },
-        {
-            seq!(
-                Admin.parse(stream),
-                role_list().parse(stream)
-            )
-            .map(|(.., opt)|
-                CreateRoleOption::AdminMembers(opt)
-            )
-        },
-        {
-            seq!(
-                Role.parse(stream),
-                role_list().parse(stream)
-            )
-            .map(|(.., opt)|
-                CreateRoleOption::AddRoleTo(opt)
-            )
-        },
-        {
-            seq!(
-                Inherit.parse(stream),
-                choice!(stream,
-                    Role.parse(stream),
-                    Group.parse(stream),
-                ),
-                role_list().parse(stream)
-            )
+    let parser = choice!(
+        seq!(Sysid, integer)
+            .right()
+            .map(CreateRoleOption::SysId),
+        seq!(Admin, role_list())
+            .right()
+            .map(CreateRoleOption::AdminMembers),
+        seq!(Role, role_list())
+            .right()
+            .map(CreateRoleOption::AddRoleTo),
+        seq!(
+            Inherit,
+            choice!(Role, Group),
+            role_list()
+        )
             .map(|(.., opt): (_, Keyword, _)|
                 CreateRoleOption::AddRoleTo(opt)
-            )
-        },
-        alter_role_option().parse(stream).map(CreateRoleOption::from)
-    )
+            ),
+        alter_role_option()
+            .map(CreateRoleOption::from)
+    );
+
+    parser.parse(stream)
 }
 
 #[cfg(test)]
@@ -98,7 +76,6 @@ mod tests {
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::integer;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role::role_list;

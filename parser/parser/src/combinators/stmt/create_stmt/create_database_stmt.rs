@@ -13,7 +13,7 @@ pub(super) fn create_database_stmt() -> impl Combinator<Output = CreateDatabaseS
 
 fn createdb_opt_list(stream: &mut TokenStream) -> Result<Vec<CreatedbOption>> {
 
-    many!(createdb_opt_item(stream))
+    many!(createdb_opt_item).parse(stream)
 }
 
 fn createdb_opt_item(stream: &mut TokenStream) -> Result<CreatedbOption> {
@@ -23,33 +23,29 @@ fn createdb_opt_item(stream: &mut TokenStream) -> Result<CreatedbOption> {
         | createdb_opt_name ( '=' )? var_value
     */
 
-    seq!(
-        createdb_opt_name(stream),
-        Equals.parse(stream).optional().map_err(ScanErr),
-        createdb_opt_value().parse(stream)
+    let parser = seq!(
+        createdb_opt_name,
+        Equals.optional(),
+        createdb_opt_value()
     )
         .map(|(kind, _, value)|
             CreatedbOption::new(kind, value)
-        )
+        );
+
+    parser.parse(stream)
 }
 
 fn createdb_opt_name(stream: &mut TokenStream) -> Result<CreatedbOptionKind> {
 
-    choice!(stream,
-        {
-            seq!(
-                Connection.parse(stream),
-                Limit.parse(stream)
-            )
-            .map(|_| ConnectionLimit)
-        },
-        Kw::Encoding.parse(stream).map(|_| Encoding),
-        LocationKw.parse(stream).map(|_| Location),
-        Kw::Owner.parse(stream).map(|_| Owner),
-        Kw::Tablespace.parse(stream).map(|_| Tablespace),
-        Kw::Template.parse(stream).map(|_| Template),
+    let parser = choice!(
+        seq!(Connection, Limit).map(|_| ConnectionLimit),
+        Kw::Encoding.map(|_| Encoding),
+        LocationKw.map(|_| Location),
+        Kw::Owner.map(|_| Owner),
+        Kw::Tablespace.map(|_| Tablespace),
+        Kw::Template.map(|_| Template),
         // Unless quoted, identifiers are lower case
-        identifier(stream).map(|ident| match ident.as_ref() {
+        identifier.map(|ident| match ident.as_ref() {
             "allow_connections" => AllowConnections,
             "builtin_locale" => BuiltinLocale,
             "collation_version" => CollationVersion,
@@ -64,7 +60,9 @@ fn createdb_opt_name(stream: &mut TokenStream) -> Result<CreatedbOptionKind> {
             "strategy" => Strategy,
             _ => Unknown(ident)
         })
-    )
+    );
+
+    parser.parse(stream)
 }
 
 pub(in crate::combinators::stmt) fn createdb_opt_value() -> impl Combinator<Output = CreatedbOptionValue> {
@@ -166,8 +164,6 @@ use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::var_value;
-use crate::result::Optional;
-use crate::scan::Error::ScanErr;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::CreateDatabaseStmt;

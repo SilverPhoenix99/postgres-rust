@@ -113,17 +113,14 @@ fn zone_value() -> impl Combinator<Output = ZoneValue> {
 
 fn zone_value_interval() -> impl Combinator<Output = IntervalRange> {
 
-    parser(|stream| {
-        let res = located!(stream, opt_interval().parse(stream))?;
-
-        match res {
+    located!(opt_interval())
+        .map_result(|res| match res? {
             (ok @ (Full { .. } | Hour | HourToMinute), _) => Ok(ok),
             (_, loc) => {
                 let err = InvalidZoneValue.at(loc);
                 Err(err.into())
             }
-        }
-    })
+        })
 }
 
 fn opt_encoding() -> impl Combinator<Output = ValueOrDefault<Box<str>>> {

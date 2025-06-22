@@ -4,12 +4,7 @@ pub(super) fn func_arg_list() -> impl Combinator<Output = Vec<FuncArgExpr>> {
         func_arg_expr ( COMMA func_arg_expr )*
     */
 
-    parser(|stream|
-        many!(
-            sep = Comma.parse(stream),
-            func_arg_expr().parse(stream)
-        )
-    )
+    many!(sep = Comma, func_arg_expr())
 }
 
 pub(super) fn func_arg_expr() -> impl Combinator<Output = FuncArgExpr> {

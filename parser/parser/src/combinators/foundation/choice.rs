@@ -1,23 +1,25 @@
 macro_rules! choice {
-    ($stream:expr, $head:expr, $($tail:expr),+ $(,)?) => {{
-        (|| -> $crate::scan::Result<_> {
+    ($head:expr, $($tail:expr),+ $(,)?) => {
+        $crate::combinators::foundation::parser(|stream| {
+            #[allow(unused_imports)]
+            use $crate::combinators::foundation::{ClosureHelpers, CombinatorHelpers};
             use $crate::result::MaybeMatch;
             use $crate::scan::Error;
 
-            if let Some(ok) = $head.maybe_match()? {
+            if let Some(ok) = $head.parse(stream).maybe_match()? {
                 return Ok(ok.into())
             }
 
             $(
-                if let Some(ok) = $tail.maybe_match()? {
+                if let Some(ok) = $tail.parse(stream).maybe_match()? {
                     return Ok(ok.into())
                 }
             )+
 
-            let loc = $stream.current_location();
+            let loc = stream.current_location();
             Err(Error::NoMatch(loc))
-        })()
-    }};
+        })
+    };
 }
 
 pub(in crate::combinators) use choice;

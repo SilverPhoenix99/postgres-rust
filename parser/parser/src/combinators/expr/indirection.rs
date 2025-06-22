@@ -11,9 +11,7 @@ pub(super) fn indirection() -> impl Combinator<Output = Vec<Indirection>> {
         ( indirection_el )+
     */
 
-    parser(|stream|
-        many!(indirection_el().parse(stream))
-    )
+    many!(indirection_el())
 }
 
 fn indirection_el() -> impl Combinator<Output = Indirection> {

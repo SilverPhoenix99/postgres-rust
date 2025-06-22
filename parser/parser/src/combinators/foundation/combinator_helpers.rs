@@ -10,25 +10,25 @@ where
 
     /// See [`required()`](required::required).
     #[inline]
-    fn required(self) -> RequiredCombi<Self> {
+    fn required(self) -> impl Combinator<Output = Self::Output> {
         required(self)
     }
 
     /// See [`try_match()`](try_match::try_match).
     #[inline]
-    fn try_match(self) -> TryMatchCombi<Self> {
+    fn try_match(self) -> impl Combinator<Output = Option<Self::Output>> {
         try_match(self)
     }
 
     /// See [`maybe_match()`](maybe_match::maybe_match).
     #[inline]
-    fn maybe_match(self) -> MaybeMatchCombi<Self> {
+    fn maybe_match(self) -> impl Combinator<Output = Option<Self::Output>> {
         maybe_match(self)
     }
 
     /// See [`and()`](and::and).
     #[inline]
-    fn and<R>(self, right: R) -> AndCombi<Self, R>
+    fn and<R>(self, right: R) -> impl Combinator<Output = (Self::Output, R::Output)>
     where
         R: Combinator
     {
@@ -37,10 +37,10 @@ where
 
     /// Same as `(Self && R)`
     #[inline]
-    fn and_then<R, O>(self, right: R, mapper: impl Fn(Self::Output, R::Output) -> O)
-        -> impl Combinator<Output = O>
+    fn and_then<R, M, O>(self, right: R, mapper: M) -> impl Combinator<Output = O>
     where
-        R: Combinator
+        R: Combinator,
+        M: Fn(Self::Output, R::Output) -> O
     {
         self.and(right)
             .map(move |(left, right)| mapper(left, right))
@@ -70,7 +70,7 @@ where
 
     /// See [`or()`](or::or)
     #[inline]
-    fn or<R>(self, right: R) -> OrCombi<Self, R>
+    fn or<R>(self, right: R) -> impl Combinator<Output = Self::Output>
     where
         R: Combinator<Output = Self::Output>
     {
@@ -79,23 +79,27 @@ where
 
     /// See [`map()`](map::map).
     #[inline]
-    fn map<O>(self, mapper: impl Fn(Self::Output) -> O) -> impl Combinator<Output = O>
+    fn map<M, O>(self, mapper: M) -> impl Combinator<Output = O>
+    where
+        M: Fn(Self::Output) -> O
     {
         map(self, mapper)
     }
 
     /// See [`map_err()`](map_err).
     #[inline]
-    fn map_err(self, mapper: impl Fn(Error) -> Error)
-        -> impl Combinator<Output = Self::Output>
+    fn map_err<M>(self, mapper: M) -> impl Combinator<Output = Self::Output>
+    where
+        M: Fn(Error) -> Error
     {
         map_err(self, mapper)
     }
 
     /// See [`map_result()`](map_result).
     #[inline]
-    fn map_result<O>(self, mapper: impl Fn(Result<Self::Output>) -> Result<O>)
-        -> impl Combinator<Output = O>
+    fn map_result<M, O>(self, mapper: M) -> impl Combinator<Output = O>
+    where
+        M: Fn(Result<Self::Output>) -> Result<O>
     {
         map_result(self, mapper)
     }
@@ -117,14 +121,15 @@ where
     }
 
     #[inline]
-    fn skip(self) -> SkipCombi<Self> {
+    fn skip(self) -> impl Combinator<Output = ()> {
         skip(self)
     }
 
     /// This is similar to [`CombinatorHelpers::map_result()`],
     /// but includes the stream as an argument to the closure.
-    fn chain_result<O>(self, mapper: impl Fn(Result<Self::Output>, &mut TokenStream) -> Result<O>)
-        -> impl Combinator<Output = O>
+    fn chain_result<M, O>(self, mapper: M) -> impl Combinator<Output = O>
+    where
+        M: Fn(Result<Self::Output>, &mut TokenStream) -> Result<O>
     {
         parser(move |stream| {
             let result = self.parse(stream);
@@ -134,8 +139,9 @@ where
 
     /// This is similar to [`CombinatorHelpers::map()`],
     /// but includes the stream as an argument to the closure.
-    fn chain<O>(self, mapper: impl Fn(Self::Output, &mut TokenStream) -> Result<O>)
-        -> impl Combinator<Output = O>
+    fn chain<M, O>(self, mapper: M) -> impl Combinator<Output = O>
+    where
+        M: Fn(Self::Output, &mut TokenStream) -> Result<O>
     {
         fn inner<I, O>(mapper: impl Fn(I, &mut TokenStream) -> Result<O>)
             -> impl Fn(Result<I>, &mut TokenStream) -> Result<O>
@@ -149,8 +155,9 @@ where
 
     /// This is similar to [`CombinatorHelpers::map_err()`],
     /// but includes the stream as an argument to the closure.
-    fn chain_err(self, mapper: impl Fn(Error, &mut TokenStream) -> Result<Self::Output>)
-        -> impl Combinator<Output = Self::Output>
+    fn chain_err<M>(self, mapper: M) -> impl Combinator<Output = Self::Output>
+    where
+        M: Fn(Error, &mut TokenStream) -> Result<Self::Output>
     {
         fn inner<I>(mapper: impl Fn(Error, &mut TokenStream) -> Result<I>)
             -> impl Fn(Result<I>, &mut TokenStream) -> Result<I>
@@ -170,22 +177,16 @@ where
 impl<T: Combinator> CombinatorHelpers for T {}
 
 use crate::combinators::foundation::and;
-use crate::combinators::foundation::and::AndCombi;
 use crate::combinators::foundation::map;
 use crate::combinators::foundation::map_err;
 use crate::combinators::foundation::map_result;
 use crate::combinators::foundation::maybe_match;
-use crate::combinators::foundation::maybe_match::MaybeMatchCombi;
 use crate::combinators::foundation::optional;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::or::OrCombi;
 use crate::combinators::foundation::parser;
 use crate::combinators::foundation::required;
-use crate::combinators::foundation::required::RequiredCombi;
 use crate::combinators::foundation::skip;
-use crate::combinators::foundation::skip::SkipCombi;
 use crate::combinators::foundation::try_match;
-use crate::combinators::foundation::try_match::TryMatchCombi;
 use crate::combinators::foundation::Combinator;
 use crate::scan::Error;
 use crate::scan::Result;

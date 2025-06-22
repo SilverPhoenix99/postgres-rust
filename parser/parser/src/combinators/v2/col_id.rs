@@ -2,11 +2,14 @@
 /// * `ColId`
 /// * `name`
 pub(in crate::combinators) fn col_id(stream: &mut TokenStream) -> crate::scan::Result<Str> {
-    choice!(stream,
-        identifier(stream),
-        Unreserved.parse(stream),
-        ColumnName.parse(stream)
-    )
+
+    let parser = choice!(
+        identifier,
+        Unreserved,
+        ColumnName
+    );
+
+    parser.parse(stream)
 }
 
 #[cfg(test)]

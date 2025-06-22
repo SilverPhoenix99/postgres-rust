@@ -4,7 +4,7 @@ pub(in crate::combinators) fn any_name_list(stream: &mut TokenStream) -> Result<
         any_name ( ',' any_name )*
     */
 
-    many!(sep = Comma.parse(stream), any_name(stream))
+    many!(sep = Comma, any_name).parse(stream)
 }
 
 /// Alias: `handler_name`
@@ -14,7 +14,7 @@ pub(in crate::combinators) fn any_name(stream: &mut TokenStream) -> Result<Quali
         col_id attrs
     */
 
-    attrs!(stream, col_id(stream))
+    attrs!(col_id).parse(stream)
 }
 
 #[cfg(test)]

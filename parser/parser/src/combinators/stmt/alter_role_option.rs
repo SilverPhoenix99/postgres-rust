@@ -1,11 +1,8 @@
 /// Alias: `AlterOptRoleList`
 pub(super) fn alter_role_options() -> impl Combinator<Output = Option<Vec<AlterRoleOption>>> {
 
-    parser(|stream|
-        many!(alter_role_option().parse(stream))
-            .optional()
-            .map_err(ScanErr)
-    )
+    many!(alter_role_option())
+        .optional()
 }
 
 /// Alias: `AlterOptRoleElem`
@@ -23,56 +20,48 @@ pub(super) fn alter_role_option() -> impl Combinator<Output = AlterRoleOption> {
         | IDENT
     */
 
-    parser(|stream| {
-        choice!(stream,
-            {
-                password_option(stream)
-            },
-            {
-                seq!(
-                    Connection.parse(stream),
-                    Limit.parse(stream),
-                    signed_i32_literal().parse(stream),
-                )
-                .map(|(.., limit)| ConnectionLimit(limit))
-            },
-            {
-                seq!(
-                    Valid.parse(stream),
-                    Until.parse(stream),
-                    string(stream)
-                )
+    choice!(
+        password_option,
+        {
+            seq!(
+                Connection,
+                Limit,
+                signed_i32_literal(),
+            )
+            .map(|(.., limit)| ConnectionLimit(limit))
+        },
+        {
+            seq!(Valid, Until, string)
                 .map(|(.., valid)| ValidUntil(valid))
-            },
-            {
-                // Supported but not documented for roles, for use by ALTER GROUP.
-                seq!(
-                    User.parse(stream),
-                    role_list().parse(stream)
-                )
-                .map(|(_, role_list)| RoleMembers(role_list))
-            },
-            {
-                Kw::Inherit
-                    .parse(stream)
-                    .map(|_| Inherit(true))
-            },
-            {
-                ident_option(stream)
-            }
-        )
-    })
+        },
+        {
+            // Supported but not documented for roles, for use by ALTER GROUP.
+            seq!(User, role_list())
+                .right()
+                .map(RoleMembers)
+        },
+        Kw::Inherit
+            .map(|_| Inherit(true)),
+        ident_option
+    )
 }
 
 fn password_option(stream: &mut TokenStream) -> Result<AlterRoleOption> {
 
-    choice!(stream,
+    /*
+          PASSWORD SCONST
+        | PASSWORD NULL
+        | ENCRYPTED PASSWORD SCONST
+        | UNENCRYPTED PASSWORD SCONST
+    */
+
+    let parser = choice!(
         {
             seq!(
-                Kw::Password.parse(stream),
-                choice!(stream,
-                    string(stream).map(Some),
-                    Null.parse(stream).map(|_| None)
+                Kw::Password,
+                choice!(
+                    string.map(Some),
+                    Null.map(|_| None)
                 )
             )
             .map(|(_, pw)| Password(pw))
@@ -83,33 +72,29 @@ fn password_option(stream: &mut TokenStream) -> Result<AlterRoleOption> {
              * form, so there is no difference between PASSWORD and
              * ENCRYPTED PASSWORD.
              */
-            seq!(
-                Encrypted.parse(stream),
-                Kw::Password.parse(stream),
-                string(stream)
-            )
-            .map(|(.., pw)|
-                Password(Some(pw))
-            )
+            seq!(Encrypted, Kw::Password, string)
+                .map(|(.., pw)|
+                    Password(Some(pw))
+                )
         },
         {
-            let (_, loc) = located!(stream,
-                seq!(
-                    Unencrypted.parse(stream),
-                    Kw::Password.parse(stream),
-                    string(stream)
-                )
-            )?;
-
-            let err = LocatedError::new(UnencryptedPassword, loc);
-            Err::<AlterRoleOption, _>(ScanErr(err))
+            located!(
+                seq!(Unencrypted, Kw::Password, string)
+            )
+                .map_result(|result| {
+                    let (_, loc) = result?;
+                    let err = LocatedError::new(UnencryptedPassword, loc);
+                    Err::<AlterRoleOption, _>(ScanErr(err))
+                })
         }
-    )
+    );
+
+    parser.parse(stream)
 }
 
 fn ident_option(stream: &mut TokenStream) -> Result<AlterRoleOption> {
 
-    let (ident, loc) = located!(stream, identifier(stream))?;
+    let (ident, loc) = located!(identifier).parse(stream)?;
 
     match &*ident {
         "superuser" => Ok(SuperUser(true)),
@@ -191,13 +176,12 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_list;
 use crate::combinators::signed_i32_literal;
-use crate::result::Optional;
 use crate::scan::Error::ScanErr;
 use crate::scan::Result;
 use crate::stream::TokenStream;

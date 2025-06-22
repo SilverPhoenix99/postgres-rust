@@ -79,7 +79,7 @@ pub(super) fn alter_database_stmt() -> impl Combinator<Output = RawStmt> {
 
 fn alterdb_opt_list(stream: &mut TokenStream) -> Result<Vec<AlterdbOption>> {
 
-    many!(alterdb_opt_item().parse(stream))
+    many!(alterdb_opt_item()).parse(stream)
 }
 
 fn alterdb_opt_item() -> impl Combinator<Output = AlterdbOption> {

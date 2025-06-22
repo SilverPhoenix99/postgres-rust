@@ -10,7 +10,7 @@ pub(super) fn case_expr() -> impl Combinator<Output = CaseExpr> {
     sequence!(
         Case.skip(),
         a_expr().optional(),
-        parser(|stream| many!(when_clause().parse(stream))),
+        many!(when_clause()),
         else_clause()
     ).map(|(_, target, when_clauses, default)|
         CaseExpr::new(target, when_clauses, default)
@@ -86,7 +86,6 @@ mod tests {
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::and;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

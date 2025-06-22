@@ -100,7 +100,7 @@ fn func_type() -> impl Combinator<Output = AlterFunctionKind> {
 
 fn alterfunc_opt_list(stream: &mut TokenStream) -> Result<Vec<AlterFunctionOption>> {
 
-    many!(alter_function_option(stream))
+    many!(alter_function_option).parse(stream)
 }
 
 #[cfg(test)]

@@ -1,11 +1,9 @@
 /// Alias: `copy_generic_opt_arg_list`
 pub(super) fn boolean_or_string_list() -> impl Combinator<Output = Vec<BooleanOrString>> {
 
-    parser(|stream|
-        many!(
-            sep = Comma.parse(stream),
-            boolean_or_string().parse(stream)
-        )
+    many!(
+        sep = Comma,
+        boolean_or_string()
     )
 }
 

@@ -16,31 +16,32 @@ pub(super) fn func_name() -> impl Combinator<Output = QualifiedName> {
             | IDENT ( attrs )?
     */
 
-    parser(|stream|
-        choice!(stream,
-            {
-                TypeFuncName.parse(stream)
-                    .map(|kw| vec![kw.into()])
-            },
-            {
-                attrs!(stream,
-                    choice!(stream,
-                        Unreserved.parse(stream).map(Str::from),
-                        identifier(stream).map(Str::from)
-                    )
+    choice!(
+        {
+            TypeFuncName
+                .map(|kw| vec![kw.into()])
+        },
+        {
+            attrs!(
+                choice!(
+                    Unreserved.map(Str::from),
+                    identifier.map(Str::from)
                 )
-            },
-            {
-                let (name, loc) = located!(stream,
-                    attrs(ColumnName.map(From::from)).parse(stream)
-                )?;
+            )
+        },
+        {
+            located!(
+                attrs!(ColumnName.map(From::from))
+            )
+            .map_result(|result| {
+                let (name, loc) = result?;
 
                 if name.len() == 1 {
                     return Err(syntax(loc))
                 }
                 Ok(name)
-            },
-        )
+            })
+        }
     )
 }
 
@@ -81,13 +82,10 @@ mod tests {
     }
 }
 
-use crate::combinators::attrs;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::v2::attrs;
 use pg_basics::QualifiedName;
 use pg_basics::Str;

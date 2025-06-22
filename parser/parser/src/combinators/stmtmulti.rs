@@ -8,14 +8,9 @@ pub(crate) fn stmtmulti() -> impl Combinator<Output = Option<Vec<RawStmt>>> {
     //     toplevel_stmt? ( ';' toplevel_stmt? )*
 
     parser(semicolons).optional()
-        .and_right(parser(|stream|
-            many!(
-                sep = semicolons(stream),
-                toplevel_stmt().parse(stream)
-            )
-                .optional()
-                .map_err(ScanErr)
-        ))
+        .and_right(
+            many!(sep = semicolons, toplevel_stmt()).optional()
+        )
 }
 
 /// Returns `Ok` if it consumed at least 1 `;` (semicolon).
@@ -23,12 +18,7 @@ fn semicolons(stream: &mut TokenStream) -> Result<()> {
 
     // Production: ( ';' )+
 
-    many!(
-        Semicolon
-            .parse(stream)
-            .map(|_| ())
-    )
-        .map(|_| ())
+    many!(Semicolon.skip()).skip().parse(stream)
 }
 
 fn toplevel_stmt() -> impl Combinator<Output = RawStmt> {
@@ -86,8 +76,6 @@ use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::stmt;
 use crate::combinators::stmt::begin_stmt;
 use crate::combinators::stmt::end_stmt;
-use crate::result::Optional;
-use crate::scan::Error::ScanErr;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::RawStmt;

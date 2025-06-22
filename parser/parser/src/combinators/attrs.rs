@@ -6,14 +6,16 @@ where
         prefix ( '.' col_label )*
     */
 
-    parser(move |stream|
-        v2::attrs!(stream, prefix.parse(stream))
+    many!(
+        pre = prefix,
+        seq!(Dot, col_label).right()
     )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::combinators::foundation::parser;
     use crate::tests::test_parser;
 
     #[test]
@@ -33,9 +35,9 @@ mod tests {
 }
 
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::v2;
+use crate::combinators::v2::col_label;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
+use pg_lexer::OperatorKind::Dot;

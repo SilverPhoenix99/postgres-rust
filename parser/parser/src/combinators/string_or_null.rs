@@ -3,11 +3,9 @@
 /// * `security_label`
 pub(super) fn string_or_null() -> impl Combinator<Output = Option<Box<str>>> {
 
-    parser(|stream|
-        choice!(stream,
-            string(stream).map(Some),
-            Null.parse(stream).map(|_| None)
-        )
+    choice!(
+        string.map(Some),
+        Null.map(|_| None)
     )
 }
 
@@ -25,7 +23,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::choice;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use pg_lexer::Keyword::Null;

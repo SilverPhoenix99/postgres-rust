@@ -29,9 +29,7 @@ fn float() -> impl Combinator<Output = TypeName> {
     */
 
     Float
-        .and_right(parser(|stream|
-            located!(stream, opt_precision().parse(stream))
-        ))
+        .and_right(located!(opt_precision()))
         .map_result(|result| {
             let (precision, loc) = result?;
             match precision {
@@ -297,7 +295,6 @@ mod tests {
 }
 
 use crate::combinators::attrs;
-use crate::combinators::foundation::enclosure;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::match_first;
@@ -306,6 +303,7 @@ use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
+use crate::combinators::foundation::enclosure;
 use crate::combinators::i32_literal_paren;
 use crate::combinators::opt_interval;
 use crate::combinators::opt_precision;

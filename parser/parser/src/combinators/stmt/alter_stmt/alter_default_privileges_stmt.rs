@@ -17,7 +17,7 @@ pub(super) fn alter_default_privileges_stmt() -> impl Combinator<Output = AlterD
 /// Alias: `DefACLOptionList`
 fn def_acl_option_list(stream: &mut TokenStream) -> Result<Vec<AclOption>> {
 
-    many!(def_acl_option().parse(stream))
+    many!(def_acl_option()).parse(stream)
 }
 
 /// Alias: `DefACLOption`

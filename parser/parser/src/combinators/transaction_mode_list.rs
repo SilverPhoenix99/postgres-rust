@@ -5,19 +5,11 @@ pub(super) fn transaction_mode_list() -> impl Combinator<Output = Vec<Transactio
         transaction_mode ( (',')? transaction_mode )*
     */
 
-    parser(|stream|
-        many!(
-            pre = transaction_mode().parse(stream),
-            choice!(stream,
-                {
-                    seq!(
-                        Comma.parse(stream),
-                        transaction_mode().parse(stream),
-                    )
-                    .map(|(_, mode)| mode)
-                },
-                transaction_mode().parse(stream),
-            )
+    many!(
+        pre = transaction_mode(),
+        choice!(
+            seq!(Comma, transaction_mode()).right(),
+            transaction_mode()
         )
     )
 }
@@ -162,7 +154,6 @@ mod tests {
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

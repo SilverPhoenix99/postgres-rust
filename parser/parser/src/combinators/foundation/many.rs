@@ -36,46 +36,61 @@
 macro_rules! many {
 
     (pre = $prefix:expr, $combinator:expr) => {
-        (|| -> $crate::scan::Result<_> {
+        $crate::combinators::foundation::parser(move |stream| {
+            #[allow(unused_imports)]
+            use $crate::combinators::foundation::{ClosureHelpers, CombinatorHelpers};
             use $crate::result::Optional;
 
-            let mut elements = vec![$prefix?];
+            let element = $prefix.parse(stream)?;
+            let mut elements = vec![element];
 
-            while let Some(element) = $combinator.optional()? {
+            let combinator = $combinator;
+            while let Some(element) = combinator.parse(stream).optional()? {
                 elements.push(element)
             }
 
             Ok(elements)
-        })()
+        })
     };
 
     (sep = $separator:expr, $combinator:expr) => {
-        (|| -> $crate::scan::Result<_> {
+        $crate::combinators::foundation::parser(move |stream| {
+            #[allow(unused_imports)]
+            use $crate::combinators::foundation::{ClosureHelpers, CombinatorHelpers};
             use $crate::result::{Optional, Required};
 
-            let mut elements = vec![$combinator?];
+            let combinator = $combinator;
 
-            while $separator.optional()?.is_some() {
-                let element = $combinator.required()?;
+            let element = combinator.parse(stream)?;
+            let mut elements = vec![element];
+
+            let separator = $separator;
+            while separator.parse(stream).optional()?.is_some() {
+                let element = combinator.parse(stream).required()?;
                 elements.push(element);
             }
 
             Ok(elements)
-        })()
+        })
     };
 
     ($combinator:expr) => {
-        (|| -> $crate::scan::Result<_> {
+        $crate::combinators::foundation::parser(move |stream| {
+            #[allow(unused_imports)]
+            use $crate::combinators::foundation::{ClosureHelpers, CombinatorHelpers};
             use $crate::result::Optional;
 
-            let mut elements = vec![$combinator?];
+            let combinator = $combinator;
 
-            while let Some(element) = $combinator.optional()? {
+            let element = combinator.parse(stream)?;
+            let mut elements = vec![element];
+
+            while let Some(element) = combinator.parse(stream).optional()? {
                 elements.push(element);
             }
 
             Ok(elements)
-        })()
+        })
     };
 }
 

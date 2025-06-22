@@ -9,9 +9,7 @@ pub(super) fn frame_extent() -> impl Combinator<Output = FrameExtent> {
         Between
             .and_right(sequence!(
                 frame_bound(),
-                And.and_right(
-                    parser(|stream| located!(stream, frame_bound().parse(stream)))
-                )
+                And.and_right(located!(frame_bound()))
             ))
             .map_result(|bounds| {
 
@@ -67,7 +65,7 @@ pub(super) fn frame_extent() -> impl Combinator<Output = FrameExtent> {
                 };
                 Ok(frame)
             }),
-        parser(|stream| located!(stream, frame_bound().parse(stream)))
+        located!(frame_bound())
             .map_result(|bound| {
                 let (bound, loc) = bound?;
                 let frame = match bound {
@@ -175,7 +173,6 @@ use super::frame_bound::frame_bound;
 use super::frame_bound::FrameBound::*;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;

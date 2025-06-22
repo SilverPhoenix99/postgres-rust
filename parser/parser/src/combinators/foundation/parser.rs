@@ -8,9 +8,9 @@ macro_rules! enclosure {
 
 pub(in crate::combinators) use enclosure;
 
-pub(in crate::combinators) fn parser<F, T>(parser: F) -> ClosureCombi<F, T>
+pub(in crate::combinators) fn parser<F, O>(parser: F) -> ClosureCombi<F, O>
 where
-    F: Fn(&mut TokenStream) -> Result<T>
+    F: Fn(&mut TokenStream) -> Result<O>
 {
     ClosureCombi {
         parser,
@@ -18,28 +18,37 @@ where
     }
 }
 
-pub(in crate::combinators) struct ClosureCombi<F, T> {
+pub(in crate::combinators) struct ClosureCombi<F, O> {
     parser: F,
-    boo: PhantomData<T>,
+    boo: PhantomData<O>,
 }
 
-impl<F, T> Combinator for ClosureCombi<F, T>
+impl<F, O> Combinator for ClosureCombi<F, O>
 where
-    F: Fn(&mut TokenStream) -> Result<T>
+    F: Fn(&mut TokenStream) -> Result<O>
 {
-    type Output = T;
+    type Output = O;
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
         (self.parser)(stream)
     }
 }
 
-impl<F, T> Debug for ClosureCombi<F, T>
+impl<F, O> Debug for ClosureCombi<F, O>
 where
-    F: Fn(&mut TokenStream) -> Result<T>
+    F: Fn(&mut TokenStream) -> Result<O>
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str("ClosureCombi")
+    }
+}
+
+impl<F, O> From<F> for ClosureCombi<F, O>
+where
+    F: Fn(&mut TokenStream) -> Result<O>
+{
+    fn from(parser: F) -> Self {
+        Self { parser, boo: PhantomData }
     }
 }
 

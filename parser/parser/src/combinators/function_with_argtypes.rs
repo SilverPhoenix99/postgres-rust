@@ -4,12 +4,7 @@ pub(super) fn function_with_argtypes_list() -> impl Combinator<Output = Vec<Func
         function_with_argtypes ( ',' function_with_argtypes )*
     */
 
-    parser(|stream|
-        many!(
-            sep = Comma.parse(stream),
-            function_with_argtypes().parse(stream)
-        )
-    )
+    many!(sep = Comma, function_with_argtypes())
 }
 
 pub(super) fn function_with_argtypes() -> impl Combinator<Output = FunctionWithArgs> {
@@ -76,7 +71,7 @@ fn func_args_list(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
         func_arg ( ',' func_arg )*
     */
 
-    many!(sep = Comma.parse(stream), func_arg().parse(stream))
+    many!(sep = Comma, func_arg()).parse(stream)
 }
 
 #[cfg(test)]

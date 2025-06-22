@@ -1,24 +1,14 @@
 /// Alias: `generic_option_list`
 pub(super) fn generic_options() -> impl Combinator<Output = Vec<GenericOption>> {
 
-    parser(|stream|
-        many!(
-            sep = Comma.parse(stream),
-            generic_option().parse(stream)
-        )
-    )
+    many!(sep = Comma, generic_option())
 }
 
 /// Alias: `generic_option_elem`
 pub(super) fn generic_option() -> impl Combinator<Output = GenericOption> {
 
-    parser(|stream|
-        seq!(
-            col_label(stream),
-            string(stream)
-        )
+    seq!(col_label, string)
         .map(|(name, arg)| GenericOption::new(name, arg))
-    )
 }
 
 #[cfg(test)]
@@ -53,10 +43,10 @@ mod tests {
 }
 
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::v2::col_label;
 use pg_ast::GenericOption;
 use pg_lexer::OperatorKind::Comma;

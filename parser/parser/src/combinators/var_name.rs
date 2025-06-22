@@ -4,7 +4,7 @@ pub(in crate::combinators) fn var_name(stream: &mut TokenStream) -> Result<Quali
         col_id ( '.' col_id )*
     */
 
-    many!(sep = Dot.parse(stream), col_id(stream))
+    many!(sep = Dot, col_id).parse(stream)
 }
 
 use crate::combinators::foundation::many;

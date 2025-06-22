@@ -15,7 +15,7 @@ fn alter_generic_option_list(stream: &mut TokenStream) -> Result<Vec<GenericOpti
         alter_generic_option ( ',' alter_generic_option )*
     */
 
-    many!(sep = Comma.parse(stream), alter_generic_option(stream))
+    many!(sep = Comma, alter_generic_option).parse(stream)
 }
 
 /// Alias: `alter_generic_option_elem`
@@ -28,32 +28,21 @@ fn alter_generic_option(stream: &mut TokenStream) -> Result<GenericOptionKind> {
         | generic_option_elem
     */
 
-    choice!(stream,
-        {
-            seq!(
-                Kw::Set.parse(stream),
-                generic_option().parse(stream)
-            )
-            .map(|(.., opt)| Set(opt))
-        },
-        {
-            seq!(
-                Kw::Add.parse(stream),
-                generic_option().parse(stream)
-            )
-            .map(|(.., opt)| Add(opt))
-        },
-        {
-            seq!(
-                DropKw.parse(stream),
-                col_label(stream)
-            )
-            .map(|(.., opt)| Drop(opt))
-        },
+    let parser = choice!(
+        seq!(Kw::Set, generic_option())
+            .right()
+            .map(Set),
+        seq!(Kw::Add, generic_option())
+            .right()
+            .map(Add),
+        seq!(DropKw, col_label)
+            .right()
+            .map(Drop),
         generic_option()
-            .parse(stream)
             .map(Unspecified)
-    )
+    );
+
+    parser.parse(stream)
 }
 
 #[cfg(test)]

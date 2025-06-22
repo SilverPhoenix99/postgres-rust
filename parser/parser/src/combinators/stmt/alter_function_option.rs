@@ -23,37 +23,22 @@ pub(super) fn alter_function_option(stream: &mut TokenStream) -> Result<AlterFun
         | reset_stmt
     */
 
-    choice!(stream,
+    let parser = choice!(
+        seq!(Called, On, Null, Input)
+            .map(|_| Strict(false)),
+        seq!(Returns, Null, On, Null, Input)
+            .map(|_| Strict(true)),
+        Kw::Strict.map(|_| Strict(true)),
+        Kw::Immutable.map(|_| Volatility(Immutable)),
+        Kw::Stable.map(|_| Volatility(Stable)),
+        Kw::Volatile.map(|_| Volatility(Volatile)),
         {
             seq!(
-                Called.parse(stream),
-                On.parse(stream),
-                Null.parse(stream),
-                Input.parse(stream)
-            )
-            .map(|_| Strict(false))
-        },
-        {
-            seq!(
-                Returns.parse(stream),
-                Null.parse(stream),
-                On.parse(stream),
-                Null.parse(stream),
-                Input.parse(stream)
-            )
-            .map(|_| Strict(true))
-        },
-        Kw::Strict.parse(stream).map(|_| Strict(true)),
-        Kw::Immutable.parse(stream).map(|_| Volatility(Immutable)),
-        Kw::Stable.parse(stream).map(|_| Volatility(Stable)),
-        Kw::Volatile.parse(stream).map(|_| Volatility(Volatile)),
-        {
-            seq!(
-                External.parse(stream),
-                Kw::Security.parse(stream),
-                choice!(stream,
-                    Definer.parse(stream).map(|_| true),
-                    Invoker.parse(stream).map(|_| false)
+                External,
+                Kw::Security,
+                choice!(
+                    Definer.map(|_| true),
+                    Invoker.map(|_| false)
                 )
             )
             .map(|(.., opt)| opt)
@@ -61,60 +46,36 @@ pub(super) fn alter_function_option(stream: &mut TokenStream) -> Result<AlterFun
         },
         {
             seq!(
-                Kw::Security.parse(stream),
-                choice!(stream,
-                    Definer.parse(stream).map(|_| true),
-                    Invoker.parse(stream).map(|_| false)
+                Kw::Security,
+                choice!(
+                    Definer.map(|_| true),
+                    Invoker.map(|_| false)
                 )
             )
             .map(|(.., opt)| opt)
             .map(Security)
         },
-        Kw::Leakproof.parse(stream).map(|_| Leakproof(true)),
-        {
-            seq!(
-                Not.parse(stream),
-                Kw::Leakproof.parse(stream)
-            )
-            .map(|_| Leakproof(false))
-        },
-        {
-            seq!(
-                Kw::Cost.parse(stream),
-                signed_number().parse(stream)
-            )
-            .map(|(.., opt)| Cost(opt))
-        },
-        {
-            seq!(
-                Kw::Rows.parse(stream),
-                signed_number().parse(stream)
-            )
-            .map(|(.., opt)| Rows(opt))
-        },
-        {
-            seq!(
-                Kw::Support.parse(stream),
-                any_name(stream)
-            )
-            .map(|(.., opt)| Support(opt))
-        },
-        {
-            seq!(
-                Kw::Parallel.parse(stream),
-                col_id(stream)
-            )
-            .map(|(.., opt)| Parallel(opt))
-        },
-        {
-            seq!(
-                Kw::Set.parse(stream),
-                set_rest_more().parse(stream)
-            )
-            .map(|(.., opt)| Set(opt))
-        },
-        reset_stmt().parse(stream).map(Reset)
-    )
+        Kw::Leakproof.map(|_| Leakproof(true)),
+        seq!(Not, Kw::Leakproof).map(|_| Leakproof(false)),
+        seq!(Kw::Cost, signed_number())
+            .right()
+            .map(Cost),
+        seq!(Kw::Rows, signed_number())
+            .right()
+            .map(Rows),
+        seq!(Kw::Support, any_name)
+            .right()
+            .map(Support),
+        seq!(Kw::Parallel, col_id)
+            .right()
+            .map(Parallel),
+        seq!(Kw::Set, set_rest_more())
+            .right()
+            .map(Set),
+        reset_stmt().map(Reset)
+    );
+
+    parser.parse(stream)
 }
 
 #[cfg(test)]

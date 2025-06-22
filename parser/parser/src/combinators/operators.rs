@@ -48,23 +48,19 @@ pub(super) fn any_operator() -> impl Combinator<Output = QualifiedOperator> {
         ( col_id '.' )* all_op
     */
 
-    parser(|stream|
-        seq!(
-            {
-                many!(
-                    seq!(col_id(stream), Dot.parse(stream))
-                        .map(|(name, _)| name)
-                )
-                .optional()
-                .map(Option::unwrap_or_default)
-                .map_err(ScanErr)
-            },
-            {
-                all_op().parse(stream)
-            }
-        )
-            .map(|(qn, op)| QualifiedOperator(qn, op))
+    seq!(
+        {
+            many!(
+                seq!(col_id, Dot).left()
+            )
+            .optional()
+            .map(Option::unwrap_or_default)
+        },
+        {
+            all_op()
+        }
     )
+        .map(|(qn, op)| QualifiedOperator(qn, op))
 }
 
 /// Alias: `all_Op`.
@@ -216,15 +212,12 @@ mod tests {
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::user_defined_operator;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::v2::col_id;
-use crate::result::Optional;
-use crate::scan::Error::ScanErr;
 use pg_ast::Operator;
 use pg_ast::Operator::Addition;
 use pg_ast::Operator::Division;

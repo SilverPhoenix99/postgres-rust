@@ -4,12 +4,7 @@ pub(super) fn grantee_list() -> impl Combinator<Output = Vec<RoleSpec>> {
         grantee ( ',' grantee )*
     */
 
-    parser(|stream|
-        many!(
-            sep = Comma.parse(stream),
-            grantee(stream)
-        )
-    )
+    many!(sep = Comma, grantee)
 }
 
 fn grantee(stream: &mut TokenStream) -> Result<RoleSpec> {
@@ -18,13 +13,10 @@ fn grantee(stream: &mut TokenStream) -> Result<RoleSpec> {
         ( GROUP )? role_spec
     */
 
-    seq!(
-        Group.parse(stream)
-            .maybe_match()
-            .map_err(Error::from),
-        role_spec().parse(stream)
-    )
-        .map(|(.., role)| role)
+    let parser = seq!(Group.maybe_match(), role_spec())
+        .right();
+
+    parser.parse(stream)
 }
 
 /// Alias: `opt_grant_grant_option`
@@ -112,13 +104,10 @@ mod tests {
 }
 
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_spec;
-use crate::result::MaybeMatch;
-use crate::scan::Error;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::DropBehavior;

@@ -1,5 +1,5 @@
 /// `Eof` and `NoMatch` become `Ok(None)`.
-pub(in crate::combinators) fn optional<P>(parser: P) -> impl Combinator<Output = Option<P::Output>>
+pub(in crate::combinators) fn optional<P>(parser: P) -> OptionalCombi<P>
 where
     P: Combinator
 {

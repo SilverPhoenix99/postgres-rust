@@ -97,10 +97,8 @@ fn parameter_name_list(stream: &mut TokenStream) -> Result<Vec<QualifiedName>> {
         parameter_name ( ',' parameter_name )*
     */
 
-    many!(
-        sep = Comma.parse(stream),
-        parameter_name(stream)
-    )
+    many!(sep = Comma, parameter_name)
+        .parse(stream)
 }
 
 fn parameter_name(stream: &mut TokenStream) -> Result<QualifiedName> {
@@ -109,10 +107,8 @@ fn parameter_name(stream: &mut TokenStream) -> Result<QualifiedName> {
         ColId ( '.' ColId )*
     */
 
-    many!(
-        sep = Dot.parse(stream),
-        col_id(stream)
-    )
+    many!(sep = Dot, col_id)
+        .parse(stream)
 }
 
 /// Alias: `NumericOnly_list`
@@ -122,10 +118,8 @@ fn signed_number_list(stream: &mut TokenStream) -> Result<Vec<SignedNumber>> {
         signed_number ( ',' signed_number )*
     */
 
-    many!(
-        sep = Comma.parse(stream),
-        signed_number().parse(stream)
-    )
+    many!(sep = Comma, signed_number())
+        .parse(stream)
 }
 
 #[cfg(test)]

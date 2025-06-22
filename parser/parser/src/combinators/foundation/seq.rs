@@ -1,15 +1,17 @@
 macro_rules! seq {
     ($head:expr, $($tail:expr),+ $(,)?) => {
-        (|| -> $crate::scan::Result<_> {
+        $crate::combinators::foundation::parser(|stream| {
+            #[allow(unused_imports)]
+            use $crate::combinators::foundation::{ClosureHelpers, CombinatorHelpers};
             use $crate::result::Required;
 
             Ok((
-                $head?,
+                $head.parse(stream)?,
                 $(
-                    $tail.required()?,
+                    $tail.parse(stream).required()?,
                 )+
             ))
-        })()
+        })
     };
 }
 

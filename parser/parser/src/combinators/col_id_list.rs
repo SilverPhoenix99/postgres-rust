@@ -4,12 +4,7 @@ pub(super) fn col_id_list(separator: OperatorKind) -> impl Combinator<Output = Q
         col_id ( <separator> col_id )*
     */
 
-    parser(move |stream|
-        many!(
-            sep = separator.parse(stream),
-            col_id(stream)
-        )
-    )
+    many!(sep = separator, col_id)
 }
 
 #[cfg(test)]
@@ -36,7 +31,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::v2::col_id;
 use pg_basics::QualifiedName;

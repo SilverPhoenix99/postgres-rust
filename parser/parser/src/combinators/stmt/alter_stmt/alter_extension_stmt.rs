@@ -51,15 +51,12 @@ fn alter_extension_options(stream: &mut TokenStream) -> Result<Option<Vec<Str>>>
         ( TO NonReservedWord_or_Sconst )*
     */
 
-    many!({
-        seq!(
-            To.parse(stream),
-            non_reserved_word_or_sconst().parse(stream)
-        )
-        .map(|(_, option)| option)
-    })
+    many!(
+        seq!(To, non_reserved_word_or_sconst()).right()
+    )
         .optional()
         .map_err(From::from)
+        .parse(stream)
 }
 
 fn alter_extension_target() -> impl Combinator<Output = AlterExtensionContentsTarget> {
@@ -314,7 +311,6 @@ use crate::combinators::stmt::view;
 use crate::combinators::stmt::Foreign;
 use crate::combinators::stmt::Operator as Op;
 use crate::combinators::stmt::TextSearch;
-use crate::result::Optional;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::AddDrop;

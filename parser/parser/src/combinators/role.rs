@@ -4,12 +4,7 @@ pub(super) fn role_list() -> impl Combinator<Output = Vec<RoleSpec>> {
         role_spec ( ',' role_spec )*
     */
 
-    parser(|stream| {
-        many!(
-            sep = Comma.parse(stream),
-            role_spec().parse(stream)
-        )
-    })
+    many!(sep = Comma, role_spec())
 }
 
 /// Alias: `RoleId`
@@ -18,7 +13,7 @@ pub(super) fn role_id() -> impl Combinator<Output = Str> {
     // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
     parser(|stream| {
-        let (role, loc) = located!(stream, role_spec().parse(stream))?;
+        let (role, loc) = located!(role_spec()).parse(stream)?;
         role.into_role_id()
             .map_err(|err|
                 ScanErr(LocatedError::new(err, loc))
@@ -45,7 +40,7 @@ pub(super) fn role_spec() -> impl Combinator<Output = RoleSpec> {
         SessionUser.map(|_| RoleSpec::SessionUser),
 
         // "none" is a ColumnName keyword, so it must be checked before the next option
-        parser(|stream| located!(stream, NoneKw.parse(stream)))
+        located!(NoneKw)
             .map_result(|result| match result {
                 Ok((_, loc)) => Err(ScanErr(
                     LocatedError::new(ReservedRoleSpec("none"), loc)

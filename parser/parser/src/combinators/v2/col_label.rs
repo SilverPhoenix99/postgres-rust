@@ -2,10 +2,13 @@
 /// * `ColLabel`
 /// * `attr_name`
 pub(crate) fn col_label(stream: &mut TokenStream) -> Result<Str> {
-    choice!(stream,
-        identifier(stream),
-        any_keyword().parse(stream)
-    )
+
+    let parser = choice!(
+        identifier,
+        any_keyword()
+    );
+
+    parser.parse(stream)
 }
 
 #[cfg(test)]

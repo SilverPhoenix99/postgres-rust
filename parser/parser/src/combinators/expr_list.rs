@@ -4,12 +4,7 @@ pub(super) fn expr_list() -> impl Combinator<Output = Vec<ExprNode>> {
         a_expr ( ',' a_expr )*
     */
 
-    parser(|stream|
-        many!(
-            sep = Comma.parse(stream),
-            a_expr().parse(stream)
-        )
-    )
+    many!(sep = Comma, a_expr())
 }
 
 #[cfg(test)]
@@ -34,7 +29,6 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use pg_ast::ExprNode;
 use pg_lexer::OperatorKind::Comma;

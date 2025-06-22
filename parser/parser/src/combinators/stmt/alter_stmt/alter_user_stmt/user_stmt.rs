@@ -14,7 +14,7 @@ pub(super) fn user_stmt() -> impl Combinator<Output = RawStmt> {
             .map(|(_, dbname, set_stmt)|
                 AlterRoleSetStmt::new(OneOrAll::All, dbname, set_stmt).into()
             ),
-        parser(|stream| located!(stream, role_spec().parse(stream)))
+        located!(role_spec())
             .chain(match_first_with_state!(|(role, loc), stream| {
                 {
                     Rename.and(To)
@@ -185,7 +185,6 @@ use super::in_database::in_database;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
