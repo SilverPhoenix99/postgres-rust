@@ -14,23 +14,24 @@ mod alter_system_stmt;
 mod alter_user_stmt;
 mod set_reset_clause;
 
-pub(super) fn alter_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn alter_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
 
-    Alter.and_right(match_first! {
+    Alter.and_right(choice!(
         alter_aggregate_stmt(),
         alter_collation_stmt(),
         alter_conversion_stmt(),
         alter_database_stmt(),
-        alter_default_privileges_stmt().map(From::from),
+        alter_default_privileges_stmt(),
         alter_event_trigger_stmt(),
         alter_extension_stmt(),
         alter_function_stmt(),
         alter_group_stmt(),
         alter_language_stmt(),
         alter_large_object_stmt(),
-        alter_system_stmt().map(From::from),
+        alter_system_stmt(),
         alter_user_stmt()
-    })
+    ))
+        .parse(stream)
 }
 
 #[cfg(test)]
@@ -56,7 +57,7 @@ mod tests {
     fn test_alter(source: &str) {
 
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = alter_stmt().parse(&mut stream);
+        let actual = alter_stmt(&mut stream);
 
         // This only quickly tests that statement types aren't missing.
         // More in-depth testing is within each statement's module.
@@ -83,8 +84,10 @@ use self::{
     alter_user_stmt::alter_user_stmt,
     set_reset_clause::set_reset_clause
 };
-use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
+use crate::combinators::foundation::choice;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_lexer::Keyword::Alter;

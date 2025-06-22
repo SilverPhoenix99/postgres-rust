@@ -83,22 +83,22 @@ mod view;
 pub(in crate::combinators) use self::begin_stmt::begin_stmt;
 pub(in crate::combinators) use self::end_stmt::end_stmt;
 
-pub(super) fn stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn stmt(stream: &mut TokenStream) -> Result<RawStmt> {
 
-    match_first! {
-        abort_stmt().map(From::from),
-        alter_stmt(),
+    choice!(
+        abort_stmt,
+        alter_stmt,
         analyze_stmt(),
         call_stmt(),
         cluster_stmt(),
         Checkpoint.map(|_| CheckPoint),
         close_stmt().map(ClosePortalStmt),
-        comment_stmt().map(From::from),
-        commit_stmt().map(From::from),
+        comment_stmt(),
+        commit_stmt(),
         copy_stmt(),
         create_stmt(),
         deallocate_stmt().map(DeallocateStmt),
-        discard_stmt().map(From::from),
+        discard_stmt(),
         do_stmt(),
         drop_stmt(),
         explain_stmt(),
@@ -108,23 +108,24 @@ pub(super) fn stmt() -> impl Combinator<Output = RawStmt> {
         load_stmt().map(LoadStmt),
         lock_stmt(),
         move_stmt(),
-        notify_stmt().map(From::from),
+        notify_stmt(),
         prepare_stmt(),
-        reassign_owned_stmt().map(From::from),
+        reassign_owned_stmt(),
         reindex_stmt(),
-        release_savepoint_stmt().map(From::from),
+        release_savepoint_stmt(),
         reset_stmt().map(VariableResetStmt),
         revoke_stmt(),
-        rollback_stmt().map(From::from),
-        savepoint_stmt().map(From::from),
-        security_label_stmt().map(From::from),
+        rollback_stmt(),
+        savepoint_stmt(),
+        security_label_stmt(),
         set_stmt(),
         show_stmt().map(VariableShowStmt),
-        start_transaction_stmt().map(From::from),
+        start_transaction_stmt(),
         truncate_stmt(),
         unlisten_stmt().map(UnlistenStmt),
         vacuum_stmt(),
-    }
+    )
+        .parse(stream)
 }
 
 #[cfg(test)]
@@ -160,7 +161,7 @@ mod tests {
     fn test_stmt(source: &str) {
 
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = stmt().parse(&mut stream);
+        let actual = stmt(&mut stream);
 
         // This only quickly tests that statement types aren't missing.
         // More in-depth testing is within each statement's module.
@@ -252,9 +253,10 @@ use self::{
     variable_target::variable_target,
     view::view,
 };
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_ast::RawStmt::CheckPoint;
 use pg_ast::RawStmt::ClosePortalStmt;

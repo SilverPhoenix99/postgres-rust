@@ -19,13 +19,16 @@ fn semicolons(stream: &mut TokenStream) -> Result<()> {
 
     // Production: ( ';' )+
 
-    many!(Semicolon.skip()).skip().parse(stream)
+    many!(Semicolon.skip())
+        .skip()
+        .parse(stream)
 }
 
 fn toplevel_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
+
     choice!(
         transaction_stmt_legacy,
-        stmt()
+        stmt
     )
         .parse(stream)
 }

@@ -1,21 +1,23 @@
-pub(super) fn abort_stmt() -> impl Combinator<Output = TransactionStmt> {
+pub(super) fn abort_stmt(stream: &mut TokenStream) -> Result<TransactionStmt> {
 
     /*
     TransactionStmt:
         ABORT_P opt_transaction opt_transaction_chain
     */
 
-    Abort
-        .and(parser(opt_transaction))
-        .and_right(parser(opt_transaction_chain))
-        .map(|chain| TransactionStmt::Rollback { chain })
+    seq!(
+        Abort,
+        opt_transaction,
+        opt_transaction_chain
+    )
+        .map(|(.., chain)| TransactionStmt::Rollback { chain })
+        .parse(stream)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use test_case::test_case;
 
     #[test_case("abort", false)]
@@ -25,14 +27,15 @@ mod tests {
     #[test_case("abort transaction and chain", true)]
     #[test_case("abort transaction and no chain", false)]
     fn test_abort(source: &str, expected: bool) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Rollback { chain: expected }), abort_stmt().parse(&mut stream));
+        test_parser!(v2, source, abort_stmt, TransactionStmt::Rollback { chain: expected })
     }
 }
 
-use crate::combinators::foundation::{parser, Combinator};
 use crate::combinators::foundation::CombinatorHelpers;
+use crate::combinators::foundation::{seq, Combinator};
 use crate::combinators::opt_transaction;
 use crate::combinators::opt_transaction_chain;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::TransactionStmt;
 use pg_lexer::Keyword::Abort;
