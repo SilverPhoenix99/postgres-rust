@@ -18,6 +18,7 @@ where
     }
 }
 
+#[derive(Debug)]
 pub(in crate::combinators) struct ClosureCombi<F, O> {
     parser: F,
     boo: PhantomData<O>,
@@ -34,15 +35,6 @@ where
     }
 }
 
-impl<F, O> Debug for ClosureCombi<F, O>
-where
-    F: Fn(&mut TokenStream) -> Result<O>
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str("ClosureCombi")
-    }
-}
-
 impl<F, O> From<F> for ClosureCombi<F, O>
 where
     F: Fn(&mut TokenStream) -> Result<O>
@@ -55,7 +47,4 @@ where
 use crate::combinators::foundation::Combinator;
 use crate::scan::Result;
 use crate::stream::TokenStream;
-use core::fmt;
-use core::fmt::Debug;
-use core::fmt::Formatter;
 use core::marker::PhantomData;

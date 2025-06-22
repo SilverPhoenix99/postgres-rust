@@ -3,6 +3,7 @@ extern crate alloc;
 #[cfg(test)]
 #[macro_use]
 extern crate assert_matches;
+extern crate core;
 
 mod combinators;
 mod config;

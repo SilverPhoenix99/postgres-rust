@@ -70,7 +70,7 @@ impl Combinator for OperatorKind {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-#[derive(Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub(in crate::combinators) struct OperatorCondCombi<F, O> {
     mapper: F,
     boo: PhantomData<O>
@@ -92,20 +92,11 @@ where
     }
 }
 
-impl<F, T> Debug for OperatorCondCombi<F, T> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str("OperatorCondCombi")
-    }
-}
-
 use crate::combinators::foundation::Combinator;
 use crate::scan::Result;
 use crate::stream::ConsumerResult;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Operator;
-use core::fmt;
-use core::fmt::Debug;
-use core::fmt::Formatter;
 use core::marker::PhantomData;
 use pg_lexer::OperatorKind;

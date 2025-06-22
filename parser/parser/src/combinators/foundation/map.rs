@@ -53,7 +53,7 @@ where
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub(in crate::combinators) struct MapResultCombi<P, M, O> {
     parser: P,
     mapper: M,
@@ -72,23 +72,8 @@ where
     }
 }
 
-impl<P, M, O> Debug for MapResultCombi<P, M, O>
-where
-    P: Combinator + Debug,
-    M: Fn(Result<P::Output>) -> Result<O>
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.debug_struct("MapResultCombi")
-            .field("parser", &self.parser)
-            .finish()
-    }
-}
-
 use crate::combinators::foundation::Combinator;
 use crate::scan::Error;
 use crate::scan::Result;
 use crate::stream::TokenStream;
-use core::fmt;
-use core::fmt::Debug;
-use core::fmt::Formatter;
 use core::marker::PhantomData;

@@ -24,6 +24,7 @@ mod tests {
 
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_spec;
 use pg_ast::RoleSpec;
 use pg_ast::RoleSpec::CurrentUser;

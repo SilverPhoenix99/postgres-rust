@@ -17,7 +17,7 @@ macro_rules! test_parser {
         $expected:expr
     ) => {{
         #[allow(unused_imports)]
-        use $crate::combinators::foundation::{ClosureHelpers, Combinator, CombinatorHelpers};
+        use $crate::combinators::foundation::Combinator;
         use $crate::tests::stream;
 
         let mut stream = stream($source);

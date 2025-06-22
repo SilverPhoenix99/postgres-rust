@@ -93,7 +93,7 @@ impl Combinator for KeywordCategory {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub(in crate::combinators) struct KeywordCondCombi<F, O> {
     mapper: F,
     boo: PhantomData<O>
@@ -112,12 +112,6 @@ where
                 _ => Ok(None)
             }
         })
-    }
-}
-
-impl<F, O> Debug for KeywordCondCombi<F, O> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str("KeywordCondCombi")
     }
 }
 
@@ -157,9 +151,6 @@ use crate::stream::ConsumerResult;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue;
-use core::fmt;
-use core::fmt::Debug;
-use core::fmt::Formatter;
 use core::marker::PhantomData;
 use pg_lexer::Keyword;
 use pg_lexer::KeywordCategory;

@@ -1,8 +1,7 @@
 macro_rules! located {
     ($parser:expr) => {
         $crate::combinators::foundation::parser(|stream| {
-            #[allow(unused_imports)]
-            use $crate::combinators::foundation::{Combinator, ClosureHelpers, CombinatorHelpers};
+            use $crate::combinators::foundation::Combinator;
 
             let loc = stream.current_location();
             $parser

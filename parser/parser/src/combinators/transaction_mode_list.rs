@@ -162,6 +162,7 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::CombinatorHelpers;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::IsolationLevel;

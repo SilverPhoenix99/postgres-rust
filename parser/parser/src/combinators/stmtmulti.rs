@@ -70,10 +70,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::ClosureHelpers;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
-use crate::combinators::foundation::{choice, many};
 use crate::combinators::stmt;
 use crate::combinators::stmt::begin_stmt;
 use crate::combinators::stmt::end_stmt;

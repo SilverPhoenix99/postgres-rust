@@ -118,6 +118,7 @@ use crate::combinators::any_name;
 use crate::combinators::col_id::col_id;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::foundation::{choice, parser};
 use crate::combinators::signed_number;
 use crate::combinators::stmt::reset_stmt;

@@ -2,7 +2,6 @@ mod and;
 mod between;
 mod bit_string;
 mod choice;
-mod closure_helpers;
 mod combinator;
 mod combinator_helpers;
 mod identifier;
@@ -33,7 +32,6 @@ pub(in crate::combinators) use self::{
     between::{between, BetweenCombi},
     bit_string::{bit_string, BitStringCombi},
     choice::choice,
-    closure_helpers::ClosureHelpers,
     combinator_helpers::CombinatorHelpers,
     identifier::identifier,
     integer::integer,

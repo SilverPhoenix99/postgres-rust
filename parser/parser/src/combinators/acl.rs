@@ -50,7 +50,7 @@ pub(super) fn opt_granted_by() -> impl Combinator<Output = RoleSpec> {
     */
 
     Granted.and(By)
-        .and_right(parser(role_spec))
+        .and_right(role_spec)
 }
 
 #[cfg(test)]
@@ -103,10 +103,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::{many, parser};
+use crate::combinators::foundation::{many, CombinatorHelpers};
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::role_spec;
 use crate::scan::Result;
 use crate::stream::TokenStream;

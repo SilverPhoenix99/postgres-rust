@@ -38,7 +38,7 @@ macro_rules! many {
     (pre = $prefix:expr, $combinator:expr) => {
         $crate::combinators::foundation::parser(|stream| {
             #[allow(unused_imports)]
-            use $crate::combinators::foundation::{Combinator, ClosureHelpers, CombinatorHelpers};
+            use $crate::combinators::foundation::Combinator;
             use $crate::result::Optional;
 
             let element = $prefix.parse(stream)?;
@@ -56,7 +56,7 @@ macro_rules! many {
     (sep = $separator:expr, $combinator:expr) => {
         $crate::combinators::foundation::parser(|stream| {
             #[allow(unused_imports)]
-            use $crate::combinators::foundation::{Combinator, ClosureHelpers, CombinatorHelpers};
+            use $crate::combinators::foundation::Combinator;
             use $crate::result::{Optional, Required};
 
             let combinator = $combinator;
@@ -77,7 +77,7 @@ macro_rules! many {
     ($combinator:expr) => {
         $crate::combinators::foundation::parser(|stream| {
             #[allow(unused_imports)]
-            use $crate::combinators::foundation::{Combinator, ClosureHelpers, CombinatorHelpers};
+            use $crate::combinators::foundation::Combinator;
             use $crate::result::Optional;
 
             let combinator = $combinator;
