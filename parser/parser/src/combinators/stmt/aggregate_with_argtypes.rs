@@ -1,26 +1,28 @@
-pub(super) fn aggregate_with_argtypes_list() -> impl Combinator<Output = Vec<AggregateWithArgs>> {
+pub(super) fn aggregate_with_argtypes_list(stream: &mut TokenStream) -> Result<Vec<AggregateWithArgs>> {
 
     /*
         aggr_func ( ',' aggr_func )*
     */
 
-    many!(sep = Comma, aggregate_with_argtypes())
+    many!(sep = Comma, aggregate_with_argtypes).parse(stream)
 }
 
-pub(super) fn aggregate_with_argtypes() -> impl Combinator<Output = AggregateWithArgs> {
+pub(super) fn aggregate_with_argtypes(stream: &mut TokenStream) -> Result<AggregateWithArgs> {
 
     /*
         func_name aggr_args
     */
 
-    func_name().and_then(aggr_args(), |name, (args, order_by)|
-        AggregateWithArgs::new(name, args, order_by)
-    )
+    seq!(func_name(), aggr_args)
+        .map(|(name, (args, order_by))|
+            AggregateWithArgs::new(name, args, order_by)
+        )
+        .parse(stream)
 }
 
 /// Either `Vec` can be empty.
 /// When both `Vec`s are empty, it means `(*)` was used.
-pub(super) fn aggr_args() -> impl Combinator<Output = (Vec<FunctionParameter>, Vec<FunctionParameter>)> {
+pub(super) fn aggr_args(stream: &mut TokenStream) -> Result<(Vec<FunctionParameter>, Vec<FunctionParameter>)> {
 
     /*
           '(' '*' ')'
@@ -44,6 +46,7 @@ pub(super) fn aggr_args() -> impl Combinator<Output = (Vec<FunctionParameter>, V
             }
         )
     )
+        .parse(stream)
 }
 
 fn order_by_aggr_args(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
@@ -92,7 +95,7 @@ mod tests {
     fn test_aggregate_with_argtypes_list() {
         test_parser!(
             source = "agg_name(json), agg_name(*)",
-            parser = aggregate_with_argtypes_list(),
+            parser = aggregate_with_argtypes_list,
             expected = vec![
                 AggregateWithArgs::new(
                     vec!["agg_name".into()],
@@ -108,7 +111,7 @@ mod tests {
     fn test_aggregate_with_argtypes() {
         test_parser!(
             source = "agg_name(json, int order by bigint)",
-            parser = aggregate_with_argtypes(),
+            parser = aggregate_with_argtypes,
             expected = AggregateWithArgs::new(
                 vec!["agg_name".into()],
                 vec![
@@ -148,7 +151,7 @@ mod tests {
         ]
     )]
     fn test_aggr_args(source: &str, args: Vec<FunctionParameter>, order_by: Vec<FunctionParameter>) {
-        test_parser!(source, aggr_args(), (args, order_by))
+        test_parser!(source, aggr_args, (args, order_by))
     }
 
     #[test]
@@ -202,12 +205,12 @@ mod tests {
 }
 
 use crate::combinators::between_paren;
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
+use crate::combinators::foundation::choice;
 use crate::combinators::func_arg;
 use crate::combinators::func_name;
 use crate::scan::Error::ScanErr;

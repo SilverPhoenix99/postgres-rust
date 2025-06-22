@@ -16,7 +16,7 @@ pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> Result<RawStmt> 
 
     Aggregate
         .and_right(seq!(
-            aggregate_with_argtypes(),
+            aggregate_with_argtypes,
             choice!(
                 seq!(Owner, To, role_spec)
                     .map(|(.., new_owner)| Change::Owner(new_owner)),
