@@ -9,8 +9,8 @@ pub(super) fn commit_stmt() -> impl Combinator<Output = TransactionStmt> {
             Prepared
                 .and_right(parser(string))
                 .map(CommitPrepared),
-            opt_transaction()
-                .and_right(opt_transaction_chain())
+            parser(opt_transaction)
+                .and_right(parser(opt_transaction_chain))
                 .map(|chain| TransactionStmt::Commit { chain })
         })
 }

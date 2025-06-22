@@ -19,8 +19,7 @@ impl<'src> Parser<'src> {
     /// The TokenStream state is changed.
     pub fn parse(&mut self) -> ParserResult {
 
-        let mut result = stmtmulti()
-            .parse(&mut self.stream)
+        let mut result = stmtmulti(&mut self.stream)
             .required();
 
         // If it's not Eof, then something didn't match properly.
@@ -39,7 +38,6 @@ impl<'src> Parser<'src> {
     }
 }
 
-use crate::combinators::foundation::Combinator;
 use crate::combinators::stmtmulti;
 use crate::result::Required;
 use crate::stream::TokenStream;

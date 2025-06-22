@@ -1,4 +1,4 @@
-pub(super) fn opt_transaction_chain() -> impl Combinator<Output = bool> {
+pub(super) fn opt_transaction_chain(stream: &mut TokenStream) -> Result<bool> {
 
     /*
           AND CHAIN
@@ -10,32 +10,35 @@ pub(super) fn opt_transaction_chain() -> impl Combinator<Output = bool> {
         And.skip(),
         No.optional(),
         Chain.skip()
-    ).optional()
+    )
+        .optional()
         .map(|chain| match chain {
             Some((_, no, _)) => no.is_none(),
             None => false,
         })
+        .parse(stream)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::combinators::foundation::ClosureHelpers;
+    use crate::tests::test_parser;
     use test_case::test_case;
 
     #[test_case("", false)]
     #[test_case("and no chain", false)]
     #[test_case("and chain", true)]
     fn test_opt_transaction_chain(source: &str, expected: bool) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(expected), opt_transaction_chain().parse(&mut stream));
+        test_parser!(source, opt_transaction_chain, expected)
     }
 }
 
 use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::CombinatorHelpers;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_lexer::Keyword::And;
 use pg_lexer::Keyword::Chain;
 use pg_lexer::Keyword::No;

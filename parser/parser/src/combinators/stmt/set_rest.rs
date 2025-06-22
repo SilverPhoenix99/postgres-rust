@@ -10,7 +10,8 @@ pub(super) fn set_rest() -> impl Combinator<Output = SetRest> {
 
     match_first! {
         Session.and_right(match_first! {
-            sequence!(Characteristics, As, Transaction).and_right(transaction_mode_list())
+            sequence!(Characteristics, As, Transaction)
+                .and_right(parser(transaction_mode_list))
                 .map(SetRest::SessionTransactionCharacteristics),
             Authorization.and_right(session_auth_user())
                 .map(|user| SetRest::SessionAuthorization { user })
@@ -18,7 +19,7 @@ pub(super) fn set_rest() -> impl Combinator<Output = SetRest> {
         Transaction.and_right(match_first! {
             Snapshot.and_right(parser(string))
                 .map(SetRest::TransactionSnapshot),
-            transaction_mode_list()
+            parser(transaction_mode_list)
                 .map(SetRest::LocalTransactionCharacteristics)
         }),
         set_rest_more().map(From::from)

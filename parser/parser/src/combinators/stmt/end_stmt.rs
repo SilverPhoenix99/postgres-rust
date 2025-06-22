@@ -6,8 +6,8 @@ pub(in crate::combinators) fn end_stmt() -> impl Combinator<Output = Transaction
     */
 
     End
-        .and(opt_transaction())
-        .and_right(opt_transaction_chain())
+        .and(parser(opt_transaction))
+        .and_right(parser(opt_transaction_chain))
         .map(|chain| Commit { chain })
 }
 
@@ -30,7 +30,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::{parser, Combinator};
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::opt_transaction;
 use crate::combinators::opt_transaction_chain;

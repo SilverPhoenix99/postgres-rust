@@ -1,21 +1,22 @@
 /// Alias: `transaction_mode_list_or_empty`
-pub(super) fn transaction_mode_list() -> impl Combinator<Output = Vec<TransactionMode>> {
+pub(super) fn transaction_mode_list(stream: &mut TokenStream) -> Result<Vec<TransactionMode>> {
 
     /*
         transaction_mode ( (',')? transaction_mode )*
     */
 
     many!(
-        pre = transaction_mode(),
+        pre = transaction_mode,
         choice!(
-            seq!(Comma, transaction_mode()).right(),
-            transaction_mode()
+            seq!(Comma, transaction_mode).right(),
+            transaction_mode
         )
     )
+        .parse(stream)
 }
 
 /// Alias: `transaction_mode_item`
-fn transaction_mode() -> impl Combinator<Output = TransactionMode> {
+fn transaction_mode(stream: &mut TokenStream) -> Result<TransactionMode> {
     use Keyword::{self as Kw, Isolation, Level, Not, Only, Read, Write};
 
     /*
@@ -26,23 +27,26 @@ fn transaction_mode() -> impl Combinator<Output = TransactionMode> {
         | NOT DEFERRABLE
     */
 
-    match_first!{
+    choice!(
         Kw::Deferrable.map(|_| Deferrable),
         Not.and_then(Kw::Deferrable, |_, _| NotDeferrable),
-        Read.and_right(
-            match_first!{
+        seq!(
+            Read,
+            choice!(
                 Only.map(|_| ReadOnly),
                 Write.map(|_| ReadWrite)
-            }
-        ),
-        Isolation.and(Level)
-            .and_right(isolation_level())
+            )
+        )
+            .right::<_, TransactionMode>(),
+        seq!(Isolation, Level, isolation_level)
+            .map(|(.., mode)| mode)
             .map(TransactionMode::IsolationLevel)
-    }
+    )
+        .parse(stream)
 }
 
 /// Alias: `iso_level`
-fn isolation_level() -> impl Combinator<Output = IsolationLevel> {
+fn isolation_level(stream: &mut TokenStream) -> Result<IsolationLevel> {
     use Keyword::{Committed, Read, Repeatable, Serializable, Uncommitted};
 
     /*
@@ -52,17 +56,20 @@ fn isolation_level() -> impl Combinator<Output = IsolationLevel> {
         | SERIALIZABLE
     */
 
-    match_first!{
+    choice!(
         Serializable.map(|_| IsolationLevel::Serializable),
         Repeatable
             .and_then(Read, |_, _| RepeatableRead),
-        Read.and_right(
-            match_first!{
+        seq!(
+            Read,
+            choice!(
                 Committed.map(|_| ReadCommitted),
                 Uncommitted.map(|_| ReadUncommitted)
-            }
+            )
         )
-    }
+        .right::<_, IsolationLevel>()
+    )
+        .parse(stream)
 }
 
 #[cfg(test)]
@@ -76,7 +83,7 @@ mod tests {
     fn test_opt_transaction_mode_list() {
 
         let mut stream = TokenStream::new("no_match", DEFAULT_CONFIG);
-        assert_matches!(transaction_mode_list().parse(&mut stream), Err(NoMatch(_)));
+        assert_matches!(transaction_mode_list(&mut stream), Err(NoMatch(_)));
 
         let mut stream = TokenStream::new(
             "read only , read write isolation level read committed",
@@ -89,7 +96,7 @@ mod tests {
             TransactionMode::IsolationLevel(ReadCommitted),
         ];
 
-        assert_eq!(Ok(expected), transaction_mode_list().parse(&mut stream));
+        assert_eq!(Ok(expected), transaction_mode_list(&mut stream));
     }
 
     #[test]
@@ -121,7 +128,7 @@ mod tests {
         ];
 
         for expected_mode in expected {
-            assert_eq!(Ok(expected_mode), transaction_mode().parse(&mut stream));
+            assert_eq!(Ok(expected_mode), transaction_mode(&mut stream));
         }
     }
 
@@ -146,17 +153,17 @@ mod tests {
         ];
 
         for expected_mode in expected {
-            assert_eq!(Ok(expected_mode), isolation_level().parse(&mut stream));
+            assert_eq!(Ok(expected_mode), isolation_level(&mut stream));
         }
     }
 }
 
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::CombinatorHelpers;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::IsolationLevel;
 use pg_ast::IsolationLevel::ReadCommitted;
 use pg_ast::IsolationLevel::ReadUncommitted;

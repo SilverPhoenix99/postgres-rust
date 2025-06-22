@@ -6,8 +6,8 @@ pub(super) fn abort_stmt() -> impl Combinator<Output = TransactionStmt> {
     */
 
     Abort
-        .and(opt_transaction())
-        .and_right(opt_transaction_chain())
+        .and(parser(opt_transaction))
+        .and_right(parser(opt_transaction_chain))
         .map(|chain| TransactionStmt::Rollback { chain })
 }
 
@@ -30,7 +30,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::{parser, Combinator};
 use crate::combinators::foundation::CombinatorHelpers;
 use crate::combinators::opt_transaction;
 use crate::combinators::opt_transaction_chain;
