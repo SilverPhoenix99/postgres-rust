@@ -1,20 +1,17 @@
 /// `prefix ( '.' col_label )*`
 macro_rules! attrs {
-    ($prefix:expr) => {
-        $crate::combinators::foundation::parser(|stream| {
-            use $crate::combinators::foundation::Combinator;
-            use $crate::combinators::foundation::many;
-            use $crate::combinators::col_label;
-            use pg_lexer::OperatorKind::Dot;
+    ($prefix:expr) => {{
+        #[allow(unused_imports)]
+        use $crate::combinators::foundation::Combinator;
+        use $crate::combinators::foundation::many;
+        use $crate::combinators::col_label;
+        use pg_lexer::OperatorKind::Dot;
 
-            let combinator = many!(
-                pre = $prefix,
-                (Dot, col_label).right()
-            );
-
-            combinator.parse(stream)
-        })
-    };
+        many!(
+            pre = $prefix,
+            (Dot, col_label).right()
+        )
+    }};
 }
 
 pub(in crate::combinators) use attrs;
@@ -22,7 +19,7 @@ pub(in crate::combinators) use attrs;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::combinators::foundation::parser;
+    use crate::combinators::foundation::{many, parser};
     use crate::tests::test_parser;
 
     #[test]

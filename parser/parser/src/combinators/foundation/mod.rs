@@ -27,7 +27,7 @@ pub(crate) use self::combinator::Combinator;
 pub(in crate::combinators) use self::{
     between::{between, BetweenCombi},
     bit_string::{bit_string, BitStringCombi},
-    choice::choice,
+    choice::{choice, seq},
     identifier::identifier,
     integer::integer,
     keyword::{any_keyword, keyword_if, keyword_result, keyword_when, KeywordCondCombi},

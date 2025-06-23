@@ -1,49 +1,84 @@
 macro_rules! choice {
 
-    (|$stream:ident| {
+    ($stream:expr =>
         $head:expr,
         $($tail:expr),+
         $(,)?
-    }) => {
-        (|| {
+    ) => {
+        'block: {
             use $crate::result::MaybeMatch;
             use $crate::scan::Error;
 
-            if let Some(ok) = $head.maybe_match()? {
-                return Ok(ok.into())
+            match $head.maybe_match() {
+                Ok(Some(ok)) => break 'block Ok(ok),
+                Err(err) => break 'block Err(Error::from(err)),
+                Ok(None) => {}
             }
 
             $(
-                if let Some(ok) = $tail.maybe_match()? {
-                    return Ok(ok.into())
+                match $tail.maybe_match() {
+                    Ok(Some(ok)) => break 'block Ok(ok),
+                    Err(err) => break 'block Err(Error::from(err)),
+                    Ok(None) => {}
                 }
             )+
 
             let loc = $stream.current_location();
             Err(Error::NoMatch(loc))
-        })()
+        }
     };
 
     ($head:expr, $($tail:expr),+ $(,)?) => {
         $crate::combinators::foundation::parser(|stream| {
             use $crate::combinators::foundation::Combinator;
-            use $crate::result::MaybeMatch;
-            use $crate::scan::Error;
-
-            if let Some(ok) = $head.parse(stream).maybe_match()? {
-                return Ok(ok.into())
-            }
-
-            $(
-                if let Some(ok) = $tail.parse(stream).maybe_match()? {
-                    return Ok(ok.into())
-                }
-            )+
-
-            let loc = stream.current_location();
-            Err(Error::NoMatch(loc))
+            choice!(stream =>
+                $head.parse(stream).map(From::from),
+                $(
+                    $tail.parse(stream).map(From::from)
+                ),+
+            )
         })
     };
 }
 
-pub(in crate::combinators) use choice;
+macro_rules! seq {
+
+    (=>
+        $head:expr,
+        $($tail:expr),+
+        $(,)?
+    ) => {
+        'block: {
+            use $crate::result::Required;
+            use $crate::scan::Error;
+
+            Ok((
+                match $head {
+                    Ok(ok) => ok,
+                    Err(err) => break 'block Err(Error::from(err)),
+                },
+                $(
+                    match $tail.required() {
+                        Ok(ok) => ok,
+                        Err(err) => break 'block Err(Error::from(err)),
+                    }
+                ),+
+            ))
+        }
+    };
+
+    ($stream:expr =>
+        $head:expr,
+        $($tail:expr),+
+        $(,)?
+    ) => {
+        seq!(=>
+            $head.parse($stream),
+            $(
+                $tail.parse($stream)
+            ),+
+        )
+    };
+}
+
+pub(in crate::combinators) use {choice, seq};

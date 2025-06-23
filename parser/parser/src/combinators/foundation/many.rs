@@ -35,58 +35,77 @@
 /// Returns `Err(NoMatch)` or `Err(Eof)`, if empty.
 macro_rules! many {
 
-    (pre = $prefix:expr, $combinator:expr) => {
-        $crate::combinators::foundation::parser(|stream| {
-            use $crate::combinators::foundation::Combinator;
+    (=> pre = $prefix:expr, $combinator:expr) => {
+        'block: {
             use $crate::result::Optional;
 
-            let element = $prefix.parse(stream)?;
+            let element = match $prefix {
+                Ok(ok) => ok,
+                Err(err) => break 'block Err(err)
+            };
+
             let mut elements = vec![element];
 
-            let combinator = $combinator;
-            while let Some(element) = combinator.parse(stream).optional()? {
+            while let Some(element) = {
+                match $combinator.optional() {
+                    Ok(ok) => ok,
+                    Err(err) => break 'block Err(err.into())
+                }
+            } {
                 elements.push(element)
             }
 
             Ok(elements)
+        }
+    };
+
+    (=> sep = $separator:expr, $combinator:expr) => {
+        'block: {
+            use $crate::result::{Optional, Required};
+
+            let element = match $combinator {
+                Ok(ok) => ok,
+                Err(err) => break 'block Err(err)
+            };
+            let mut elements = vec![element];
+
+            while {
+                    match $separator.optional() {
+                        Ok(ok) => ok.is_some(),
+                        Err(err) => break 'block Err(err.into())
+                    }
+                }
+            {
+                let element = match $combinator.required() {
+                    Ok(ok) => ok,
+                    Err(err) => break 'block Err(err.into())
+                };
+                elements.push(element);
+            }
+
+            Ok(elements)
+        }
+    };
+
+    (=> $combinator:expr) => {
+        many!(=> pre = $combinator, $combinator)
+    };
+
+    (pre = $prefix:expr, $combinator:expr) => {
+        $crate::combinators::foundation::parser(|stream| {
+            many!(=> pre = $prefix.parse(stream), $combinator.parse(stream))
         })
     };
 
     (sep = $separator:expr, $combinator:expr) => {
         $crate::combinators::foundation::parser(|stream| {
-            use $crate::combinators::foundation::Combinator;
-            use $crate::result::{Optional, Required};
-
-            let combinator = $combinator;
-
-            let element = combinator.parse(stream)?;
-            let mut elements = vec![element];
-
-            let separator = $separator;
-            while separator.parse(stream).optional()?.is_some() {
-                let element = combinator.parse(stream).required()?;
-                elements.push(element);
-            }
-
-            Ok(elements)
+            many!(=> sep = $separator.parse(stream), $combinator.parse(stream))
         })
     };
 
     ($combinator:expr) => {
         $crate::combinators::foundation::parser(|stream| {
-            use $crate::combinators::foundation::Combinator;
-            use $crate::result::Optional;
-
-            let combinator = $combinator;
-
-            let element = combinator.parse(stream)?;
-            let mut elements = vec![element];
-
-            while let Some(element) = combinator.parse(stream).optional()? {
-                elements.push(element);
-            }
-
-            Ok(elements)
+            many!(=> $combinator.parse(stream))
         })
     };
 }

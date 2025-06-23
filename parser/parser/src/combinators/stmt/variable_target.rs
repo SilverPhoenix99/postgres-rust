@@ -8,15 +8,12 @@ pub(super) fn variable_target(stream: &mut TokenStream) -> Result<VariableTarget
         | all_or_var_name
     */
 
-    choice!(|stream| {
-        (Time, Zone)
-            .parse(stream)
+    choice!(stream =>
+        seq!(stream => Time, Zone)
             .map(|_| TimeZone),
-        (Transaction, Isolation, Level)
-            .parse(stream)
+        seq!(stream => Transaction, Isolation, Level)
             .map(|_| TransactionIsolation),
-        (Session, Authorization)
-            .parse(stream)
+        seq!(stream => Session, Authorization)
             .map(|_| SessionAuthorization),
         all_or_var_name
             .parse(stream)
@@ -24,7 +21,7 @@ pub(super) fn variable_target(stream: &mut TokenStream) -> Result<VariableTarget
                 OneOrAll::All => VariableTarget::All,
                 OneOrAll::One(name) => VariableTarget::Variable{ name }
             })
-    })
+    )
 }
 
 #[cfg(test)]
@@ -44,7 +41,7 @@ mod tests {
 }
 
 use crate::combinators::all_or_var_name;
-use crate::combinators::foundation::choice;
+use crate::combinators::foundation::{choice, seq};
 use crate::combinators::foundation::Combinator;
 use crate::scan::Result;
 use crate::stream::TokenStream;
