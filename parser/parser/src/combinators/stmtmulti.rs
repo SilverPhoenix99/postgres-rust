@@ -23,25 +23,25 @@ fn semicolons(stream: &mut TokenStream) -> Result<()> {
 
     // Production: ( ';' )+
 
-    many!(Semicolon.skip())
-        .skip()
-        .parse(stream)
+    many!(=> Semicolon.skip().parse(stream))
+        .map(|_| ())
 }
 
 fn toplevel_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
 
-    choice!(
-        transaction_stmt_legacy,
-        stmt
+    choice!(stream =>
+        transaction_stmt_legacy.parse(stream).map(RawStmt::from),
+        stmt.parse(stream)
     )
-        .parse(stream)
 }
 
 /// Alias: `TransactionStmtLegacy`
 fn transaction_stmt_legacy(stream: &mut TokenStream) -> Result<TransactionStmt> {
 
-    choice!(begin_stmt, end_stmt)
-        .parse(stream)
+    choice!(stream =>
+        begin_stmt.parse(stream),
+        end_stmt.parse(stream)
+    )
 }
 
 #[cfg(test)]
