@@ -53,14 +53,14 @@ macro_rules! seq {
             use $crate::scan::Error;
 
             Ok((
-                match $head {
+                match $head.map_err(Error::from) {
                     Ok(ok) => ok,
-                    Err(err) => break 'block Err(Error::from(err)),
+                    Err(err) => break 'block Err(err),
                 },
                 $(
-                    match $tail.required() {
+                    match $tail.map_err(Error::from).required().map_err(Error::from) {
                         Ok(ok) => ok,
-                        Err(err) => break 'block Err(Error::from(err)),
+                        Err(err) => break 'block Err(err),
                     }
                 ),+
             ))

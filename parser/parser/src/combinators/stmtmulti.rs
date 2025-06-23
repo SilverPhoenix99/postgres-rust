@@ -1,3 +1,4 @@
+use crate::result::Optional;
 pub(crate) fn stmtmulti(stream: &mut TokenStream) -> Result<Option<Vec<RawStmt>>> {
 
     // This production is slightly cheating, not because it's more efficient,
@@ -6,12 +7,15 @@ pub(crate) fn stmtmulti(stream: &mut TokenStream) -> Result<Option<Vec<RawStmt>>
     //     (';')* ( toplevel_stmt ( (';')+ toplevel_stmt? )* )?
     // Original production:
     //     toplevel_stmt? ( ';' toplevel_stmt? )*
-
-    semicolons.optional()
-        .and_right(
-            many!(sep = semicolons, toplevel_stmt).optional()
-        )
-        .parse(stream)
+    
+    seq!(=>
+        semicolons.parse(stream).optional(),
+        many!(=>
+            sep = semicolons.parse(stream),
+            toplevel_stmt.parse(stream)
+        ).optional()
+    )
+        .map(|(_, stmts)| stmts)
 }
 
 /// Returns `Ok` if it consumed at least 1 `;` (semicolon).
@@ -72,6 +76,7 @@ mod tests {
 
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt;
 use crate::combinators::stmt::begin_stmt;

@@ -38,8 +38,9 @@ macro_rules! many {
     (=> pre = $prefix:expr, $combinator:expr) => {
         'block: {
             use $crate::result::Optional;
+            use $crate::scan::Error;
 
-            let element = match $prefix {
+            let element = match $prefix.map_err(Error::from) {
                 Ok(ok) => ok,
                 Err(err) => break 'block Err(err)
             };
@@ -47,7 +48,7 @@ macro_rules! many {
             let mut elements = vec![element];
 
             while let Some(element) = {
-                match $combinator.optional() {
+                match $combinator.optional().map_err(Error::from) {
                     Ok(ok) => ok,
                     Err(err) => break 'block Err(err.into())
                 }
@@ -55,35 +56,36 @@ macro_rules! many {
                 elements.push(element)
             }
 
-            Ok(elements)
+            break 'block Ok(elements)
         }
     };
 
     (=> sep = $separator:expr, $combinator:expr) => {
         'block: {
             use $crate::result::{Optional, Required};
+            use $crate::scan::Error;
 
-            let element = match $combinator {
+            let element = match $combinator.map_err(Error::from) {
                 Ok(ok) => ok,
                 Err(err) => break 'block Err(err)
             };
             let mut elements = vec![element];
 
             while {
-                    match $separator.optional() {
+                    match $separator.optional().map_err(Error::from) {
                         Ok(ok) => ok.is_some(),
-                        Err(err) => break 'block Err(err.into())
+                        Err(err) => break 'block Err(err)
                     }
                 }
             {
-                let element = match $combinator.required() {
+                let element = match $combinator.required().map_err(Error::from) {
                     Ok(ok) => ok,
-                    Err(err) => break 'block Err(err.into())
+                    Err(err) => break 'block Err(err)
                 };
                 elements.push(element);
             }
 
-            Ok(elements)
+            break 'block Ok(elements)
         }
     };
 
