@@ -29,18 +29,18 @@ fn semicolons(stream: &mut TokenStream) -> Result<()> {
 
 fn toplevel_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
 
-    choice!(stream =>
-        transaction_stmt_legacy.parse(stream).map(RawStmt::from),
-        stmt.parse(stream)
+    choice!(parsed stream =>
+        transaction_stmt_legacy.map(RawStmt::from),
+        stmt
     )
 }
 
 /// Alias: `TransactionStmtLegacy`
 fn transaction_stmt_legacy(stream: &mut TokenStream) -> Result<TransactionStmt> {
 
-    choice!(stream =>
-        begin_stmt.parse(stream),
-        end_stmt.parse(stream)
+    choice!(parsed stream =>
+        begin_stmt,
+        end_stmt
     )
 }
 

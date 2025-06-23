@@ -31,13 +31,13 @@ fn transaction_mode(stream: &mut TokenStream) -> Result<TransactionMode> {
         Kw::Deferrable
             .parse(stream)
             .map(|_| Deferrable),
-        seq!(stream => Not, Kw::Deferrable )
+        seq!(stream => Not, Kw::Deferrable)
             .map(|_| NotDeferrable),
         seq!(=> 
             Read.parse(stream),
-            choice!(stream =>
-                Only.parse(stream).map(|_| ReadOnly),
-                Write.parse(stream).map(|_| ReadWrite)
+            choice!(parsed stream =>
+                Only.map(|_| ReadOnly),
+                Write.map(|_| ReadWrite)
             )
         )
             .map(|(_, mode)| mode),
@@ -67,9 +67,9 @@ fn isolation_level(stream: &mut TokenStream) -> Result<IsolationLevel> {
             .map(|_| RepeatableRead),
         seq!(=>
             Read.parse(stream),
-            choice!(stream =>
-                Committed.parse(stream).map(|_| ReadCommitted),
-                Uncommitted.parse(stream).map(|_| ReadUncommitted)
+            choice!(parsed stream =>
+                Committed.map(|_| ReadCommitted),
+                Uncommitted.map(|_| ReadUncommitted)
             )
         )
         .map(|(_, isolation)| isolation)

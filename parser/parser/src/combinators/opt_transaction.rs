@@ -3,10 +3,7 @@ pub(super) fn opt_transaction(stream: &mut TokenStream) -> Result<()> {
 
     // Skips over WORK | TRANSACTION
 
-    choice!(stream =>
-        Work.parse(stream),
-        Transaction.parse(stream)
-    )
+    choice!(parsed stream => Work, Transaction)
         .optional()?;
 
     Ok(())

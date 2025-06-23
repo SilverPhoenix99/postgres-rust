@@ -3,13 +3,11 @@
 /// * `name`
 pub(in crate::combinators) fn col_id(stream: &mut TokenStream) -> Result<Str> {
 
-    let parser = choice!(
-        identifier,
-        Unreserved,
-        ColumnName
-    );
-
-    parser.parse(stream)
+    choice!(parsed stream =>
+        identifier.map(From::from),
+        Unreserved.map(From::from),
+        ColumnName.map(From::from)
+    )
 }
 
 #[cfg(test)]

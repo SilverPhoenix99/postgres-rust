@@ -28,13 +28,26 @@ macro_rules! choice {
         }
     };
 
+    (parsed $stream:expr =>
+        $head:expr,
+        $($tail:expr),+
+        $(,)?
+    ) => {
+        choice!($stream =>
+            $head.parse($stream),
+            $(
+                $tail.parse($stream)
+            ),+
+        )
+    };
+
     ($head:expr, $($tail:expr),+ $(,)?) => {
         $crate::combinators::foundation::parser(|stream| {
             use $crate::combinators::foundation::Combinator;
-            choice!(stream =>
-                $head.parse(stream).map(From::from),
+            choice!(parsed stream =>
+                $head.map(From::from),
                 $(
-                    $tail.parse(stream).map(From::from)
+                    $tail.map(From::from)
                 ),+
             )
         })
