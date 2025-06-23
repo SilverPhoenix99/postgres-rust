@@ -30,13 +30,15 @@ where
         maybe_match(self)
     }
 
-    /// See [`and()`](and::and).
+    /// Returns the result from both parsers, in order, or the first `Err`.
+    ///
+    /// This is equivalent to `Self & R`.
     #[inline]
     fn and<R>(self, right: R) -> impl Combinator<Output = (Self::Output, R::Output)>
     where
         R: Combinator
     {
-        and(self, right)
+        (self, right)
     }
 
     /// Same as `(Self && R)`
@@ -189,7 +191,41 @@ where
     }
 }
 
-use crate::combinators::foundation::and;
+macro_rules! sequence_combinator {
+    ($($t:ident => $f:ident),+) => {
+        /// Joins multiple parsers into a single parser,
+        /// and where the returned parser returns the first `Err`.
+        ///
+        /// If all parsers return `Ok`, then a tuple with all results is returned.
+        ///
+        /// Equivalent to `A & B ( & ... )*`.
+        impl<T0, $($t),+> Combinator for (T0, $($t),+)
+        where
+            T0: Combinator,
+            $($t: Combinator),+
+        {
+            type Output = (T0::Output, $($t::Output),+);
+
+            fn parse(&self, stream: &mut TokenStream) -> Result<Self::Output> {
+
+                let (f0, $($f),+) = self;
+
+                Ok((
+                    f0.parse(stream)?,
+                    $($f.parse(stream).required()?),+
+                ))
+            }
+        }
+    };
+}
+
+sequence_combinator!(T1 => f1);
+sequence_combinator!(T1 => f1, T2 => f2);
+sequence_combinator!(T1 => f1, T2 => f2, T3 => f3);
+sequence_combinator!(T1 => f1, T2 => f2, T3 => f3, T4 => f4);
+sequence_combinator!(T1 => f1, T2 => f2, T3 => f3, T4 => f4, T5 => f5);
+sequence_combinator!(T1 => f1, T2 => f2, T3 => f3, T4 => f4, T5 => f5, T6 => f6);
+
 use crate::combinators::foundation::map;
 use crate::combinators::foundation::map_err;
 use crate::combinators::foundation::map_result;
@@ -200,6 +236,7 @@ use crate::combinators::foundation::parser;
 use crate::combinators::foundation::required;
 use crate::combinators::foundation::skip;
 use crate::combinators::foundation::try_match;
+use crate::result::Required;
 use crate::scan::Error;
 use crate::scan::Result;
 use crate::stream::TokenStream;

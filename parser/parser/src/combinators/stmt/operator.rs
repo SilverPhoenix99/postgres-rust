@@ -8,11 +8,11 @@ pub(super) enum Operator {
 pub(super) fn operator() -> impl Combinator<Output = Operator> {
 
     Kw::Operator.and_right(match_first! {
-        and(
+        (
             Class.and_right(any_name),
             Using.and_right(col_id)
         ).map(|(name, index_method)| Operator::Class { name, index_method }),
-        and(
+        (
             Family.and_right(any_name),
             Using.and_right(col_id)
         ).map(|(name, index_method)| Operator::Family { name, index_method }),
@@ -58,7 +58,6 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::and;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::operator_with_argtypes;

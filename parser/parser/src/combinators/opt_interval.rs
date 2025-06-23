@@ -100,7 +100,7 @@ fn minute() -> impl Combinator<Output = IntervalRange> {
 
     MinuteKw
         .and_right(
-            sequence!(
+            (
                 To.and(SecondKw).skip(),
                 opt_precision()
             )
@@ -147,7 +147,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_precision;
 use pg_ast::IntervalRange;

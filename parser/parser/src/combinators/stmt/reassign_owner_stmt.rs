@@ -5,7 +5,7 @@ pub(super) fn reassign_owned_stmt() -> impl Combinator<Output = ReassignOwnedStm
         REASSIGN OWNED BY role_list TO RoleSpec
     */
 
-    sequence!(
+    (
         Reassign.and(OwnedKw).and(By).skip(),
         role_list,
         To.skip(),
@@ -35,7 +35,6 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_list;
 use crate::combinators::role_spec;

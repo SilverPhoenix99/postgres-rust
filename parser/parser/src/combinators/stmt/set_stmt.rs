@@ -10,7 +10,7 @@ pub(super) fn set_stmt() -> impl Combinator<Output = RawStmt> {
     */
 
     Set.and_right(match_first! {
-        sequence!(Constraints, constraints_set_list(), constraints_set_mode())
+        (Constraints, constraints_set_list(), constraints_set_mode())
             .map(|(_, constraints, mode)|
                 ConstraintsSetStmt::new(constraints, mode)
             )
@@ -103,7 +103,6 @@ mod tests {
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::optional;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::qualified_name::qualified_name_list;
 use crate::combinators::stmt::set_rest;

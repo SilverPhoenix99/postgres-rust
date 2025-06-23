@@ -13,7 +13,7 @@ fn grantee(stream: &mut TokenStream) -> Result<RoleSpec> {
         ( GROUP )? role_spec
     */
 
-    let parser = seq!(Group.maybe_match(), role_spec)
+    let parser = (Group.maybe_match(), role_spec)
         .right();
 
     parser.parse(stream)
@@ -104,7 +104,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::scan::Result;

@@ -8,10 +8,10 @@ pub(super) fn opt_window_exclusion_clause() -> impl Combinator<Output = Option<W
     */
 
     Exclude.and_right(match_first! {
-        and(Current, Row).map(|_| Some(CurrentRow)),
+        (Current, Row).map(|_| Some(CurrentRow)),
         Kw::Group.map(|_| Some(Group)),
         Kw::Ties.map(|_| Some(Ties)),
-        and(No, Others).map(|_| None)
+        (No, Others).map(|_| None)
     })
         .optional()
         .map(Option::flatten)
@@ -34,7 +34,6 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::and;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
 use pg_ast::WindowExclusion;

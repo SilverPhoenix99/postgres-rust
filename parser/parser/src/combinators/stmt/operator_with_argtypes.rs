@@ -13,7 +13,7 @@ pub(super) fn operator_with_argtypes() -> impl Combinator<Output = OperatorWithA
         any_operator oper_argtypes
     */
 
-    sequence!(any_operator(), oper_argtypes())
+    (any_operator(), oper_argtypes())
         .map(|(name, args)|
             OperatorWithArgs::new(name, args)
         )
@@ -29,7 +29,7 @@ fn oper_argtypes() -> impl Combinator<Output = OneOrBoth<Type>> {
     */
 
     between_paren(match_first! {
-        sequence!(NoneKw, Comma, typename())
+        (NoneKw, Comma, typename())
             .map(|(.., typ)| OneOrBoth::Right(typ)),
         typename().and_then(
             match_first!(
@@ -103,7 +103,6 @@ use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::operators::any_operator;
 use crate::combinators::typename;

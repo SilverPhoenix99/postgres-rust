@@ -5,9 +5,9 @@ pub(super) fn create_conversion_stmt() -> impl Combinator<Output = CreateConvers
         opt_default CONVERSION_P any_name FOR SCONST TO SCONST FROM any_name
     */
 
-    sequence!(
+    (
         or(
-            and(DefaultKw, Conversion).map(|_| true),
+            (DefaultKw, Conversion).map(|_| true),
             Conversion.map(|_| false)
         ),
         any_name,
@@ -44,9 +44,7 @@ mod tests {
 }
 
 use crate::combinators::any_name;
-use crate::combinators::foundation::and;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use pg_ast::CreateConversionStmt;

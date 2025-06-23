@@ -17,16 +17,16 @@ fn create_role_option(stream: &mut TokenStream) -> Result<CreateRoleOption> {
     */
 
     let parser = choice!(
-        seq!(Sysid, integer)
+        (Sysid, integer)
             .right()
             .map(CreateRoleOption::SysId),
-        seq!(Admin, role_list)
+        (Admin, role_list)
             .right()
             .map(CreateRoleOption::AdminMembers),
-        seq!(Role, role_list)
+        (Role, role_list)
             .right()
             .map(CreateRoleOption::AddRoleTo),
-        seq!(
+        (
             Inherit,
             choice!(Role, Group),
             role_list
@@ -76,7 +76,6 @@ mod tests {
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::integer;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role::role_list;
 use crate::combinators::stmt::alter_role_option;

@@ -13,7 +13,7 @@ pub(super) fn create_user_stmt() -> impl Combinator<Output = RawStmt> {
 
 fn create_user_mapping() -> impl Combinator<Output = CreateUserMappingStmt> {
 
-    sequence!(
+    (
         Mapping.and_right(if_not_exists()),
         For.and_right(auth_ident()),
         Server.and_right(col_id),
@@ -26,7 +26,7 @@ fn create_user_mapping() -> impl Combinator<Output = CreateUserMappingStmt> {
 
 fn create_user_role() -> impl Combinator<Output = CreateRoleStmt> {
 
-    sequence!(
+    (
         role_id,
         With.optional(),
         create_role_options()
@@ -99,7 +99,6 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_id;
 use crate::combinators::stmt::auth_ident;

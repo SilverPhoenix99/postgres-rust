@@ -36,7 +36,7 @@ fn star_args() -> impl Combinator<Output = FuncArgsKind> {
 
 fn all_args() -> impl Combinator<Output = FuncArgsKind> {
 
-    sequence!(
+    (
         Kw::All,
         func_arg_list(),
         sort_clause().optional()
@@ -51,7 +51,7 @@ fn all_args() -> impl Combinator<Output = FuncArgsKind> {
 
 fn distinct_args() -> impl Combinator<Output = FuncArgsKind> {
 
-    sequence!(
+    (
         Kw::Distinct,
         func_arg_list(),
         sort_clause().optional()
@@ -63,7 +63,7 @@ fn distinct_args() -> impl Combinator<Output = FuncArgsKind> {
 
 fn simple_args() -> impl Combinator<Output = FuncArgsKind> {
 
-    sequence!(
+    (
         variadic_func_args(),
         sort_clause().optional()
     )
@@ -257,7 +257,6 @@ use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg_expr;
 use crate::combinators::func_arg_list;

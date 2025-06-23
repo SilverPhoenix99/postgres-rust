@@ -22,7 +22,7 @@ pub(super) fn alter_group_stmt() -> impl Combinator<Output = RawStmt> {
                 RenameStmt::new(Role(group), new_name).into()
             },
             {
-                sequence!(
+                (
                     or(
                         Add.map(|_| AddDrop::Add),
                         DropKw.map(|_| AddDrop::Drop),
@@ -95,7 +95,6 @@ mod tests {
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_id;
 use crate::combinators::role_list;

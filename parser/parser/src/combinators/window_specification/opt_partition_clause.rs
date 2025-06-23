@@ -4,7 +4,7 @@ pub(super) fn opt_partition_clause() -> impl Combinator<Output = Option<Vec<Expr
         PARTITION BY expr_list
     */
 
-    and(Partition, By)
+    (Partition, By)
         .and_right(expr_list())
         .optional()
 }
@@ -26,7 +26,6 @@ mod tests {
 }
 
 use crate::combinators::expr_list;
-use crate::combinators::foundation::and;
 use crate::combinators::foundation::Combinator;
 use pg_ast::ExprNode;
 use pg_lexer::Keyword::By;

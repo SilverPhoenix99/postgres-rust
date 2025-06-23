@@ -1,7 +1,7 @@
 /// Alias: `CreatedbStmt`
 pub(super) fn create_database_stmt() -> impl Combinator<Output = CreateDatabaseStmt> {
 
-    sequence!(
+    (
         Database.skip(),
         col_id,
         With.optional().skip(),
@@ -23,7 +23,7 @@ fn createdb_opt_item(stream: &mut TokenStream) -> Result<CreatedbOption> {
         | createdb_opt_name ( '=' )? var_value
     */
 
-    let parser = seq!(
+    let parser = (
         createdb_opt_name,
         Equals.optional(),
         createdb_opt_value()
@@ -38,7 +38,7 @@ fn createdb_opt_item(stream: &mut TokenStream) -> Result<CreatedbOption> {
 fn createdb_opt_name(stream: &mut TokenStream) -> Result<CreatedbOptionKind> {
 
     let parser = choice!(
-        seq!(Connection, Limit).map(|_| ConnectionLimit),
+        (Connection, Limit).map(|_| ConnectionLimit),
         Kw::Encoding.map(|_| Encoding),
         LocationKw.map(|_| Location),
         Kw::Owner.map(|_| Owner),
@@ -158,8 +158,6 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::seq;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::var_value;
 use crate::scan::Result;

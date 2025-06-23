@@ -15,13 +15,13 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
 
     // SET SCHEMA is inlined, because it conflicts with `alter_function_option -> SET set_rest_more`.
 
-    sequence!(
+    (
         func_type(),
         function_with_argtypes()
     )
         .chain(match_first_with_state!{|(func_type, func_sig), stream| {
             {
-                sequence!(Depends, On, Extension)
+                (Depends, On, Extension)
                     .and_right(col_id)
             } => (extension) {
                 let target = match func_type {
@@ -32,7 +32,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
                 AlterObjectDependsStmt::new(target, extension, AddDrop::Add).into()
             },
             {
-                sequence!(No, Depends, On, Extension)
+                (No, Depends, On, Extension)
                     .and_right(col_id)
             } => (extension) {
                 let target = match func_type {
@@ -43,7 +43,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
                 AlterObjectDependsStmt::new(target, extension, AddDrop::Drop).into()
             },
             {
-                sequence!(Owner, To)
+                (Owner, To)
                     .and_right(role_spec)
             } => (new_owner) {
                 let target = match func_type {
@@ -54,7 +54,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
                 AlterOwnerStmt::new(target, new_owner).into()
             },
             {
-                sequence!(Rename, To)
+                (Rename, To)
                     .and_right(col_id)
             } => (new_name) {
                 let target = match func_type {
@@ -65,7 +65,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
                 RenameStmt::new(target, new_name).into()
             },
             {
-                sequence!(Set, Schema)
+                (Set, Schema)
                     .and_right(or(
                         col_id,
                         string
@@ -263,7 +263,6 @@ use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::function_with_argtypes;

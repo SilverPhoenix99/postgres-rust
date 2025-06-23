@@ -5,8 +5,8 @@ pub(super) fn create_access_method_stmt() -> impl Combinator<Output = CreateAcce
         ACCESS METHOD ColId TYPE_P am_type HANDLER any_name
     */
 
-    sequence!(
-        and(Access, Method).and_right(col_id),
+    (
+        (Access, Method).and_right(col_id),
         Type.and_right(am_type()),
         Handler.and_right(any_name)
     )
@@ -47,9 +47,7 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::and;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use pg_ast::AccessMethodKind;
 use pg_ast::AccessMethodKind::Index;

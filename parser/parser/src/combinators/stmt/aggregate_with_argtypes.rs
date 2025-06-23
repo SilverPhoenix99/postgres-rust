@@ -13,7 +13,7 @@ pub(super) fn aggregate_with_argtypes(stream: &mut TokenStream) -> Result<Aggreg
         func_name aggr_args
     */
 
-    seq!(func_name(), aggr_args)
+    (func_name(), aggr_args)
         .map(|(name, (args, order_by))|
             AggregateWithArgs::new(name, args, order_by)
         )
@@ -37,7 +37,7 @@ pub(super) fn aggr_args(stream: &mut TokenStream) -> Result<(Vec<FunctionParamet
             order_by_aggr_args
                 .map(|args| (Vec::new(), args)),
             {
-                seq!(
+                (
                     aggr_args_list,
                     order_by_aggr_args
                         .optional()
@@ -55,7 +55,7 @@ fn order_by_aggr_args(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>
         ORDER BY aggr_args_list
     */
 
-    seq!(Order, By, aggr_args_list)
+    (Order, By, aggr_args_list)
         .map(|(.., args)| args)
         .parse(stream)
 }
@@ -208,7 +208,6 @@ use crate::combinators::between_paren;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg;
 use crate::combinators::func_name;

@@ -33,7 +33,7 @@ pub(super) fn explicit_op() -> impl Combinator<Output = QualifiedOperator> {
         OPERATOR '(' any_operator ')'
     */
 
-    sequence!(
+    (
         OperatorKw.skip(),
         OpenParenthesis.skip(),
         any_operator(),
@@ -48,10 +48,10 @@ pub(super) fn any_operator() -> impl Combinator<Output = QualifiedOperator> {
         ( col_id '.' )* all_op
     */
 
-    seq!(
+    (
         {
             many!(
-                seq!(col_id, Dot).left()
+                (col_id, Dot).left()
             )
             .optional()
             .map(Option::unwrap_or_default)
@@ -213,8 +213,6 @@ use crate::combinators::col_id;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::seq;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::user_defined_operator;
 use crate::combinators::foundation::Combinator;
 use pg_ast::Operator;

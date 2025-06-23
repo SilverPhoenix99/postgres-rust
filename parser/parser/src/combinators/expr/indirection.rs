@@ -42,13 +42,14 @@ fn indirection_el() -> impl Combinator<Output = Indirection> {
                 )
                 .map(|expr| expr.unwrap_or(Slice(None, None))),
 
-            sequence!(
+            (
                 a_expr(),
                 optional(
                     Colon.and_right(
                         a_expr().optional()
                     ),
-                ))
+                )
+            )
                 .map(|(left, right)| match right {
                     None => Index(left),
                     Some(None) => Slice(Some(left), None),
@@ -150,7 +151,6 @@ use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::optional;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::scan::Result;
 use pg_ast::Indirection;

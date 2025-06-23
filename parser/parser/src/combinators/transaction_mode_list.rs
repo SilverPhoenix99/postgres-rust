@@ -8,7 +8,7 @@ pub(super) fn transaction_mode_list(stream: &mut TokenStream) -> Result<Vec<Tran
     many!(
         pre = transaction_mode,
         choice!(
-            seq!(Comma, transaction_mode).right(),
+            (Comma, transaction_mode).right(),
             transaction_mode
         )
     )
@@ -30,7 +30,7 @@ fn transaction_mode(stream: &mut TokenStream) -> Result<TransactionMode> {
     choice!(
         Kw::Deferrable.map(|_| Deferrable),
         Not.and_then(Kw::Deferrable, |_, _| NotDeferrable),
-        seq!(
+        (
             Read,
             choice!(
                 Only.map(|_| ReadOnly),
@@ -38,7 +38,7 @@ fn transaction_mode(stream: &mut TokenStream) -> Result<TransactionMode> {
             )
         )
             .right::<_, TransactionMode>(),
-        seq!(Isolation, Level, isolation_level)
+        (Isolation, Level, isolation_level)
             .map(|(.., mode)| mode)
             .map(TransactionMode::IsolationLevel)
     )
@@ -60,7 +60,7 @@ fn isolation_level(stream: &mut TokenStream) -> Result<IsolationLevel> {
         Serializable.map(|_| IsolationLevel::Serializable),
         Repeatable
             .and_then(Read, |_, _| RepeatableRead),
-        seq!(
+        (
             Read,
             choice!(
                 Committed.map(|_| ReadCommitted),
@@ -160,7 +160,6 @@ mod tests {
 
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan::Result;
 use crate::stream::TokenStream;

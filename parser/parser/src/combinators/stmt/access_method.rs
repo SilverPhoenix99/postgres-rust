@@ -4,7 +4,7 @@ pub(super) fn access_method() -> impl Combinator<Output = Str> {
         ACCESS METHOD ColId
     */
 
-    and(Access, Method)
+    (Access, Method)
         .and_right(col_id)
 }
 
@@ -24,7 +24,6 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::and;
 use crate::combinators::foundation::Combinator;
 use pg_basics::Str;
 use pg_lexer::Keyword::Access;

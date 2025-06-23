@@ -5,7 +5,7 @@ pub(super) fn reset_stmt(stream: &mut TokenStream) -> Result<VariableTarget> {
         RESET variable_target
     */
 
-    Reset.and_right(variable_target())
+    Reset.and_right(variable_target)
         .parse(stream)
 }
 

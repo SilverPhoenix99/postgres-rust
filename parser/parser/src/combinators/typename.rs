@@ -6,7 +6,7 @@ pub(super) fn typename() -> impl Combinator<Output = Type> {
     */
 
     match_first! {
-        sequence!(Setof, record_typename())
+        (Setof, record_typename())
             .map(|(_, typename)| {
                 typename.returning_table()
             }),
@@ -20,7 +20,7 @@ fn record_typename() -> impl Combinator<Output = Type> {
         SimpleTypename opt_array_bounds
     */
 
-    sequence!(simple_typename(), opt_array_bounds())
+    (simple_typename(), opt_array_bounds())
         .map(|(typename, array_bounds)| {
             typename.with_array_bounds(array_bounds)
         })
@@ -66,7 +66,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_array_bounds;
 use crate::combinators::simple_typename;

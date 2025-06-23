@@ -17,7 +17,7 @@ pub(super) fn text_search() -> impl Combinator<Output = TextSearch> {
          ) any_name
     */
 
-    and(Text, Search)
+    (Text, Search)
         .and_right(match_first! {
             Configuration
                 .and_right(any_name)
@@ -50,7 +50,6 @@ mod tests {
 }
 
 use crate::combinators::any_name;
-use crate::combinators::foundation::and;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
 use pg_basics::QualifiedName;

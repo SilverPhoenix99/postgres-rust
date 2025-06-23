@@ -8,7 +8,7 @@ pub(super) fn opt_timezone() -> impl Combinator<Output = bool> {
         With.map(|_| true),
         Without.map(|_| false)
     )
-        .and_left(sequence!(Time, Zone).skip())
+        .and_left((Time, Zone).skip())
         .optional()
         .map(|tz| tz.unwrap_or(false))
 }
@@ -29,7 +29,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use pg_lexer::Keyword::Time;
 use pg_lexer::Keyword::With;

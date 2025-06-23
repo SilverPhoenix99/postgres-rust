@@ -10,12 +10,12 @@ pub(super) fn set_rest(stream: &mut TokenStream) -> Result<SetRest> {
 
     choice!(
         {
-            seq!(
+            (
                 Session,
                 choice!(
-                    seq!(Characteristics, As, Transaction, transaction_mode_list)
+                    (Characteristics, As, Transaction, transaction_mode_list)
                         .map(|(.., modes)| SetRest::SessionTransactionCharacteristics(modes)),
-                    seq!(Authorization, session_auth_user)
+                    (Authorization, session_auth_user)
                         .right()
                         .map(|user| SetRest::SessionAuthorization { user })
                 )
@@ -23,10 +23,10 @@ pub(super) fn set_rest(stream: &mut TokenStream) -> Result<SetRest> {
             .right::<_, SetRest>()
         },
         {
-            seq!(
+            (
                 Transaction,
                 choice!(
-                    seq!(Snapshot, string)
+                    (Snapshot, string)
                         .right()
                         .map(SetRest::TransactionSnapshot),
                     transaction_mode_list
@@ -58,25 +58,25 @@ pub(super) fn set_rest_more(stream: &mut TokenStream) -> Result<SetRestMore> {
     // All keywords conflict with `var_name`, so it needs to be last
 
     choice!(
-        seq!(Session, Authorization, session_auth_user)
+        (Session, Authorization, session_auth_user)
             .map(|(.., user)| SetRestMore::SessionAuthorization { user }),
-        seq!(Transaction, Snapshot, string)
+        (Transaction, Snapshot, string)
             .map(|(.., snapshot)| SetRestMore::TransactionSnapshot(snapshot)),
-        seq!(Time, Zone, zone_value)
+        (Time, Zone, zone_value)
             .map(|(.., zone)| SetRestMore::TimeZone(zone)),
-        seq!(Kw::Catalog, string)
+        (Kw::Catalog, string)
             .right()
             .map(SetRestMore::Catalog),
-        seq!(Kw::Schema, string)
+        (Kw::Schema, string)
             .right()
             .map(SetRestMore::Schema),
-        seq!(Names, opt_encoding)
+        (Names, opt_encoding)
             .right()
             .map(SetRestMore::ClientEncoding),
-        seq!(Kw::Role, non_reserved_word_or_sconst())
+        (Kw::Role, non_reserved_word_or_sconst())
             .right()    
             .map(SetRestMore::Role),
-        seq!(Xml, OptionKw, document_or_content())
+        (Xml, OptionKw, document_or_content())
             .map(|(.., option)| SetRestMore::XmlOption(option)),
         set_var_name
     )
@@ -89,8 +89,8 @@ fn set_var_name(stream: &mut TokenStream) -> Result<SetRestMore> {
 
     let option =
         choice!(
-            seq!(FromKw, Current).map(|_| None),
-            generic_set_tail().map(|value| Some(value))
+            (FromKw, Current).map(|_| None),
+            generic_set_tail().map(Some)
         )
         .parse(stream)?;
 
@@ -135,12 +135,12 @@ fn zone_value(stream: &mut TokenStream) -> Result<ZoneValue> {
             .map(|name: Box<str>|
                 ZoneValue::String(name.into())
             ),
-        seq!(
+        (
             Kw::Interval,
             choice!(
-                seq!(string, zone_value_interval)
+                (string, zone_value_interval)
                     .map(|(value, range)| Interval { value, range }),
-                seq!(i32_literal_paren(), string)
+                (i32_literal_paren(), string)
                     .map(|(precision, value)|
                         Interval {
                             value,
@@ -251,7 +251,6 @@ use crate::combinators::document_or_content;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_set_tail;

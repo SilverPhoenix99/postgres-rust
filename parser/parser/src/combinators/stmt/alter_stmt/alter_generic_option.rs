@@ -29,13 +29,13 @@ fn alter_generic_option(stream: &mut TokenStream) -> Result<GenericOptionKind> {
     */
 
     let parser = choice!(
-        seq!(Kw::Set, generic_option())
+        (Kw::Set, generic_option())
             .right()
             .map(Set),
-        seq!(Kw::Add, generic_option())
+        (Kw::Add, generic_option())
             .right()
             .map(Add),
-        seq!(DropKw, col_label)
+        (DropKw, col_label)
             .right()
             .map(Drop),
         generic_option()
@@ -95,7 +95,6 @@ use crate::combinators::between_paren;
 use crate::combinators::col_label;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_option;
 use crate::scan::Result;

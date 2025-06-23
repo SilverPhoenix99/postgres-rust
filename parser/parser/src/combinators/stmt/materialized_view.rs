@@ -4,7 +4,7 @@ pub(super) fn materialized_view() -> impl Combinator<Output = QualifiedName> {
         MATERIALIZED VIEW any_name
     */
 
-    and(Materialized, View)
+    (Materialized, View)
         .and_right(any_name)
 }
 
@@ -24,7 +24,6 @@ mod tests {
 }
 
 use crate::combinators::any_name;
-use crate::combinators::foundation::and;
 use crate::combinators::foundation::Combinator;
 use pg_basics::QualifiedName;
 use pg_lexer::Keyword::Materialized;

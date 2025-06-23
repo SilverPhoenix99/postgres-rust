@@ -4,7 +4,7 @@ pub(super) fn create_cast_stmt() -> impl Combinator<Output = CreateCastStmt> {
         typecast cast_conversion cast_context
     */
 
-    sequence!(typecast(), cast_conversion(), cast_context())
+    (typecast(), cast_conversion(), cast_context())
         .map(|(typecast, conversion, coercion)|
             CreateCastStmt::new(typecast, conversion, coercion)
         )
@@ -26,7 +26,7 @@ fn cast_conversion() -> impl Combinator<Output = CastConversion> {
                     .and_right(function_with_argtypes())
                     .map(WithFunction)
             )),
-        and(Without, Function).map(|_| WithoutFunction),
+        (Without, Function).map(|_| WithoutFunction),
 
     )
 }
@@ -85,9 +85,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::and;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::function_with_argtypes;
 use crate::combinators::stmt::typecast;

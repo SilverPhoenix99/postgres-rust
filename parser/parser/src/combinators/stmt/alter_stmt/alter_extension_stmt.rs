@@ -30,7 +30,7 @@ pub(super) fn alter_extension_stmt() -> impl Combinator<Output = RawStmt> {
                 AlterExtensionStmt::new(extension, options).into()
             },
             {
-                and(
+                (
                     or(
                         Add.map(|_| AddDrop::Add),
                         DropKw.map(|_| AddDrop::Drop),
@@ -52,7 +52,7 @@ fn alter_extension_options(stream: &mut TokenStream) -> Result<Option<Vec<Str>>>
     */
 
     many!(
-        seq!(To, non_reserved_word_or_sconst()).right()
+        (To, non_reserved_word_or_sconst()).right()
     )
         .optional()
         .map_err(From::from)
@@ -268,13 +268,11 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::and;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::parser;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::stmt::access_method;

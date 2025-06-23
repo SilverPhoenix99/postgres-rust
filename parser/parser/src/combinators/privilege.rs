@@ -6,7 +6,7 @@ pub(super) fn privileges() -> impl Combinator<Output = AccessPrivilege> {
     */
 
     match_first!(
-        sequence!(
+        (
             AllKw.and(Privileges.optional()).skip(),
             paren_name_list().optional()
         )
@@ -96,7 +96,6 @@ mod tests {
 use crate::combinators::col_id;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::paren_name_list;
 use pg_ast::AccessPrivilege;

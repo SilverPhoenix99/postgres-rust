@@ -5,7 +5,7 @@ pub(super) fn alter_default_privileges_stmt() -> impl Combinator<Output = AlterD
         ALTER DEFAULT PRIVILEGES DefACLOptionList DefACLAction
     */
 
-    sequence!(
+    (
         DefaultKw.and(Privileges).skip(),
         def_acl_option_list.optional(),
         def_acl_action()
@@ -30,14 +30,14 @@ fn def_acl_option() -> impl Combinator<Output = AclOption> {
 
     match_first!{
 
-        sequence!(
+        (
             In.and(Schema),
             name_list()
         ).map(|(_, schemas)|
             AclOption::Schemas(schemas)
         ),
 
-        sequence!(
+        (
             For.and(Role.or(User))
                 .skip(),
             role_list
@@ -61,19 +61,19 @@ fn def_acl_action() -> impl Combinator<Output = GrantStmt> {
 
     match_first! {
         {
-            let grant = sequence!{
+            let grant = (
                 Grant.and_right(privileges()),
                 On.and_right(def_acl_privilege_target()),
                 To.and_right(grantee_list()),
                 opt_grant_option()
-            };
+            );
 
             grant.map(|(privileges, object_type, grantees, grant_option)|
                 GrantStmt::grant(privileges, object_type, grantees, grant_option)
             )
         },
         {
-            let revoke = sequence!{
+            let revoke = (
                 Revoke.skip(),
                 Grant.and(OptionKw).and(For)
                     .optional()
@@ -82,7 +82,7 @@ fn def_acl_action() -> impl Combinator<Output = GrantStmt> {
                 On.and_right(def_acl_privilege_target()),
                 FromKw.and_right(grantee_list()),
                 opt_drop_behavior()
-            };
+            );
 
             revoke.map(|(_, grant_option, privileges, object_type, grantees, drop_behavior)|
                 GrantStmt::revoke(privileges, object_type, grantees, grant_option, drop_behavior)
@@ -100,7 +100,7 @@ fn def_acl_privilege_target() -> impl Combinator<Output = PrivilegeDefaultsTarge
         Kw::Sequences.map(|_| Sequences),
         Kw::Types.map(|_| Types),
         Kw::Schemas.map(|_| Schemas),
-        and(Kw::Large, Kw::Objects).map(|_| LargeObjects)
+        (Kw::Large, Kw::Objects).map(|_| LargeObjects)
     }
 }
 
@@ -244,10 +244,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::and;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::grantee_list;
 use crate::combinators::name_list;

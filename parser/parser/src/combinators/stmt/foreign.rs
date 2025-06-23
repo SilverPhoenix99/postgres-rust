@@ -10,7 +10,7 @@ pub(super) fn foreign() -> impl Combinator<Output = Foreign> {
     */
 
     Kw::Foreign.and_right(match_first!(
-        sequence!(Data, Wrapper, col_id)
+        (Data, Wrapper, col_id)
             .map(|(.., name)|
                 Foreign::DataWrapper(name)
             ),
@@ -48,7 +48,6 @@ mod tests {
 use crate::combinators::any_name;
 use crate::combinators::col_id;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use pg_basics::QualifiedName;
 use pg_basics::Str;

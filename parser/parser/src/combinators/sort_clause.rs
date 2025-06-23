@@ -7,7 +7,7 @@ pub(super) fn sort_clause() -> impl Combinator<Output = Vec<SortBy>> {
         ORDER BY sortby_list
     */
 
-    and(Order, By)
+    (Order, By)
         .and_right(sortby_list)
 }
 
@@ -27,7 +27,7 @@ fn sortby() -> impl Combinator<Output = SortBy> {
         | a_expr opt_asc_desc opt_nulls_order
     */
 
-    sequence!(
+    (
         a_expr(),
         or(
             Kw::Using
@@ -112,10 +112,8 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::and;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_asc_desc;
 use crate::combinators::opt_nulls_order;

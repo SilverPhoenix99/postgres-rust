@@ -7,7 +7,7 @@ pub(super) fn frame_extent() -> impl Combinator<Output = FrameExtent> {
 
     or(
         Between
-            .and_right(sequence!(
+            .and_right((
                 frame_bound(),
                 And.and_right(located!(frame_bound()))
             ))
@@ -173,7 +173,6 @@ use super::frame_bound::frame_bound;
 use super::frame_bound::FrameBound::*;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use pg_ast::CurrentRowEnd;
 use pg_ast::FollowingEnd;

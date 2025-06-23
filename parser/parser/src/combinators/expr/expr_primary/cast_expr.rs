@@ -4,7 +4,7 @@ pub(super) fn cast_expr() -> impl Combinator<Output = TypecastExpr> {
     */
 
     Cast.and_right(between_paren(
-        sequence!(
+        (
             a_expr(),
             As,
             typename()
@@ -37,7 +37,6 @@ mod tests {
 
 use crate::combinators::between_paren;
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
 use pg_ast::TypecastExpr;

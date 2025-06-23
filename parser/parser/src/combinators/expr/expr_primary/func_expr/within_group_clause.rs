@@ -4,7 +4,7 @@ pub(super) fn within_group_clause() -> impl Combinator<Output = Vec<SortBy>> {
         WITHIN GROUP_P '(' sort_clause ')'
     */
 
-    and(Within, Group)
+    (Within, Group)
         .and_right(between_paren(
             sort_clause()
         ))
@@ -29,7 +29,6 @@ mod tests {
 }
 
 use crate::combinators::between_paren;
-use crate::combinators::foundation::and;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::sort_clause;
 use pg_ast::SortBy;

@@ -23,7 +23,7 @@ pub(super) fn alter_role_option() -> impl Combinator<Output = AlterRoleOption> {
     choice!(
         password_option,
         {
-            seq!(
+            (
                 Connection,
                 Limit,
                 signed_i32_literal(),
@@ -31,12 +31,12 @@ pub(super) fn alter_role_option() -> impl Combinator<Output = AlterRoleOption> {
             .map(|(.., limit)| ConnectionLimit(limit))
         },
         {
-            seq!(Valid, Until, string)
+            (Valid, Until, string)
                 .map(|(.., valid)| ValidUntil(valid))
         },
         {
             // Supported but not documented for roles, for use by ALTER GROUP.
-            seq!(User, role_list)
+            (User, role_list)
                 .right()
                 .map(RoleMembers)
         },
@@ -57,7 +57,7 @@ fn password_option(stream: &mut TokenStream) -> Result<AlterRoleOption> {
 
     let parser = choice!(
         {
-            seq!(
+            (
                 Kw::Password,
                 choice!(
                     string.map(Some),
@@ -72,14 +72,14 @@ fn password_option(stream: &mut TokenStream) -> Result<AlterRoleOption> {
              * form, so there is no difference between PASSWORD and
              * ENCRYPTED PASSWORD.
              */
-            seq!(Encrypted, Kw::Password, string)
+            (Encrypted, Kw::Password, string)
                 .map(|(.., pw)|
                     Password(Some(pw))
                 )
         },
         {
             located!(
-                seq!(Unencrypted, Kw::Password, string)
+                (Unencrypted, Kw::Password, string)
             )
                 .map_result(|result| {
                     let (_, loc) = result?;
@@ -176,7 +176,6 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_list;

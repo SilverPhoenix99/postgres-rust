@@ -1,5 +1,5 @@
 /// Alias: `reset_rest`
-pub(super) fn variable_target() -> impl Combinator<Output = VariableTarget> {
+pub(super) fn variable_target(stream: &mut TokenStream) -> Result<VariableTarget> {
 
     /*
           TIME ZONE
@@ -8,22 +8,29 @@ pub(super) fn variable_target() -> impl Combinator<Output = VariableTarget> {
         | all_or_var_name
     */
 
-    match_first! {
-        sequence!(Time, Zone).map(|_| TimeZone),
-        sequence!(Transaction, Isolation, Level).map(|_| TransactionIsolation),
-        sequence!(Session, Authorization).map(|_| SessionAuthorization),
-        all_or_var_name.map(|reset| match reset {
-            OneOrAll::All => VariableTarget::All,
-            OneOrAll::One(name) => VariableTarget::Variable{ name }
-        })
-    }
+    choice!(|stream| {
+        (Time, Zone)
+            .parse(stream)
+            .map(|_| TimeZone),
+        (Transaction, Isolation, Level)
+            .parse(stream)
+            .map(|_| TransactionIsolation),
+        (Session, Authorization)
+            .parse(stream)
+            .map(|_| SessionAuthorization),
+        all_or_var_name
+            .parse(stream)
+            .map(|reset| match reset {
+                OneOrAll::All => VariableTarget::All,
+                OneOrAll::One(name) => VariableTarget::Variable{ name }
+            })
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use test_case::test_case;
 
     #[test_case("all", VariableTarget::All)]
@@ -32,15 +39,15 @@ mod tests {
     #[test_case("transaction isolation level", VariableTarget::TransactionIsolation)]
     #[test_case("qualified.name", VariableTarget::Variable { name: vec!["qualified".into(), "name".into()] })]
     fn test_show_stmt(source: &str, expected: VariableTarget) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(expected), variable_target().parse(&mut stream));
+        test_parser!(source, variable_target, expected)
     }
 }
 
 use crate::combinators::all_or_var_name;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::sequence;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::Combinator;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::OneOrAll;
 use pg_ast::VariableTarget;
 use pg_ast::VariableTarget::SessionAuthorization;

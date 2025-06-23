@@ -1,6 +1,6 @@
 pub(super) fn transform() -> impl Combinator<Output = Transform> {
 
-    and(Kw::Transform, For)
+    (Kw::Transform, For)
         .and_right(typename())
         .and_then(
             Language.and_right(col_id),
@@ -25,7 +25,6 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::and;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
 use pg_ast::Transform;

@@ -10,7 +10,7 @@ pub(super) fn user_stmt() -> impl Combinator<Output = RawStmt> {
     */
 
     match_first! {
-        sequence!(All.skip(), in_database().optional(), set_reset_clause())
+        (All.skip(), in_database().optional(), set_reset_clause())
             .map(|(_, dbname, set_stmt)|
                 AlterRoleSetStmt::new(OneOrAll::All, dbname, set_stmt).into()
             ),
@@ -27,7 +27,7 @@ pub(super) fn user_stmt() -> impl Combinator<Output = RawStmt> {
                     RenameStmt::new(Role(role_id), new_name).into()
                 },
                 {
-                    sequence!(in_database(), set_reset_clause())
+                    (in_database(), set_reset_clause())
                 } => ((dbname, set_stmt)) {
                     AlterRoleSetStmt::new(OneOrAll::One(role), Some(dbname), set_stmt).into()
                 },
@@ -185,7 +185,6 @@ use super::in_database::in_database;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_id;
 use crate::combinators::role_spec;

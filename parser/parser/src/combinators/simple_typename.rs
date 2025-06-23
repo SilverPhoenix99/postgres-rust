@@ -58,7 +58,7 @@ fn bit() -> impl Combinator<Output = TypeName> {
         BIT opt_varying ( '(' expr_list ')' )?
     */
 
-    sequence!(
+    (
         Kw::Bit.skip(),
         opt_varying(),
         opt_type_modifiers()
@@ -124,7 +124,7 @@ fn timestamp() -> impl Combinator<Output = TypeName> {
         TIMESTAMP ( '(' ICONST ')' )? opt_timezone
     */
 
-    sequence!(
+    (
         Kw::Timestamp.skip(),
         opt_precision(),
         opt_timezone()
@@ -145,7 +145,7 @@ fn time() -> impl Combinator<Output = TypeName> {
         TIMESTAMP ( '(' ICONST ')' )? opt_timezone
     */
 
-    sequence!(
+    (
         Kw::Time.skip(),
         opt_precision(),
         opt_timezone()
@@ -301,7 +301,6 @@ use crate::combinators::foundation::located;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::parser;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::i32_literal_paren;
 use crate::combinators::opt_interval;

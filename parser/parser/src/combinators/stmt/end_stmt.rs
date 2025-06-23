@@ -5,7 +5,7 @@ pub(in crate::combinators) fn end_stmt(stream: &mut TokenStream) -> Result<Trans
         END_P opt_transaction opt_transaction_chain
     */
 
-    seq!(
+    (
         End,
         opt_transaction,
         opt_transaction_chain
@@ -31,7 +31,6 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_transaction;
 use crate::combinators::opt_transaction_chain;

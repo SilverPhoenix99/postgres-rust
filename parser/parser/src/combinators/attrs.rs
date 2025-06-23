@@ -4,13 +4,12 @@ macro_rules! attrs {
         $crate::combinators::foundation::parser(|stream| {
             use $crate::combinators::foundation::Combinator;
             use $crate::combinators::foundation::many;
-            use $crate::combinators::foundation::seq;
             use $crate::combinators::col_label;
             use pg_lexer::OperatorKind::Dot;
 
             let combinator = many!(
                 pre = $prefix,
-                seq!(Dot, col_label).right()
+                (Dot, col_label).right()
             );
 
             combinator.parse(stream)

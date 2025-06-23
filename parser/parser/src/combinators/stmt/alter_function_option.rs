@@ -24,16 +24,16 @@ pub(super) fn alter_function_option(stream: &mut TokenStream) -> Result<AlterFun
     */
 
     let parser = choice!(
-        seq!(Called, On, Null, Input)
+        (Called, On, Null, Input)
             .map(|_| Strict(false)),
-        seq!(Returns, Null, On, Null, Input)
+        (Returns, Null, On, Null, Input)
             .map(|_| Strict(true)),
         Kw::Strict.map(|_| Strict(true)),
         Kw::Immutable.map(|_| Volatility(Immutable)),
         Kw::Stable.map(|_| Volatility(Stable)),
         Kw::Volatile.map(|_| Volatility(Volatile)),
         {
-            seq!(
+            (
                 External,
                 Kw::Security,
                 choice!(
@@ -45,7 +45,7 @@ pub(super) fn alter_function_option(stream: &mut TokenStream) -> Result<AlterFun
             .map(Security)
         },
         {
-            seq!(
+            (
                 Kw::Security,
                 choice!(
                     Definer.map(|_| true),
@@ -56,20 +56,20 @@ pub(super) fn alter_function_option(stream: &mut TokenStream) -> Result<AlterFun
             .map(Security)
         },
         Kw::Leakproof.map(|_| Leakproof(true)),
-        seq!(Not, Kw::Leakproof).map(|_| Leakproof(false)),
-        seq!(Kw::Cost, signed_number())
+        (Not, Kw::Leakproof).map(|_| Leakproof(false)),
+        (Kw::Cost, signed_number())
             .right()
             .map(Cost),
-        seq!(Kw::Rows, signed_number())
+        (Kw::Rows, signed_number())
             .right()
             .map(Rows),
-        seq!(Kw::Support, any_name)
+        (Kw::Support, any_name)
             .right()
             .map(Support),
-        seq!(Kw::Parallel, col_id)
+        (Kw::Parallel, col_id)
             .right()
             .map(Parallel),
-        seq!(Kw::Set, set_rest_more)
+        (Kw::Set, set_rest_more)
             .right()
             .map(Set),
         reset_stmt.map(Reset)
@@ -117,7 +117,6 @@ mod tests {
 use crate::combinators::any_name;
 use crate::combinators::col_id::col_id;
 use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::signed_number;
 use crate::combinators::stmt::reset_stmt;

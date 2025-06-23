@@ -6,7 +6,7 @@ pub(super) fn opt_transaction_chain(stream: &mut TokenStream) -> Result<bool> {
         | /* EMPTY */
     */
 
-    sequence!(
+    (
         And.skip(),
         No.optional(),
         Chain.skip()
@@ -33,7 +33,6 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::scan::Result;
 use crate::stream::TokenStream;

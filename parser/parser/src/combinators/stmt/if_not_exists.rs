@@ -1,6 +1,6 @@
 pub(super) fn if_not_exists() -> impl Combinator<Output = bool> {
 
-    sequence!(If, Not, Exists)
+    (If, Not, Exists)
         .optional()
         .map(|opt| opt.is_some())
 }
@@ -19,7 +19,6 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use pg_lexer::Keyword::Exists;
 use pg_lexer::Keyword::If;

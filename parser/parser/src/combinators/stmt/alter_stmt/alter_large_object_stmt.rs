@@ -4,7 +4,7 @@ pub(super) fn alter_large_object_stmt() -> impl Combinator<Output = RawStmt> {
         ALTER LARGE_P OBJECT_P NumericOnly OWNER TO RoleSpec
     */
 
-    sequence!(
+    (
         Large.and(Object).skip(),
         signed_number(),
         Owner.and(To),
@@ -39,7 +39,6 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::combinators::signed_number;

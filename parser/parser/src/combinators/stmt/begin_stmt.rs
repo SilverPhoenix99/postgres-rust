@@ -5,7 +5,7 @@ pub(in crate::combinators) fn begin_stmt(stream: &mut TokenStream) -> Result<Tra
         BEGIN_P opt_transaction opt_transaction_mode_list
     */
 
-    seq!(
+    (
         Begin,
         opt_transaction,
         transaction_mode_list.optional()
@@ -35,7 +35,6 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_transaction;
 use crate::combinators::transaction_mode_list;

@@ -6,7 +6,7 @@ pub(super) fn opt_frame_clause() -> impl Combinator<Output = Option<WindowFrame>
       | GROUPS frame_extent opt_window_exclusion_clause
     */
 
-    sequence! {
+    (
         match_first! {
             RangeKw.map(|_| Range),
             Kw::Rows.map(|_| Rows),
@@ -14,7 +14,7 @@ pub(super) fn opt_frame_clause() -> impl Combinator<Output = Option<WindowFrame>
         },
         frame_extent(),
         opt_window_exclusion_clause()
-    }
+    )
         .map(|(kind, extent, exclusion)|
             WindowFrame::new(kind, extent, exclusion)
         )
@@ -65,7 +65,6 @@ mod tests {
 use super::frame_extent::frame_extent;
 use super::opt_window_exclusion_clause::opt_window_exclusion_clause;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use pg_ast::WindowFrame;
 use pg_ast::WindowFrameKind::Groups;

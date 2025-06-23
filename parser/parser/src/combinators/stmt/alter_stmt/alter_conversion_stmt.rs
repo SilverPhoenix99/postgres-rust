@@ -13,14 +13,14 @@ pub(super) fn alter_conversion_stmt(stream: &mut TokenStream) -> Result<RawStmt>
     */
 
     Conversion
-        .and_right(seq!(
+        .and_right((
             any_name,
             choice!(
-                seq!(Owner, To, role_spec)
+                (Owner, To, role_spec)
                     .map(|(.., new_owner)| Change::Owner(new_owner)),
-                seq!(Rename, To, col_id)
+                (Rename, To, col_id)
                     .map(|(.., new_name)| Change::Name(new_name)),
-                seq!(Set, Schema, col_id)
+                (Set, Schema, col_id)
                     .map(|(.., new_schema)| Change::Schema(new_schema))
             )
         ))
@@ -93,7 +93,6 @@ mod tests {
 use crate::combinators::any_name;
 use crate::combinators::col_id;
 use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::scan::Result;

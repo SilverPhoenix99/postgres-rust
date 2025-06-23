@@ -7,7 +7,7 @@ pub(super) fn case_expr() -> impl Combinator<Output = CaseExpr> {
         END
     */
 
-    sequence!(
+    (
         Case.skip(),
         a_expr().optional(),
         many!(when_clause()),
@@ -18,7 +18,7 @@ pub(super) fn case_expr() -> impl Combinator<Output = CaseExpr> {
 }
 
 fn when_clause() -> impl Combinator<Output = CaseWhen> {
-    and(
+    (
         When.and_right(a_expr()),
         Then.and_right(a_expr()),
     ).map(|(condition, body)|
@@ -84,9 +84,7 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::and;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use pg_ast::CaseExpr;
 use pg_ast::CaseWhen;

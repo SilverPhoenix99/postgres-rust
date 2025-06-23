@@ -14,10 +14,11 @@ pub(super) fn alter_user_stmt() -> impl Combinator<Output = RawStmt> {
 
     match_first! {
         User.and_right(match_first! {
-            sequence!(Mapping, For, auth_ident(), Server, col_id, alter_generic_options()).map(
-                |(_, _, user, _, servername, options)|
-                    AlterUserMappingStmt::new(user, servername, options).into()
-            ),
+            (Mapping, For, auth_ident(), Server, col_id, alter_generic_options())
+                .map(
+                    |(_, _, user, _, servername, options)|
+                        AlterUserMappingStmt::new(user, servername, options).into()
+                ),
             user_stmt()
         }),
         Kw::Role.and_right(user_stmt())
@@ -77,7 +78,6 @@ mod tests {
 use self::user_stmt::user_stmt;
 use crate::combinators::col_id;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::alter_stmt::alter_generic_options;
 use crate::combinators::stmt::auth_ident;

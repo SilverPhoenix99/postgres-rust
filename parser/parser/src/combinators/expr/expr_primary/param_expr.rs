@@ -6,7 +6,7 @@ pub(super) fn param_expr() -> impl Combinator<Output = ExprNode> {
         E.g: $1.foo[0].*
     */
 
-    sequence!(
+    (
         param(),
         located!(indirection()).optional()
     )
@@ -47,7 +47,6 @@ use crate::combinators::expr::check_indirection;
 use crate::combinators::expr::indirection;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::param;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::ParamRef;

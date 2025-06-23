@@ -5,7 +5,7 @@ pub(super) fn security_label_stmt() -> impl Combinator<Output = SecurityLabelStm
         SECURITY LABEL opt_provider ON label_target IS security_label
     */
 
-    sequence!(
+    (
         Security.and(Label).and_right(opt_provider()),
         On.and_right(label_target()),
         security_label()
@@ -206,7 +206,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::stmt::access_method;

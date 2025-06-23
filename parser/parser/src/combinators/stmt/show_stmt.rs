@@ -5,7 +5,7 @@ pub(super) fn show_stmt() -> impl Combinator<Output = VariableTarget> {
         SHOW variable_target
     */
 
-    Show.and_right(variable_target())
+    Show.and_right(variable_target)
 }
 
 #[cfg(test)]

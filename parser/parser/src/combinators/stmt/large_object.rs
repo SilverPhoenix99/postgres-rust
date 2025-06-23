@@ -4,7 +4,7 @@ pub(super) fn large_object() -> impl Combinator<Output = SignedNumber> {
         LARGE OBJECT NumericOnly
     */
 
-    and(Large, Object)
+    (Large, Object)
         .and_right(signed_number())
 }
 
@@ -24,7 +24,6 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::and;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::signed_number;
 use pg_ast::SignedNumber;

@@ -1,4 +1,3 @@
-mod and;
 mod between;
 mod bit_string;
 mod choice;
@@ -17,7 +16,6 @@ mod or;
 mod param;
 mod parser;
 mod required;
-mod seq;
 mod skip;
 mod string;
 mod try_match;
@@ -27,7 +25,6 @@ pub(crate) use self::combinator::Combinator;
 
 #[allow(unused_imports)] // TODO: eventually remove
 pub(in crate::combinators) use self::{
-    and::{and, sequence, AndCombi},
     between::{between, BetweenCombi},
     bit_string::{bit_string, BitStringCombi},
     choice::choice,
@@ -45,7 +42,6 @@ pub(in crate::combinators) use self::{
     param::param,
     parser::{enclosure, parser, ClosureCombi},
     required::{required, RequiredCombi},
-    seq::seq,
     skip::{skip, SkipCombi},
     string::string,
     try_match::{try_match, TryMatchCombi},

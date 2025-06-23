@@ -5,7 +5,7 @@ pub(super) fn notify_stmt() -> impl Combinator<Output = NotifyStmt> {
         NOTIFY ColId ( ',' SCONST )?
     */
 
-    sequence!(
+    (
         Notify.skip(),
         col_id,
         Comma
@@ -44,7 +44,6 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::parser;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use pg_ast::NotifyStmt;

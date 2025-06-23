@@ -5,7 +5,7 @@ pub(super) fn in_database() -> impl Combinator<Output = Str> {
         IN DATABASE col_id
     */
 
-    sequence!(In, Database)
+    (In, Database)
         .and_right(parser(col_id))
         .map(|dbname| dbname)
 }
@@ -27,7 +27,6 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::parser;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use pg_basics::Str;
 use pg_lexer::Keyword::Database;

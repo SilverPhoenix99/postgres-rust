@@ -7,7 +7,7 @@ pub(super) fn generic_options() -> impl Combinator<Output = Vec<GenericOption>> 
 /// Alias: `generic_option_elem`
 pub(super) fn generic_option() -> impl Combinator<Output = GenericOption> {
 
-    seq!(col_label, string)
+    (col_label, string)
         .map(|(name, arg)| GenericOption::new(name, arg))
 }
 
@@ -44,7 +44,6 @@ mod tests {
 
 use crate::combinators::col_label;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use pg_ast::GenericOption;

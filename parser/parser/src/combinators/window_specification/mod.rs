@@ -12,7 +12,7 @@ pub(super) fn window_specification() -> impl Combinator<Output = WindowDefinitio
     */
 
     between_paren(
-        sequence!(
+        (
             opt_existing_window_name(),
             opt_partition_clause(),
             sort_clause().optional(),
@@ -34,7 +34,6 @@ use self::{
     opt_window_exclusion_clause::opt_window_exclusion_clause,
 };
 use crate::combinators::between_paren;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::sort_clause;
 use pg_ast::WindowDefinition;

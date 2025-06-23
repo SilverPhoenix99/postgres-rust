@@ -25,19 +25,19 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
 
     match_first! {
         All.and_right(match_first! {
-            sequence!(Functions, In, Kw::Schema)
+            (Functions, In, Kw::Schema)
                 .and_right(name_list())
                 .map(AllFunctionsInSchema),
-            sequence!(Procedures, In, Kw::Schema)
+            (Procedures, In, Kw::Schema)
                 .and_right(name_list())
                 .map(AllProceduresInSchema),
-            sequence!(Routines, In, Kw::Schema)
+            (Routines, In, Kw::Schema)
                 .and_right(name_list())
                 .map(AllRoutinesInSchema),
-            sequence!(Sequences, In, Kw::Schema)
+            (Sequences, In, Kw::Schema)
                 .and_right(name_list())
                 .map(AllSequencesInSchema),
-            sequence!(Tables, In, Kw::Schema)
+            (Tables, In, Kw::Schema)
                 .and_right(name_list())
                 .map(AllTablesInSchema),
         }),
@@ -48,7 +48,7 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
             .and_right(any_name_list)
             .map(Domain),
         Foreign.and_right(match_first! {
-            sequence!(Data, Wrapper)
+            (Data, Wrapper)
                 .and_right(name_list())
                 .map(ForeignDataWrapper),
             Server
@@ -61,7 +61,7 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
         Kw::Language
             .and_right(name_list())
             .map(Language),
-        sequence!(Large, Object)
+        (Large, Object)
             .and_right(signed_number_list)
             .map(LargeObject),
         Parameter
@@ -262,7 +262,6 @@ use crate::combinators::any_name_list;
 use crate::combinators::col_id;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::function_with_argtypes_list;
 use crate::combinators::name_list;

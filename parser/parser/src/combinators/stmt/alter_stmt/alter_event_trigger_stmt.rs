@@ -7,7 +7,7 @@ pub(super) fn alter_event_trigger_stmt() -> impl Combinator<Output = RawStmt> {
         ALTER EVENT TRIGGER ColId RENAME TO ColId
     */
 
-    sequence!(
+    (
         Event.and(Trigger).skip(),
         col_id,
     ).chain(match_first_with_state!(|(_, trigger), stream| {
@@ -46,7 +46,7 @@ fn enable_trigger() -> impl Combinator<Output = EventTriggerState> {
 
     match_first! {
         Disable.map(|_| Disabled),
-        sequence!(
+        (
             Enable.skip(),
             or(
                 Replica.map(|_| FiresOnReplica),
@@ -114,7 +114,6 @@ use crate::combinators::col_id;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::sequence;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use pg_ast::AlterEventTrigStmt;

@@ -24,20 +24,20 @@ pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
     */
 
     Database
-        .and_right(seq!(
+        .and_right((
             col_id,
             choice!(
-                seq!(Refresh, Collation, Version)
+                (Refresh, Collation, Version)
                     .map(|_| Change::RefreshVersion),
-                seq!(Owner, To, role_spec)
+                (Owner, To, role_spec)
                     .map(|(.., new_owner)| Change::Owner(new_owner)),
-                seq!(Rename, To, col_id)
+                (Rename, To, col_id)
                     .map(|(.., new_name)| Change::Name(new_name)),
                 {
-                    seq!(
+                    (
                         Set,
                         choice!(
-                            seq!(Kw::Tablespace, col_id)
+                            (Kw::Tablespace, col_id)
                                 .right()
                                 .map(Change::SetTablespace),
                             set_rest
@@ -48,7 +48,7 @@ pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
                 },
                 reset_stmt
                     .map(Change::ResetOption),
-                seq!(With, alterdb_opt_list)
+                (With, alterdb_opt_list)
                     .right()
                     .map(Change::Options),
                 alterdb_opt_list
@@ -102,7 +102,7 @@ fn alterdb_opt_item(stream: &mut TokenStream) -> Result<AlterdbOption> {
         | alterdb_opt_name ( '=' )? var_value
     */
 
-    seq!(
+    (
         alterdb_opt_name,
         Equals.optional(),
         createdb_opt_value()
@@ -227,7 +227,6 @@ use crate::combinators::col_id;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::combinators::stmt::createdb_opt_value;
