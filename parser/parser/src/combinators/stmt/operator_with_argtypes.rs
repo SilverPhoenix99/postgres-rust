@@ -13,13 +13,13 @@ pub(super) fn operator_with_argtypes() -> impl Combinator<Output = OperatorWithA
         any_operator oper_argtypes
     */
 
-    (any_operator(), oper_argtypes())
+    (any_operator(), oper_argtypes)
         .map(|(name, args)|
             OperatorWithArgs::new(name, args)
         )
 }
 
-fn oper_argtypes() -> impl Combinator<Output = OneOrBoth<Type>> {
+fn oper_argtypes(stream: &mut TokenStream) -> Result<OneOrBoth<Type>> {
 
     /*
           '(' NONE ',' Typename ')'
@@ -28,33 +28,36 @@ fn oper_argtypes() -> impl Combinator<Output = OneOrBoth<Type>> {
         | '(' Typename ')' => Err
     */
 
-    between_paren(match_first! {
-        (NoneKw, Comma, typename())
-            .map(|(.., typ)| OneOrBoth::Right(typ)),
-        typename().and_then(
-            match_first!(
-                close_paren(),
-                Comma.and_right(or(
-                    NoneKw.map(|_| None),
-                    typename().map(Some)
+    between!(paren : stream =>
+        choice!(stream =>
+            seq!(stream => NoneKw, Comma, typename())
+                .map(|(.., typ)| OneOrBoth::Right(typ)),
+            seq!(=>
+                typename().parse(stream),
+                choice!(stream =>
+                    close_paren.parse(stream),
+                    seq!(=>
+                        Comma.parse(stream),
+                        choice!(parsed stream =>
+                            NoneKw.map(|_| None),
+                            typename().map(Some)
+                        )
+                    ).map(|(_, typ)| typ)
                 )
-            )),
-                |typ1, typ2| match typ2 {
+            )
+                .map(|(typ1, typ2)| match typ2 {
                     Some(typ2) => OneOrBoth::Both(typ1, typ2),
                     None => OneOrBoth::Left(typ1)
-                }
-            )
-    })
+                })
+        )
+    )
 }
 
-fn close_paren<T>() -> impl Combinator<Output = T> {
+fn close_paren(stream: &mut TokenStream) -> Result<Option<Type>> {
 
-    located!(CloseParenthesis)
-        .map_result(|res| {
-            let (_, loc) = res?;
-            let err = LocatedError::new(MissingOperatorArgumentType, loc);
-            Err(ScanErr(err))
-        })
+    let (_, loc) = located!(stream => CloseParenthesis)?;
+    let err = LocatedError::new(MissingOperatorArgumentType, loc);
+    Err(ScanErr(err))
 }
 
 #[cfg(test)]
@@ -94,19 +97,20 @@ mod tests {
     #[test_case("(none, int)", OneOrBoth::Right(Int4.into()))]
     #[test_case("(int, none)", OneOrBoth::Left(Int4.into()))]
     fn test_oper_argtypes(source: &str, expected: OneOrBoth<Type>) {
-        test_parser!(source, oper_argtypes(), expected);
+        test_parser!(source, oper_argtypes, expected);
     }
 }
 
-use crate::combinators::between_paren;
+use crate::combinators::foundation::between;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::operators::any_operator;
 use crate::combinators::typename;
 use crate::scan::Error::ScanErr;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::OneOrBoth;
 use pg_ast::OperatorWithArgs;
 use pg_ast::Type;

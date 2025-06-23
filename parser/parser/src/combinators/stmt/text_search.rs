@@ -6,7 +6,7 @@ pub(super) enum TextSearch {
     Template(QualifiedName),
 }
 
-pub(super) fn text_search() -> impl Combinator<Output = TextSearch> {
+pub(super) fn text_search(stream: &mut TokenStream) -> Result<TextSearch> {
 
     /*
         TEXT SEARCH (
@@ -17,21 +17,21 @@ pub(super) fn text_search() -> impl Combinator<Output = TextSearch> {
          ) any_name
     */
 
-    (Text, Search)
-        .and_right(match_first! {
-            Configuration
-                .and_right(any_name)
-                .map(TextSearch::Configuration),
-            Dictionary
-                .and_right(any_name)
-                .map(TextSearch::Dictionary),
-            ParserKw
-                .and_right(any_name)
-                .map(TextSearch::Parser),
-            Template
-                .and_right(any_name)
-                .map(TextSearch::Template)
-        })
+    seq!(=>
+        Text.parse(stream),
+        Search.parse(stream),
+        choice!(stream =>
+            seq!(stream => Configuration, any_name)
+                .map(|(_, name)| TextSearch::Configuration(name)),
+            seq!(stream => Dictionary, any_name)
+                .map(|(_, name)| TextSearch::Dictionary(name)),
+            seq!(stream => ParserKw, any_name)
+                .map(|(_, name)| TextSearch::Parser(name)),
+            seq!(stream => Template, any_name)
+                .map(|(_, name)| TextSearch::Template(name))
+        )
+    )
+        .map(|(.., search_type)| search_type)
 }
 
 #[cfg(test)]
@@ -45,13 +45,16 @@ mod tests {
     #[test_case("text search parser foo", TextSearch::Parser(vec!["foo".into()]))]
     #[test_case("text search template foo", TextSearch::Template(vec!["foo".into()]))]
     fn test_text_search(source: &str, expected: TextSearch) {
-        test_parser!(source, text_search(), expected)
+        test_parser!(source, text_search, expected)
     }
 }
 
 use crate::combinators::any_name;
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_basics::QualifiedName;
 use pg_lexer::Keyword::Configuration;
 use pg_lexer::Keyword::Dictionary;

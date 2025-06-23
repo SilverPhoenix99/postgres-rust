@@ -35,7 +35,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_transaction;
 use crate::combinators::transaction_mode_list;
 use crate::scan::Result;

@@ -5,19 +5,25 @@ pub(super) enum Operator {
     Family { name: QualifiedName, index_method: Str },
 }
 
-pub(super) fn operator() -> impl Combinator<Output = Operator> {
+pub(super) fn operator(stream: &mut TokenStream) -> Result<Operator> {
 
-    Kw::Operator.and_right(match_first! {
-        (
-            Class.and_right(any_name),
-            Using.and_right(col_id)
-        ).map(|(name, index_method)| Operator::Class { name, index_method }),
-        (
-            Family.and_right(any_name),
-            Using.and_right(col_id)
-        ).map(|(name, index_method)| Operator::Family { name, index_method }),
-        operator_with_argtypes().map(Operator::WithArgs)
-    })
+    seq!(=>
+        Kw::Operator.parse(stream),
+        choice!(stream =>
+            seq!(stream => Class, any_name, Using, col_id)
+                .map(|(_, name, _, index_method)|
+                    Operator::Class { name, index_method }
+                ),
+            seq!(stream => Family, any_name, Using, col_id)
+                .map(|(_, name, _, index_method)|
+                    Operator::Family { name, index_method }
+                ),
+            operator_with_argtypes()
+                .parse(stream)
+                .map(Operator::WithArgs)
+        )
+    )
+        .map(|(_, op)| op)
 }
 
 #[cfg(test)]
@@ -52,15 +58,18 @@ mod tests {
             }
     )]
     fn test_operator(source: &str, expected: Operator) {
-        test_parser!(source, operator(), expected)
+        test_parser!(source, operator, expected)
     }
 }
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::operator_with_argtypes;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::OperatorWithArgs;
 use pg_basics::QualifiedName;
 use pg_basics::Str;

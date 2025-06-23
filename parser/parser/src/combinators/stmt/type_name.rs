@@ -1,7 +1,7 @@
-pub(super) fn type_name() -> impl Combinator<Output = Type> {
+pub(super) fn type_name(stream: &mut TokenStream) -> Result<Type> {
 
-    Kw::Type
-        .and_right(typename())
+    seq!(stream => Kw::Type, typename())
+        .map(|(_, typ)| typ)
 }
 
 #[cfg(test)]
@@ -14,13 +14,15 @@ mod tests {
     fn test_type() {
         test_parser!(
             source = "type int",
-            parser = type_name(),
+            parser = type_name,
             expected = Int4
         )
     }
 }
 
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::seq;
 use crate::combinators::typename;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::Type;
 use pg_lexer::Keyword as Kw;

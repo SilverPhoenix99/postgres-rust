@@ -30,7 +30,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::{seq, Combinator};
+use crate::combinators::foundation::seq;
 use crate::combinators::opt_transaction;
 use crate::combinators::opt_transaction_chain;
 use crate::scan::Result;

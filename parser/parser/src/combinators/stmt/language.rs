@@ -1,14 +1,17 @@
-pub(super) fn language() -> impl Combinator<Output = Str> {
+pub(super) fn language(stream: &mut TokenStream) -> Result<Str> {
 
     /*
         opt_procedural LANGUAGE name
     */
 
-    or(
-        Language.skip(),
-        (Procedural, Language).skip()
+    seq!(=>
+        choice!(stream =>
+            Language.parse(stream).map(|_| ()),
+            seq!(stream => Procedural, Language).map(|_| ())
+        ),
+        col_id.parse(stream)
     )
-        .and_right(col_id)
+        .map(|(_, name)| name)
 }
 
 #[cfg(test)]
@@ -20,7 +23,7 @@ mod tests {
     fn test_language() {
         test_parser!(
             source = "language foo",
-            parser = language(),
+            parser = language,
             expected = "foo"
         );
     }
@@ -29,15 +32,18 @@ mod tests {
     fn test_procedural_language() {
     test_parser!(
             source = "procedural language foo",
-            parser = language(),
+            parser = language,
             expected = "foo"
         );
     }
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_basics::Str;
 use pg_lexer::Keyword::Language;
 use pg_lexer::Keyword::Procedural;

@@ -204,7 +204,6 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg;
 use crate::combinators::func_name;
 use crate::scan::Error::ScanErr;

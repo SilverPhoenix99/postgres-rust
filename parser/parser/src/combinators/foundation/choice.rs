@@ -86,14 +86,15 @@ macro_rules! seq {
         $head:expr,
         $($tail:expr),+
         $(,)?
-    ) => {
+    ) => {{
+        use $crate::combinators::foundation::Combinator;
         seq!(=>
             $head.parse($stream),
             $(
                 $tail.parse($stream)
             ),+
         )
-    };
+    }};
 }
 
 macro_rules! between {

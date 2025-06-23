@@ -1,11 +1,11 @@
-pub(super) fn tablespace() -> impl Combinator<Output = Str> {
+pub(super) fn tablespace(stream: &mut TokenStream) -> Result<Str> {
 
     /*
         TABLESPACE ColId
     */
 
-    Tablespace
-        .and_right(col_id)
+    seq!(stream => Tablespace, col_id)
+        .map(|(_, name)| name)
 }
 
 #[cfg(test)]
@@ -17,13 +17,15 @@ mod tests {
     fn test_tablespace() {
         test_parser!(
             source = "tablespace foo",
-            parser = tablespace(),
+            parser = tablespace,
             expected = "foo"
         )
     }
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::seq;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_basics::Str;
 use pg_lexer::Keyword::Tablespace;

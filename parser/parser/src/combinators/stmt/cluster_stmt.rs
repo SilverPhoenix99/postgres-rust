@@ -18,7 +18,6 @@ pub(super) fn cluster_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
 
 use crate::combinators::foundation::parser;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::RawStmt;

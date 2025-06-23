@@ -79,35 +79,35 @@ fn comment_target(stream: &mut TokenStream) -> Result<CommentTarget> {
         index().map(Index),
         large_object().map(LargeObject),
         materialized_view().map(MaterializedView),
-        operator().map(|op| match op {
+        operator.map(|op| match op {
             Op::WithArgs(op) => Operator(op),
             Op::Class { name, index_method } => OperatorClass { name, index_method },
             Op::Family { name, index_method } => OperatorFamily { name, index_method },
         }),
-        language().map(Language),
+        language.map(Language),
         policy,
-        procedure().map(Procedure),
-        publication().map(Publication),
-        role().map(Role),
-        routine().map(Routine),
+        procedure.map(Procedure),
+        publication.map(Publication),
+        role.map(Role),
+        routine.map(Routine),
         rule,
-        schema().map(Schema),
-        sequence().map(Sequence),
-        server().map(ForeignServer),
-        statistics().map(ExtendedStatistics),
-        subscription().map(Subscription),
-        table().map(Table),
-        tablespace().map(Tablespace),
-        text_search().map(|text_search| match text_search {
+        schema.map(Schema),
+        sequence.map(Sequence),
+        server.map(ForeignServer),
+        statistics.map(ExtendedStatistics),
+        subscription.map(Subscription),
+        table.map(Table),
+        tablespace.map(Tablespace),
+        text_search.map(|text_search| match text_search {
             TextSearch::Configuration(name) => TextSearchConfiguration(name),
             TextSearch::Dictionary(name) => TextSearchDictionary(name),
             TextSearch::Parser(name) => TextSearchParser(name),
             TextSearch::Template(name) => TextSearchTemplate(name),
         }),
-        transform().map(Transform),
+        transform.map(Transform),
         trigger,
-        type_name().map(Type),
-        view().map(View),
+        type_name.map(Type),
+        view.map(View),
     )
 }
 
@@ -179,10 +179,7 @@ fn comment_text(stream: &mut TokenStream) -> Result<Option<Box<str>>> {
         | IS NULL
     */
 
-    seq!(stream =>
-        Is,
-        string_or_null
-    )
+    seq!(stream => Is, string_or_null)
         .map(|(_, text)| text)
 }
 
