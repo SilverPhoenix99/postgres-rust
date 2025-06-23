@@ -111,7 +111,7 @@ fn security_label() -> impl Combinator<Output = Option<Box<str>>> {
         | IS NULL
     */
 
-    Is.and_right(string_or_null())
+    Is.and_right(string_or_null)
 }
 
 #[cfg(test)]

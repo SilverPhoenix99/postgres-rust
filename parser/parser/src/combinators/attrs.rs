@@ -12,6 +12,21 @@ macro_rules! attrs {
             (Dot, col_label).right()
         )
     }};
+    
+    ($stream:expr => $prefix:expr) => {{
+        #[allow(unused_imports)]
+        use $crate::combinators::foundation::Combinator;
+        use $crate::combinators::foundation::many;
+        use $crate::combinators::foundation::seq;
+        use $crate::combinators::col_label;
+        use pg_lexer::OperatorKind::Dot;
+
+        many!(=>
+            pre = $prefix,
+            seq!($stream => Dot, col_label)
+                .map(|(_, item)| item)
+        )
+    }};
 }
 
 pub(in crate::combinators) use attrs;

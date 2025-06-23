@@ -1,21 +1,17 @@
 /// Alias: `CommentStmt`
-pub(super) fn comment_stmt() -> impl Combinator<Output = CommentStmt> {
+pub(super) fn comment_stmt(stream: &mut TokenStream) -> Result<CommentStmt> {
 
     /*
           COMMENT ON comment_target IS comment_text
     */
 
-    (
-        (Comment, On).skip(),
-        comment_target(),
-        comment_text()
-    )
-        .map(|(_, target, comment)|
+    seq!(stream => Comment, On, comment_target, comment_text)
+        .map(|(.., target, comment)|
             CommentStmt::new(target, comment)
         )
 }
 
-fn comment_target() -> impl Combinator<Output = CommentTarget> {
+fn comment_target(stream: &mut TokenStream) -> Result<CommentTarget> {
 
     /*
           ACCESS METHOD name
@@ -63,13 +59,13 @@ fn comment_target() -> impl Combinator<Output = CommentTarget> {
         | VIEW any_name
     */
 
-    match_first! {
+    choice!(parsed stream =>
         access_method().map(AccessMethod),
         aggregate().map(Aggregate),
         typecast().map(Typecast),
         collation().map(Collation),
         column().map(Column),
-        constraint(),
+        constraint,
         conversion().map(Conversion),
         database().map(Database),
         domain().map(Domain),
@@ -89,12 +85,12 @@ fn comment_target() -> impl Combinator<Output = CommentTarget> {
             Op::Family { name, index_method } => OperatorFamily { name, index_method },
         }),
         language().map(Language),
-        policy(),
+        policy,
         procedure().map(Procedure),
         publication().map(Publication),
         role().map(Role),
         routine().map(Routine),
-        rule(),
+        rule,
         schema().map(Schema),
         sequence().map(Sequence),
         server().map(ForeignServer),
@@ -109,58 +105,85 @@ fn comment_target() -> impl Combinator<Output = CommentTarget> {
             TextSearch::Template(name) => TextSearchTemplate(name),
         }),
         transform().map(Transform),
-        trigger(),
+        trigger,
         type_name().map(Type),
         view().map(View),
+    )
+}
+
+fn constraint(stream: &mut TokenStream) -> Result<CommentTarget> {
+
+    enum Constraint {
+        Domain(TypeName),
+        Table(QualifiedName)
     }
-}
 
-fn constraint() -> impl Combinator<Output = CommentTarget> {
-    Kw::Constraint
-        .and_right(col_id)
-        .and_left(On)
-        .chain(match_first_with_state!(|constraint, stream| {
+    seq!(=>
+        Kw::Constraint.parse(stream),
+        col_id.parse(stream),
+        On.parse(stream),
+        choice!(stream =>
             // See https://github.com/postgres/postgres/blob/cdc168ad4b22ea4183f966688b245cabb5935d1f/src/backend/parser/gram.y#L7230-L7232
-            Kw::Domain.and_right(simple_typename()) => (domain) DomainConstraint { constraint, domain },
-            any_name => (table) TableConstraint { constraint, table },
-        }))
-}
-
-fn policy() -> impl Combinator<Output = CommentTarget> {
-    Kw::Policy
-        .and_right(col_id)
-        .and_then(
-            On.and_right(any_name),
-            |name, table| Policy { name, table }
+            seq!(stream => Kw::Domain, simple_typename())
+                .map(|(_, domain)| Constraint::Domain(domain)),
+            any_name.parse(stream)
+                .map(Constraint::Table)
         )
+    )
+        .map(|(_, name, _, constraint)| match constraint {
+            Constraint::Domain(domain) => DomainConstraint {
+                constraint: name,
+                domain,
+            },
+            Constraint::Table(table) => TableConstraint {
+                constraint: name,
+                table,
+            },
+        })
 }
 
-fn rule() -> impl Combinator<Output = CommentTarget> {
-    Kw::Rule
-        .and_right(col_id)
-        .and_then(
-            On.and_right(any_name),
-            |name, table| Rule { name, table }
-        )
+fn policy(stream: &mut TokenStream) -> Result<CommentTarget> {
+
+    /*
+        POLICY name ON any_name
+    */
+
+    seq!(stream => Kw::Policy, col_id, On, any_name)
+        .map(|(_, name, _, table)| Policy { name, table })
 }
 
-fn trigger() -> impl Combinator<Output = CommentTarget> {
-    Kw::Trigger
-        .and_right(col_id)
-        .and_then(
-            On.and_right(any_name),
-            |name, table| Trigger { name, table }
-        )
+fn rule(stream: &mut TokenStream) -> Result<CommentTarget> {
+
+    /*
+        RULE name ON any_name
+    */
+
+    seq!(stream => Kw::Rule, col_id, On, any_name)
+        .map(|(_, name, _, table)| Rule { name, table })
 }
 
-fn comment_text() -> impl Combinator<Output = Option<Box<str>>> {
+fn trigger(stream: &mut TokenStream) -> Result<CommentTarget> {
+
+    /*
+        TRIGGER name ON any_name
+    */
+
+    seq!(stream => Kw::Trigger, col_id, On, any_name)
+        .map(|(_, name, _, table)| Trigger { name, table })
+}
+
+fn comment_text(stream: &mut TokenStream) -> Result<Option<Box<str>>> {
 
     /*
           IS SCONST
         | IS NULL
     */
 
-    Is.and_right(string_or_null())
+    seq!(stream =>
+        Is,
+        string_or_null
+    )
+        .map(|(_, text)| text)
 }
 
 #[cfg(test)]
@@ -186,7 +209,7 @@ mod tests {
     fn test_comment_stmt() {
         test_parser!(
             source = "comment on schema foo is 'bar'",
-            parser = comment_stmt(),
+            parser = comment_stmt,
             expected = CommentStmt::new(
                 Schema("foo".into()),
                 Some("bar".into())
@@ -298,20 +321,20 @@ mod tests {
     #[test_case("type int", Type(Int4.into()))]
     #[test_case("view some_view", View(vec!["some_view".into()]))]
     fn test_comment_target(source: &str, expected: CommentTarget) {
-        test_parser!(source, comment_target(), expected)
+        test_parser!(source, comment_target, expected)
     }
 
     #[test_case("is 'abc'", Some("abc".into()))]
     #[test_case("is null", None)]
     fn test_comment_text(source: &str, expected: Option<Box<str>>) {
-        test_parser!(source, comment_text(), expected)
+        test_parser!(source, comment_text, expected)
     }
 }
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::match_first_with_state;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::simple_typename;
 use crate::combinators::stmt::access_method;
@@ -350,9 +373,55 @@ use crate::combinators::stmt::Foreign;
 use crate::combinators::stmt::Operator as Op;
 use crate::combinators::stmt::TextSearch;
 use crate::combinators::string_or_null;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::CommentStmt;
 use pg_ast::CommentTarget;
-use pg_ast::CommentTarget::*;
+use pg_ast::CommentTarget::AccessMethod;
+use pg_ast::CommentTarget::Aggregate;
+use pg_ast::CommentTarget::Collation;
+use pg_ast::CommentTarget::Column;
+use pg_ast::CommentTarget::Conversion;
+use pg_ast::CommentTarget::Database;
+use pg_ast::CommentTarget::Domain;
+use pg_ast::CommentTarget::DomainConstraint;
+use pg_ast::CommentTarget::EventTrigger;
+use pg_ast::CommentTarget::ExtendedStatistics;
+use pg_ast::CommentTarget::Extension;
+use pg_ast::CommentTarget::ForeignDataWrapper;
+use pg_ast::CommentTarget::ForeignServer;
+use pg_ast::CommentTarget::ForeignTable;
+use pg_ast::CommentTarget::Function;
+use pg_ast::CommentTarget::Index;
+use pg_ast::CommentTarget::Language;
+use pg_ast::CommentTarget::LargeObject;
+use pg_ast::CommentTarget::MaterializedView;
+use pg_ast::CommentTarget::Operator;
+use pg_ast::CommentTarget::OperatorClass;
+use pg_ast::CommentTarget::OperatorFamily;
+use pg_ast::CommentTarget::Policy;
+use pg_ast::CommentTarget::Procedure;
+use pg_ast::CommentTarget::Publication;
+use pg_ast::CommentTarget::Role;
+use pg_ast::CommentTarget::Routine;
+use pg_ast::CommentTarget::Rule;
+use pg_ast::CommentTarget::Schema;
+use pg_ast::CommentTarget::Sequence;
+use pg_ast::CommentTarget::Subscription;
+use pg_ast::CommentTarget::Table;
+use pg_ast::CommentTarget::TableConstraint;
+use pg_ast::CommentTarget::Tablespace;
+use pg_ast::CommentTarget::TextSearchConfiguration;
+use pg_ast::CommentTarget::TextSearchDictionary;
+use pg_ast::CommentTarget::TextSearchParser;
+use pg_ast::CommentTarget::TextSearchTemplate;
+use pg_ast::CommentTarget::Transform;
+use pg_ast::CommentTarget::Trigger;
+use pg_ast::CommentTarget::Type;
+use pg_ast::CommentTarget::Typecast;
+use pg_ast::CommentTarget::View;
+use pg_ast::TypeName;
+use pg_basics::QualifiedName;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Comment;
 use pg_lexer::Keyword::Is;
