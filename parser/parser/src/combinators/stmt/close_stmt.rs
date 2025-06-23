@@ -1,43 +1,41 @@
 /// Alias: `ClosePortalStmt`
-pub(super) fn close_stmt() -> impl Combinator<Output = OneOrAll<Str>> {
+pub(super) fn close_stmt(stream: &mut TokenStream) -> Result<OneOrAll<Str>> {
 
     /*
         CLOSE ALL
         CLOSE ColId
     */
 
-    Close
-        .and_right(or(
+    seq!(=>
+        Close.parse(stream),
+        choice!(parsed stream =>
             All.map(|_| OneOrAll::All),
             col_id.map(OneOrAll::One)
-        ))
+        )
+    )
+        .map(|(_, stmt)| stmt)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
+    use test_case::test_case;
 
-    #[test]
-    fn test_close_all() {
-        let mut stream = TokenStream::new("close all", DEFAULT_CONFIG);
-        assert_eq!(Ok(OneOrAll::All), close_stmt().parse(&mut stream));
-    }
-
-    #[test]
-    fn test_close_named() {
-        let mut stream = TokenStream::new("close abort", DEFAULT_CONFIG);
-        assert_eq!(Ok(OneOrAll::One("abort".into())), close_stmt().parse(&mut stream));
-
-        let mut stream = TokenStream::new("close ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(OneOrAll::One("ident".into())), close_stmt().parse(&mut stream));
+    #[test_case("close all", OneOrAll::All)]
+    #[test_case("close abort", OneOrAll::One("abort".into()))]
+    #[test_case("close ident", OneOrAll::One("ident".into()))]
+    fn test_close_all(source: &str, expected: OneOrAll<Str>) {
+        test_parser!(source, close_stmt, expected)
     }
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::OneOrAll;
 use pg_basics::Str;
 use pg_lexer::Keyword::All;

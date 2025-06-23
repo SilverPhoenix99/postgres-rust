@@ -92,7 +92,7 @@ pub(super) fn stmt(stream: &mut TokenStream) -> Result<RawStmt> {
         call_stmt,
         cluster_stmt,
         Checkpoint.map(|_| CheckPoint),
-        close_stmt().map(ClosePortalStmt),
+        close_stmt.map(ClosePortalStmt),
         comment_stmt().map(From::from),
         commit_stmt().map(From::from),
         copy_stmt(),
