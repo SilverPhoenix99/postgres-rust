@@ -52,7 +52,7 @@ macro_rules! seq {
             use $crate::result::Required;
             use $crate::scan::Error;
 
-            Ok((
+            let value = (
                 match $head.map_err(Error::from) {
                     Ok(ok) => ok,
                     Err(err) => break 'block Err(err),
@@ -63,7 +63,9 @@ macro_rules! seq {
                         Err(err) => break 'block Err(err),
                     }
                 ),+
-            ))
+            );
+
+            Ok(value)
         }
     };
 
@@ -81,4 +83,42 @@ macro_rules! seq {
     };
 }
 
-pub(in crate::combinators) use {choice, seq};
+macro_rules! between {
+
+    (paren : $stream:expr => $content:expr) => {{
+        use $crate::combinators::foundation::Combinator;
+        use $crate::combinators::foundation::seq;
+        use pg_lexer::OperatorKind::{CloseParenthesis, OpenParenthesis};
+        between!($stream =>
+            OpenParenthesis.skip().parse($stream),
+            $content,
+            CloseParenthesis.skip().parse($stream)
+        )
+    }};
+
+    (square : $stream:expr => $content:expr) => {{
+        use $crate::combinators::foundation::Combinator;
+        use $crate::combinators::foundation::seq;
+        use pg_lexer::OperatorKind::{CloseBracket, OpenBracket};
+        between!($stream =>
+            OpenBracket.skip().parse($stream),
+            $content,
+            CloseBracket.skip().parse($stream)
+        )
+    }};
+
+    ($stream:expr => $before:expr, $content:expr, $after:expr) => {{
+        use $crate::combinators::foundation::seq;
+        seq!(=> $before, $content, $after)
+            .map(|(_, content, _)| content)
+    }};
+
+    ($before:expr, $content:expr, $after:expr) => {
+        $crate::combinators::foundation::parser(|stream| {
+            use $crate::combinators::foundation::Combinator;
+            between!(stream => $before, $content, $after)
+        })
+    };
+}
+
+pub(in crate::combinators) use {between, choice, seq};

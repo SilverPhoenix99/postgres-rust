@@ -4,7 +4,7 @@ pub(super) fn aggregate_with_argtypes_list(stream: &mut TokenStream) -> Result<V
         aggr_func ( ',' aggr_func )*
     */
 
-    many!(sep = Comma, aggregate_with_argtypes).parse(stream)
+    many!(stream => sep = Comma, aggregate_with_argtypes)
 }
 
 pub(super) fn aggregate_with_argtypes(stream: &mut TokenStream) -> Result<AggregateWithArgs> {
@@ -13,11 +13,10 @@ pub(super) fn aggregate_with_argtypes(stream: &mut TokenStream) -> Result<Aggreg
         func_name aggr_args
     */
 
-    (func_name(), aggr_args)
+    seq!(stream => func_name(), aggr_args)
         .map(|(name, (args, order_by))|
             AggregateWithArgs::new(name, args, order_by)
         )
-        .parse(stream)
 }
 
 /// Either `Vec` can be empty.
@@ -30,23 +29,20 @@ pub(super) fn aggr_args(stream: &mut TokenStream) -> Result<(Vec<FunctionParamet
         | '(' aggr_args_list ( ORDER BY aggr_args_list )? ')'
     */
 
-    between_paren(
-        choice!(
-            Mul
+    between!(paren : stream =>
+        choice!(stream =>
+            Mul.parse(stream)
                 .map(|_| (Vec::new(), Vec::new())),
-            order_by_aggr_args
+            order_by_aggr_args.parse(stream)
                 .map(|args| (Vec::new(), args)),
-            {
-                (
-                    aggr_args_list,
-                    order_by_aggr_args
-                        .optional()
-                        .map(Option::unwrap_or_default)
-                )
-            }
+            seq!(stream =>
+                aggr_args_list,
+                order_by_aggr_args
+                    .optional()
+                    .map(Option::unwrap_or_default)
+            )
         )
     )
-        .parse(stream)
 }
 
 fn order_by_aggr_args(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
@@ -55,9 +51,8 @@ fn order_by_aggr_args(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>
         ORDER BY aggr_args_list
     */
 
-    (Order, By, aggr_args_list)
+    seq!(stream => Order, By, aggr_args_list)
         .map(|(.., args)| args)
-        .parse(stream)
 }
 
 fn aggr_args_list(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
@@ -66,12 +61,12 @@ fn aggr_args_list(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
         aggr_arg ( ',' aggr_arg )*
     */
 
-    many!(sep = Comma, aggr_arg).parse(stream)
+    many!(stream => sep = Comma, aggr_arg)
 }
 
 fn aggr_arg(stream: &mut TokenStream) -> Result<FunctionParameter> {
 
-    let (param, loc) = located!(func_arg()).parse(stream)?;
+    let (param, loc) = located!(stream => func_arg())?;
 
     if matches!(param.mode(), Mode::Default | Mode::In | Mode::Variadic) {
         return Ok(param)
@@ -204,10 +199,11 @@ mod tests {
     }
 }
 
-use crate::combinators::between_paren;
+use crate::combinators::foundation::between;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg;
 use crate::combinators::func_name;

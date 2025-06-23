@@ -14,20 +14,19 @@ pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> Result<RawStmt> 
         )
     */
 
-    Aggregate
-        .and_right((
-            aggregate_with_argtypes,
-            choice!(
-                (Owner, To, role_spec)
-                    .map(|(.., new_owner)| Change::Owner(new_owner)),
-                (Rename, To, col_id)
-                    .map(|(.., new_name)| Change::Name(new_name)),
-                (Set, Schema, col_id)
-                    .map(|(.., new_schema)| Change::Schema(new_schema))
-            )
-        ))
-        .parse(stream)
-        .map(|(aggregate, change)| match change {
+    seq!(=>
+        Aggregate.parse(stream),
+        aggregate_with_argtypes.parse(stream),
+        choice!(stream =>
+            seq!(stream => Owner, To, role_spec)
+                .map(|(.., new_owner)| Change::Owner(new_owner)),
+            seq!(stream => Rename, To, col_id)
+                .map(|(.., new_name)| Change::Name(new_name)),
+            seq!(stream => Set, Schema, col_id)
+                .map(|(.., new_schema)| Change::Schema(new_schema))
+        )
+    )
+        .map(|(_, aggregate, change)| match change {
             Change::Owner(new_owner) => {
                 AlterOwnerStmt::new(
                     AlterOwnerTarget::Aggregate(aggregate),
@@ -101,6 +100,7 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role::role_spec;
 use crate::combinators::stmt::aggregate_with_argtypes;

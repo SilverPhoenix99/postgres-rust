@@ -11,21 +11,20 @@ pub(super) fn alter_conversion_stmt(stream: &mut TokenStream) -> Result<RawStmt>
         ALTER CONVERSION any_name RENAME TO ColId
         ALTER CONVERSION any_name SET SCHEMA ColId
     */
-
-    Conversion
-        .and_right((
-            any_name,
-            choice!(
-                (Owner, To, role_spec)
-                    .map(|(.., new_owner)| Change::Owner(new_owner)),
-                (Rename, To, col_id)
-                    .map(|(.., new_name)| Change::Name(new_name)),
-                (Set, Schema, col_id)
-                    .map(|(.., new_schema)| Change::Schema(new_schema))
-            )
-        ))
-        .parse(stream)
-        .map(|(name, change)| match change {
+    
+    seq!(=>
+        Conversion.parse(stream),
+        any_name.parse(stream),
+        choice!(stream =>
+            seq!(stream => Owner, To, role_spec)
+                .map(|(.., new_owner)| Change::Owner(new_owner)),
+            seq!(stream => Rename, To, col_id)
+                .map(|(.., new_name)| Change::Name(new_name)),
+            seq!(stream => Set, Schema, col_id)
+                .map(|(.., new_schema)| Change::Schema(new_schema))
+        )
+    )
+        .map(|(_, name, change)| match change {
             Change::Owner(new_owner) => {
                 AlterOwnerStmt::new(
                     AlterOwnerTarget::Conversion(name),
@@ -92,7 +91,7 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
+use crate::combinators::foundation::{choice, seq};
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::scan::Result;

@@ -1,11 +1,15 @@
+
 pub(super) fn opt_transaction(stream: &mut TokenStream) -> Result<()> {
 
     // Skips over WORK | TRANSACTION
 
-    Work.or(Transaction)
-        .optional()
-        .skip()
-        .parse(stream)
+    choice!(stream =>
+        Work.parse(stream),
+        Transaction.parse(stream)
+    )
+        .optional()?;
+
+    Ok(())
 }
 
 #[cfg(test)]
@@ -24,6 +28,8 @@ mod tests {
 }
 
 use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::choice;
+use crate::result::Optional;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_lexer::Keyword::Transaction;

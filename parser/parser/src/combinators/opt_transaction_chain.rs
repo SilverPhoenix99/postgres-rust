@@ -1,3 +1,4 @@
+
 pub(super) fn opt_transaction_chain(stream: &mut TokenStream) -> Result<bool> {
 
     /*
@@ -6,17 +7,19 @@ pub(super) fn opt_transaction_chain(stream: &mut TokenStream) -> Result<bool> {
         | /* EMPTY */
     */
 
-    (
+    let chain = seq!(stream =>
         And.skip(),
         No.optional(),
         Chain.skip()
     )
-        .optional()
-        .map(|chain| match chain {
-            Some((_, no, _)) => no.is_none(),
-            None => false,
-        })
-        .parse(stream)
+        .optional()?;
+
+    let chain = match chain {
+        Some((_, no, _)) => no.is_none(),
+        None => false,
+    };
+
+    Ok(chain)
 }
 
 #[cfg(test)]
@@ -33,7 +36,9 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::result::Optional;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_lexer::Keyword::And;

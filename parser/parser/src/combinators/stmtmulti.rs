@@ -7,7 +7,7 @@ pub(crate) fn stmtmulti(stream: &mut TokenStream) -> Result<Option<Vec<RawStmt>>
     //     (';')* ( toplevel_stmt ( (';')+ toplevel_stmt? )* )?
     // Original production:
     //     toplevel_stmt? ( ';' toplevel_stmt? )*
-    
+
     seq!(=>
         semicolons.parse(stream).optional(),
         many!(=>

@@ -14,23 +14,22 @@ pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> Result<RawStmt> 
         ALTER COLLATION any_name RENAME TO ColId
         ALTER COLLATION any_name SET SCHEMA ColId
     */
-
-    Collation
-        .and_right((
-            any_name,
-            choice!(
-                (Refresh, Version)
-                    .map(|_| Change::RefreshVersion),
-                (Owner, To, role_spec)
-                    .map(|(.., role)| Change::Owner(role)),
-                (Rename, To, col_id)
-                    .map(|(.., name)| Change::Name(name)),
-                (Set, Schema, col_id)
-                    .map(|(.., schema)| Change::Schema(schema))
-            )
-        ))
-        .parse(stream)
-        .map(|(name, change)| match change {
+    
+    seq!(=>
+        Collation.parse(stream),
+        any_name.parse(stream),
+        choice!(stream =>
+            seq!(stream => Refresh, Version)
+                .map(|_| Change::RefreshVersion),
+            seq!(stream => Owner, To, role_spec)
+                .map(|(.., role)| Change::Owner(role)),
+            seq!(stream => Rename, To, col_id)
+                .map(|(.., name)| Change::Name(name)),
+            seq!(stream => Set, Schema, col_id)
+                .map(|(.., schema)| Change::Schema(schema))
+        )
+    )
+        .map(|(_, name, change)| match change {
             Change::RefreshVersion => {
                 RefreshCollationVersionStmt(name)
             }
@@ -110,6 +109,7 @@ mod tests {
 use crate::combinators::any_name;
 use crate::combinators::col_id;
 use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::scan::Result;

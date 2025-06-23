@@ -5,14 +5,14 @@ pub(super) fn transaction_mode_list(stream: &mut TokenStream) -> Result<Vec<Tran
         transaction_mode ( (',')? transaction_mode )*
     */
 
-    many!(
-        pre = transaction_mode,
-        choice!(
-            (Comma, transaction_mode).right(),
-            transaction_mode
+    many!(=>
+        pre = transaction_mode.parse(stream),
+        choice!(stream =>
+            seq!(stream => Comma.skip(), transaction_mode)
+                .map(|(_, mode)| mode),
+            transaction_mode.parse(stream)
         )
     )
-        .parse(stream)
 }
 
 /// Alias: `transaction_mode_item`
@@ -27,22 +27,25 @@ fn transaction_mode(stream: &mut TokenStream) -> Result<TransactionMode> {
         | NOT DEFERRABLE
     */
 
-    choice!(
-        Kw::Deferrable.map(|_| Deferrable),
-        Not.and_then(Kw::Deferrable, |_, _| NotDeferrable),
-        (
-            Read,
-            choice!(
-                Only.map(|_| ReadOnly),
-                Write.map(|_| ReadWrite)
+    choice!(stream =>
+        Kw::Deferrable
+            .parse(stream)
+            .map(|_| Deferrable),
+        seq!(stream => Not, Kw::Deferrable )
+            .map(|_| NotDeferrable),
+        seq!(=> 
+            Read.parse(stream),
+            choice!(stream =>
+                Only.parse(stream).map(|_| ReadOnly),
+                Write.parse(stream).map(|_| ReadWrite)
             )
         )
-            .right::<_, TransactionMode>(),
-        (Isolation, Level, isolation_level)
-            .map(|(.., mode)| mode)
-            .map(TransactionMode::IsolationLevel)
+            .map(|(_, mode)| mode),
+        seq!(stream => Isolation, Level, isolation_level)
+            .map(|(.., mode)|
+                TransactionMode::IsolationLevel(mode)
+            )
     )
-        .parse(stream)
 }
 
 /// Alias: `iso_level`
@@ -56,20 +59,21 @@ fn isolation_level(stream: &mut TokenStream) -> Result<IsolationLevel> {
         | SERIALIZABLE
     */
 
-    choice!(
-        Serializable.map(|_| IsolationLevel::Serializable),
-        Repeatable
-            .and_then(Read, |_, _| RepeatableRead),
-        (
-            Read,
-            choice!(
-                Committed.map(|_| ReadCommitted),
-                Uncommitted.map(|_| ReadUncommitted)
+    choice!(stream =>
+        Serializable
+            .parse(stream)
+            .map(|_| IsolationLevel::Serializable),
+        seq!(stream => Repeatable, Read)
+            .map(|_| RepeatableRead),
+        seq!(=>
+            Read.parse(stream),
+            choice!(stream =>
+                Committed.parse(stream).map(|_| ReadCommitted),
+                Uncommitted.parse(stream).map(|_| ReadUncommitted)
             )
         )
-        .right::<_, IsolationLevel>()
+        .map(|(_, isolation)| isolation)
     )
-        .parse(stream)
 }
 
 #[cfg(test)]
@@ -160,6 +164,7 @@ mod tests {
 
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan::Result;
 use crate::stream::TokenStream;

@@ -93,6 +93,27 @@ macro_rules! many {
         many!(=> pre = $combinator, $combinator)
     };
 
+    ($stream:expr => pre = $prefix:expr, $combinator:expr) => {{
+        use $crate::combinators::foundation::Combinator;
+        many!(=>
+            pre = $prefix.parse($stream),
+            $combinator.parse($stream)
+        )
+    }};
+
+    ($stream:expr => sep = $separator:expr, $combinator:expr) => {{
+        use $crate::combinators::foundation::Combinator;
+        many!(=>
+            sep = $separator.parse($stream),
+            $combinator.parse($stream)
+        )
+    }};
+
+    ($stream:expr => $combinator:expr) => {
+        use $crate::combinators::foundation::Combinator;
+        many!(=> $combinator.parse($stream))
+    };
+
     (pre = $prefix:expr, $combinator:expr) => {
         $crate::combinators::foundation::parser(|stream| {
             many!(=> pre = $prefix.parse(stream), $combinator.parse(stream))
