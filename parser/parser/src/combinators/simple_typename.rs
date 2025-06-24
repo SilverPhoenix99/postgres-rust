@@ -12,7 +12,7 @@ pub(super) fn simple_typename() -> impl Combinator<Output = TypeName> {
             .and_right(opt_type_modifiers())
             .map(Numeric),
         float(),
-        bit(),
+        bit,
         character,
         timestamp,
         time,
@@ -52,29 +52,28 @@ fn float() -> impl Combinator<Output = TypeName> {
 /// Inlined:
 /// * `BitWithLength`
 /// * `BitWithoutLength`
-fn bit() -> impl Combinator<Output = TypeName> {
+fn bit(stream: &mut TokenStream) -> Result<TypeName> {
 
     /*
         BIT opt_varying ( '(' expr_list ')' )?
     */
 
-    (
-        Kw::Bit.skip(),
+    let (_, varying, mut modifiers) = seq!(stream =>
+        Kw::Bit,
         opt_varying,
         opt_type_modifiers()
-    )
-        .map(|(_, varying, mut modifiers)| {
-            if varying {
-                return Varbit(modifiers)
-            }
+    )?;
 
-            if modifiers.is_none() {
-                // BitWithoutLength: `bit` defaults to `bit(1)`
-                modifiers = Some(vec![IntegerConst(1)]);
-            }
+    if varying {
+        return Ok(Varbit(modifiers))
+    }
 
-            Bit(modifiers)
-        })
+    if modifiers.is_none() {
+        // BitWithoutLength: `bit` defaults to `bit(1)`
+        modifiers = Some(vec![IntegerConst(1)]);
+    }
+
+    Ok(Bit(modifiers))
 }
 
 /// Alias: `Character`
@@ -290,12 +289,12 @@ mod tests {
 }
 
 use crate::combinators::attrs;
-use crate::combinators::foundation::choice;
+use crate::combinators::foundation::located;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::located;
+use crate::combinators::foundation::choice;
 use crate::combinators::i32_literal_paren;
 use crate::combinators::opt_interval;
 use crate::combinators::opt_precision;
