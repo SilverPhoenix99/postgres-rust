@@ -75,7 +75,7 @@ class ErrCodesGenerator
       '',
       *render_enum,
       '',
-      'pub(super) static MAP: mphf::Map<u32, ()> = mphf::Map::new(&SALTS, &ENTRIES);',
+      "pub(super) static MAP: mphf::Map<u32, (), #{@table.salts.size}> = mphf::Map::new(&SALTS, &ENTRIES);",
       '',
       *render_variants_array,
       '',

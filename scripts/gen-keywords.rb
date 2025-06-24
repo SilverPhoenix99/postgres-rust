@@ -94,7 +94,7 @@ class KeywordsGenerator
       '',
       render_max_length,
       '',
-      'pub(super) static MAP: mphf::Map<&str, KeywordDetails> = mphf::Map::new(&SALTS, &ENTRIES);',
+      "pub(super) static MAP: mphf::Map<&str, KeywordDetails, #{@table.salts.size}> = mphf::Map::new(&SALTS, &ENTRIES);",
       '',
       *render_keyword_details,
       '',

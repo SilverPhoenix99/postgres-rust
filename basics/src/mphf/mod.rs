@@ -1,17 +1,20 @@
-pub struct Map<K, V>
+pub struct Map<K, V, const SALTS_SIZE: usize>
 where
     K: 'static,
     V: 'static,
 {
-    salts: &'static [i16],
+    salts: &'static [i16; SALTS_SIZE],
     entries: &'static [(K, V)],
 }
 
-impl<K, V> Map<K, V>
+impl<K, V, const SALTS_SIZE: usize> Map<K, V, SALTS_SIZE>
 where
     K: MphfHash
 {
-    pub const fn new(salts: &'static [i16], entries: &'static [(K, V)]) -> Self {
+    // Ensure tables don't exceed 65K entries.
+    const _MAX_SALTS_SIZE: () = assert!(SALTS_SIZE <= u16::MAX as usize);
+
+    pub const fn new(salts: &'static [i16; SALTS_SIZE], entries: &'static [(K, V)]) -> Self {
         Self { salts, entries }
     }
 
@@ -60,22 +63,22 @@ where
         Some(index)
     }
 
-    fn hasher(&self, salt: u32) -> Fnv1a {
-        Fnv1a::new(salt, self.salts.len() as u32)
+    fn hasher(&self, salt: u32) -> Fnv1a<SALTS_SIZE> {
+        Fnv1a::new(salt)
     }
 }
 
-pub struct Fnv1a {
-    salt: Wrapping<u32>,
-    table_size: u32,
+pub struct Fnv1a<const SALTS_SIZE: usize> {
+    salt: Wrapping<u32>
 }
 
-impl Fnv1a {
+impl<const SALTS_SIZE: usize> Fnv1a<SALTS_SIZE> {
 
-    fn new(salt: u32, table_size: u32) -> Self {
+    const NUM_BITS: u32 = u32::BITS - (SALTS_SIZE as u32).leading_zeros();
+
+    fn new(salt: u32) -> Self {
         Self {
-            salt: Wrapping(salt),
-            table_size,
+            salt: Wrapping(salt)
         }
     }
 
@@ -92,17 +95,16 @@ impl Fnv1a {
             .0;
 
         // xor-shift excess bits
-        let nbits = u32::BITS - self.table_size.leading_zeros();
         let mut n = u32::BITS >> 1;
         let mut mask = (1u32 << n) - 1;
-        while n > nbits {
+        while n > Self::NUM_BITS {
             hash = (hash >> n) ^ (hash & mask);
             n >>= 1;
             mask >>= n;
         }
 
         // lazy mod
-        (hash % self.table_size) as usize
+        (hash % (SALTS_SIZE as u32)) as usize
     }
 
     pub fn hash_bytes(&self, bytes: &[u8]) -> usize {
@@ -111,37 +113,37 @@ impl Fnv1a {
 }
 
 pub trait MphfHash {
-    fn mphf_hash(&self, hasher: &Fnv1a) -> usize;
+    fn mphf_hash<const SALTS_SIZE: usize>(&self, hasher: &Fnv1a<SALTS_SIZE>) -> usize;
 }
 
 impl MphfHash for u64 {
-    fn mphf_hash(&self, hasher: &Fnv1a) -> usize {
+    fn mphf_hash<const SALTS_SIZE: usize>(&self, hasher: &Fnv1a<SALTS_SIZE>) -> usize {
         let bytes = (*self).to_le_bytes();
         hasher.hash_bytes(&bytes)
     }
 }
 
 impl MphfHash for u32 {
-    fn mphf_hash(&self, hasher: &Fnv1a) -> usize {
+    fn mphf_hash<const SALTS_SIZE: usize>(&self, hasher: &Fnv1a<SALTS_SIZE>) -> usize {
         let bytes = (*self).to_le_bytes();
         hasher.hash_bytes(&bytes)
     }
 }
 
 impl MphfHash for str {
-    fn mphf_hash(&self, hasher: &Fnv1a) -> usize {
+    fn mphf_hash<const SALTS_SIZE: usize>(&self, hasher: &Fnv1a<SALTS_SIZE>) -> usize {
         hasher.hash_bytes((*self).as_bytes())
     }
 }
 
 impl MphfHash for &str {
-    fn mphf_hash(&self, hasher: &Fnv1a) -> usize {
+    fn mphf_hash<const SALTS_SIZE: usize>(&self, hasher: &Fnv1a<SALTS_SIZE>) -> usize {
         (*self).mphf_hash(hasher)
     }
 }
 
 impl MphfHash for String {
-    fn mphf_hash(&self, hasher: &Fnv1a) -> usize {
+    fn mphf_hash<const SALTS_SIZE: usize>(&self, hasher: &Fnv1a<SALTS_SIZE>) -> usize {
         self.as_str().mphf_hash(hasher)
     }
 }
