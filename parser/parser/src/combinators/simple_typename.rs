@@ -16,7 +16,7 @@ pub(super) fn simple_typename() -> impl Combinator<Output = TypeName> {
         character(),
         timestamp(),
         time(),
-        interval().map(From::from),
+        interval.map(From::from),
         generic_type
     )
 }
@@ -159,19 +159,24 @@ fn time() -> impl Combinator<Output = TypeName> {
     })
 }
 
-fn interval() -> impl Combinator<Output = IntervalRange> {
+fn interval(stream: &mut TokenStream) -> Result<IntervalRange> {
 
     /*
           INTERVAL '(' ICONST ')'
         | INTERVAL opt_interval
     */
 
-    Kw::Interval
-        .and_right(or(
+    seq!(=>
+        Kw::Interval.parse(stream),
+        choice!(parsed stream =>
             i32_literal_paren()
                 .map(|precision| Full { precision: Some(precision) }),
-            opt_interval,
-        ))
+            opt_interval
+        )
+            .optional()
+            .map_err(Error::from)
+    )
+        .map(|(_, interval)| interval.unwrap_or_default())
 }
 
 /// Alias: `GenericType`
@@ -205,8 +210,7 @@ fn generic_type(stream: &mut TokenStream) -> Result<TypeName> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use test_case::test_case;
 
     #[test_case("json",                           Json)]
@@ -273,19 +277,12 @@ mod tests {
     #[test_case("double.unreserved(55)",          TypeName::Generic { name: vec!["double".into(), "unreserved".into()], type_modifiers: Some(vec![IntegerConst(55)]) })]
     #[test_case("full.type_func_name",            TypeName::Generic { name: vec!["full".into(), "type_func_name".into()], type_modifiers: None })]
     fn test_simple_typename(source: &str, expected: TypeName) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = simple_typename().parse(&mut stream);
-        assert_eq!(
-            Ok(expected.clone()),
-            actual,
-            "source:   {source:?}\n\
-             expected: Ok({expected:?})\n\
-             actual:   {actual:?}"
-        );
+        test_parser!(source, simple_typename(), expected)
     }
 }
 
 use crate::combinators::attrs;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
@@ -298,9 +295,11 @@ use crate::combinators::opt_timezone;
 use crate::combinators::opt_type_modifiers;
 use crate::combinators::opt_varying;
 use crate::combinators::type_function_name;
+use crate::result::Optional;
 use crate::result::Required;
 use crate::scan::Result;
-use crate::stream::{TokenStream, TokenValue};
+use crate::stream::TokenStream;
+use crate::stream::TokenValue;
 use pg_ast::ExprNode::IntegerConst;
 use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Full;
