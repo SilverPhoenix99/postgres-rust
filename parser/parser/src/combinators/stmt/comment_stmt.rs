@@ -60,18 +60,18 @@ fn comment_target(stream: &mut TokenStream) -> Result<CommentTarget> {
     */
 
     choice!(parsed stream =>
-        access_method().map(AccessMethod),
-        aggregate().map(Aggregate),
-        typecast().map(Typecast),
-        collation().map(Collation),
-        column().map(Column),
+        access_method.map(AccessMethod),
+        aggregate.map(Aggregate),
+        typecast.map(Typecast),
+        collation.map(Collation),
+        column.map(Column),
         constraint,
-        conversion().map(Conversion),
-        database().map(Database),
-        domain().map(Domain),
-        event_trigger().map(EventTrigger),
-        extension().map(Extension),
-        foreign().map(|foreign| match foreign {
+        conversion.map(Conversion),
+        database.map(Database),
+        domain.map(Domain),
+        event_trigger.map(EventTrigger),
+        extension.map(Extension),
+        foreign.map(|foreign| match foreign {
             Foreign::DataWrapper(name) => ForeignDataWrapper(name),
             Foreign::Table(name) => ForeignTable(name),
         }),

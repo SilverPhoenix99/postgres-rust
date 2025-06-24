@@ -4,7 +4,7 @@ pub(super) fn create_cast_stmt() -> impl Combinator<Output = CreateCastStmt> {
         typecast cast_conversion cast_context
     */
 
-    (typecast(), cast_conversion(), cast_context())
+    (typecast, cast_conversion(), cast_context())
         .map(|(typecast, conversion, coercion)|
             CreateCastStmt::new(typecast, conversion, coercion)
         )

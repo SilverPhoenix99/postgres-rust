@@ -1,11 +1,11 @@
-pub(super) fn aggregate() -> impl Combinator<Output = AggregateWithArgs> {
+pub(super) fn aggregate(stream: &mut TokenStream) -> Result<AggregateWithArgs> {
 
     /*
         AGGREGATE aggregate_with_argtypes
     */
 
-    Aggregate
-        .and_right(aggregate_with_argtypes)
+    seq!(stream => Aggregate, aggregate_with_argtypes)
+        .map(|(_, signature)| signature)
 }
 
 #[cfg(test)]
@@ -17,13 +17,15 @@ mod tests {
     fn test_aggregate() {
         test_parser!(
             source = "aggregate foo(*)",
-            parser = aggregate(),
+            parser = aggregate,
             expected = AggregateWithArgs::new(vec!["foo".into()], vec![], vec![])
         )
     }
 }
 
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::seq;
 use crate::combinators::stmt::aggregate_with_argtypes;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::AggregateWithArgs;
 use pg_lexer::Keyword::Aggregate;

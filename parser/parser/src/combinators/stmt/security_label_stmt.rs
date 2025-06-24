@@ -64,16 +64,16 @@ fn label_target() -> impl Combinator<Output = SecurityLabelTarget> {
     */
 
     match_first! {
-        access_method().map(AccessMethod),
-        aggregate().map(Aggregate),
-        collation().map(Collation),
-        column().map(Column),
-        conversion().map(Conversion),
-        database().map(Database),
-        domain().map(Domain),
-        event_trigger().map(EventTrigger),
-        extension().map(Extension),
-        foreign().map(|foreign| match foreign {
+        access_method.map(AccessMethod),
+        aggregate.map(Aggregate),
+        collation.map(Collation),
+        column.map(Column),
+        conversion.map(Conversion),
+        database.map(Database),
+        domain.map(Domain),
+        event_trigger.map(EventTrigger),
+        extension.map(Extension),
+        foreign.map(|foreign| match foreign {
             Foreign::DataWrapper(name) => ForeignDataWrapper(name),
             Foreign::Table(name) => ForeignTable(name),
         }),

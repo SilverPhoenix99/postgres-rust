@@ -1,11 +1,11 @@
-pub(super) fn access_method() -> impl Combinator<Output = Str> {
+pub(super) fn access_method(stream: &mut TokenStream) -> Result<Str> {
 
     /*
         ACCESS METHOD ColId
     */
 
-    (Access, Method)
-        .and_right(col_id)
+    seq!(stream => Access, Method, col_id)
+        .map(|(.., name)| name)
 }
 
 #[cfg(test)]
@@ -17,14 +17,16 @@ mod tests {
     fn test_access_method() {
         test_parser!(
             source = "access method foo",
-            parser = access_method(),
+            parser = access_method,
             expected = "foo"
         )
     }
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::seq;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_basics::Str;
 use pg_lexer::Keyword::Access;
 use pg_lexer::Keyword::Method;

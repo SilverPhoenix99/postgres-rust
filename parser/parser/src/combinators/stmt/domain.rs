@@ -1,11 +1,11 @@
-pub(super) fn domain() -> impl Combinator<Output=Type> {
+pub(super) fn domain(stream: &mut TokenStream) -> Result<Type> {
 
     /*
         DOMAIN Typename
     */
 
-    Domain
-        .and_right(typename)
+    seq!(stream => Domain, typename)
+        .map(|(_, typ)| typ)
 }
 
 #[cfg(test)]
@@ -18,13 +18,15 @@ mod tests {
     fn test_domain() {
         test_parser!(
             source = "domain int",
-            parser = domain(),
+            parser = domain,
             expected = Int4
         )
     }
 }
 
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::seq;
 use crate::combinators::typename;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::Type;
 use pg_lexer::Keyword::Domain;

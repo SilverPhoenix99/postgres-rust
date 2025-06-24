@@ -1,19 +1,18 @@
-pub(super) fn typecast() -> impl Combinator<Output = Typecast> {
+pub(super) fn typecast(stream: &mut TokenStream) -> Result<Typecast> {
 
     /*
         CAST '(' Typename AS Typename ')'
     */
 
-    Cast.and_right(between_paren(
-        (
-            typename,
-            As,
-            typename
+    seq!(=>
+            Cast.parse(stream),
+            between!(paren : stream =>
+                seq!(stream => typename, As, typename)
+            )
         )
-            .map(|(from_type, _, to_type)|
+            .map(|(_, (from_type, _, to_type))|
                 Typecast::new(from_type, to_type)
             )
-    ))
 }
 
 #[cfg(test)]
@@ -27,15 +26,18 @@ mod tests {
     fn test_typecast() {
         test_parser!(
             source = "cast (int as bigint)",
-            parser = typecast(),
+            parser = typecast,
             expected = Typecast::new(Int4, Int8)
         )
     }
 }
 
-use crate::combinators::between_paren;
+use crate::combinators::foundation::between;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::Typecast;
 use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Cast;

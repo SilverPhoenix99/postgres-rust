@@ -101,16 +101,16 @@ fn alter_extension_target() -> impl Combinator<Output = AlterExtensionContentsTa
     */
 
     match_first! {
-        access_method().map(AccessMethod),
-        aggregate().map(Aggregate),
-        typecast().map(Typecast),
-        collation().map(Collation),
-        conversion().map(Conversion),
-        database().map(Database),
-        domain().map(Domain),
-        event_trigger().map(EventTrigger),
-        extension().map(Extension),
-        foreign().map(|foreign| match foreign {
+        access_method.map(AccessMethod),
+        aggregate.map(Aggregate),
+        typecast.map(Typecast),
+        collation.map(Collation),
+        conversion.map(Conversion),
+        database.map(Database),
+        domain.map(Domain),
+        event_trigger.map(EventTrigger),
+        extension.map(Extension),
+        foreign.map(|foreign| match foreign {
             Foreign::DataWrapper(foreign) => ForeignDataWrapper(foreign),
             Foreign::Table(foreign) => ForeignTable(foreign),
         }),

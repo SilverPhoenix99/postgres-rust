@@ -1,11 +1,11 @@
-pub(super) fn event_trigger() -> impl Combinator<Output = Str> {
+pub(super) fn event_trigger(stream: &mut TokenStream) -> Result<Str> {
 
     /*
         EVENT TRIGGER ColId
     */
 
-    (Event, Trigger)
-        .and_right(col_id)
+    seq!(stream => Event, Trigger, col_id)
+        .map(|(.., name)| name)
 }
 
 #[cfg(test)]
@@ -17,14 +17,16 @@ mod tests {
     fn test_event_trigger() {
         test_parser!(
             source = "event trigger foo",
-            parser = event_trigger(),
+            parser = event_trigger,
             expected = "foo"
         )
     }
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::seq;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_basics::Str;
 use pg_lexer::Keyword::Event;
 use pg_lexer::Keyword::Trigger;
