@@ -5,17 +5,18 @@ pub(super) fn generic_set_tail(stream: &mut TokenStream) -> Result<ValueOrDefaul
         | (TO | '=') var_list
     */
 
-        seq!(=>
-            choice!(parsed stream =>
-                To.skip(),
-                Equals.skip()
-            ),
-            choice!(parsed stream =>
-                DefaultKw.map(|_| ValueOrDefault::Default),
-                var_list.map(ValueOrDefault::Value)
-            )
+    let (_, value) = seq!(=>
+        choice!(parsed stream =>
+            To.skip(),
+            Equals.skip()
+        ),
+        choice!(parsed stream =>
+            DefaultKw.map(|_| ValueOrDefault::Default),
+            var_list.map(ValueOrDefault::Value)
         )
-            .map(|(_, value)| value)
+    )?;
+
+    Ok(value)
 }
 
 #[cfg(test)]

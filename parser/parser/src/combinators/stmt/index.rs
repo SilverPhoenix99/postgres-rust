@@ -4,8 +4,9 @@ pub(super) fn index(stream: &mut TokenStream) -> Result<QualifiedName> {
         INDEX any_name
     */
 
-    seq!(stream => Index, any_name)
-        .map(|(_, name)| name)
+    let (_, name) = seq!(stream => Index, any_name)?;
+
+    Ok(name)
 }
 
 #[cfg(test)]

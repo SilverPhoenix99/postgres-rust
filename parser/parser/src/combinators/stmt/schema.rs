@@ -4,8 +4,9 @@ pub(super) fn schema(stream: &mut TokenStream) -> Result<Str> {
         SCHEMA ColId
     */
 
-    seq!(stream => Schema, col_id)
-        .map(|(_, name)| name)
+    let (_, name) = seq!(stream => Schema, col_id)?;
+
+    Ok(name)
 }
 
 use crate::combinators::col_id;

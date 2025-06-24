@@ -7,7 +7,7 @@ pub(super) enum Operator {
 
 pub(super) fn operator(stream: &mut TokenStream) -> Result<Operator> {
 
-    seq!(=>
+    let (_, op) = seq!(=>
         Kw::Operator.parse(stream),
         choice!(stream =>
             seq!(stream => Class, any_name, Using, col_id)
@@ -22,8 +22,9 @@ pub(super) fn operator(stream: &mut TokenStream) -> Result<Operator> {
                 .parse(stream)
                 .map(Operator::WithArgs)
         )
-    )
-        .map(|(_, op)| op)
+    )?;
+
+    Ok(op)
 }
 
 #[cfg(test)]

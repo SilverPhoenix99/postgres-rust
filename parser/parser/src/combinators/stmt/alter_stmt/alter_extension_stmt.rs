@@ -50,12 +50,14 @@ fn alter_extension_options(stream: &mut TokenStream) -> Result<Option<Vec<Str>>>
         ( TO NonReservedWord_or_Sconst )*
     */
 
-    many!(=>
+    let options = many!(=>
         seq!(stream => To, non_reserved_word_or_sconst())
             .map(|(_, opt)| opt)
-    )
-        .optional()
-        .map_err(From::from)
+    );
+
+    let options = options.optional()?;
+
+    Ok(options)
 }
 
 fn alter_extension_target() -> impl Combinator<Output = AlterExtensionContentsTarget> {

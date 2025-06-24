@@ -4,8 +4,9 @@ pub(super) fn conversion(stream: &mut TokenStream) -> Result<QualifiedName> {
         CONVERSION any_name
     */
 
-    seq!(stream => Conversion, any_name)
-        .map(|(_, name)| name)
+    let (_, name) = seq!(stream => Conversion, any_name)?;
+
+    Ok(name)
 }
 
 #[cfg(test)]

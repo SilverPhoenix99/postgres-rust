@@ -4,8 +4,9 @@ pub(super) fn server(stream: &mut TokenStream) -> Result<Str> {
         SERVER ColId
     */
 
-    seq!(stream => Server, col_id)
-        .map(|(_, name)| name)
+    let (_, name) = seq!(stream => Server, col_id)?;
+
+    Ok(name)
 }
 
 #[cfg(test)]

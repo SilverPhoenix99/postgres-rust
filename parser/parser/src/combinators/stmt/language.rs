@@ -4,14 +4,15 @@ pub(super) fn language(stream: &mut TokenStream) -> Result<Str> {
         opt_procedural LANGUAGE name
     */
 
-    seq!(=>
+    let (_, name) = seq!(=>
         choice!(stream =>
             Language.parse(stream).map(|_| ()),
             seq!(stream => Procedural, Language).map(|_| ())
         ),
         col_id.parse(stream)
-    )
-        .map(|(_, name)| name)
+    )?;
+
+    Ok(name)
 }
 
 #[cfg(test)]

@@ -4,8 +4,9 @@ pub(super) fn table(stream: &mut TokenStream) -> Result<QualifiedName> {
         TABLE any_name
     */
 
-    seq!(stream => Table, any_name)
-        .map(|(_, name)| name)
+    let (_, name) = seq!(stream => Table, any_name)?;
+
+    Ok(name)
 }
 
 #[cfg(test)]

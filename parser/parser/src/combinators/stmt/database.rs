@@ -4,8 +4,9 @@ pub(super) fn database(stream: &mut TokenStream) -> Result<Str> {
         DATABASE ColId
     */
 
-    seq!(stream => Database, col_id)
-        .map(|(_, name)| name)
+    let (_, name) = seq!(stream => Database, col_id)?;
+
+    Ok(name)
 }
 
 #[cfg(test)]

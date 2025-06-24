@@ -4,8 +4,9 @@ pub(super) fn extension(stream: &mut TokenStream) -> Result<Str> {
         EXTENSION ColId
     */
 
-    seq!(stream => Extension, col_id)
-        .map(|(_, name)| name)
+    let (_, name) = seq!(stream => Extension, col_id)?;
+
+    Ok(name)
 }
 
 #[cfg(test)]

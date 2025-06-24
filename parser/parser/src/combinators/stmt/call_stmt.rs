@@ -6,11 +6,12 @@ pub(super) fn call_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
         CALL func_application
     */
 
-    seq!(stream =>
+    let (_, stmt) = seq!(stream =>
         Call,
         parser(|_| todo!())
-    )
-        .map(|(_, stmt)| stmt)
+    )?;
+
+    Ok(stmt)
 }
 
 use crate::combinators::foundation::parser;

@@ -5,12 +5,13 @@ pub(super) fn abort_stmt(stream: &mut TokenStream) -> Result<TransactionStmt> {
         ABORT_P opt_transaction opt_transaction_chain
     */
 
-    seq!(stream =>
+    let (.., chain) = seq!(stream =>
         Abort,
         opt_transaction,
         opt_transaction_chain
-    )
-        .map(|(.., chain)| TransactionStmt::Rollback { chain })
+    )?;
+
+    Ok(TransactionStmt::Rollback { chain })
 }
 
 #[cfg(test)]

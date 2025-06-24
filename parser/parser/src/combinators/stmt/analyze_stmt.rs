@@ -6,11 +6,12 @@ pub(super) fn analyze_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
         (ANALYSE | ANALYZE) (VERBOSE)? opt_vacuum_relation_list
     */
 
-    seq!(=>
+    let (_, stmt) = seq!(=>
         choice!(parsed stream => Analyze, Analyse),
         parser(|_| todo!()).parse(stream)
-    )
-        .map(|(_, stmt)| stmt)
+    )?;
+
+    Ok(stmt)
 }
 
 use crate::combinators::foundation::choice;

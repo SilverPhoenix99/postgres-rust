@@ -150,8 +150,9 @@ fn policy(stream: &mut TokenStream) -> Result<CommentTarget> {
         POLICY name ON any_name
     */
 
-    seq!(stream => Kw::Policy, col_id, On, any_name)
-        .map(|(_, name, _, table)| Policy { name, table })
+    let (_, name, _, table) = seq!(stream => Kw::Policy, col_id, On, any_name)?;
+
+    Ok(Policy { name, table })
 }
 
 fn rule(stream: &mut TokenStream) -> Result<CommentTarget> {
@@ -160,8 +161,9 @@ fn rule(stream: &mut TokenStream) -> Result<CommentTarget> {
         RULE name ON any_name
     */
 
-    seq!(stream => Kw::Rule, col_id, On, any_name)
-        .map(|(_, name, _, table)| Rule { name, table })
+    let (_, name, _, table) = seq!(stream => Kw::Rule, col_id, On, any_name)?;
+
+    Ok(Rule { name, table })
 }
 
 fn trigger(stream: &mut TokenStream) -> Result<CommentTarget> {
@@ -170,8 +172,9 @@ fn trigger(stream: &mut TokenStream) -> Result<CommentTarget> {
         TRIGGER name ON any_name
     */
 
-    seq!(stream => Kw::Trigger, col_id, On, any_name)
-        .map(|(_, name, _, table)| Trigger { name, table })
+    let (_, name, _, table) = seq!(stream => Kw::Trigger, col_id, On, any_name)?;
+
+    Ok(Trigger { name, table })
 }
 
 fn comment_text(stream: &mut TokenStream) -> Result<Option<Box<str>>> {
@@ -181,8 +184,9 @@ fn comment_text(stream: &mut TokenStream) -> Result<Option<Box<str>>> {
         | IS NULL
     */
 
-    seq!(stream => Is, string_or_null)
-        .map(|(_, text)| text)
+    let (_, text) = seq!(stream => Is, string_or_null)?;
+
+    Ok(text)
 }
 
 #[cfg(test)]
@@ -332,9 +336,9 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::choice;
+use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::seq;
 use crate::combinators::simple_typename;
 use crate::combinators::stmt::access_method;
 use crate::combinators::stmt::aggregate;

@@ -9,7 +9,7 @@ pub(super) fn foreign(stream: &mut TokenStream) -> Result<Foreign> {
         FOREIGN any_name
     */
 
-    seq!(=>
+    let (_, foreign) = seq!(=>
         Kw::Foreign.parse(stream),
         choice!(stream =>
             seq!(stream => Data, Wrapper, col_id)
@@ -21,8 +21,9 @@ pub(super) fn foreign(stream: &mut TokenStream) -> Result<Foreign> {
                     Foreign::Table(name)
                 )
         )
-    )
-        .map(|(_, foreign)| foreign)
+    )?;
+
+    Ok(foreign)
 }
 
 #[cfg(test)]

@@ -49,24 +49,7 @@ pub(super) fn function_with_argtypes(stream: &mut TokenStream) -> Result<Functio
                     FunctionWithArgs::new(name, args)
                 })
         },
-        { 'block: {
-            let name: QualifiedName = match attrs!(stream => ColumnName.parse(stream).map(From::from)) {
-                Ok(ok) => ok,
-                Err(err) => break 'block Err(err)
-            };
-
-            if name.len() == 1 {
-                break 'block Ok(FunctionWithArgs::new(name, None))
-            }
-
-            // arguments are only allowed when the function name is qualified
-            let args = match func_args.parse(stream) {
-                Ok(ok) => ok,
-                Err(err) => break 'block Err(err)
-            };
-
-            break 'block Ok(FunctionWithArgs::new(name, args))
-        }}
+        func_column_name.parse(stream)
     )
 }
 
@@ -82,12 +65,14 @@ fn func_args(stream: &mut TokenStream) -> Result<Option<Option<Vec<FunctionParam
         ( '(' ( func_args_list )? ')' )?
     */
 
-    between!(paren : stream =>
+    let args = between!(paren : stream =>
         func_args_list.optional()
             .parse(stream)
-    )
-        .optional()
-        .map_err(From::from)
+    );
+
+    let args = args.optional()?;
+
+    Ok(args)
 }
 
 fn func_args_list(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
@@ -96,7 +81,21 @@ fn func_args_list(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
         func_arg ( ',' func_arg )*
     */
 
-    many!(sep = Comma, func_arg()).parse(stream)
+    many!(stream => sep = Comma, func_arg())
+}
+
+fn func_column_name(stream: &mut TokenStream) -> Result<FunctionWithArgs> {
+
+    let name = attrs!(stream => ColumnName.parse(stream).map(From::from))?;
+
+    if name.len() == 1 {
+        return Ok(FunctionWithArgs::new(name, None))
+    }
+
+    // arguments are only allowed when the function name is qualified
+    let args = func_args.parse(stream)?;
+
+    Ok(FunctionWithArgs::new(name, args))
 }
 
 #[cfg(test)]
@@ -156,7 +155,6 @@ use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionWithArgs;
-use pg_basics::QualifiedName;
 use pg_basics::Str;
 use pg_lexer::KeywordCategory::ColumnName;
 use pg_lexer::KeywordCategory::TypeFuncName;

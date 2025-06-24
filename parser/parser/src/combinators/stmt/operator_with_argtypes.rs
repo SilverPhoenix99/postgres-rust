@@ -13,10 +13,9 @@ pub(super) fn operator_with_argtypes(stream: &mut TokenStream) -> Result<Operato
         any_operator oper_argtypes
     */
 
-    seq!(stream => any_operator, oper_argtypes)
-        .map(|(name, args)|
-            OperatorWithArgs::new(name, args)
-        )
+    let (name, args) = seq!(stream => any_operator, oper_argtypes)?;
+
+    Ok(OperatorWithArgs::new(name, args))
 }
 
 fn oper_argtypes(stream: &mut TokenStream) -> Result<OneOrBoth<Type>> {

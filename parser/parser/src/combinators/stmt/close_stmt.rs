@@ -6,14 +6,15 @@ pub(super) fn close_stmt(stream: &mut TokenStream) -> Result<OneOrAll<Str>> {
         CLOSE ColId
     */
 
-    seq!(=>
+    let (_, stmt) = seq!(=>
         Close.parse(stream),
         choice!(parsed stream =>
             All.map(|_| OneOrAll::All),
             col_id.map(OneOrAll::One)
         )
-    )
-        .map(|(_, stmt)| stmt)
+    )?;
+
+    Ok(stmt)
 }
 
 #[cfg(test)]

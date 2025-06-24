@@ -4,8 +4,9 @@ pub(super) fn materialized_view(stream: &mut TokenStream) -> Result<QualifiedNam
         MATERIALIZED VIEW any_name
     */
 
-    seq!(stream => Materialized, View, any_name)
-        .map(|(.., name)| name)
+    let (.., name) = seq!(stream => Materialized, View, any_name)?;
+
+    Ok(name)
 }
 
 #[cfg(test)]

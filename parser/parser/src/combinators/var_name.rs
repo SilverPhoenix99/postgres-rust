@@ -4,12 +4,11 @@ pub(in crate::combinators) fn var_name(stream: &mut TokenStream) -> Result<Quali
         col_id ( '.' col_id )*
     */
 
-    many!(sep = Dot, col_id).parse(stream)
+    many!(stream => sep = Dot, col_id)
 }
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::Combinator;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_basics::QualifiedName;

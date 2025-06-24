@@ -16,52 +16,52 @@ pub(super) fn frame_extent() -> impl Combinator<Output = FrameExtent> {
                 let (start, (end, loc)) = bounds?;
                 let frame = match (start, end) {
                     (UnboundedPreceding, UnboundedFollowing)
-                    => FrameExtent::Unbounded { end: Some(PrecedingEnd::Unbounded) },
+                        => FrameExtent::Unbounded { end: Some(PrecedingEnd::Unbounded) },
                     (UnboundedPreceding, CurrentRow)
-                    => FrameExtent::Unbounded { end: Some(PrecedingEnd::CurrentRow) },
+                        => FrameExtent::Unbounded { end: Some(PrecedingEnd::CurrentRow) },
                     (UnboundedPreceding, OffsetPreceding(end))
-                    => FrameExtent::Unbounded { end: Some(PrecedingEnd::Preceding(end)) },
+                        => FrameExtent::Unbounded { end: Some(PrecedingEnd::Preceding(end)) },
                     (UnboundedPreceding, OffsetFollowing(end))
-                    => FrameExtent::Unbounded { end: Some(PrecedingEnd::Following(end)) },
+                        => FrameExtent::Unbounded { end: Some(PrecedingEnd::Following(end)) },
                     (CurrentRow, UnboundedFollowing)
-                    => FrameExtent::CurrentRow { end: Some(CurrentRowEnd::Unbounded) },
+                        => FrameExtent::CurrentRow { end: Some(CurrentRowEnd::Unbounded) },
                     (CurrentRow, CurrentRow)
-                    => FrameExtent::CurrentRow { end: Some(CurrentRowEnd::CurrentRow) },
+                        => FrameExtent::CurrentRow { end: Some(CurrentRowEnd::CurrentRow) },
                     (CurrentRow, OffsetFollowing(end))
-                    => FrameExtent::CurrentRow { end: Some(CurrentRowEnd::Following(end)) },
+                        => FrameExtent::CurrentRow { end: Some(CurrentRowEnd::Following(end)) },
                     (OffsetPreceding(start), UnboundedFollowing)
-                    => FrameExtent::Preceding { start, end: Some(PrecedingEnd::Unbounded) },
+                        => FrameExtent::Preceding { start, end: Some(PrecedingEnd::Unbounded) },
                     (OffsetPreceding(start), CurrentRow)
-                    => FrameExtent::Preceding { start, end: Some(PrecedingEnd::CurrentRow) },
+                        => FrameExtent::Preceding { start, end: Some(PrecedingEnd::CurrentRow) },
                     (OffsetPreceding(start), OffsetPreceding(end))
-                    => FrameExtent::Preceding { start, end: Some(PrecedingEnd::Preceding(end)) },
+                        => FrameExtent::Preceding { start, end: Some(PrecedingEnd::Preceding(end)) },
                     (OffsetPreceding(start), OffsetFollowing(end))
-                    => FrameExtent::Preceding { start, end: Some(PrecedingEnd::Following(end)) },
+                        => FrameExtent::Preceding { start, end: Some(PrecedingEnd::Following(end)) },
                     (OffsetFollowing(start), UnboundedFollowing)
-                    => FrameExtent::Following { start, end: FollowingEnd::Unbounded },
+                        => FrameExtent::Following { start, end: FollowingEnd::Unbounded },
                     (OffsetFollowing(start), OffsetFollowing(end))
-                    => FrameExtent::Following { start, end: FollowingEnd::Following(end) },
+                        => FrameExtent::Following { start, end: FollowingEnd::Following(end) },
                     // Illegal combinations:
                     (UnboundedFollowing, _)
-                    => {
-                        let err = InvalidUnboundedFollowingFrame.at(loc);
-                        return Err(err.into())
-                    },
+                        => {
+                            let err = InvalidUnboundedFollowingFrame.at(loc);
+                            return Err(err.into())
+                        },
                     (_, UnboundedPreceding)
-                    => {
-                        let err = InvalidUnboundedPrecedingFrame.at(loc);
-                        return Err(err.into())
-                    },
+                        => {
+                            let err = InvalidUnboundedPrecedingFrame.at(loc);
+                            return Err(err.into())
+                        },
                     (CurrentRow, OffsetPreceding(_))
-                    => {
-                        let err = InvalidCurrentRowFrame.at(loc);
-                        return Err(err.into())
-                    },
+                        => {
+                            let err = InvalidCurrentRowFrame.at(loc);
+                            return Err(err.into())
+                        },
                     (OffsetFollowing(_), CurrentRow | OffsetPreceding(_))
-                    => {
-                        let err = InvalidStartFollowingEndPrecedingFrame.at(loc);
-                        return Err(err.into())
-                    },
+                        => {
+                            let err = InvalidStartFollowingEndPrecedingFrame.at(loc);
+                            return Err(err.into())
+                        },
                 };
                 Ok(frame)
             }),

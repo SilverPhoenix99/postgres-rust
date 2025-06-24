@@ -4,8 +4,9 @@ pub(super) fn subscription(stream: &mut TokenStream) -> Result<Str> {
         SUBSCRIPTION ColId
     */
 
-    seq!(stream => Subscription, col_id)
-        .map(|(_, name)| name)
+    let (_, name) = seq!(stream => Subscription, col_id)?;
+
+    Ok(name)
 }
 
 #[cfg(test)]

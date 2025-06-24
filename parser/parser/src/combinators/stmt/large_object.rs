@@ -4,8 +4,9 @@ pub(super) fn large_object(stream: &mut TokenStream) -> Result<SignedNumber> {
         LARGE OBJECT NumericOnly
     */
 
-    seq!(stream => Large, Object, signed_number)
-        .map(|(.., id)| id)
+    let (.., id) = seq!(stream => Large, Object, signed_number)?;
+
+    Ok(id)
 }
 
 #[cfg(test)]

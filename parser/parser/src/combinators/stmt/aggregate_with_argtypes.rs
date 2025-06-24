@@ -13,10 +13,9 @@ pub(super) fn aggregate_with_argtypes(stream: &mut TokenStream) -> Result<Aggreg
         func_name aggr_args
     */
 
-    seq!(stream => func_name(), aggr_args)
-        .map(|(name, (args, order_by))|
-            AggregateWithArgs::new(name, args, order_by)
-        )
+    let (name, (args, order_by)) = seq!(stream => func_name(), aggr_args)?;
+
+    Ok(AggregateWithArgs::new(name, args, order_by))
 }
 
 /// Either `Vec` can be empty.
@@ -51,8 +50,9 @@ fn order_by_aggr_args(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>
         ORDER BY aggr_args_list
     */
 
-    seq!(stream => Order, By, aggr_args_list)
-        .map(|(.., args)| args)
+    let (.., args) = seq!(stream => Order, By, aggr_args_list)?;
+
+    Ok(args)
 }
 
 fn aggr_args_list(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {

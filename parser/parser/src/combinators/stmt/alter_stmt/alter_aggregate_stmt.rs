@@ -14,7 +14,7 @@ pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> Result<RawStmt> 
         )
     */
 
-    seq!(=>
+    let (_, aggregate, change) = seq!(=>
         Aggregate.parse(stream),
         aggregate_with_argtypes.parse(stream),
         choice!(stream =>
@@ -25,27 +25,30 @@ pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> Result<RawStmt> 
             seq!(stream => Set, Schema, col_id)
                 .map(|(.., new_schema)| Change::Schema(new_schema))
         )
-    )
-        .map(|(_, aggregate, change)| match change {
-            Change::Owner(new_owner) => {
-                AlterOwnerStmt::new(
-                    AlterOwnerTarget::Aggregate(aggregate),
-                    new_owner
-                ).into()
-            },
-            Change::Name(new_name) => {
-                RenameStmt::new(
-                    RenameTarget::Aggregate(aggregate),
-                    new_name
-                ).into()
-            },
-            Change::Schema(new_schema) => {
-                AlterObjectSchemaStmt::new(
-                    AlterObjectSchemaTarget::Aggregate(aggregate),
-                    new_schema
-                ).into()
-            },
-        })
+    )?;
+
+    let change = match change {
+        Change::Owner(new_owner) => {
+            AlterOwnerStmt::new(
+                AlterOwnerTarget::Aggregate(aggregate),
+                new_owner
+            ).into()
+        },
+        Change::Name(new_name) => {
+            RenameStmt::new(
+                RenameTarget::Aggregate(aggregate),
+                new_name
+            ).into()
+        },
+        Change::Schema(new_schema) => {
+            AlterObjectSchemaStmt::new(
+                AlterObjectSchemaTarget::Aggregate(aggregate),
+                new_schema
+            ).into()
+        },
+    };
+
+    Ok(change)
 }
 
 #[cfg(test)]

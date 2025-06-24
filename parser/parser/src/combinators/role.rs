@@ -4,8 +4,7 @@ pub(super) fn role_list(stream: &mut TokenStream) -> Result<Vec<RoleSpec>> {
         role_spec ( ',' role_spec )*
     */
 
-    many!(sep = Comma, role_spec)
-        .parse(stream)
+    many!(stream => sep = Comma, role_spec)
 }
 
 /// Alias: `RoleId`
@@ -16,9 +15,7 @@ pub(super) fn role_id(stream: &mut TokenStream) -> Result<Str> {
     let (role, loc) = located!(role_spec).parse(stream)?;
 
     role.into_role_id()
-        .map_err(|err|
-            ScanErr(LocatedError::new(err, loc))
-        )
+        .map_err(|err| err.at(loc).into())
 }
 
 /// Alias: `RoleSpec`
@@ -34,7 +31,7 @@ pub(super) fn role_spec(stream: &mut TokenStream) -> Result<RoleSpec> {
             | non_reserved_word
     */
 
-    choice!(
+    choice!(parsed stream =>
         CurrentRole.map(|_| RoleSpec::CurrentRole),
         CurrentUser.map(|_| RoleSpec::CurrentUser),
         SessionUser.map(|_| RoleSpec::SessionUser),
@@ -52,7 +49,6 @@ pub(super) fn role_spec(stream: &mut TokenStream) -> Result<RoleSpec> {
             _ => RoleSpec::Name(ident)
         })
     )
-        .parse(stream)
 }
 
 #[cfg(test)]
@@ -151,7 +147,6 @@ use crate::stream::TokenStream;
 use pg_ast::RoleSpec;
 use pg_basics::Str;
 use pg_elog::role_spec::Error::ReservedRoleSpec;
-use pg_elog::LocatedError;
 use pg_lexer::Keyword::CurrentRole;
 use pg_lexer::Keyword::CurrentUser;
 use pg_lexer::Keyword::NoneKw;

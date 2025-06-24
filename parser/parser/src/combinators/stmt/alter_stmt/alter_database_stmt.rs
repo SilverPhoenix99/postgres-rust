@@ -92,7 +92,7 @@ pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
 
 fn alterdb_opt_list(stream: &mut TokenStream) -> Result<Vec<AlterdbOption>> {
 
-    many!(alterdb_opt_item).parse(stream)
+    many!(stream => alterdb_opt_item)
 }
 
 fn alterdb_opt_item(stream: &mut TokenStream) -> Result<AlterdbOption> {

@@ -1,9 +1,8 @@
 pub(super) fn transform(stream: &mut TokenStream) -> Result<Transform> {
 
-    seq!(stream => Kw::Transform, For, typename, Language, col_id)
-        .map(|(_, _, for_type, _, language)|
-            Transform::new(for_type, language)
-        )
+    let (_, _, for_type, _, language) = seq!(stream => Kw::Transform, For, typename, Language, col_id)?;
+
+    Ok(Transform::new(for_type, language))
 }
 
 #[cfg(test)]

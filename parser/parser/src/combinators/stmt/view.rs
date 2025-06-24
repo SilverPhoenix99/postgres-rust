@@ -4,8 +4,9 @@ pub(super) fn view(stream: &mut TokenStream) -> Result<QualifiedName> {
         VIEW any_name
     */
 
-    seq!(stream => View, any_name)
-        .map(|(_, view)| view)
+    let (_, view) = seq!(stream => View, any_name)?;
+
+    Ok(view)
 }
 
 #[cfg(test)]

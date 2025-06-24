@@ -25,8 +25,9 @@ pub(super) fn opt_interval(stream: &mut TokenStream) -> Result<IntervalRange> {
         minute.parse(stream),
         seq!(stream => SecondKw, opt_precision)
             .map(|(_, precision)| Second { precision }),
-    )
-        .optional()?;
+    );
+
+    let interval = interval.optional()?;
 
     Ok(interval.unwrap_or_default())
 }
@@ -145,9 +146,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::choice;
+use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::seq;
 use crate::combinators::opt_precision;
 use crate::result::Optional;
 use crate::scan::Result;

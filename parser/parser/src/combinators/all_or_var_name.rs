@@ -6,12 +6,10 @@ pub(in crate::combinators) fn all_or_var_name(stream: &mut TokenStream) -> Resul
         | var_name
     */
 
-    let parser = choice!(
+    choice!(parsed stream =>
         Keyword::All.map(|_| OneOrAll::All),
         var_name.map(OneOrAll::One)
-    );
-
-    parser.parse(stream)
+    )
 }
 
 #[cfg(test)]

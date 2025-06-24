@@ -4,8 +4,9 @@ pub(super) fn function(stream: &mut TokenStream) -> Result<FunctionWithArgs> {
         FUNCTION function_with_argtypes
     */
 
-    seq!(stream => Function, function_with_argtypes)
-        .map(|(_, signature)| signature)
+    let (_, signature) = seq!(stream => Function, function_with_argtypes)?;
+
+    Ok(signature)
 }
 
 #[cfg(test)]

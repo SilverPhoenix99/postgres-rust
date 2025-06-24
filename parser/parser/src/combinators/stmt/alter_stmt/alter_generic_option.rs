@@ -15,7 +15,7 @@ fn alter_generic_option_list(stream: &mut TokenStream) -> Result<Vec<GenericOpti
         alter_generic_option ( ',' alter_generic_option )*
     */
 
-    many!(sep = Comma, alter_generic_option).parse(stream)
+    many!(stream => sep = Comma, alter_generic_option)
 }
 
 /// Alias: `alter_generic_option_elem`

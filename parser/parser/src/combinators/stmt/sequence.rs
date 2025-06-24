@@ -4,8 +4,9 @@ pub(super) fn sequence(stream: &mut TokenStream) -> Result<QualifiedName> {
         SEQUENCE any_name
     */
 
-    seq!(stream => Sequence, any_name)
-        .map(|(_, name)| name)
+    let (_, name) = seq!(stream => Sequence, any_name)?;
+
+    Ok(name)
 }
 
 #[cfg(test)]

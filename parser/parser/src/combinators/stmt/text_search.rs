@@ -17,7 +17,7 @@ pub(super) fn text_search(stream: &mut TokenStream) -> Result<TextSearch> {
          ) any_name
     */
 
-    seq!(=>
+    let (.., search_type) = seq!(=>
         Text.parse(stream),
         Search.parse(stream),
         choice!(stream =>
@@ -30,8 +30,9 @@ pub(super) fn text_search(stream: &mut TokenStream) -> Result<TextSearch> {
             seq!(stream => Template, any_name)
                 .map(|(_, name)| TextSearch::Template(name))
         )
-    )
-        .map(|(.., search_type)| search_type)
+    )?;
+
+    Ok(search_type)
 }
 
 #[cfg(test)]

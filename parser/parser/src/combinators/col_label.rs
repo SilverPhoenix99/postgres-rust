@@ -3,12 +3,10 @@
 /// * `attr_name`
 pub(in crate::combinators) fn col_label(stream: &mut TokenStream) -> Result<Str> {
 
-    let parser = choice!(
-        identifier,
-        any_keyword()
-    );
-
-    parser.parse(stream)
+    choice!(parsed stream =>
+        identifier.map(From::from),
+        any_keyword().map(From::from)
+    )
 }
 
 #[cfg(test)]

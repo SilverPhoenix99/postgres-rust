@@ -4,8 +4,9 @@ pub(super) fn event_trigger(stream: &mut TokenStream) -> Result<Str> {
         EVENT TRIGGER ColId
     */
 
-    seq!(stream => Event, Trigger, col_id)
-        .map(|(.., name)| name)
+    let (.., name) = seq!(stream => Event, Trigger, col_id)?;
+
+    Ok(name)
 }
 
 #[cfg(test)]

@@ -4,8 +4,9 @@ pub(super) fn domain(stream: &mut TokenStream) -> Result<Type> {
         DOMAIN Typename
     */
 
-    seq!(stream => Domain, typename)
-        .map(|(_, typ)| typ)
+    let (_, typ) = seq!(stream => Domain, typename)?;
+
+    Ok(typ)
 }
 
 #[cfg(test)]

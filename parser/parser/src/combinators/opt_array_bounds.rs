@@ -5,7 +5,7 @@ pub(super) fn opt_array_bounds(stream: &mut TokenStream) -> Result<Option<Vec<Op
         | ( '[' ( ICONST )? ']' )*
     */
 
-    choice!(stream =>
+    let bounds = choice!(stream =>
         seq!(=>
             Array.parse(stream),
             between!(square : stream => i32_literal.parse(stream))
@@ -18,9 +18,10 @@ pub(super) fn opt_array_bounds(stream: &mut TokenStream) -> Result<Option<Vec<Op
                     .optional()
             )
         )
-    )
-        .optional()
-        .map_err(From::from)
+    );
+
+    let bounds = bounds.optional()?;
+    Ok(bounds)
 }
 
 #[cfg(test)]

@@ -4,8 +4,9 @@ pub(super) fn statistics(stream: &mut TokenStream) -> Result<QualifiedName> {
         STATISTICS any_name
     */
 
-    seq!(stream => Statistics, any_name)
-        .map(|(_, name)| name)
+    let (_, name) = seq!(stream => Statistics, any_name)?;
+
+    Ok(name)
 }
 
 #[cfg(test)]

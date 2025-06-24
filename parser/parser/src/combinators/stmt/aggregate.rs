@@ -4,8 +4,9 @@ pub(super) fn aggregate(stream: &mut TokenStream) -> Result<AggregateWithArgs> {
         AGGREGATE aggregate_with_argtypes
     */
 
-    seq!(stream => Aggregate, aggregate_with_argtypes)
-        .map(|(_, signature)| signature)
+    let (_, signature) = seq!(stream => Aggregate, aggregate_with_argtypes)?;
+
+    Ok(signature)
 }
 
 #[cfg(test)]

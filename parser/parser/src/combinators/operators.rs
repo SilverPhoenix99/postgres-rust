@@ -33,11 +33,12 @@ pub(super) fn explicit_op(stream: &mut TokenStream) -> Result<QualifiedOperator>
         OPERATOR '(' any_operator ')'
     */
 
-    seq!(=>
+    let (_, op) = seq!(=>
         OperatorKw.parse(stream),
         between!(paren : stream => any_operator.parse(stream))
-    )
-        .map(|(_, op)| op)
+    )?;
+
+    Ok(op)
 }
 
 pub(super) fn any_operator(stream: &mut TokenStream) -> Result<QualifiedOperator> {
@@ -46,7 +47,7 @@ pub(super) fn any_operator(stream: &mut TokenStream) -> Result<QualifiedOperator
         ( col_id '.' )* all_op
     */
 
-    seq!(=>
+    let (qn, op) = seq!(=>
         {
             many!(=>
                 seq!(stream => col_id, Dot)
@@ -58,8 +59,9 @@ pub(super) fn any_operator(stream: &mut TokenStream) -> Result<QualifiedOperator
         {
             all_op.parse(stream)
         }
-    )
-        .map(|(qn, op)| QualifiedOperator(qn, op))
+    )?;
+
+    Ok(QualifiedOperator(qn, op))
 }
 
 /// Alias: `all_Op`.

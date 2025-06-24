@@ -4,8 +4,9 @@ pub(super) fn access_method(stream: &mut TokenStream) -> Result<Str> {
         ACCESS METHOD ColId
     */
 
-    seq!(stream => Access, Method, col_id)
-        .map(|(.., name)| name)
+    let (.., name) = seq!(stream => Access, Method, col_id)?;
+
+    Ok(name)
 }
 
 #[cfg(test)]

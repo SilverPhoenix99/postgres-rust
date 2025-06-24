@@ -74,7 +74,7 @@ pub(super) fn set_rest_more(stream: &mut TokenStream) -> Result<SetRestMore> {
             .right()
             .map(SetRestMore::ClientEncoding),
         (Kw::Role, non_reserved_word_or_sconst())
-            .right()    
+            .right()
             .map(SetRestMore::Role),
         (Xml, OptionKw, document_or_content())
             .map(|(.., option)| SetRestMore::XmlOption(option)),

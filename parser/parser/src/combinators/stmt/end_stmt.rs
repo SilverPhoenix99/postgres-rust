@@ -5,12 +5,13 @@ pub(in crate::combinators) fn end_stmt(stream: &mut TokenStream) -> Result<Trans
         END_P opt_transaction opt_transaction_chain
     */
 
-    seq!(stream =>
+    let (.., chain) = seq!(stream =>
         End,
         opt_transaction,
         opt_transaction_chain
-    )
-        .map(|(.., chain)| Commit { chain })
+    )?;
+
+    Ok(Commit { chain })
 }
 
 #[cfg(test)]

@@ -8,14 +8,15 @@ pub(crate) fn stmtmulti(stream: &mut TokenStream) -> Result<Option<Vec<RawStmt>>
     // Original production:
     //     toplevel_stmt? ( ';' toplevel_stmt? )*
 
-    seq!(=>
+    let (_, stmts) = seq!(=>
         semicolons.parse(stream).optional(),
         many!(=>
             sep = semicolons.parse(stream),
             toplevel_stmt.parse(stream)
         ).optional()
-    )
-        .map(|(_, stmts)| stmts)
+    )?;
+
+    Ok(stmts)
 }
 
 /// Returns `Ok` if it consumed at least 1 `;` (semicolon).
@@ -23,8 +24,9 @@ fn semicolons(stream: &mut TokenStream) -> Result<()> {
 
     // Production: ( ';' )+
 
-    many!(=> Semicolon.skip().parse(stream))
-        .map(|_| ())
+    many!(=> Semicolon.skip().parse(stream))?;
+
+    Ok(())
 }
 
 fn toplevel_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
@@ -74,10 +76,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::choice;
 use crate::combinators::stmt;
 use crate::combinators::stmt::begin_stmt;
 use crate::combinators::stmt::end_stmt;

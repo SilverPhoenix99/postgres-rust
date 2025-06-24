@@ -17,7 +17,7 @@ fn sortby_list(stream: &mut TokenStream) -> Result<Vec<SortBy>> {
         sortby ( ',' sortby )*
     */
 
-    many!(sep = Comma, sortby()).parse(stream)
+    many!(stream => sep = Comma, sortby())
 }
 
 fn sortby() -> impl Combinator<Output = SortBy> {

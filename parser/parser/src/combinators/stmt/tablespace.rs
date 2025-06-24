@@ -4,8 +4,9 @@ pub(super) fn tablespace(stream: &mut TokenStream) -> Result<Str> {
         TABLESPACE ColId
     */
 
-    seq!(stream => Tablespace, col_id)
-        .map(|(_, name)| name)
+    let (_, name) = seq!(stream => Tablespace, col_id)?;
+
+    Ok(name)
 }
 
 #[cfg(test)]

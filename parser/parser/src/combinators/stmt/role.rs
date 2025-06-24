@@ -4,8 +4,9 @@ pub(super) fn role(stream: &mut TokenStream) -> Result<Str> {
         ROLE name
     */
 
-    seq!(stream => Role, col_id)
-        .map(|(_, name)| name)
+    let (_, name) = seq!(stream => Role, col_id)?;
+
+    Ok(name)
 }
 
 #[cfg(test)]

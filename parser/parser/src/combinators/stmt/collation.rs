@@ -4,8 +4,9 @@ pub(super) fn collation(stream: &mut TokenStream) -> Result<QualifiedName> {
         COLLATION any_name
     */
 
-    seq!(stream => Collation, any_name)
-        .map(|(_, name)| name)
+    let (_, name) = seq!(stream => Collation, any_name)?;
+
+    Ok(name)
 }
 
 #[cfg(test)]

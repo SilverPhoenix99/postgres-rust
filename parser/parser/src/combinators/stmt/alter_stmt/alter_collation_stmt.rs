@@ -14,8 +14,8 @@ pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> Result<RawStmt> 
         ALTER COLLATION any_name RENAME TO ColId
         ALTER COLLATION any_name SET SCHEMA ColId
     */
-    
-    seq!(=>
+
+    let (_, name, change) = seq!(=>
         Collation.parse(stream),
         any_name.parse(stream),
         choice!(stream =>
@@ -28,30 +28,33 @@ pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> Result<RawStmt> 
             seq!(stream => Set, Schema, col_id)
                 .map(|(.., schema)| Change::Schema(schema))
         )
-    )
-        .map(|(_, name, change)| match change {
-            Change::RefreshVersion => {
-                RefreshCollationVersionStmt(name)
-            }
-            Change::Owner(new_owner) => {
-                AlterOwnerStmt::new(
-                    AlterOwnerTarget::Collation(name),
-                    new_owner
-                ).into()
-            }
-            Change::Name(new_name) => {
-                RenameStmt::new(
-                    RenameTarget::Collation(name),
-                    new_name
-                ).into()
-            }
-            Change::Schema(new_schema) => {
-                AlterObjectSchemaStmt::new(
-                    AlterObjectSchemaTarget::Collation(name),
-                    new_schema
-                ).into()
-            }
-        })
+    )?;
+
+    let change = match change {
+        Change::RefreshVersion => {
+            RefreshCollationVersionStmt(name)
+        }
+        Change::Owner(new_owner) => {
+            AlterOwnerStmt::new(
+                AlterOwnerTarget::Collation(name),
+                new_owner
+            ).into()
+        }
+        Change::Name(new_name) => {
+            RenameStmt::new(
+                RenameTarget::Collation(name),
+                new_name
+            ).into()
+        }
+        Change::Schema(new_schema) => {
+            AlterObjectSchemaStmt::new(
+                AlterObjectSchemaTarget::Collation(name),
+                new_schema
+            ).into()
+        }
+    };
+
+    Ok(change)
 }
 
 #[cfg(test)]

@@ -4,8 +4,9 @@ pub(super) fn procedure(stream: &mut TokenStream) -> Result<FunctionWithArgs> {
         PROCEDURE function_with_argtypes
     */
 
-    seq!(stream => Procedure, function_with_argtypes)
-        .map(|(_, signature)| signature)
+    let (_, signature) = seq!(stream => Procedure, function_with_argtypes)?;
+
+    Ok(signature)
 }
 
 #[cfg(test)]

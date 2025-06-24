@@ -9,11 +9,12 @@ pub(super) fn cluster_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
         CLUSTER opt_verbose qualified_name cluster_index_specification
     */
 
-    seq!(stream =>
+    let (_, stmt) = seq!(stream =>
         Cluster,
         parser(|_| todo!())
-    )
-        .map(|(_, stmt)| stmt)
+    )?;
+        
+    Ok(stmt)
 }
 
 use crate::combinators::foundation::parser;

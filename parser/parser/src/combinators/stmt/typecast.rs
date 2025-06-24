@@ -4,15 +4,14 @@ pub(super) fn typecast(stream: &mut TokenStream) -> Result<Typecast> {
         CAST '(' Typename AS Typename ')'
     */
 
-    seq!(=>
-            Cast.parse(stream),
-            between!(paren : stream =>
-                seq!(stream => typename, As, typename)
-            )
+    let (_, (from_type, _, to_type)) = seq!(=>
+        Cast.parse(stream),
+        between!(paren : stream =>
+            seq!(stream => typename, As, typename)
         )
-            .map(|(_, (from_type, _, to_type))|
-                Typecast::new(from_type, to_type)
-            )
+    )?;
+
+    Ok(Typecast::new(from_type, to_type))
 }
 
 #[cfg(test)]
