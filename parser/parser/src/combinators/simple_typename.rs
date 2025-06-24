@@ -11,7 +11,7 @@ pub(super) fn simple_typename() -> impl Combinator<Output = TypeName> {
         match_first!(Dec, Decimal, Kw::Numeric)
             .and_right(opt_type_modifiers())
             .map(Numeric),
-        float(),
+        float,
         bit,
         character,
         timestamp,
@@ -22,29 +22,29 @@ pub(super) fn simple_typename() -> impl Combinator<Output = TypeName> {
 }
 
 /// Inlined: `opt_float`
-fn float() -> impl Combinator<Output = TypeName> {
+fn float(stream: &mut TokenStream) -> Result<TypeName> {
 
     /*
         FLOAT ( '(' ICONST ')' )?
     */
 
-    Float
-        .and_right(located!(opt_precision))
-        .map_result(|result| {
-            let (precision, loc) = result?;
-            match precision {
-                None | Some(25..=53) => Ok(Float8),
-                Some(1..=24) => Ok(Float4),
-                Some(num @ ..=0) => {
-                    let err = FloatPrecisionUnderflow(num).at(loc);
-                    Err(err.into())
-                },
-                Some(num @ 54..) => {
-                    let err = FloatPrecisionOverflow(num).at(loc);
-                    Err(err.into())
-                },
-            }
-        })
+    let (_, (precision, loc)) = seq!(stream =>
+        Float,
+        located!(opt_precision)
+    )?;
+
+    match precision {
+        None | Some(25..=53) => Ok(Float8),
+        Some(1..=24) => Ok(Float4),
+        Some(num @ ..=0) => {
+            let err = FloatPrecisionUnderflow(num).at(loc);
+            Err(err.into())
+        },
+        Some(num @ 54..) => {
+            let err = FloatPrecisionOverflow(num).at(loc);
+            Err(err.into())
+        },
+    }
 }
 
 /// Alias: `Bit`
@@ -153,18 +153,20 @@ fn time(stream: &mut TokenStream) -> Result<TypeName> {
         TIMESTAMP ( '(' ICONST ')' )? opt_timezone
     */
 
-    seq!(stream =>
+    let (_, precision, with_tz) = seq!(stream =>
         Kw::Time,
         opt_precision,
         opt_timezone
-    ).map(|(_, precision, with_tz)| {
-        if with_tz {
-            TimeTz { precision }
-        }
-        else {
-            Time { precision }
-        }
-    })
+    )?;
+
+    let typ = if with_tz {
+        TimeTz { precision }
+    }
+    else {
+        Time { precision }
+    };
+
+    Ok(typ)
 }
 
 fn interval(stream: &mut TokenStream) -> Result<IntervalRange> {
@@ -174,7 +176,7 @@ fn interval(stream: &mut TokenStream) -> Result<IntervalRange> {
         | INTERVAL opt_interval
     */
 
-    seq!(=>
+    let (_, interval) = seq!(=>
         Kw::Interval.parse(stream),
         choice!(parsed stream =>
             i32_literal_paren
@@ -182,8 +184,9 @@ fn interval(stream: &mut TokenStream) -> Result<IntervalRange> {
             opt_interval
         )
             .optional()
-    )
-        .map(|(_, interval)| interval.unwrap_or_default())
+    )?;
+
+    Ok(interval.unwrap_or_default())
 }
 
 /// Alias: `GenericType`
@@ -205,13 +208,12 @@ fn generic_type(stream: &mut TokenStream) -> Result<TypeName> {
         return Ok(Float8)
     }
 
-    seq!(=>
+    let (name, type_modifiers) = seq!(=>
         attrs!(stream => type_function_name.parse(stream)),
         opt_type_modifiers().parse(stream)
-    )
-        .map(|(name, type_modifiers)|
-            Generic { name, type_modifiers }
-        )
+    )?;
+
+    Ok(Generic { name, type_modifiers })
 }
 
 #[cfg(test)]
@@ -289,12 +291,12 @@ mod tests {
 }
 
 use crate::combinators::attrs;
-use crate::combinators::foundation::located;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::choice;
+use crate::combinators::foundation::located;
 use crate::combinators::i32_literal_paren;
 use crate::combinators::opt_interval;
 use crate::combinators::opt_precision;
