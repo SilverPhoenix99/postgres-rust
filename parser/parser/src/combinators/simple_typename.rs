@@ -14,7 +14,7 @@ pub(super) fn simple_typename() -> impl Combinator<Output = TypeName> {
         float(),
         bit(),
         character(),
-        timestamp(),
+        timestamp,
         time,
         interval.map(From::from),
         generic_type
@@ -60,7 +60,7 @@ fn bit() -> impl Combinator<Output = TypeName> {
 
     (
         Kw::Bit.skip(),
-        opt_varying(),
+        opt_varying,
         opt_type_modifiers()
     )
         .map(|(_, varying, mut modifiers)| {
@@ -99,7 +99,7 @@ fn character() -> impl Combinator<Output = TypeName> {
             Nchar.skip(),
             National.and(or(Char, Character)).skip(),
         )
-            .and_right(opt_varying())
+            .and_right(opt_varying)
     )
         .and_then(
             opt_precision,
@@ -118,24 +118,26 @@ fn character() -> impl Combinator<Output = TypeName> {
 }
 
 /// Inlined: `ConstDatetime`
-fn timestamp() -> impl Combinator<Output = TypeName> {
+fn timestamp(stream: &mut TokenStream) -> Result<TypeName> {
 
     /*
         TIMESTAMP ( '(' ICONST ')' )? opt_timezone
     */
 
-    (
-        Kw::Timestamp.skip(),
+    let (_, precision, with_tz) = seq!(stream =>
+        Kw::Timestamp,
         opt_precision,
         opt_timezone
-    ).map(|(_, precision, with_tz)| {
-        if with_tz {
-            TimestampTz { precision }
-        }
-        else {
-            Timestamp { precision }
-        }
-    })
+    )?;
+
+    let typ = if with_tz {
+        TimestampTz { precision }
+    }
+    else {
+        Timestamp { precision }
+    };
+
+    Ok(typ)
 }
 
 /// Inlined: `ConstDatetime`
@@ -281,12 +283,12 @@ mod tests {
 }
 
 use crate::combinators::attrs;
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::choice;
 use crate::combinators::i32_literal_paren;
 use crate::combinators::opt_interval;
 use crate::combinators::opt_precision;
