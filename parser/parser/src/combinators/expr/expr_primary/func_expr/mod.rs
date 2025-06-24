@@ -13,16 +13,16 @@ pub(super) fn func_expr() -> impl Combinator<Output = ExprNode> {
         Kw::CurrentCatalog.map(|_| CurrentCatalog),
         Kw::CurrentDate.map(|_| CurrentDate),
         Kw::CurrentTime
-            .and_right(opt_precision())
+            .and_right(opt_precision)
             .map(|precision| CurrentTime { precision }),
         Kw::CurrentTimestamp
-            .and_right(opt_precision())
+            .and_right(opt_precision)
             .map(|precision| CurrentTimestamp { precision }),
         Kw::Localtime
-            .and_right(opt_precision())
+            .and_right(opt_precision)
             .map(|precision| LocalTime { precision }),
         Kw::Localtimestamp
-            .and_right(opt_precision())
+            .and_right(opt_precision)
             .map(|precision| LocalTimestamp { precision }),
         case_expr().map(From::from),
         cast_expr().map(From::from),

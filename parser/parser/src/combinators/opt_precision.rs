@@ -1,7 +1,10 @@
-pub(super) fn opt_precision() -> impl Combinator<Output = Option<i32>> {
-    i32_literal_paren()
+pub(super) fn opt_precision(stream: &mut TokenStream) -> Result<Option<i32>> {
+    i32_literal_paren
         .optional()
+        .parse(stream)
 }
 
 use crate::combinators::foundation::Combinator;
 use crate::combinators::i32_literal_paren;
+use crate::scan::Result;
+use crate::stream::TokenStream;

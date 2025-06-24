@@ -20,7 +20,7 @@ pub(super) fn opt_array_bounds(stream: &mut TokenStream) -> Result<Option<Vec<Op
         )
     )
         .optional()
-        .map_err(crate::scan::Error::from)
+        .map_err(From::from)
 }
 
 #[cfg(test)]

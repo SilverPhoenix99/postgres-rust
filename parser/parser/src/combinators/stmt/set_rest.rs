@@ -140,7 +140,7 @@ fn zone_value(stream: &mut TokenStream) -> Result<ZoneValue> {
             choice!(
                 (string, zone_value_interval)
                     .map(|(value, range)| Interval { value, range }),
-                (i32_literal_paren(), string)
+                (i32_literal_paren, string)
                     .map(|(precision, value)|
                         Interval {
                             value,

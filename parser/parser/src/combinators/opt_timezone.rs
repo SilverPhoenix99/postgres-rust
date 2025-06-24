@@ -1,16 +1,21 @@
-pub(super) fn opt_timezone() -> impl Combinator<Output = bool> {
+pub(super) fn opt_timezone(stream: &mut TokenStream) -> Result<bool> {
 
     /*
         ( (WITH | WITHOUT) TIME ZONE )?
     */
 
-    match_first!(
-        With.map(|_| true),
-        Without.map(|_| false)
+    let tz = seq!(=>
+        choice!(parsed stream =>
+            With.map(|_| true),
+            Without.map(|_| false)
+        ),
+        Time.parse(stream),
+        Zone.parse(stream)
     )
-        .and_left((Time, Zone).skip())
-        .optional()
-        .map(|tz| tz.unwrap_or(false))
+        .map(|(tz, ..)| tz)
+        .optional()?;
+
+    Ok(tz.unwrap_or(false))
 }
 
 #[cfg(test)]
@@ -24,12 +29,16 @@ mod tests {
     #[test_case("something else", false)]
     #[test_case("", false)]
     fn test_opt_timezone(source: &str, expected: bool) {
-        test_parser!(source, opt_timezone(), expected);
+        test_parser!(source, opt_timezone, expected);
     }
 }
 
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::choice;
+use crate::result::Optional;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_lexer::Keyword::Time;
 use pg_lexer::Keyword::With;
 use pg_lexer::Keyword::Without;

@@ -1,4 +1,3 @@
-
 /// Aliases:
 /// * `AlterExtensionContentsStmt`
 /// * `AlterExtensionStmt`
@@ -51,12 +50,12 @@ fn alter_extension_options(stream: &mut TokenStream) -> Result<Option<Vec<Str>>>
         ( TO NonReservedWord_or_Sconst )*
     */
 
-    many!(
-        (To, non_reserved_word_or_sconst()).right()
+    many!(=>
+        seq!(stream => To, non_reserved_word_or_sconst())
+            .map(|(_, opt)| opt)
     )
         .optional()
         .map_err(From::from)
-        .parse(stream)
 }
 
 fn alter_extension_target() -> impl Combinator<Output = AlterExtensionContentsTarget> {
@@ -273,6 +272,7 @@ use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::stmt::access_method;
@@ -308,12 +308,48 @@ use crate::combinators::stmt::view;
 use crate::combinators::stmt::Foreign;
 use crate::combinators::stmt::Operator as Op;
 use crate::combinators::stmt::TextSearch;
+use crate::result::Optional;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::AddDrop;
 use pg_ast::AlterExtensionContentsStmt;
 use pg_ast::AlterExtensionContentsTarget;
-use pg_ast::AlterExtensionContentsTarget::*;
+use pg_ast::AlterExtensionContentsTarget::AccessMethod;
+use pg_ast::AlterExtensionContentsTarget::Aggregate;
+use pg_ast::AlterExtensionContentsTarget::Collation;
+use pg_ast::AlterExtensionContentsTarget::Conversion;
+use pg_ast::AlterExtensionContentsTarget::Database;
+use pg_ast::AlterExtensionContentsTarget::Domain;
+use pg_ast::AlterExtensionContentsTarget::EventTrigger;
+use pg_ast::AlterExtensionContentsTarget::ExtendedStatistics;
+use pg_ast::AlterExtensionContentsTarget::Extension;
+use pg_ast::AlterExtensionContentsTarget::ForeignDataWrapper;
+use pg_ast::AlterExtensionContentsTarget::ForeignServer;
+use pg_ast::AlterExtensionContentsTarget::ForeignTable;
+use pg_ast::AlterExtensionContentsTarget::Function;
+use pg_ast::AlterExtensionContentsTarget::Index;
+use pg_ast::AlterExtensionContentsTarget::Language;
+use pg_ast::AlterExtensionContentsTarget::MaterializedView;
+use pg_ast::AlterExtensionContentsTarget::Operator;
+use pg_ast::AlterExtensionContentsTarget::OperatorClass;
+use pg_ast::AlterExtensionContentsTarget::OperatorFamily;
+use pg_ast::AlterExtensionContentsTarget::Procedure;
+use pg_ast::AlterExtensionContentsTarget::Publication;
+use pg_ast::AlterExtensionContentsTarget::Role;
+use pg_ast::AlterExtensionContentsTarget::Routine;
+use pg_ast::AlterExtensionContentsTarget::Schema;
+use pg_ast::AlterExtensionContentsTarget::Sequence;
+use pg_ast::AlterExtensionContentsTarget::Subscription;
+use pg_ast::AlterExtensionContentsTarget::Table;
+use pg_ast::AlterExtensionContentsTarget::Tablespace;
+use pg_ast::AlterExtensionContentsTarget::TextSearchConfiguration;
+use pg_ast::AlterExtensionContentsTarget::TextSearchDictionary;
+use pg_ast::AlterExtensionContentsTarget::TextSearchParser;
+use pg_ast::AlterExtensionContentsTarget::TextSearchTemplate;
+use pg_ast::AlterExtensionContentsTarget::Transform;
+use pg_ast::AlterExtensionContentsTarget::Type;
+use pg_ast::AlterExtensionContentsTarget::Typecast;
+use pg_ast::AlterExtensionContentsTarget::View;
 use pg_ast::AlterExtensionStmt;
 use pg_ast::AlterObjectSchemaStmt;
 use pg_ast::AlterObjectSchemaTarget;

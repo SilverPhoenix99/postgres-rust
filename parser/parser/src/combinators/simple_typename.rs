@@ -15,7 +15,7 @@ pub(super) fn simple_typename() -> impl Combinator<Output = TypeName> {
         bit(),
         character(),
         timestamp(),
-        time(),
+        time,
         interval.map(From::from),
         generic_type
     )
@@ -29,7 +29,7 @@ fn float() -> impl Combinator<Output = TypeName> {
     */
 
     Float
-        .and_right(located!(opt_precision()))
+        .and_right(located!(opt_precision))
         .map_result(|result| {
             let (precision, loc) = result?;
             match precision {
@@ -102,7 +102,7 @@ fn character() -> impl Combinator<Output = TypeName> {
             .and_right(opt_varying())
     )
         .and_then(
-            opt_precision(),
+            opt_precision,
             |varying, mut length| {
                 if varying {
                     return Varchar { max_length: length }
@@ -126,8 +126,8 @@ fn timestamp() -> impl Combinator<Output = TypeName> {
 
     (
         Kw::Timestamp.skip(),
-        opt_precision(),
-        opt_timezone()
+        opt_precision,
+        opt_timezone
     ).map(|(_, precision, with_tz)| {
         if with_tz {
             TimestampTz { precision }
@@ -139,16 +139,16 @@ fn timestamp() -> impl Combinator<Output = TypeName> {
 }
 
 /// Inlined: `ConstDatetime`
-fn time() -> impl Combinator<Output = TypeName> {
+fn time(stream: &mut TokenStream) -> Result<TypeName> {
 
     /*
         TIMESTAMP ( '(' ICONST ')' )? opt_timezone
     */
 
-    (
-        Kw::Time.skip(),
-        opt_precision(),
-        opt_timezone()
+    seq!(stream =>
+        Kw::Time,
+        opt_precision,
+        opt_timezone
     ).map(|(_, precision, with_tz)| {
         if with_tz {
             TimeTz { precision }
@@ -169,12 +169,11 @@ fn interval(stream: &mut TokenStream) -> Result<IntervalRange> {
     seq!(=>
         Kw::Interval.parse(stream),
         choice!(parsed stream =>
-            i32_literal_paren()
+            i32_literal_paren
                 .map(|precision| Full { precision: Some(precision) }),
             opt_interval
         )
             .optional()
-            .map_err(Error::from)
     )
         .map(|(_, interval)| interval.unwrap_or_default())
 }

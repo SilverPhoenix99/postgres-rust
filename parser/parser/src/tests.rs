@@ -29,7 +29,7 @@ macro_rules! test_parser {
     }};
 }
 
-pub(crate) fn stream(source: &str) -> TokenStream {
+pub(crate) fn stream(source: &str) -> TokenStream<'_> {
     TokenStream::new(source, DEFAULT_CONFIG)
 }
 

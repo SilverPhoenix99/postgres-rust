@@ -17,18 +17,18 @@ pub(super) fn opt_interval(stream: &mut TokenStream) -> Result<IntervalRange> {
         | /* EMPTY */
     */
 
-    choice!(stream =>
+    let interval = choice!(stream =>
         year.parse(stream),
         MonthKw.parse(stream).map(|_| Month),
         day.parse(stream),
         hour.parse(stream),
         minute.parse(stream),
-        seq!(stream => SecondKw, opt_precision())
+        seq!(stream => SecondKw, opt_precision)
             .map(|(_, precision)| Second { precision }),
     )
-        .optional()
-        .map(Option::unwrap_or_default)
-        .map_err(Error::from)
+        .optional()?;
+
+    Ok(interval.unwrap_or_default())
 }
 
 fn year(stream: &mut TokenStream) -> Result<IntervalRange> {
@@ -63,13 +63,12 @@ fn day(stream: &mut TokenStream) -> Result<IntervalRange> {
             choice!(stream =>
                 HourKw.parse(stream).map(|_| DayToHour),
                 MinuteKw.parse(stream).map(|_| DayToMinute),
-                seq!(stream => SecondKw, opt_precision())
+                seq!(stream => SecondKw, opt_precision)
                     .map(|(_, precision)| DayToSecond { precision })
             )
         )
             .map(|(_, interval)| interval)
             .optional()
-            .map_err(Error::from)
     )
         .map(|(_, d)| d.unwrap_or(Day))
 }
@@ -88,13 +87,12 @@ fn hour(stream: &mut TokenStream) -> Result<IntervalRange> {
             To.parse(stream),
             choice!(stream =>
                 MinuteKw.parse(stream).map(|_| HourToMinute),
-                seq!(stream => SecondKw, opt_precision())
+                seq!(stream => SecondKw, opt_precision)
                     .map(|(_, precision)| HourToSecond { precision })
             )
         )
             .map(|(_, interval)| interval)
             .optional()
-            .map_err(Error::from)
     )
         .map(|(_, h)| h.unwrap_or(Hour))
 }
@@ -111,11 +109,10 @@ fn minute(stream: &mut TokenStream) -> Result<IntervalRange> {
         seq!(stream =>
             To,
             SecondKw,
-            opt_precision()
+            opt_precision
         )
             .map(|(.., precision)| precision)
             .optional()
-            .map_err(Error::from)
     )
         .map(|(_, precision)| match precision {
             None => Minute,
@@ -148,12 +145,11 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::choice;
 use crate::combinators::opt_precision;
 use crate::result::Optional;
-use crate::scan::Error;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::IntervalRange;
