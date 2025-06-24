@@ -6,21 +6,21 @@ pub(super) fn typename() -> impl Combinator<Output = Type> {
     */
 
     match_first! {
-        (Setof, record_typename())
+        (Setof, record_typename)
             .map(|(_, typename)| {
                 typename.returning_table()
             }),
-        record_typename(),
+        record_typename,
     }
 }
 
-fn record_typename() -> impl Combinator<Output = Type> {
+fn record_typename(stream: &mut TokenStream) -> Result<Type> {
 
     /*
         SimpleTypename opt_array_bounds
     */
 
-    (simple_typename(), opt_array_bounds())
+    seq!(stream => simple_typename(), opt_array_bounds)
         .map(|(typename, array_bounds)| {
             typename.with_array_bounds(array_bounds)
         })
@@ -32,7 +32,6 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
-    use pg_ast::Type;
     #[allow(unused_imports)]
     use pg_ast::{SetOf, TypeName};
     use test_case::test_case;
@@ -65,9 +64,11 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::{match_first, seq};
 use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_array_bounds;
 use crate::combinators::simple_typename;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::Type;
 use pg_lexer::Keyword::Setof;
