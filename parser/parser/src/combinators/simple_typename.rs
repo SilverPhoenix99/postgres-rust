@@ -17,7 +17,7 @@ pub(super) fn simple_typename() -> impl Combinator<Output = TypeName> {
         timestamp(),
         time(),
         interval().map(From::from),
-        generic_type()
+        generic_type
     )
 }
 
@@ -177,38 +177,29 @@ fn interval() -> impl Combinator<Output = IntervalRange> {
 /// Alias: `GenericType`
 ///
 /// Includes `DOUBLE PRECISION` due to conflict with `Unreserved` keywords.
-fn generic_type() -> impl Combinator<Output = TypeName> {
+fn generic_type(stream: &mut TokenStream) -> Result<TypeName> {
 
     /*
           DOUBLE PRECISION
         | type_function_name ( attrs )? opt_type_modifiers
     */
 
-    match_first!(
-        Unreserved
-            .chain(|kw, stream| {
-                if kw == Double && Precision.optional().parse(stream)?.is_some() {
-                    // `Double` conflicts with, and has lower precedence than, any other `Keyword::Unreserved`.
-                    // If it's followed by `Precision`, then it's a Float8.
-                    // Otherwise, it's a plain `Unreserved` keyword, which can be its own User Defined Type.
-                    return Ok(Float8)
-                }
+    // `Double` conflicts with, and has lower precedence than, any other `Keyword::Unreserved`.
+    // If it's followed by `Precision`, then it's a Float8.
+    // Otherwise, it's a plain `Unreserved` keyword, which can be its own User Defined Type.
+    if matches!(stream.peek2_option(), Some((TokenValue::Keyword(Double), TokenValue::Keyword(Precision)))) {
+        // Shouldn't fail, since it was already tested
+        seq!(stream => Double, Precision).required()?;
+        return Ok(Float8)
+    }
 
-                let prefix = parser(move |_| Ok(kw.into()));
-                attrs!(prefix)
-                    .and_then(enclosure! { opt_type_modifiers() }, |name, type_modifiers|
-                        Generic { name, type_modifiers }
-                    )
-                    .parse(stream)
-            }),
-        attrs!(or(
-            TypeFuncName.map(From::from),
-            identifier.map(From::from)
-        ))
-            .and_then(enclosure!{ opt_type_modifiers() }, |name, type_modifiers|
-                Generic { name, type_modifiers }
-            )
+    seq!(=>
+        attrs!(stream => type_function_name().parse(stream)),
+        opt_type_modifiers().parse(stream)
     )
+        .map(|(name, type_modifiers)|
+            Generic { name, type_modifiers }
+        )
 }
 
 #[cfg(test)]
@@ -295,12 +286,10 @@ mod tests {
 }
 
 use crate::combinators::attrs;
-use crate::combinators::foundation::enclosure;
-use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::i32_literal_paren;
 use crate::combinators::opt_interval;
@@ -308,6 +297,10 @@ use crate::combinators::opt_precision;
 use crate::combinators::opt_timezone;
 use crate::combinators::opt_type_modifiers;
 use crate::combinators::opt_varying;
+use crate::combinators::type_function_name;
+use crate::result::Required;
+use crate::scan::Result;
+use crate::stream::{TokenStream, TokenValue};
 use pg_ast::ExprNode::IntegerConst;
 use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Full;
@@ -347,5 +340,3 @@ use pg_lexer::Keyword::Nchar;
 use pg_lexer::Keyword::Precision;
 use pg_lexer::Keyword::Real;
 use pg_lexer::Keyword::Smallint;
-use pg_lexer::KeywordCategory::TypeFuncName;
-use pg_lexer::KeywordCategory::Unreserved;
