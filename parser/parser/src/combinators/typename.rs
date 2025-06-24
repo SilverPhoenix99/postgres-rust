@@ -20,10 +20,11 @@ fn record_typename(stream: &mut TokenStream) -> Result<Type> {
         SimpleTypename opt_array_bounds
     */
 
-    seq!(stream => simple_typename(), opt_array_bounds)
-        .map(|(typename, array_bounds)| {
-            typename.with_array_bounds(array_bounds)
-        })
+    let (typename, array_bounds) = seq!(stream => simple_typename, opt_array_bounds)?;
+
+    let typename = typename.with_array_bounds(array_bounds);
+
+    Ok(typename)
 }
 
 
@@ -61,9 +62,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::choice;
 use crate::combinators::opt_array_bounds;
 use crate::combinators::simple_typename;
 use crate::scan::Result;

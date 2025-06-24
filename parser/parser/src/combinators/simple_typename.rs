@@ -1,16 +1,14 @@
 /// Alias: `SimpleTypename`
-pub(super) fn simple_typename() -> impl Combinator<Output = TypeName> {
+pub(super) fn simple_typename(stream: &mut TokenStream) -> Result<TypeName> {
 
-    match_first!(
+    choice!(parsed stream =>
         Kw::Json.map(|_| Json),
         Boolean.map(|_| Bool),
         Smallint.map(|_| Int2),
-        or(Int, Integer).map(|_| Int4),
         Bigint.map(|_| Int8),
         Real.map(|_| Float4),
-        match_first!(Dec, Decimal, Kw::Numeric)
-            .and_right(opt_type_modifiers())
-            .map(Numeric),
+        decimal,
+        int,
         float,
         bit,
         character,
@@ -19,6 +17,32 @@ pub(super) fn simple_typename() -> impl Combinator<Output = TypeName> {
         interval.map(From::from),
         generic_type
     )
+}
+
+fn int(stream: &mut TokenStream) -> Result<TypeName> {
+
+    /*
+        INT | INTEGER
+    */
+
+    choice!(parsed stream => Int, Integer)?;
+    Ok(Int4)
+}
+
+fn decimal(stream: &mut TokenStream) -> Result<TypeName> {
+
+    /*
+          DECIMAL ( '(' ICONST ')' )?
+        | NUMERIC ( '(' ICONST ')' )?
+        | DEC ( '(' ICONST ')' )?
+    */
+
+    let (_, typ) = seq!(=>
+        choice!(parsed stream => Dec, Decimal, Kw::Numeric),
+        opt_type_modifiers().parse(stream).map(Numeric),
+    )?;
+
+    Ok(typ)
 }
 
 /// Inlined: `opt_float`
@@ -286,17 +310,15 @@ mod tests {
     #[test_case("double.unreserved(55)",          TypeName::Generic { name: vec!["double".into(), "unreserved".into()], type_modifiers: Some(vec![IntegerConst(55)]) })]
     #[test_case("full.type_func_name",            TypeName::Generic { name: vec!["full".into(), "type_func_name".into()], type_modifiers: None })]
     fn test_simple_typename(source: &str, expected: TypeName) {
-        test_parser!(source, simple_typename(), expected)
+        test_parser!(source, simple_typename, expected)
     }
 }
 
 use crate::combinators::attrs;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::located;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::located;
+use crate::combinators::foundation::choice;
 use crate::combinators::i32_literal_paren;
 use crate::combinators::opt_interval;
 use crate::combinators::opt_precision;

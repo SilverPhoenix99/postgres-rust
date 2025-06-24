@@ -5,10 +5,9 @@ pub(super) fn comment_stmt(stream: &mut TokenStream) -> Result<CommentStmt> {
           COMMENT ON comment_target IS comment_text
     */
 
-    seq!(stream => Comment, On, comment_target, comment_text)
-        .map(|(.., target, comment)|
-            CommentStmt::new(target, comment)
-        )
+    let (.., target, comment) = seq!(stream => Comment, On, comment_target, comment_text)?;
+
+    Ok(CommentStmt::new(target, comment))
 }
 
 fn comment_target(stream: &mut TokenStream) -> Result<CommentTarget> {
@@ -118,28 +117,31 @@ fn constraint(stream: &mut TokenStream) -> Result<CommentTarget> {
         Table(QualifiedName)
     }
 
-    seq!(=>
+    let (_, name, _, constraint) = seq!(=>
         Kw::Constraint.parse(stream),
         col_id.parse(stream),
         On.parse(stream),
         choice!(stream =>
             // See https://github.com/postgres/postgres/blob/cdc168ad4b22ea4183f966688b245cabb5935d1f/src/backend/parser/gram.y#L7230-L7232
-            seq!(stream => Kw::Domain, simple_typename())
+            seq!(stream => Kw::Domain, simple_typename)
                 .map(|(_, domain)| Constraint::Domain(domain)),
             any_name.parse(stream)
                 .map(Constraint::Table)
         )
-    )
-        .map(|(_, name, _, constraint)| match constraint {
-            Constraint::Domain(domain) => DomainConstraint {
-                constraint: name,
-                domain,
-            },
-            Constraint::Table(table) => TableConstraint {
-                constraint: name,
-                table,
-            },
-        })
+    )?;
+
+    let target = match constraint {
+        Constraint::Domain(domain) => DomainConstraint {
+            constraint: name,
+            domain,
+        },
+        Constraint::Table(table) => TableConstraint {
+            constraint: name,
+            table,
+        },
+    };
+
+    Ok(target)
 }
 
 fn policy(stream: &mut TokenStream) -> Result<CommentTarget> {
@@ -330,9 +332,9 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::choice;
 use crate::combinators::simple_typename;
 use crate::combinators::stmt::access_method;
 use crate::combinators::stmt::aggregate;
