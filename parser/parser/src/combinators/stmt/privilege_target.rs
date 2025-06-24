@@ -77,7 +77,7 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
             .and_right(name_list())
             .map(Schema),
         Kw::Sequence
-            .and_right(qualified_name_list())
+            .and_right(qualified_name_list)
             .map(Sequence),
         Kw::Tablespace
             .and_right(name_list())
@@ -86,7 +86,7 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
             .and_right(any_name_list)
             .map(Type),
         Kw::Table.optional()
-            .and_right(qualified_name_list())
+            .and_right(qualified_name_list)
             .map(Table)
     }
 }

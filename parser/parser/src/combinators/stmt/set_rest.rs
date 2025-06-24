@@ -90,7 +90,7 @@ fn set_var_name(stream: &mut TokenStream) -> Result<SetRestMore> {
     let option =
         choice!(
             (FromKw, Current).map(|_| None),
-            generic_set_tail().map(Some)
+            generic_set_tail.map(Some)
         )
         .parse(stream)?;
 

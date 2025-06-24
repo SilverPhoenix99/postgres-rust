@@ -1,16 +1,16 @@
-pub(super) fn var_list() -> impl Combinator<Output = Vec<VarValue>> {
+pub(super) fn var_list(stream: &mut TokenStream) -> Result<Vec<VarValue>> {
 
-    many!(sep = Comma, var_value())
+    many!(stream => sep = Comma, var_value)
 }
 
-pub(super) fn var_value() -> impl Combinator<Output = VarValue> {
+pub(super) fn var_value(stream: &mut TokenStream) -> Result<VarValue> {
 
     /*
           opt_boolean_or_string
         | signed_number
     */
 
-    match_first!(
+    choice!(parsed stream =>
         boolean_or_string().map(From::from),
         signed_number.map(From::from)
     )
@@ -19,8 +19,7 @@ pub(super) fn var_value() -> impl Combinator<Output = VarValue> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use test_case::test_case;
 
     #[test_case("true", true.into())]
@@ -30,16 +29,16 @@ mod tests {
     #[test_case("'value'", "value".into())]
     #[test_case("+123", 123.into())]
     fn test_var_value(source: &str, expected: VarValue) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = var_value().parse(&mut stream);
-        assert_eq!(Ok(expected), actual);
+        test_parser!(source, var_value, expected)
     }
 }
 
 use crate::combinators::boolean_or_string;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::signed_number;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::VarValue;
 use pg_lexer::OperatorKind::Comma;

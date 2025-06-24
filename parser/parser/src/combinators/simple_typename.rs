@@ -194,7 +194,7 @@ fn generic_type(stream: &mut TokenStream) -> Result<TypeName> {
     }
 
     seq!(=>
-        attrs!(stream => type_function_name().parse(stream)),
+        attrs!(stream => type_function_name.parse(stream)),
         opt_type_modifiers().parse(stream)
     )
         .map(|(name, type_modifiers)|

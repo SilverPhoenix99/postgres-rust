@@ -33,7 +33,7 @@ fn constraints_set_list() -> impl Combinator<Output = OneOrAll<Vec<RelationName>
 
     match_first! {
         All.map(|_| OneOrAll::All),
-        qualified_name_list().map(OneOrAll::One)
+        qualified_name_list.map(OneOrAll::One)
     }
 }
 

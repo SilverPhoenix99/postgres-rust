@@ -13,7 +13,7 @@ pub(super) fn alter_system_stmt() -> impl Combinator<Output = AlterSystemStmt> {
                 OneOrAll::One(name) => AlterSystemStmt::Reset { name }
             }),
             Set.and_right(var_name)
-                .and_then(enclosure!(generic_set_tail()), |name, set| match set {
+                .and_then(enclosure!(generic_set_tail), |name, set| match set {
                 ValueOrDefault::Default => AlterSystemStmt::SetDefault { name },
                 ValueOrDefault::Value(values) => AlterSystemStmt::Set { name, values }
             })

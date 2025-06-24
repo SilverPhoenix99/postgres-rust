@@ -75,7 +75,7 @@ pub(in crate::combinators::stmt) fn createdb_opt_value() -> impl Combinator<Outp
 
     match_first! {
         DefaultKw.map(|_| Default),
-        var_value().map(From::from)
+        var_value.map(From::from)
     }
 }
 

@@ -17,7 +17,7 @@ pub(super) fn func_arg() -> impl Combinator<Output = FunctionParameter> {
             // It's the argument name.
             // Regardless of `arg_class` matching or not, `is_arg_name()` returned `true`,
             // so this is guaranteed to be `Some` argument name.
-            Some(type_function_name().required().parse(stream)?)
+            Some(type_function_name.required().parse(stream)?)
         }
         else {
             None

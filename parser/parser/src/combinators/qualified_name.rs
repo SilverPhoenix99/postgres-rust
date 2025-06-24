@@ -1,10 +1,10 @@
-pub(super) fn qualified_name_list() -> impl Combinator<Output = Vec<RelationName>> {
+pub(super) fn qualified_name_list(stream: &mut TokenStream) -> Result<Vec<RelationName>> {
 
     /*
         qualified_name ( ',' qualified_name )*
     */
 
-    many!(sep = Comma, qualified_name)
+    many!(stream => sep = Comma, qualified_name)
 }
 
 pub(super) fn qualified_name(stream: &mut TokenStream) -> Result<RelationName> {
@@ -50,30 +50,28 @@ pub(super) fn qualified_name(stream: &mut TokenStream) -> Result<RelationName> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::{test_parser, DEFAULT_CONFIG};
+    use crate::tests::test_parser;
 
     #[test]
     fn test_qualified_name_list() {
-        let source = "relation_,schema_.relation_, catalog_.schema_.relation_";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        let expected = vec![
-            RelationName::new("relation_", None),
-            RelationName::new(
-                "relation_",
-                Some(SchemaName::new("schema_", None))
-            ),
-            RelationName::new(
-                "relation_",
-                Some(SchemaName::new(
-                    "schema_",
-                    Some("catalog_".into())
-                ))
-            )
-        ];
-
-        assert_eq!(Ok(expected), qualified_name_list().parse(&mut stream));
+        test_parser!(
+            source = "relation_,schema_.relation_, catalog_.schema_.relation_",
+            parser = qualified_name_list,
+            expected = vec![
+                RelationName::new("relation_", None),
+                RelationName::new(
+                    "relation_",
+                    Some(SchemaName::new("schema_", None))
+                ),
+                RelationName::new(
+                    "relation_",
+                    Some(SchemaName::new(
+                        "schema_",
+                        Some("catalog_".into())
+                    ))
+                )
+            ]
+        )
     }
 
     #[test]
