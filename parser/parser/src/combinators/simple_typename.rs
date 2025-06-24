@@ -170,7 +170,7 @@ fn interval() -> impl Combinator<Output = IntervalRange> {
         .and_right(or(
             i32_literal_paren()
                 .map(|precision| Full { precision: Some(precision) }),
-            opt_interval(),
+            opt_interval,
         ))
 }
 

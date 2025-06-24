@@ -1,4 +1,4 @@
-pub(super) fn opt_interval() -> impl Combinator<Output = IntervalRange> {
+pub(super) fn opt_interval(stream: &mut TokenStream) -> Result<IntervalRange> {
 
     /*
           YEAR
@@ -17,37 +17,37 @@ pub(super) fn opt_interval() -> impl Combinator<Output = IntervalRange> {
         | /* EMPTY */
     */
 
-    match_first! (
-        year(),
-        MonthKw.map(|_| Month),
-        day(),
-        hour(),
-        minute(),
-        SecondKw
-            .and_right(opt_precision())
-            .map(|precision| Second { precision }),
+    choice!(stream =>
+        year.parse(stream),
+        MonthKw.parse(stream).map(|_| Month),
+        day.parse(stream),
+        hour.parse(stream),
+        minute.parse(stream),
+        seq!(stream => SecondKw, opt_precision())
+            .map(|(_, precision)| Second { precision }),
     )
         .optional()
         .map(Option::unwrap_or_default)
+        .map_err(Error::from)
 }
 
-fn year() -> impl Combinator<Output = IntervalRange> {
+fn year(stream: &mut TokenStream) -> Result<IntervalRange> {
 
     /*
           YEAR
         | YEAR TO MONTH
     */
 
-    YearKw.and_right(
-        To.and(MonthKw)
+    seq!(=>
+        YearKw.parse(stream),
+        seq!(stream => To, MonthKw)
+            .map(|_| ())
             .optional()
-            .map(|y|
-                if y.is_some() { YearToMonth } else { Year }
-            )
     )
+        .map(|(_, y)| if y.is_some() { YearToMonth } else { Year })
 }
 
-fn day() -> impl Combinator<Output = IntervalRange> {
+fn day(stream: &mut TokenStream) -> Result<IntervalRange> {
 
     /*
           DAY
@@ -56,21 +56,25 @@ fn day() -> impl Combinator<Output = IntervalRange> {
         | DAY TO SECOND ( '(' ICONST ')' )?
     */
 
-    DayKw
-        .and_right(
-            To.and_right(match_first! {
-                HourKw.map(|_| DayToHour),
-                MinuteKw.map(|_| DayToMinute),
-                SecondKw.and_right(
-                    opt_precision().map(|precision| DayToSecond { precision })
-                )
-            })
-            .optional()
+    seq!(=>
+        DayKw.parse(stream),
+        seq!(=>
+            To.parse(stream),
+            choice!(stream =>
+                HourKw.parse(stream).map(|_| DayToHour),
+                MinuteKw.parse(stream).map(|_| DayToMinute),
+                seq!(stream => SecondKw, opt_precision())
+                    .map(|(_, precision)| DayToSecond { precision })
+            )
         )
-        .map(|d| d.unwrap_or(Day))
+            .map(|(_, interval)| interval)
+            .optional()
+            .map_err(Error::from)
+    )
+        .map(|(_, d)| d.unwrap_or(Day))
 }
 
-fn hour() -> impl Combinator<Output = IntervalRange> {
+fn hour(stream: &mut TokenStream) -> Result<IntervalRange> {
 
     /*
           HOUR
@@ -78,35 +82,42 @@ fn hour() -> impl Combinator<Output = IntervalRange> {
         | HOUR TO SECOND ( '(' ICONST ')' )?
     */
 
-    HourKw
-        .and_right(
-            To.and_right(match_first! {
-                MinuteKw.map(|_| HourToMinute),
-                SecondKw.and_right(
-                    opt_precision().map(|precision| HourToSecond { precision })
-                )
-            })
-            .optional()
+    seq!(=>
+        HourKw.parse(stream),
+        seq!(=>
+            To.parse(stream),
+            choice!(stream =>
+                MinuteKw.parse(stream).map(|_| HourToMinute),
+                seq!(stream => SecondKw, opt_precision())
+                    .map(|(_, precision)| HourToSecond { precision })
+            )
         )
-        .map(|h| h.unwrap_or(Hour))
+            .map(|(_, interval)| interval)
+            .optional()
+            .map_err(Error::from)
+    )
+        .map(|(_, h)| h.unwrap_or(Hour))
 }
 
-fn minute() -> impl Combinator<Output = IntervalRange> {
+fn minute(stream: &mut TokenStream) -> Result<IntervalRange> {
 
     /*
           MINUTE
         | MINUTE TO SECOND ( '(' ICONST ')' )?
     */
 
-    MinuteKw
-        .and_right(
-            (
-                To.and(SecondKw).skip(),
-                opt_precision()
-            )
-            .map(|(_, precision)| precision)
+    seq!(=>
+        MinuteKw.parse(stream),
+        seq!(stream =>
+            To,
+            SecondKw,
+            opt_precision()
+        )
+            .map(|(.., precision)| precision)
             .optional()
-        ).map(|precision| match precision {
+            .map_err(Error::from)
+    )
+        .map(|(_, precision)| match precision {
             None => Minute,
             Some(precision) => MinuteToSecond { precision }
         })
@@ -115,8 +126,7 @@ fn minute() -> impl Combinator<Output = IntervalRange> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use test_case::test_case;
 
     #[test_case("",                  IntervalRange::default())]
@@ -134,21 +144,18 @@ mod tests {
     #[test_case("second",            IntervalRange::Second { precision: None })]
     #[test_case("second(3)",         IntervalRange::Second { precision: Some(3) })]
     fn test_opt_interval(source: &str, expected: IntervalRange) {
-
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = opt_interval().parse(&mut stream);
-
-        assert_eq!(
-            Ok(expected),
-            actual,
-            r"expected {expected:?} for source {source:?} but actually got {actual:?}"
-        );
+        test_parser!(source, opt_interval, expected)
     }
 }
 
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_precision;
+use crate::result::Optional;
+use crate::scan::Error;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Day;
 use pg_ast::IntervalRange::DayToHour;

@@ -156,7 +156,7 @@ fn zone_value(stream: &mut TokenStream) -> Result<ZoneValue> {
 
 fn zone_value_interval(stream: &mut TokenStream) -> Result<IntervalRange> {
 
-    let (zone, loc) = located!(opt_interval()).parse(stream)?;
+    let (zone, loc) = located!(opt_interval).parse(stream)?;
 
     if matches!(zone, Full { .. } | Hour | HourToMinute) {
         return Ok(zone)
