@@ -1,19 +1,19 @@
-pub(super) fn operator_with_argtypes_list() -> impl Combinator<Output = Vec<OperatorWithArgs>> {
+pub(super) fn operator_with_argtypes_list(stream: &mut TokenStream) -> Result<Vec<OperatorWithArgs>> {
 
     /*
         operator_with_argtypes ( ',' operator_with_argtypes )*
     */
 
-    many!(sep = Comma, operator_with_argtypes())
+    many!(stream => sep = Comma, operator_with_argtypes)
 }
 
-pub(super) fn operator_with_argtypes() -> impl Combinator<Output = OperatorWithArgs> {
+pub(super) fn operator_with_argtypes(stream: &mut TokenStream) -> Result<OperatorWithArgs> {
 
     /*
         any_operator oper_argtypes
     */
 
-    (any_operator, oper_argtypes)
+    seq!(stream => any_operator, oper_argtypes)
         .map(|(name, args)|
             OperatorWithArgs::new(name, args)
         )
@@ -73,7 +73,7 @@ mod tests {
     fn test_operator_with_argtypes_list() {
         test_parser!(
             source = "=(int, int), =(none, int), =(int, none)",
-            parser = operator_with_argtypes_list(),
+            parser = operator_with_argtypes_list,
             expected = vec![
                 OperatorWithArgs::new(QualifiedOperator(vec![], Equals), OneOrBoth::Both(Int4.into(), Int4.into())),
                 OperatorWithArgs::new(QualifiedOperator(vec![], Equals), OneOrBoth::Right(Int4.into())),
@@ -88,7 +88,7 @@ mod tests {
     fn test_operator_with_argtypes(source: &str, expected: OneOrBoth<Type>) {
         test_parser!(
             source = source,
-            parser = operator_with_argtypes(),
+            parser = operator_with_argtypes,
             expected = OperatorWithArgs::new(QualifiedOperator(vec![], Equals), expected)
         )
     }
@@ -105,7 +105,7 @@ use crate::combinators::foundation::between;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::seq;
 use crate::combinators::operators::any_operator;
 use crate::combinators::typename;
 use crate::scan::Error::ScanErr;
