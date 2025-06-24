@@ -6,9 +6,9 @@ pub(super) fn typecast() -> impl Combinator<Output = Typecast> {
 
     Cast.and_right(between_paren(
         (
-            typename(),
+            typename,
             As,
-            typename()
+            typename
         )
             .map(|(from_type, _, to_type)|
                 Typecast::new(from_type, to_type)

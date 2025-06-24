@@ -30,17 +30,17 @@ fn oper_argtypes(stream: &mut TokenStream) -> Result<OneOrBoth<Type>> {
 
     between!(paren : stream =>
         choice!(stream =>
-            seq!(stream => NoneKw, Comma, typename())
+            seq!(stream => NoneKw, Comma, typename)
                 .map(|(.., typ)| OneOrBoth::Right(typ)),
             seq!(=>
-                typename().parse(stream),
+                typename.parse(stream),
                 choice!(stream =>
                     close_paren.parse(stream),
                     seq!(=>
                         Comma.parse(stream),
                         choice!(parsed stream =>
                             NoneKw.map(|_| None),
-                            typename().map(Some)
+                            typename.map(Some)
                         )
                     ).map(|(_, typ)| typ)
                 )

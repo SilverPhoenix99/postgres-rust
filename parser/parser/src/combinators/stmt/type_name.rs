@@ -1,6 +1,6 @@
 pub(super) fn type_name(stream: &mut TokenStream) -> Result<Type> {
 
-    seq!(stream => Kw::Type, typename())
+    seq!(stream => Kw::Type, typename)
         .map(|(_, typ)| typ)
 }
 

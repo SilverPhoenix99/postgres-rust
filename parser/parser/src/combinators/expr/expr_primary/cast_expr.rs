@@ -7,7 +7,7 @@ pub(super) fn cast_expr() -> impl Combinator<Output = TypecastExpr> {
         (
             a_expr(),
             As,
-            typename()
+            typename
         )
             .map(|(arg, _, type_name)|
                 TypecastExpr::new(arg, type_name)

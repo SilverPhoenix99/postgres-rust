@@ -5,7 +5,7 @@ pub(super) fn domain() -> impl Combinator<Output=Type> {
     */
 
     Domain
-        .and_right(typename())
+        .and_right(typename)
 }
 
 #[cfg(test)]
