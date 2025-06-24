@@ -147,7 +147,7 @@ class KeywordsGenerator
 
   def render_max_length
     max_len = keywords.map { |kw| kw.text.size }.max
-    "pub(super) static MAX_KEYWORD_LENGTH: usize = #{max_len};"
+    "pub(super) const MAX_KEYWORD_LENGTH: usize = #{max_len};"
   end
 
   def render_salts
