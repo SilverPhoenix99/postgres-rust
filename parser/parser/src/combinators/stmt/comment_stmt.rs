@@ -77,8 +77,8 @@ fn comment_target(stream: &mut TokenStream) -> Result<CommentTarget> {
         }),
         function().map(Function),
         index().map(Index),
-        large_object().map(LargeObject),
-        materialized_view().map(MaterializedView),
+        large_object.map(LargeObject),
+        materialized_view.map(MaterializedView),
         operator.map(|op| match op {
             Op::WithArgs(op) => Operator(op),
             Op::Class { name, index_method } => OperatorClass { name, index_method },

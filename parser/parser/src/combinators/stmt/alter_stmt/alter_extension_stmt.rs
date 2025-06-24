@@ -116,7 +116,7 @@ fn alter_extension_target() -> impl Combinator<Output = AlterExtensionContentsTa
         }),
         function().map(Function),
         index().map(Index),
-        materialized_view().map(MaterializedView),
+        materialized_view.map(MaterializedView),
         operator.map(|op| match op {
             Op::WithArgs(op) => Operator(op),
             Op::Class { name, index_method } => OperatorClass { name, index_method },

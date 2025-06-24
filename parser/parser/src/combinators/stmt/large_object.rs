@@ -1,11 +1,11 @@
-pub(super) fn large_object() -> impl Combinator<Output = SignedNumber> {
+pub(super) fn large_object(stream: &mut TokenStream) -> Result<SignedNumber> {
 
     /*
         LARGE OBJECT NumericOnly
     */
 
-    (Large, Object)
-        .and_right(signed_number())
+    seq!(stream => Large, Object, signed_number())
+        .map(|(.., id)| id)
 }
 
 #[cfg(test)]
@@ -18,14 +18,16 @@ mod tests {
     fn test_large_object() {
         test_parser!(
             source = "large object 123",
-            parser = large_object(),
+            parser = large_object,
             expected = IntegerConst(123)
         )
     }
 }
 
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::seq;
 use crate::combinators::signed_number;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::SignedNumber;
 use pg_lexer::Keyword::Large;
 use pg_lexer::Keyword::Object;
