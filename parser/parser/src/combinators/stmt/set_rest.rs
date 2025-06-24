@@ -130,7 +130,7 @@ fn zone_value(stream: &mut TokenStream) -> Result<ZoneValue> {
 
     choice!(
         choice!(DefaultKw, Kw::Local).map(|_: Kw| Local),
-        signed_number().map(Numeric),
+        signed_number.map(Numeric),
         choice!(string, identifier)
             .map(|name: Box<str>|
                 ZoneValue::String(name.into())

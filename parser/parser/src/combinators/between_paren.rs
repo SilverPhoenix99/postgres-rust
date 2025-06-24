@@ -12,7 +12,7 @@ mod tests {
     fn test_between_paren() {
         test_parser!(
             source = "(1)",
-            parser = between_paren(signed_i32_literal()),
+            parser = between_paren(signed_i32_literal),
             expected = 1
         )
     }

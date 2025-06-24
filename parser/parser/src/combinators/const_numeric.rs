@@ -1,56 +1,50 @@
 /// Alias: `NumericOnly`
-pub(super) fn signed_number() -> impl Combinator<Output = SignedNumber> {
+pub(super) fn signed_number(stream: &mut TokenStream) -> Result<SignedNumber> {
 
     // ('+' | '-')? (ICONST | FCONST)
 
-    parser(|stream| {
+    let sign = sign().maybe_match().parse(stream)?;
+    let num = number().map(SignedNumber::from);
 
-        let sign = sign().maybe_match().parse(stream)?;
-        let num = number().map(SignedNumber::from);
+    let negative = match sign {
+        None => return num.parse(stream),
+        Some(sign) => sign == Minus,
+    };
 
-        let negative = match sign {
-            None => return num.parse(stream),
-            Some(sign) => sign == Minus,
-        };
+    let mut num = num.required().parse(stream)?;
+    if negative {
+        num = num.neg();
+    }
 
-        let mut num = num.required().parse(stream)?;
-        if negative {
-            num = num.neg();
-        }
-
-        Ok(num)
-    })
+    Ok(num)
 }
 
 /// Alias: `ICONST`
-pub(super) fn i32_literal() -> impl Combinator<Output = i32> {
-    integer.map(i32::from)
+pub(super) fn i32_literal(stream: &mut TokenStream) -> Result<i32> {
+    integer(stream).map(i32::from)
 }
 
 /// Alias: `SignedIconst`
-pub(super) fn signed_i32_literal() -> impl Combinator<Output = i32> {
+pub(super) fn signed_i32_literal(stream: &mut TokenStream) -> Result<i32> {
 
     // ('+' | '-')? ICONST
 
-    parser(|stream| {
+    let sign = sign().maybe_match().parse(stream)?;
 
-        let sign = sign().maybe_match().parse(stream)?;
-
-        let int = match sign {
-            None => i32_literal().parse(stream)?,
-            Some(sign) => {
-                let mut num = i32_literal()
-                    .required()
-                    .parse(stream)?;
-                if sign == Minus {
-                    num = -num;
-                }
-                num
+    let int = match sign {
+        None => i32_literal(stream)?,
+        Some(sign) => {
+            let mut num = i32_literal
+                .parse(stream)
+                .required()?;
+            if sign == Minus {
+                num = -num;
             }
-        };
+            num
+        }
+    };
 
-        Ok(int)
-    })
+    Ok(int)
 }
 
 #[cfg(test)]
@@ -70,30 +64,32 @@ mod tests {
     #[test_case( "-303", SignedNumber::IntegerConst(-303))]
     fn test_signed_number(source: &str, expected: SignedNumber) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = signed_number().parse(&mut stream);
+        let actual = signed_number(&mut stream);
         assert_eq!(Ok(expected), actual);
     }
 
     #[test]
     fn test_i32_literal() {
         let mut stream = TokenStream::new("123", DEFAULT_CONFIG);
-        assert_eq!(Ok(123), i32_literal().parse(&mut stream));
+        assert_eq!(Ok(123), i32_literal(&mut stream));
     }
 
     #[test_case("-123", -123)]
     #[test_case("+321", 321)]
     fn test_signed_i32_literal(source: &str, expected: i32) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = signed_i32_literal().parse(&mut stream);
+        let actual = signed_i32_literal(&mut stream);
         assert_eq!(Ok(expected), actual);
     }
 }
 
 use crate::combinators::foundation::integer;
 use crate::combinators::foundation::number;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::sign;
+use crate::result::Required;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use core::ops::Neg;
 use pg_ast::SignedNumber;
 use pg_lexer::OperatorKind::Minus;

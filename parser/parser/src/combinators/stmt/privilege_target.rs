@@ -118,7 +118,7 @@ fn signed_number_list(stream: &mut TokenStream) -> Result<Vec<SignedNumber>> {
         signed_number ( ',' signed_number )*
     */
 
-    many!(sep = Comma, signed_number())
+    many!(sep = Comma, signed_number)
         .parse(stream)
 }
 

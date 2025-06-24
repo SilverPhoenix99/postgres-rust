@@ -12,7 +12,7 @@ pub(super) fn var_value() -> impl Combinator<Output = VarValue> {
 
     match_first!(
         boolean_or_string().map(From::from),
-        signed_number().map(From::from)
+        signed_number.map(From::from)
     )
 }
 

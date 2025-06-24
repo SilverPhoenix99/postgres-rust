@@ -26,7 +26,7 @@ pub(super) fn alter_role_option() -> impl Combinator<Output = AlterRoleOption> {
             (
                 Connection,
                 Limit,
-                signed_i32_literal(),
+                signed_i32_literal,
             )
             .map(|(.., limit)| ConnectionLimit(limit))
         },

@@ -12,7 +12,7 @@ mod tests {
     fn test_between_brackets() {
         test_parser!(
             source = "[1]",
-            parser = between_brackets(signed_i32_literal()),
+            parser = between_brackets(signed_i32_literal),
             expected = 1
         )
     }

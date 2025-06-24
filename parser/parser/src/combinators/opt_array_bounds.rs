@@ -1,22 +1,26 @@
-pub(super) fn opt_array_bounds() -> impl Combinator<Output = Option<Vec<Option<i32>>>> {
+pub(super) fn opt_array_bounds(stream: &mut TokenStream) -> Result<Option<Vec<Option<i32>>>> {
 
     /*
           ARRAY ( '[' ICONST ']' )?
         | ( '[' ( ICONST )? ']' )*
     */
 
-    match_first!{
-        Array
-            .and_right(
-                between_brackets(i32_literal())
+    choice!(stream =>
+        seq!(=>
+            Array.parse(stream),
+            between!(square : stream => i32_literal.parse(stream))
+                .optional()
+        )
+            .map(|(_, dim)| vec![dim]),
+        many!(=>
+            between!(square : stream =>
+                i32_literal.parse(stream)
                     .optional()
             )
-            .map(|dim| Some(vec![dim])),
-        many!(
-            between_brackets(i32_literal().optional())
         )
-            .optional()
-    }
+    )
+        .optional()
+        .map_err(crate::scan::Error::from)
 }
 
 #[cfg(test)]
@@ -34,13 +38,17 @@ mod tests {
     #[test_case("", None)]
     #[test_case("something else", None)]
     fn test_opt_array_bounds(source: &str, expected: Option<Vec<Option<i32>>>) {
-        test_parser!(source, opt_array_bounds(), expected);
+        test_parser!(source, opt_array_bounds, expected);
     }
 }
 
-use crate::combinators::between_brackets;
+use crate::combinators::foundation::between;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::i32_literal;
+use crate::result::Optional;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_lexer::Keyword::Array;

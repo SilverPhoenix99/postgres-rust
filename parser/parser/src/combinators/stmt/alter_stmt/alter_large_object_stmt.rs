@@ -6,7 +6,7 @@ pub(super) fn alter_large_object_stmt() -> impl Combinator<Output = RawStmt> {
 
     (
         Large.and(Object).skip(),
-        signed_number(),
+        signed_number,
         Owner.and(To),
         role_spec
     ).map(|(_, oid, _, new_owner)|

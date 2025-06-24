@@ -57,10 +57,10 @@ pub(super) fn alter_function_option(stream: &mut TokenStream) -> Result<AlterFun
         },
         Kw::Leakproof.map(|_| Leakproof(true)),
         (Not, Kw::Leakproof).map(|_| Leakproof(false)),
-        (Kw::Cost, signed_number())
+        (Kw::Cost, signed_number)
             .right()
             .map(Cost),
-        (Kw::Rows, signed_number())
+        (Kw::Rows, signed_number)
             .right()
             .map(Rows),
         (Kw::Support, any_name)
