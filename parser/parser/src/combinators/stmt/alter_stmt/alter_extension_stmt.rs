@@ -114,8 +114,8 @@ fn alter_extension_target() -> impl Combinator<Output = AlterExtensionContentsTa
             Foreign::DataWrapper(foreign) => ForeignDataWrapper(foreign),
             Foreign::Table(foreign) => ForeignTable(foreign),
         }),
-        function().map(Function),
-        index().map(Index),
+        function.map(Function),
+        index.map(Index),
         materialized_view.map(MaterializedView),
         operator.map(|op| match op {
             Op::WithArgs(op) => Operator(op),

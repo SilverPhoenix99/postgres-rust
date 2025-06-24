@@ -56,7 +56,7 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
                 .map(ForeignServer),
         }),
         Kw::Function
-            .and_right(function_with_argtypes_list())
+            .and_right(function_with_argtypes_list)
             .map(Function),
         Kw::Language
             .and_right(name_list())
@@ -68,10 +68,10 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
             .and_right(parameter_name_list)
             .map(ParameterAcl),
         Kw::Procedure
-            .and_right(function_with_argtypes_list())
+            .and_right(function_with_argtypes_list)
             .map(Procedure),
         Kw::Routine
-            .and_right(function_with_argtypes_list())
+            .and_right(function_with_argtypes_list)
             .map(Routine),
         Kw::Schema
             .and_right(name_list())

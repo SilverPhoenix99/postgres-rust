@@ -1,13 +1,13 @@
-pub(super) fn function_with_argtypes_list() -> impl Combinator<Output = Vec<FunctionWithArgs>> {
+pub(super) fn function_with_argtypes_list(stream: &mut TokenStream) -> Result<Vec<FunctionWithArgs>> {
 
     /*
         function_with_argtypes ( ',' function_with_argtypes )*
     */
 
-    many!(sep = Comma, function_with_argtypes())
+    many!(stream => sep = Comma, function_with_argtypes)
 }
 
-pub(super) fn function_with_argtypes() -> impl Combinator<Output = FunctionWithArgs> {
+pub(super) fn function_with_argtypes(stream: &mut TokenStream) -> Result<FunctionWithArgs> {
 
     /*
         Original production:
@@ -27,26 +27,47 @@ pub(super) fn function_with_argtypes() -> impl Combinator<Output = FunctionWithA
             | col_name_keyword ( attrs ( func_args )? )?
     */
 
-    match_first! {
-        TypeFuncName.map(|kw| vec![From::from(kw)])
-            .and_then(func_args(), FunctionWithArgs::new),
+    choice!(stream =>
+        {
+            seq!(stream => TypeFuncName, func_args)
+                .map(|(name, args)| {
+                    let name = vec![name.text().into()];
+                    FunctionWithArgs::new(name, args)
+                })
+        },
+        {
+            seq!(=>
+                attrs!(stream =>
+                    choice!(parsed stream =>
+                        Unreserved.map(Str::from),
+                        identifier.map(Str::from)
+                    )
+                ),
+                func_args.parse(stream)
+            )
+                .map(|(name, args)| {
+                    FunctionWithArgs::new(name, args)
+                })
+        },
+        { 'block: {
+            let name: QualifiedName = match attrs!(stream => ColumnName.parse(stream).map(From::from)) {
+                Ok(ok) => ok,
+                Err(err) => break 'block Err(err)
+            };
 
-        attrs!(or(
-            Unreserved.map(From::from),
-            identifier.map(From::from)
-        ))
-            .and_then(func_args(), FunctionWithArgs::new),
+            if name.len() == 1 {
+                break 'block Ok(FunctionWithArgs::new(name, None))
+            }
 
-        attrs!(ColumnName.map(From::from))
-            .chain(|name, stream| {
-                if name.len() == 1 {
-                    return Ok(FunctionWithArgs::new(name, None))
-                }
-                // arguments are only allowed when the function name is qualified
-                let args = func_args().parse(stream)?;
-                Ok(FunctionWithArgs::new(name, args))
-            })
-    }
+            // arguments are only allowed when the function name is qualified
+            let args = match func_args.parse(stream) {
+                Ok(ok) => ok,
+                Err(err) => break 'block Err(err)
+            };
+
+            break 'block Ok(FunctionWithArgs::new(name, args))
+        }}
+    )
 }
 
 /// # Return
@@ -55,14 +76,18 @@ pub(super) fn function_with_argtypes() -> impl Combinator<Output = FunctionWithA
 /// * `Some(_)` if there are parenthesis, but the arguments list might still be empty. E.g.s:
 ///     * `"()"`: An empty list returns `Some(None)`;
 ///     * `"(arg1, arg2)"`: If arguments exist, then it returns them `Some(Some([arg1, arg2]))`.
-fn func_args() -> impl Combinator<Output = Option<Option<Vec<FunctionParameter>>>> {
+fn func_args(stream: &mut TokenStream) -> Result<Option<Option<Vec<FunctionParameter>>>> {
 
     /*
         ( '(' ( func_args_list )? ')' )?
     */
 
-    between_paren(func_args_list.optional())
+    between!(paren : stream =>
+        func_args_list.optional()
+            .parse(stream)
+    )
         .optional()
+        .map_err(From::from)
 }
 
 fn func_args_list(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
@@ -77,13 +102,13 @@ fn func_args_list(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         FuncType,
         TypeName,
     };
+    use pg_ast::{FunctionParameter, FunctionWithArgs};
     use test_case::test_case;
 
     // type_func_name_keyword ( func_args )?
@@ -104,9 +129,7 @@ mod tests {
     #[test_case("float.boat", FunctionWithArgs::new(vec!["float".into(), "boat".into()], None))]
     #[test_case("float", FunctionWithArgs::new(vec!["float".into()], None))]
     fn test_function_with_argtypes(source: &str, expected: FunctionWithArgs) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = function_with_argtypes().parse(&mut stream);
-        assert_eq!(Ok(expected), actual);
+        test_parser!(source, function_with_argtypes, expected)
     }
 
     #[test_case("", None)]
@@ -116,24 +139,25 @@ mod tests {
         FuncType::Type(TypeName::Int4.into()).into()
     ])))]
     fn test_func_args(source: &str, expected: Option<Option<Vec<FunctionParameter>>>) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = func_args().parse(&mut stream);
-        assert_eq!(Ok(expected), actual);
+        test_parser!(source, func_args, expected)
     }
 }
 
 use crate::combinators::attrs;
-use crate::combinators::between_paren;
+use crate::combinators::foundation::between;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg;
+use crate::result::Optional;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionWithArgs;
+use pg_basics::QualifiedName;
+use pg_basics::Str;
 use pg_lexer::KeywordCategory::ColumnName;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_lexer::KeywordCategory::Unreserved;

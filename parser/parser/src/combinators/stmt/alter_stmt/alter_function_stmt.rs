@@ -17,7 +17,7 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
 
     (
         func_type(),
-        function_with_argtypes()
+        function_with_argtypes
     )
         .chain(match_first_with_state!{|(func_type, func_sig), stream| {
             {

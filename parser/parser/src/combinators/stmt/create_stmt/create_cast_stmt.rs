@@ -23,7 +23,7 @@ fn cast_conversion() -> impl Combinator<Output = CastConversion> {
             .and_right(or(
                 Inout.map(|_| WithInout),
                 Function
-                    .and_right(function_with_argtypes())
+                    .and_right(function_with_argtypes)
                     .map(WithFunction)
             )),
         (Without, Function).map(|_| WithoutFunction),

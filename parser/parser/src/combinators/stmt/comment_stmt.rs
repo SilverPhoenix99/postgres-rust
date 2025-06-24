@@ -75,8 +75,8 @@ fn comment_target(stream: &mut TokenStream) -> Result<CommentTarget> {
             Foreign::DataWrapper(name) => ForeignDataWrapper(name),
             Foreign::Table(name) => ForeignTable(name),
         }),
-        function().map(Function),
-        index().map(Index),
+        function.map(Function),
+        index.map(Index),
         large_object.map(LargeObject),
         materialized_view.map(MaterializedView),
         operator.map(|op| match op {
