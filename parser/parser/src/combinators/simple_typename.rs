@@ -13,7 +13,7 @@ pub(super) fn simple_typename() -> impl Combinator<Output = TypeName> {
             .map(Numeric),
         float(),
         bit(),
-        character(),
+        character,
         timestamp,
         time,
         interval.map(From::from),
@@ -83,7 +83,7 @@ fn bit() -> impl Combinator<Output = TypeName> {
 /// * `CharacterWithLength`
 /// * `CharacterWithoutLength`
 /// * `character` (lowercase rule)
-fn character() -> impl Combinator<Output = TypeName> {
+fn character(stream: &mut TokenStream) -> Result<TypeName> {
 
     /*
           VARCHAR opt_paren_i32
@@ -91,30 +91,37 @@ fn character() -> impl Combinator<Output = TypeName> {
         | NATIONAL (CHAR | CHARACTER) opt_varying opt_paren_i32
     */
 
-    match_first!(
-        Kw::Varchar.map(|_| true),
-        match_first!(
-            Char.skip(),
-            Character.skip(),
-            Nchar.skip(),
-            National.and(or(Char, Character)).skip(),
-        )
-            .and_right(opt_varying)
-    )
-        .and_then(
-            opt_precision,
-            |varying, mut length| {
-                if varying {
-                    return Varchar { max_length: length }
-                }
+    let (varying, mut length) = seq!(=>
+        choice!(stream =>
+            Kw::Varchar.parse(stream).map(|_| true),
+            seq!(=>
+                choice!(stream =>
+                    Char.skip().parse(stream),
+                    Character.skip().parse(stream),
+                    Nchar.skip().parse(stream),
+                    seq!(=>
+                        National.parse(stream),
+                        choice!(parsed stream => Char, Character)
+                    )
+                        .map(|_| ())
+                ),
+                opt_varying.parse(stream)
+            )
+                .map(|(_, varying)| varying),
+        ),
+        opt_precision.parse(stream)
+    )?;
 
-                if length.is_none() {
-                    // CharacterWithoutLength: `char` defaults to `char(1)`
-                    length = Some(1)
-                }
+    if varying {
+        return Ok(Varchar { max_length: length })
+    }
 
-                Bpchar { length }
-            })
+    if length.is_none() {
+        // CharacterWithoutLength: `char` defaults to `char(1)`
+        length = Some(1)
+    }
+
+    Ok(Bpchar { length })
 }
 
 /// Inlined: `ConstDatetime`
@@ -283,12 +290,12 @@ mod tests {
 }
 
 use crate::combinators::attrs;
-use crate::combinators::foundation::located;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::choice;
+use crate::combinators::foundation::located;
 use crate::combinators::i32_literal_paren;
 use crate::combinators::opt_interval;
 use crate::combinators::opt_precision;
