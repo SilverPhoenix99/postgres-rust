@@ -1,14 +1,15 @@
 /// Aliases:
 /// * `opt_sort_clause`
 /// * `json_array_aggregate_order_by_clause_opt`
-pub(super) fn sort_clause() -> impl Combinator<Output = Vec<SortBy>> {
+pub(super) fn sort_clause(stream: &mut TokenStream) -> Result<Vec<SortBy>> {
 
     /*
         ORDER BY sortby_list
     */
 
-    (Order, By)
-        .and_right(sortby_list)
+    let (.., sorts) = seq!(stream => Order, By, sortby_list)?;
+
+    Ok(sorts)
 }
 
 fn sortby_list(stream: &mut TokenStream) -> Result<Vec<SortBy>> {
@@ -17,30 +18,29 @@ fn sortby_list(stream: &mut TokenStream) -> Result<Vec<SortBy>> {
         sortby ( ',' sortby )*
     */
 
-    many!(stream => sep = Comma, sortby())
+    many!(stream => sep = Comma, sortby)
 }
 
-fn sortby() -> impl Combinator<Output = SortBy> {
+fn sortby(stream: &mut TokenStream) -> Result<SortBy> {
 
     /*
           a_expr USING qual_all_Op opt_nulls_order
         | a_expr opt_asc_desc opt_nulls_order
     */
 
-    (
-        a_expr(),
-        or(
-            Kw::Using
-                .and_then(qual_all_op,
-                    |_, op| Some(Using(op))
-                ),
-            opt_asc_desc()
-        ),
-        opt_nulls_order()
-    )
-        .map(|(expr, direction, nulls)|
-            SortBy::new(expr, direction, nulls)
+    let (expr, direction, nulls) = seq!(=>
+        a_expr().parse(stream),
+        choice!(stream =>
+            seq!(stream => Kw::Using, qual_all_op)
+                .map(|(_, op)| Some(Using(op))),
+            opt_asc_desc().parse(stream)
         )
+            .optional()
+            .map(Option::unwrap_or_default),
+        opt_nulls_order().parse(stream)
+    )?;
+
+    Ok(SortBy::new(expr, direction, nulls))
 }
 
 #[cfg(test)]
@@ -59,7 +59,7 @@ mod tests {
     fn test_sort_clause() {
         test_parser!(
             source = "order by 1, 2",
-            parser = sort_clause(),
+            parser = sort_clause,
             expected = vec![
                 SortBy::new(IntegerConst(1), None, None),
                 SortBy::new(IntegerConst(2), None, None),
@@ -107,13 +107,14 @@ mod tests {
         Some(NullsFirst)
     ))]
     fn test_sortby(source: &str, expected: SortBy) {
-        test_parser!(source, sortby(), expected)
+        test_parser!(source, sortby, expected)
     }
 }
 
 use crate::combinators::expr::a_expr;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_asc_desc;
 use crate::combinators::opt_nulls_order;
@@ -126,3 +127,4 @@ use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Order;
 use pg_lexer::OperatorKind::Comma;
+use crate::result::Optional;

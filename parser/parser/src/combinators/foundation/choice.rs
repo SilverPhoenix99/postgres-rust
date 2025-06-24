@@ -6,20 +6,21 @@ macro_rules! choice {
         $(,)?
     ) => {
         'block: {
-            use $crate::result::MaybeMatch;
             use $crate::scan::Error;
 
-            match $head.maybe_match() {
-                Ok(Some(ok)) => break 'block Ok(ok),
-                Err(err) => break 'block Err(Error::from(err)),
-                Ok(None) => {}
+            match $head.map_err(Error::from) {
+                Ok(ok) => break 'block Ok(ok),
+                Err(Error::NoMatch(_)) => {/* continue */},
+                Err(Error::Eof(loc)) => break 'block Err(Error::NoMatch(loc)),
+                Err(Error::ScanErr(err)) => break 'block Err(Error::ScanErr(err)),
             }
 
             $(
-                match $tail.maybe_match() {
-                    Ok(Some(ok)) => break 'block Ok(ok),
-                    Err(err) => break 'block Err(Error::from(err)),
-                    Ok(None) => {}
+                match $tail.map_err(Error::from) {
+                    Ok(ok) => break 'block Ok(ok),
+                    Err(Error::NoMatch(_)) => {/* continue */},
+                    Err(Error::Eof(loc)) => break 'block Err(Error::NoMatch(loc)),
+                    Err(Error::ScanErr(err)) => break 'block Err(Error::ScanErr(err)),
                 }
             )+
 

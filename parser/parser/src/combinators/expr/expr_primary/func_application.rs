@@ -39,7 +39,7 @@ fn all_args() -> impl Combinator<Output = FuncArgsKind> {
     (
         Kw::All,
         func_arg_list(),
-        sort_clause().optional()
+        sort_clause.optional()
     )
         .map(|(_, args, order)|
             All {
@@ -54,7 +54,7 @@ fn distinct_args() -> impl Combinator<Output = FuncArgsKind> {
     (
         Kw::Distinct,
         func_arg_list(),
-        sort_clause().optional()
+        sort_clause.optional()
     )
         .map(|(_, args, order)|
             Distinct { args, order }
@@ -65,7 +65,7 @@ fn simple_args() -> impl Combinator<Output = FuncArgsKind> {
 
     (
         variadic_func_args(),
-        sort_clause().optional()
+        sort_clause.optional()
     )
         .map(|((args, variadic), order)| {
             if variadic {

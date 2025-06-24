@@ -6,7 +6,7 @@ pub(super) fn within_group_clause() -> impl Combinator<Output = Vec<SortBy>> {
 
     (Within, Group)
         .and_right(between_paren(
-            sort_clause()
+            sort_clause
         ))
 }
 
