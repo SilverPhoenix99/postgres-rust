@@ -109,25 +109,28 @@ macro_rules! many {
         )
     }};
 
-    ($stream:expr => $combinator:expr) => {
+    ($stream:expr => $combinator:expr) => {{
         use $crate::combinators::foundation::Combinator;
         many!(=> $combinator.parse($stream))
-    };
+    }};
 
     (pre = $prefix:expr, $combinator:expr) => {
         $crate::combinators::foundation::parser(|stream| {
+            use $crate::combinators::foundation::Combinator;
             many!(=> pre = $prefix.parse(stream), $combinator.parse(stream))
         })
     };
 
     (sep = $separator:expr, $combinator:expr) => {
         $crate::combinators::foundation::parser(|stream| {
+            use $crate::combinators::foundation::Combinator;
             many!(=> sep = $separator.parse(stream), $combinator.parse(stream))
         })
     };
 
     ($combinator:expr) => {
         $crate::combinators::foundation::parser(|stream| {
+            use $crate::combinators::foundation::Combinator;
             many!(=> $combinator.parse(stream))
         })
     };

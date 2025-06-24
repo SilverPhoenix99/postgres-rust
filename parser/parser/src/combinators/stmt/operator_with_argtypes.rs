@@ -13,7 +13,7 @@ pub(super) fn operator_with_argtypes() -> impl Combinator<Output = OperatorWithA
         any_operator oper_argtypes
     */
 
-    (any_operator(), oper_argtypes)
+    (any_operator, oper_argtypes)
         .map(|(name, args)|
             OperatorWithArgs::new(name, args)
         )

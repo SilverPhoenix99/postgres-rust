@@ -1,63 +1,62 @@
 /// Alias: `subquery_Op`
-pub(super) fn subquery_op() -> impl Combinator<Output = QualifiedOperator> {
+pub(super) fn subquery_op(stream: &mut TokenStream) -> Result<QualifiedOperator> {
 
     // Intentionally excludes NOT LIKE/NOT ILIKE, due to conflicts.
     // Those will have to be checked separately.
 
-    match_first!(
-        qual_all_op(),
-        like_op().map(From::from)
+    choice!(parsed stream =>
+        qual_all_op,
+        like_op.map(From::from)
     )
 }
 
 /// Alias: `qual_all_Op`
-pub(super) fn qual_all_op() -> impl Combinator<Output = QualifiedOperator> {
-    match_first!(
-        all_op().map(From::from),
-        explicit_op()
+pub(super) fn qual_all_op(stream: &mut TokenStream) -> Result<QualifiedOperator> {
+    choice!(parsed stream =>
+        all_op.map(From::from),
+        explicit_op
     )
 }
 
 /// Alias: `qual_Op`
-pub(super) fn qual_op() -> impl Combinator<Output = QualifiedOperator> {
-    match_first!(
+pub(super) fn qual_op(stream: &mut TokenStream) -> Result<QualifiedOperator> {
+    choice!(parsed stream =>
         user_defined_operator()
             .map(|op| UserDefined(op).into()),
-        explicit_op(),
+        explicit_op,
     )
 }
 
-pub(super) fn explicit_op() -> impl Combinator<Output = QualifiedOperator> {
+pub(super) fn explicit_op(stream: &mut TokenStream) -> Result<QualifiedOperator> {
 
     /*
         OPERATOR '(' any_operator ')'
     */
 
-    (
-        OperatorKw.skip(),
-        OpenParenthesis.skip(),
-        any_operator(),
-        CloseParenthesis.skip()
+    seq!(=>
+        OperatorKw.parse(stream),
+        between!(paren : stream => any_operator.parse(stream))
     )
-        .map(|(_, _, op, _)| op)
+        .map(|(_, op)| op)
 }
 
-pub(super) fn any_operator() -> impl Combinator<Output = QualifiedOperator> {
+pub(super) fn any_operator(stream: &mut TokenStream) -> Result<QualifiedOperator> {
 
     /*
         ( col_id '.' )* all_op
     */
 
-    (
+    seq!(=>
         {
-            many!(
-                (col_id, Dot).left()
+            many!(=>
+                seq!(stream => col_id, Dot)
+                    .map(|(qn, _)| qn)
             )
             .optional()
             .map(Option::unwrap_or_default)
         },
         {
-            all_op()
+            all_op.parse(stream)
         }
     )
         .map(|(qn, op)| QualifiedOperator(qn, op))
@@ -66,37 +65,39 @@ pub(super) fn any_operator() -> impl Combinator<Output = QualifiedOperator> {
 /// Alias: `all_Op`.
 ///
 /// Inlined: `MathOp`
-fn all_op() -> impl Combinator<Output = Operator> {
-    match_first!(
-        additive_op(),
-        multiplicative_op(),
-        exponentiation_op(),
-        boolean_op(),
+fn all_op(stream: &mut TokenStream) -> Result<Operator> {
+    choice!(parsed stream =>
+        additive_op,
+        multiplicative_op,
+        exponentiation_op,
+        boolean_op,
         user_defined_operator().map(UserDefined)
     )
 }
 
-fn additive_op() -> impl Combinator<Output = Operator> {
-    or(
+fn additive_op(stream: &mut TokenStream) -> Result<Operator> {
+    choice!(parsed stream =>
         Plus.map(|_| Addition),
         Minus.map(|_| Subtraction)
     )
 }
 
-fn multiplicative_op() -> impl Combinator<Output = Operator> {
-    match_first!(
+fn multiplicative_op(stream: &mut TokenStream) -> Result<Operator> {
+    choice!(parsed stream =>
         Mul.map(|_| Multiplication),
         Div.map(|_| Division),
         Percent.map(|_| Modulo),
     )
 }
 
-fn exponentiation_op() -> impl Combinator<Output = Operator> {
-    Circumflex.map(|_| Exponentiation)
+fn exponentiation_op(stream: &mut TokenStream) -> Result<Operator> {
+    Circumflex
+        .parse(stream)
+        .map(|_| Exponentiation)
 }
 
-fn boolean_op() -> impl Combinator<Output = Operator> {
-    match_first!(
+fn boolean_op(stream: &mut TokenStream) -> Result<Operator> {
+    choice!(parsed stream =>
         Less.map(|_| Operator::Less),
         Equals.map(|_| Operator::Equals),
         Greater.map(|_| Operator::Greater),
@@ -106,8 +107,8 @@ fn boolean_op() -> impl Combinator<Output = Operator> {
     )
 }
 
-fn like_op() -> impl Combinator<Output = Operator> {
-    or(
+fn like_op(stream: &mut TokenStream) -> Result<Operator> {
+    choice!(parsed stream =>
         Like.map(|_| Operator::Like),
         Ilike.map(|_| ILike)
     )
@@ -126,10 +127,10 @@ mod tests {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
         let expected = QualifiedOperator(vec![], UserDefined("|/".into()));
-        assert_eq!(Ok(expected), qual_op().parse(&mut stream));
+        assert_eq!(Ok(expected), qual_op(&mut stream));
 
         let expected = QualifiedOperator(vec![], UserDefined("<@>".into()));
-        assert_eq!(Ok(expected), qual_op().parse(&mut stream));
+        assert_eq!(Ok(expected), qual_op(&mut stream));
     }
 
     #[test]
@@ -137,7 +138,7 @@ mod tests {
         let source = "operator(some_qn.*)";
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        let actual = qual_op().parse(&mut stream);
+        let actual = qual_op(&mut stream);
         let expected = QualifiedOperator(
             vec!["some_qn".into()],
             Multiplication
@@ -154,19 +155,19 @@ mod tests {
             vec![],
             UserDefined("@@".into())
         );
-        assert_eq!(Ok(expected), any_operator().parse(&mut stream));
+        assert_eq!(Ok(expected), any_operator(&mut stream));
 
         let expected = QualifiedOperator(
             vec![],
             Operator::NotEquals
         );
-        assert_eq!(Ok(expected), any_operator().parse(&mut stream));
+        assert_eq!(Ok(expected), any_operator(&mut stream));
 
         let expected = QualifiedOperator(
             vec!["q_name".into()],
             Addition
         );
-        assert_eq!(Ok(expected), any_operator().parse(&mut stream));
+        assert_eq!(Ok(expected), any_operator(&mut stream));
     }
 
     #[test]
@@ -174,8 +175,8 @@ mod tests {
         let source = "~@ <>";
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        assert_eq!(Ok(UserDefined("~@".into())), all_op().parse(&mut stream));
-        assert_eq!(Ok(Operator::NotEquals), all_op().parse(&mut stream));
+        assert_eq!(Ok(UserDefined("~@".into())), all_op(&mut stream));
+        assert_eq!(Ok(Operator::NotEquals), all_op(&mut stream));
     }
 
     #[test]
@@ -184,19 +185,19 @@ mod tests {
         let source = "+ - * / % ^ < > = <= >= != <>";
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        assert_eq!(Ok(Addition), all_op().parse(&mut stream));
-        assert_eq!(Ok(Subtraction), all_op().parse(&mut stream));
-        assert_eq!(Ok(Multiplication), all_op().parse(&mut stream));
-        assert_eq!(Ok(Division), all_op().parse(&mut stream));
-        assert_eq!(Ok(Modulo), all_op().parse(&mut stream));
-        assert_eq!(Ok(Exponentiation), all_op().parse(&mut stream));
-        assert_eq!(Ok(Operator::Less), all_op().parse(&mut stream));
-        assert_eq!(Ok(Operator::Greater), all_op().parse(&mut stream));
-        assert_eq!(Ok(Operator::Equals), all_op().parse(&mut stream));
-        assert_eq!(Ok(Operator::LessEquals), all_op().parse(&mut stream));
-        assert_eq!(Ok(Operator::GreaterEquals), all_op().parse(&mut stream));
-        assert_eq!(Ok(Operator::NotEquals), all_op().parse(&mut stream));
-        assert_eq!(Ok(Operator::NotEquals), all_op().parse(&mut stream));
+        assert_eq!(Ok(Addition), all_op(&mut stream));
+        assert_eq!(Ok(Subtraction), all_op(&mut stream));
+        assert_eq!(Ok(Multiplication), all_op(&mut stream));
+        assert_eq!(Ok(Division), all_op(&mut stream));
+        assert_eq!(Ok(Modulo), all_op(&mut stream));
+        assert_eq!(Ok(Exponentiation), all_op(&mut stream));
+        assert_eq!(Ok(Operator::Less), all_op(&mut stream));
+        assert_eq!(Ok(Operator::Greater), all_op(&mut stream));
+        assert_eq!(Ok(Operator::Equals), all_op(&mut stream));
+        assert_eq!(Ok(Operator::LessEquals), all_op(&mut stream));
+        assert_eq!(Ok(Operator::GreaterEquals), all_op(&mut stream));
+        assert_eq!(Ok(Operator::NotEquals), all_op(&mut stream));
+        assert_eq!(Ok(Operator::NotEquals), all_op(&mut stream));
     }
 
     #[test]
@@ -204,17 +205,21 @@ mod tests {
         let source = "like ilike";
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        assert_eq!(Ok(Operator::Like.into()), subquery_op().parse(&mut stream));
-        assert_eq!(Ok(ILike.into()), subquery_op().parse(&mut stream));
+        assert_eq!(Ok(Operator::Like.into()), subquery_op(&mut stream));
+        assert_eq!(Ok(ILike.into()), subquery_op(&mut stream));
     }
 }
 
 use crate::combinators::col_id;
+use crate::combinators::foundation::between;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::user_defined_operator;
 use crate::combinators::foundation::Combinator;
+use crate::result::Optional;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::Operator;
 use pg_ast::Operator::Addition;
 use pg_ast::Operator::Division;
@@ -229,7 +234,6 @@ use pg_lexer::Keyword::Ilike;
 use pg_lexer::Keyword::Like;
 use pg_lexer::Keyword::Operator as OperatorKw;
 use pg_lexer::OperatorKind::Circumflex;
-use pg_lexer::OperatorKind::CloseParenthesis;
 use pg_lexer::OperatorKind::Div;
 use pg_lexer::OperatorKind::Dot;
 use pg_lexer::OperatorKind::Equals;
@@ -240,6 +244,5 @@ use pg_lexer::OperatorKind::LessEquals;
 use pg_lexer::OperatorKind::Minus;
 use pg_lexer::OperatorKind::Mul;
 use pg_lexer::OperatorKind::NotEquals;
-use pg_lexer::OperatorKind::OpenParenthesis;
 use pg_lexer::OperatorKind::Percent;
 use pg_lexer::OperatorKind::Plus;

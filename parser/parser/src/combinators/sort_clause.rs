@@ -31,7 +31,7 @@ fn sortby() -> impl Combinator<Output = SortBy> {
         a_expr(),
         or(
             Kw::Using
-                .and_then(qual_all_op(),
+                .and_then(qual_all_op,
                     |_, op| Some(Using(op))
                 ),
             opt_asc_desc()
