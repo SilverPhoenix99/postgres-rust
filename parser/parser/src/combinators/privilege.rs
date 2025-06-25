@@ -1,30 +1,32 @@
-pub(super) fn privileges() -> impl Combinator<Output = AccessPrivilege> {
+pub(super) fn privileges(stream: &mut TokenStream) -> Result<AccessPrivilege> {
 
     /*
           ALL ( PRIVILEGES )? opt_column_list
         | privilege_list
     */
 
-    match_first!(
-        (
-            AllKw.and(Privileges.optional()).skip(),
+    choice!(stream =>
+        seq!(stream =>
+            AllKw.and(Privileges.optional()),
             paren_name_list().optional()
         )
             .map(|(_, columns)| All(columns)),
-        privilege_list().map(Specific)
+        privilege_list
+            .parse(stream)
+            .map(Specific)
     )
 }
 
-pub(super) fn privilege_list() -> impl Combinator<Output = Vec<SpecificAccessPrivilege>> {
+pub(super) fn privilege_list(stream: &mut TokenStream) -> Result<Vec<SpecificAccessPrivilege>> {
 
     /*
         privilege ( ',' privilege )*
     */
 
-    many!(sep = Comma, privilege())
+    many!(stream => sep = Comma, privilege)
 }
 
-fn privilege() -> impl Combinator<Output = SpecificAccessPrivilege> {
+fn privilege(stream: &mut TokenStream) -> Result<SpecificAccessPrivilege> {
 
     /*
           ALTER SYSTEM
@@ -34,24 +36,44 @@ fn privilege() -> impl Combinator<Output = SpecificAccessPrivilege> {
         | col_id opt_column_list
     */
 
-    match_first! {
-        Alter.and(SystemKw).map(|_| AlterSystem),
-        CreateKw
-            .and_then(paren_name_list().optional(), |_, columns| Create(columns)),
-        ReferencesKw
-            .and_then(paren_name_list().optional(), |_, columns| References(columns)),
-        SelectKw
-            .and_then(paren_name_list().optional(), |_, columns| Select(columns)),
-        col_id
-            .and_then(paren_name_list().optional(), Named)
-    }
+    choice!(stream =>
+        seq!(stream => Alter, SystemKw)
+            .map(|_| AlterSystem),
+        seq!(stream =>
+            CreateKw,
+            paren_name_list().optional()
+        )
+            .map(|(_, columns)|
+                Create(columns)
+            ),
+        seq!(stream =>
+            ReferencesKw,
+            paren_name_list().optional()
+        )
+            .map(|(_, columns)|
+                References(columns)
+            ),
+        seq!(stream =>
+            SelectKw,
+            paren_name_list().optional()
+        )
+            .map(|(_, columns)|
+                Select(columns)
+            ),
+        seq!(stream =>
+            col_id,
+            paren_name_list().optional()
+        )
+            .map(|(name, columns)|
+                Named(name, columns)
+        )
+    )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use test_case::test_case;
 
     #[test_case("all", All(None))]
@@ -59,23 +81,21 @@ mod tests {
     #[test_case("all (column_name)", All(Some(vec!["column_name".into()])))]
     #[test_case("select, references", Specific(vec![Select(None), References(None)]))]
     fn test_privileges(source: &str, expected: AccessPrivilege) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(expected), privileges().parse(&mut stream));
+        test_parser!(source, privileges, expected)
     }
 
     #[test]
     fn test_privilege_list() {
-        let source = "alter system, select, create, some_privilege";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        let expected = vec![
-            AlterSystem,
-            Select(None),
-            Create(None),
-            Named("some_privilege".into(), None),
-        ];
-
-        assert_eq!(Ok(expected), privilege_list().parse(&mut stream));
+        test_parser!(
+            source = "alter system, select, create, some_privilege",
+            parser = privilege_list,
+            expected = vec![
+                AlterSystem,
+                Select(None),
+                Create(None),
+                Named("some_privilege".into(), None),
+            ]
+        )
     }
 
     #[test_case("alter system", AlterSystem)]
@@ -88,16 +108,18 @@ mod tests {
     #[test_case("some_name", Named("some_name".into(), None))]
     #[test_case("another_name(column_name)", Named("another_name".into(), Some(vec!["column_name".into()])))]
     fn test_privilege(source: &str, expected: SpecificAccessPrivilege) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(expected), privilege().parse(&mut stream));
+        test_parser!(source, privilege, expected)
     }
 }
 
 use crate::combinators::col_id;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::paren_name_list;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::AccessPrivilege;
 use pg_ast::AccessPrivilege::All;
 use pg_ast::AccessPrivilege::Specific;

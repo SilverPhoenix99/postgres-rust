@@ -62,7 +62,7 @@ fn def_acl_action() -> impl Combinator<Output = GrantStmt> {
     match_first! {
         {
             let grant = (
-                Grant.and_right(privileges()),
+                Grant.and_right(privileges),
                 On.and_right(def_acl_privilege_target()),
                 To.and_right(grantee_list()),
                 opt_grant_option()
@@ -78,7 +78,7 @@ fn def_acl_action() -> impl Combinator<Output = GrantStmt> {
                 Grant.and(OptionKw).and(For)
                     .optional()
                     .map(|grant_option| grant_option.is_some()),
-                privileges(),
+                privileges,
                 On.and_right(def_acl_privilege_target()),
                 FromKw.and_right(grantee_list()),
                 opt_drop_behavior()
