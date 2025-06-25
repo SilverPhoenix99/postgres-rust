@@ -13,7 +13,7 @@ pub(super) fn cluster_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
         Cluster,
         parser(|_| todo!())
     )?;
-        
+
     Ok(stmt)
 }
 

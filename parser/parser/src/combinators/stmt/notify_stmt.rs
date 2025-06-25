@@ -9,7 +9,7 @@ pub(super) fn notify_stmt() -> impl Combinator<Output = NotifyStmt> {
         Notify.skip(),
         col_id,
         Comma
-            .and_right(parser(string))
+            .and_right(string)
             .optional()
     ).map(|(_, condition_name, payload)| {
         if let Some(payload) = payload {
@@ -43,7 +43,6 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use pg_ast::NotifyStmt;

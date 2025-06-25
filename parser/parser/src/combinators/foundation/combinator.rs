@@ -162,7 +162,7 @@ where
 
 impl<F, O> Combinator for F
 where
-    F: Fn(&mut TokenStream) -> Result<O>,
+    F: for<'a> Fn(&'a mut TokenStream<'_>) -> Result<O>,
 {
     type Output = O;
 

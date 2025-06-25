@@ -11,11 +11,11 @@ pub(super) fn alter_extension_stmt() -> impl Combinator<Output = RawStmt> {
         )
     */
 
-    Kw::Extension.and_right(parser(col_id))
+    Kw::Extension.and_right(col_id)
         .chain(match_first_with_state!{|extension, stream| {
             {
                 Kw::Set.and(Kw::Schema)
-                    .and_right(parser(col_id))
+                    .and_right(col_id)
             } => (schema) {
                 AlterObjectSchemaStmt::new(
                     AlterObjectSchemaTarget::Extension(extension),
@@ -24,7 +24,7 @@ pub(super) fn alter_extension_stmt() -> impl Combinator<Output = RawStmt> {
             },
             {
                 Kw::Update
-                    .and_right(parser(alter_extension_options))
+                    .and_right(alter_extension_options)
             } => (options) {
                 AlterExtensionStmt::new(extension, options).into()
             },
@@ -273,7 +273,6 @@ use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::match_first_with_state;
 use crate::combinators::foundation::or;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word_or_sconst;
