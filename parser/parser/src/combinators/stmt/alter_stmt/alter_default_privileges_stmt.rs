@@ -121,7 +121,7 @@ mod tests {
             expected = AlterDefaultPrivilegesStmt::new(
                 vec![AclOption::Schemas(vec!["some_schema".into()])],
                 GrantStmt::grant(
-                    AccessPrivilege::All(None),
+                    AccessPrivilege::All { columns: None },
                     Tables,
                     vec![Public],
                     false
@@ -180,7 +180,7 @@ mod tests {
             source = "grant all on tables to public",
             parser = def_acl_action(),
             expected = GrantStmt::grant(
-                AccessPrivilege::All(None),
+                AccessPrivilege::All { columns: None },
                 Tables,
                 vec![Public],
                 false
@@ -194,7 +194,7 @@ mod tests {
             source = "grant all privileges on tables to public with grant option",
             parser = def_acl_action(),
             expected = GrantStmt::grant(
-                AccessPrivilege::All(None),
+                AccessPrivilege::All { columns: None },
                 Tables,
                 vec![Public],
                 true
@@ -208,7 +208,7 @@ mod tests {
             source = "revoke all privileges on tables from public",
             parser = def_acl_action(),
             expected = GrantStmt::revoke(
-                AccessPrivilege::All(None),
+                AccessPrivilege::All { columns: None },
                 Tables,
                 vec![Public],
                 false,
@@ -223,7 +223,7 @@ mod tests {
             source = "revoke grant option for all privileges on tables from public cascade",
             parser = def_acl_action(),
             expected = GrantStmt::revoke(
-                AccessPrivilege::All(None),
+                AccessPrivilege::All { columns: None },
                 Tables,
                 vec![Public],
                 true,

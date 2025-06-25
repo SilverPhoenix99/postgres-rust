@@ -8,9 +8,9 @@ pub(super) fn privileges(stream: &mut TokenStream) -> Result<AccessPrivilege> {
     choice!(stream =>
         seq!(stream =>
             AllKw.and(Privileges.optional()),
-            paren_name_list().optional()
+            paren_name_list.optional()
         )
-            .map(|(_, columns)| All(columns)),
+            .map(|(_, columns)| All { columns }),
         privilege_list
             .parse(stream)
             .map(Specific)
@@ -39,34 +39,14 @@ fn privilege(stream: &mut TokenStream) -> Result<SpecificAccessPrivilege> {
     choice!(stream =>
         seq!(stream => Alter, SystemKw)
             .map(|_| AlterSystem),
-        seq!(stream =>
-            CreateKw,
-            paren_name_list().optional()
-        )
-            .map(|(_, columns)|
-                Create(columns)
-            ),
-        seq!(stream =>
-            ReferencesKw,
-            paren_name_list().optional()
-        )
-            .map(|(_, columns)|
-                References(columns)
-            ),
-        seq!(stream =>
-            SelectKw,
-            paren_name_list().optional()
-        )
-            .map(|(_, columns)|
-                Select(columns)
-            ),
-        seq!(stream =>
-            col_id,
-            paren_name_list().optional()
-        )
-            .map(|(name, columns)|
-                Named(name, columns)
-        )
+        seq!(stream => CreateKw, paren_name_list.optional())
+            .map(|(_, columns)| Create { columns }),
+        seq!(stream => ReferencesKw, paren_name_list.optional())
+            .map(|(_, columns)| References { columns }),
+        seq!(stream => SelectKw, paren_name_list.optional())
+            .map(|(_, columns)| Select { columns }),
+        seq!(stream => col_id, paren_name_list.optional())
+            .map(|(privilege, columns)| Named { privilege, columns })
     )
 }
 
@@ -76,10 +56,10 @@ mod tests {
     use crate::tests::test_parser;
     use test_case::test_case;
 
-    #[test_case("all", All(None))]
-    #[test_case("all privileges", All(None))]
-    #[test_case("all (column_name)", All(Some(vec!["column_name".into()])))]
-    #[test_case("select, references", Specific(vec![Select(None), References(None)]))]
+    #[test_case("all", All { columns: None })]
+    #[test_case("all privileges", All { columns: None })]
+    #[test_case("all (column_name)", All { columns: Some(vec!["column_name".into()]) })]
+    #[test_case("select, references", Specific(vec![Select { columns: None }, References { columns: None }]))]
     fn test_privileges(source: &str, expected: AccessPrivilege) {
         test_parser!(source, privileges, expected)
     }
@@ -91,22 +71,27 @@ mod tests {
             parser = privilege_list,
             expected = vec![
                 AlterSystem,
-                Select(None),
-                Create(None),
-                Named("some_privilege".into(), None),
+                Select { columns: None },
+                Create { columns: None },
+                Named{ privilege: "some_privilege".into(), columns: None },
             ]
         )
     }
 
     #[test_case("alter system", AlterSystem)]
-    #[test_case("select", Select(None))]
-    #[test_case("select(column_name)", Select(Some(vec!["column_name".into()])))]
-    #[test_case("references", References(None))]
-    #[test_case("references(column_name)", References(Some(vec!["column_name".into()])))]
-    #[test_case("create", Create(None))]
-    #[test_case("create(column_name)", Create(Some(vec!["column_name".into()])))]
-    #[test_case("some_name", Named("some_name".into(), None))]
-    #[test_case("another_name(column_name)", Named("another_name".into(), Some(vec!["column_name".into()])))]
+    #[test_case("select", Select { columns: None })]
+    #[test_case("select(column_name)", Select { columns: Some(vec!["column_name".into()]) })]
+    #[test_case("references", References { columns: None })]
+    #[test_case("references(column_name)", References { columns: Some(vec!["column_name".into()]) })]
+    #[test_case("create", Create { columns: None })]
+    #[test_case("create(column_name)", Create { columns: Some(vec!["column_name".into()]) })]
+    #[test_case("some_name", Named { privilege: "some_name".into(), columns: None })]
+    #[test_case("another_name(column_name)",
+        Named {
+            privilege: "another_name".into(),
+            columns: Some(vec!["column_name".into()])
+        }
+    )]
     fn test_privilege(source: &str, expected: SpecificAccessPrivilege) {
         test_parser!(source, privilege, expected)
     }

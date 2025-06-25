@@ -185,15 +185,18 @@ pub enum AclOption {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum SpecificAccessPrivilege {
     AlterSystem,
-    Create(Option<Vec<Str>>),
-    References(Option<Vec<Str>>),
-    Select(Option<Vec<Str>>),
-    Named(Str, Option<Vec<Str>>),
+    Create { columns: Option<Vec<Str>> },
+    References { columns: Option<Vec<Str>> },
+    Select { columns: Option<Vec<Str>> },
+    Named {
+        privilege: Str,
+        columns: Option<Vec<Str>>
+    },
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AccessPrivilege {
-    All(Option<Vec<Str>>),
+    All { columns: Option<Vec<Str>> },
     Specific(Vec<SpecificAccessPrivilege>),
 }
 
