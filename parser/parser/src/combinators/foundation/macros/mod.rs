@@ -1,11 +1,13 @@
+mod between;
 mod choice;
-pub mod located;
-pub mod many;
+mod located;
+mod many;
+mod seq;
 
 pub(in crate::combinators) use self::{
-    choice::between,
+    between::between,
     choice::choice,
-    choice::seq,
     located::located,
     many::many,
+    seq::seq,
 };
