@@ -13,7 +13,7 @@ pub(super) fn alter_system_stmt() -> impl Combinator<Output = AlterSystemStmt> {
                 OneOrAll::One(name) => AlterSystemStmt::Reset { name }
             }),
             Set.and_right(var_name)
-                .and_then(enclosure!(generic_set_tail), |name, set| match set {
+                .and_then(generic_set_tail, |name, set| match set {
                 ValueOrDefault::Default => AlterSystemStmt::SetDefault { name },
                 ValueOrDefault::Value(values) => AlterSystemStmt::Set { name, values }
             })
@@ -40,7 +40,6 @@ mod tests {
 }
 
 use crate::combinators::all_or_var_name;
-use crate::combinators::foundation::enclosure;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_set_tail;

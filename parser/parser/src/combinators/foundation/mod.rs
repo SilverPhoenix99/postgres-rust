@@ -34,7 +34,7 @@ pub(in crate::combinators) use self::{
     optional::{optional, OptionalCombi},
     or::{match_first, match_first_with_state, or, OrCombi},
     param::param,
-    parser::{enclosure, parser, ClosureCombi},
+    parser::{parser, ClosureCombi},
     required::{required, RequiredCombi},
     skip::{skip, SkipCombi},
     string::string,

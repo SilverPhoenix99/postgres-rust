@@ -1,13 +1,3 @@
-/// Used to wrap combinators causing type names being too large.
-macro_rules! enclosure {
-    ($expr:expr) => {{
-        let p = $expr;
-        $crate::combinators::foundation::parser(move |stream| p.parse(stream))
-    }};
-}
-
-pub(in crate::combinators) use enclosure;
-
 pub(in crate::combinators) fn parser<F, O>(parser: F) -> ClosureCombi<F, O>
 where
     F: Fn(&mut TokenStream) -> Result<O>
