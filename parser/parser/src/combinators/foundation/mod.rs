@@ -1,12 +1,10 @@
 mod between;
 mod bit_string;
-mod choice;
 mod combinator;
 mod identifier;
 mod integer;
 mod keyword;
-mod located;
-mod many;
+mod macros;
 mod map;
 mod maybe_match;
 mod number;
@@ -27,12 +25,10 @@ pub(crate) use self::combinator::Combinator;
 pub(in crate::combinators) use self::{
     between::{between, BetweenCombi},
     bit_string::{bit_string, BitStringCombi},
-    choice::{between, choice, seq},
     identifier::identifier,
     integer::integer,
     keyword::{any_keyword, keyword_if, keyword_result, keyword_when, KeywordCondCombi},
-    located::located,
-    many::many,
+    macros::{between, choice, located, many, seq},
     map::{map, map_err, map_result, MapResultCombi},
     maybe_match::{maybe_match, MaybeMatchCombi},
     number::{number, NumberCombi},
