@@ -1,4 +1,3 @@
-mod between;
 mod bit_string;
 mod combinator;
 mod identifier;
@@ -23,7 +22,6 @@ pub(crate) use self::combinator::Combinator;
 
 #[allow(unused_imports)] // TODO: eventually remove
 pub(in crate::combinators) use self::{
-    between::{between, BetweenCombi},
     bit_string::{bit_string, BitStringCombi},
     identifier::identifier,
     integer::integer,

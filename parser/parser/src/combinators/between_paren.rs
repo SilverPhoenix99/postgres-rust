@@ -1,5 +1,7 @@
 pub(super) fn between_paren<T: Combinator>(combinator: T) -> impl Combinator<Output = T::Output> {
-    between(OpenParenthesis, combinator, CloseParenthesis)
+    parser(move |stream|
+        between!(paren : stream => combinator.parse(stream))
+    )
 }
 
 #[cfg(test)]
@@ -19,6 +21,5 @@ mod tests {
 }
 
 use crate::combinators::foundation::between;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
-use pg_lexer::OperatorKind::CloseParenthesis;
-use pg_lexer::OperatorKind::OpenParenthesis;

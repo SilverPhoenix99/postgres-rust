@@ -1,5 +1,7 @@
 pub(super) fn between_brackets<T: Combinator>(combinator: T) -> impl Combinator<Output = T::Output> {
-    between(OpenBracket, combinator, CloseBracket)
+    parser(move |stream| {
+        between!(square : stream => combinator.parse(stream))
+    })
 }
 
 #[cfg(test)]
@@ -19,6 +21,5 @@ mod tests {
 }
 
 use crate::combinators::foundation::between;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
-use pg_lexer::OperatorKind::CloseBracket;
-use pg_lexer::OperatorKind::OpenBracket;
