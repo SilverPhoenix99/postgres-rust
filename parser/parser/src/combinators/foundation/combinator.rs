@@ -16,11 +16,6 @@ where
         required(self)
     }
 
-    /// See [`try_match()`](try_match::try_match).
-    fn try_match(self) -> impl Combinator<Output = Option<Self::Output>> {
-        try_match(self)
-    }
-
     /// See [`maybe_match()`](maybe_match::maybe_match).
     fn maybe_match(self) -> impl Combinator<Output = Option<Self::Output>> {
         maybe_match(self)
@@ -220,7 +215,6 @@ use crate::combinators::foundation::or;
 use crate::combinators::foundation::parser;
 use crate::combinators::foundation::required;
 use crate::combinators::foundation::skip;
-use crate::combinators::foundation::try_match;
 use crate::result::Required;
 use crate::scan::Error;
 use crate::scan::Result;

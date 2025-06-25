@@ -9,16 +9,6 @@ impl<T> Required<T> for Result<T> {
     }
 }
 
-impl<T> TryMatch<T> for Result<T> {
-    fn try_match(self) -> LocatedResult<Option<T>> {
-        match self {
-            Ok(ok) => Ok(Some(ok)),
-            Err(Eof(loc)) => Err(syntax(loc)),
-            Err(NotEof(err)) => Err(err),
-        }
-    }
-}
-
 impl<T> Optional<T> for Result<T> {
     fn optional(self) -> LocatedResult<Option<T>> {
         match self {
@@ -34,6 +24,5 @@ use crate::eof::Error::Eof;
 use crate::eof::Error::NotEof;
 use crate::result::Optional;
 use crate::result::Required;
-use crate::result::TryMatch;
 use pg_elog::syntax;
 use pg_elog::LocatedResult;

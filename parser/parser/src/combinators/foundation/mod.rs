@@ -15,7 +15,6 @@ mod parser;
 mod required;
 mod skip;
 mod string;
-mod try_match;
 mod user_defined_operator;
 
 pub(crate) use self::combinator::Combinator;
@@ -38,6 +37,5 @@ pub(in crate::combinators) use self::{
     required::{required, RequiredCombi},
     skip::{skip, SkipCombi},
     string::string,
-    try_match::{try_match, TryMatchCombi},
     user_defined_operator::{user_defined_operator, UserOpCombi},
 };
