@@ -21,7 +21,7 @@ fn opt_provider() -> impl Combinator<Output = Option<Str>> {
         ( FOR NonReservedWord_or_Sconst )?
     */
 
-    For.and_right(non_reserved_word_or_sconst())
+    For.and_right(non_reserved_word_or_sconst)
         .optional()
 }
 

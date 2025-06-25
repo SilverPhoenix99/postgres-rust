@@ -73,7 +73,7 @@ pub(super) fn set_rest_more(stream: &mut TokenStream) -> Result<SetRestMore> {
         (Names, opt_encoding)
             .right()
             .map(SetRestMore::ClientEncoding),
-        (Kw::Role, non_reserved_word_or_sconst())
+        (Kw::Role, non_reserved_word_or_sconst)
             .right()
             .map(SetRestMore::Role),
         (Xml, OptionKw, document_or_content())
@@ -111,7 +111,7 @@ fn session_auth_user(stream: &mut TokenStream) -> Result<ValueOrDefault<Str>> {
 
     choice!(
         DefaultKw.map(|_| ValueOrDefault::Default),
-        non_reserved_word_or_sconst().map(ValueOrDefault::Value)
+        non_reserved_word_or_sconst.map(ValueOrDefault::Value)
     )
         .parse(stream)
 }

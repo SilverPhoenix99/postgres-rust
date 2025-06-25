@@ -37,7 +37,7 @@ pub(super) fn role_spec(stream: &mut TokenStream) -> Result<RoleSpec> {
         SessionUser.map(|_| RoleSpec::SessionUser),
         // "none" is a ColumnName keyword, so it must be checked before the next option
         role_none,
-        non_reserved_word().map(|ident| match ident.as_ref() {
+        non_reserved_word.map(|ident| match ident.as_ref() {
             "public" => RoleSpec::Public,
             _ => RoleSpec::Name(ident)
         })

@@ -11,10 +11,9 @@ pub(super) fn opt_transaction_chain(stream: &mut TokenStream) -> Result<bool> {
         And.skip(),
         No.optional(),
         Chain.skip()
-    )
-        .optional()?;
+    );
 
-    let chain = match chain {
+    let chain = match chain.optional()? {
         Some((_, no, _)) => no.is_none(),
         None => false,
     };

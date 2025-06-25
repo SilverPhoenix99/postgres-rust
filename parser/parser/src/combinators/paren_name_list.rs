@@ -5,7 +5,7 @@ pub(super) fn paren_name_list(stream: &mut TokenStream) -> Result<Vec<Str>> {
         '(' name_list ')'
     */
 
-    between!(paren : stream => name_list().parse(stream))
+    between!(paren : stream => name_list.parse(stream))
 }
 
 use crate::combinators::foundation::between;

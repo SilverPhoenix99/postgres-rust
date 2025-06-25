@@ -1,4 +1,4 @@
-pub(super) fn opt_nulls_order() -> impl Combinator<Output = Option<SortNulls>> {
+pub(super) fn opt_nulls_order(stream: &mut TokenStream) -> Result<Option<SortNulls>> {
 
     /*
           NULLS FIRST
@@ -6,12 +6,18 @@ pub(super) fn opt_nulls_order() -> impl Combinator<Output = Option<SortNulls>> {
         | // empty
     */
 
-    Nulls
-        .and_right(or(
+    let order = seq!(=>
+        Nulls.parse(stream),
+        choice!(parsed stream =>
             First.map(|_| NullsFirst),
             Last.map(|_| NullsLast),
-        ))
-        .optional()
+        )
+    );
+
+    let order = order.optional()?
+        .map(|(_, order)| order);
+
+    Ok(order)
 }
 
 #[cfg(test)]
@@ -25,12 +31,16 @@ mod tests {
     #[test_case("", None)]
     #[test_case("foo", None)]
     fn test_opt_nulls_order(source: &str, expected: Option<SortNulls>) {
-        test_parser!(source, opt_nulls_order(), expected)
+        test_parser!(source, opt_nulls_order, expected)
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::result::Optional;
+use crate::scan::Result;
+use crate::stream::TokenStream;
 use pg_ast::SortNulls;
 use pg_ast::SortNulls::NullsFirst;
 use pg_ast::SortNulls::NullsLast;

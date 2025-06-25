@@ -33,11 +33,11 @@ fn sortby(stream: &mut TokenStream) -> Result<SortBy> {
         choice!(stream =>
             seq!(stream => Kw::Using, qual_all_op)
                 .map(|(_, op)| Some(Using(op))),
-            opt_asc_desc().parse(stream)
+            opt_asc_desc.parse(stream)
         )
             .optional()
             .map(Option::unwrap_or_default),
-        opt_nulls_order().parse(stream)
+        opt_nulls_order.parse(stream)
     )?;
 
     Ok(SortBy::new(expr, direction, nulls))

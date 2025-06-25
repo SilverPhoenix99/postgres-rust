@@ -26,40 +26,40 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
     match_first! {
         All.and_right(match_first! {
             (Functions, In, Kw::Schema)
-                .and_right(name_list())
+                .and_right(name_list)
                 .map(AllFunctionsInSchema),
             (Procedures, In, Kw::Schema)
-                .and_right(name_list())
+                .and_right(name_list)
                 .map(AllProceduresInSchema),
             (Routines, In, Kw::Schema)
-                .and_right(name_list())
+                .and_right(name_list)
                 .map(AllRoutinesInSchema),
             (Sequences, In, Kw::Schema)
-                .and_right(name_list())
+                .and_right(name_list)
                 .map(AllSequencesInSchema),
             (Tables, In, Kw::Schema)
-                .and_right(name_list())
+                .and_right(name_list)
                 .map(AllTablesInSchema),
         }),
         Kw::Database
-            .and_right(name_list())
+            .and_right(name_list)
             .map(Database),
         Kw::Domain
             .and_right(any_name_list)
             .map(Domain),
         Foreign.and_right(match_first! {
             (Data, Wrapper)
-                .and_right(name_list())
+                .and_right(name_list)
                 .map(ForeignDataWrapper),
             Server
-                .and_right(name_list())
+                .and_right(name_list)
                 .map(ForeignServer),
         }),
         Kw::Function
             .and_right(function_with_argtypes_list)
             .map(Function),
         Kw::Language
-            .and_right(name_list())
+            .and_right(name_list)
             .map(Language),
         (Large, Object)
             .and_right(signed_number_list)
@@ -74,13 +74,13 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
             .and_right(function_with_argtypes_list)
             .map(Routine),
         Kw::Schema
-            .and_right(name_list())
+            .and_right(name_list)
             .map(Schema),
         Kw::Sequence
             .and_right(qualified_name_list)
             .map(Sequence),
         Kw::Tablespace
-            .and_right(name_list())
+            .and_right(name_list)
             .map(Tablespace),
         Kw::Type
             .and_right(any_name_list)

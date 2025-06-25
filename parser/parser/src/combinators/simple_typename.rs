@@ -39,7 +39,7 @@ fn decimal(stream: &mut TokenStream) -> Result<TypeName> {
 
     let (_, typ) = seq!(=>
         choice!(parsed stream => Dec, Decimal, Kw::Numeric),
-        opt_type_modifiers().parse(stream).map(Numeric),
+        opt_type_modifiers.parse(stream).map(Numeric),
     )?;
 
     Ok(typ)
@@ -85,7 +85,7 @@ fn bit(stream: &mut TokenStream) -> Result<TypeName> {
     let (_, varying, mut modifiers) = seq!(stream =>
         Kw::Bit,
         opt_varying,
-        opt_type_modifiers()
+        opt_type_modifiers
     )?;
 
     if varying {
@@ -234,7 +234,7 @@ fn generic_type(stream: &mut TokenStream) -> Result<TypeName> {
 
     let (name, type_modifiers) = seq!(=>
         attrs!(stream => type_function_name.parse(stream)),
-        opt_type_modifiers().parse(stream)
+        opt_type_modifiers.parse(stream)
     )?;
 
     Ok(Generic { name, type_modifiers })

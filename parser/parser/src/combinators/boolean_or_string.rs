@@ -16,7 +16,7 @@ pub(super) fn boolean_or_string() -> impl Combinator<Output = BooleanOrString> {
         On.map(|kw| kw.text().into()),
         string.map(From::from),
         // `Off` is handled by this production:
-        non_reserved_word().map(From::from),
+        non_reserved_word.map(From::from),
     )
 }
 

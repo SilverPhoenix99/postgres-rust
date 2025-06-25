@@ -32,7 +32,7 @@ fn def_acl_option() -> impl Combinator<Output = AclOption> {
 
         (
             In.and(Schema),
-            name_list()
+            name_list
         ).map(|(_, schemas)|
             AclOption::Schemas(schemas)
         ),

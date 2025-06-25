@@ -83,9 +83,8 @@ mod tests {
     #[test]
     fn test_opt_grant_option() {
         let mut stream = TokenStream::new("with grant option", DEFAULT_CONFIG);
-        let parser = opt_grant_option();
-        assert_eq!(Ok(true), parser.parse(&mut stream));
-        assert_eq!(Ok(false), parser.parse(&mut stream));
+        assert_eq!(Ok(true), opt_grant_option().parse(&mut stream));
+        assert_eq!(Ok(false), opt_grant_option().parse(&mut stream));
     }
 
     #[test]

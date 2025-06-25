@@ -51,7 +51,7 @@ fn alter_extension_options(stream: &mut TokenStream) -> Result<Option<Vec<Str>>>
     */
 
     let options = many!(=>
-        seq!(stream => To, non_reserved_word_or_sconst())
+        seq!(stream => To, non_reserved_word_or_sconst)
             .map(|(_, opt)| opt)
     );
 
