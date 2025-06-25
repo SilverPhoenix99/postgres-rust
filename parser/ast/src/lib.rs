@@ -279,103 +279,84 @@ impl From<UnsignedNumber> for ExprNode {
 }
 
 impl ExprNode {
-    #[inline(always)]
+
     pub fn addition(left: Self, right: Self) -> Self {
         BinaryExpr::addition(left, right).into()
     }
 
-    #[inline(always)]
     pub fn unary_plus(operand: Self) -> Self {
         UnaryExpr::new(Operator::Addition.into(), operand).into()
     }
 
-    #[inline(always)]
     pub fn subtraction(left: Self, right: Self) -> Self {
         BinaryExpr::subtraction(left, right).into()
     }
 
     /// Aka `unary_minus`
-    #[inline(always)]
     pub fn negation(operand: Self) -> Self {
         UnaryExpr::new(Operator::Subtraction.into(), operand).into()
     }
 
-    #[inline(always)]
     pub fn multiplication(left: Self, right: Self) -> Self {
         BinaryExpr::multiplication(left, right).into()
     }
 
-    #[inline(always)]
     pub fn division(left: Self, right: Self) -> Self {
         BinaryExpr::division(left, right).into()
     }
 
-    #[inline(always)]
     pub fn modulo(left: Self, right: Self) -> Self {
         BinaryExpr::modulo(left, right).into()
     }
 
-    #[inline(always)]
     pub fn exponentiation(left: Self, right: Self) -> Self {
         BinaryExpr::exponentiation(left, right).into()
     }
 
-    #[inline(always)]
     pub fn less(left: Self, right: Self) -> Self {
         BinaryExpr::less(left, right).into()
     }
 
-    #[inline(always)]
     pub fn greater(left: Self, right: Self) -> Self {
         BinaryExpr::greater(left, right).into()
     }
 
-    #[inline(always)]
     pub fn equals(left: Self, right: Self) -> Self {
         BinaryExpr::equals(left, right).into()
     }
 
-    #[inline(always)]
     pub fn greater_equals(left: Self, right: Self) -> Self {
         BinaryExpr::greater_equals(left, right).into()
     }
 
-    #[inline(always)]
     pub fn less_equals(left: Self, right: Self) -> Self {
         BinaryExpr::less_equals(left, right).into()
     }
 
-    #[inline(always)]
     pub fn not_equals(left: Self, right: Self) -> Self {
         BinaryExpr::not_equals(left, right).into()
     }
 
-    #[inline(always)]
     pub fn distinct(left: Self, right: Self) -> Self {
         Self::Distinct(Box::new((left, right)))
     }
 
-    #[inline(always)]
     pub fn not_distinct(left: Self, right: Self) -> Self {
         Self::NotDistinct(Box::new((left, right)))
     }
 
-    #[inline(always)]
     pub fn is_xml_document(operand: Self) -> Self {
         Self::IsXmlDocument(Box::new(operand))
     }
 
-    #[inline(always)]
     pub fn not(expr: Self) -> Self {
         BoolExpr::not(expr).into()
     }
 
-    #[inline(always)]
     pub fn or(left: Self, right: Self) -> Self {
         BoolExpr::or(left, right).into()
     }
 
-    #[inline(always)]
     pub fn and(left: Self, right: Self) -> Self {
         BoolExpr::and(left, right).into()
     }

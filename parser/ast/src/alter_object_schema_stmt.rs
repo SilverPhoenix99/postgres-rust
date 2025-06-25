@@ -5,7 +5,7 @@ pub struct AlterObjectSchemaStmt {
 }
 
 impl AlterObjectSchemaStmt {
-    #[inline(always)]
+
     pub fn new<T: Into<Str>>(target: AlterObjectSchemaTarget, new_schema: T) -> Self {
         Self {
             target,

@@ -5,7 +5,6 @@ pub(in crate::stream) struct BasicStringDecoder<'src> {
 
 impl<'src> BasicStringDecoder<'src> {
 
-    #[inline(always)]
     pub fn new(source: &'src str, is_ident: bool) -> BasicStringDecoder<'src> {
         BasicStringDecoder { source, is_ident }
     }

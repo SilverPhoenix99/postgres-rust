@@ -5,7 +5,7 @@ pub struct RenameStmt {
 }
 
 impl RenameStmt {
-    #[inline(always)]
+
     pub fn new<T: Into<Str>>(target: RenameTarget, new_name: T) -> Self {
         Self {
             target,

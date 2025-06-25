@@ -6,7 +6,6 @@ pub(super) enum Associativity {
 }
 
 impl Associativity {
-    #[inline(always)]
     pub fn precedence(&self) -> i16 {
         match self {
             Self::Right(prec)
@@ -15,7 +14,6 @@ impl Associativity {
         }
     }
 
-    #[inline(always)]
     pub fn right_precedence(&self) -> i16 {
         match self {
             Self::Right(prec) => *prec,
@@ -23,7 +21,6 @@ impl Associativity {
         }
     }
 
-    #[inline(always)]
     pub fn max_precedence(&self) -> i16 {
         self.precedence() - 1
     }

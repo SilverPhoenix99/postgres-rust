@@ -5,17 +5,15 @@ pub struct AlterOwnerStmt {
 }
 
 impl AlterOwnerStmt {
-    #[inline(always)]
+
     pub fn new(target: AlterOwnerTarget, new_owner: RoleSpec) -> Self {
         Self { target, new_owner }
     }
 
-    #[inline(always)]
     pub fn target(&self) -> &AlterOwnerTarget {
         &self.target
     }
 
-    #[inline(always)]
     pub fn new_owner(&self) -> &RoleSpec {
         &self.new_owner
     }

@@ -45,7 +45,6 @@ impl TryFrom<u32> for SqlState {
 
 impl Display for SqlState {
 
-    #[inline(always)]
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
 
         let code = *self as u32;

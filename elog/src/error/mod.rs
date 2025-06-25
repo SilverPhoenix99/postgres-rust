@@ -8,7 +8,6 @@ pub(super) mod unicode_string;
 pub type LocatedError = LocatedMessage<Error>;
 pub type LocatedResult<T> = Result<T, LocatedError>;
 
-#[inline]
 pub fn syntax<T>(location: Location) -> T
 where
     LocatedError: Into<T>

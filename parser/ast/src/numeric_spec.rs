@@ -32,7 +32,6 @@ impl NumericSpec {
     /// that a numeric value can have, when the precision and scale are **both** unspecified.
     pub const UNSPECIFIED_SCALE: i32 = 16383;
 
-    #[inline]
     pub fn new(precision: NonZero<u16>, scale: i16) -> Result<Self, NewNumericSpecError> {
 
         if !Self::VALID_SPECIFIED_PRECISION.contains(&precision.get()) {
@@ -46,7 +45,6 @@ impl NumericSpec {
         Ok(Self { precision, scale })
     }
 
-    #[inline(always)]
     pub fn with_precision(precision: NonZero<u16>) -> Result<Self, NewNumericSpecError> {
         Self::new(precision, 0)
     }
@@ -54,7 +52,6 @@ impl NumericSpec {
     /// Total number of digits the value can have, before & after the decimal point.
     /// * If specified, it must be <= 1000;
     /// * If unspecified, the maximum is 131,072 digits before the decimal point, and 16,383 after.
-    #[inline(always)]
     pub fn precision(&self) -> u32 {
 
         if self.precision.get() == u16::MAX {
@@ -70,7 +67,6 @@ impl NumericSpec {
     /// * If specified, it must be >= -1000 and <= 1000;
     /// * If `precision` is specified, and `scale` is unspecified, it's defaulted to 0.
     /// * If unspecified, the maximum is 16,383 digits after the decimal point.
-    #[inline(always)]
     pub fn scale(&self) -> i32 {
 
         if self.scale == i16::MAX {
@@ -85,7 +81,6 @@ impl NumericSpec {
 
 impl Default for NumericSpec {
 
-    #[inline(always)]
     fn default() -> Self {
 
         // Hack: using the MAX values to represent Self::UNSPECIFIED_* values,

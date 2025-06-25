@@ -10,7 +10,6 @@ pub(in crate::stream) struct ExtendedStringResult {
 
 impl<'src> ExtendedStringDecoder<'src> {
 
-    #[inline]
     pub fn new(source: &'src str, backslash_quote: BackslashQuote) -> Self {
         let input = CharBuffer::new(source);
         Self { input, backslash_quote }

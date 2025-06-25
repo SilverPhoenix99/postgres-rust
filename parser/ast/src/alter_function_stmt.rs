@@ -6,7 +6,7 @@ pub struct AlterFunctionStmt {
 }
 
 impl AlterFunctionStmt {
-    #[inline(always)]
+
     pub fn new(kind: AlterFunctionKind, name: FunctionWithArgs, actions: Vec<AlterFunctionOption>) -> Self {
         Self { kind, name, actions }
     }

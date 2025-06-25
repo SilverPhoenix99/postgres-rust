@@ -5,12 +5,11 @@ pub enum XmlNodeKind {
 }
 
 impl XmlNodeKind {
-    #[inline(always)]
+
     pub fn is_document(&self) -> bool {
         *self == Self::Document
     }
 
-    #[inline(always)]
     pub fn is_content(&self) -> bool {
         *self == Self::Content
     }

@@ -7,25 +7,21 @@ where
     fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output>;
 
     /// See [`optional()`](optional::optional).
-    #[inline]
     fn optional(self) -> impl Combinator<Output = Option<Self::Output>> {
         optional(self)
     }
 
     /// See [`required()`](required::required).
-    #[inline]
     fn required(self) -> impl Combinator<Output = Self::Output> {
         required(self)
     }
 
     /// See [`try_match()`](try_match::try_match).
-    #[inline]
     fn try_match(self) -> impl Combinator<Output = Option<Self::Output>> {
         try_match(self)
     }
 
     /// See [`maybe_match()`](maybe_match::maybe_match).
-    #[inline]
     fn maybe_match(self) -> impl Combinator<Output = Option<Self::Output>> {
         maybe_match(self)
     }
@@ -33,7 +29,6 @@ where
     /// Returns the result from both parsers, in order, or the first `Err`.
     ///
     /// This is equivalent to `Self & R`.
-    #[inline]
     fn and<R>(self, right: R) -> impl Combinator<Output = (Self::Output, R::Output)>
     where
         R: Combinator
@@ -42,7 +37,6 @@ where
     }
 
     /// Same as `(Self && R)`
-    #[inline]
     fn and_then<R, M, O>(self, right: R, mapper: M) -> impl Combinator<Output = O>
     where
         R: Combinator,
@@ -55,7 +49,6 @@ where
     /// Same as `(Self && R)`.
     ///
     /// Returns `Self::Output`.
-    #[inline]
     fn and_left<R>(self, right: R) -> impl Combinator<Output = Self::Output>
     where
         R: Combinator
@@ -66,7 +59,6 @@ where
     /// Same as `(Self && R)`.
     ///
     /// Returns `Right::Output`.
-    #[inline]
     fn and_right<R>(self, right: R) -> impl Combinator<Output = R::Output>
     where
         R: Combinator
@@ -75,7 +67,6 @@ where
     }
 
     /// See [`or()`](or::or)
-    #[inline]
     fn or<R>(self, right: R) -> impl Combinator<Output = Self::Output>
     where
         R: Combinator<Output = Self::Output>
@@ -84,7 +75,6 @@ where
     }
 
     /// See [`map()`](map::map).
-    #[inline]
     fn map<M, O>(self, mapper: M) -> impl Combinator<Output = O>
     where
         M: Fn(Self::Output) -> O
@@ -93,7 +83,6 @@ where
     }
 
     /// See [`map_err()`](map_err).
-    #[inline]
     fn map_err<M>(self, mapper: M) -> impl Combinator<Output = Self::Output>
     where
         M: Fn(Error) -> Error
@@ -102,7 +91,6 @@ where
     }
 
     /// See [`map_result()`](map_result).
-    #[inline]
     fn map_result<M, O>(self, mapper: M) -> impl Combinator<Output = O>
     where
         M: Fn(Result<Self::Output>) -> Result<O>
@@ -110,7 +98,6 @@ where
         map_result(self, mapper)
     }
 
-    #[inline]
     fn left<L, R>(self) -> impl Combinator<Output = L>
     where
         Self: Combinator<Output = (L, R)>
@@ -118,7 +105,6 @@ where
         self.map(|(left, _)| left)
     }
 
-    #[inline]
     fn right<L, R>(self) -> impl Combinator<Output = R>
     where
         Self: Combinator<Output = (L, R)>
@@ -126,7 +112,6 @@ where
         self.map(|(_, right)| right)
     }
 
-    #[inline]
     fn skip(self) -> impl Combinator<Output = ()> {
         skip(self)
     }

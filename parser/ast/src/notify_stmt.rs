@@ -5,7 +5,7 @@ pub struct NotifyStmt {
 }
 
 impl NotifyStmt {
-    #[inline(always)]
+
     pub fn new<T: Into<Str>>(condition_name: T) -> Self {
         Self {
             condition_name: condition_name.into(),
@@ -13,7 +13,6 @@ impl NotifyStmt {
         }
     }
 
-    #[inline(always)]
     pub fn with_payload<N, P>(condition_name: N, payload: P) -> Self
     where
         N: Into<Str>,
@@ -25,12 +24,10 @@ impl NotifyStmt {
         }
     }
 
-    #[inline(always)]
     pub fn condition_name(&self) -> &str {
         &self.condition_name
     }
 
-    #[inline(always)]
     pub fn payload(&self) -> Option<&str> {
         self.payload.as_deref()
     }

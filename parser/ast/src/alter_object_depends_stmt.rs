@@ -6,7 +6,7 @@ pub struct AlterObjectDependsStmt {
 }
 
 impl AlterObjectDependsStmt {
-    #[inline(always)]
+
     pub fn new<T: Into<Str>>(target: AlterObjectDependsTarget, extension: T, action: AddDrop) -> Self {
         Self {
             target,

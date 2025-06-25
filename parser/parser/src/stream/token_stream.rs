@@ -23,7 +23,6 @@ impl<'src> TokenStream<'src> {
         }
     }
 
-    #[inline(always)]
     pub fn source(&self) -> &'src str {
         self.lexer.lexer.source()
     }
@@ -37,14 +36,12 @@ impl<'src> TokenStream<'src> {
         }
     }
 
-    #[inline(always)]
     pub fn eof(&mut self) -> bool {
         matches!(self.peek_mut(), Err(Eof(_)))
     }
 
     /// Returns the location of the current token,
     /// or an empty-length location if in the Eof state.
-    #[inline(always)]
     pub fn current_location(&mut self) -> Location {
         match self.peek_mut() {
             Ok((_, loc)) | Err(Eof(loc)) => loc.clone(),
@@ -64,12 +61,10 @@ impl<'src> TokenStream<'src> {
         Some(slice)
     }
 
-    #[inline(always)]
     pub fn next(&mut self) {
         self.buf.pop_front();
     }
 
-    #[inline(always)]
     pub fn peek(&mut self) -> eof::Result<&TokenValue> {
         match self.peek_mut() {
             Ok((tok, _)) => Ok(tok),
@@ -206,7 +201,6 @@ impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenStream<'_> {
 }
 
 impl<TOut> TokenConsumer<TOut, Option<TOut>> for TokenStream<'_> {
-    #[inline(always)]
     fn consume<F>(&mut self, mapper: F) -> scan::Result<TOut>
     where
         F: Fn(&mut TokenValue) -> Option<TOut>

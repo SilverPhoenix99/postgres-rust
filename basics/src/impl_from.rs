@@ -8,7 +8,6 @@ macro_rules! impl_from {
 
     ($from:ident for $for_:ident :: $variant:ident) => {
         impl From<$from> for $for_ {
-            #[inline(always)]
             fn from(value: $from) -> Self {
                 Self::$variant(value.into())
             }
@@ -21,7 +20,6 @@ macro_rules! impl_from {
 
     (box $from:ident for $for_:ident :: $variant:ident) => {
         impl From<$from> for $for_ {
-            #[inline(always)]
             fn from(value: $from) -> Self {
                 Self::$variant(Box::new(value.into()))
             }

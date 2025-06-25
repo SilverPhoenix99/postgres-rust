@@ -14,7 +14,6 @@ pub(in crate::stream) struct BitStringDecoder<'src> {
 
 impl<'src> BitStringDecoder<'src> {
 
-    #[inline(always)]
     pub fn new(source: &'src str, is_hex: bool) -> Self {
         let bits_per_char = if is_hex { 4 } else { 1 };
         Self { source, bits_per_char }

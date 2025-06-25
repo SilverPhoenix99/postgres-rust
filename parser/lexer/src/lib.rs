@@ -47,7 +47,6 @@ impl FusedIterator for Lexer<'_> {}
 
 impl<'src> Lexer<'src> {
 
-    #[inline]
     pub fn new(source: &'src str, standard_conforming_strings: bool) -> Self {
         Self {
             standard_conforming_strings,
@@ -56,13 +55,11 @@ impl<'src> Lexer<'src> {
         }
     }
 
-    #[inline(always)]
     pub fn source(&self) -> &'src str {
         self.buffer.source()
     }
 
     /// Zero-length `range`.
-    #[inline(always)]
     pub fn current_location(&self) -> Location {
         self.buffer.current_location()
     }
@@ -426,17 +423,14 @@ impl<'src> Lexer<'src> {
         true
     }
 
-    #[inline(always)]
     fn lex_hex_integer(&mut self) -> Result {
         self.lex_prefixed_int(is_hex_digit, Hexadecimal)
     }
 
-    #[inline(always)]
     fn lex_oct_integer(&mut self) -> Result {
         self.lex_prefixed_int(is_oct_digit, Octal)
     }
 
-    #[inline(always)]
     fn lex_bin_integer(&mut self) -> Result {
         self.lex_prefixed_int(is_bin_digit, NumberRadix::Binary)
     }
@@ -564,7 +558,6 @@ impl<'src> Lexer<'src> {
         }
     }
 
-    #[inline]
     fn lex_identifier(&mut self) -> Result {
 
         // To prevent re-consuming it, {ident_start} was already consumed.

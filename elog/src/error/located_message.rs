@@ -60,22 +60,18 @@ impl<T> LogMessage for LocatedMessage<T>
 where
     T: LogMessage + 'static
 {
-    #[inline(always)]
     fn sql_state(&self) -> SqlState {
         self.source.sql_state()
     }
 
-    #[inline(always)]
     fn hint(&self) -> Option<&str> {
         self.source.hint()
     }
 
-    #[inline(always)]
     fn detail(&self) -> Option<&str> {
         self.source.detail()
     }
 
-    #[inline(always)]
     fn detail_log(&self) -> Option<&str> {
         self.source.detail_log()
     }

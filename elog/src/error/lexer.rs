@@ -56,12 +56,10 @@ pub enum Error {
 
 impl LogMessage for Error {
 
-    #[inline(always)]
     fn sql_state(&self) -> SqlState {
         SyntaxError
     }
 
-    #[inline(always)]
     fn detail(&self) -> Option<&str> {
         if UnsafeUnicodeString.eq(self) {
             Some(

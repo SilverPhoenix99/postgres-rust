@@ -11,34 +11,28 @@ pub struct Location {
 
 impl Location {
 
-    #[inline(always)]
     pub fn new(range: Range<u32>, line: u32, col: u32) -> Self {
         Self { range, line, col }
     }
 
     /// Slices the input source, according to the current range
-    #[inline(always)]
     pub fn slice<'src>(&self, source: &'src str) -> &'src str {
         let range = self.range.start as usize..self.range.end as usize;
         &source[range]
     }
 
-    #[inline(always)]
     pub fn range(&self) -> &Range<u32> {
         &self.range
     }
 
-    #[inline(always)]
     pub fn line(&self) -> u32 {
         self.line
     }
 
-    #[inline(always)]
     pub fn col(&self) -> u32 {
         self.col
     }
 
-    #[inline(always)]
     pub fn position(&self) -> Position {
         (self.line, self.col)
     }
