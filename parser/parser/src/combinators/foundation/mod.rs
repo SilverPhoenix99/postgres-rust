@@ -22,7 +22,7 @@ pub(crate) use self::combinator::Combinator;
 
 #[allow(unused_imports)] // TODO: eventually remove
 pub(in crate::combinators) use self::{
-    bit_string::{bit_string, BitStringCombi},
+    bit_string::bit_string,
     identifier::identifier,
     integer::integer,
     keyword::{any_keyword, keyword_if, keyword_result, keyword_when, KeywordCondCombi},
