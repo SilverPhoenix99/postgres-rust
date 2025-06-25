@@ -3,7 +3,7 @@ pub(super) fn signed_number(stream: &mut TokenStream) -> Result<SignedNumber> {
 
     // ('+' | '-')? (ICONST | FCONST)
 
-    let sign = sign().maybe_match().parse(stream)?;
+    let sign = sign.maybe_match().parse(stream)?;
     let num = number().map(SignedNumber::from);
 
     let negative = match sign {
@@ -29,7 +29,7 @@ pub(super) fn signed_i32_literal(stream: &mut TokenStream) -> Result<i32> {
 
     // ('+' | '-')? ICONST
 
-    let sign = sign().maybe_match().parse(stream)?;
+    let sign = sign.maybe_match().parse(stream)?;
 
     let int = match sign {
         None => i32_literal(stream)?,

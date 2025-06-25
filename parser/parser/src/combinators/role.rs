@@ -12,7 +12,7 @@ pub(super) fn role_id(stream: &mut TokenStream) -> Result<Str> {
 
     // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
-    let (role, loc) = located!(role_spec).parse(stream)?;
+    let (role, loc) = located!(stream => role_spec)?;
 
     role.into_role_id()
         .map_err(|err| err.at(loc).into())
@@ -35,15 +35,8 @@ pub(super) fn role_spec(stream: &mut TokenStream) -> Result<RoleSpec> {
         CurrentRole.map(|_| RoleSpec::CurrentRole),
         CurrentUser.map(|_| RoleSpec::CurrentUser),
         SessionUser.map(|_| RoleSpec::SessionUser),
-
         // "none" is a ColumnName keyword, so it must be checked before the next option
-        located!(NoneKw)
-            .map_result(|result| {
-                let (_, loc) = result?;
-                let err = ReservedRoleSpec("none").at(loc);
-                Err::<RoleSpec, _>(ScanErr(err.into()))
-            }),
-
+        role_none,
         non_reserved_word().map(|ident| match ident.as_ref() {
             "public" => RoleSpec::Public,
             _ => RoleSpec::Name(ident)
@@ -51,10 +44,17 @@ pub(super) fn role_spec(stream: &mut TokenStream) -> Result<RoleSpec> {
     )
 }
 
+fn role_none(stream: &mut TokenStream) -> Result<RoleSpec> {
+
+    let (_, loc) = located!(stream => NoneKw)?;
+    let err = ReservedRoleSpec("none").at(loc);
+    Err(err.into())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::scan::Error::NoMatch;
+    use crate::scan::Error::{NoMatch, ScanErr};
     use crate::scan::Result;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
@@ -141,7 +141,6 @@ use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word;
-use crate::scan::Error::ScanErr;
 use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::RoleSpec;
