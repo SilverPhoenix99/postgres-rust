@@ -6,25 +6,22 @@ macro_rules! choice {
         $(,)?
     ) => {
         'block: {
-            use $crate::result::MaybeMatch;
-            use $crate::scan::Error;
-
-            match $head.maybe_match() {
+            match $crate::result::MaybeMatch::maybe_match($head) {
                 Ok(Some(ok)) => break 'block Ok(ok),
-                Err(err) => break 'block Err(Error::from(err)),
+                Err(err) => break 'block Err($crate::scan::Error::from(err)),
                 Ok(None) => {}
             }
 
             $(
-                match $tail.maybe_match() {
+                match $crate::result::MaybeMatch::maybe_match($tail) {
                     Ok(Some(ok)) => break 'block Ok(ok),
-                    Err(err) => break 'block Err(Error::from(err)),
+                    Err(err) => break 'block Err($crate::scan::Error::from(err)),
                     Ok(None) => {}
                 }
             )+
 
-            let loc = $stream.current_location();
-            Err(Error::NoMatch(loc))
+            let loc = $crate::stream::TokenStream::current_location($stream);
+            Err($crate::scan::Error::NoMatch(loc))
         }
     };
 
@@ -34,20 +31,19 @@ macro_rules! choice {
         $(,)?
     ) => {
         choice!($stream =>
-            $head.parse($stream),
+            $crate::combinators::foundation::Combinator::parse(&$head, $stream),
             $(
-                $tail.parse($stream)
+                $crate::combinators::foundation::Combinator::parse(&$tail, $stream)
             ),+
         )
     };
 
     ($head:expr, $($tail:expr),+ $(,)?) => {
         $crate::combinators::foundation::parser(|stream| {
-            use $crate::combinators::foundation::Combinator;
             choice!(parsed stream =>
-                $head.map(From::from),
+                $crate::combinators::foundation::Combinator::map($head, From::from),
                 $(
-                    $tail.map(From::from)
+                    $crate::combinators::foundation::Combinator::map($tail, From::from)
                 ),+
             )
         })
@@ -62,18 +58,19 @@ macro_rules! seq {
         $(,)?
     ) => {
         'block: {
-            use $crate::result::Required;
-            use $crate::scan::Error;
-
             let value = (
-                match $head.map_err(Error::from) {
+                match $head {
                     Ok(ok) => ok,
-                    Err(err) => break 'block Err(err),
+                    Err(err) => break 'block Err($crate::scan::Error::from(err)),
                 },
                 $(
-                    match $tail.map_err(Error::from).required().map_err(Error::from) {
+                    match {
+                        let result = $tail;
+                        let result = result.map_err($crate::scan::Error::from);
+                        $crate::result::Required::required(result)
+                    } {
                         Ok(ok) => ok,
-                        Err(err) => break 'block Err(err),
+                        Err(err) => break 'block Err($crate::scan::Error::from(err)),
                     }
                 ),+
             );
@@ -86,50 +83,53 @@ macro_rules! seq {
         $head:expr,
         $($tail:expr),+
         $(,)?
-    ) => {{
-        use $crate::combinators::foundation::Combinator;
+    ) => {
         seq!(=>
-            $head.parse($stream),
+            $crate::combinators::foundation::Combinator::parse(&$head, $stream),
             $(
-                $tail.parse($stream)
+                $crate::combinators::foundation::Combinator::parse(&$tail, $stream)
             ),+
         )
-    }};
+    };
 }
 
 macro_rules! between {
 
     (paren : $stream:expr => $content:expr) => {{
-        use $crate::combinators::foundation::Combinator;
-        use $crate::combinators::foundation::seq;
-        use pg_lexer::OperatorKind::{CloseParenthesis, OpenParenthesis};
         between!($stream =>
-            OpenParenthesis.skip().parse($stream),
+            {
+                let p = $crate::combinators::foundation::Combinator::skip(pg_lexer::OperatorKind::OpenParenthesis);
+                $crate::combinators::foundation::Combinator::parse(&p, $stream)
+            },
             $content,
-            CloseParenthesis.skip().parse($stream)
+            {
+                let p = $crate::combinators::foundation::Combinator::skip(pg_lexer::OperatorKind::CloseParenthesis);
+                $crate::combinators::foundation::Combinator::parse(&p, $stream)
+            }
         )
     }};
 
     (square : $stream:expr => $content:expr) => {{
-        use $crate::combinators::foundation::Combinator;
-        use $crate::combinators::foundation::seq;
-        use pg_lexer::OperatorKind::{CloseBracket, OpenBracket};
         between!($stream =>
-            OpenBracket.skip().parse($stream),
+            {
+                let p = $crate::combinators::foundation::Combinator::skip(pg_lexer::OperatorKind::OpenBracket);
+                $crate::combinators::foundation::Combinator::parse(&p, $stream)
+            },
             $content,
-            CloseBracket.skip().parse($stream)
+            {
+                let p = $crate::combinators::foundation::Combinator::skip(pg_lexer::OperatorKind::CloseBracket);
+                $crate::combinators::foundation::Combinator::parse(&p, $stream)
+            }
         )
     }};
 
     ($stream:expr => $before:expr, $content:expr, $after:expr) => {{
-        use $crate::combinators::foundation::seq;
-        seq!(=> $before, $content, $after)
-            .map(|(_, content, _)| content)
+        let result = $crate::combinators::foundation::seq!(=> $before, $content, $after);
+        result.map(|(_, content, _)| content)
     }};
 
     ($before:expr, $content:expr, $after:expr) => {
         $crate::combinators::foundation::parser(|stream| {
-            use $crate::combinators::foundation::Combinator;
             between!(stream => $before, $content, $after)
         })
     };

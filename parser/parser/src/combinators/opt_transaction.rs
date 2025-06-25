@@ -24,7 +24,6 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::choice;
 use crate::result::Optional;
 use crate::scan::Result;

@@ -1,4 +1,3 @@
-
 pub(super) fn opt_transaction_chain(stream: &mut TokenStream) -> Result<bool> {
 
     /*
@@ -36,6 +35,7 @@ mod tests {
 }
 
 use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
 use crate::scan::Result;
 use crate::stream::TokenStream;

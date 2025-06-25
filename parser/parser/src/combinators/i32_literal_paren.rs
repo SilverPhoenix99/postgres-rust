@@ -24,5 +24,6 @@ mod tests {
 
 use crate::combinators::foundation::between;
 use crate::combinators::foundation::integer;
+use crate::combinators::foundation::Combinator;
 use crate::scan::Result;
 use crate::stream::TokenStream;

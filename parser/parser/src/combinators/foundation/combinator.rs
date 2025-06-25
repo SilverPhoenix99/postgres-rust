@@ -191,7 +191,7 @@ where
     }
 }
 
-macro_rules! sequence_combinator {
+macro_rules! tuple_combinator {
     ($($t:ident => $f:ident),+) => {
         /// Joins multiple parsers into a single parser,
         /// and where the returned parser returns the first `Err`.
@@ -219,12 +219,12 @@ macro_rules! sequence_combinator {
     };
 }
 
-sequence_combinator!(T1 => f1);
-sequence_combinator!(T1 => f1, T2 => f2);
-sequence_combinator!(T1 => f1, T2 => f2, T3 => f3);
-sequence_combinator!(T1 => f1, T2 => f2, T3 => f3, T4 => f4);
-sequence_combinator!(T1 => f1, T2 => f2, T3 => f3, T4 => f4, T5 => f5);
-sequence_combinator!(T1 => f1, T2 => f2, T3 => f3, T4 => f4, T5 => f5, T6 => f6);
+tuple_combinator!(T1 => f1);
+tuple_combinator!(T1 => f1, T2 => f2);
+tuple_combinator!(T1 => f1, T2 => f2, T3 => f3);
+tuple_combinator!(T1 => f1, T2 => f2, T3 => f3, T4 => f4);
+tuple_combinator!(T1 => f1, T2 => f2, T3 => f3, T4 => f4, T5 => f5);
+tuple_combinator!(T1 => f1, T2 => f2, T3 => f3, T4 => f4, T5 => f5, T6 => f6);
 
 use crate::combinators::foundation::map;
 use crate::combinators::foundation::map_err;

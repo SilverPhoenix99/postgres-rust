@@ -37,10 +37,7 @@ macro_rules! many {
 
     (=> pre = $prefix:expr, $combinator:expr) => {
         'block: {
-            use $crate::result::Optional;
-            use $crate::scan::Error;
-
-            let element = match $prefix.map_err(Error::from) {
+            let element = match $prefix.map_err($crate::scan::Error::from) {
                 Ok(ok) => ok,
                 Err(err) => break 'block Err(err)
             };
@@ -48,7 +45,11 @@ macro_rules! many {
             let mut elements = vec![element];
 
             while let Some(element) = {
-                match $combinator.optional().map_err(Error::from) {
+                match {
+                    let result = $combinator;
+                    let result = $crate::result::Optional::optional(result);
+                    result.map_err($crate::scan::Error::from)
+                } {
                     Ok(ok) => ok,
                     Err(err) => break 'block Err(err.into())
                 }
@@ -62,23 +63,28 @@ macro_rules! many {
 
     (=> sep = $separator:expr, $combinator:expr) => {
         'block: {
-            use $crate::result::{Optional, Required};
-            use $crate::scan::Error;
-
-            let element = match $combinator.map_err(Error::from) {
+            let element = match $combinator.map_err($crate::scan::Error::from) {
                 Ok(ok) => ok,
                 Err(err) => break 'block Err(err)
             };
             let mut elements = vec![element];
 
             while {
-                    match $separator.optional().map_err(Error::from) {
+                    match {
+                        let result = $separator;
+                        let result = $crate::result::Optional::optional(result);
+                        result.map_err($crate::scan::Error::from)
+                    } {
                         Ok(ok) => ok.is_some(),
                         Err(err) => break 'block Err(err)
                     }
                 }
             {
-                let element = match $combinator.required().map_err(Error::from) {
+                let element = match {
+                    let result = $combinator;
+                    let result = $crate::result::Required::required(result);
+                    result.map_err($crate::scan::Error::from)
+                } {
                     Ok(ok) => ok,
                     Err(err) => break 'block Err(err)
                 };
@@ -94,44 +100,43 @@ macro_rules! many {
     };
 
     ($stream:expr => pre = $prefix:expr, $combinator:expr) => {{
-        use $crate::combinators::foundation::Combinator;
+        let prefix = $prefix;
+        let combinator = $combinator;
         many!(=>
-            pre = $prefix.parse($stream),
-            $combinator.parse($stream)
+            pre = $crate::combinators::foundation::Combinator::parse(&prefix, $stream),
+            $crate::combinators::foundation::Combinator::parse(&combinator, $stream)
         )
     }};
 
     ($stream:expr => sep = $separator:expr, $combinator:expr) => {{
-        use $crate::combinators::foundation::Combinator;
+        let separator = $separator;
+        let combinator = $combinator;
         many!(=>
-            sep = $separator.parse($stream),
-            $combinator.parse($stream)
+            sep = $crate::combinators::foundation::Combinator::parse(&separator, $stream),
+            $crate::combinators::foundation::Combinator::parse(&combinator, $stream)
         )
     }};
 
     ($stream:expr => $combinator:expr) => {{
-        use $crate::combinators::foundation::Combinator;
-        many!(=> $combinator.parse($stream))
+        let combinator = $combinator;
+        many!(=> $crate::combinators::foundation::Combinator::parse(&combinator, $stream))
     }};
 
     (pre = $prefix:expr, $combinator:expr) => {
         $crate::combinators::foundation::parser(|stream| {
-            use $crate::combinators::foundation::Combinator;
-            many!(=> pre = $prefix.parse(stream), $combinator.parse(stream))
+            many!(stream => pre = $prefix, $combinator)
         })
     };
 
     (sep = $separator:expr, $combinator:expr) => {
         $crate::combinators::foundation::parser(|stream| {
-            use $crate::combinators::foundation::Combinator;
-            many!(=> sep = $separator.parse(stream), $combinator.parse(stream))
+            many!(stream => sep = $separator, $combinator)
         })
     };
 
     ($combinator:expr) => {
         $crate::combinators::foundation::parser(|stream| {
-            use $crate::combinators::foundation::Combinator;
-            many!(=> $combinator.parse(stream))
+            many!(stream => $combinator)
         })
     };
 }

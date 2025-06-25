@@ -9,6 +9,7 @@ pub(super) fn paren_name_list(stream: &mut TokenStream) -> Result<Vec<Str>> {
 }
 
 use crate::combinators::foundation::between;
+use crate::combinators::foundation::Combinator;
 use crate::combinators::name_list;
 use crate::scan::Result;
 use crate::stream::TokenStream;
