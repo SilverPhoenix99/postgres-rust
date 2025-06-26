@@ -12,8 +12,7 @@ pub(super) fn privileges(stream: &mut TokenStream) -> scan::Result<AccessPrivile
             paren_name_list.optional()
         )
             .map(|(.., columns)| All { columns }),
-        privilege_list
-            .parse(stream)
+        privilege_list(stream)
             .map(Specific)
     )
 }

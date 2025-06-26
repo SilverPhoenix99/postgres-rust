@@ -66,8 +66,8 @@ fn func_args(stream: &mut TokenStream) -> scan::Result<Option<Option<Vec<Functio
     */
 
     let args = between!(paren : stream =>
-        func_args_list.optional()
-            .parse(stream)
+        func_args_list(stream)
+            .optional()
     );
 
     let args = args.optional()?;
@@ -148,7 +148,6 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg;
 use crate::result::Optional;
 use crate::scan;

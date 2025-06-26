@@ -35,7 +35,7 @@ pub(super) fn explicit_op(stream: &mut TokenStream) -> scan::Result<QualifiedOpe
 
     let (_, op) = seq!(=>
         OperatorKw.parse(stream),
-        between!(paren : stream => any_operator.parse(stream))
+        between!(paren : stream => any_operator(stream))
     )?;
 
     Ok(op)

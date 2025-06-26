@@ -3,7 +3,7 @@ pub(super) fn non_reserved_word_or_sconst(stream: &mut TokenStream) -> scan::Res
 
     choice!(parsed stream =>
         non_reserved_word,
-        string.map(Boxed)
+        string.map(Str::from)
     )
 }
 
@@ -27,4 +27,3 @@ use crate::combinators::non_reserved_word;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::Str;
-use pg_basics::Str::Boxed;

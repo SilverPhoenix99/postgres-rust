@@ -65,7 +65,7 @@ mod tests {
 
     #[test]
     fn test_role_list() {
-        let source = "public , CuRrEnT_rOlE,CURRENT_USER, session_user ,coalesce,xxYYzz none";
+        let source = "puBlic , CuRrEnT_rOlE,CURRENT_USER, session_user ,coalesce,xxYYzz none";
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
         let actual = role_list(&mut stream).unwrap();

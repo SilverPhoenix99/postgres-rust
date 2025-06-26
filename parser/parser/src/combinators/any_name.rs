@@ -14,7 +14,7 @@ pub(in crate::combinators) fn any_name(stream: &mut TokenStream) -> scan::Result
         col_id attrs
     */
 
-    attrs!(stream => col_id.parse(stream))
+    attrs!(stream => col_id(stream))
 }
 
 #[cfg(test)]

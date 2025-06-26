@@ -8,13 +8,13 @@ pub(super) fn opt_array_bounds(stream: &mut TokenStream) -> scan::Result<Option<
     let bounds = choice!(stream =>
         seq!(=>
             Array.parse(stream),
-            between!(square : stream => i32_literal.parse(stream))
+            between!(square : stream => i32_literal(stream))
                 .optional()
         )
             .map(|(_, dim)| vec![dim]),
         many!(=>
             between!(square : stream =>
-                i32_literal.parse(stream)
+                i32_literal(stream)
                     .optional()
             )
         )

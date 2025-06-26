@@ -15,8 +15,7 @@ pub(super) fn variable_target(stream: &mut TokenStream) -> scan::Result<Variable
             .map(|_| TransactionIsolation),
         seq!(stream => Session, Authorization)
             .map(|_| SessionAuthorization),
-        all_or_var_name
-            .parse(stream)
+        all_or_var_name(stream)
             .map(|reset| match reset {
                 OneOrAll::All => VariableTarget::All,
                 OneOrAll::One(name) => VariableTarget::Variable{ name }
@@ -43,7 +42,6 @@ mod tests {
 use crate::combinators::all_or_var_name;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::OneOrAll;

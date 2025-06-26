@@ -18,8 +18,7 @@ pub(super) fn operator(stream: &mut TokenStream) -> scan::Result<Operator> {
                 .map(|(_, name, _, index_method)|
                     Operator::Family { name, index_method }
                 ),
-            operator_with_argtypes
-                .parse(stream)
+            operator_with_argtypes(stream)
                 .map(Operator::WithArgs)
         )
     )?;
