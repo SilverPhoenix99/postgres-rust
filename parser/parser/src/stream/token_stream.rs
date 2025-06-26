@@ -170,12 +170,12 @@ pub(crate) trait TokenConsumer<TOut, FRes> {
 
 /// Consumers are not allowed to return `Err(Eof)`,
 /// which is an internal error that's only returned by the `TokenBuffer` directly.
-pub(crate) type ConsumerResult<T> = pg_elog::LocatedResult<Option<T>>;
+pub(crate) type LocatedResult<T> = pg_elog::LocatedResult<Option<T>>;
 
-impl<TOut> TokenConsumer<TOut, ConsumerResult<TOut>> for TokenStream<'_> {
+impl<TOut> TokenConsumer<TOut, LocatedResult<TOut>> for TokenStream<'_> {
     fn consume<F>(&mut self, mapper: F) -> scan::Result<TOut>
     where
-        F: Fn(&mut TokenValue) -> ConsumerResult<TOut>
+        F: Fn(&mut TokenValue) -> LocatedResult<TOut>
     {
         let (tok, loc) = match self.peek_mut() {
             Ok(ok) => ok,

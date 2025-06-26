@@ -8,7 +8,7 @@
 /// * [`keyword_when()`]
 pub(in crate::combinators) fn keyword_if<P>(pred: P)
     -> KeywordCondCombi<
-        impl Fn(Keyword) -> ConsumerResult<Keyword>,
+        impl Fn(Keyword) -> stream::LocatedResult<Keyword>,
         Keyword
     >
 where
@@ -19,7 +19,7 @@ where
 
 pub(in crate::combinators) fn any_keyword()
     -> KeywordCondCombi<
-        impl Fn(Keyword) -> ConsumerResult<Keyword>,
+        impl Fn(Keyword) -> stream::LocatedResult<Keyword>,
         Keyword
     >
 {
@@ -38,7 +38,7 @@ pub(in crate::combinators) fn keyword_when<O>(
     mapper: impl Fn(Keyword) -> Option<O>
 )
     -> KeywordCondCombi<
-        impl Fn(Keyword) -> ConsumerResult<O>,
+        impl Fn(Keyword) -> stream::LocatedResult<O>,
         O
     >
 {
@@ -56,9 +56,9 @@ pub(in crate::combinators) fn keyword_when<O>(
 /// * [`keyword_when()`]
 /// * [`keyword_if()`]
 pub(in crate::combinators) fn keyword_result<O>(
-    mapper: impl Fn(Keyword) -> ConsumerResult<O>
+    mapper: impl Fn(Keyword) -> stream::LocatedResult<O>
 ) -> KeywordCondCombi<
-        impl Fn(Keyword) -> ConsumerResult<O>,
+        impl Fn(Keyword) -> stream::LocatedResult<O>,
         O
     >
 {
@@ -101,7 +101,7 @@ pub(in crate::combinators) struct KeywordCondCombi<F, O> {
 
 impl<F, O> Combinator for KeywordCondCombi<F, O>
 where
-    F: Fn(Keyword) -> ConsumerResult<O>
+    F: Fn(Keyword) -> stream::LocatedResult<O>
 {
     type Output = O;
 
@@ -147,7 +147,7 @@ mod tests {
 
 use crate::combinators::foundation::Combinator;
 use crate::scan;
-use crate::stream::ConsumerResult;
+use crate::stream;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue;

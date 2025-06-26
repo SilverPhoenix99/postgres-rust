@@ -6,6 +6,6 @@ mod token_value;
 mod uescape_escape;
 
 pub(crate) use self::{
-    token_stream::{ConsumerResult, TokenConsumer, TokenStream},
+    token_stream::{LocatedResult, TokenConsumer, TokenStream},
     token_value::TokenValue,
 };

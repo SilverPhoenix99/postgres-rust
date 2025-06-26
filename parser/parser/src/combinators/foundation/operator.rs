@@ -10,7 +10,7 @@ pub(in crate::combinators) fn operator_if(
     pred: impl Fn(OperatorKind) -> bool
 )
     -> OperatorCondCombi<
-        impl Fn(OperatorKind) -> ConsumerResult<OperatorKind>,
+        impl Fn(OperatorKind) -> stream::LocatedResult<OperatorKind>,
         OperatorKind
     >
 {
@@ -28,7 +28,7 @@ pub(in crate::combinators) fn operator_when<O>(
     mapper: impl Fn(OperatorKind) -> Option<O>
 )
     -> OperatorCondCombi<
-        impl Fn(OperatorKind) -> ConsumerResult<O>,
+        impl Fn(OperatorKind) -> stream::LocatedResult<O>,
         O
     >
 {
@@ -44,10 +44,10 @@ pub(in crate::combinators) fn operator_when<O>(
 /// * [`operator_result()`]
 /// * [`operator_if()`]
 pub(in crate::combinators) fn operator_result<O>(
-    mapper: impl Fn(OperatorKind) -> ConsumerResult<O>
+    mapper: impl Fn(OperatorKind) -> stream::LocatedResult<O>
 )
     -> OperatorCondCombi<
-        impl Fn(OperatorKind) -> ConsumerResult<O>,
+        impl Fn(OperatorKind) -> stream::LocatedResult<O>,
         O
     >
 {
@@ -78,7 +78,7 @@ pub(in crate::combinators) struct OperatorCondCombi<F, O> {
 
 impl<F, O> Combinator for OperatorCondCombi<F, O>
 where
-    F: Fn(OperatorKind) -> ConsumerResult<O>
+    F: Fn(OperatorKind) -> stream::LocatedResult<O>
 {
     type Output = O;
 
@@ -94,7 +94,7 @@ where
 
 use crate::combinators::foundation::Combinator;
 use crate::scan;
-use crate::stream::ConsumerResult;
+use crate::stream;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Operator;
