@@ -14,7 +14,7 @@ pub(super) fn window_specification() -> impl Combinator<Output = WindowDefinitio
     parser(|stream| between!(paren : stream =>
         (
             opt_existing_window_name(),
-            opt_partition_clause(),
+            opt_partition_clause,
             sort_clause.optional(),
             opt_frame_clause()
         )

@@ -12,7 +12,7 @@ macro_rules! attrs {
             (Dot, col_label).right()
         )
     }};
-    
+
     ($stream:ident => $prefix:expr) => {{
         #[allow(unused_imports)]
         use $crate::combinators::foundation::Combinator;

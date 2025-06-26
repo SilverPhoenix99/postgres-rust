@@ -30,11 +30,11 @@ pub(super) fn func_arg() -> impl Combinator<Output = FunctionParameter> {
 
         let func_type = if mode.is_none() && arg_name.is_none() {
             // Nothing matched before, so it's still optional
-            func_type().parse(stream)?
+            func_type(stream)?
         }
         else {
             // At least 1 matched
-            func_type().required().parse(stream)?
+            func_type(stream).required()?
         };
 
         // In case `arg_class` didn't match, there's still a default that can be applied.
@@ -74,7 +74,7 @@ fn is_arg_name(
         // E.g.:
         // * In `double double precision`, the 1st `double` will be the argument name.
         // * In `double precision`, the argument is anonymous.
-        (Ok(Keyword(Double)), Ok(Keyword(kw2))) => kw2 != &Precision,
+        (Ok(Keyword(Double)), Ok(Keyword(kw2))) => *kw2 != Precision,
 
         (Ok(Keyword(kw)), Ok(Keyword(_)))
             => matches!(kw.category(), Unreserved | TypeFuncName),
@@ -137,6 +137,7 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::func_type;
 use crate::combinators::type_function_name;
 use crate::eof;
+use crate::result::Required;
 use crate::stream::TokenValue;
 use crate::stream::TokenValue::Identifier;
 use crate::stream::TokenValue::Keyword;

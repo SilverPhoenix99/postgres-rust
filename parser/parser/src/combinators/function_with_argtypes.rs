@@ -43,13 +43,13 @@ pub(super) fn function_with_argtypes(stream: &mut TokenStream) -> scan::Result<F
                         identifier.map(Str::from)
                     )
                 ),
-                func_args.parse(stream)
+                func_args(stream)
             )
                 .map(|(name, args)| {
                     FunctionWithArgs::new(name, args)
                 })
         },
-        func_column_name.parse(stream)
+        func_column_name(stream)
     )
 }
 
@@ -93,7 +93,7 @@ fn func_column_name(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> 
     }
 
     // arguments are only allowed when the function name is qualified
-    let args = func_args.parse(stream)?;
+    let args = func_args(stream)?;
 
     Ok(FunctionWithArgs::new(name, args))
 }

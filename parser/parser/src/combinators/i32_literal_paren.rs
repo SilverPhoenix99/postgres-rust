@@ -2,7 +2,7 @@
 pub(super) fn i32_literal_paren(stream: &mut TokenStream) -> scan::Result<i32> {
 
     between!(paren : stream =>
-        integer.parse(stream)
+        integer(stream)
             .map(From::from)
     )
 }
@@ -24,6 +24,5 @@ mod tests {
 
 use crate::combinators::foundation::between;
 use crate::combinators::foundation::integer;
-use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

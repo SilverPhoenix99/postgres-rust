@@ -6,12 +6,13 @@ pub(super) fn opt_asc_desc(stream: &mut TokenStream) -> scan::Result<Option<Sort
         | // empty
     */
 
-    choice!(parsed stream =>
+    let sort = choice!(parsed stream =>
         Asc.map(|_| Ascending),
         Desc.map(|_| Descending),
-    )
-    .optional()
-    .map_err(From::from)
+    );
+
+    let sort = sort.optional()?;
+    Ok(sort)
 }
 
 #[cfg(test)]
@@ -29,8 +30,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::choice;
 use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;

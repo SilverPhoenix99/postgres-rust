@@ -1,85 +1,87 @@
-pub(super) fn func_type() -> impl Combinator<Output = FuncType> {
+pub(super) fn func_type(stream: &mut TokenStream) -> scan::Result<FuncType> {
 
     /*
           Typename
         | ( SETOF )? type_function_name attrs '%' TYPE_P
     */
 
-    typename.chain(|typ, stream| {
+    let typ = typename(stream)?;
 
-        // In `Typename`, only generic types goes to `type_function_name`.
-        let Generic { name, type_modifiers } = typ.name() else {
-            return Ok(FuncType::Type(typ))
-        };
+    // In `Typename`, only generic types goes to `type_function_name`.
+    let Generic { name, type_modifiers } = typ.name() else {
+        return Ok(FuncType::Type(typ))
+    };
 
-        // Also, Type references (`%TYPE`):
-        // 1. don't have modifiers;
-        let ref_allowed = type_modifiers.is_none()
-            // 2. don't have array bounds;
-            && typ.array_bounds().is_none()
-            // 3. must have a qualified name.
-            && name.len() > 1;
+    // Also, Type references (`%TYPE`):
+    // 1. don't have modifiers;
+    let ref_allowed = type_modifiers.is_none()
+        // 2. don't have array bounds;
+        && typ.array_bounds().is_none()
+        // 3. must have a qualified name.
+        && name.len() > 1;
 
-        if !ref_allowed {
-            return Ok(FuncType::Type(typ))
-        }
+    if !ref_allowed {
+        return Ok(FuncType::Type(typ))
+    }
 
-        // `%TYPE`
-        if Percent.and(Type).optional().parse(stream)?.is_none() {
-            // If it isn't a type reference, just return the type
-            return Ok(FuncType::Type(typ))
-        }
+    // `%TYPE`
+    if Percent.and(Type).optional().parse(stream)?.is_none() {
+        // If it isn't a type reference, just return the type
+        return Ok(FuncType::Type(typ))
+    }
 
-        let (Generic { name, .. }, _, mult) = typ.into() else {
-            // SAFETY: already checked that it's `Generic` above.
-            unsafe { unreachable_unchecked() }
-        };
+    let (Generic { name, .. }, _, mult) = typ.into() else {
+        // SAFETY: already checked that it's `Generic` above.
+        unsafe { unreachable_unchecked() }
+    };
 
-        let typeref = TypeReference::new(name, mult);
-        Ok(Reference(typeref))
-    })
+    let typeref = TypeReference::new(name, mult);
+    Ok(Reference(typeref))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use pg_ast::SetOf;
 
     #[test]
     fn test_ref_func_type() {
-        let mut stream = TokenStream::new("setof some_.qualified_name %type", DEFAULT_CONFIG);
-        let actual = func_type().parse(&mut stream);
-
-        let expected = TypeReference::new(
-            vec!["some_".into(), "qualified_name".into()],
-            SetOf::Table
-        );
-
-        assert_eq!(Ok(Reference(expected)), actual);
+        test_parser!(
+            source = "setof some_.qualified_name %type",
+            parser = func_type,
+            expected = Reference(
+                TypeReference::new(
+                    vec!["some_".into(), "qualified_name".into()],
+                    SetOf::Table
+                )
+            )
+        )
     }
 
     #[test]
     fn test_type_func_type() {
-        let mut stream = TokenStream::new("setof some_.qualified_name[]", DEFAULT_CONFIG);
-        let actual = func_type().parse(&mut stream);
-
-        let expected = pg_ast::Type::new(
+        test_parser!(
+            source = "setof some_.qualified_name[]",
+            parser = func_type,
+            expected = FuncType::Type(
+                pg_ast::Type::new(
             Generic {
                 name: vec!["some_".into(), "qualified_name".into()],
                 type_modifiers: None
             },
             Some(vec![None]),
             SetOf::Table
-        );
-
-        assert_eq!(Ok(FuncType::Type(expected)), actual);
+        )
+            )
+        )
     }
 }
 
 use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
+use crate::scan;
+use crate::stream::TokenStream;
 use core::hint::unreachable_unchecked;
 use pg_ast::FuncType;
 use pg_ast::FuncType::Reference;

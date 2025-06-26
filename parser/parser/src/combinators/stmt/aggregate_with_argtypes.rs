@@ -13,7 +13,7 @@ pub(super) fn aggregate_with_argtypes(stream: &mut TokenStream) -> scan::Result<
         func_name aggr_args
     */
 
-    let (name, (args, order_by)) = seq!(stream => func_name(), aggr_args)?;
+    let (name, (args, order_by)) = seq!(stream => func_name, aggr_args)?;
 
     Ok(AggregateWithArgs::new(name, args, order_by))
 }
@@ -32,7 +32,7 @@ pub(super) fn aggr_args(stream: &mut TokenStream) -> scan::Result<(Vec<FunctionP
         choice!(stream =>
             Mul.parse(stream)
                 .map(|_| (Vec::new(), Vec::new())),
-            order_by_aggr_args.parse(stream)
+            order_by_aggr_args(stream)
                 .map(|args| (Vec::new(), args)),
             seq!(stream =>
                 aggr_args_list,

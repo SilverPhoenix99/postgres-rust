@@ -7,9 +7,9 @@ pub(super) fn opt_transaction_chain(stream: &mut TokenStream) -> scan::Result<bo
     */
 
     let chain = seq!(stream =>
-        And.skip(),
+        And,
         No.optional(),
-        Chain.skip()
+        Chain
     );
 
     let chain = match chain.optional()? {

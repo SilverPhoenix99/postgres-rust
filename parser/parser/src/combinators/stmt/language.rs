@@ -9,7 +9,7 @@ pub(super) fn language(stream: &mut TokenStream) -> scan::Result<Str> {
             Language.parse(stream).map(|_| ()),
             seq!(stream => Procedural, Language).map(|_| ())
         ),
-        col_id.parse(stream)
+        col_id(stream)
     )?;
 
     Ok(name)

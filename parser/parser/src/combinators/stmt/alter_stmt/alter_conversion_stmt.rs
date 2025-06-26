@@ -14,7 +14,7 @@ pub(super) fn alter_conversion_stmt(stream: &mut TokenStream) -> scan::Result<Ra
     
     seq!(=>
         Conversion.parse(stream),
-        any_name.parse(stream),
+        any_name(stream),
         choice!(stream =>
             seq!(stream => Owner, To, role_spec)
                 .map(|(.., new_owner)| Change::Owner(new_owner)),

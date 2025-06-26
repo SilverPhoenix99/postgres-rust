@@ -10,7 +10,7 @@ pub(super) fn typename(stream: &mut TokenStream) -> scan::Result<Type> {
             .map(|(_, typename)| {
                 typename.returning_table()
             }),
-        record_typename.parse(stream),
+        record_typename(stream),
     )
 }
 
@@ -63,7 +63,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::choice;
 use crate::combinators::opt_array_bounds;
 use crate::combinators::simple_typename;

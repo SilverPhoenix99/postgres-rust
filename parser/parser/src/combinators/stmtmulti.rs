@@ -9,10 +9,10 @@ pub(crate) fn stmtmulti(stream: &mut TokenStream) -> scan::Result<Option<Vec<Raw
     //     toplevel_stmt? ( ';' toplevel_stmt? )*
 
     let (_, stmts) = seq!(=>
-        semicolons.parse(stream).optional(),
+        semicolons(stream).optional(),
         many!(=>
-            sep = semicolons.parse(stream),
-            toplevel_stmt.parse(stream)
+            sep = semicolons(stream),
+            toplevel_stmt(stream)
         ).optional()
     )?;
 

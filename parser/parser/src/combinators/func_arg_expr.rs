@@ -19,7 +19,7 @@ pub(super) fn func_arg_expr() -> impl Combinator<Output = FuncArgExpr> {
 
         match stream.peek2_option() {
             Some((first, Operator(ColonEquals | EqualsGreater))) if is_type_function_name(first) => {
-                let name = type_function_name.parse(stream)?;
+                let name = type_function_name(stream)?;
                 or(ColonEquals, EqualsGreater).parse(stream)?;
                 let value = a_expr().parse(stream)?;
                 let arg = NamedValue { name, value };

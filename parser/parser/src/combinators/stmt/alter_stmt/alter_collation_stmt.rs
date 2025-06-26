@@ -17,7 +17,7 @@ pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> scan::Result<Raw
 
     let (_, name, change) = seq!(=>
         Collation.parse(stream),
-        any_name.parse(stream),
+        any_name(stream),
         choice!(stream =>
             seq!(stream => Refresh, Version)
                 .map(|_| Change::RefreshVersion),

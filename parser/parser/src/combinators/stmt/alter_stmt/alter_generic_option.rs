@@ -6,7 +6,7 @@ pub(super) fn alter_generic_options() -> impl Combinator<Output = Vec<GenericOpt
 
     Options.and_right(
         parser(|stream| between!(paren : stream =>
-            alter_generic_option_list.parse(stream)
+            alter_generic_option_list(stream)
         ))
     )
 }
@@ -31,16 +31,16 @@ fn alter_generic_option(stream: &mut TokenStream) -> scan::Result<GenericOptionK
     */
 
     let parser = choice!(
-        (Kw::Set, generic_option())
+        (Kw::Set, generic_option)
             .right()
             .map(Set),
-        (Kw::Add, generic_option())
+        (Kw::Add, generic_option)
             .right()
             .map(Add),
         (DropKw, col_label)
             .right()
             .map(Drop),
-        generic_option()
+        generic_option
             .map(Unspecified)
     );
 

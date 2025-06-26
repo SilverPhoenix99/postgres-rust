@@ -5,7 +5,7 @@ pub(super) fn create_generic_options() -> impl Combinator<Output = Option<Vec<Ge
     */
 
     Options.and_right(parser(|stream| between!(paren : stream =>
-        generic_options().parse(stream)
+        generic_options(stream)
     )))
         .optional()
 }

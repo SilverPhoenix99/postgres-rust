@@ -57,7 +57,7 @@ pub(super) fn any_operator(stream: &mut TokenStream) -> scan::Result<QualifiedOp
             .map(Option::unwrap_or_default)
         },
         {
-            all_op.parse(stream)
+            all_op(stream)
         }
     )?;
 

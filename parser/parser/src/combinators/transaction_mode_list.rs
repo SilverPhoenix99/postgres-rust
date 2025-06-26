@@ -6,11 +6,11 @@ pub(super) fn transaction_mode_list(stream: &mut TokenStream) -> scan::Result<Ve
     */
 
     many!(=>
-        pre = transaction_mode.parse(stream),
+        pre = transaction_mode(stream),
         choice!(stream =>
             seq!(stream => Comma, transaction_mode)
                 .map(|(_, mode)| mode),
-            transaction_mode.parse(stream)
+            transaction_mode(stream)
         )
     )
 }

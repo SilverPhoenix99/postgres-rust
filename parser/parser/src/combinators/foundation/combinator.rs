@@ -77,6 +77,15 @@ where
         map(self, mapper)
     }
 
+    fn map_err<M>(self, mapper: M) -> impl Combinator<Output = Self::Output>
+    where
+        M: Fn(scan::Error) -> scan::Error
+    {
+        self.map_result(move |result|
+            result.map_err(&mapper)
+        )
+    }
+
     /// See [`map_result()`](map_result).
     fn map_result<M, O>(self, mapper: M) -> impl Combinator<Output = O>
     where

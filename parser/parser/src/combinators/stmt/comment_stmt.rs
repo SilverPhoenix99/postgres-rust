@@ -119,13 +119,13 @@ fn constraint(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
 
     let (_, name, _, constraint) = seq!(=>
         Kw::Constraint.parse(stream),
-        col_id.parse(stream),
+        col_id(stream),
         On.parse(stream),
         choice!(stream =>
             // See https://github.com/postgres/postgres/blob/cdc168ad4b22ea4183f966688b245cabb5935d1f/src/backend/parser/gram.y#L7230-L7232
             seq!(stream => Kw::Domain, simple_typename)
                 .map(|(_, domain)| Constraint::Domain(domain)),
-            any_name.parse(stream)
+            any_name(stream)
                 .map(Constraint::Table)
         )
     )?;

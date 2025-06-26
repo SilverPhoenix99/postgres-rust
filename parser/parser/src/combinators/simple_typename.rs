@@ -39,7 +39,7 @@ fn decimal(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     let (_, typ) = seq!(=>
         choice!(parsed stream => Dec, Decimal, Kw::Numeric),
-        opt_type_modifiers.parse(stream).map(Numeric),
+        opt_type_modifiers(stream).map(Numeric),
     )?;
 
     Ok(typ)
@@ -128,11 +128,11 @@ fn character(stream: &mut TokenStream) -> scan::Result<TypeName> {
                     )
                         .map(|_| ())
                 ),
-                opt_varying.parse(stream)
+                opt_varying(stream)
             )
                 .map(|(_, varying)| varying),
         ),
-        opt_precision.parse(stream)
+        opt_precision(stream)
     )?;
 
     if varying {
@@ -233,8 +233,8 @@ fn generic_type(stream: &mut TokenStream) -> scan::Result<TypeName> {
     }
 
     let (name, type_modifiers) = seq!(=>
-        attrs!(stream => type_function_name.parse(stream)),
-        opt_type_modifiers.parse(stream)
+        attrs!(stream => type_function_name(stream)),
+        opt_type_modifiers(stream)
     )?;
 
     Ok(Generic { name, type_modifiers })

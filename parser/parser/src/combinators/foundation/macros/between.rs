@@ -55,9 +55,7 @@ mod tests {
         test_parser!(
             source = "(1)",
             parser = parser(|stream|
-                between!(paren : stream =>
-                    integer.parse(stream)
-                )
+                between!(paren : stream => integer(stream))
             ),
             expected = NonNegative::from(1u32)
         )
@@ -68,9 +66,7 @@ mod tests {
         test_parser!(
             source = "[1]",
             parser = parser(|stream|
-                between!(square : stream =>
-                    integer.parse(stream)
-                )
+                between!(square : stream => integer(stream))
             ),
             expected = NonNegative::from(1u32)
         )
