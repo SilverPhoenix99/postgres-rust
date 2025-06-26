@@ -1,6 +1,6 @@
 macro_rules! choice {
 
-    ($stream:expr =>
+    ($stream:ident =>
         $head:expr,
         $($tail:expr),+
         $(,)?
@@ -25,7 +25,7 @@ macro_rules! choice {
         }
     };
 
-    (parsed $stream:expr =>
+    (parsed $stream:ident =>
         $head:expr,
         $($tail:expr),+
         $(,)?

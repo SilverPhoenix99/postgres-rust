@@ -1,5 +1,5 @@
 macro_rules! located {
-    ($stream:expr => $parser:expr) => {{
+    ($stream:ident => $parser:expr) => {{
         let loc = $crate::stream::TokenStream::current_location($stream);
         let p = $parser;
         let result = $crate::combinators::foundation::Combinator::parse(&p, $stream);

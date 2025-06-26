@@ -108,7 +108,7 @@ macro_rules! many {
         )
     }};
 
-    ($stream:expr => sep = $separator:expr, $combinator:expr) => {{
+    ($stream:ident => sep = $separator:expr, $combinator:expr) => {{
         let separator = $separator;
         let combinator = $combinator;
         many!(=>
@@ -117,7 +117,7 @@ macro_rules! many {
         )
     }};
 
-    ($stream:expr => $combinator:expr) => {{
+    ($stream:ident => $combinator:expr) => {{
         let combinator = $combinator;
         many!(=> $crate::combinators::foundation::Combinator::parse(&combinator, $stream))
     }};

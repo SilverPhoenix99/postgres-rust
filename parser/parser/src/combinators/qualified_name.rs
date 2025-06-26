@@ -13,7 +13,7 @@ pub(super) fn qualified_name(stream: &mut TokenStream) -> scan::Result<RelationN
         (col_id attrs){1,3}
     */
 
-    let (mut qn, loc) = located!(any_name).parse(stream)?;
+    let (mut qn, loc) = located!(stream => any_name)?;
 
     match qn.as_mut_slice() {
         [relation] => {
@@ -93,7 +93,6 @@ mod tests {
 use crate::combinators::any_name;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use core::mem;

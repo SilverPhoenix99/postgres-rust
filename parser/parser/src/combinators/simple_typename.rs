@@ -52,9 +52,9 @@ fn float(stream: &mut TokenStream) -> scan::Result<TypeName> {
         FLOAT ( '(' ICONST ')' )?
     */
 
-    let (_, (precision, loc)) = seq!(stream =>
-        Float,
-        located!(opt_precision)
+    let (_, (precision, loc)) = seq!(=>
+        Float.parse(stream),
+        located!(stream => opt_precision)
     )?;
 
     match precision {

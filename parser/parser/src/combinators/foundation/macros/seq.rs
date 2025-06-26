@@ -27,7 +27,7 @@ macro_rules! seq {
         }
     };
 
-    ($stream:expr =>
+    ($stream:ident =>
         $head:expr,
         $($tail:expr),+
         $(,)?

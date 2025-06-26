@@ -13,7 +13,7 @@ macro_rules! attrs {
         )
     }};
     
-    ($stream:expr => $prefix:expr) => {{
+    ($stream:ident => $prefix:expr) => {{
         #[allow(unused_imports)]
         use $crate::combinators::foundation::Combinator;
         use $crate::combinators::foundation::many;
