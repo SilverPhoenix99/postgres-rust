@@ -4,7 +4,9 @@ pub(super) fn create_generic_options() -> impl Combinator<Output = Option<Vec<Ge
         OPTIONS '(' generic_option_list ')'
     */
 
-    Options.and_right(between_paren(generic_options()))
+    Options.and_right(parser(|stream| between!(paren : stream =>
+        generic_options().parse(stream)
+    )))
         .optional()
 }
 
@@ -26,7 +28,8 @@ mod tests {
     }
 }
 
-use crate::combinators::between_paren;
+use crate::combinators::foundation::between;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_options;
 use pg_ast::GenericOption;

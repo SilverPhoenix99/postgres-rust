@@ -41,3 +41,38 @@ macro_rules! between {
 }
 
 pub(in crate::combinators) use between;
+
+#[cfg(test)]
+mod tests {
+    use pg_basics::NonNegative;
+    use crate::combinators::foundation::integer;
+    use crate::combinators::foundation::parser;
+    use crate::tests::test_parser;
+    use super::*;
+
+    #[test]
+    fn test_between_paren() {
+        test_parser!(
+            source = "(1)",
+            parser = parser(|stream|
+                between!(paren : stream =>
+                    integer.parse(stream)
+                )
+            ),
+            expected = NonNegative::from(1u32)
+        )
+    }
+
+    #[test]
+    fn test_between_brackets() {
+        test_parser!(
+            source = "[1]",
+            parser = parser(|stream|
+                between!(square : stream =>
+                    integer.parse(stream)
+                )
+            ),
+            expected = NonNegative::from(1u32)
+        )
+    }
+}

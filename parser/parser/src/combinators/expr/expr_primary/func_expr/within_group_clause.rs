@@ -5,9 +5,9 @@ pub(super) fn within_group_clause() -> impl Combinator<Output = Vec<SortBy>> {
     */
 
     (Within, Group)
-        .and_right(between_paren(
-            sort_clause
-        ))
+        .and_right(parser(|stream| between!(paren : stream =>
+            sort_clause.parse(stream)
+        )))
 }
 
 #[cfg(test)]
@@ -28,7 +28,8 @@ mod tests {
     }
 }
 
-use crate::combinators::between_paren;
+use crate::combinators::foundation::between;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::sort_clause;
 use pg_ast::SortBy;

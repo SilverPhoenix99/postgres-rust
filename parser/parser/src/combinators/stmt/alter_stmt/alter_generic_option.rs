@@ -5,7 +5,9 @@ pub(super) fn alter_generic_options() -> impl Combinator<Output = Vec<GenericOpt
     */
 
     Options.and_right(
-        between_paren(alter_generic_option_list)
+        parser(|stream| between!(paren : stream =>
+            alter_generic_option_list.parse(stream)
+        ))
     )
 }
 
@@ -91,10 +93,11 @@ mod tests {
     }
 }
 
-use crate::combinators::between_paren;
 use crate::combinators::col_label;
+use crate::combinators::foundation::between;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_option;
 use crate::scan;

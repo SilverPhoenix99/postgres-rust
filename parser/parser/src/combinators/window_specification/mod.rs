@@ -11,17 +11,18 @@ pub(super) fn window_specification() -> impl Combinator<Output = WindowDefinitio
         '(' opt_existing_window_name opt_partition_clause ( sort_clause )? opt_frame_clause ')'
     */
 
-    between_paren(
+    parser(|stream| between!(paren : stream =>
         (
             opt_existing_window_name(),
             opt_partition_clause(),
             sort_clause.optional(),
             opt_frame_clause()
         )
+        .parse(stream)
         .map(|(name, partition, order, frame)|
             WindowDefinition::new(name, partition, order, frame)
         )
-    )
+    ))
 }
 
 #[allow(unused_imports)]
@@ -33,7 +34,9 @@ use self::{
     opt_partition_clause::opt_partition_clause,
     opt_window_exclusion_clause::opt_window_exclusion_clause,
 };
-use crate::combinators::between_paren;
+
+use crate::combinators::foundation::between;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::sort_clause;
 use pg_ast::WindowDefinition;

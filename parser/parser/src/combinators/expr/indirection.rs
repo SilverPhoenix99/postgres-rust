@@ -33,28 +33,31 @@ fn indirection_el() -> impl Combinator<Output = Indirection> {
             col_label.map(Property),
         )),
 
-        between_brackets(match_first!(
-            Colon
-                .and_right(
-                    a_expr()
-                        .map(|index| Slice(None, Some(index)))
-                        .optional()
+        parser(|stream| between!(square : stream =>
+            match_first!(
+                Colon
+                    .and_right(
+                        a_expr()
+                            .map(|index| Slice(None, Some(index)))
+                            .optional()
+                    )
+                    .map(|expr| expr.unwrap_or(Slice(None, None))),
+    
+                (
+                    a_expr(),
+                    optional(
+                        Colon.and_right(
+                            a_expr().optional()
+                        ),
+                    )
                 )
-                .map(|expr| expr.unwrap_or(Slice(None, None))),
-
-            (
-                a_expr(),
-                optional(
-                    Colon.and_right(
-                        a_expr().optional()
-                    ),
-                )
+                    .map(|(left, right)| match right {
+                        None => Index(left),
+                        Some(None) => Slice(Some(left), None),
+                        Some(Some(right)) => Slice(Some(left), Some(right)),
+                    })
             )
-                .map(|(left, right)| match right {
-                    None => Index(left),
-                    Some(None) => Slice(Some(left), None),
-                    Some(Some(right)) => Slice(Some(left), Some(right)),
-                })
+            .parse(stream)
         ))
     )
 }
@@ -144,13 +147,14 @@ mod tests {
     }
 }
 
-use crate::combinators::between_brackets;
 use crate::combinators::col_label;
 use crate::combinators::expr::a_expr;
+use crate::combinators::foundation::between;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::optional;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use pg_ast::Indirection;

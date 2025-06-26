@@ -4,13 +4,14 @@ pub(super) fn func_application_args() -> impl Combinator<Output = FuncArgsKind> 
         '(' ( func_call_args )? ')'
     */
 
-    between_paren(
+    parser(|stream| between!(paren : stream =>
         func_call_args()
+            .parse(stream)
             .optional()
             .map(|args| {
                 args.unwrap_or(Empty { order_within_group: None })
             })
-    )
+    ))
 }
 
 fn func_call_args() -> impl Combinator<Output = FuncArgsKind> {
@@ -252,15 +253,17 @@ mod tests {
     }
 }
 
-use crate::combinators::between_paren;
+use crate::combinators::foundation::between;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg_expr;
 use crate::combinators::func_arg_list;
 use crate::combinators::sort_clause;
+use crate::result::Optional;
 use crate::scan;
 use pg_ast::FuncArgExpr;
 use pg_ast::FuncArgsKind;
