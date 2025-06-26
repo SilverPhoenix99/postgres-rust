@@ -21,7 +21,7 @@ pub(super) fn qual_all_op(stream: &mut TokenStream) -> scan::Result<QualifiedOpe
 /// Alias: `qual_Op`
 pub(super) fn qual_op(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
     choice!(parsed stream =>
-        user_defined_operator()
+        user_defined_operator
             .map(|op| UserDefined(op).into()),
         explicit_op,
     )
@@ -73,7 +73,7 @@ fn all_op(stream: &mut TokenStream) -> scan::Result<Operator> {
         multiplicative_op,
         exponentiation_op,
         boolean_op,
-        user_defined_operator().map(UserDefined)
+        user_defined_operator.map(UserDefined)
     )
 }
 

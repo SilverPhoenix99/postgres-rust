@@ -7,7 +7,7 @@ pub(super) fn param_expr() -> impl Combinator<Output = ExprNode> {
     */
 
     (
-        param(),
+        param,
         located!(indirection()).optional()
     )
         .map_result(|res| {

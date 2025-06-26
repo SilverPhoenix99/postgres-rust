@@ -9,12 +9,6 @@ where
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub(in crate::combinators) struct OptionalCombi<P>(P);
 
-impl<P> OptionalCombi<P> {
-    fn optional(self) -> OptionalCombi<P> {
-        self
-    }
-}
-
 impl<P> Combinator for OptionalCombi<P>
 where
     P: Combinator

@@ -16,24 +16,6 @@ pub(in crate::combinators) fn operator_if(
 {
     operator_result(move |op| Ok(pred(op).then_some(op)))
 }
-/// Maps the operator before consuming it.
-///
-/// * If the `mapper` returns `Some(_)`, then the operator is consumed.
-/// * Otherwise, when `None` is returned, then an `Err(NoMatch)` is emitted and the operator is **Not** consumed.
-///
-/// See also
-/// * [`operator_result()`]
-/// * [`operator_if()`]
-pub(in crate::combinators) fn operator_when<O>(
-    mapper: impl Fn(OperatorKind) -> Option<O>
-)
-    -> OperatorCondCombi<
-        impl Fn(OperatorKind) -> stream::LocatedResult<O>,
-        O
-    >
-{
-    operator_result(move |op| Ok(mapper(op)))
-}
 
 /// Maps the operator before consuming it.
 ///
