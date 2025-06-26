@@ -4,7 +4,7 @@ pub(super) fn signed_number(stream: &mut TokenStream) -> scan::Result<SignedNumb
     // ('+' | '-')? (ICONST | FCONST)
 
     let sign = sign.maybe_match().parse(stream)?;
-    let num = number().map(SignedNumber::from);
+    let num = number.map(SignedNumber::from);
 
     let negative = match sign {
         None => return num.parse(stream),

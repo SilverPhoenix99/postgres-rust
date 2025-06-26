@@ -27,7 +27,7 @@ pub(in crate::combinators) use self::{
     macros::{between, choice, located, many, seq},
     map::{map, map_result, MapResultCombi},
     maybe_match::{maybe_match, MaybeMatchCombi},
-    number::{number, NumberCombi},
+    number::number,
     operator::{operator_if, operator_result, operator_when, OperatorCondCombi},
     optional::{optional, OptionalCombi},
     or::{match_first, match_first_with_state, or, OrCombi},

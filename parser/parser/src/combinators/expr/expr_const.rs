@@ -14,7 +14,7 @@ pub(super) fn expr_const() -> impl Combinator<Output = ExprNode> {
     */
 
     match_first! {
-        number().map(From::from),
+        number.map(From::from),
         string.map(StringConst),
         bit_string
             .map(|(kind, value)| match kind {
