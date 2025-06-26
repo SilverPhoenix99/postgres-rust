@@ -36,31 +36,6 @@ where
     }
 }
 
-/// Maps the `Err(_)` value of a parser combinator into another type.
-pub(in crate::combinators) fn map_err<P, M>(parser: P, mapper: M)
-    -> MapResultCombi<
-        P,
-        impl Fn(scan::Result<P::Output>) -> scan::Result<P::Output>,
-        P::Output
-    >
-where
-    P: Combinator,
-    M: Fn(scan::Error) -> scan::Error
-{
-    // Reduces size of type names:
-    fn inner<I>(mapper: impl Fn(scan::Error) -> scan::Error)
-        -> impl Fn(scan::Result<I>) -> scan::Result<I>
-    {
-        move |result| result.map_err(&mapper)
-    }
-
-    MapResultCombi {
-        parser,
-        mapper: inner(mapper),
-        boo: PhantomData,
-    }
-}
-
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub(in crate::combinators) struct MapResultCombi<P, M, O> {
     parser: P,

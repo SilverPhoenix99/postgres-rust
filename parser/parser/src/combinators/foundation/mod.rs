@@ -13,7 +13,6 @@ mod or;
 mod param;
 mod parser;
 mod required;
-mod skip;
 mod string;
 mod user_defined_operator;
 
@@ -26,7 +25,7 @@ pub(in crate::combinators) use self::{
     integer::integer,
     keyword::{any_keyword, keyword_if, keyword_result, keyword_when, KeywordCondCombi},
     macros::{between, choice, located, many, seq},
-    map::{map, map_err, map_result, MapResultCombi},
+    map::{map, map_result, MapResultCombi},
     maybe_match::{maybe_match, MaybeMatchCombi},
     number::{number, NumberCombi},
     operator::{operator_if, operator_result, operator_when, OperatorCondCombi},
@@ -35,7 +34,6 @@ pub(in crate::combinators) use self::{
     param::param,
     parser::{parser, ClosureCombi},
     required::{required, RequiredCombi},
-    skip::{skip, SkipCombi},
     string::string,
     user_defined_operator::{user_defined_operator, UserOpCombi},
 };
