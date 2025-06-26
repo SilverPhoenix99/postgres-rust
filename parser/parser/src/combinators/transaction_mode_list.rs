@@ -8,7 +8,7 @@ pub(super) fn transaction_mode_list(stream: &mut TokenStream) -> scan::Result<Ve
     many!(=>
         pre = transaction_mode.parse(stream),
         choice!(stream =>
-            seq!(stream => Comma.skip(), transaction_mode)
+            seq!(stream => Comma, transaction_mode)
                 .map(|(_, mode)| mode),
             transaction_mode.parse(stream)
         )
@@ -17,7 +17,6 @@ pub(super) fn transaction_mode_list(stream: &mut TokenStream) -> scan::Result<Ve
 
 /// Alias: `transaction_mode_item`
 fn transaction_mode(stream: &mut TokenStream) -> scan::Result<TransactionMode> {
-    use Keyword::{self as Kw, Isolation, Level, Not, Only, Read, Write};
 
     /*
           ISOLATION LEVEL iso_level
@@ -50,7 +49,6 @@ fn transaction_mode(stream: &mut TokenStream) -> scan::Result<TransactionMode> {
 
 /// Alias: `iso_level`
 fn isolation_level(stream: &mut TokenStream) -> scan::Result<IsolationLevel> {
-    use Keyword::{Committed, Read, Repeatable, Serializable, Uncommitted};
 
     /*
           READ UNCOMMITTED
@@ -60,9 +58,9 @@ fn isolation_level(stream: &mut TokenStream) -> scan::Result<IsolationLevel> {
     */
 
     choice!(stream =>
-        Serializable
+        Kw::Serializable
             .parse(stream)
-            .map(|_| IsolationLevel::Serializable),
+            .map(|_| Serializable),
         seq!(stream => Repeatable, Read)
             .map(|_| RepeatableRead),
         seq!(=>
@@ -128,7 +126,7 @@ mod tests {
             TransactionMode::IsolationLevel(ReadCommitted),
             TransactionMode::IsolationLevel(ReadUncommitted),
             TransactionMode::IsolationLevel(RepeatableRead),
-            TransactionMode::IsolationLevel(IsolationLevel::Serializable),
+            TransactionMode::IsolationLevel(Serializable),
         ];
 
         for expected_mode in expected {
@@ -153,7 +151,7 @@ mod tests {
             ReadCommitted,
             ReadUncommitted,
             RepeatableRead,
-            IsolationLevel::Serializable,
+            Serializable,
         ];
 
         for expected_mode in expected {
@@ -172,10 +170,20 @@ use pg_ast::IsolationLevel;
 use pg_ast::IsolationLevel::ReadCommitted;
 use pg_ast::IsolationLevel::ReadUncommitted;
 use pg_ast::IsolationLevel::RepeatableRead;
+use pg_ast::IsolationLevel::Serializable;
 use pg_ast::TransactionMode;
 use pg_ast::TransactionMode::Deferrable;
 use pg_ast::TransactionMode::NotDeferrable;
 use pg_ast::TransactionMode::ReadOnly;
 use pg_ast::TransactionMode::ReadWrite;
-use pg_lexer::Keyword;
+use pg_lexer::Keyword as Kw;
+use pg_lexer::Keyword::Committed;
+use pg_lexer::Keyword::Isolation;
+use pg_lexer::Keyword::Level;
+use pg_lexer::Keyword::Not;
+use pg_lexer::Keyword::Only;
+use pg_lexer::Keyword::Read;
+use pg_lexer::Keyword::Repeatable;
+use pg_lexer::Keyword::Uncommitted;
+use pg_lexer::Keyword::Write;
 use pg_lexer::OperatorKind::Comma;

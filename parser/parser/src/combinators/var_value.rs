@@ -11,7 +11,7 @@ pub(super) fn var_value(stream: &mut TokenStream) -> scan::Result<VarValue> {
     */
 
     choice!(parsed stream =>
-        boolean_or_string().map(From::from),
+        boolean_or_string.map(From::from),
         signed_number.map(From::from)
     )
 }

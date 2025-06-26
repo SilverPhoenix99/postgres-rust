@@ -1,16 +1,16 @@
 /// Alias: `copy_generic_opt_arg_list`
-pub(super) fn boolean_or_string_list() -> impl Combinator<Output = Vec<BooleanOrString>> {
+pub(super) fn boolean_or_string_list(stream: &mut TokenStream) -> scan::Result<Vec<BooleanOrString>> {
 
-    many!(
+    many!(stream =>
         sep = Comma,
-        boolean_or_string()
+        boolean_or_string
     )
 }
 
 /// Alias: `opt_boolean_or_string`
-pub(super) fn boolean_or_string() -> impl Combinator<Output = BooleanOrString> {
+pub(super) fn boolean_or_string(stream: &mut TokenStream) -> scan::Result<BooleanOrString> {
 
-    match_first!(
+    choice!(parsed stream =>
         True.map(|_| true.into()),
         False.map(|_| false.into()),
         On.map(|kw| kw.text().into()),
@@ -23,8 +23,7 @@ pub(super) fn boolean_or_string() -> impl Combinator<Output = BooleanOrString> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use test_case::test_case;
 
     #[test_case("true", true.into())]
@@ -33,17 +32,17 @@ mod tests {
     #[test_case("off", "off".into())]
     #[test_case("'value'", "value".into())]
     fn test_opt_boolean_or_string(source: &str, expected: BooleanOrString) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = boolean_or_string().parse(&mut stream);
-        assert_eq!(Ok(expected), actual);
+        test_parser!(source, boolean_or_string, expected)
     }
 }
 
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::BooleanOrString;
 use pg_lexer::Keyword::False;
 use pg_lexer::Keyword::On;
