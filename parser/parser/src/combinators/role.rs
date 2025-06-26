@@ -1,4 +1,4 @@
-pub(super) fn role_list(stream: &mut TokenStream) -> Result<Vec<RoleSpec>> {
+pub(super) fn role_list(stream: &mut TokenStream) -> scan::Result<Vec<RoleSpec>> {
 
     /*
         role_spec ( ',' role_spec )*
@@ -8,7 +8,7 @@ pub(super) fn role_list(stream: &mut TokenStream) -> Result<Vec<RoleSpec>> {
 }
 
 /// Alias: `RoleId`
-pub(super) fn role_id(stream: &mut TokenStream) -> Result<Str> {
+pub(super) fn role_id(stream: &mut TokenStream) -> scan::Result<Str> {
 
     // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
@@ -19,7 +19,7 @@ pub(super) fn role_id(stream: &mut TokenStream) -> Result<Str> {
 }
 
 /// Alias: `RoleSpec`
-pub(super) fn role_spec(stream: &mut TokenStream) -> Result<RoleSpec> {
+pub(super) fn role_spec(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
 
     /*
         role_spec :
@@ -44,7 +44,7 @@ pub(super) fn role_spec(stream: &mut TokenStream) -> Result<RoleSpec> {
     )
 }
 
-fn role_none(stream: &mut TokenStream) -> Result<RoleSpec> {
+fn role_none(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
 
     let (_, loc) = located!(stream => NoneKw)?;
     let err = ReservedRoleSpec("none").at(loc);
@@ -55,12 +55,11 @@ fn role_none(stream: &mut TokenStream) -> Result<RoleSpec> {
 mod tests {
     use super::*;
     use crate::scan::Error::{NoMatch, ScanErr};
-    use crate::scan::Result;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
     use core::fmt::Debug;
     use pg_ast::RoleSpec;
-    use pg_elog::role_spec::Error;
+    use pg_elog::role_spec;
     use pg_elog::role_spec::Error::ForbiddenRoleSpec;
     use pg_elog::Error::Role;
 
@@ -125,7 +124,7 @@ mod tests {
         assert_err(ReservedRoleSpec("none"), role_spec(&mut stream));
     }
 
-    fn assert_err<T: Debug>(expected: Error, actual: Result<T>) {
+    fn assert_err<T: Debug>(expected: role_spec::Error, actual: scan::Result<T>) {
         assert_matches!(actual, Err(ScanErr(_)));
         let ScanErr(actual) = actual.unwrap_err() else {
             unreachable!("already checked for Err(ScanErr(_))");
@@ -141,7 +140,7 @@ use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::RoleSpec;
 use pg_basics::Str;

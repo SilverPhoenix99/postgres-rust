@@ -98,7 +98,7 @@ fn func_type() -> impl Combinator<Output = AlterFunctionKind> {
     }
 }
 
-fn alterfunc_opt_list(stream: &mut TokenStream) -> Result<Vec<AlterFunctionOption>> {
+fn alterfunc_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<AlterFunctionOption>> {
 
     many!(stream => alter_function_option)
 }
@@ -268,7 +268,7 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::function_with_argtypes;
 use crate::combinators::role_spec;
 use crate::combinators::stmt::alter_function_option;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::AddDrop;
 use pg_ast::AlterFunctionKind;

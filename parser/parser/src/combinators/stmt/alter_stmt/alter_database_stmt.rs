@@ -9,7 +9,7 @@ enum Change {
 }
 
 /// Alias: `AlterDatabaseStmt`
-pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
+pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
     /*
         ALTER DATABASE ColId (
               REFRESH COLLATION VERSION => AlterDatabaseRefreshCollStmt
@@ -90,12 +90,12 @@ pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
         })
 }
 
-fn alterdb_opt_list(stream: &mut TokenStream) -> Result<Vec<AlterdbOption>> {
+fn alterdb_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<AlterdbOption>> {
 
     many!(stream => alterdb_opt_item)
 }
 
-fn alterdb_opt_item(stream: &mut TokenStream) -> Result<AlterdbOption> {
+fn alterdb_opt_item(stream: &mut TokenStream) -> scan::Result<AlterdbOption> {
 
     /*
           alterdb_opt_name ( '=' )? DEFAULT
@@ -113,7 +113,7 @@ fn alterdb_opt_item(stream: &mut TokenStream) -> Result<AlterdbOption> {
         .parse(stream)
 }
 
-fn alterdb_opt_name(stream: &mut TokenStream) -> Result<AlterdbOptionKind> {
+fn alterdb_opt_name(stream: &mut TokenStream) -> scan::Result<AlterdbOptionKind> {
 
     choice! (
         Connection.and(Limit).map(|_| ConnectionLimit),
@@ -232,7 +232,7 @@ use crate::combinators::role_spec;
 use crate::combinators::stmt::createdb_opt_value;
 use crate::combinators::stmt::reset_stmt::reset_stmt;
 use crate::combinators::stmt::set_rest;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::AlterDatabaseSetStmt;
 use pg_ast::AlterDatabaseStmt;

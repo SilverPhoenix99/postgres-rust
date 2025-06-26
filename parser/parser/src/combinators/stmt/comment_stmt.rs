@@ -1,5 +1,5 @@
 /// Alias: `CommentStmt`
-pub(super) fn comment_stmt(stream: &mut TokenStream) -> Result<CommentStmt> {
+pub(super) fn comment_stmt(stream: &mut TokenStream) -> scan::Result<CommentStmt> {
 
     /*
           COMMENT ON comment_target IS comment_text
@@ -10,7 +10,7 @@ pub(super) fn comment_stmt(stream: &mut TokenStream) -> Result<CommentStmt> {
     Ok(CommentStmt::new(target, comment))
 }
 
-fn comment_target(stream: &mut TokenStream) -> Result<CommentTarget> {
+fn comment_target(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
 
     /*
           ACCESS METHOD name
@@ -110,7 +110,7 @@ fn comment_target(stream: &mut TokenStream) -> Result<CommentTarget> {
     )
 }
 
-fn constraint(stream: &mut TokenStream) -> Result<CommentTarget> {
+fn constraint(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
 
     enum Constraint {
         Domain(TypeName),
@@ -144,7 +144,7 @@ fn constraint(stream: &mut TokenStream) -> Result<CommentTarget> {
     Ok(target)
 }
 
-fn policy(stream: &mut TokenStream) -> Result<CommentTarget> {
+fn policy(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
 
     /*
         POLICY name ON any_name
@@ -155,7 +155,7 @@ fn policy(stream: &mut TokenStream) -> Result<CommentTarget> {
     Ok(Policy { name, table })
 }
 
-fn rule(stream: &mut TokenStream) -> Result<CommentTarget> {
+fn rule(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
 
     /*
         RULE name ON any_name
@@ -166,7 +166,7 @@ fn rule(stream: &mut TokenStream) -> Result<CommentTarget> {
     Ok(Rule { name, table })
 }
 
-fn trigger(stream: &mut TokenStream) -> Result<CommentTarget> {
+fn trigger(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
 
     /*
         TRIGGER name ON any_name
@@ -177,7 +177,7 @@ fn trigger(stream: &mut TokenStream) -> Result<CommentTarget> {
     Ok(Trigger { name, table })
 }
 
-fn comment_text(stream: &mut TokenStream) -> Result<Option<Box<str>>> {
+fn comment_text(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
 
     /*
           IS SCONST
@@ -376,7 +376,7 @@ use crate::combinators::stmt::Foreign;
 use crate::combinators::stmt::Operator as Op;
 use crate::combinators::stmt::TextSearch;
 use crate::combinators::string_or_null;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::CommentStmt;
 use pg_ast::CommentTarget;

@@ -58,7 +58,7 @@ impl KeywordDetails {
 }
 
 impl Display for KeywordDetails {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str(self.text)
     }
 }
@@ -98,6 +98,6 @@ use super::KeywordCategory::ColumnName;
 use super::KeywordCategory::Reserved;
 use super::KeywordCategory::TypeFuncName;
 use super::KeywordCategory::Unreserved;
+use core::fmt;
 use core::fmt::Display;
 use core::fmt::Formatter;
-use core::fmt::Result;

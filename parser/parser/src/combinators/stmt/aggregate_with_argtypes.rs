@@ -1,4 +1,4 @@
-pub(super) fn aggregate_with_argtypes_list(stream: &mut TokenStream) -> Result<Vec<AggregateWithArgs>> {
+pub(super) fn aggregate_with_argtypes_list(stream: &mut TokenStream) -> scan::Result<Vec<AggregateWithArgs>> {
 
     /*
         aggr_func ( ',' aggr_func )*
@@ -7,7 +7,7 @@ pub(super) fn aggregate_with_argtypes_list(stream: &mut TokenStream) -> Result<V
     many!(stream => sep = Comma, aggregate_with_argtypes)
 }
 
-pub(super) fn aggregate_with_argtypes(stream: &mut TokenStream) -> Result<AggregateWithArgs> {
+pub(super) fn aggregate_with_argtypes(stream: &mut TokenStream) -> scan::Result<AggregateWithArgs> {
 
     /*
         func_name aggr_args
@@ -20,7 +20,7 @@ pub(super) fn aggregate_with_argtypes(stream: &mut TokenStream) -> Result<Aggreg
 
 /// Either `Vec` can be empty.
 /// When both `Vec`s are empty, it means `(*)` was used.
-pub(super) fn aggr_args(stream: &mut TokenStream) -> Result<(Vec<FunctionParameter>, Vec<FunctionParameter>)> {
+pub(super) fn aggr_args(stream: &mut TokenStream) -> scan::Result<(Vec<FunctionParameter>, Vec<FunctionParameter>)> {
 
     /*
           '(' '*' ')'
@@ -44,7 +44,7 @@ pub(super) fn aggr_args(stream: &mut TokenStream) -> Result<(Vec<FunctionParamet
     )
 }
 
-fn order_by_aggr_args(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
+fn order_by_aggr_args(stream: &mut TokenStream) -> scan::Result<Vec<FunctionParameter>> {
 
     /*
         ORDER BY aggr_args_list
@@ -55,7 +55,7 @@ fn order_by_aggr_args(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>
     Ok(args)
 }
 
-fn aggr_args_list(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
+fn aggr_args_list(stream: &mut TokenStream) -> scan::Result<Vec<FunctionParameter>> {
 
     /*
         aggr_arg ( ',' aggr_arg )*
@@ -64,7 +64,7 @@ fn aggr_args_list(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
     many!(stream => sep = Comma, aggr_arg)
 }
 
-fn aggr_arg(stream: &mut TokenStream) -> Result<FunctionParameter> {
+fn aggr_arg(stream: &mut TokenStream) -> scan::Result<FunctionParameter> {
 
     let (param, loc) = located!(stream => func_arg())?;
 
@@ -72,7 +72,7 @@ fn aggr_arg(stream: &mut TokenStream) -> Result<FunctionParameter> {
         return Ok(param)
     }
 
-    let err = LocatedError::new(AggregateWithOutputParameters, loc);
+    let err = AggregateWithOutputParameters.at(loc).into();
     Err(ScanErr(err))
 }
 
@@ -207,14 +207,13 @@ use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg;
 use crate::combinators::func_name;
+use crate::scan;
 use crate::scan::Error::ScanErr;
-use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::AggregateWithArgs;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionParameterMode as Mode;
 use pg_elog::parser::Error::AggregateWithOutputParameters;
-use pg_elog::LocatedError;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Order;
 use pg_lexer::OperatorKind::Comma;

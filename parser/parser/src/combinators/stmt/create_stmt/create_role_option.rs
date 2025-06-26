@@ -5,7 +5,7 @@ pub(super) fn create_role_options() -> impl Combinator<Output = Vec<CreateRoleOp
 }
 
 /// Alias: `CreateOptRoleElem`
-fn create_role_option(stream: &mut TokenStream) -> Result<CreateRoleOption> {
+fn create_role_option(stream: &mut TokenStream) -> scan::Result<CreateRoleOption> {
 
     /*
           SYSID ICONST
@@ -79,7 +79,7 @@ use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role::role_list;
 use crate::combinators::stmt::alter_role_option;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::CreateRoleOption;
 use pg_lexer::Keyword;

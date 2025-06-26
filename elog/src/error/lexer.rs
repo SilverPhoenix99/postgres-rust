@@ -54,6 +54,12 @@ pub enum Error {
     UnsafeUnicodeString,
 }
 
+impl Error {
+    pub fn at(self, location: Location) -> LocatedError {
+        LocatedError::new(self, location)
+    }
+}
+
 impl LogMessage for Error {
 
     fn sql_state(&self) -> SqlState {
@@ -77,4 +83,4 @@ use crate::LocatedMessage;
 use crate::LogMessage;
 use crate::SqlState;
 use crate::SqlState::SyntaxError;
-use pg_basics::NumberRadix;
+use pg_basics::{Location, NumberRadix};

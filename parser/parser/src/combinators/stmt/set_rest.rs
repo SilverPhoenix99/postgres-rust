@@ -1,4 +1,4 @@
-pub(super) fn set_rest(stream: &mut TokenStream) -> Result<SetRest> {
+pub(super) fn set_rest(stream: &mut TokenStream) -> scan::Result<SetRest> {
 
     /*
           SESSION CHARACTERISTICS AS TRANSACTION transaction_mode_list
@@ -40,7 +40,7 @@ pub(super) fn set_rest(stream: &mut TokenStream) -> Result<SetRest> {
         .parse(stream)
 }
 
-pub(super) fn set_rest_more(stream: &mut TokenStream) -> Result<SetRestMore> {
+pub(super) fn set_rest_more(stream: &mut TokenStream) -> scan::Result<SetRestMore> {
 
     /*
           SESSION AUTHORIZATION session_auth_user
@@ -83,7 +83,7 @@ pub(super) fn set_rest_more(stream: &mut TokenStream) -> Result<SetRestMore> {
         .parse(stream)
 }
 
-fn set_var_name(stream: &mut TokenStream) -> Result<SetRestMore> {
+fn set_var_name(stream: &mut TokenStream) -> scan::Result<SetRestMore> {
 
     let name = var_name(stream)?;
 
@@ -102,7 +102,7 @@ fn set_var_name(stream: &mut TokenStream) -> Result<SetRestMore> {
     Ok(option)
 }
 
-fn session_auth_user(stream: &mut TokenStream) -> Result<ValueOrDefault<Str>> {
+fn session_auth_user(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<Str>> {
 
     /*
           DEFAULT
@@ -116,7 +116,7 @@ fn session_auth_user(stream: &mut TokenStream) -> Result<ValueOrDefault<Str>> {
         .parse(stream)
 }
 
-fn zone_value(stream: &mut TokenStream) -> Result<ZoneValue> {
+fn zone_value(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
 
     /*
           DEFAULT
@@ -154,7 +154,7 @@ fn zone_value(stream: &mut TokenStream) -> Result<ZoneValue> {
         .parse(stream)
 }
 
-fn zone_value_interval(stream: &mut TokenStream) -> Result<IntervalRange> {
+fn zone_value_interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
 
     let (zone, loc) = located!(opt_interval).parse(stream)?;
 
@@ -166,7 +166,7 @@ fn zone_value_interval(stream: &mut TokenStream) -> Result<IntervalRange> {
     Err(err.into())
 }
 
-fn opt_encoding(stream: &mut TokenStream) -> Result<ValueOrDefault<Box<str>>> {
+fn opt_encoding(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<Box<str>>> {
 
     choice!(
         DefaultKw.map(|_| ValueOrDefault::Default),
@@ -261,7 +261,7 @@ use crate::combinators::signed_number;
 use crate::combinators::transaction_mode_list;
 use crate::combinators::var_name;
 use crate::result::Optional;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Full;

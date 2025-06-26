@@ -1,4 +1,4 @@
-pub(in crate::combinators) fn end_stmt(stream: &mut TokenStream) -> Result<TransactionStmt> {
+pub(in crate::combinators) fn end_stmt(stream: &mut TokenStream) -> scan::Result<TransactionStmt> {
 
     /*
     TransactionStmtLegacy:
@@ -34,7 +34,7 @@ mod tests {
 use crate::combinators::foundation::seq;
 use crate::combinators::opt_transaction;
 use crate::combinators::opt_transaction_chain;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::TransactionStmt;
 use pg_ast::TransactionStmt::Commit;

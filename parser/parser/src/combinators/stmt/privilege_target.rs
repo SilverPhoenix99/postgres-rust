@@ -91,7 +91,7 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
     }
 }
 
-fn parameter_name_list(stream: &mut TokenStream) -> Result<Vec<QualifiedName>> {
+fn parameter_name_list(stream: &mut TokenStream) -> scan::Result<Vec<QualifiedName>> {
 
     /*
         parameter_name ( ',' parameter_name )*
@@ -100,7 +100,7 @@ fn parameter_name_list(stream: &mut TokenStream) -> Result<Vec<QualifiedName>> {
     many!(stream => sep = Comma, parameter_name)
 }
 
-fn parameter_name(stream: &mut TokenStream) -> Result<QualifiedName> {
+fn parameter_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
 
     /*
         ColId ( '.' ColId )*
@@ -110,7 +110,7 @@ fn parameter_name(stream: &mut TokenStream) -> Result<QualifiedName> {
 }
 
 /// Alias: `NumericOnly_list`
-fn signed_number_list(stream: &mut TokenStream) -> Result<Vec<SignedNumber>> {
+fn signed_number_list(stream: &mut TokenStream) -> scan::Result<Vec<SignedNumber>> {
 
     /*
         signed_number ( ',' signed_number )*
@@ -264,7 +264,7 @@ use crate::combinators::function_with_argtypes_list;
 use crate::combinators::name_list;
 use crate::combinators::qualified_name_list;
 use crate::combinators::signed_number;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::PrivilegeTarget;
 use pg_ast::PrivilegeTarget::AllFunctionsInSchema;

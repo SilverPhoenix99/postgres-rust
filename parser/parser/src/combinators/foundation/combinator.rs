@@ -4,7 +4,7 @@ where
 {
     type Output;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output>;
+    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output>;
 
     /// See [`optional()`](optional::optional).
     fn optional(self) -> impl Combinator<Output = Option<Self::Output>> {
@@ -80,7 +80,7 @@ where
     /// See [`map_err()`](map_err).
     fn map_err<M>(self, mapper: M) -> impl Combinator<Output = Self::Output>
     where
-        M: Fn(Error) -> Error
+        M: Fn(scan::Error) -> scan::Error
     {
         map_err(self, mapper)
     }
@@ -88,7 +88,7 @@ where
     /// See [`map_result()`](map_result).
     fn map_result<M, O>(self, mapper: M) -> impl Combinator<Output = O>
     where
-        M: Fn(Result<Self::Output>) -> Result<O>
+        M: Fn(scan::Result<Self::Output>) -> scan::Result<O>
     {
         map_result(self, mapper)
     }
@@ -115,7 +115,7 @@ where
     /// but includes the stream as an argument to the closure.
     fn chain_result<M, O>(self, mapper: M) -> impl Combinator<Output = O>
     where
-        M: Fn(Result<Self::Output>, &mut TokenStream) -> Result<O>
+        M: Fn(scan::Result<Self::Output>, &mut TokenStream) -> scan::Result<O>
     {
         parser(move |stream| {
             let result = self.parse(stream);
@@ -127,10 +127,10 @@ where
     /// but includes the stream as an argument to the closure.
     fn chain<M, O>(self, mapper: M) -> impl Combinator<Output = O>
     where
-        M: Fn(Self::Output, &mut TokenStream) -> Result<O>
+        M: Fn(Self::Output, &mut TokenStream) -> scan::Result<O>
     {
-        fn inner<I, O>(mapper: impl Fn(I, &mut TokenStream) -> Result<O>)
-            -> impl Fn(Result<I>, &mut TokenStream) -> Result<O>
+        fn inner<I, O>(mapper: impl Fn(I, &mut TokenStream) -> scan::Result<O>)
+            -> impl Fn(scan::Result<I>, &mut TokenStream) -> scan::Result<O>
         {
             move |result, stream| mapper(result?, stream)
         }
@@ -143,10 +143,10 @@ where
     /// but includes the stream as an argument to the closure.
     fn chain_err<M>(self, mapper: M) -> impl Combinator<Output = Self::Output>
     where
-        M: Fn(Error, &mut TokenStream) -> Result<Self::Output>
+        M: Fn(scan::Error, &mut TokenStream) -> scan::Result<Self::Output>
     {
-        fn inner<I>(mapper: impl Fn(Error, &mut TokenStream) -> Result<I>)
-            -> impl Fn(Result<I>, &mut TokenStream) -> Result<I>
+        fn inner<I>(mapper: impl Fn(scan::Error, &mut TokenStream) -> scan::Result<I>)
+            -> impl Fn(scan::Result<I>, &mut TokenStream) -> scan::Result<I>
         {
             move |result, stream|
                 match result {
@@ -162,11 +162,11 @@ where
 
 impl<F, O> Combinator for F
 where
-    F: for<'a> Fn(&'a mut TokenStream<'_>) -> Result<O>,
+    F: for<'a> Fn(&'a mut TokenStream<'_>) -> scan::Result<O>,
 {
     type Output = O;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
         self(stream)
     }
 }
@@ -186,7 +186,7 @@ macro_rules! tuple_combinator {
         {
             type Output = (T0::Output, $($t::Output),+);
 
-            fn parse(&self, stream: &mut TokenStream) -> Result<Self::Output> {
+            fn parse(&self, stream: &mut TokenStream) -> scan::Result<Self::Output> {
 
                 let (f0, $($f),+) = self;
 
@@ -216,6 +216,5 @@ use crate::combinators::foundation::parser;
 use crate::combinators::foundation::required;
 use crate::combinators::foundation::skip;
 use crate::result::Required;
-use crate::scan::Error;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;

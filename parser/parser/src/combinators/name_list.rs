@@ -1,5 +1,5 @@
 /// Alias: `columnList`
-pub(super) fn name_list(stream: &mut TokenStream) -> Result<Vec<Str>> {
+pub(super) fn name_list(stream: &mut TokenStream) -> scan::Result<Vec<Str>> {
 
     /*
         col_id ( ',' col_id )*
@@ -10,7 +10,7 @@ pub(super) fn name_list(stream: &mut TokenStream) -> Result<Vec<Str>> {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::many;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::Str;
 use pg_lexer::OperatorKind::Comma;

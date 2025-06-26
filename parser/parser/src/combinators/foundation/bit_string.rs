@@ -5,7 +5,7 @@
 /// Note that it doesn't validate the content.
 /// That needs to be done in a separate stage,
 /// when we know the actual type from the catalog.
-pub(in crate::combinators) fn bit_string(stream: &mut TokenStream) -> Result<(BitStringKind, Box<str>)> {
+pub(in crate::combinators) fn bit_string(stream: &mut TokenStream) -> scan::Result<(BitStringKind, Box<str>)> {
     stream.consume(|tok| {
         let BitString { kind, value } = tok else { return None };
         let value = mem::take(value);
@@ -32,7 +32,7 @@ mod tests {
     }
 }
 
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::BitString;

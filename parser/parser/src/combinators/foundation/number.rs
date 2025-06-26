@@ -9,7 +9,7 @@ pub(in crate::combinators) struct NumberCombi;
 impl Combinator for NumberCombi {
     type Output = UnsignedNumber;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
         stream.consume(|tok| {
             let TokenValue::UnsignedNumber(value) = tok else { return None };
             Some(mem::take(value))
@@ -35,7 +35,7 @@ mod tests {
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue;

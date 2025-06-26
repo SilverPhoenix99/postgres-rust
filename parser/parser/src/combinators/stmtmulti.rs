@@ -1,5 +1,5 @@
 use crate::result::Optional;
-pub(crate) fn stmtmulti(stream: &mut TokenStream) -> Result<Option<Vec<RawStmt>>> {
+pub(crate) fn stmtmulti(stream: &mut TokenStream) -> scan::Result<Option<Vec<RawStmt>>> {
 
     // This production is slightly cheating, not because it's more efficient,
     // but helps simplify capturing the combinator.
@@ -20,7 +20,7 @@ pub(crate) fn stmtmulti(stream: &mut TokenStream) -> Result<Option<Vec<RawStmt>>
 }
 
 /// Returns `Ok` if it consumed at least 1 `;` (semicolon).
-fn semicolons(stream: &mut TokenStream) -> Result<()> {
+fn semicolons(stream: &mut TokenStream) -> scan::Result<()> {
 
     // Production: ( ';' )+
 
@@ -29,7 +29,7 @@ fn semicolons(stream: &mut TokenStream) -> Result<()> {
     Ok(())
 }
 
-fn toplevel_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
+fn toplevel_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     choice!(parsed stream =>
         transaction_stmt_legacy.map(RawStmt::from),
@@ -38,7 +38,7 @@ fn toplevel_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
 }
 
 /// Alias: `TransactionStmtLegacy`
-fn transaction_stmt_legacy(stream: &mut TokenStream) -> Result<TransactionStmt> {
+fn transaction_stmt_legacy(stream: &mut TokenStream) -> scan::Result<TransactionStmt> {
 
     choice!(parsed stream =>
         begin_stmt,
@@ -83,7 +83,7 @@ use crate::combinators::foundation::choice;
 use crate::combinators::stmt;
 use crate::combinators::stmt::begin_stmt;
 use crate::combinators::stmt::end_stmt;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_ast::TransactionStmt;

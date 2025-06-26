@@ -6,7 +6,7 @@ pub(super) enum TextSearch {
     Template(QualifiedName),
 }
 
-pub(super) fn text_search(stream: &mut TokenStream) -> Result<TextSearch> {
+pub(super) fn text_search(stream: &mut TokenStream) -> scan::Result<TextSearch> {
 
     /*
         TEXT SEARCH (
@@ -54,7 +54,7 @@ use crate::combinators::any_name;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::QualifiedName;
 use pg_lexer::Keyword::Configuration;

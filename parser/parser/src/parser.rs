@@ -1,6 +1,6 @@
 pub struct ParserResult {
-    pub result: LocatedResult<Option<Vec<RawStmt>>>,
-    pub warnings: Option<Vec<Located<Warning>>>,
+    pub result: pg_elog::LocatedResult<Option<Vec<RawStmt>>>,
+    pub warnings: Option<Vec<Located<parser::Warning>>>,
 }
 
 pub struct Parser<'src> {
@@ -45,6 +45,5 @@ use crate::ParserConfig;
 use core::mem;
 use pg_ast::RawStmt;
 use pg_basics::Located;
-use pg_elog::parser::Warning;
+use pg_elog::parser;
 use pg_elog::syntax;
-use pg_elog::LocatedResult;

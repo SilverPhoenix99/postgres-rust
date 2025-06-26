@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `comment_text`
 /// * `security_label`
-pub(super) fn string_or_null(stream: &mut TokenStream) -> Result<Option<Box<str>>> {
+pub(super) fn string_or_null(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
 
     choice!(parsed stream =>
         string.map(Some),
@@ -25,6 +25,6 @@ mod tests {
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_lexer::Keyword::Null;

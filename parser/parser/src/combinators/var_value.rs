@@ -1,9 +1,9 @@
-pub(super) fn var_list(stream: &mut TokenStream) -> Result<Vec<VarValue>> {
+pub(super) fn var_list(stream: &mut TokenStream) -> scan::Result<Vec<VarValue>> {
 
     many!(stream => sep = Comma, var_value)
 }
 
-pub(super) fn var_value(stream: &mut TokenStream) -> Result<VarValue> {
+pub(super) fn var_value(stream: &mut TokenStream) -> scan::Result<VarValue> {
 
     /*
           opt_boolean_or_string
@@ -38,7 +38,7 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::signed_number;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::VarValue;
 use pg_lexer::OperatorKind::Comma;

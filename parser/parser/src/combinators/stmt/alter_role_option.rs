@@ -46,7 +46,7 @@ pub(super) fn alter_role_option() -> impl Combinator<Output = AlterRoleOption> {
     )
 }
 
-fn password_option(stream: &mut TokenStream) -> Result<AlterRoleOption> {
+fn password_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
 
     /*
           PASSWORD SCONST
@@ -83,7 +83,7 @@ fn password_option(stream: &mut TokenStream) -> Result<AlterRoleOption> {
             )
                 .map_result(|result| {
                     let (_, loc) = result?;
-                    let err = LocatedError::new(UnencryptedPassword, loc);
+                    let err = UnencryptedPassword.at(loc).into();
                     Err::<AlterRoleOption, _>(ScanErr(err))
                 })
         }
@@ -92,7 +92,7 @@ fn password_option(stream: &mut TokenStream) -> Result<AlterRoleOption> {
     parser.parse(stream)
 }
 
-fn ident_option(stream: &mut TokenStream) -> Result<AlterRoleOption> {
+fn ident_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
 
     let (ident, loc) = located!(identifier).parse(stream)?;
 
@@ -113,8 +113,7 @@ fn ident_option(stream: &mut TokenStream) -> Result<AlterRoleOption> {
         // but NOINHERIT is handled here.
         "noinherit" => Ok(Inherit(false)),
         _ => {
-            let kind = UnrecognizedRoleOption(ident);
-            let err = LocatedError::new(kind, loc);
+            let err = UnrecognizedRoleOption(ident).at(loc).into();
             Err(ScanErr(err))
         }
     }
@@ -180,8 +179,8 @@ use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_list;
 use crate::combinators::signed_i32_literal;
+use crate::scan;
 use crate::scan::Error::ScanErr;
-use crate::scan::Result;
 use crate::stream::TokenStream;
 use pg_ast::AlterRoleOption;
 use pg_ast::AlterRoleOption::BypassRls;
@@ -197,7 +196,6 @@ use pg_ast::AlterRoleOption::SuperUser;
 use pg_ast::AlterRoleOption::ValidUntil;
 use pg_elog::parser::Error::UnencryptedPassword;
 use pg_elog::parser::Error::UnrecognizedRoleOption;
-use pg_elog::LocatedError;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Connection;
 use pg_lexer::Keyword::Encrypted;

@@ -1,4 +1,4 @@
-pub(super) fn language(stream: &mut TokenStream) -> Result<Str> {
+pub(super) fn language(stream: &mut TokenStream) -> scan::Result<Str> {
 
     /*
         opt_procedural LANGUAGE name
@@ -43,7 +43,7 @@ use crate::combinators::col_id;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::Str;
 use pg_lexer::Keyword::Language;

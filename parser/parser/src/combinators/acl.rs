@@ -7,7 +7,7 @@ pub(super) fn grantee_list() -> impl Combinator<Output = Vec<RoleSpec>> {
     many!(sep = Comma, grantee)
 }
 
-fn grantee(stream: &mut TokenStream) -> Result<RoleSpec> {
+fn grantee(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
 
     /*
         ( GROUP )? role_spec
@@ -105,7 +105,7 @@ mod tests {
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::DropBehavior;
 use pg_ast::RoleSpec;

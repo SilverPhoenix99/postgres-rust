@@ -29,8 +29,8 @@ impl LogMessage for Error {
         match self {
             Lexer(err) => err.sql_state(),
             Parser(err) => err.sql_state(),
-            Self::ExtendedString(err ) => err.sql_state(),
-            Self::UnicodeString(err) => err.sql_state(),
+            ExtendedString(err ) => err.sql_state(),
+            UnicodeString(err) => err.sql_state(),
             Role(err) => err.sql_state(),
         }
     }
@@ -39,8 +39,8 @@ impl LogMessage for Error {
         match self {
             Lexer(err) => err.hint(),
             Parser(err) => err.hint(),
-            Self::ExtendedString(err) => err.hint(),
-            Self::UnicodeString(err) => err.hint(),
+            ExtendedString(err) => err.hint(),
+            UnicodeString(err) => err.hint(),
             Role(err) => err.hint(),
         }
     }
@@ -49,8 +49,8 @@ impl LogMessage for Error {
         match self {
             Lexer(err) => err.detail(),
             Parser(err) => err.detail(),
-            Self::ExtendedString(err) => err.detail(),
-            Self::UnicodeString(err) => err.detail(),
+            ExtendedString(err) => err.detail(),
+            UnicodeString(err) => err.detail(),
             Role(err) => err.detail(),
         }
     }
@@ -59,8 +59,8 @@ impl LogMessage for Error {
         match self {
             Lexer(err) => err.detail_log(),
             Parser(err) => err.detail_log(),
-            Self::ExtendedString(err) => err.detail_log(),
-            Self::UnicodeString(err) => err.detail_log(),
+            ExtendedString(err) => err.detail_log(),
+            UnicodeString(err) => err.detail_log(),
             Role(err) => err.detail_log(),
         }
     }
@@ -90,9 +90,27 @@ impl From<role_spec::LocatedError> for LocatedError {
     }
 }
 
+impl From<extended_string::error::LocatedError> for LocatedError {
+    fn from(value: extended_string::error::LocatedError) -> Self {
+        let (source, location) = value.into();
+        let source = ExtendedString(source);
+        Self::new(source, location)
+    }
+}
+
+impl From<unicode_string::LocatedError> for LocatedError {
+    fn from(value: unicode_string::LocatedError) -> Self {
+        let (source, location) = value.into();
+        let source = UnicodeString(source);
+        Self::new(source, location)
+    }
+}
+
+use self::Error::ExtendedString;
 use self::Error::Lexer;
 use self::Error::Parser;
 use self::Error::Role;
+use self::Error::UnicodeString;
 use crate::parser::Error::Syntax;
 use crate::LocatedMessage;
 use crate::LogMessage;

@@ -1,4 +1,4 @@
-pub(in crate::combinators) fn any_name_list(stream: &mut TokenStream) -> Result<Vec<QualifiedName>> {
+pub(in crate::combinators) fn any_name_list(stream: &mut TokenStream) -> scan::Result<Vec<QualifiedName>> {
 
     /*
         any_name ( ',' any_name )*
@@ -8,7 +8,7 @@ pub(in crate::combinators) fn any_name_list(stream: &mut TokenStream) -> Result<
 }
 
 /// Alias: `handler_name`
-pub(in crate::combinators) fn any_name(stream: &mut TokenStream) -> Result<QualifiedName> {
+pub(in crate::combinators) fn any_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
 
     /*
         col_id attrs
@@ -51,7 +51,7 @@ mod tests {
 use crate::combinators::attrs;
 use crate::combinators::col_id;
 use crate::combinators::foundation::many;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::QualifiedName;
 use pg_lexer::OperatorKind::Comma;

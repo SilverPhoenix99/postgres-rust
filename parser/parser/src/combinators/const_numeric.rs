@@ -1,6 +1,6 @@
 /// Alias: `NumericOnly`
-pub(super) fn signed_number(stream: &mut TokenStream) -> Result<SignedNumber> {
-
+pub(super) fn signed_number(stream: &mut TokenStream) -> scan::Result<SignedNumber> {
+    
     // ('+' | '-')? (ICONST | FCONST)
 
     let sign = sign.maybe_match().parse(stream)?;
@@ -20,12 +20,12 @@ pub(super) fn signed_number(stream: &mut TokenStream) -> Result<SignedNumber> {
 }
 
 /// Alias: `ICONST`
-pub(super) fn i32_literal(stream: &mut TokenStream) -> Result<i32> {
+pub(super) fn i32_literal(stream: &mut TokenStream) -> scan::Result<i32> {
     integer(stream).map(i32::from)
 }
 
 /// Alias: `SignedIconst`
-pub(super) fn signed_i32_literal(stream: &mut TokenStream) -> Result<i32> {
+pub(super) fn signed_i32_literal(stream: &mut TokenStream) -> scan::Result<i32> {
 
     // ('+' | '-')? ICONST
 
@@ -88,7 +88,7 @@ use crate::combinators::foundation::number;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::sign;
 use crate::result::Required;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use core::ops::Neg;
 use pg_ast::SignedNumber;

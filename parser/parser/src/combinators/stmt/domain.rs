@@ -1,4 +1,4 @@
-pub(super) fn domain(stream: &mut TokenStream) -> Result<Type> {
+pub(super) fn domain(stream: &mut TokenStream) -> scan::Result<Type> {
 
     /*
         DOMAIN Typename
@@ -27,7 +27,7 @@ mod tests {
 
 use crate::combinators::foundation::seq;
 use crate::combinators::typename;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::Type;
 use pg_lexer::Keyword::Domain;

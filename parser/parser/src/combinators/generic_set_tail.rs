@@ -1,4 +1,4 @@
-pub(super) fn generic_set_tail(stream: &mut TokenStream) -> Result<ValueOrDefault<Vec<VarValue>>> {
+pub(super) fn generic_set_tail(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<Vec<VarValue>>> {
 
     /*
           (TO | '=') DEFAULT
@@ -38,7 +38,7 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::var_list;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::ValueOrDefault;
 use pg_ast::VarValue;

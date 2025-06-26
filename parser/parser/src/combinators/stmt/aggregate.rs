@@ -1,4 +1,4 @@
-pub(super) fn aggregate(stream: &mut TokenStream) -> Result<AggregateWithArgs> {
+pub(super) fn aggregate(stream: &mut TokenStream) -> scan::Result<AggregateWithArgs> {
 
     /*
         AGGREGATE aggregate_with_argtypes
@@ -26,7 +26,7 @@ mod tests {
 
 use crate::combinators::foundation::seq;
 use crate::combinators::stmt::aggregate_with_argtypes;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::AggregateWithArgs;
 use pg_lexer::Keyword::Aggregate;

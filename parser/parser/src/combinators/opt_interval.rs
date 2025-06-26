@@ -1,4 +1,4 @@
-pub(super) fn opt_interval(stream: &mut TokenStream) -> Result<IntervalRange> {
+pub(super) fn opt_interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
 
     /*
           YEAR
@@ -32,7 +32,7 @@ pub(super) fn opt_interval(stream: &mut TokenStream) -> Result<IntervalRange> {
     Ok(interval.unwrap_or_default())
 }
 
-fn year(stream: &mut TokenStream) -> Result<IntervalRange> {
+fn year(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
 
     /*
           YEAR
@@ -48,7 +48,7 @@ fn year(stream: &mut TokenStream) -> Result<IntervalRange> {
         .map(|(_, y)| if y.is_some() { YearToMonth } else { Year })
 }
 
-fn day(stream: &mut TokenStream) -> Result<IntervalRange> {
+fn day(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
 
     /*
           DAY
@@ -74,7 +74,7 @@ fn day(stream: &mut TokenStream) -> Result<IntervalRange> {
         .map(|(_, d)| d.unwrap_or(Day))
 }
 
-fn hour(stream: &mut TokenStream) -> Result<IntervalRange> {
+fn hour(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
 
     /*
           HOUR
@@ -98,7 +98,7 @@ fn hour(stream: &mut TokenStream) -> Result<IntervalRange> {
         .map(|(_, h)| h.unwrap_or(Hour))
 }
 
-fn minute(stream: &mut TokenStream) -> Result<IntervalRange> {
+fn minute(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
 
     /*
           MINUTE
@@ -151,7 +151,7 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::seq;
 use crate::combinators::opt_precision;
 use crate::result::Optional;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Day;

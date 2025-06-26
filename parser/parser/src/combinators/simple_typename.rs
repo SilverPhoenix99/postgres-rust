@@ -1,5 +1,5 @@
 /// Alias: `SimpleTypename`
-pub(super) fn simple_typename(stream: &mut TokenStream) -> Result<TypeName> {
+pub(super) fn simple_typename(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     choice!(parsed stream =>
         Kw::Json.map(|_| Json),
@@ -19,7 +19,7 @@ pub(super) fn simple_typename(stream: &mut TokenStream) -> Result<TypeName> {
     )
 }
 
-fn int(stream: &mut TokenStream) -> Result<TypeName> {
+fn int(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
         INT | INTEGER
@@ -29,7 +29,7 @@ fn int(stream: &mut TokenStream) -> Result<TypeName> {
     Ok(Int4)
 }
 
-fn decimal(stream: &mut TokenStream) -> Result<TypeName> {
+fn decimal(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
           DECIMAL ( '(' ICONST ')' )?
@@ -46,7 +46,7 @@ fn decimal(stream: &mut TokenStream) -> Result<TypeName> {
 }
 
 /// Inlined: `opt_float`
-fn float(stream: &mut TokenStream) -> Result<TypeName> {
+fn float(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
         FLOAT ( '(' ICONST ')' )?
@@ -76,7 +76,7 @@ fn float(stream: &mut TokenStream) -> Result<TypeName> {
 /// Inlined:
 /// * `BitWithLength`
 /// * `BitWithoutLength`
-fn bit(stream: &mut TokenStream) -> Result<TypeName> {
+fn bit(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
         BIT opt_varying ( '(' expr_list ')' )?
@@ -106,7 +106,7 @@ fn bit(stream: &mut TokenStream) -> Result<TypeName> {
 /// * `CharacterWithLength`
 /// * `CharacterWithoutLength`
 /// * `character` (lowercase rule)
-fn character(stream: &mut TokenStream) -> Result<TypeName> {
+fn character(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
           VARCHAR opt_paren_i32
@@ -148,7 +148,7 @@ fn character(stream: &mut TokenStream) -> Result<TypeName> {
 }
 
 /// Inlined: `ConstDatetime`
-fn timestamp(stream: &mut TokenStream) -> Result<TypeName> {
+fn timestamp(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
         TIMESTAMP ( '(' ICONST ')' )? opt_timezone
@@ -171,7 +171,7 @@ fn timestamp(stream: &mut TokenStream) -> Result<TypeName> {
 }
 
 /// Inlined: `ConstDatetime`
-fn time(stream: &mut TokenStream) -> Result<TypeName> {
+fn time(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
         TIMESTAMP ( '(' ICONST ')' )? opt_timezone
@@ -193,7 +193,7 @@ fn time(stream: &mut TokenStream) -> Result<TypeName> {
     Ok(typ)
 }
 
-fn interval(stream: &mut TokenStream) -> Result<IntervalRange> {
+fn interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
 
     /*
           INTERVAL '(' ICONST ')'
@@ -216,7 +216,7 @@ fn interval(stream: &mut TokenStream) -> Result<IntervalRange> {
 /// Alias: `GenericType`
 ///
 /// Includes `DOUBLE PRECISION` due to conflict with `Unreserved` keywords.
-fn generic_type(stream: &mut TokenStream) -> Result<TypeName> {
+fn generic_type(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
           DOUBLE PRECISION
@@ -315,10 +315,10 @@ mod tests {
 }
 
 use crate::combinators::attrs;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::choice;
 use crate::combinators::i32_literal_paren;
 use crate::combinators::opt_interval;
 use crate::combinators::opt_precision;
@@ -328,7 +328,7 @@ use crate::combinators::opt_varying;
 use crate::combinators::type_function_name;
 use crate::result::Optional;
 use crate::result::Required;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue;
 use pg_ast::ExprNode::IntegerConst;

@@ -99,7 +99,7 @@ where
 {
     type Output = L::Output;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
 
         if let Some(ok) = self.left.parse(stream).optional()? {
             return Ok(ok)
@@ -111,5 +111,5 @@ where
 
 use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;

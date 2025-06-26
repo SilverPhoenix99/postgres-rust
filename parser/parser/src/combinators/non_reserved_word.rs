@@ -1,5 +1,5 @@
 /// Alias: `NonReservedWord`
-pub(super) fn non_reserved_word(stream: &mut TokenStream) -> Result<Str> {
+pub(super) fn non_reserved_word(stream: &mut TokenStream) -> scan::Result<Str> {
     choice!(parsed stream =>
         identifier.map(Str::from),
         Unreserved.map(Str::from),
@@ -29,7 +29,7 @@ mod tests {
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::Combinator;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::Str;
 use pg_lexer::KeywordCategory::ColumnName;

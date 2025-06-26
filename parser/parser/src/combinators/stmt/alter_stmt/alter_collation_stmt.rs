@@ -6,7 +6,7 @@ enum Change {
 }
 
 /// Alias: `AlterCollationStmt`
-pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
+pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
         ALTER COLLATION any_name REFRESH VERSION_P
@@ -115,7 +115,7 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::AlterObjectSchemaTarget;
 use pg_ast::AlterOwnerStmt;

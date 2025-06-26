@@ -1,5 +1,5 @@
 /// Alias: `transaction_mode_list_or_empty`
-pub(super) fn transaction_mode_list(stream: &mut TokenStream) -> Result<Vec<TransactionMode>> {
+pub(super) fn transaction_mode_list(stream: &mut TokenStream) -> scan::Result<Vec<TransactionMode>> {
 
     /*
         transaction_mode ( (',')? transaction_mode )*
@@ -16,7 +16,7 @@ pub(super) fn transaction_mode_list(stream: &mut TokenStream) -> Result<Vec<Tran
 }
 
 /// Alias: `transaction_mode_item`
-fn transaction_mode(stream: &mut TokenStream) -> Result<TransactionMode> {
+fn transaction_mode(stream: &mut TokenStream) -> scan::Result<TransactionMode> {
     use Keyword::{self as Kw, Isolation, Level, Not, Only, Read, Write};
 
     /*
@@ -49,7 +49,7 @@ fn transaction_mode(stream: &mut TokenStream) -> Result<TransactionMode> {
 }
 
 /// Alias: `iso_level`
-fn isolation_level(stream: &mut TokenStream) -> Result<IsolationLevel> {
+fn isolation_level(stream: &mut TokenStream) -> scan::Result<IsolationLevel> {
     use Keyword::{Committed, Read, Repeatable, Serializable, Uncommitted};
 
     /*
@@ -166,7 +166,7 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::IsolationLevel;
 use pg_ast::IsolationLevel::ReadCommitted;

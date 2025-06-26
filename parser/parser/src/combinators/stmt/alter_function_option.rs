@@ -1,6 +1,6 @@
 /// Alias: `common_func_opt_item`
 /// Inlined: `FunctionSetResetClause`
-pub(super) fn alter_function_option(stream: &mut TokenStream) -> Result<AlterFunctionOption> {
+pub(super) fn alter_function_option(stream: &mut TokenStream) -> scan::Result<AlterFunctionOption> {
 
     /*
           CALLED ON NULL INPUT
@@ -121,7 +121,7 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::signed_number;
 use crate::combinators::stmt::reset_stmt;
 use crate::combinators::stmt::set_rest_more;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::AlterFunctionOption;
 use pg_ast::AlterFunctionOption::*;

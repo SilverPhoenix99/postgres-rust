@@ -72,7 +72,7 @@ impl Error {
 pub struct NameList(pub QualifiedName);
 
 impl Display for NameList {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
 
         if self.0.is_empty() {
             return f.write_str("")
@@ -146,6 +146,6 @@ use crate::LocatedMessage;
 use crate::LogMessage;
 use core::fmt::Display;
 use core::fmt::Formatter;
-use core::fmt::Result;
+use core::fmt;
 use pg_basics::Location;
 use pg_basics::QualifiedName;

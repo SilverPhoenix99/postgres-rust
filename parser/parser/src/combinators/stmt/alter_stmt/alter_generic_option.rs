@@ -9,7 +9,7 @@ pub(super) fn alter_generic_options() -> impl Combinator<Output = Vec<GenericOpt
     )
 }
 
-fn alter_generic_option_list(stream: &mut TokenStream) -> Result<Vec<GenericOptionKind>> {
+fn alter_generic_option_list(stream: &mut TokenStream) -> scan::Result<Vec<GenericOptionKind>> {
 
     /*
         alter_generic_option ( ',' alter_generic_option )*
@@ -19,7 +19,7 @@ fn alter_generic_option_list(stream: &mut TokenStream) -> Result<Vec<GenericOpti
 }
 
 /// Alias: `alter_generic_option_elem`
-fn alter_generic_option(stream: &mut TokenStream) -> Result<GenericOptionKind> {
+fn alter_generic_option(stream: &mut TokenStream) -> scan::Result<GenericOptionKind> {
 
     /*
           SET generic_option_elem
@@ -97,7 +97,7 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_option;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::GenericOptionKind;
 use pg_ast::GenericOptionKind::Add;

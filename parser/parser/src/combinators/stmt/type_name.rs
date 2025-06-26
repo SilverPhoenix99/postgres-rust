@@ -1,4 +1,4 @@
-pub(super) fn type_name(stream: &mut TokenStream) -> Result<Type> {
+pub(super) fn type_name(stream: &mut TokenStream) -> scan::Result<Type> {
 
     let (_, typ) = seq!(stream => Kw::Type, typename)?;
 
@@ -23,7 +23,7 @@ mod tests {
 
 use crate::combinators::foundation::seq;
 use crate::combinators::typename;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::Type;
 use pg_lexer::Keyword as Kw;

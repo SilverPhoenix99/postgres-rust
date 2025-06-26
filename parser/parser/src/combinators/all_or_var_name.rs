@@ -1,5 +1,5 @@
 /// Alias: `generic_reset`
-pub(in crate::combinators) fn all_or_var_name(stream: &mut TokenStream) -> Result<OneOrAll<QualifiedName>> {
+pub(in crate::combinators) fn all_or_var_name(stream: &mut TokenStream) -> scan::Result<OneOrAll<QualifiedName>> {
 
     /*
           ALL
@@ -31,7 +31,7 @@ mod tests {
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::var_name;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::OneOrAll;
 use pg_basics::QualifiedName;

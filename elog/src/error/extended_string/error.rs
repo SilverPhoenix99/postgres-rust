@@ -1,3 +1,4 @@
+pub type LocatedError = LocatedMessage<Error>;
 pub type Result<T = Box<str>> = core::result::Result<T, Error>;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
@@ -24,6 +25,12 @@ pub enum Error {
     /// When the format of the escape doesn't match \uXXXX or \UXXXXXXXX.
     #[error("invalid Unicode escape")]
     InvalidUnicodeEscape(u32),
+}
+
+impl Error {
+    pub fn at(self, location: Location) -> LocatedError {
+        LocatedError::new(self, location)
+    }
 }
 
 impl LogMessage for Error {
@@ -54,5 +61,7 @@ use crate::sql_state::SqlState::CharacterNotInRepertoire;
 use crate::sql_state::SqlState::InvalidEscapeSequence;
 use crate::sql_state::SqlState::NonstandardUseOfEscapeCharacter;
 use crate::sql_state::SqlState::SyntaxError;
+use crate::LocatedMessage;
 use crate::LogMessage;
 use core::str::Utf8Error;
+use pg_basics::Location;

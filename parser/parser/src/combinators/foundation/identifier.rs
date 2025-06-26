@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `IDENT`
 /// * `UIDENT`
-pub(in crate::combinators) fn identifier(stream: &mut TokenStream) -> Result<Box<str>> {
+pub(in crate::combinators) fn identifier(stream: &mut TokenStream) -> scan::Result<Box<str>> {
     stream.consume(|tok| {
         let Identifier(ident) = tok else { return None };
         Some(mem::take(ident))
@@ -25,7 +25,7 @@ mod tests {
     }
 }
 
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Identifier;

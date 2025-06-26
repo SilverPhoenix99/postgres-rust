@@ -1,12 +1,12 @@
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum Error {
-    NotEof(LocatedError),
+    NotEof(pg_elog::LocatedError),
     Eof(Location),
 }
 
 impl<T> From<T> for Error
 where
-    T: Into<LocatedError>
+    T: Into<pg_elog::LocatedError>
 {
     fn from(value: T) -> Self {
         Self::NotEof(value.into())
@@ -14,4 +14,3 @@ where
 }
 
 use pg_basics::Location;
-use pg_elog::LocatedError;

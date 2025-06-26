@@ -5,7 +5,7 @@ pub(super) enum Operator {
     Family { name: QualifiedName, index_method: Str },
 }
 
-pub(super) fn operator(stream: &mut TokenStream) -> Result<Operator> {
+pub(super) fn operator(stream: &mut TokenStream) -> scan::Result<Operator> {
 
     let (_, op) = seq!(=>
         Kw::Operator.parse(stream),
@@ -69,7 +69,7 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::operator_with_argtypes;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::OperatorWithArgs;
 use pg_basics::QualifiedName;

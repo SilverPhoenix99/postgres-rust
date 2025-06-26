@@ -21,9 +21,7 @@ pub(super) fn user_stmt() -> impl Combinator<Output = RawStmt> {
                         .and_right(role_id)
                 } => (new_name) {
                     let role_id = role.into_role_id()
-                        .map_err(|err|
-                            LocatedError::new(err, loc)
-                        )?;
+                        .map_err(|err| err.at(loc))?;
                     RenameStmt::new(Role(role_id), new_name).into()
                 },
                 {
@@ -197,7 +195,6 @@ use pg_ast::OneOrAll;
 use pg_ast::RawStmt;
 use pg_ast::RenameStmt;
 use pg_ast::RenameTarget::Role;
-use pg_elog::LocatedError;
 use pg_lexer::Keyword::All;
 use pg_lexer::Keyword::Rename;
 use pg_lexer::Keyword::To;

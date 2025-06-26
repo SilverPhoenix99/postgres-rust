@@ -15,7 +15,7 @@ pub(super) fn alter_default_privileges_stmt() -> impl Combinator<Output = AlterD
 }
 
 /// Alias: `DefACLOptionList`
-fn def_acl_option_list(stream: &mut TokenStream) -> Result<Vec<AclOption>> {
+fn def_acl_option_list(stream: &mut TokenStream) -> scan::Result<Vec<AclOption>> {
 
     many!(stream => def_acl_option())
 }
@@ -253,7 +253,7 @@ use crate::combinators::opt_drop_behavior;
 use crate::combinators::opt_grant_option;
 use crate::combinators::privileges;
 use crate::combinators::role_list;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::AclOption;
 use pg_ast::AlterDefaultPrivilegesStmt;

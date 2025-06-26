@@ -19,15 +19,14 @@ where
 {
     type Output = Option<P::Output>;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
         self.0.parse(stream)
             .maybe_match()
-            .map_err(Error::from)
+            .map_err(scan::Error::from)
     }
 }
 
 use crate::combinators::foundation::Combinator;
 use crate::result::MaybeMatch;
-use crate::scan::Error;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;

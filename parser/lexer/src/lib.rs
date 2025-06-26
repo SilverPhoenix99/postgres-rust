@@ -95,7 +95,7 @@ impl<'src> Lexer<'src> {
         match token {
             Ok(kind) => Some(Ok((kind, location))),
             Err(err_code) => {
-                let report = LocatedError::new(err_code, location);
+                let report = err_code.at(location);
                 Some(Err(report))
             }
         }
@@ -706,7 +706,7 @@ impl<'src> Lexer<'src> {
 
             if self.buffer.eof() {
                 let loc = self.buffer.location_starting_at(start_index);
-                let report = LocatedError::new(UnterminatedBlockComment, loc);
+                let report = UnterminatedBlockComment.at(loc);
                 return Err(report)
             }
 
@@ -1133,4 +1133,3 @@ use pg_elog::lexer::Error::UnterminatedDollarQuotedString;
 use pg_elog::lexer::Error::UnterminatedHexString;
 use pg_elog::lexer::Error::UnterminatedQuotedIdentifier;
 use pg_elog::lexer::Error::UnterminatedQuotedString;
-use pg_elog::lexer::LocatedError;

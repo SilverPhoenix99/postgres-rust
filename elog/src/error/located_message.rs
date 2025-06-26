@@ -36,7 +36,7 @@ impl<T> Display for LocatedMessage<T>
 where
     T: LogMessage
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
 
         let sql_state= self.source.sql_state();
         let source = &self.source;
@@ -91,6 +91,6 @@ use crate::HasLocation;
 use crate::LogMessage;
 use core::fmt::Display;
 use core::fmt::Formatter;
-use core::fmt::Result;
+use core::fmt;
 use pg_basics::Located;
 use pg_basics::Location;

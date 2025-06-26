@@ -1,4 +1,4 @@
-pub(super) fn opt_asc_desc(stream: &mut TokenStream) -> Result<Option<SortDirection>> {
+pub(super) fn opt_asc_desc(stream: &mut TokenStream) -> scan::Result<Option<SortDirection>> {
 
     /*
           ASC
@@ -32,7 +32,7 @@ mod tests {
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::SortDirection;
 use pg_ast::SortDirection::Ascending;

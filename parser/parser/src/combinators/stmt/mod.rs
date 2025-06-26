@@ -83,7 +83,7 @@ mod view;
 pub(in crate::combinators) use self::begin_stmt::begin_stmt;
 pub(in crate::combinators) use self::end_stmt::end_stmt;
 
-pub(super) fn stmt(stream: &mut TokenStream) -> Result<RawStmt> {
+pub(super) fn stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     choice!(parsed stream =>
         abort_stmt.map(From::from),
@@ -254,7 +254,7 @@ use self::{
 };
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::Combinator;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_ast::RawStmt::CheckPoint;

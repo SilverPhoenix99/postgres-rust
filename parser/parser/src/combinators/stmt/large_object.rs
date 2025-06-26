@@ -1,4 +1,4 @@
-pub(super) fn large_object(stream: &mut TokenStream) -> Result<SignedNumber> {
+pub(super) fn large_object(stream: &mut TokenStream) -> scan::Result<SignedNumber> {
 
     /*
         LARGE OBJECT NumericOnly
@@ -27,7 +27,7 @@ mod tests {
 
 use crate::combinators::foundation::seq;
 use crate::combinators::signed_number;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::SignedNumber;
 use pg_lexer::Keyword::Large;

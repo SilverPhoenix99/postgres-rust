@@ -1,4 +1,4 @@
-pub(super) fn operator_with_argtypes_list(stream: &mut TokenStream) -> Result<Vec<OperatorWithArgs>> {
+pub(super) fn operator_with_argtypes_list(stream: &mut TokenStream) -> scan::Result<Vec<OperatorWithArgs>> {
 
     /*
         operator_with_argtypes ( ',' operator_with_argtypes )*
@@ -7,7 +7,7 @@ pub(super) fn operator_with_argtypes_list(stream: &mut TokenStream) -> Result<Ve
     many!(stream => sep = Comma, operator_with_argtypes)
 }
 
-pub(super) fn operator_with_argtypes(stream: &mut TokenStream) -> Result<OperatorWithArgs> {
+pub(super) fn operator_with_argtypes(stream: &mut TokenStream) -> scan::Result<OperatorWithArgs> {
 
     /*
         any_operator oper_argtypes
@@ -18,7 +18,7 @@ pub(super) fn operator_with_argtypes(stream: &mut TokenStream) -> Result<Operato
     Ok(OperatorWithArgs::new(name, args))
 }
 
-fn oper_argtypes(stream: &mut TokenStream) -> Result<OneOrBoth<Type>> {
+fn oper_argtypes(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
 
     /*
           '(' NONE ',' Typename ')'
@@ -52,10 +52,10 @@ fn oper_argtypes(stream: &mut TokenStream) -> Result<OneOrBoth<Type>> {
     )
 }
 
-fn close_paren(stream: &mut TokenStream) -> Result<Option<Type>> {
+fn close_paren(stream: &mut TokenStream) -> scan::Result<Option<Type>> {
 
     let (_, loc) = located!(stream => CloseParenthesis)?;
-    let err = LocatedError::new(MissingOperatorArgumentType, loc);
+    let err = MissingOperatorArgumentType.at(loc).into();
     Err(ScanErr(err))
 }
 
@@ -109,13 +109,12 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::operators::any_operator;
 use crate::combinators::typename;
 use crate::scan::Error::ScanErr;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::OneOrBoth;
 use pg_ast::OperatorWithArgs;
 use pg_ast::Type;
 use pg_elog::parser::Error::MissingOperatorArgumentType;
-use pg_elog::LocatedError;
 use pg_lexer::Keyword::NoneKw;
 use pg_lexer::OperatorKind::CloseParenthesis;
 use pg_lexer::OperatorKind::Comma;

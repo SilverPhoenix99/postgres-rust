@@ -12,7 +12,7 @@ impl<'src> UnicodeStringDecoder<'src> {
         Self { input, quote, escape: uescape }
     }
 
-    pub fn decode(&mut self) -> Result {
+    pub fn decode(&mut self) -> unicode_string::Result {
 
         // see [str_udeescape](https://github.com/postgres/postgres/blob/1c61fd8b527954f0ec522e5e60a11ce82628b681/src/backend/parser/parser.c#L372)
 
@@ -52,7 +52,7 @@ impl<'src> UnicodeStringDecoder<'src> {
         Ok(out.into_boxed_str())
     }
 
-    fn consume_unicode(&mut self) -> Result<char> {
+    fn consume_unicode(&mut self) -> unicode_string::Result<char> {
 
         let start_index = self.input.current_index() - 1; // include `\`
         let unicode_len = if self.input.consume_char('+') { 6 } else { 4 };
@@ -101,7 +101,7 @@ use pg_basics::UnicodeChar::SurrogateFirst;
 use pg_basics::UnicodeChar::SurrogateSecond;
 use pg_basics::UnicodeCharError;
 use pg_basics::UnicodeCharError::LenTooShort;
+use pg_elog::unicode_string;
 use pg_elog::unicode_string::Error::InvalidUnicodeEscape;
 use pg_elog::unicode_string::Error::InvalidUnicodeSurrogatePair;
 use pg_elog::unicode_string::Error::InvalidUnicodeValue;
-use pg_elog::unicode_string::Result;

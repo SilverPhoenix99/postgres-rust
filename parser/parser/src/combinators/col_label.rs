@@ -1,8 +1,8 @@
 /// Aliases:
 /// * `ColLabel`
 /// * `attr_name`
-pub(in crate::combinators) fn col_label(stream: &mut TokenStream) -> Result<Str> {
-
+pub(in crate::combinators) fn col_label(stream: &mut TokenStream) -> scan::Result<Str> {
+    
     choice!(parsed stream =>
         identifier.map(From::from),
         any_keyword().map(From::from)
@@ -29,6 +29,6 @@ use crate::combinators::foundation::any_keyword;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::Combinator;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::Str;

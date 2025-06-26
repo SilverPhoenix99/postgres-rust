@@ -1,4 +1,4 @@
-pub(super) fn collation(stream: &mut TokenStream) -> Result<QualifiedName> {
+pub(super) fn collation(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
 
     /*
         COLLATION any_name
@@ -26,7 +26,7 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::foundation::seq;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::QualifiedName;
 use pg_lexer::Keyword::Collation;

@@ -1,5 +1,5 @@
 /// Alias: `ClosePortalStmt`
-pub(super) fn close_stmt(stream: &mut TokenStream) -> Result<OneOrAll<Str>> {
+pub(super) fn close_stmt(stream: &mut TokenStream) -> scan::Result<OneOrAll<Str>> {
 
     /*
         CLOSE ALL
@@ -35,7 +35,7 @@ use crate::combinators::col_id;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::OneOrAll;
 use pg_basics::Str;

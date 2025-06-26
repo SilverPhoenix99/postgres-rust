@@ -1,5 +1,5 @@
 /// Alias: `reset_rest`
-pub(super) fn variable_target(stream: &mut TokenStream) -> Result<VariableTarget> {
+pub(super) fn variable_target(stream: &mut TokenStream) -> scan::Result<VariableTarget> {
 
     /*
           TIME ZONE
@@ -41,9 +41,10 @@ mod tests {
 }
 
 use crate::combinators::all_or_var_name;
-use crate::combinators::foundation::{choice, seq};
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::OneOrAll;
 use pg_ast::VariableTarget;

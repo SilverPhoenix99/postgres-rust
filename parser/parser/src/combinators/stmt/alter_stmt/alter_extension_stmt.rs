@@ -44,7 +44,7 @@ pub(super) fn alter_extension_stmt() -> impl Combinator<Output = RawStmt> {
 
 /// Alias: `alter_extension_opt_list`
 /// Includes: `alter_extension_opt_item`
-fn alter_extension_options(stream: &mut TokenStream) -> Result<Option<Vec<Str>>> {
+fn alter_extension_options(stream: &mut TokenStream) -> scan::Result<Option<Vec<Str>>> {
 
     /*
         ( TO NonReservedWord_or_Sconst )*
@@ -310,7 +310,7 @@ use crate::combinators::stmt::Foreign;
 use crate::combinators::stmt::Operator as Op;
 use crate::combinators::stmt::TextSearch;
 use crate::result::Optional;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::AddDrop;
 use pg_ast::AlterExtensionContentsStmt;

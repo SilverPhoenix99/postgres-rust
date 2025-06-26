@@ -14,7 +14,7 @@ mod alter_system_stmt;
 mod alter_user_stmt;
 mod set_reset_clause;
 
-pub(super) fn alter_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
+pub(super) fn alter_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     Alter.and_right(choice!(
         alter_aggregate_stmt,
@@ -86,7 +86,7 @@ use self::{
 };
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::Combinator;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_lexer::Keyword::Alter;

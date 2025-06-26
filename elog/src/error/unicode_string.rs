@@ -1,3 +1,4 @@
+pub type LocatedError = LocatedMessage<Error>;
 pub type Result<T = Box<str>> = core::result::Result<T, Error>;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
@@ -16,12 +17,18 @@ pub enum Error {
     InvalidUnicodeEscape(u32),
 }
 
+impl Error {
+    pub fn at(self, location: Location) -> LocatedError {
+        LocatedError::new(self, location)
+    }
+}
+
 impl LogMessage for Error {
 
     fn sql_state(&self) -> SqlState {
         SyntaxError
     }
-    
+
     fn hint(&self) -> Option<&str> {
         match self {
             Self::InvalidUnicodeEscape(_) => Some(r"Unicode escapes must be \XXXX or \+XXXXXX."),
@@ -32,4 +39,6 @@ impl LogMessage for Error {
 
 use crate::sql_state::SqlState;
 use crate::sql_state::SqlState::SyntaxError;
+use crate::LocatedMessage;
 use crate::LogMessage;
+use pg_basics::Location;

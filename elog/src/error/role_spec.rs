@@ -1,4 +1,4 @@
-pub type LocatedError = crate::LocatedMessage<Error>;
+pub type LocatedError = LocatedMessage<Error>;
 pub type Result<T = Str> = core::result::Result<T, Error>;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
@@ -25,6 +25,7 @@ impl LogMessage for Error {
     }
 }
 
+use crate::LocatedMessage;
 use crate::LogMessage;
 use crate::SqlState;
 use pg_basics::Location;

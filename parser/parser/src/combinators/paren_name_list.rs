@@ -1,5 +1,5 @@
 /// Alias: `opt_column_list`
-pub(super) fn paren_name_list(stream: &mut TokenStream) -> Result<Vec<Str>> {
+pub(super) fn paren_name_list(stream: &mut TokenStream) -> scan::Result<Vec<Str>> {
 
     /*
         '(' name_list ')'
@@ -11,6 +11,6 @@ pub(super) fn paren_name_list(stream: &mut TokenStream) -> Result<Vec<Str>> {
 use crate::combinators::foundation::between;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::name_list;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::Str;

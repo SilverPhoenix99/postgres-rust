@@ -11,12 +11,12 @@ pub(super) fn create_database_stmt() -> impl Combinator<Output = CreateDatabaseS
     )
 }
 
-fn createdb_opt_list(stream: &mut TokenStream) -> Result<Vec<CreatedbOption>> {
+fn createdb_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<CreatedbOption>> {
 
     many!(createdb_opt_item).parse(stream)
 }
 
-fn createdb_opt_item(stream: &mut TokenStream) -> Result<CreatedbOption> {
+fn createdb_opt_item(stream: &mut TokenStream) -> scan::Result<CreatedbOption> {
 
     /*
           createdb_opt_name ( '=' )? DEFAULT
@@ -35,7 +35,7 @@ fn createdb_opt_item(stream: &mut TokenStream) -> Result<CreatedbOption> {
     parser.parse(stream)
 }
 
-fn createdb_opt_name(stream: &mut TokenStream) -> Result<CreatedbOptionKind> {
+fn createdb_opt_name(stream: &mut TokenStream) -> scan::Result<CreatedbOptionKind> {
 
     let parser = choice!(
         (Connection, Limit).map(|_| ConnectionLimit),
@@ -160,7 +160,7 @@ use crate::combinators::foundation::many;
 use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::var_value;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::CreateDatabaseStmt;
 use pg_ast::CreatedbOption;

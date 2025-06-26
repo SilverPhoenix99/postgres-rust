@@ -1,4 +1,4 @@
-pub(in crate::combinators) fn begin_stmt(stream: &mut TokenStream) -> Result<TransactionStmt> {
+pub(in crate::combinators) fn begin_stmt(stream: &mut TokenStream) -> scan::Result<TransactionStmt> {
 
     /*
     TransactionStmtLegacy:
@@ -39,7 +39,7 @@ use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_transaction;
 use crate::combinators::transaction_mode_list;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::TransactionStmt;
 use pg_lexer::Keyword::Begin;

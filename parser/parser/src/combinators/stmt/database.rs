@@ -1,4 +1,4 @@
-pub(super) fn database(stream: &mut TokenStream) -> Result<Str> {
+pub(super) fn database(stream: &mut TokenStream) -> scan::Result<Str> {
 
     /*
         DATABASE ColId
@@ -26,7 +26,7 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::seq;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::Str;
 use pg_lexer::Keyword::Database;

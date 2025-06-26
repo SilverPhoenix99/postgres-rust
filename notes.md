@@ -24,6 +24,8 @@
   * `makeRangeVarFromQualifiedName`: qualified name == `( attrs ){1, 3}`
 
 # TO DO
+* Allow case-insensitive search on Mphf, specifically to search for keywords.
+  * Maybe use the `unicase` crate?
 * Change `ParserResult.result` to be `Vec<ParseResult<RawStmt>>`.
   * Introduce a fail fast (compile time) flag.
   * In debug mode: fail fast == false, and returns all errors until EOF.

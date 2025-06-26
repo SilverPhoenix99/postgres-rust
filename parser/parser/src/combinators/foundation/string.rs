@@ -2,7 +2,7 @@
 /// * `SCONST`
 /// * `USCONST`
 /// * `file_name`
-pub(in crate::combinators) fn string(stream: &mut TokenStream<'_>) -> Result<Box<str>> {
+pub(in crate::combinators) fn string(stream: &mut TokenStream<'_>) -> scan::Result<Box<str>> {
     stream.consume(|tok| {
         let TokenValue::String(value) = tok else { return None };
         Some(mem::take(value))
@@ -32,7 +32,7 @@ mod tests {
     }
 }
 
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue;

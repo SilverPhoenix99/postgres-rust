@@ -1,4 +1,4 @@
-pub(super) fn transform(stream: &mut TokenStream) -> Result<Transform> {
+pub(super) fn transform(stream: &mut TokenStream) -> scan::Result<Transform> {
 
     let (_, _, for_type, _, language) = seq!(stream => Kw::Transform, For, typename, Language, col_id)?;
 
@@ -24,7 +24,7 @@ mod tests {
 use crate::combinators::col_id;
 use crate::combinators::foundation::seq;
 use crate::combinators::typename;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::Transform;
 use pg_lexer::Keyword as Kw;

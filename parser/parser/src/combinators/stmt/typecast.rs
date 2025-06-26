@@ -1,4 +1,4 @@
-pub(super) fn typecast(stream: &mut TokenStream) -> Result<Typecast> {
+pub(super) fn typecast(stream: &mut TokenStream) -> scan::Result<Typecast> {
 
     /*
         CAST '(' Typename AS Typename ')'
@@ -35,7 +35,7 @@ use crate::combinators::foundation::between;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::Typecast;
 use pg_lexer::Keyword::As;

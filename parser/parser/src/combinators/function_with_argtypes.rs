@@ -1,4 +1,4 @@
-pub(super) fn function_with_argtypes_list(stream: &mut TokenStream) -> Result<Vec<FunctionWithArgs>> {
+pub(super) fn function_with_argtypes_list(stream: &mut TokenStream) -> scan::Result<Vec<FunctionWithArgs>> {
 
     /*
         function_with_argtypes ( ',' function_with_argtypes )*
@@ -7,7 +7,7 @@ pub(super) fn function_with_argtypes_list(stream: &mut TokenStream) -> Result<Ve
     many!(stream => sep = Comma, function_with_argtypes)
 }
 
-pub(super) fn function_with_argtypes(stream: &mut TokenStream) -> Result<FunctionWithArgs> {
+pub(super) fn function_with_argtypes(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
 
     /*
         Original production:
@@ -59,7 +59,7 @@ pub(super) fn function_with_argtypes(stream: &mut TokenStream) -> Result<Functio
 /// * `Some(_)` if there are parenthesis, but the arguments list might still be empty. E.g.s:
 ///     * `"()"`: An empty list returns `Some(None)`;
 ///     * `"(arg1, arg2)"`: If arguments exist, then it returns them `Some(Some([arg1, arg2]))`.
-fn func_args(stream: &mut TokenStream) -> Result<Option<Option<Vec<FunctionParameter>>>> {
+fn func_args(stream: &mut TokenStream) -> scan::Result<Option<Option<Vec<FunctionParameter>>>> {
 
     /*
         ( '(' ( func_args_list )? ')' )?
@@ -75,7 +75,7 @@ fn func_args(stream: &mut TokenStream) -> Result<Option<Option<Vec<FunctionParam
     Ok(args)
 }
 
-fn func_args_list(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
+fn func_args_list(stream: &mut TokenStream) -> scan::Result<Vec<FunctionParameter>> {
 
     /*
         func_arg ( ',' func_arg )*
@@ -84,7 +84,7 @@ fn func_args_list(stream: &mut TokenStream) -> Result<Vec<FunctionParameter>> {
     many!(stream => sep = Comma, func_arg())
 }
 
-fn func_column_name(stream: &mut TokenStream) -> Result<FunctionWithArgs> {
+fn func_column_name(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
 
     let name = attrs!(stream => ColumnName.parse(stream).map(From::from))?;
 
@@ -151,7 +151,7 @@ use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg;
 use crate::result::Optional;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionWithArgs;

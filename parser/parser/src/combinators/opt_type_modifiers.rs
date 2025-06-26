@@ -1,4 +1,4 @@
-pub(super) fn opt_type_modifiers(stream: &mut TokenStream) -> Result<Option<TypeModifiers>> {
+pub(super) fn opt_type_modifiers(stream: &mut TokenStream) -> scan::Result<Option<TypeModifiers>> {
 
     /*
         ( '(' expr_list ')' )?
@@ -11,6 +11,6 @@ pub(super) fn opt_type_modifiers(stream: &mut TokenStream) -> Result<Option<Type
 
 use crate::combinators::expr_list_paren;
 use crate::combinators::foundation::Combinator;
-use pg_ast::TypeModifiers;
+use crate::scan;
 use crate::stream::TokenStream;
-use crate::scan::Result;
+use pg_ast::TypeModifiers;

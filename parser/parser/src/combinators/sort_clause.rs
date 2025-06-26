@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `opt_sort_clause`
 /// * `json_array_aggregate_order_by_clause_opt`
-pub(super) fn sort_clause(stream: &mut TokenStream) -> Result<Vec<SortBy>> {
+pub(super) fn sort_clause(stream: &mut TokenStream) -> scan::Result<Vec<SortBy>> {
 
     /*
         ORDER BY sortby_list
@@ -12,7 +12,7 @@ pub(super) fn sort_clause(stream: &mut TokenStream) -> Result<Vec<SortBy>> {
     Ok(sorts)
 }
 
-fn sortby_list(stream: &mut TokenStream) -> Result<Vec<SortBy>> {
+fn sortby_list(stream: &mut TokenStream) -> scan::Result<Vec<SortBy>> {
 
     /*
         sortby ( ',' sortby )*
@@ -21,7 +21,7 @@ fn sortby_list(stream: &mut TokenStream) -> Result<Vec<SortBy>> {
     many!(stream => sep = Comma, sortby)
 }
 
-fn sortby(stream: &mut TokenStream) -> Result<SortBy> {
+fn sortby(stream: &mut TokenStream) -> scan::Result<SortBy> {
 
     /*
           a_expr USING qual_all_Op opt_nulls_order
@@ -119,7 +119,7 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_asc_desc;
 use crate::combinators::opt_nulls_order;
 use crate::combinators::qual_all_op;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::SortBy;
 use pg_ast::SortDirection::Using;

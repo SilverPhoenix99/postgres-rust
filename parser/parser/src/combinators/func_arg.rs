@@ -60,8 +60,8 @@ fn arg_class() -> impl Combinator<Output = FunctionParameterMode> {
 }
 
 fn is_arg_name(
-    first: &Result<&TokenValue>,
-    second: &Result<&TokenValue>,
+    first: &eof::Result<&TokenValue>,
+    second: &eof::Result<&TokenValue>,
 ) -> bool {
 
     match (first, second) {
@@ -136,7 +136,7 @@ use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_type;
 use crate::combinators::type_function_name;
-use crate::eof::Result;
+use crate::eof;
 use crate::stream::TokenValue;
 use crate::stream::TokenValue::Identifier;
 use crate::stream::TokenValue::Keyword;

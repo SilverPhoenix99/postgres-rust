@@ -4,7 +4,7 @@ enum Change {
     Schema(Str),
 }
 
-pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> Result<RawStmt> {
+pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
         ALTER AGGREGATE aggregate_with_argtypes (
@@ -107,7 +107,7 @@ use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role::role_spec;
 use crate::combinators::stmt::aggregate_with_argtypes;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::AlterObjectSchemaStmt;
 use pg_ast::AlterObjectSchemaTarget;

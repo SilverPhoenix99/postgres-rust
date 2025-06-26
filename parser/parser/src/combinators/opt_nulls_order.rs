@@ -1,4 +1,4 @@
-pub(super) fn opt_nulls_order(stream: &mut TokenStream) -> Result<Option<SortNulls>> {
+pub(super) fn opt_nulls_order(stream: &mut TokenStream) -> scan::Result<Option<SortNulls>> {
 
     /*
           NULLS FIRST
@@ -39,7 +39,7 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::SortNulls;
 use pg_ast::SortNulls::NullsFirst;

@@ -1,4 +1,4 @@
-pub(super) fn procedure(stream: &mut TokenStream) -> Result<FunctionWithArgs> {
+pub(super) fn procedure(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
 
     /*
         PROCEDURE function_with_argtypes
@@ -26,7 +26,7 @@ mod tests {
 
 use crate::combinators::foundation::seq;
 use crate::combinators::function_with_argtypes;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::FunctionWithArgs;
 use pg_lexer::Keyword::Procedure;

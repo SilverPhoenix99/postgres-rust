@@ -1,5 +1,5 @@
 /// Alias: `Typename`
-pub(super) fn typename(stream: &mut TokenStream) -> Result<Type> {
+pub(super) fn typename(stream: &mut TokenStream) -> scan::Result<Type> {
 
     /*
         ( SETOF )? SimpleTypename opt_array_bounds
@@ -14,7 +14,7 @@ pub(super) fn typename(stream: &mut TokenStream) -> Result<Type> {
     )
 }
 
-fn record_typename(stream: &mut TokenStream) -> Result<Type> {
+fn record_typename(stream: &mut TokenStream) -> scan::Result<Type> {
 
     /*
         SimpleTypename opt_array_bounds
@@ -67,7 +67,7 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::foundation::choice;
 use crate::combinators::opt_array_bounds;
 use crate::combinators::simple_typename;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::Type;
 use pg_lexer::Keyword::Setof;

@@ -1,4 +1,4 @@
-pub(super) fn opt_array_bounds(stream: &mut TokenStream) -> Result<Option<Vec<Option<i32>>>> {
+pub(super) fn opt_array_bounds(stream: &mut TokenStream) -> scan::Result<Option<Vec<Option<i32>>>> {
 
     /*
           ARRAY ( '[' ICONST ']' )?
@@ -50,6 +50,6 @@ use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::i32_literal;
 use crate::result::Optional;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_lexer::Keyword::Array;

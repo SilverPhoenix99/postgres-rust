@@ -63,7 +63,7 @@ impl BufferedLexer<'_> {
                     .decode()
                     .map(str::into_string)
                     .map_err(|err|
-                        LocatedError::new(err, loc.clone())
+                        pg_elog::LocatedError::new(err, loc.clone())
                     )?
             }
         };
@@ -152,9 +152,7 @@ impl BufferedLexer<'_> {
                     self.warnings.push((warning.into(), loc.clone()));
                 }
 
-                result.map_err(|err|
-                    LocatedError::new(err, loc.clone())
-                )?
+                result.map_err(|err| err.at(loc.clone()))?
             }
             Unicode => {
 
@@ -162,9 +160,7 @@ impl BufferedLexer<'_> {
 
                 UnicodeStringDecoder::new(&buffer, false, escape)
                     .decode()
-                    .map_err(|err|
-                        LocatedError::new(err, loc.clone())
-                    )?
+                    .map_err(|err| err.at(loc.clone()))?
             }
             Dollar => unreachable!("`$` strings don't have any escapes"),
         };
@@ -173,7 +169,7 @@ impl BufferedLexer<'_> {
         Ok((value, loc))
     }
 
-    fn uescape(&mut self) -> LocatedResult<char> {
+    fn uescape(&mut self) -> pg_elog::LocatedResult<char> {
         use StringKind::Basic;
 
         /*
@@ -190,9 +186,8 @@ impl BufferedLexer<'_> {
             // No match or Eof
             Ok((_, loc))
             | Err(Eof(loc)) => {
-                return Err(
-                    LocatedError::new(UescapeDelimiterMissing, loc.clone())
-                )
+                let err = UescapeDelimiterMissing.at(loc.clone()).into();
+                return Err(err)
             },
 
             Err(NotEof(err)) => return Err(err.clone()),
@@ -214,7 +209,7 @@ impl BufferedLexer<'_> {
         let loc = Location::new(range, loc.line(), loc.col());
 
         uescape_escape(&buffer).ok_or_else(||
-            LocatedError::new(InvalidUescapeDelimiter, loc)
+            InvalidUescapeDelimiter.at(loc).into()
         )
     }
 
@@ -252,8 +247,6 @@ use pg_basics::NAMEDATALEN;
 use pg_elog::parser::Error::InvalidUescapeDelimiter;
 use pg_elog::parser::Error::UescapeDelimiterMissing;
 use pg_elog::parser::Warning;
-use pg_elog::LocatedError;
-use pg_elog::LocatedResult;
 use pg_lexer::BitStringKind;
 use pg_lexer::IdentifierKind;
 use pg_lexer::IdentifierKind::Quoted;

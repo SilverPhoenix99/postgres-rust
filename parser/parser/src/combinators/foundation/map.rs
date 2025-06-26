@@ -2,7 +2,7 @@
 pub(in crate::combinators) fn map_result<P, M, O>(parser: P, mapper: M) -> MapResultCombi<P, M, O>
 where
     P: Combinator,
-    M: Fn(Result<P::Output>) -> Result<O>
+    M: Fn(scan::Result<P::Output>) -> scan::Result<O>
 {
     MapResultCombi {
         parser,
@@ -13,14 +13,18 @@ where
 
 /// Maps the `Ok(_)` value of a parser combinator into another type.
 pub(in crate::combinators) fn map<P, M, O>(parser: P, mapper: M)
-    -> MapResultCombi<P, impl Fn(Result<P::Output>) -> Result<O>, O>
+    -> MapResultCombi<
+        P,
+        impl Fn(scan::Result<P::Output>) -> scan::Result<O>,
+        O
+    >
 where
     P: Combinator,
     M: Fn(P::Output) -> O
 {
     // Reduces size of type names:
     fn inner<I, O>(mapper: impl Fn(I) -> O)
-        -> impl Fn(Result<I>) -> Result<O>
+        -> impl Fn(scan::Result<I>) -> scan::Result<O>
     {
         move |result| result.map(&mapper)
     }
@@ -34,14 +38,18 @@ where
 
 /// Maps the `Err(_)` value of a parser combinator into another type.
 pub(in crate::combinators) fn map_err<P, M>(parser: P, mapper: M)
-    -> MapResultCombi<P, impl Fn(Result<P::Output>) -> Result<P::Output>, P::Output>
+    -> MapResultCombi<
+        P,
+        impl Fn(scan::Result<P::Output>) -> scan::Result<P::Output>,
+        P::Output
+    >
 where
     P: Combinator,
-    M: Fn(Error) -> Error
+    M: Fn(scan::Error) -> scan::Error
 {
     // Reduces size of type names:
-    fn inner<I>(mapper: impl Fn(Error) -> Error)
-        -> impl Fn(Result<I>) -> Result<I>
+    fn inner<I>(mapper: impl Fn(scan::Error) -> scan::Error)
+        -> impl Fn(scan::Result<I>) -> scan::Result<I>
     {
         move |result| result.map_err(&mapper)
     }
@@ -63,17 +71,16 @@ pub(in crate::combinators) struct MapResultCombi<P, M, O> {
 impl<P, M, O> Combinator for MapResultCombi<P, M, O>
 where
     P: Combinator,
-    M: Fn(Result<P::Output>) -> Result<O>
+    M: Fn(scan::Result<P::Output>) -> scan::Result<O>
 {
     type Output = O;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> Result<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
         (self.mapper)(self.parser.parse(stream))
     }
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::scan::Error;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use core::marker::PhantomData;

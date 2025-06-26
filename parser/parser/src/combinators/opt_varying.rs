@@ -1,4 +1,4 @@
-pub(super) fn opt_varying(stream: &mut TokenStream) -> Result<bool> {
+pub(super) fn opt_varying(stream: &mut TokenStream) -> scan::Result<bool> {
 
     /*
         ( VARYING )?
@@ -13,6 +13,6 @@ pub(super) fn opt_varying(stream: &mut TokenStream) -> Result<bool> {
 
 use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_lexer::Keyword::Varying;

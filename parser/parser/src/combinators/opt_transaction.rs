@@ -1,5 +1,4 @@
-
-pub(super) fn opt_transaction(stream: &mut TokenStream) -> Result<()> {
+pub(super) fn opt_transaction(stream: &mut TokenStream) -> scan::Result<()> {
 
     // Skips over WORK | TRANSACTION
 
@@ -26,7 +25,7 @@ mod tests {
 
 use crate::combinators::foundation::choice;
 use crate::result::Optional;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_lexer::Keyword::Transaction;
 use pg_lexer::Keyword::Work;

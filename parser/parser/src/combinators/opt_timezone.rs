@@ -1,4 +1,4 @@
-pub(super) fn opt_timezone(stream: &mut TokenStream) -> Result<bool> {
+pub(super) fn opt_timezone(stream: &mut TokenStream) -> scan::Result<bool> {
 
     /*
         ( (WITH | WITHOUT) TIME ZONE )?
@@ -40,7 +40,7 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_lexer::Keyword::Time;
 use pg_lexer::Keyword::With;

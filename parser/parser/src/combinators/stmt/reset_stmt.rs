@@ -1,5 +1,5 @@
 /// Alias: `VariableResetStmt`
-pub(super) fn reset_stmt(stream: &mut TokenStream) -> Result<VariableTarget> {
+pub(super) fn reset_stmt(stream: &mut TokenStream) -> scan::Result<VariableTarget> {
 
     /*
         RESET variable_target
@@ -26,7 +26,7 @@ mod tests {
 
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::variable_target;
-use crate::scan::Result;
+use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::VariableTarget;
 use pg_lexer::Keyword::Reset;
