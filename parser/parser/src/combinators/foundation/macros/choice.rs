@@ -6,14 +6,14 @@ macro_rules! choice {
         $(,)?
     ) => {
         'block: {
-            match $crate::result::MaybeMatch::maybe_match($head) {
+            match $crate::result::Optional::optional($head) {
                 Ok(Some(ok)) => break 'block Ok(ok),
                 Err(err) => break 'block Err($crate::scan::Error::from(err)),
                 Ok(None) => {}
             }
 
             $(
-                match $crate::result::MaybeMatch::maybe_match($tail) {
+                match $crate::result::Optional::optional($tail) {
                     Ok(Some(ok)) => break 'block Ok(ok),
                     Err(err) => break 'block Err($crate::scan::Error::from(err)),
                     Ok(None) => {}
