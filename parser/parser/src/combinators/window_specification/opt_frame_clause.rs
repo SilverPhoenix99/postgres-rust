@@ -1,4 +1,4 @@
-pub(super) fn opt_frame_clause() -> impl Combinator<Output = Option<WindowFrame>> {
+pub(super) fn opt_frame_clause(stream: &mut TokenStream<'_>) -> scan::Result<Option<WindowFrame>> {
 
     /*
         RANGE frame_extent opt_window_exclusion_clause
@@ -6,19 +6,22 @@ pub(super) fn opt_frame_clause() -> impl Combinator<Output = Option<WindowFrame>
       | GROUPS frame_extent opt_window_exclusion_clause
     */
 
-    (
-        match_first! {
+    let clause = seq!(=>
+        choice!(parsed stream =>
             RangeKw.map(|_| Range),
             Kw::Rows.map(|_| Rows),
             Kw::Groups.map(|_| Groups),
-        },
-        frame_extent(),
-        opt_window_exclusion_clause()
-    )
+        ),
+        frame_extent(stream),
+        opt_window_exclusion_clause(stream)
+    );
+
+    let clause = clause.optional()?
         .map(|(kind, extent, exclusion)|
             WindowFrame::new(kind, extent, exclusion)
-        )
-        .optional()
+        );
+
+    Ok(clause)
 }
 
 #[cfg(test)]
@@ -58,14 +61,18 @@ mod tests {
     #[test_case("something else", None)]
     #[test_case("", None)]
     fn test_opt_frame_clause(source: &str, expected: Option<WindowFrame>) {
-        test_parser!(source, opt_frame_clause(), expected);
+        test_parser!(source, opt_frame_clause, expected);
     }
 }
 
-use super::frame_extent::frame_extent;
-use super::opt_window_exclusion_clause::opt_window_exclusion_clause;
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::window_specification::frame_extent;
+use crate::combinators::window_specification::opt_window_exclusion_clause;
+use crate::result::Optional;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::WindowFrame;
 use pg_ast::WindowFrameKind::Groups;
 use pg_ast::WindowFrameKind::Range;

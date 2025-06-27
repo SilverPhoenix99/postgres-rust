@@ -1,90 +1,136 @@
-pub(super) fn frame_extent() -> impl Combinator<Output = FrameExtent> {
+pub(super) fn frame_extent(stream: &mut TokenStream<'_>) -> scan::Result<FrameExtent> {
 
     /*
           frame_bound
         | BETWEEN frame_bound AND frame_bound
     */
 
-    or(
-        Between
-            .and_right((
-                frame_bound(),
-                And.and_right(located!(frame_bound()))
-            ))
-            .map_result(|bounds| {
+    choice!(parsed stream => between_frame_bounds, single_frame_bound)
+}
 
-                let (start, (end, loc)) = bounds?;
-                let frame = match (start, end) {
-                    (UnboundedPreceding, UnboundedFollowing)
-                        => FrameExtent::Unbounded { end: Some(PrecedingEnd::Unbounded) },
-                    (UnboundedPreceding, CurrentRow)
-                        => FrameExtent::Unbounded { end: Some(PrecedingEnd::CurrentRow) },
-                    (UnboundedPreceding, OffsetPreceding(end))
-                        => FrameExtent::Unbounded { end: Some(PrecedingEnd::Preceding(end)) },
-                    (UnboundedPreceding, OffsetFollowing(end))
-                        => FrameExtent::Unbounded { end: Some(PrecedingEnd::Following(end)) },
-                    (CurrentRow, UnboundedFollowing)
-                        => FrameExtent::CurrentRow { end: Some(CurrentRowEnd::Unbounded) },
-                    (CurrentRow, CurrentRow)
-                        => FrameExtent::CurrentRow { end: Some(CurrentRowEnd::CurrentRow) },
-                    (CurrentRow, OffsetFollowing(end))
-                        => FrameExtent::CurrentRow { end: Some(CurrentRowEnd::Following(end)) },
-                    (OffsetPreceding(start), UnboundedFollowing)
-                        => FrameExtent::Preceding { start, end: Some(PrecedingEnd::Unbounded) },
-                    (OffsetPreceding(start), CurrentRow)
-                        => FrameExtent::Preceding { start, end: Some(PrecedingEnd::CurrentRow) },
-                    (OffsetPreceding(start), OffsetPreceding(end))
-                        => FrameExtent::Preceding { start, end: Some(PrecedingEnd::Preceding(end)) },
-                    (OffsetPreceding(start), OffsetFollowing(end))
-                        => FrameExtent::Preceding { start, end: Some(PrecedingEnd::Following(end)) },
-                    (OffsetFollowing(start), UnboundedFollowing)
-                        => FrameExtent::Following { start, end: FollowingEnd::Unbounded },
-                    (OffsetFollowing(start), OffsetFollowing(end))
-                        => FrameExtent::Following { start, end: FollowingEnd::Following(end) },
-                    // Illegal combinations:
-                    (UnboundedFollowing, _)
-                        => {
-                            let err = InvalidUnboundedFollowingFrame.at(loc);
-                            return Err(err.into())
-                        },
-                    (_, UnboundedPreceding)
-                        => {
-                            let err = InvalidUnboundedPrecedingFrame.at(loc);
-                            return Err(err.into())
-                        },
-                    (CurrentRow, OffsetPreceding(_))
-                        => {
-                            let err = InvalidCurrentRowFrame.at(loc);
-                            return Err(err.into())
-                        },
-                    (OffsetFollowing(_), CurrentRow | OffsetPreceding(_))
-                        => {
-                            let err = InvalidStartFollowingEndPrecedingFrame.at(loc);
-                            return Err(err.into())
-                        },
-                };
-                Ok(frame)
-            }),
-        located!(frame_bound())
-            .map_result(|bound| {
-                let (bound, loc) = bound?;
-                let frame = match bound {
-                    UnboundedPreceding => FrameExtent::Unbounded { end: None },
-                    CurrentRow => FrameExtent::CurrentRow { end: None },
-                    OffsetPreceding(start) => FrameExtent::Preceding { start, end: None },
-                    // Illegal options:
-                    UnboundedFollowing => {
-                        let err = InvalidUnboundedFollowingFrame.at(loc);
-                        return Err(err.into())
-                    },
-                    OffsetFollowing(_) => {
-                        let err = InvalidOffsetFollowingFrame.at(loc);
-                        return Err(err.into())
-                    },
-                };
-                Ok(frame)
-            })
-    )
+fn between_frame_bounds(stream: &mut TokenStream<'_>) -> scan::Result<FrameExtent> {
+
+    let (_, start, _, (end, loc)) = seq!(stream =>
+        Between,
+        frame_bound,
+        And,
+        located!(frame_bound)
+    )?;
+
+    let frame = match (start, end) {
+        (UnboundedPreceding, UnboundedFollowing) => {
+            FrameExtent::Unbounded {
+                end: Some(PrecedingEnd::Unbounded)
+            }
+        },
+        (UnboundedPreceding, CurrentRow) => {
+            FrameExtent::Unbounded {
+                end: Some(PrecedingEnd::CurrentRow)
+            }
+        },
+        (UnboundedPreceding, OffsetPreceding(end)) => {
+            FrameExtent::Unbounded {
+                end: Some(PrecedingEnd::Preceding(end))
+            }
+        },
+        (UnboundedPreceding, OffsetFollowing(end)) => {
+            FrameExtent::Unbounded {
+                end: Some(PrecedingEnd::Following(end))
+            }
+        },
+        (CurrentRow, UnboundedFollowing) => {
+            FrameExtent::CurrentRow {
+                end: Some(CurrentRowEnd::Unbounded)
+            }
+        },
+        (CurrentRow, CurrentRow) => {
+            FrameExtent::CurrentRow {
+                end: Some(CurrentRowEnd::CurrentRow)
+            }
+        },
+        (CurrentRow, OffsetFollowing(end)) => {
+            FrameExtent::CurrentRow {
+                end: Some(CurrentRowEnd::Following(end))
+            }
+        },
+        (OffsetPreceding(start), UnboundedFollowing) => {
+            FrameExtent::Preceding {
+                start,
+                end: Some(PrecedingEnd::Unbounded)
+            }
+        },
+        (OffsetPreceding(start), CurrentRow) => {
+            FrameExtent::Preceding {
+                start,
+                end: Some(PrecedingEnd::CurrentRow)
+            }
+        },
+        (OffsetPreceding(start), OffsetPreceding(end)) => {
+            FrameExtent::Preceding {
+                start,
+                end: Some(PrecedingEnd::Preceding(end))
+            }
+        },
+        (OffsetPreceding(start), OffsetFollowing(end)) => {
+            FrameExtent::Preceding {
+                start,
+                end: Some(PrecedingEnd::Following(end))
+            }
+        },
+        (OffsetFollowing(start), UnboundedFollowing) => {
+            FrameExtent::Following {
+                start,
+                end: FollowingEnd::Unbounded
+            }
+        },
+        (OffsetFollowing(start), OffsetFollowing(end)) => {
+            FrameExtent::Following {
+                start,
+                end: FollowingEnd::Following(end)
+            }
+        },
+        // Illegal combinations:
+        (UnboundedFollowing, _) => {
+            let err = InvalidUnboundedFollowingFrame.at(loc);
+            return Err(err.into())
+        },
+        (_, UnboundedPreceding) => {
+            let err = InvalidUnboundedPrecedingFrame.at(loc);
+            return Err(err.into())
+        },
+        (CurrentRow, OffsetPreceding(_)) => {
+            let err = InvalidCurrentRowFrame.at(loc);
+            return Err(err.into())
+        },
+        (OffsetFollowing(_), CurrentRow | OffsetPreceding(_)) => {
+            let err = InvalidStartFollowingEndPrecedingFrame.at(loc);
+            return Err(err.into())
+        },
+    };
+
+    Ok(frame)
+}
+
+fn single_frame_bound(stream: &mut TokenStream<'_>) -> scan::Result<FrameExtent> {
+
+    let (bound, loc) = located!(stream => frame_bound)?;
+
+    let frame = match bound {
+        UnboundedPreceding => FrameExtent::Unbounded { end: None },
+        CurrentRow => FrameExtent::CurrentRow { end: None },
+        OffsetPreceding(start) => FrameExtent::Preceding { start, end: None },
+        // Illegal options:
+        UnboundedFollowing => {
+            let err = InvalidUnboundedFollowingFrame.at(loc);
+            return Err(err.into())
+        },
+        OffsetFollowing(_) => {
+            let err = InvalidOffsetFollowingFrame.at(loc);
+            return Err(err.into())
+        },
+    };
+
+    Ok(frame)
 }
 
 #[cfg(test)]
@@ -165,15 +211,21 @@ mod tests {
         }
     )]
     fn test_frame_extent(source: &str, expected: FrameExtent) {
-        test_parser!(source, frame_extent(), expected);
+        test_parser!(source, frame_extent, expected)
     }
 }
 
 use super::frame_bound::frame_bound;
-use super::frame_bound::FrameBound::*;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::or;
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::seq;
+use crate::combinators::window_specification::frame_bound::FrameBound::CurrentRow;
+use crate::combinators::window_specification::frame_bound::FrameBound::OffsetFollowing;
+use crate::combinators::window_specification::frame_bound::FrameBound::OffsetPreceding;
+use crate::combinators::window_specification::frame_bound::FrameBound::UnboundedFollowing;
+use crate::combinators::window_specification::frame_bound::FrameBound::UnboundedPreceding;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::CurrentRowEnd;
 use pg_ast::FollowingEnd;
 use pg_ast::FrameExtent;

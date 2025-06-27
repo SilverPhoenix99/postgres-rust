@@ -7,7 +7,7 @@ pub(super) enum FrameBound {
     OffsetFollowing(ExprNode),
 }
 
-pub(super) fn frame_bound() -> impl Combinator<Output = FrameBound> {
+pub(super) fn frame_bound(stream: &mut TokenStream<'_>) -> scan::Result<FrameBound> {
 
     /*
         UNBOUNDED PRECEDING
@@ -17,25 +17,36 @@ pub(super) fn frame_bound() -> impl Combinator<Output = FrameBound> {
       | a_expr FOLLOWING
     */
 
-    match_first! {
-        parser(|stream| {
-            // A single keyword is ambiguous with a_expr, so we need to check 2.
-            let res = match stream.peek2_option() {
-                Some((Kw(Unbounded), Kw(Preceding))) => UnboundedPreceding,
-                Some((Kw(Unbounded), Kw(Following))) => UnboundedFollowing,
-                Some((Kw(Current), Kw(Row))) => CurrentRow,
-                _ => return Err(NoMatch(stream.current_location()))
-            };
+    // A single keyword is ambiguous with a_expr, so we need to check 2.
+    if let Some((first, second)) = stream.peek2_option() {
 
+        let res = match (first, second) {
+            (Kw(Unbounded), Kw(Preceding)) => Some(UnboundedPreceding),
+            (Kw(Unbounded), Kw(Following)) => Some(UnboundedFollowing),
+            (Kw(Current), Kw(Row)) => Some(CurrentRow),
+            _ => None
+        };
+
+        if let Some(bound) = res {
             stream.next();
             stream.next();
-            Ok(res)
-        }),
-        a_expr().chain(match_first_with_state!(|expr, stream| {
-            Preceding => (_) OffsetPreceding(expr),
-            Following => (_) OffsetFollowing(expr),
-        }))
+            return Ok(bound);
+        }
     }
+
+    let (expr, bound) = seq!(=>
+        a_expr().parse(stream),
+        choice!(parsed stream => Preceding, Following)
+    )?;
+
+    let bound = if bound == Preceding {
+        OffsetPreceding(expr)
+    }
+    else {
+        OffsetFollowing(expr)
+    };
+
+    Ok(bound)
 }
 
 #[cfg(test)]
@@ -52,7 +63,7 @@ mod tests {
     #[test_case("1 preceding", OffsetPreceding(IntegerConst(1)))]
     #[test_case("1 following", OffsetFollowing(IntegerConst(1)))]
     fn test_frame_bound(source: &str, expected: FrameBound) {
-        test_parser!(source, frame_bound(), expected);
+        test_parser!(source, frame_bound, expected);
     }
 }
 
@@ -62,11 +73,11 @@ use self::FrameBound::OffsetPreceding;
 use self::FrameBound::UnboundedFollowing;
 use self::FrameBound::UnboundedPreceding;
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::match_first_with_state;
-use crate::combinators::foundation::parser;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::scan::Error::NoMatch;
+use crate::scan;
+use crate::stream::TokenStream;
 use crate::stream::TokenValue::Keyword as Kw;
 use pg_ast::ExprNode;
 use pg_lexer::Keyword::Current;

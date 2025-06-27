@@ -4,10 +4,11 @@ pub(super) fn opt_partition_clause(stream: &mut TokenStream) -> scan::Result<Opt
         PARTITION BY expr_list
     */
 
-    seq!(stream => Partition, By, expr_list)
-        .map(|(.., exprs)| exprs)
-        .optional()
-        .map_err(From::from)
+    let exprs = seq!(stream => Partition, By, expr_list)
+        .optional()?
+        .map(|(.., exprs)| exprs);
+
+    Ok(exprs)
 }
 
 #[cfg(test)]

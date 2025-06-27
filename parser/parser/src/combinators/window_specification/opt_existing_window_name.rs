@@ -1,26 +1,30 @@
-pub(super) fn opt_existing_window_name() -> impl Combinator<Output = Option<Str>> {
+pub(super) fn opt_existing_window_name(stream: &mut TokenStream<'_>) -> scan::Result<Option<Str>> {
 
     /*
         ( col_id )?
     */
 
-    parser(|stream| match stream.peek2_option() {
+    let Some((first, second)) = stream.peek2_option() else {
+        return Ok(None)
+    };
+
+    match (first, second) {
         // These 2 rules need to come first, due to conflicts with Unreserved keywords.
-        Some((Kw(Partition), Kw(By))) => Ok(None),
-        Some((Kw(RangeKw | Rows | Groups), Kw(Unbounded | Current | Between))) => Ok(None),
+        (Kw(Partition), Kw(By)) => Ok(None),
+        (Kw(RangeKw | Rows | Groups), Kw(Unbounded | Current | Between)) => Ok(None),
 
         // ColId:
-        Some((Identifier(_), _)) => {
+        (Identifier(_), _) => {
             let name = identifier(stream)?;
             Ok(Some(name.into()))
         },
-        Some((Kw(kw), _)) if matches!(kw.category(), Unreserved | ColumnName) => {
+        (Kw(kw), _) if matches!(kw.category(), Unreserved | ColumnName) => {
             let name = any_keyword().parse(stream)?;
             Ok(Some(name.into()))
         },
 
         _ => Ok(None),
-    })
+    }
 }
 
 #[cfg(test)]
@@ -58,14 +62,15 @@ mod tests {
     #[test_case("something else", Some("something".into()))]
     #[test_case("", None)]
     fn test_opt_existing_window_name(source: &str, expected: Option<Str>) {
-        test_parser!(source, opt_existing_window_name(), expected);
+        test_parser!(source, opt_existing_window_name, expected);
     }
 }
 
 use crate::combinators::foundation::any_keyword;
 use crate::combinators::foundation::identifier;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
+use crate::scan;
+use crate::stream::TokenStream;
 use crate::stream::TokenValue::Identifier;
 use crate::stream::TokenValue::Keyword as Kw;
 use pg_basics::Str;

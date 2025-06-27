@@ -121,27 +121,26 @@ impl<'src> TokenStream<'src> {
     }
 
     fn lex_next(&mut self) -> eof::Result<Located<TokenValue>> {
-        use RawTokenKind::*;
 
         let (tok, loc) = self.lexer.next()?;
         let slice = loc.slice(self.source());
 
         match tok {
-            Operator(op) => Ok((TokenValue::Operator(op), loc)),
-            Keyword(kw) => Ok((TokenValue::Keyword(kw), loc)),
-            Param { index } => Ok((TokenValue::Param { index }, loc)),
-            UserDefinedOperator => {
+            RawTokenKind::Operator(op) => Ok((TokenValue::Operator(op), loc)),
+            RawTokenKind::Keyword(kw) => Ok((TokenValue::Keyword(kw), loc)),
+            RawTokenKind::Param { index } => Ok((TokenValue::Param { index }, loc)),
+            RawTokenKind::UserDefinedOperator => {
                 let value = TokenValue::UserDefinedOperator(slice.into());
                 Ok((value, loc))
             },
-            NumberLiteral(radix) => {
+            RawTokenKind::NumberLiteral(radix) => {
                 let value = parse_number(slice, radix);
                 let value = TokenValue::UnsignedNumber(value);
                 Ok((value, loc))
             },
-            BitStringLiteral(kind) => self.lexer.parse_bit_string(slice, loc, kind),
-            Identifier(kind) => self.lexer.parse_identifier(slice, loc, kind),
-            StringLiteral(kind) => self.lexer.parse_string(slice, loc, kind),
+            RawTokenKind::BitStringLiteral(kind) => self.lexer.parse_bit_string(slice, loc, kind),
+            RawTokenKind::Identifier(kind) => self.lexer.parse_identifier(slice, loc, kind),
+            RawTokenKind::StringLiteral(kind) => self.lexer.parse_string(slice, loc, kind),
         }
     }
 }

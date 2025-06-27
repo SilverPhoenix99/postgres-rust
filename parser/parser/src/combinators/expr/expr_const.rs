@@ -18,8 +18,8 @@ pub(super) fn expr_const() -> impl Combinator<Output = ExprNode> {
         string.map(StringConst),
         bit_string
             .map(|(kind, value)| match kind {
-                Binary => BinaryStringConst(value),
-                Hex => HexStringConst(value),
+                BitStringKind::Binary => BinaryStringConst(value),
+                BitStringKind::Hex => HexStringConst(value),
             }),
         True.map(|_| BooleanConst(true)),
         False.map(|_| BooleanConst(false)),
@@ -65,7 +65,7 @@ use pg_ast::ExprNode::BooleanConst;
 use pg_ast::ExprNode::HexStringConst;
 use pg_ast::ExprNode::NullConst;
 use pg_ast::ExprNode::StringConst;
-use pg_lexer::BitStringKind::*;
+use pg_lexer::BitStringKind;
 use pg_lexer::Keyword::False;
 use pg_lexer::Keyword::Null;
 use pg_lexer::Keyword::True;

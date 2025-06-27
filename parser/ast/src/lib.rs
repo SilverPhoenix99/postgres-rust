@@ -269,11 +269,10 @@ impl_from!(XmlElement for ExprNode);
 
 impl From<UnsignedNumber> for ExprNode {
     fn from(value: UnsignedNumber) -> Self {
-        use UnsignedNumber::*;
         match value {
             // SAFETY: `int` is originally parsed by `i32::from_str_radix()`, so `0 <= int <= i32::MAX`
-            IntegerConst(int) => Self::IntegerConst(int.into()),
-            NumericConst { value, radix } => Self::NumericConst { radix, value }
+            UnsignedNumber::IntegerConst(int) => Self::IntegerConst(int.into()),
+            UnsignedNumber::NumericConst { value, radix } => Self::NumericConst { radix, value }
         }
     }
 }

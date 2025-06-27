@@ -66,7 +66,6 @@ fn createdb_opt_name(stream: &mut TokenStream) -> scan::Result<CreatedbOptionKin
 }
 
 pub(in crate::combinators::stmt) fn createdb_opt_value() -> impl Combinator<Output = CreatedbOptionValue> {
-    use CreatedbOptionValue::*;
 
     /*
           DEFAULT
@@ -74,7 +73,7 @@ pub(in crate::combinators::stmt) fn createdb_opt_value() -> impl Combinator<Outp
     */
 
     match_first! {
-        DefaultKw.map(|_| Default),
+        DefaultKw.map(|_| CreatedbOptionValue::Default),
         var_value.map(From::from)
     }
 }

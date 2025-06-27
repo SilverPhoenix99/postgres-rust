@@ -1,4 +1,4 @@
-pub(super) fn opt_window_exclusion_clause() -> impl Combinator<Output = Option<WindowExclusion>> {
+pub(super) fn opt_window_exclusion_clause(stream: &mut TokenStream<'_>) -> scan::Result<Option<WindowExclusion>> {
 
     /*
           EXCLUDE CURRENT ROW
@@ -7,14 +7,20 @@ pub(super) fn opt_window_exclusion_clause() -> impl Combinator<Output = Option<W
         | EXCLUDE NO OTHERS
     */
 
-    Exclude.and_right(match_first! {
-        (Current, Row).map(|_| Some(CurrentRow)),
-        Kw::Group.map(|_| Some(Group)),
-        Kw::Ties.map(|_| Some(Ties)),
-        (No, Others).map(|_| None)
-    })
-        .optional()
-        .map(Option::flatten)
+    let exclusion = seq!(=>
+        Exclude.parse(stream),
+        choice!(stream =>
+            seq!(stream => Current, Row).map(|_| Some(CurrentRow)),
+            Kw::Group.parse(stream).map(|_| Some(Group)),
+            Kw::Ties.parse(stream).map(|_| Some(Ties)),
+            seq!(stream => No, Others).map(|_| None)
+        )
+    );
+
+    let exclusion = exclusion.optional()?
+        .and_then(|(_, exclusion)| exclusion);
+
+    Ok(exclusion)
 }
 
 #[cfg(test)]
@@ -30,12 +36,16 @@ mod tests {
     #[test_case("something else", None)]
     #[test_case("", None)]
     fn test_opt_window_exclusion_clause(source: &str, expected: Option<WindowExclusion>) {
-        test_parser!(source, opt_window_exclusion_clause(), expected);
+        test_parser!(source, opt_window_exclusion_clause, expected);
     }
 }
 
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::result::Optional;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::WindowExclusion;
 use pg_ast::WindowExclusion::CurrentRow;
 use pg_ast::WindowExclusion::Group;
