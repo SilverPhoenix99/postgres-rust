@@ -1,50 +1,58 @@
 /// Alias: `NotifyStmt`
-pub(super) fn notify_stmt() -> impl Combinator<Output = NotifyStmt> {
+pub(super) fn notify_stmt(stream: &mut TokenStream) -> scan::Result<NotifyStmt> {
 
     /*
         NOTIFY ColId ( ',' SCONST )?
     */
 
-    (
-        Notify.skip(),
-        col_id,
-        Comma
-            .and_right(string)
+    let (_, condition_name, payload) = seq!(=>
+        Notify.parse(stream),
+        col_id(stream),
+        seq!(stream => Comma, string)
             .optional()
-    ).map(|(_, condition_name, payload)| {
-        if let Some(payload) = payload {
-            NotifyStmt::with_payload(condition_name, payload)
-        }
-        else {
-            NotifyStmt::new(condition_name)
-        }
-    })
+    )?;
 
+    let stmt = if let Some((_, payload)) = payload {
+        NotifyStmt::with_payload(condition_name, payload)
+    }
+    else {
+        NotifyStmt::new(condition_name)
+    };
+
+    Ok(stmt)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
 
     #[test]
     fn test_notify() {
-        let mut stream = TokenStream::new("notify test_ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(NotifyStmt::new("test_ident")), notify_stmt().parse(&mut stream));
+        test_parser!(
+            source = "notify test_ident",
+            parser = notify_stmt,
+            expected = NotifyStmt::new("test_ident")
+        )
     }
 
     #[test]
     fn test_notify_with_payload() {
-        let mut stream = TokenStream::new("notify test_ident, 'test-payload'", DEFAULT_CONFIG);
-        let expected = NotifyStmt::with_payload("test_ident", "test-payload");
-        assert_eq!(Ok(expected), notify_stmt().parse(&mut stream));
+        test_parser!(
+            source = "notify test_ident, 'test-payload'",
+            parser = notify_stmt,
+            expected = NotifyStmt::with_payload("test_ident", "test-payload")
+        )
     }
 }
 
 use crate::combinators::col_id;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
+use crate::result::Optional;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::NotifyStmt;
 use pg_lexer::Keyword::Notify;
 use pg_lexer::OperatorKind::Comma;

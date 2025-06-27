@@ -1,36 +1,46 @@
-pub(super) fn prepare_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn prepare_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
         PREPARE TRANSACTION SCONST
         PREPARE ColId ( '(' type_list ')' )? AS PreparableStmt
     */
 
-    Prepare
-        .and_right(or(
-            Transaction
-                .and_then(string, |_, tx_id| PrepareTransactionStmt(tx_id)),
-            col_id.map(|_name| todo!())
-        ))
+    let (_, stmt) = seq!(=>
+        Prepare.parse(stream),
+        choice!(stream =>
+            seq!(stream => Transaction, string)
+                .map(|(_, tx_id)| PrepareTransactionStmt(tx_id)),
+            col_id
+                .parse(stream)
+                .map(|_name| todo!())
+        )
+    )?;
+
+    Ok(stmt)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
 
     #[test]
     fn test_prepare_transaction() {
-        let mut stream = TokenStream::new("prepare transaction 'some prepared tx'", DEFAULT_CONFIG);
-        let expected = PrepareTransactionStmt("some prepared tx".into());
-        assert_eq!(Ok(expected), prepare_stmt().parse(&mut stream));
+        test_parser!(
+            source = "prepare transaction 'some prepared tx'",
+            parser = prepare_stmt,
+            expected = PrepareTransactionStmt("some prepared tx".into())
+        )
     }
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_ast::RawStmt::PrepareTransactionStmt;
 use pg_lexer::Keyword::Prepare;

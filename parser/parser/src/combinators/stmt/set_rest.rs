@@ -8,36 +8,34 @@ pub(super) fn set_rest(stream: &mut TokenStream) -> scan::Result<SetRest> {
         | set_rest_more
     */
 
-    choice!(
-        {
-            (
-                Session,
-                choice!(
-                    (Characteristics, As, Transaction, transaction_mode_list)
-                        .map(|(.., modes)| SetRest::SessionTransactionCharacteristics(modes)),
-                    (Authorization, session_auth_user)
-                        .right()
-                        .map(|user| SetRest::SessionAuthorization { user })
-                )
-            )
-            .right::<_, SetRest>()
-        },
-        {
-            (
-                Transaction,
-                choice!(
-                    (Snapshot, string)
-                        .right()
-                        .map(SetRest::TransactionSnapshot),
-                    transaction_mode_list
-                        .map(SetRest::LocalTransactionCharacteristics)
-                )
-            )
-            .right::<_, SetRest>()
-        },
-        set_rest_more
+    choice!(stream => 
+        seq!(stream => Session, set_rest_session)
+            .map(|(_, stmt)| stmt),
+        seq!(stream => Transaction, set_rest_transaction)
+            .map(|(_, stmt)| stmt),
+        set_rest_more(stream)
+            .map(SetRest::from)
     )
-        .parse(stream)
+}
+
+fn set_rest_session(stream: &mut TokenStream) -> scan::Result<SetRest> {
+
+    choice!(stream =>
+        seq!(stream => Characteristics, As, Transaction, transaction_mode_list)
+            .map(|(.., modes)| SetRest::SessionTransactionCharacteristics(modes)),
+        seq!(stream => Authorization, session_auth_user)
+            .map(|(_, user)| SetRest::SessionAuthorization { user })
+    )
+}
+
+fn set_rest_transaction(stream: &mut TokenStream) -> scan::Result<SetRest> {
+
+    choice!(stream =>
+        seq!(stream => Snapshot, string)
+            .map(|(_, snapshot)| SetRest::TransactionSnapshot(snapshot)),
+        transaction_mode_list(stream)
+            .map(SetRest::LocalTransactionCharacteristics)
+    )
 }
 
 pub(super) fn set_rest_more(stream: &mut TokenStream) -> scan::Result<SetRestMore> {
@@ -57,30 +55,25 @@ pub(super) fn set_rest_more(stream: &mut TokenStream) -> scan::Result<SetRestMor
 
     // All keywords conflict with `var_name`, so it needs to be last
 
-    choice!(
-        (Session, Authorization, session_auth_user)
+    choice!(stream =>
+        seq!(stream => Session, Authorization, session_auth_user)
             .map(|(.., user)| SetRestMore::SessionAuthorization { user }),
-        (Transaction, Snapshot, string)
+        seq!(stream => Transaction, Snapshot, string)
             .map(|(.., snapshot)| SetRestMore::TransactionSnapshot(snapshot)),
-        (Time, Zone, zone_value)
+        seq!(stream => Time, Zone, zone_value)
             .map(|(.., zone)| SetRestMore::TimeZone(zone)),
-        (Kw::Catalog, string)
-            .right()
-            .map(SetRestMore::Catalog),
-        (Kw::Schema, string)
-            .right()
-            .map(SetRestMore::Schema),
-        (Names, opt_encoding)
-            .right()
-            .map(SetRestMore::ClientEncoding),
-        (Kw::Role, non_reserved_word_or_sconst)
-            .right()
-            .map(SetRestMore::Role),
-        (Xml, OptionKw, document_or_content)
+        seq!(stream => Kw::Catalog, string)
+            .map(|(_, catalog)| SetRestMore::Catalog(catalog)),
+        seq!(stream => Kw::Schema, string)
+            .map(|(_, schema)| SetRestMore::Schema(schema)),
+        seq!(stream => Names, opt_encoding)
+            .map(|(_, encoding)| SetRestMore::ClientEncoding(encoding)),
+        seq!(stream => Kw::Role, non_reserved_word_or_sconst)
+            .map(|(_, role)| SetRestMore::Role(role)),
+        seq!(stream => Xml, OptionKw, document_or_content)
             .map(|(.., option)| SetRestMore::XmlOption(option)),
-        set_var_name
+        set_var_name(stream)
     )
-        .parse(stream)
 }
 
 fn set_var_name(stream: &mut TokenStream) -> scan::Result<SetRestMore> {
@@ -109,11 +102,10 @@ fn session_auth_user(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<St
         | NonReservedWord_or_Sconst
     */
 
-    choice!(
+    choice!(parsed stream =>
         DefaultKw.map(|_| ValueOrDefault::Default),
         non_reserved_word_or_sconst.map(ValueOrDefault::Value)
     )
-        .parse(stream)
 }
 
 fn zone_value(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
@@ -128,35 +120,46 @@ fn zone_value(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
         | INTERVAL '(' ICONST ')' SCONST
     */
 
-    choice!(
-        choice!(DefaultKw, Kw::Local).map(|_: Kw| Local),
-        signed_number.map(Numeric),
-        choice!(string, identifier)
+    choice!(stream =>
+        choice!(parsed stream => DefaultKw, Kw::Local)
+            .map(|_: Kw| Local),
+        signed_number(stream).map(Numeric),
+        choice!(parsed stream => string, identifier)
             .map(|name: Box<str>|
                 ZoneValue::String(name.into())
             ),
-        (
-            Kw::Interval,
-            choice!(
-                (string, zone_value_interval)
-                    .map(|(value, range)| Interval { value, range }),
-                (i32_literal_paren, string)
-                    .map(|(precision, value)|
-                        Interval {
-                            value,
-                            range: Full { precision: Some(precision) }
-                        }
-                    )
-            )
-        )
-        .right::<_, ZoneValue>()
+        zone_interval(stream)
     )
-        .parse(stream)
+}
+
+fn zone_interval(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
+
+    /*
+        | INTERVAL SCONST opt_interval
+        | INTERVAL '(' ICONST ')' SCONST
+    */
+
+    let (_, zone) = seq!(=>
+        Kw::Interval.parse(stream),
+        choice!(stream =>
+            seq!(stream => string, zone_value_interval)
+                .map(|(value, range)| Interval { value, range }),
+            seq!(stream => i32_literal_paren, string)
+                .map(|(precision, value)|
+                    Interval {
+                        value,
+                        range: Full { precision: Some(precision) }
+                    }
+                )
+        )
+    )?;
+
+    Ok(zone)
 }
 
 fn zone_value_interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
 
-    let (zone, loc) = located!(opt_interval).parse(stream)?;
+    let (zone, loc) = located!(stream => opt_interval)?;
 
     if matches!(zone, Full { .. } | Hour | HourToMinute) {
         return Ok(zone)
@@ -168,14 +171,15 @@ fn zone_value_interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> 
 
 fn opt_encoding(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<Box<str>>> {
 
-    choice!(
+    let value = choice!(parsed stream =>
         DefaultKw.map(|_| ValueOrDefault::Default),
         string.map(ValueOrDefault::Value)
-    )
-        .parse(stream)
-        .optional()
-        .map(|value| value.unwrap_or(ValueOrDefault::Default))
-        .map_err(From::from)
+    );
+
+    let value = value.optional()?;
+    let value = value.unwrap_or(ValueOrDefault::Default);
+
+    Ok(value)
 }
 
 #[cfg(test)]
@@ -251,6 +255,7 @@ use crate::combinators::document_or_content;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_set_tail;

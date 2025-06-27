@@ -1,31 +1,31 @@
 /// Alias: `ListenStmt`
-pub(super) fn listen_stmt() -> impl Combinator<Output = Str> {
+pub(super) fn listen_stmt(stream: &mut TokenStream) -> scan::Result<Str> {
 
     /*
         LISTEN ColId
     */
 
-    Listen
-        .and_right(col_id)
+    let (_, channel) = seq!(stream => Listen, col_id)?;
+
+    Ok(channel)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
+    use test_case::test_case;
 
-    #[test]
-    fn test_listen_stmt() {
-        let mut stream = TokenStream::new("listen abort", DEFAULT_CONFIG);
-        assert_eq!(Ok("abort".into()), listen_stmt().parse(&mut stream));
-
-        let mut stream = TokenStream::new("listen ident", DEFAULT_CONFIG);
-        assert_eq!(Ok("ident".into()), listen_stmt().parse(&mut stream));
+    #[test_case("listen abort", "abort".into())]
+    #[test_case("listen ident", "ident".into())]
+    fn test_listen_stmt(source: &str, expected: Str) {
+        test_parser!(source, listen_stmt, expected)
     }
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::seq;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_basics::Str;
 use pg_lexer::Keyword::Listen;

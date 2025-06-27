@@ -5,8 +5,9 @@ pub(super) fn reset_stmt(stream: &mut TokenStream) -> scan::Result<VariableTarge
         RESET variable_target
     */
 
-    Reset.and_right(variable_target)
-        .parse(stream)
+    let (_, target) = seq!(stream => Reset, variable_target)?;
+
+    Ok(target)
 }
 
 #[cfg(test)]
@@ -24,7 +25,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::seq;
 use crate::combinators::stmt::variable_target;
 use crate::scan;
 use crate::stream::TokenStream;

@@ -1,16 +1,16 @@
-pub(super) fn create_cast_stmt() -> impl Combinator<Output = CreateCastStmt> {
+pub(super) fn create_cast_stmt(stream: &mut TokenStream) -> scan::Result<CreateCastStmt> {
 
     /*
         typecast cast_conversion cast_context
     */
 
-    (typecast, cast_conversion(), cast_context())
+    seq!(stream => typecast, cast_conversion, cast_context)
         .map(|(typecast, conversion, coercion)|
             CreateCastStmt::new(typecast, conversion, coercion)
         )
 }
 
-fn cast_conversion() -> impl Combinator<Output = CastConversion> {
+fn cast_conversion(stream: &mut TokenStream) -> scan::Result<CastConversion> {
 
     /*
           WITH FUNCTION function_with_argtypes
@@ -18,31 +18,39 @@ fn cast_conversion() -> impl Combinator<Output = CastConversion> {
         | WITHOUT FUNCTION
     */
 
-    or(
-        With
-            .and_right(or(
-                Inout.map(|_| WithInout),
-                Function
-                    .and_right(function_with_argtypes)
-                    .map(WithFunction)
-            )),
-        (Without, Function).map(|_| WithoutFunction),
-
+    choice!(stream =>
+        seq!(=>
+            With.parse(stream),
+            choice!(stream =>
+                Inout.parse(stream).map(|_| WithInout),
+                seq!(stream => Function, function_with_argtypes)
+                    .map(|(_, signature)| WithFunction(signature))
+            )
+        )
+            .map(|(_, conversion)| conversion),
+        seq!(stream => Without, Function).map(|_| WithoutFunction),
     )
 }
 
-fn cast_context() -> impl Combinator<Output = CoercionContext> {
+fn cast_context(stream: &mut TokenStream) -> scan::Result<CoercionContext> {
 
     /*
           ( AS (IMPLICIT | ASSIGNMENT) )?
     */
 
-    As.and_right(or(
-        Kw::Implicit.map(|_| CoercionContext::Implicit),
-        Kw::Assignment.map(|_| CoercionContext::Assignment)
-    ))
-        .optional()
-        .map(Option::unwrap_or_default)
+    let context = seq!(=>
+        As.parse(stream),
+        choice!(parsed stream =>
+            Kw::Implicit.map(|_| CoercionContext::Implicit),
+            Kw::Assignment.map(|_| CoercionContext::Assignment)
+        )
+    );
+
+    let Some((_, context)) = context.optional()? else {
+        return Ok(CoercionContext::default());
+    };
+
+    Ok(context)
 }
 
 #[cfg(test)]
@@ -60,7 +68,7 @@ mod tests {
     fn test_create_cast_stmt() {
         test_parser!(
             source = "cast (int as bigint) without function as assignment",
-            parser = create_cast_stmt(),
+            parser = create_cast_stmt,
             expected = CreateCastStmt::new(
                 Typecast::new(Int4, Int8),
                 WithoutFunction,
@@ -73,7 +81,7 @@ mod tests {
     #[test_case("with function foo", WithFunction(FunctionWithArgs::new(vec!["foo".into()], None)))]
     #[test_case("without function", WithoutFunction)]
     fn test_cast_conversion(source: &str, expected: CastConversion) {
-        test_parser!(source, cast_conversion(), expected);
+        test_parser!(source, cast_conversion, expected);
     }
 
     #[test_case("as implicit", CoercionContext::Implicit)]
@@ -81,14 +89,18 @@ mod tests {
     #[test_case("", CoercionContext::Explicit)]
     #[test_case("something else", CoercionContext::Explicit)]
     fn test_cast_context(source: &str, expected: CoercionContext) {
-        test_parser!(source, cast_context(), expected);
+        test_parser!(source, cast_context, expected);
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::function_with_argtypes;
 use crate::combinators::stmt::typecast;
+use crate::result::Optional;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::CastConversion;
 use pg_ast::CastConversion::WithFunction;
 use pg_ast::CastConversion::WithInout;

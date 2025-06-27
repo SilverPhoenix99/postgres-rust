@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `RevokeStmt`
 /// * `RevokeRoleStmt`
-pub(super) fn revoke_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn revoke_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
         REVOKE privileges ON privilege_target FROM grantee_list opt_granted_by opt_drop_behavior
@@ -10,10 +10,14 @@ pub(super) fn revoke_stmt() -> impl Combinator<Output = RawStmt> {
         REVOKE ColId OPTION FOR privilege_list FROM role_list opt_granted_by opt_drop_behavior
     */
 
-    Revoke
-        .map(|_| todo!())
+    let (_, stmt) = seq!(stream => Revoke, parser(|_| todo!()))?;
+
+    Ok(stmt)
 }
 
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_lexer::Keyword::Revoke;

@@ -1,29 +1,35 @@
-pub(super) fn savepoint_stmt() -> impl Combinator<Output = TransactionStmt> {
+pub(super) fn savepoint_stmt(stream: &mut TokenStream) -> scan::Result<TransactionStmt> {
 
     /*
     TransactionStmt:
         SAVEPOINT ColId
     */
 
-    Savepoint
-        .and_right(col_id)
-        .map(TransactionStmt::Savepoint)
+    let (_, name) = seq!(stream => Savepoint, col_id)?;
+
+    let stmt = TransactionStmt::Savepoint(name);
+
+    Ok(stmt)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
 
     #[test]
     fn test_savepoint() {
-        let mut stream = TokenStream::new("savepoint test_ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Savepoint("test_ident".into())), savepoint_stmt().parse(&mut stream));
+        test_parser!(
+            source = "savepoint test_ident",
+            parser = savepoint_stmt,
+            expected = TransactionStmt::Savepoint("test_ident".into())
+        )
     }
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::seq;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::TransactionStmt;
 use pg_lexer::Keyword::Savepoint;

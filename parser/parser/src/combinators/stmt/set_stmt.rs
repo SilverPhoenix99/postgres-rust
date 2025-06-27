@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `ConstraintsSetStmt`
 /// * `VariableSetStmt`
-pub(super) fn set_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn set_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
           SET CONSTRAINTS constraints_set_list constraints_set_mode
@@ -9,42 +9,48 @@ pub(super) fn set_stmt() -> impl Combinator<Output = RawStmt> {
         | SET ( SESSION )? set_rest
     */
 
-    Set.and_right(match_first! {
-        (Constraints, constraints_set_list(), constraints_set_mode())
-            .map(|(_, constraints, mode)|
-                ConstraintsSetStmt::new(constraints, mode)
-            )
-            .map(From::from),
-        Local.and_right(set_rest)
-            .map(VariableSetStmt::local)
-            .map(From::from),
-        optional(Session).and_right(set_rest)
-            .map(VariableSetStmt::session)
-            .map(From::from),
-    })
+    let (_, stmt) = seq!(=>
+        Set.parse(stream),
+        choice!(stream =>
+            seq!(stream => Constraints, constraints_set_list, constraints_set_mode)
+                .map(|(_, constraints, mode)|
+                    ConstraintsSetStmt::new(constraints, mode).into()
+                ),
+            seq!(stream => Local, set_rest)
+                .map(|(_, stmt)|
+                    VariableSetStmt::local(stmt).into()
+                ),
+            seq!(stream => Session.optional(), set_rest)
+                .map(|(_, stmt)|
+                    VariableSetStmt::session(stmt).into()
+                )
+        )
+    )?;
+
+    Ok(stmt)
 }
 
-fn constraints_set_list() -> impl Combinator<Output = OneOrAll<Vec<RelationName>>> {
+fn constraints_set_list(stream: &mut TokenStream) -> scan::Result<OneOrAll<Vec<RelationName>>> {
 
     /*
           ALL
         | qualified_name_list
     */
 
-    match_first! {
+    choice!(parsed stream =>
         All.map(|_| OneOrAll::All),
         qualified_name_list.map(OneOrAll::One)
-    }
+    )
 }
 
-fn constraints_set_mode() -> impl Combinator<Output = ConstraintsSetMode> {
+fn constraints_set_mode(stream: &mut TokenStream) -> scan::Result<ConstraintsSetMode> {
 
     /*
           DEFERRED
         | IMMEDIATE
     */
 
-    or(
+    choice!(parsed stream =>
         Kw::Immediate.map(|_| Immediate),
         Kw::Deferred.map(|_| Deferred)
     )
@@ -53,59 +59,55 @@ fn constraints_set_mode() -> impl Combinator<Output = ConstraintsSetMode> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use pg_ast::SetRest;
     use test_case::test_case;
 
     #[test]
     fn test_set_constraints() {
-        let mut stream = TokenStream::new("set constraints all immediate", DEFAULT_CONFIG);
-        let actual = set_stmt().parse(&mut stream);
-        let expected = ConstraintsSetStmt::new(OneOrAll::All, Immediate);
-        assert_eq!(Ok(expected.into()), actual);
+        test_parser!(
+            source = "set constraints all immediate",
+            parser = set_stmt,
+            expected = ConstraintsSetStmt::new(OneOrAll::All, Immediate)
+        )
     }
 
     #[test]
     fn test_set_local() {
-        let mut stream = TokenStream::new("set local transaction snapshot 'abc'", DEFAULT_CONFIG);
-        let actual = set_stmt().parse(&mut stream);
-        let expected = VariableSetStmt::local(SetRest::TransactionSnapshot("abc".into()));
-        assert_eq!(Ok(expected.into()), actual);
+        test_parser!(
+            source = "set local transaction snapshot 'abc'",
+            parser = set_stmt,
+            expected = VariableSetStmt::local(SetRest::TransactionSnapshot("abc".into()))
+        )
     }
 
     #[test_case("set session transaction snapshot 'abc'")]
     #[test_case("set transaction snapshot 'abc'")]
     fn test_set_session(source: &str) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = set_stmt().parse(&mut stream);
         let expected = VariableSetStmt::session(SetRest::TransactionSnapshot("abc".into()));
-        assert_eq!(Ok(expected.into()), actual);
+        test_parser!(source, set_stmt, expected)
     }
 
     #[test_case("all", OneOrAll::All)]
     #[test_case("_relation", OneOrAll::One(vec![RelationName::new("_relation", None)]))]
     fn test_constraints_set_list(source: &str, expected: OneOrAll<Vec<RelationName>>) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = constraints_set_list().parse(&mut stream);
-        assert_eq!(Ok(expected), actual);
+        test_parser!(source, constraints_set_list, expected)
     }
 
     #[test_case("immediate", Immediate)]
     #[test_case("deferred", Deferred)]
     fn test_constraints_set_mode(source: &str, expected: ConstraintsSetMode) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = constraints_set_mode().parse(&mut stream);
-        assert_eq!(Ok(expected), actual);
+        test_parser!(source, constraints_set_mode, expected)
     }
 }
 
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::optional;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::qualified_name::qualified_name_list;
 use crate::combinators::stmt::set_rest;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::ConstraintsSetMode;
 use pg_ast::ConstraintsSetMode::Deferred;
 use pg_ast::ConstraintsSetMode::Immediate;

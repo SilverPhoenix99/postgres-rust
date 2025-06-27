@@ -1,42 +1,52 @@
-pub(super) fn start_transaction_stmt() -> impl Combinator<Output = TransactionStmt> {
+pub(super) fn start_transaction_stmt(stream: &mut TokenStream) -> scan::Result<TransactionStmt> {
 
     /*
         START TRANSACTION opt_transaction_mode_list
     */
 
-    (
-        Start.and(Transaction).skip(),
+    let (.., tx_modes) = seq!(stream =>
+        Start,
+        Transaction,
         transaction_mode_list.optional()
-    ).map(|(_, tx_modes)|
-        TransactionStmt::Start(tx_modes.unwrap_or_default())
-    )
+    )?;
+
+    let stmt = TransactionStmt::Start(tx_modes.unwrap_or_default());
+
+    Ok(stmt)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use pg_ast::TransactionMode::Deferrable;
     use pg_ast::TransactionMode::ReadOnly;
     use pg_ast::TransactionMode::ReadWrite;
 
     #[test]
     fn test_start_transaction() {
-        let mut stream = TokenStream::new("start transaction", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Start(Vec::new())), start_transaction_stmt().parse(&mut stream));
+        test_parser!(
+            source = "start transaction",
+            parser = start_transaction_stmt,
+            expected = TransactionStmt::Start(Vec::new())
+        )
     }
 
     #[test]
     fn test_start_transaction_with_transaction_modes() {
-        let mut stream = TokenStream::new("start transaction read only, read write deferrable", DEFAULT_CONFIG);
-        let modes = vec![ReadOnly, ReadWrite, Deferrable];
-        assert_eq!(Ok(TransactionStmt::Start(modes)), start_transaction_stmt().parse(&mut stream));
+        test_parser!(
+            source = "start transaction read only, read write deferrable",
+            parser = start_transaction_stmt,
+            expected = TransactionStmt::Start(vec![ReadOnly, ReadWrite, Deferrable])
+        )
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::transaction_mode_list;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::TransactionStmt;
 use pg_lexer::Keyword::Start;
 use pg_lexer::Keyword::Transaction;

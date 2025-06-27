@@ -1,27 +1,32 @@
 /// Alias: `LoadStmt`
-pub(super) fn load_stmt() -> impl Combinator<Output = Box<str>> {
+pub(super) fn load_stmt(stream: &mut TokenStream) -> scan::Result<Box<str>> {
 
     /*
         LOAD SCONST
     */
 
-    Load
-        .and_right(string)
+    let (_, lib_name) = seq!(stream => Load, string)?;
+
+    Ok(lib_name)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
 
     #[test]
     fn test_load_stmt() {
-        let mut stream = TokenStream::new("load 'test string'", DEFAULT_CONFIG);
-        assert_eq!(Ok("test string".into()), load_stmt().parse(&mut stream));
+        test_parser!(
+            source = "load 'test string'",
+            parser = load_stmt,
+            expected = "test string"
+        )
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
-use crate::combinators::foundation::Combinator;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_lexer::Keyword::Load;

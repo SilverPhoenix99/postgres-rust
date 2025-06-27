@@ -14,7 +14,7 @@ pub(super) fn create_user_stmt() -> impl Combinator<Output = RawStmt> {
 fn create_user_mapping() -> impl Combinator<Output = CreateUserMappingStmt> {
 
     (
-        Mapping.and_right(if_not_exists()),
+        Mapping.and_right(if_not_exists),
         For.and_right(auth_ident()),
         Server.and_right(col_id),
         create_generic_options()

@@ -12,7 +12,7 @@ pub(super) fn create_stmt() -> impl Combinator<Output = RawStmt> {
 
     Create.and_right(match_first! {
         create_access_method_stmt().map(From::from),
-        create_cast_stmt().map(From::from),
+        create_cast_stmt.map(From::from),
         create_conversion_stmt().map(From::from),
         create_database_stmt().map(From::from),
         create_role_stmt().map(From::from),

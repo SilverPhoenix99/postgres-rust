@@ -1,31 +1,39 @@
 /// Alias: `SecLabelStmt`
-pub(super) fn security_label_stmt() -> impl Combinator<Output = SecurityLabelStmt> {
+pub(super) fn security_label_stmt(stream: &mut TokenStream) -> scan::Result<SecurityLabelStmt> {
 
     /*
         SECURITY LABEL opt_provider ON label_target IS security_label
     */
 
-    (
-        Security.and(Label).and_right(opt_provider()),
-        On.and_right(label_target()),
-        security_label()
-    )
-        .map(|(provider, target, label)| {
-            SecurityLabelStmt::new(provider, target, label)
-        })
+    let (_, _, provider, _, target, label) = seq!(stream =>
+        Security,
+        Label,
+        opt_provider,
+        On,
+        label_target,
+        security_label
+    )?;
+
+    let stmt = SecurityLabelStmt::new(provider, target, label);
+
+    Ok(stmt)
 }
 
-fn opt_provider() -> impl Combinator<Output = Option<Str>> {
+fn opt_provider(stream: &mut TokenStream) -> scan::Result<Option<Str>> {
 
     /*
         ( FOR NonReservedWord_or_Sconst )?
     */
 
-    For.and_right(non_reserved_word_or_sconst)
-        .optional()
+    let provider = seq!(stream => For, non_reserved_word_or_sconst);
+
+    let provider = provider.optional()?
+        .map(|(_, provider)| provider);
+
+    Ok(provider)
 }
 
-fn label_target() -> impl Combinator<Output = SecurityLabelTarget> {
+fn label_target(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
 
     /*
         ACCESS METHOD name
@@ -63,7 +71,7 @@ fn label_target() -> impl Combinator<Output = SecurityLabelTarget> {
       | VIEW any_name
     */
 
-    match_first! {
+    choice!(parsed stream =>
         access_method.map(AccessMethod),
         aggregate.map(Aggregate),
         collation.map(Collation),
@@ -101,17 +109,19 @@ fn label_target() -> impl Combinator<Output = SecurityLabelTarget> {
         }),
         type_name.map(Type),
         view.map(View),
-    }
+    )
 }
 
-fn security_label() -> impl Combinator<Output = Option<Box<str>>> {
+fn security_label(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
 
     /*
           IS SCONST
         | IS NULL
     */
 
-    Is.and_right(string_or_null)
+    let (_, label) = seq!(stream => Is, string_or_null)?;
+
+    Ok(label)
 }
 
 #[cfg(test)]
@@ -131,7 +141,7 @@ mod tests {
     fn test_security_label_stmt() {
         test_parser!(
             source = "SECURITY LABEL ON access method some_method IS 'foo'",
-            parser = security_label_stmt(),
+            parser = security_label_stmt,
             expected = SecurityLabelStmt::new(
                 None,
                 AccessMethod("some_method".into()),
@@ -143,7 +153,7 @@ mod tests {
     #[test_case("", None)]
     #[test_case("for 'foo'", Some("foo".into()))]
     fn test_opt_provider(source: &str, expected: Option<Str>) {
-        test_parser!(source, opt_provider(), expected);
+        test_parser!(source, opt_provider, expected);
     }
 
     #[test_case("access method some_method", AccessMethod("some_method".into()))]
@@ -195,17 +205,18 @@ mod tests {
     #[test_case("type int", Type(Int4.into()))]
     #[test_case("view some_view", View(vec!["some_view".into()]))]
     fn test_label_target(source: &str, expected: SecurityLabelTarget) {
-        test_parser!(source, label_target(), expected)
+        test_parser!(source, label_target, expected)
     }
 
     #[test_case("is 'abc'", Some("abc".into()))]
     #[test_case("is null", None)]
     fn test_comment_text(source: &str, expected: Option<Box<str>>) {
-        test_parser!(source, security_label(), expected)
+        test_parser!(source, security_label, expected)
     }
 }
 
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::stmt::access_method;
@@ -240,6 +251,9 @@ use crate::combinators::stmt::view;
 use crate::combinators::stmt::Foreign;
 use crate::combinators::stmt::TextSearch;
 use crate::combinators::string_or_null;
+use crate::result::Optional;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::SecurityLabelStmt;
 use pg_ast::SecurityLabelTarget;
 use pg_ast::SecurityLabelTarget::AccessMethod;

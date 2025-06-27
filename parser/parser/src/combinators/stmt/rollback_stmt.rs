@@ -1,4 +1,4 @@
-pub(super) fn rollback_stmt() -> impl Combinator<Output = TransactionStmt> {
+pub(super) fn rollback_stmt(stream: &mut TokenStream) -> scan::Result<TransactionStmt> {
 
     /*
         ROLLBACK PREPARED SCONST
@@ -7,29 +7,30 @@ pub(super) fn rollback_stmt() -> impl Combinator<Output = TransactionStmt> {
         ROLLBACK opt_transaction opt_transaction_chain
     */
 
-    Rollback.and_right(
-        match_first!{
-            Prepared
-                .and_right(string)
-                .map(RollbackPrepared),
-            opt_transaction.and_right(
-                match_first!{
-                    To.and(Savepoint.optional())
-                        .and_right(col_id)
-                        .map(RollbackTo),
-                    opt_transaction_chain
+    seq!(=>
+        Rollback.parse(stream),
+        choice!(stream =>
+            seq!(stream => Prepared, string)
+                .map(|(_, name)| RollbackPrepared(name)),
+            seq!(=>
+                opt_transaction(stream),
+                choice!(stream =>
+                    seq!(stream => To, Savepoint.optional(), col_id)
+                        .map(|(.., name)| RollbackTo(name)),
+                    opt_transaction_chain(stream)
                         .map(|chain| TransactionStmt::Rollback { chain })
-                }
+                )
             )
-        }
+                .map(|(_, stmt)| stmt)
+        )
     )
+        .map(|(_, stmt)| stmt)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use test_case::test_case;
 
     #[test_case("rollback", TransactionStmt::Rollback { chain: false })]
@@ -44,18 +45,19 @@ mod tests {
     #[test_case("rollback transaction to savepoint test_ident", TransactionStmt::RollbackTo("test_ident".into()))]
     #[test_case("rollback prepared 'test-string'", TransactionStmt::RollbackPrepared("test-string".into()))]
     fn test_rollback(source: &str, expected: TransactionStmt) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = rollback_stmt().parse(&mut stream);
-        assert_eq!(Ok(expected), actual);
+        test_parser!(source, rollback_stmt, expected)
     }
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_transaction;
 use crate::combinators::opt_transaction_chain;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::TransactionStmt;
 use pg_ast::TransactionStmt::RollbackPrepared;
 use pg_ast::TransactionStmt::RollbackTo;

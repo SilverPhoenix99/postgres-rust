@@ -1,16 +1,20 @@
 /// Alias: `UnlistenStmt`
-pub(super) fn unlisten_stmt() -> impl Combinator<Output = OneOrAll<Str>> {
+pub(super) fn unlisten_stmt(stream: &mut TokenStream) -> scan::Result<OneOrAll<Str>> {
 
     /*
         UNLISTEN '*'
         UNLISTEN ColId
     */
 
-    Unlisten
-        .and_right(match_first!{
+    let (_, stmt) = seq!(=>
+        Unlisten.parse(stream),
+        choice!(parsed stream =>
             Mul.map(|_| OneOrAll::All),
             col_id.map(OneOrAll::One)
-        })
+        )
+    )?;
+
+    Ok(stmt)
 }
 
 #[cfg(test)]
@@ -24,13 +28,16 @@ mod tests {
     #[test_case("unlisten test_name", OneOrAll::One("test_name".into()))]
     fn test_unlisten(source: &str, expected: OneOrAll<Str>) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(expected), unlisten_stmt().parse(&mut stream));
+        assert_eq!(Ok(expected), unlisten_stmt(&mut stream));
     }
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::OneOrAll;
 use pg_basics::Str;
 use pg_lexer::Keyword::Unlisten;

@@ -1,4 +1,4 @@
-pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
+pub(super) fn privilege_target(stream: &mut TokenStream) -> scan::Result<PrivilegeTarget> {
 
     /*
         ALL FUNCTIONS IN SCHEMA name_list
@@ -23,71 +23,59 @@ pub(super) fn privilege_target() -> impl Combinator<Output = PrivilegeTarget> {
       | ( TABLE )? qualified_name_list
     */
 
-    match_first! {
-        All.and_right(match_first! {
-            (Functions, In, Kw::Schema)
-                .and_right(name_list)
-                .map(AllFunctionsInSchema),
-            (Procedures, In, Kw::Schema)
-                .and_right(name_list)
-                .map(AllProceduresInSchema),
-            (Routines, In, Kw::Schema)
-                .and_right(name_list)
-                .map(AllRoutinesInSchema),
-            (Sequences, In, Kw::Schema)
-                .and_right(name_list)
-                .map(AllSequencesInSchema),
-            (Tables, In, Kw::Schema)
-                .and_right(name_list)
-                .map(AllTablesInSchema),
-        }),
-        Kw::Database
-            .and_right(name_list)
-            .map(Database),
-        Kw::Domain
-            .and_right(any_name_list)
-            .map(Domain),
-        Foreign.and_right(match_first! {
-            (Data, Wrapper)
-                .and_right(name_list)
-                .map(ForeignDataWrapper),
-            Server
-                .and_right(name_list)
-                .map(ForeignServer),
-        }),
-        Kw::Function
-            .and_right(function_with_argtypes_list)
-            .map(Function),
-        Kw::Language
-            .and_right(name_list)
-            .map(Language),
-        (Large, Object)
-            .and_right(signed_number_list)
-            .map(LargeObject),
-        Parameter
-            .and_right(parameter_name_list)
-            .map(ParameterAcl),
-        Kw::Procedure
-            .and_right(function_with_argtypes_list)
-            .map(Procedure),
-        Kw::Routine
-            .and_right(function_with_argtypes_list)
-            .map(Routine),
-        Kw::Schema
-            .and_right(name_list)
-            .map(Schema),
-        Kw::Sequence
-            .and_right(qualified_name_list)
-            .map(Sequence),
-        Kw::Tablespace
-            .and_right(name_list)
-            .map(Tablespace),
-        Kw::Type
-            .and_right(any_name_list)
-            .map(Type),
-        Kw::Table.optional()
-            .and_right(qualified_name_list)
-            .map(Table)
+    choice!{stream =>
+        seq!(=>
+            All.parse(stream),
+            choice!(stream =>
+                seq!(stream => Functions, In, Kw::Schema, name_list)
+                    .map(|(.., schemas)| AllFunctionsInSchema(schemas)),
+                seq!(stream => Procedures, In, Kw::Schema, name_list)
+                    .map(|(.., schemas)| AllProceduresInSchema(schemas)),
+                seq!(stream => Routines, In, Kw::Schema, name_list)
+                    .map(|(.., schemas)| AllRoutinesInSchema(schemas)),
+                seq!(stream => Sequences, In, Kw::Schema, name_list)
+                    .map(|(.., schemas)| AllSequencesInSchema(schemas)),
+                seq!(stream => Tables, In, Kw::Schema, name_list)
+                    .map(|(.., schemas)| AllTablesInSchema(schemas)),
+            )
+        )
+            .map(|(_, target)| target),
+        seq!(stream => Kw::Database, name_list)
+            .map(|(_, db_names)| Database(db_names)),
+        seq!(stream => Kw::Domain, any_name_list)
+            .map(|(_, domains)| Domain(domains)),
+        seq!(=>
+            Foreign.parse(stream),
+            choice!(stream =>
+                seq!(stream => Data, Wrapper, name_list)
+                    .map(|(.., fdws)| ForeignDataWrapper(fdws)),
+                seq!(stream => Server, name_list)
+                    .map(|(_, servers)| ForeignServer(servers)),
+            )
+        )
+            .map(|(_, target)| target),
+        seq!(stream => Kw::Function, function_with_argtypes_list)
+            .map(|(_, signatures)| Function(signatures)),
+        seq!(stream => Kw::Language, name_list)
+            .map(|(_, languages)| Language(languages)),
+        seq!(stream => Large, Object, signed_number_list)
+            .map(|(.., lob_ids)| LargeObject(lob_ids)),
+        seq!(stream => Parameter, parameter_name_list)
+            .map(|(_, config_parameters)| ParameterAcl(config_parameters)),
+        seq!(stream => Kw::Procedure, function_with_argtypes_list)
+            .map(|(_, signatures)| Procedure(signatures)),
+        seq!(stream => Kw::Routine, function_with_argtypes_list)
+            .map(|(_, signatures)| Routine(signatures)),
+        seq!(stream => Kw::Schema, name_list)
+            .map(|(_, schemas)| Schema(schemas)),
+        seq!(stream => Kw::Sequence, qualified_name_list)
+            .map(|(_, sequences)| Sequence(sequences)),
+        seq!(stream => Kw::Tablespace, name_list)
+            .map(|(_, tablespaces)| Tablespace(tablespaces)),
+        seq!(stream => Kw::Type, any_name_list)
+            .map(|(_, types)| Type(types)),
+        seq!(stream => Kw::Table.optional(), qualified_name_list)
+            .map(|(_, tables)| Table(tables))
     }
 }
 
@@ -217,7 +205,7 @@ mod tests {
         ])
     )]
     fn test_privilege_target(source: &str, expected: PrivilegeTarget) {
-        test_parser!(source, privilege_target(), expected)
+        test_parser!(source, privilege_target, expected)
     }
 
     #[test]
@@ -257,17 +245,16 @@ mod tests {
 
 use crate::combinators::any_name_list;
 use crate::combinators::col_id;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::function_with_argtypes_list;
 use crate::combinators::name_list;
-use crate::combinators::qualified_name_list;
 use crate::combinators::signed_number;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::PrivilegeTarget;
-use pg_ast::PrivilegeTarget::AllFunctionsInSchema;
+use pg_ast::PrivilegeTarget::{AllFunctionsInSchema, Function, Language, LargeObject, ParameterAcl, Procedure, Routine, Schema, Sequence, Table, Tablespace, Type};
 use pg_ast::PrivilegeTarget::AllProceduresInSchema;
 use pg_ast::PrivilegeTarget::AllRoutinesInSchema;
 use pg_ast::PrivilegeTarget::AllSequencesInSchema;
@@ -276,28 +263,14 @@ use pg_ast::PrivilegeTarget::Database;
 use pg_ast::PrivilegeTarget::Domain;
 use pg_ast::PrivilegeTarget::ForeignDataWrapper;
 use pg_ast::PrivilegeTarget::ForeignServer;
-use pg_ast::PrivilegeTarget::Function;
-use pg_ast::PrivilegeTarget::Language;
-use pg_ast::PrivilegeTarget::LargeObject;
-use pg_ast::PrivilegeTarget::ParameterAcl;
-use pg_ast::PrivilegeTarget::Procedure;
-use pg_ast::PrivilegeTarget::Routine;
-use pg_ast::PrivilegeTarget::Schema;
-use pg_ast::PrivilegeTarget::Sequence;
-use pg_ast::PrivilegeTarget::Table;
-use pg_ast::PrivilegeTarget::Tablespace;
-use pg_ast::PrivilegeTarget::Type;
 use pg_ast::SignedNumber;
 use pg_basics::QualifiedName;
 use pg_lexer::Keyword as Kw;
-use pg_lexer::Keyword::All;
+use pg_lexer::Keyword::{All, Large, Object, Parameter};
 use pg_lexer::Keyword::Data;
 use pg_lexer::Keyword::Foreign;
 use pg_lexer::Keyword::Functions;
 use pg_lexer::Keyword::In;
-use pg_lexer::Keyword::Large;
-use pg_lexer::Keyword::Object;
-use pg_lexer::Keyword::Parameter;
 use pg_lexer::Keyword::Procedures;
 use pg_lexer::Keyword::Routines;
 use pg_lexer::Keyword::Sequences;
@@ -306,3 +279,5 @@ use pg_lexer::Keyword::Tables;
 use pg_lexer::Keyword::Wrapper;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::Dot;
+use crate::combinators::function_with_argtypes::function_with_argtypes_list;
+use crate::combinators::qualified_name::qualified_name_list;

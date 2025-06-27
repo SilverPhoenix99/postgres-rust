@@ -1,14 +1,18 @@
 /// Alias: `FetchStmt`
-pub(super) fn move_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn move_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
         MOVE fetch_args
     */
 
-    Move
-        .map(|_| todo!())
+    let (_, stmt) = seq!(stream => Move, parser(|_| todo!()))?;
+
+    Ok(stmt)
 }
 
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_lexer::Keyword::Move;

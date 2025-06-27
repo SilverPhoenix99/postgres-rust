@@ -1,8 +1,9 @@
-pub(super) fn if_not_exists() -> impl Combinator<Output = bool> {
+pub(super) fn if_not_exists(stream: &mut TokenStream) -> scan::Result<bool> {
 
-    (If, Not, Exists)
-        .optional()
-        .map(|opt| opt.is_some())
+    let opt = seq!(stream => If, Not, Exists)
+        .optional()?;
+
+    Ok(opt.is_some())
 }
 
 #[cfg(test)]
@@ -15,11 +16,14 @@ mod tests {
     #[test_case("", false)]
     #[test_case("something else", false)]
     fn test_(source: &str, expected: bool) {
-        test_parser!(source, if_not_exists(), expected)
+        test_parser!(source, if_not_exists, expected)
     }
 }
 
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::seq;
+use crate::result::Optional;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_lexer::Keyword::Exists;
 use pg_lexer::Keyword::If;
 use pg_lexer::Keyword::Not;

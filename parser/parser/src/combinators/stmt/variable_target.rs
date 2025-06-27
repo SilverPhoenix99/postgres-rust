@@ -18,7 +18,7 @@ pub(super) fn variable_target(stream: &mut TokenStream) -> scan::Result<Variable
         all_or_var_name(stream)
             .map(|reset| match reset {
                 OneOrAll::All => VariableTarget::All,
-                OneOrAll::One(name) => VariableTarget::Variable{ name }
+                OneOrAll::One(name) => VariableTarget::Variable { name }
             })
     )
 }

@@ -1,4 +1,4 @@
-pub(super) fn release_savepoint_stmt() -> impl Combinator<Output = TransactionStmt> {
+pub(super) fn release_savepoint_stmt(stream: &mut TokenStream) -> scan::Result<TransactionStmt> {
 
     /*
     TransactionStmt:
@@ -6,33 +6,40 @@ pub(super) fn release_savepoint_stmt() -> impl Combinator<Output = TransactionSt
         RELEASE ColId
     */
 
-    Release
-        .and(Savepoint.optional())
-        .and_right(col_id)
-        .map(TransactionStmt::Release)
+    let (.., name) = seq!(stream => Release, Savepoint.optional(), col_id)?;
+
+    Ok(TransactionStmt::Release(name))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
 
     #[test]
     fn test_release() {
-        let mut stream = TokenStream::new("release test_ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Release("test_ident".into())), release_savepoint_stmt().parse(&mut stream));
+        test_parser!(
+            source = "release test_ident",
+            parser = release_savepoint_stmt,
+            expected = TransactionStmt::Release("test_ident".into())
+        )
     }
 
     #[test]
     fn test_release_savepoint() {
-        let mut stream = TokenStream::new("release savepoint test_ident", DEFAULT_CONFIG);
-        assert_eq!(Ok(TransactionStmt::Release("test_ident".into())), release_savepoint_stmt().parse(&mut stream));
+        test_parser!(
+            source = "release savepoint test_ident",
+            parser = release_savepoint_stmt,
+            expected = TransactionStmt::Release("test_ident".into())
+        )
     }
 }
 
 use crate::combinators::col_id;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::TransactionStmt;
 use pg_lexer::Keyword::Release;
 use pg_lexer::Keyword::Savepoint;
