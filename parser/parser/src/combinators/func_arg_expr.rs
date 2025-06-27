@@ -1,13 +1,13 @@
-pub(super) fn func_arg_list() -> impl Combinator<Output = Vec<FuncArgExpr>> {
+pub(super) fn func_arg_list(stream: &mut TokenStream<'_>) -> scan::Result<Vec<FuncArgExpr>> {
 
     /*
         func_arg_expr ( COMMA func_arg_expr )*
     */
 
-    many!(sep = Comma, func_arg_expr())
+    many!(stream => sep = Comma, func_arg_expr)
 }
 
-pub(super) fn func_arg_expr() -> impl Combinator<Output = FuncArgExpr> {
+pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<FuncArgExpr> {
 
     /*
         type_function_name COLON_EQUALS a_expr
@@ -15,23 +15,20 @@ pub(super) fn func_arg_expr() -> impl Combinator<Output = FuncArgExpr> {
       | a_expr
     */
 
-    parser(|stream| {
-
-        match stream.peek2_option() {
-            Some((first, Operator(ColonEquals | EqualsGreater))) if is_type_function_name(first) => {
-                let name = type_function_name(stream)?;
-                or(ColonEquals, EqualsGreater).parse(stream)?;
-                let value = a_expr().parse(stream)?;
-                let arg = NamedValue { name, value };
-                Ok(arg)
-            },
-            _ => {
-                let value = a_expr().parse(stream)?;
-                let arg = Unnamed(value);
-                Ok(arg)
-            },
-        }
-    })
+    match stream.peek2_option() {
+        Some((first, Operator(ColonEquals | EqualsGreater))) if is_type_function_name(first) => {
+            let name = type_function_name(stream)?;
+            choice!(parsed stream => ColonEquals, EqualsGreater).required()?;
+            let value = a_expr().parse(stream)?;
+            let arg = NamedValue { name, value };
+            Ok(arg)
+        },
+        _ => {
+            let value = a_expr().parse(stream)?;
+            let arg = Unnamed(value);
+            Ok(arg)
+        },
+    }
 }
 
 fn is_type_function_name(tok: &TokenValue) -> bool {
@@ -55,20 +52,21 @@ mod tests {
     #[test_case("foo := 2", NamedValue { name: "foo".into(), value: IntegerConst(2) })]
     #[test_case("bar => 3", NamedValue { name: "bar".into(), value: IntegerConst(3) })]
     fn test_func_arg_expr(source: &str, expected: FuncArgExpr) {
-        test_parser!(source, func_arg_expr(), expected);
+        test_parser!(source, func_arg_expr, expected);
     }
 }
 
 use crate::combinators::expr::a_expr;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::or;
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::type_function_name;
-use crate::stream::TokenValue;
+use crate::result::Required;
+use crate::scan;
 use crate::stream::TokenValue::Identifier;
 use crate::stream::TokenValue::Keyword;
 use crate::stream::TokenValue::Operator;
+use crate::stream::{TokenStream, TokenValue};
 use pg_ast::FuncArgExpr;
 use pg_ast::FuncArgExpr::NamedValue;
 use pg_ast::FuncArgExpr::Unnamed;

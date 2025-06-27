@@ -1,4 +1,4 @@
-pub(super) fn func_arg() -> impl Combinator<Output = FunctionParameter> {
+pub(super) fn func_arg(stream: &mut TokenStream<'_>) -> scan::Result<FunctionParameter> {
 
     /*
           arg_class ( type_function_name )? func_type
@@ -9,74 +9,69 @@ pub(super) fn func_arg() -> impl Combinator<Output = FunctionParameter> {
     // The 1st token of `func_type` might be a `type_function_name`, so this production is LL(2),
     // due to the conflict with the optional argument name which is also `type_function_name`.
 
-    arg_class().optional().chain(|mut mode, stream| {
+    let mut mode = arg_class(stream).optional()?;
 
-        let (first, second) = stream.peek2();
+    let has_name = stream.peek2_option()
+        .map(|(first, second)| is_arg_name(first, second))
+        .unwrap_or_default();
 
-        let arg_name = if is_arg_name(&first, &second) {
-            // It's the argument name.
-            // Regardless of `arg_class` matching or not, `is_arg_name()` returned `true`,
-            // so this is guaranteed to be `Some` argument name.
-            Some(type_function_name.required().parse(stream)?)
-        }
-        else {
-            None
-        };
+    let arg_name = if has_name {
+        // It's the argument name.
+        // Regardless of `arg_class` matching or not, `is_arg_name()` returned `true`,
+        // so this is guaranteed to be `Some` argument name.
+        Some(type_function_name(stream).required()?)
+    }
+    else {
+        None
+    };
 
-        if mode.is_none() && arg_name.is_some() {
-            // `arg_class` didn't match before the argument name, so it might still match after.
-            mode = arg_class().optional().parse(stream)?;
-        }
+    if mode.is_none() && arg_name.is_some() {
+        // `arg_class` didn't match before the argument name, so it might still match after.
+        mode = arg_class(stream).optional()?;
+    }
 
-        let func_type = if mode.is_none() && arg_name.is_none() {
-            // Nothing matched before, so it's still optional
-            func_type(stream)?
-        }
-        else {
-            // At least 1 matched
-            func_type(stream).required()?
-        };
+    let func_type = if mode.is_none() && arg_name.is_none() {
+        // Nothing matched before, so it's still optional
+        func_type(stream)?
+    }
+    else {
+        // At least 1 matched
+        func_type(stream).required()?
+    };
 
-        // In case `arg_class` didn't match, there's still a default that can be applied.
-        let mode = mode.unwrap_or_default();
+    // In case `arg_class` didn't match, there's still a default that can be applied.
+    let mode = mode.unwrap_or_default();
 
-        let func_arg = FunctionParameter::new(arg_name, mode, func_type);
-        Ok(func_arg)
-    })
+    let func_arg = FunctionParameter::new(arg_name, mode, func_type);
+    Ok(func_arg)
 }
 
-fn arg_class() -> impl Combinator<Output = FunctionParameterMode> {
-    use FunctionParameterMode::*;
+fn arg_class(stream: &mut TokenStream<'_>) -> scan::Result<FunctionParameterMode> {
 
-    match_first!(
-        Kw::In.and_right(
-            Kw::Out.optional()
-                .map(|out| if out.is_some() { InOut } else { In })
-        ),
-        Kw::Out.map(|_| Out),
-        Kw::Inout.map(|_| InOut),
-        Kw::Variadic.map(|_| Variadic),
+    choice!(stream =>
+        seq!(stream => Kw::In, Kw::Out.optional())
+            .map(|(_, out)| if out.is_some() { InOut } else { In }),
+        Kw::Out.parse(stream).map(|_| Out),
+        Kw::Inout.parse(stream).map(|_| InOut),
+        Kw::Variadic.parse(stream).map(|_| Variadic),
     )
 }
 
-fn is_arg_name(
-    first: &eof::Result<&TokenValue>,
-    second: &eof::Result<&TokenValue>,
-) -> bool {
+fn is_arg_name(first: &TokenValue, second: &TokenValue) -> bool {
 
     match (first, second) {
 
-        (Ok(Identifier(_)), Ok(Identifier(_) | Keyword(_))) => true,
+        (Identifier(_), Identifier(_) | Keyword(_)) => true,
 
-        (Ok(Keyword(_)), Ok(Identifier(_))) => true,
+        (Keyword(_), Identifier(_)) => true,
 
         // Double is an Unreserved keyword that can conflict with the argument name.
         // E.g.:
         // * In `double double precision`, the 1st `double` will be the argument name.
         // * In `double precision`, the argument is anonymous.
-        (Ok(Keyword(Double)), Ok(Keyword(kw2))) => *kw2 != Precision,
+        (Keyword(Double), Keyword(kw2)) => *kw2 != Precision,
 
-        (Ok(Keyword(kw)), Ok(Keyword(_)))
+        (Keyword(kw), Keyword(_))
             => matches!(kw.category(), Unreserved | TypeFuncName),
 
         _ => false
@@ -86,8 +81,7 @@ fn is_arg_name(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use pg_ast::FuncType;
     use pg_ast::SetOf;
     use pg_ast::Type;
@@ -109,16 +103,13 @@ mod tests {
         type_name: TypeName,
         set_of: SetOf
     ) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = func_arg().parse(&mut stream);
-
         let expected = FunctionParameter::new(
             arg_name,
             mode,
             FuncType::Type(Type::new(type_name, None, set_of))
         );
 
-        assert_eq!(Ok(expected), actual);
+        test_parser!(source, func_arg, expected)
     }
 
     #[test_case("in", FunctionParameterMode::In)]
@@ -127,22 +118,28 @@ mod tests {
     #[test_case("inout", FunctionParameterMode::InOut)]
     #[test_case("variadic", FunctionParameterMode::Variadic)]
     fn test_arg_class(source: &str, expected: FunctionParameterMode) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(expected), arg_class().parse(&mut stream));
+        test_parser!(source, arg_class, expected)
     }
 }
 
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_type;
 use crate::combinators::type_function_name;
-use crate::eof;
+use crate::result::Optional;
 use crate::result::Required;
+use crate::scan;
+use crate::stream::TokenStream;
 use crate::stream::TokenValue;
 use crate::stream::TokenValue::Identifier;
 use crate::stream::TokenValue::Keyword;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionParameterMode;
+use pg_ast::FunctionParameterMode::In;
+use pg_ast::FunctionParameterMode::InOut;
+use pg_ast::FunctionParameterMode::Out;
+use pg_ast::FunctionParameterMode::Variadic;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Double;
 use pg_lexer::Keyword::Precision;

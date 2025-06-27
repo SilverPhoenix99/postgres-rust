@@ -81,7 +81,7 @@ fn func_args_list(stream: &mut TokenStream) -> scan::Result<Vec<FunctionParamete
         func_arg ( ',' func_arg )*
     */
 
-    many!(stream => sep = Comma, func_arg())
+    many!(stream => sep = Comma, func_arg)
 }
 
 fn func_column_name(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {

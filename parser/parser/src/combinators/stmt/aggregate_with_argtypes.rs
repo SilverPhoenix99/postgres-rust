@@ -66,7 +66,7 @@ fn aggr_args_list(stream: &mut TokenStream) -> scan::Result<Vec<FunctionParamete
 
 fn aggr_arg(stream: &mut TokenStream) -> scan::Result<FunctionParameter> {
 
-    let (param, loc) = located!(stream => func_arg())?;
+    let (param, loc) = located!(stream => func_arg)?;
 
     if matches!(param.mode(), Mode::Default | Mode::In | Mode::Variadic) {
         return Ok(param)
