@@ -96,13 +96,16 @@ macro_rules! many {
     };
 
     (=> $combinator:expr) => {
-        many!(=> pre = $combinator, $combinator)
+        $crate::combinators::foundation::many!(=>
+            pre = $combinator,
+            $combinator
+        )
     };
 
     ($stream:expr => pre = $prefix:expr, $combinator:expr) => {{
         let prefix = $prefix;
         let combinator = $combinator;
-        many!(=>
+        $crate::combinators::foundation::many!(=>
             pre = $crate::combinators::foundation::Combinator::parse(&prefix, $stream),
             $crate::combinators::foundation::Combinator::parse(&combinator, $stream)
         )
@@ -111,7 +114,7 @@ macro_rules! many {
     ($stream:ident => sep = $separator:expr, $combinator:expr) => {{
         let separator = $separator;
         let combinator = $combinator;
-        many!(=>
+        $crate::combinators::foundation::many!(=>
             sep = $crate::combinators::foundation::Combinator::parse(&separator, $stream),
             $crate::combinators::foundation::Combinator::parse(&combinator, $stream)
         )
@@ -119,24 +122,34 @@ macro_rules! many {
 
     ($stream:ident => $combinator:expr) => {{
         let combinator = $combinator;
-        many!(=> $crate::combinators::foundation::Combinator::parse(&combinator, $stream))
+        $crate::combinators::foundation::many!(=>
+            $crate::combinators::foundation::Combinator::parse(&combinator, $stream)
+        )
     }};
 
     (pre = $prefix:expr, $combinator:expr) => {
         $crate::combinators::foundation::parser(|stream| {
-            many!(stream => pre = $prefix, $combinator)
+            $crate::combinators::foundation::many!(stream =>
+                pre = $prefix,
+                $combinator
+            )
         })
     };
 
     (sep = $separator:expr, $combinator:expr) => {
         $crate::combinators::foundation::parser(|stream| {
-            many!(stream => sep = $separator, $combinator)
+            $crate::combinators::foundation::many!(stream =>
+                sep = $separator,
+                $combinator
+            )
         })
     };
 
     ($combinator:expr) => {
         $crate::combinators::foundation::parser(|stream| {
-            many!(stream => $combinator)
+            $crate::combinators::foundation::many!(stream =>
+                $combinator
+            )
         })
     };
 }

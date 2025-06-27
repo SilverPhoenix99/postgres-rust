@@ -32,7 +32,7 @@ macro_rules! seq {
         $($tail:expr),+
         $(,)?
     ) => {
-        seq!(=>
+        $crate::combinators::foundation::seq!(=>
             $crate::combinators::foundation::Combinator::parse(&$head, $stream),
             $(
                 $crate::combinators::foundation::Combinator::parse(&$tail, $stream)

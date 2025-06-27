@@ -8,7 +8,9 @@ macro_rules! located {
 
     ($parser:expr) => {
         $crate::combinators::foundation::parser(|stream| {
-            located!(stream => $parser)
+            $crate::combinators::foundation::located!(stream =>
+                $parser
+            )
         })
     };
 }

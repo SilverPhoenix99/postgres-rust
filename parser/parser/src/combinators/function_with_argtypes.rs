@@ -148,6 +148,7 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg;
 use crate::result::Optional;
 use crate::scan;

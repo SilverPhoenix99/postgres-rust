@@ -1,7 +1,7 @@
 macro_rules! between {
 
     (paren : $stream:ident => $content:expr) => {{
-        between!($stream =>
+        $crate::combinators::foundation::between!($stream =>
             {
                 let p = $crate::combinators::foundation::Combinator::skip(pg_lexer::OperatorKind::OpenParenthesis);
                 $crate::combinators::foundation::Combinator::parse(&p, $stream)
@@ -15,7 +15,7 @@ macro_rules! between {
     }};
 
     (square : $stream:ident => $content:expr) => {{
-        between!($stream =>
+        $crate::combinators::foundation::between!($stream =>
             {
                 let p = $crate::combinators::foundation::Combinator::skip(pg_lexer::OperatorKind::OpenBracket);
                 $crate::combinators::foundation::Combinator::parse(&p, $stream)
@@ -35,7 +35,11 @@ macro_rules! between {
 
     ($before:ident, $content:expr, $after:expr) => {
         $crate::combinators::foundation::parser(|stream| {
-            between!(stream => $before, $content, $after)
+            $crate::combinators::foundation::between!(stream =>
+                $before,
+                $content,
+                $after
+            )
         })
     };
 }

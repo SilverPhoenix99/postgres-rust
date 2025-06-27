@@ -30,7 +30,7 @@ macro_rules! choice {
         $($tail:expr),+
         $(,)?
     ) => {
-        choice!($stream =>
+        $crate::combinators::foundation::choice!($stream =>
             $crate::combinators::foundation::Combinator::parse(&$head, $stream),
             $(
                 $crate::combinators::foundation::Combinator::parse(&$tail, $stream)
@@ -40,7 +40,7 @@ macro_rules! choice {
 
     ($head:expr, $($tail:expr),+ $(,)?) => {
         $crate::combinators::foundation::parser(|stream| {
-            choice!(parsed stream =>
+            $crate::combinators::foundation::choice!(parsed stream =>
                 $crate::combinators::foundation::Combinator::map($head, From::from),
                 $(
                     $crate::combinators::foundation::Combinator::map($tail, From::from)
