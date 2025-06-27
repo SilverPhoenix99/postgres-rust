@@ -76,7 +76,7 @@ pub(super) fn set_rest_more(stream: &mut TokenStream) -> scan::Result<SetRestMor
         (Kw::Role, non_reserved_word_or_sconst)
             .right()
             .map(SetRestMore::Role),
-        (Xml, OptionKw, document_or_content())
+        (Xml, OptionKw, document_or_content)
             .map(|(.., option)| SetRestMore::XmlOption(option)),
         set_var_name
     )

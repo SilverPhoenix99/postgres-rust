@@ -64,8 +64,8 @@ fn def_acl_action() -> impl Combinator<Output = GrantStmt> {
             let grant = (
                 Grant.and_right(privileges),
                 On.and_right(def_acl_privilege_target()),
-                To.and_right(grantee_list()),
-                opt_grant_option()
+                To.and_right(grantee_list),
+                opt_grant_option
             );
 
             grant.map(|(privileges, object_type, grantees, grant_option)|
@@ -80,8 +80,8 @@ fn def_acl_action() -> impl Combinator<Output = GrantStmt> {
                     .map(|grant_option| grant_option.is_some()),
                 privileges,
                 On.and_right(def_acl_privilege_target()),
-                FromKw.and_right(grantee_list()),
-                opt_drop_behavior()
+                FromKw.and_right(grantee_list),
+                opt_drop_behavior
             );
 
             revoke.map(|(_, grant_option, privileges, object_type, grantees, drop_behavior)|

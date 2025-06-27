@@ -3,7 +3,7 @@ pub(super) fn signed_number(stream: &mut TokenStream) -> scan::Result<SignedNumb
     
     // ('+' | '-')? (ICONST | FCONST)
 
-    let sign = sign.maybe_match().parse(stream)?;
+    let sign = sign(stream).maybe_match()?;
     let num = number.map(SignedNumber::from);
 
     let negative = match sign {
@@ -11,7 +11,7 @@ pub(super) fn signed_number(stream: &mut TokenStream) -> scan::Result<SignedNumb
         Some(sign) => sign == Minus,
     };
 
-    let mut num = num.required().parse(stream)?;
+    let mut num = num.parse(stream).required()?;
     if negative {
         num = num.neg();
     }
@@ -29,14 +29,12 @@ pub(super) fn signed_i32_literal(stream: &mut TokenStream) -> scan::Result<i32> 
 
     // ('+' | '-')? ICONST
 
-    let sign = sign.maybe_match().parse(stream)?;
+    let sign = sign(stream).maybe_match()?;
 
     let int = match sign {
         None => i32_literal(stream)?,
         Some(sign) => {
-            let mut num = i32_literal
-                .parse(stream)
-                .required()?;
+            let mut num = i32_literal(stream).required()?;
             if sign == Minus {
                 num = -num;
             }
@@ -87,6 +85,7 @@ use crate::combinators::foundation::integer;
 use crate::combinators::foundation::number;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::sign;
+use crate::result::MaybeMatch;
 use crate::result::Required;
 use crate::scan;
 use crate::stream::TokenStream;

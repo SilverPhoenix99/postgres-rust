@@ -53,6 +53,7 @@ mod var_name;
 mod var_value;
 mod window_specification;
 
+// Entrypoint:
 pub(super) use stmtmulti::stmtmulti;
 
 #[allow(unused_imports)] // TODO: eventually remove

@@ -1,6 +1,6 @@
 /// Alias: `BareColLabel`
-pub(super) fn bare_col_label() -> impl Combinator<Output = Str> {
-    match_first!(
+pub(super) fn bare_col_label(stream: &mut TokenStream<'_>) -> scan::Result<Str> {
+    choice!(parsed stream =>
         identifier.map(From::from),
         keyword_if(|kw| kw.details().bare()).map(From::from)
     )
@@ -17,13 +17,15 @@ mod tests {
         let source = "sequence xxyyzz";
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
 
-        assert_eq!(Ok("sequence".into()), bare_col_label().parse(&mut stream));
-        assert_eq!(Ok("xxyyzz".into()), bare_col_label().parse(&mut stream));
+        assert_eq!(Ok("sequence".into()), bare_col_label(&mut stream));
+        assert_eq!(Ok("xxyyzz".into()), bare_col_label(&mut stream));
     }
 }
 
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::keyword_if;
-use crate::combinators::foundation::match_first;
 use crate::combinators::foundation::Combinator;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_basics::Str;
