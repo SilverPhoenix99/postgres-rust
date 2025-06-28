@@ -10,8 +10,7 @@ pub(super) fn prepare_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
         choice!(stream =>
             seq!(stream => Transaction, string)
                 .map(|(_, tx_id)| PrepareTransactionStmt(tx_id)),
-            col_id
-                .parse(stream)
+            col_id(stream)
                 .map(|_name| todo!())
         )
     )?;

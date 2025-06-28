@@ -25,31 +25,15 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use pg_lexer::Keyword;
+    use test_case::test_case;
 
-    #[test]
-    fn test_optional() {
-        let mut stream = TokenStream::new("precision", DEFAULT_CONFIG);
-        let parser = optional(Keyword::Precision);
-        let actual = parser.parse(&mut stream);
-        assert_eq!(Ok(Some(Keyword::Precision)), actual);
-    }
-
-    #[test]
-    fn test_optional_no_match() {
-        let mut stream = TokenStream::new("abort", DEFAULT_CONFIG);
-        let parser = optional(Keyword::Precision);
-        let actual = parser.parse(&mut stream);
-        assert_eq!(Ok(None), actual);
-    }
-
-    #[test]
-    fn test_optional_eof() {
-        let mut stream = TokenStream::new("", DEFAULT_CONFIG);
-        let parser = optional(Keyword::Precision);
-        let actual = parser.parse(&mut stream);
-        assert_eq!(Ok(None), actual);
+    #[test_case("precision", Some(Keyword::Precision))]
+    #[test_case("abort", None)]
+    #[test_case("", None)]
+    fn test_optional(source: &str, expected: Option<Keyword>) {
+        test_parser!(source, optional(Keyword::Precision), expected)
     }
 }
 

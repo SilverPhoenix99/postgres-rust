@@ -24,7 +24,7 @@ fn semicolons(stream: &mut TokenStream) -> scan::Result<()> {
 
     // Production: ( ';' )+
 
-    many!(=> Semicolon.skip().parse(stream))?;
+    many!(stream => Semicolon.skip())?;
 
     Ok(())
 }

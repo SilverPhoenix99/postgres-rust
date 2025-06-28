@@ -18,8 +18,7 @@ pub(super) fn func_name(stream: &mut TokenStream) -> scan::Result<QualifiedName>
 
     choice!(stream =>
         {
-            TypeFuncName
-                .parse(stream)
+            TypeFuncName.parse(stream)
                 .map(|kw| vec![kw.into()])
         },
         {
@@ -40,8 +39,7 @@ fn column_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
 
     let loc = stream.current_location();
     let name = attrs!(stream =>
-        ColumnName
-            .parse(stream)
+        ColumnName.parse(stream)
             .map(Str::from)
     )?;
 

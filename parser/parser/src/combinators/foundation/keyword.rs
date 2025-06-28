@@ -17,13 +17,11 @@ where
     keyword_result(move |kw| Ok(pred(kw).then_some(kw)))
 }
 
-pub(in crate::combinators) fn any_keyword()
-    -> KeywordCondCombi<
-        impl Fn(Keyword) -> stream::LocatedResult<Keyword>,
-        Keyword
-    >
-{
-    keyword_if(|_| true)
+pub(in crate::combinators) fn any_keyword(stream: &mut TokenStream) -> scan::Result<Keyword> {
+    stream.consume(|tok| match tok {
+        TokenValue::Keyword(kw) => Some(*kw),
+        _ => None
+    })
 }
 
 /// Maps the keyword before consuming it.
@@ -99,30 +97,35 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use pg_lexer::Keyword::Abort;
     use pg_lexer::KeywordCategory::Unreserved;
 
     #[test]
     fn test_keyword() {
-        let mut stream = TokenStream::new("abort", DEFAULT_CONFIG);
-        let actual = Abort.parse(&mut stream);
-        assert_eq!(Ok(Abort), actual);
+        test_parser!(
+            source = "abort",
+            parser = Abort,
+            expected = Abort
+        )
     }
 
     #[test]
     fn test_keyword_category() {
-        let mut stream = TokenStream::new("abort", DEFAULT_CONFIG);
-        let actual = Unreserved.parse(&mut stream);
-        assert_eq!(Ok(Abort), actual);
+        test_parser!(
+            source = "abort",
+            parser = Unreserved,
+            expected = Abort
+        )
     }
 
     #[test]
     fn test_keyword_if() {
-        let mut stream = TokenStream::new("abort", DEFAULT_CONFIG);
-        let parser = keyword_if(|kw| kw.category() == Unreserved);
-        let actual = parser.parse(&mut stream);
-        assert_eq!(Ok(Abort), actual);
+        test_parser!(
+            source = "abort",
+            parser = keyword_if(|kw| kw.category() == Unreserved),
+            expected = Abort
+        )
     }
 }
 

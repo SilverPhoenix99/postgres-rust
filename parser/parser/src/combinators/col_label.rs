@@ -5,7 +5,7 @@ pub(in crate::combinators) fn col_label(stream: &mut TokenStream) -> scan::Resul
     
     choice!(parsed stream =>
         identifier.map(From::from),
-        any_keyword().map(From::from)
+        any_keyword.map(From::from)
     )
 }
 

@@ -27,8 +27,7 @@ fn transaction_mode(stream: &mut TokenStream) -> scan::Result<TransactionMode> {
     */
 
     choice!(stream =>
-        Kw::Deferrable
-            .parse(stream)
+        Kw::Deferrable.parse(stream)
             .map(|_| Deferrable),
         seq!(stream => Not, Kw::Deferrable)
             .map(|_| NotDeferrable),
@@ -58,8 +57,7 @@ fn isolation_level(stream: &mut TokenStream) -> scan::Result<IsolationLevel> {
     */
 
     choice!(stream =>
-        Kw::Serializable
-            .parse(stream)
+        Kw::Serializable.parse(stream)
             .map(|_| Serializable),
         seq!(stream => Repeatable, Read)
             .map(|_| RepeatableRead),

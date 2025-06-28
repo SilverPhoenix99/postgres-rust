@@ -10,11 +10,11 @@ pub(super) fn frame_extent(stream: &mut TokenStream<'_>) -> scan::Result<FrameEx
 
 fn between_frame_bounds(stream: &mut TokenStream<'_>) -> scan::Result<FrameExtent> {
 
-    let (_, start, _, (end, loc)) = seq!(stream =>
-        Between,
-        frame_bound,
-        And,
-        located!(frame_bound)
+    let (_, start, _, (end, loc)) = seq!(=>
+        Between.parse(stream),
+        frame_bound(stream),
+        And.parse(stream),
+        located!(stream => frame_bound)
     )?;
 
     let frame = match (start, end) {
@@ -219,6 +219,7 @@ use super::frame_bound::frame_bound;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::combinators::window_specification::frame_bound::FrameBound::CurrentRow;
 use crate::combinators::window_specification::frame_bound::FrameBound::OffsetFollowing;
 use crate::combinators::window_specification::frame_bound::FrameBound::OffsetPreceding;

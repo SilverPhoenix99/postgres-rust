@@ -93,8 +93,7 @@ fn multiplicative_op(stream: &mut TokenStream) -> scan::Result<Operator> {
 }
 
 fn exponentiation_op(stream: &mut TokenStream) -> scan::Result<Operator> {
-    Circumflex
-        .parse(stream)
+    Circumflex.parse(stream)
         .map(|_| Exponentiation)
 }
 

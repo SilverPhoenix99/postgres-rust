@@ -80,12 +80,10 @@ fn set_var_name(stream: &mut TokenStream) -> scan::Result<SetRestMore> {
 
     let name = var_name(stream)?;
 
-    let option =
-        choice!(
-            (FromKw, Current).map(|_| None),
-            generic_set_tail.map(Some)
-        )
-        .parse(stream)?;
+    let option = choice!(stream =>
+        seq!(stream => FromKw, Current).map(|_| None),
+        generic_set_tail(stream).map(Some)
+    )?;
 
     let option = match option {
         None => SetRestMore::FromCurrent { name },

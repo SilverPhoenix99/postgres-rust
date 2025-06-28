@@ -95,7 +95,7 @@ fn unencrypted_password_option(stream: &mut TokenStream) -> scan::Result<AlterRo
 
 fn ident_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
 
-    let (ident, loc) = located!(identifier).parse(stream)?;
+    let (ident, loc) = located!(stream => identifier)?;
 
     let option = match &*ident {
         "superuser" => SuperUser(true),

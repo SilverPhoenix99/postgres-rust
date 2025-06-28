@@ -54,8 +54,7 @@ pub(super) fn alter_function_option(stream: &mut TokenStream) -> scan::Result<Al
             .map(|(.., opt)| opt)
             .map(Security)
         },
-        Kw::Leakproof
-            .parse(stream)
+        Kw::Leakproof.parse(stream)
             .map(|_| Leakproof(true)),
         seq!(stream => Not, Kw::Leakproof)
             .map(|_| Leakproof(false)),

@@ -32,16 +32,6 @@ macro_rules! between {
         let result = $crate::combinators::foundation::seq!(=> $before, $content, $after);
         result.map(|(_, content, _)| content)
     }};
-
-    ($before:ident, $content:expr, $after:expr) => {
-        $crate::combinators::foundation::parser(|stream| {
-            $crate::combinators::foundation::between!(stream =>
-                $before,
-                $content,
-                $after
-            )
-        })
-    };
 }
 
 pub(in crate::combinators) use between;

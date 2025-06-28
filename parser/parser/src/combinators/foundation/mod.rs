@@ -8,10 +8,8 @@ mod map;
 mod number;
 mod operator;
 mod optional;
-mod or;
 mod param;
 mod parser;
-mod required;
 mod string;
 mod user_defined_operator;
 
@@ -24,13 +22,11 @@ pub(in crate::combinators) use self::{
     integer::integer,
     keyword::{any_keyword, keyword_if, keyword_result, KeywordCondCombi},
     macros::{between, choice, located, many, seq},
-    map::{map, map_result, MapResultCombi},
+    map::{map, MapResultCombi},
     number::number,
     optional::{optional, OptionalCombi},
-    or::{match_first, or, OrCombi},
     param::param,
     parser::{parser, ClosureCombi},
-    required::{required, RequiredCombi},
     string::string,
     user_defined_operator::user_defined_operator,
 };

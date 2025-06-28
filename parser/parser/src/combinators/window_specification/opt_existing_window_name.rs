@@ -19,7 +19,7 @@ pub(super) fn opt_existing_window_name(stream: &mut TokenStream<'_>) -> scan::Re
             Ok(Some(name.into()))
         },
         (Kw(kw), _) if matches!(kw.category(), Unreserved | ColumnName) => {
-            let name = any_keyword().parse(stream)?;
+            let name = any_keyword(stream)?;
             Ok(Some(name.into()))
         },
 
@@ -68,7 +68,6 @@ mod tests {
 
 use crate::combinators::foundation::any_keyword;
 use crate::combinators::foundation::identifier;
-use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Identifier;

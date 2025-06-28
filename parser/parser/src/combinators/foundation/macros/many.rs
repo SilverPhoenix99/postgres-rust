@@ -126,32 +126,6 @@ macro_rules! many {
             $crate::combinators::foundation::Combinator::parse(&combinator, $stream)
         )
     }};
-
-    (pre = $prefix:expr, $combinator:expr) => {
-        $crate::combinators::foundation::parser(|stream| {
-            $crate::combinators::foundation::many!(stream =>
-                pre = $prefix,
-                $combinator
-            )
-        })
-    };
-
-    (sep = $separator:expr, $combinator:expr) => {
-        $crate::combinators::foundation::parser(|stream| {
-            $crate::combinators::foundation::many!(stream =>
-                sep = $separator,
-                $combinator
-            )
-        })
-    };
-
-    ($combinator:expr) => {
-        $crate::combinators::foundation::parser(|stream| {
-            $crate::combinators::foundation::many!(stream =>
-                $combinator
-            )
-        })
-    };
 }
 
 pub(in crate::combinators) use many;

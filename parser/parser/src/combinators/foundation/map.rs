@@ -1,16 +1,3 @@
-/// Maps the result of a parser combinator into another type.
-pub(in crate::combinators) fn map_result<P, M, O>(parser: P, mapper: M) -> MapResultCombi<P, M, O>
-where
-    P: Combinator,
-    M: Fn(scan::Result<P::Output>) -> scan::Result<O>
-{
-    MapResultCombi {
-        parser,
-        mapper,
-        boo: PhantomData,
-    }
-}
-
 /// Maps the `Ok(_)` value of a parser combinator into another type.
 pub(in crate::combinators) fn map<P, M, O>(parser: P, mapper: M)
     -> MapResultCombi<
@@ -51,7 +38,8 @@ where
     type Output = O;
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
-        (self.mapper)(self.parser.parse(stream))
+        let result = self.parser.parse(stream);
+        (self.mapper)(result)
     }
 }
 

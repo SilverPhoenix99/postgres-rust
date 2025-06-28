@@ -37,17 +37,6 @@ macro_rules! choice {
             ),+
         )
     };
-
-    ($head:expr, $($tail:expr),+ $(,)?) => {
-        $crate::combinators::foundation::parser(|stream| {
-            $crate::combinators::foundation::choice!(parsed stream =>
-                $crate::combinators::foundation::Combinator::map($head, From::from),
-                $(
-                    $crate::combinators::foundation::Combinator::map($tail, From::from)
-                ),+
-            )
-        })
-    };
 }
 
 pub(in crate::combinators) use choice;

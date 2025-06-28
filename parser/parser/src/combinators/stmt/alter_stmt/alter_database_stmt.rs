@@ -23,71 +23,71 @@ pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> scan::Result<RawS
         )
     */
 
-    Database
-        .and_right((
-            col_id,
-            choice!(
-                (Refresh, Collation, Version)
-                    .map(|_| Change::RefreshVersion),
-                (Owner, To, role_spec)
-                    .map(|(.., new_owner)| Change::Owner(new_owner)),
-                (Rename, To, col_id)
-                    .map(|(.., new_name)| Change::Name(new_name)),
-                {
-                    (
-                        Set,
-                        choice!(
-                            (Kw::Tablespace, col_id)
-                                .right()
-                                .map(Change::Tablespace),
-                            set_rest
-                                .map(Change::SetOption)
-                        )
+    let (_, name, change) = seq!(=>
+        Database.parse(stream),
+        col_id(stream),
+        choice!(stream =>
+            seq!(stream => Refresh, Collation, Version)
+                .map(|_| Change::RefreshVersion),
+            seq!(stream => Owner, To, role_spec)
+                .map(|(.., new_owner)| Change::Owner(new_owner)),
+            seq!(stream => Rename, To, col_id)
+                .map(|(.., new_name)| Change::Name(new_name)),
+            {
+                seq!(=>
+                    Set.parse(stream),
+                    choice!(stream =>
+                        seq!(stream => Kw::Tablespace, col_id)
+                            .map(|(_, tablespace)| Change::Tablespace(tablespace)),
+                        set_rest(stream)
+                            .map(Change::SetOption)
                     )
-                    .right::<_, Change>()
-                },
-                reset_stmt
-                    .map(Change::ResetOption),
-                (With, alterdb_opt_list)
-                    .right()
-                    .map(Change::Options),
-                alterdb_opt_list
-                    .map(Change::Options),
-            )
-        ))
-        .parse(stream)
-        .map(|(name, change)| match change {
-            Change::RefreshVersion => {
-                AlterDatabaseRefreshCollStmt(name)
-            }
-            Change::Owner(new_owner) => {
-                AlterOwnerStmt::new(
-                    AlterOwnerTarget::Database(name),
-                    new_owner
-                ).into()
-            }
-            Change::Name(new_name) => {
-                RenameStmt::new(
-                    RenameTarget::Database(name),
-                    new_name
-                ).into()
-            }
-            Change::Tablespace(tablespace) => {
-                let option = AlterdbOption::new(Tablespace, tablespace);
-                AlterDatabaseStmt::new(name, vec![option]).into()
-            }
-            Change::SetOption(option) => {
-                let option = SetResetClause::Set(option);
-                AlterDatabaseSetStmt::new(name, option).into()
-            }
-            Change::ResetOption(option) => {
-                let option = SetResetClause::Reset(option);
-                AlterDatabaseSetStmt::new(name, option).into()
-            }
-            Change::Options(options) => {
-                AlterDatabaseStmt::new(name, options).into()
-            }
-        })
+                )
+                .map(|(_, change)| change)
+            },
+            reset_stmt(stream)
+                .map(Change::ResetOption),
+            seq!(stream => With, alterdb_opt_list)
+                .map(|(_, options)| Change::Options(options)),
+            alterdb_opt_list(stream)
+                .map(Change::Options),
+        )
+    )?;
+
+    let stmt = match change {
+        Change::RefreshVersion => {
+            AlterDatabaseRefreshCollStmt(name)
+        }
+        Change::Owner(new_owner) => {
+            AlterOwnerStmt::new(
+                AlterOwnerTarget::Database(name),
+                new_owner
+            ).into()
+        }
+        Change::Name(new_name) => {
+            RenameStmt::new(
+                RenameTarget::Database(name),
+                new_name
+            ).into()
+        }
+        Change::Tablespace(tablespace) => {
+            let option = AlterdbOption::new(Tablespace, tablespace);
+            AlterDatabaseStmt::new(name, vec![option]).into()
+        }
+        Change::SetOption(option) => {
+            let option = SetResetClause::Set(option);
+            AlterDatabaseSetStmt::new(name, option).into()
+        }
+        Change::ResetOption(option) => {
+            let option = SetResetClause::Reset(option);
+            AlterDatabaseSetStmt::new(name, option).into()
+        }
+        Change::Options(options) => {
+            AlterDatabaseStmt::new(name, options).into()
+        }
+    };
+
+    Ok(stmt)
 }
 
 fn alterdb_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<AlterdbOption>> {
@@ -102,29 +102,27 @@ fn alterdb_opt_item(stream: &mut TokenStream) -> scan::Result<AlterdbOption> {
         | alterdb_opt_name ( '=' )? var_value
     */
 
-    (
+    let (kind, _, value) = seq!(stream =>
         alterdb_opt_name,
         Equals.optional(),
         createdb_opt_value
-    )
-        .map(|(kind, _, value)|
-            AlterdbOption::new(kind, value)
-        )
-        .parse(stream)
+    )?;
+
+    let option = AlterdbOption::new(kind, value);
+    Ok(option)
 }
 
 fn alterdb_opt_name(stream: &mut TokenStream) -> scan::Result<AlterdbOptionKind> {
 
-    choice!(
-        Connection.and(Limit).map(|_| ConnectionLimit),
-        Kw::Tablespace.map(|_| Tablespace),
-        identifier.map(|ident| match ident.as_ref() {
+    choice!(stream =>
+        seq!(stream => Connection, Limit).map(|_| ConnectionLimit),
+        Kw::Tablespace.parse(stream).map(|_| Tablespace),
+        identifier(stream).map(|ident| match ident.as_ref() {
             "allow_connections" => AllowConnections,
             "is_template" => IsTemplate,
             _ => Unknown(ident)
         })
     )
-        .parse(stream)
 }
 
 #[cfg(test)]
@@ -227,6 +225,7 @@ use crate::combinators::col_id;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::combinators::stmt::createdb_opt_value;

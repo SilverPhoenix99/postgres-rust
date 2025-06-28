@@ -1,15 +1,5 @@
 /// `prefix ( '.' col_label )*`
 macro_rules! attrs {
-    ($prefix:expr) => {
-        $crate::combinators::foundation::many!(
-            pre = $prefix,
-            $crate::combinators::foundation::Combinator::right((
-                pg_lexer::OperatorKind::Dot,
-                $crate::combinators::col_label
-            ))
-        )
-    };
-
     ($stream:ident => $prefix:expr) => {
         $crate::combinators::foundation::many!(=>
             pre = $prefix,
@@ -28,6 +18,7 @@ pub(in crate::combinators) use attrs;
 mod tests {
     use super::*;
     use crate::combinators::foundation::parser;
+    use crate::scan;
     use crate::tests::test_parser;
 
     #[test]
@@ -35,7 +26,11 @@ mod tests {
 
         test_parser!(
             source = ".qualified_.name_",
-            parser = attrs!(parser(|_| Ok("*some*".into()))),
+            parser = parser(|stream|
+                attrs!(stream =>
+                    Ok::<_, scan::Error>("*some*".into())
+                )
+            ),
             expected = vec![
                 "*some*".into(),
                 "qualified_".into(),
