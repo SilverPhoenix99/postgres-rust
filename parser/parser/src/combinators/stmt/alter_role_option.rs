@@ -1,12 +1,13 @@
 /// Alias: `AlterOptRoleList`
-pub(super) fn alter_role_options() -> impl Combinator<Output = Option<Vec<AlterRoleOption>>> {
+pub(super) fn alter_role_options(stream: &mut TokenStream) -> scan::Result<Option<Vec<AlterRoleOption>>> {
 
-    many!(alter_role_option())
+    many!(stream => alter_role_option)
         .optional()
+        .map_err(From::from)
 }
 
 /// Alias: `AlterOptRoleElem`
-pub(super) fn alter_role_option() -> impl Combinator<Output = AlterRoleOption> {
+pub(super) fn alter_role_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
 
     /*
           PASSWORD SCONST
@@ -20,10 +21,10 @@ pub(super) fn alter_role_option() -> impl Combinator<Output = AlterRoleOption> {
         | IDENT
     */
 
-    choice!(
-        password_option,
+    choice!(stream =>
+        password_option(stream),
         {
-            (
+            seq!(stream =>
                 Connection,
                 Limit,
                 signed_i32_literal,
@@ -31,18 +32,17 @@ pub(super) fn alter_role_option() -> impl Combinator<Output = AlterRoleOption> {
             .map(|(.., limit)| ConnectionLimit(limit))
         },
         {
-            (Valid, Until, string)
+            seq!(stream => Valid, Until, string)
                 .map(|(.., valid)| ValidUntil(valid))
         },
         {
             // Supported but not documented for roles, for use by ALTER GROUP.
-            (User, role_list)
-                .right()
-                .map(RoleMembers)
+            seq!(stream =>User, role_list)
+                .map(|(_, roles)| RoleMembers(roles))
         },
-        Kw::Inherit
+        Kw::Inherit.parse(stream)
             .map(|_| Inherit(true)),
-        ident_option
+        ident_option(stream)
     )
 }
 
@@ -55,11 +55,11 @@ fn password_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
         | UNENCRYPTED PASSWORD SCONST
     */
 
-    let parser = choice!(
+    choice!(stream =>
         {
-            (
-                Kw::Password,
-                choice!(
+            seq!(=>
+                Kw::Password.parse(stream),
+                choice!(parsed stream =>
                     string.map(Some),
                     Null.map(|_| None)
                 )
@@ -72,51 +72,54 @@ fn password_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
              * form, so there is no difference between PASSWORD and
              * ENCRYPTED PASSWORD.
              */
-            (Encrypted, Kw::Password, string)
+            seq!(stream => Encrypted, Kw::Password, string)
                 .map(|(.., pw)|
                     Password(Some(pw))
                 )
         },
         {
-            located!(
-                (Unencrypted, Kw::Password, string)
-            )
-                .map_result(|result| {
-                    let (_, loc) = result?;
-                    let err = UnencryptedPassword.at(loc).into();
-                    Err::<AlterRoleOption, _>(ScanErr(err))
-                })
+            unencrypted_password_option(stream)
         }
-    );
+    )
+}
 
-    parser.parse(stream)
+fn unencrypted_password_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
+
+    let loc = stream.current_location();
+
+    let _ = seq!(stream => Unencrypted, Kw::Password, string)?;
+
+    let err = UnencryptedPassword.at(loc).into();
+    Err::<AlterRoleOption, _>(ScanErr(err))
 }
 
 fn ident_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
 
     let (ident, loc) = located!(identifier).parse(stream)?;
 
-    match &*ident {
-        "superuser" => Ok(SuperUser(true)),
-        "nosuperuser" => Ok(SuperUser(false)),
-        "createrole" => Ok(CreateRole(true)),
-        "nocreaterole" => Ok(CreateRole(false)),
-        "replication" => Ok(IsReplication(true)),
-        "noreplication" => Ok(IsReplication(false)),
-        "createdb" => Ok(CreateDatabase(true)),
-        "nocreatedb" => Ok(CreateDatabase(false)),
-        "login" => Ok(CanLogin(true)),
-        "nologin" => Ok(CanLogin(false)),
-        "bypassrls" => Ok(BypassRls(true)),
-        "nobypassrls" => Ok(BypassRls(false)),
+    let option = match &*ident {
+        "superuser" => SuperUser(true),
+        "nosuperuser" => SuperUser(false),
+        "createrole" => CreateRole(true),
+        "nocreaterole" => CreateRole(false),
+        "replication" => IsReplication(true),
+        "noreplication" => IsReplication(false),
+        "createdb" => CreateDatabase(true),
+        "nocreatedb" => CreateDatabase(false),
+        "login" => CanLogin(true),
+        "nologin" => CanLogin(false),
+        "bypassrls" => BypassRls(true),
+        "nobypassrls" => BypassRls(false),
         // Note that INHERIT is a keyword, so it's handled by main parser,
         // but NOINHERIT is handled here.
-        "noinherit" => Ok(Inherit(false)),
+        "noinherit" => Inherit(false),
         _ => {
             let err = UnrecognizedRoleOption(ident).at(loc).into();
-            Err(ScanErr(err))
+            return Err(ScanErr(err))
         }
-    }
+    };
+
+    Ok(option)
 }
 
 #[cfg(test)]
@@ -131,7 +134,7 @@ mod tests {
     fn test_alter_role_options() {
         test_parser!(
             source = "inherit password null",
-            parser = alter_role_options(),
+            parser = alter_role_options,
             expected = Some(vec![Inherit(true), Password(None)])
         )
     }
@@ -143,7 +146,7 @@ mod tests {
     #[test_case("inherit", Inherit(true))]
     #[test_case("noinherit", Inherit(false))]
     fn test_alter_role_option(source: &str, expected: AlterRoleOption) {
-        test_parser!(source, alter_role_option(), expected)
+        test_parser!(source, alter_role_option, expected)
     }
 
     #[test_case("password 'password1'", Some("password1".into()))]
@@ -175,10 +178,12 @@ use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_list;
 use crate::combinators::signed_i32_literal;
+use crate::result::Optional;
 use crate::scan;
 use crate::scan::Error::ScanErr;
 use crate::stream::TokenStream;

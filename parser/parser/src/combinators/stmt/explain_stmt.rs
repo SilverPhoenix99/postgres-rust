@@ -1,5 +1,5 @@
 /// Alias: `ExplainStmt`
-pub(super) fn explain_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn explain_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
         EXPLAIN ExplainableStmt
@@ -8,10 +8,14 @@ pub(super) fn explain_stmt() -> impl Combinator<Output = RawStmt> {
         EXPLAIN '(' utility_option_list ')' ExplainableStmt
     */
 
-    Explain
-        .map(|_| todo!())
+    let (_, stmt) = seq!(stream => Explain, parser(|_| todo!()))?;
+
+    Ok(stmt)
 }
 
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_lexer::Keyword::Explain;

@@ -1,5 +1,5 @@
 /// Alias: `DropStmt`
-pub(super) fn drop_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn drop_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
         DROP DOMAIN_P IF_P EXISTS type_name_list opt_drop_behavior
@@ -16,10 +16,14 @@ pub(super) fn drop_stmt() -> impl Combinator<Output = RawStmt> {
         DROP TYPE_P type_name_list opt_drop_behavior
     */
 
-    DropKw
-        .map(|_| todo!())
+    let (_, stmt) = seq!(stream => DropKw, parser(|_| todo!()))?;
+
+    Ok(stmt)
 }
 
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_lexer::Keyword::DropKw;

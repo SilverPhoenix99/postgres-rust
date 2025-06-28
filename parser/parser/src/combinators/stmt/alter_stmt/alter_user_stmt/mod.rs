@@ -14,7 +14,7 @@ pub(super) fn alter_user_stmt() -> impl Combinator<Output = RawStmt> {
 
     match_first! {
         User.and_right(match_first! {
-            (Mapping, For, auth_ident(), Server, col_id, alter_generic_options())
+            (Mapping, For, auth_ident, Server, col_id, alter_generic_options())
                 .map(
                     |(_, _, user, _, servername, options)|
                         AlterUserMappingStmt::new(user, servername, options).into()

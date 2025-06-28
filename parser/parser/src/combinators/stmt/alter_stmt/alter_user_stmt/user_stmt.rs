@@ -30,7 +30,7 @@ pub(super) fn user_stmt() -> impl Combinator<Output = RawStmt> {
                     AlterRoleSetStmt::new(OneOrAll::One(role), Some(dbname), set_stmt).into()
                 },
                 {
-                    With.and_right(alter_role_options())
+                    With.and_right(alter_role_options)
                 } => (options) {
                     AlterRoleStmt::new(role, Add, options).into()
                 },
@@ -40,7 +40,7 @@ pub(super) fn user_stmt() -> impl Combinator<Output = RawStmt> {
                     AlterRoleSetStmt::new(OneOrAll::One(role), None, set_stmt).into()
                 },
                 {
-                    alter_role_options()
+                    alter_role_options
                 } => (options) {
                     AlterRoleStmt::new(role, Add, options).into()
                 }

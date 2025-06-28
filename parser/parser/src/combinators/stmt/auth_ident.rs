@@ -1,6 +1,6 @@
-pub(super) fn auth_ident() -> impl Combinator<Output = RoleSpec> {
+pub(super) fn auth_ident(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
 
-    choice!(
+    choice!(parsed stream =>
         User.map(|_| CurrentUser),
         role_spec
     )
@@ -9,22 +9,21 @@ pub(super) fn auth_ident() -> impl Combinator<Output = RoleSpec> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use test_case::test_case;
 
     #[test_case("public", RoleSpec::Public)]
     #[test_case("user", CurrentUser)]
     fn test_auth_ident(source: &str, expected: RoleSpec) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = auth_ident().parse(&mut stream);
-        assert_eq!(Ok(expected), actual);
+        test_parser!(source, auth_ident, expected)
     }
 }
 
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::RoleSpec;
 use pg_ast::RoleSpec::CurrentUser;
 use pg_lexer::Keyword::User;

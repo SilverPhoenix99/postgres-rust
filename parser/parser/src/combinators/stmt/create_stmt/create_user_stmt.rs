@@ -15,9 +15,9 @@ fn create_user_mapping() -> impl Combinator<Output = CreateUserMappingStmt> {
 
     (
         Mapping.and_right(if_not_exists),
-        For.and_right(auth_ident()),
+        For.and_right(auth_ident),
         Server.and_right(col_id),
-        create_generic_options()
+        create_generic_options
     )
         .map(|(if_not_exists, user, server, options)|
             CreateUserMappingStmt::new(user, server, options, if_not_exists)

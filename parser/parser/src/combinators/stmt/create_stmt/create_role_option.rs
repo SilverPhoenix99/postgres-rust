@@ -34,7 +34,7 @@ fn create_role_option(stream: &mut TokenStream) -> scan::Result<CreateRoleOption
             .map(|(.., opt): (_, Keyword, _)|
                 CreateRoleOption::AddRoleTo(opt)
             ),
-        alter_role_option()
+        alter_role_option
             .map(CreateRoleOption::from)
     );
 
