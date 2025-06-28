@@ -96,7 +96,7 @@ pub(super) fn stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
         comment_stmt.map(From::from),
         commit_stmt.map(From::from),
         copy_stmt,
-        create_stmt(),
+        create_stmt,
         deallocate_stmt.map(DeallocateStmt),
         discard_stmt.map(From::from),
         do_stmt,

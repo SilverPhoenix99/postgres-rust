@@ -1,19 +1,20 @@
 /// Alias: `CreatedbStmt`
-pub(super) fn create_database_stmt() -> impl Combinator<Output = CreateDatabaseStmt> {
+pub(super) fn create_database_stmt(stream: &mut TokenStream) -> scan::Result<CreateDatabaseStmt> {
 
-    (
-        Database.skip(),
+    let (_, name, _, options) = seq!(stream =>
+        Database,
         col_id,
-        With.optional().skip(),
+        With.optional(),
         createdb_opt_list
-    ).map(|(_, name, _, options)|
-        CreateDatabaseStmt::new(name, options)
-    )
+    )?;
+
+    let stmt = CreateDatabaseStmt::new(name, options);
+    Ok(stmt)
 }
 
 fn createdb_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<CreatedbOption>> {
 
-    many!(createdb_opt_item).parse(stream)
+    many!(stream => createdb_opt_item)
 }
 
 fn createdb_opt_item(stream: &mut TokenStream) -> scan::Result<CreatedbOption> {
@@ -23,29 +24,27 @@ fn createdb_opt_item(stream: &mut TokenStream) -> scan::Result<CreatedbOption> {
         | createdb_opt_name ( '=' )? var_value
     */
 
-    let parser = (
+    let (kind, _, value) = seq!(stream =>
         createdb_opt_name,
         Equals.optional(),
-        createdb_opt_value()
-    )
-        .map(|(kind, _, value)|
-            CreatedbOption::new(kind, value)
-        );
+        createdb_opt_value
+    )?;
 
-    parser.parse(stream)
+    let option = CreatedbOption::new(kind, value);
+    Ok(option)
 }
 
 fn createdb_opt_name(stream: &mut TokenStream) -> scan::Result<CreatedbOptionKind> {
 
-    let parser = choice!(
-        (Connection, Limit).map(|_| ConnectionLimit),
-        Kw::Encoding.map(|_| Encoding),
-        LocationKw.map(|_| Location),
-        Kw::Owner.map(|_| Owner),
-        Kw::Tablespace.map(|_| Tablespace),
-        Kw::Template.map(|_| Template),
+    choice!(stream =>
+        seq!(stream => Connection, Limit).map(|_| ConnectionLimit),
+        Kw::Encoding.parse(stream).map(|_| Encoding),
+        LocationKw.parse(stream).map(|_| Location),
+        Kw::Owner.parse(stream).map(|_| Owner),
+        Kw::Tablespace.parse(stream).map(|_| Tablespace),
+        Kw::Template.parse(stream).map(|_| Template),
         // Unless quoted, identifiers are lower case
-        identifier.map(|ident| match ident.as_ref() {
+        identifier(stream).map(|ident| match ident.as_ref() {
             "allow_connections" => AllowConnections,
             "builtin_locale" => BuiltinLocale,
             "collation_version" => CollationVersion,
@@ -60,22 +59,20 @@ fn createdb_opt_name(stream: &mut TokenStream) -> scan::Result<CreatedbOptionKin
             "strategy" => Strategy,
             _ => Unknown(ident)
         })
-    );
-
-    parser.parse(stream)
+    )
 }
 
-pub(in crate::combinators::stmt) fn createdb_opt_value() -> impl Combinator<Output = CreatedbOptionValue> {
+pub(in crate::combinators::stmt) fn createdb_opt_value(stream: &mut TokenStream) -> scan::Result<CreatedbOptionValue> {
 
     /*
           DEFAULT
         | var_value
     */
 
-    match_first! {
+    choice!(parsed stream =>
         DefaultKw.map(|_| CreatedbOptionValue::Default),
         var_value.map(From::from)
-    }
+    )
 }
 
 #[cfg(test)]
@@ -88,7 +85,7 @@ mod tests {
     fn test_create_database_stmt() {
         test_parser!(
             source = "database db_name with connection limit = 753 allow_connections 'on'",
-            parser = create_database_stmt(),
+            parser = create_database_stmt,
             expected = CreateDatabaseStmt::new(
                 "db_name",
                 vec![
@@ -148,7 +145,7 @@ mod tests {
     #[test_case("'value'", "value".into())]
     #[test_case("+123", 123.into())]
     fn test_createdb_opt_value(source: &str, expected: CreatedbOptionValue) {
-        test_parser!(source, createdb_opt_value(), expected)
+        test_parser!(source, createdb_opt_value, expected)
     }
 }
 
@@ -156,7 +153,7 @@ use crate::combinators::col_id;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::var_value;
 use crate::scan;

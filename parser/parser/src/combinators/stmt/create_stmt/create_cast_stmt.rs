@@ -4,10 +4,10 @@ pub(super) fn create_cast_stmt(stream: &mut TokenStream) -> scan::Result<CreateC
         typecast cast_conversion cast_context
     */
 
-    seq!(stream => typecast, cast_conversion, cast_context)
-        .map(|(typecast, conversion, coercion)|
-            CreateCastStmt::new(typecast, conversion, coercion)
-        )
+    let (typecast, conversion, coercion) = seq!(stream => typecast, cast_conversion, cast_context)?;
+
+    let stmt = CreateCastStmt::new(typecast, conversion, coercion);
+    Ok(stmt)
 }
 
 fn cast_conversion(stream: &mut TokenStream) -> scan::Result<CastConversion> {

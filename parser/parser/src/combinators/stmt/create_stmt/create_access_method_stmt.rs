@@ -1,23 +1,21 @@
 /// Alias: `CreateAmStmt`
-pub(super) fn create_access_method_stmt() -> impl Combinator<Output = CreateAccessMethodStmt> {
+pub(super) fn create_access_method_stmt(stream: &mut TokenStream) -> scan::Result<CreateAccessMethodStmt> {
 
     /*
         ACCESS METHOD ColId TYPE_P am_type HANDLER any_name
     */
 
-    (
-        (Access, Method).and_right(col_id),
-        Type.and_right(am_type()),
-        Handler.and_right(any_name)
-    )
-        .map(|(name, kind, handler)|
-            CreateAccessMethodStmt::new(name, kind, handler)
-        )
+    let (_, _, name, _, kind, _, handler) = seq!(stream =>
+        Access, Method, col_id, Type, am_type, Handler, any_name
+    )?;
+
+    let stmt = CreateAccessMethodStmt::new(name, kind, handler);
+    Ok(stmt)
 }
 
-fn am_type() -> impl Combinator<Output = AccessMethodKind> {
+fn am_type(stream: &mut TokenStream) -> scan::Result<AccessMethodKind> {
 
-    or(
+    choice!(parsed stream =>
         Kw::Index.map(|_| Index),
         Kw::Table.map(|_| Table)
     )
@@ -33,7 +31,7 @@ mod tests {
     fn test_create_access_method_stmt() {
         test_parser!(
             source = "access method foo type index handler bar",
-            parser = create_access_method_stmt(),
+            parser = create_access_method_stmt,
             expected = CreateAccessMethodStmt::new("foo", Index, vec!["bar".into()])
         )
     }
@@ -41,14 +39,17 @@ mod tests {
     #[test_case("index", Index)]
     #[test_case("table", Table)]
     fn test_am_type(source: &str, expected: AccessMethodKind) {
-        test_parser!(source, am_type(), expected);
+        test_parser!(source, am_type, expected);
     }
 }
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::AccessMethodKind;
 use pg_ast::AccessMethodKind::Index;
 use pg_ast::AccessMethodKind::Table;

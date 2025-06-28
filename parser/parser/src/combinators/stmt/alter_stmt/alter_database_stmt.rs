@@ -105,7 +105,7 @@ fn alterdb_opt_item(stream: &mut TokenStream) -> scan::Result<AlterdbOption> {
     (
         alterdb_opt_name,
         Equals.optional(),
-        createdb_opt_value()
+        createdb_opt_value
     )
         .map(|(kind, _, value)|
             AlterdbOption::new(kind, value)

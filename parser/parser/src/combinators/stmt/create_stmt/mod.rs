@@ -8,16 +8,21 @@ mod create_user_stmt;
 
 pub(super) use create_database_stmt::createdb_opt_value;
 
-pub(super) fn create_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn create_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
-    Create.and_right(match_first! {
-        create_access_method_stmt().map(From::from),
-        create_cast_stmt.map(From::from),
-        create_conversion_stmt().map(From::from),
-        create_database_stmt().map(From::from),
-        create_role_stmt().map(From::from),
-        create_user_stmt(),
-    })
+    let (_, stmt) = seq!(=>
+        Create.parse(stream),
+        choice!(parsed stream =>
+            create_access_method_stmt.map(From::from),
+            create_cast_stmt.map(From::from),
+            create_conversion_stmt.map(From::from),
+            create_database_stmt.map(From::from),
+            create_role_stmt.map(From::from),
+            create_user_stmt,
+        )
+    )?;
+
+    Ok(stmt)
 }
 
 #[cfg(test)]
@@ -35,7 +40,7 @@ mod tests {
     #[test_case("create user new_user with password 'password'")]
     fn test_create_stmt(source: &str) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = create_stmt().parse(&mut stream);
+        let actual = create_stmt(&mut stream);
 
         // This only quickly tests that statement types aren't missing.
         // More in-depth testing is within each statement's module.
@@ -54,7 +59,10 @@ use self::{
     create_role_stmt::create_role_stmt,
     create_user_stmt::create_user_stmt,
 };
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_lexer::Keyword::Create;

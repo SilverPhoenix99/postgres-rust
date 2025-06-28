@@ -1,7 +1,7 @@
 /// Alias: `OptRoleList`
-pub(super) fn create_role_options() -> impl Combinator<Output = Vec<CreateRoleOption>> {
+pub(super) fn create_role_options(stream: &mut TokenStream) -> scan::Result<Vec<CreateRoleOption>> {
 
-    many!(create_role_option)
+    many!(stream => create_role_option)
 }
 
 /// Alias: `CreateOptRoleElem`
@@ -16,29 +16,24 @@ fn create_role_option(stream: &mut TokenStream) -> scan::Result<CreateRoleOption
         | alter_role_option
     */
 
-    let parser = choice!(
-        (Sysid, integer)
-            .right()
-            .map(CreateRoleOption::SysId),
-        (Admin, role_list)
-            .right()
-            .map(CreateRoleOption::AdminMembers),
-        (Role, role_list)
-            .right()
-            .map(CreateRoleOption::AddRoleTo),
-        (
-            Inherit,
-            choice!(Role, Group),
-            role_list
+    choice!(stream =>
+        seq!(stream => Sysid, integer)
+            .map(|(_, id)| CreateRoleOption::SysId(id)),
+        seq!(stream => Admin, role_list)
+            .map(|(_, members)| CreateRoleOption::AdminMembers(members)),
+        seq!(stream => Role, role_list)
+            .map(|(_, roles)| CreateRoleOption::AddRoleTo(roles)),
+        seq!(=>
+            Inherit.parse(stream),
+            choice!(parsed stream => Role, Group),
+            role_list(stream)
         )
-            .map(|(.., opt): (_, Keyword, _)|
+            .map(|(.., opt)|
                 CreateRoleOption::AddRoleTo(opt)
             ),
-        alter_role_option
+        alter_role_option(stream)
             .map(CreateRoleOption::from)
-    );
-
-    parser.parse(stream)
+    )
 }
 
 #[cfg(test)]
@@ -52,7 +47,7 @@ mod tests {
     fn test_create_role_options() {
         test_parser!(
             source = "sysid 42 admin public role public inherit group public",
-            parser = create_role_options(),
+            parser = create_role_options,
             expected = vec![
                 CreateRoleOption::SysId(42.into()),
                 CreateRoleOption::AdminMembers(vec![Public]),
@@ -76,13 +71,13 @@ mod tests {
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::integer;
 use crate::combinators::foundation::many;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role::role_list;
 use crate::combinators::stmt::alter_role_option;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::CreateRoleOption;
-use pg_lexer::Keyword;
 use pg_lexer::Keyword::Admin;
 use pg_lexer::Keyword::Group;
 use pg_lexer::Keyword::Inherit;

@@ -1,39 +1,47 @@
-pub(super) fn create_user_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn create_user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
           USER MAPPING if_not_exists FOR auth_ident SERVER ColId create_generic_options => CreateUserMappingStmt
         | USER RoleId opt_with OptRoleList => CreateRoleStmt
     */
 
-    User.and_right(match_first!(
-        create_user_mapping().map(From::from),
-        create_user_role().map(From::from)
-    ))
-}
-
-fn create_user_mapping() -> impl Combinator<Output = CreateUserMappingStmt> {
-
-    (
-        Mapping.and_right(if_not_exists),
-        For.and_right(auth_ident),
-        Server.and_right(col_id),
-        create_generic_options
-    )
-        .map(|(if_not_exists, user, server, options)|
-            CreateUserMappingStmt::new(user, server, options, if_not_exists)
+    let (_, stmt) = seq!(=>
+        User.parse(stream),
+        choice!(parsed stream =>
+            create_user_mapping.map(From::from),
+            create_user_role.map(From::from)
         )
+    )?;
+
+    Ok(stmt)
 }
 
-fn create_user_role() -> impl Combinator<Output = CreateRoleStmt> {
+fn create_user_mapping(stream: &mut TokenStream) -> scan::Result<CreateUserMappingStmt> {
 
-    (
+    let (_, if_not_exists, _, user, _, server, options) = seq!(stream =>
+        Mapping,
+        if_not_exists,
+        For,
+        auth_ident,
+        Server,
+        col_id,
+        create_generic_options
+    )?;
+
+    let stmt = CreateUserMappingStmt::new(user, server, options, if_not_exists);
+    Ok(stmt)
+}
+
+fn create_user_role(stream: &mut TokenStream) -> scan::Result<CreateRoleStmt> {
+
+    let (name, _, options) = seq!(stream =>
         role_id,
         With.optional(),
-        create_role_options()
-    )
-        .map(|(name, _, options)|
-            CreateRoleStmt::new(name, RoleKind::User, options)
-        )
+        create_role_options
+    )?;
+
+    let stmt = CreateRoleStmt::new(name, RoleKind::User, options);
+    Ok(stmt)
 }
 
 #[cfg(test)]
@@ -54,7 +62,7 @@ mod tests {
     #[test_case("user mapping for foo server bar")]
     fn test_create_user_stmt(source: &str) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = create_user_stmt().parse(&mut stream);
+        let actual = create_user_stmt(&mut stream);
 
         // This only quickly tests that statement types aren't missing.
         // More in-depth testing is within each statement's module.
@@ -80,14 +88,14 @@ mod tests {
         )
     )]
     fn test_create_user_mapping(source: &str, expected: CreateUserMappingStmt) {
-        test_parser!(source, create_user_mapping(), expected);
+        test_parser!(source, create_user_mapping, expected);
     }
 
     #[test]
     fn test_create_user_role() {
         test_parser!(
             source = "test_user with sysid 42",
-            parser = create_user_role(),
+            parser = create_user_role,
             expected = CreateRoleStmt::new(
                 "test_user",
                 RoleKind::User,
@@ -98,13 +106,16 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_id;
 use crate::combinators::stmt::auth_ident;
 use crate::combinators::stmt::create_generic_options;
 use crate::combinators::stmt::create_stmt::create_role_options;
 use crate::combinators::stmt::if_not_exists;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::CreateRoleStmt;
 use pg_ast::CreateUserMappingStmt;
 use pg_ast::RawStmt;
