@@ -13,7 +13,7 @@ fn grantee(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
         ( GROUP )? role_spec
     */
 
-    let (_, role) = seq!(stream => Group.maybe_match(), role_spec)?;
+    let (_, role) = seq!(stream => Group.optional(), role_spec)?;
     Ok(role)
 }
 

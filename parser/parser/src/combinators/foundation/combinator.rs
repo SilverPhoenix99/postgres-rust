@@ -11,16 +11,6 @@ where
         optional(self)
     }
 
-    /// See [`required()`](required::required).
-    fn required(self) -> impl Combinator<Output = Self::Output> {
-        required(self)
-    }
-
-    /// See [`maybe_match()`](maybe_match::maybe_match).
-    fn maybe_match(self) -> impl Combinator<Output = Option<Self::Output>> {
-        maybe_match(self)
-    }
-
     /// Returns the result from both parsers, in order, or the first `Err`.
     ///
     /// This is equivalent to `Self & R`.
@@ -43,16 +33,6 @@ where
 
     /// Same as `(Self && R)`.
     ///
-    /// Returns `Self::Output`.
-    fn and_left<R>(self, right: R) -> impl Combinator<Output = Self::Output>
-    where
-        R: Combinator
-    {
-        self.and_then(right, |left, _| left)
-    }
-
-    /// Same as `(Self && R)`.
-    ///
     /// Returns `Right::Output`.
     fn and_right<R>(self, right: R) -> impl Combinator<Output = R::Output>
     where
@@ -61,29 +41,12 @@ where
         self.and_then(right, |_, right| right)
     }
 
-    /// See [`or()`](or::or)
-    fn or<R>(self, right: R) -> impl Combinator<Output = Self::Output>
-    where
-        R: Combinator<Output = Self::Output>
-    {
-        or(self, right)
-    }
-
     /// See [`map()`](map::map).
     fn map<M, O>(self, mapper: M) -> impl Combinator<Output = O>
     where
         M: Fn(Self::Output) -> O
     {
         map(self, mapper)
-    }
-
-    fn map_err<M>(self, mapper: M) -> impl Combinator<Output = Self::Output>
-    where
-        M: Fn(scan::Error) -> scan::Error
-    {
-        self.map_result(move |result|
-            result.map_err(&mapper)
-        )
     }
 
     /// See [`map_result()`](map_result).
@@ -103,25 +66,6 @@ where
 
     fn skip(self) -> impl Combinator<Output = ()> {
         self.map(|_| ())
-    }
-
-    /// This is similar to [`Combinator::map()`],
-    /// but includes the stream as an argument to the closure.
-    fn chain<M, O>(self, mapper: M) -> impl Combinator<Output = O>
-    where
-        M: Fn(Self::Output, &mut TokenStream) -> scan::Result<O>
-    {
-        fn inner<I, O>(mapper: impl Fn(I, &mut TokenStream) -> scan::Result<O>)
-            -> impl Fn(scan::Result<I>, &mut TokenStream) -> scan::Result<O>
-        {
-            move |result, stream| mapper(result?, stream)
-        }
-
-        let mapper= inner(mapper);
-        parser(move |stream| {
-            let result = self.parse(stream);
-            mapper(result, stream)
-        })
     }
 }
 
@@ -169,11 +113,7 @@ tuple_combinator!(T1 => 1, T2 => 2, T3 => 3, T4 => 4, T5 => 5);
 
 use crate::combinators::foundation::map;
 use crate::combinators::foundation::map_result;
-use crate::combinators::foundation::maybe_match;
 use crate::combinators::foundation::optional;
-use crate::combinators::foundation::or;
-use crate::combinators::foundation::parser;
-use crate::combinators::foundation::required;
 use crate::result::Required;
 use crate::scan;
 use crate::stream::TokenStream;

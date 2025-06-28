@@ -5,7 +5,6 @@ mod integer;
 mod keyword;
 mod macros;
 mod map;
-mod maybe_match;
 mod number;
 mod operator;
 mod optional;
@@ -23,13 +22,12 @@ pub(in crate::combinators) use self::{
     bit_string::bit_string,
     identifier::identifier,
     integer::integer,
-    keyword::{any_keyword, keyword_if, keyword_result, keyword_when, KeywordCondCombi},
+    keyword::{any_keyword, keyword_if, keyword_result, KeywordCondCombi},
     macros::{between, choice, located, many, seq},
     map::{map, map_result, MapResultCombi},
-    maybe_match::{maybe_match, MaybeMatchCombi},
     number::number,
     optional::{optional, OptionalCombi},
-    or::{match_first, match_first_with_state, or, OrCombi},
+    or::{match_first, or, OrCombi},
     param::param,
     parser::{parser, ClosureCombi},
     required::{required, RequiredCombi},

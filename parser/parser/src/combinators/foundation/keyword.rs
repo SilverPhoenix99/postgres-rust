@@ -28,25 +28,6 @@ pub(in crate::combinators) fn any_keyword()
 
 /// Maps the keyword before consuming it.
 ///
-/// * If the `mapper` returns `Some(_)`, then the keyword is consumed.
-/// * Otherwise, when `None` is returned, then an `Err(NoMatch)` is emitted and the keyword is **Not** consumed.
-///
-/// See also
-/// * [`keyword_result()`]
-/// * [`keyword_if()`]
-pub(in crate::combinators) fn keyword_when<O>(
-    mapper: impl Fn(Keyword) -> Option<O>
-)
-    -> KeywordCondCombi<
-        impl Fn(Keyword) -> stream::LocatedResult<O>,
-        O
-    >
-{
-    keyword_result(move |kw| Ok(mapper(kw)))
-}
-
-/// Maps the keyword before consuming it.
-///
 /// * If the `mapper` returns `Ok(Some(_))`, then the keyword is consumed.
 /// * If it returns, `Ok(None)`, then an `Err(NoMatch)` is emitted and the keyword is **Not** consumed.
 /// * [`ParserError`](crate::parser::error::ParserError) can be returned to stop the parser.

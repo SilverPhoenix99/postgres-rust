@@ -31,49 +31,6 @@ macro_rules! match_first {
 
 pub(in crate::combinators) use match_first;
 
-/// Pair this with [`chain()`](super::CombinatorHelpers::chain).
-macro_rules! match_first_with_state {
-    (
-        $($move:ident)? |$state:pat, $stream:ident| {
-            $head:expr => ($head_pat:pat) $head_expr:expr,
-            $( $tail:expr => ($tail_pat:pat) $tail_expr:expr ),+
-            $(,)?
-        }
-    ) => {
-        $($move)? |$state, $stream| {
-            use $crate::combinators::foundation::Combinator;
-            use $crate::scan::Error::{Eof, NoMatch, ScanErr};
-
-            let p = $head;
-            let result = p.parse($stream);
-            match result {
-                Ok($head_pat) => return Ok($head_expr),
-                Err(ScanErr(err)) => return Err(ScanErr(err)),
-                _ => {}
-            }
-
-            $(
-                let p = $tail;
-                let result = p.parse($stream);
-                match result {
-                    Ok($tail_pat) => return Ok($tail_expr),
-                    Err(ScanErr(err)) => return Err(ScanErr(err)),
-                    _ => {}
-                }
-            )+
-
-            match result {
-                Err(NoMatch(loc)) => Err(NoMatch(loc)),
-                Err(Eof(loc)) => Err(NoMatch(loc)),
-                // SAFETY: Ok and ScanErr are matched above
-                _ => unsafe { core::hint::unreachable_unchecked() }
-            }
-        }
-    };
-}
-
-pub(in crate::combinators) use match_first_with_state;
-
 /// Returns the first `Ok` result between the 2 parsers.
 ///
 /// This is equivalent to `L | R`.
