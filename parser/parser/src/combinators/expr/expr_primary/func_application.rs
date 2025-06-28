@@ -1,20 +1,19 @@
-pub(super) fn func_application_args() -> impl Combinator<Output = FuncArgsKind> {
+pub(super) fn func_application_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
 
     /*
         '(' ( func_call_args )? ')'
     */
 
-    parser(|stream| between!(paren : stream =>
-        func_call_args()
-            .parse(stream)
+    between!(paren : stream =>
+        func_call_args(stream)
             .optional()
             .map(|args| {
                 args.unwrap_or(Empty { order_within_group: None })
             })
-    ))
+    )
 }
 
-fn func_call_args() -> impl Combinator<Output = FuncArgsKind> {
+fn func_call_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
 
     /*
           '*'
@@ -23,65 +22,68 @@ fn func_call_args() -> impl Combinator<Output = FuncArgsKind> {
         | variadic_func_arg_list ( sort_clause )?
     */
 
-    match_first! {
-        star_args(),
-        all_args(),
-        distinct_args(),
-        simple_args(),
-    }
+    choice!(parsed stream =>
+        star_args,
+        all_args,
+        distinct_args,
+        simple_args,
+    )
 }
 
-fn star_args() -> impl Combinator<Output = FuncArgsKind> {
-    Mul.map(|_| Wildcard { order_within_group: None })
+fn star_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
+
+    let _ = Mul.parse(stream)?;
+    Ok(Wildcard { order_within_group: None })
 }
 
-fn all_args() -> impl Combinator<Output = FuncArgsKind> {
+fn all_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
 
-    (
+    let (_, args, order) = seq!(stream =>
         Kw::All,
         func_arg_list,
         sort_clause.optional()
-    )
-        .map(|(_, args, order)|
-            All {
-                args,
-                order: order.map(FuncArgsOrder::OrderBy)
-            }
-        )
+    )?;
+
+    let args = All {
+        args,
+        order: order.map(FuncArgsOrder::OrderBy)
+    };
+
+    Ok(args)
 }
 
-fn distinct_args() -> impl Combinator<Output = FuncArgsKind> {
+fn distinct_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
 
-    (
+    let (_, args, order) = seq!(stream =>
         Kw::Distinct,
         func_arg_list,
         sort_clause.optional()
-    )
-        .map(|(_, args, order)|
-            Distinct { args, order }
-        )
+    )?;
+
+    Ok(Distinct { args, order })
 }
 
-fn simple_args() -> impl Combinator<Output = FuncArgsKind> {
+fn simple_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
 
-    (
-        variadic_func_args(),
+    let ((args, variadic), order) = seq!(stream =>
+        variadic_func_args,
         sort_clause.optional()
-    )
-        .map(|((args, variadic), order)| {
-            if variadic {
-                Variadic { args, order }
-            }
-            else {
-                All {
-                    args,
-                    order: order.map(FuncArgsOrder::OrderBy)
-                }
-            }
-        })
+    )?;
+
+    let args = if variadic {
+        Variadic { args, order }
+    }
+    else {
+        All {
+            args,
+            order: order.map(FuncArgsOrder::OrderBy)
+        }
+    };
+
+    Ok(args)
 }
 
-fn variadic_func_args() -> impl Combinator<Output = (Vec<FuncArgExpr>, bool)> {
+fn variadic_func_args(stream: &mut TokenStream) -> scan::Result<(Vec<FuncArgExpr>, bool)> {
 
     /*
           func_arg_list
@@ -92,10 +94,8 @@ fn variadic_func_args() -> impl Combinator<Output = (Vec<FuncArgExpr>, bool)> {
         and then check if none or only the last argument is VARIADIC.
     */
 
-    variadic_args()
-        .map_result(|res| {
-            sanitize_variadic_args(res?)
-        })
+    let args = variadic_args(stream)?;
+    sanitize_variadic_args(args)
 }
 
 fn sanitize_variadic_args(
@@ -138,27 +138,28 @@ fn sanitize_variadic_args(
     Ok((args, true))
 }
 
-fn variadic_args() -> impl Combinator<Output = Vec<(FuncArgExpr, Option<Location>)>> {
+fn variadic_args(stream: &mut TokenStream) -> scan::Result<Vec<(FuncArgExpr, Option<Location>)>> {
 
     /*
         ( VARIADIC )? func_arg_expr ( ',' ( VARIADIC )? func_arg_expr )*
     */
 
-    many!(sep = Comma, variadic_arg())
+    many!(stream => sep = Comma, variadic_arg)
 }
 
-fn variadic_arg() -> impl Combinator<Output = (FuncArgExpr, Option<Location>)> {
+fn variadic_arg(stream: &mut TokenStream) -> scan::Result<(FuncArgExpr, Option<Location>)> {
 
     /*
         ( VARIADIC )? func_arg_expr
     */
 
-    or(
-        located!(Kw::Variadic)
-            .and_then(func_arg_expr, |(_, loc), arg|
-                (arg, Some(loc))
-            ),
-        func_arg_expr
+    choice!(stream =>
+        seq!(=>
+            located!(stream => Kw::Variadic),
+            func_arg_expr(stream)
+        )
+            .map(|((_, loc), arg)| (arg, Some(loc))),
+        func_arg_expr(stream)
             .map(|arg| (arg, None)),
     )
 }
@@ -191,7 +192,7 @@ mod tests {
     })]
     #[test_case("()", Empty { order_within_group: None })]
     fn test_func_application_args(source: &str, expected: FuncArgsKind) {
-        test_parser!(source, func_application_args(), expected);
+        test_parser!(source, func_application_args, expected);
     }
 
     #[test_case("1, 2, variadic 3", (
@@ -211,14 +212,14 @@ mod tests {
         false
     ))]
     fn test_variadic_func_args(source: &str, expected: (Vec<FuncArgExpr>, bool)) {
-        test_parser!(source, variadic_func_args(), expected);
+        test_parser!(source, variadic_func_args, expected);
     }
 
     #[test]
     fn test_variadic_args() {
         test_parser!(
             source = "1, variadic 2, 3, variadic foo := 4, bar => 5",
-            parser = variadic_args(),
+            parser = variadic_args,
             expected = vec![
                 (Unnamed(IntegerConst(1)), None),
                 (Unnamed(IntegerConst(2)), Some(Location::new(3..11, 1, 4))),
@@ -249,22 +250,22 @@ mod tests {
         Some(Location::new(0..8, 1, 1))
     )]
     fn test_variadic_arg(source: &str, expected: FuncArgExpr, loc: Option<Location>) {
-        test_parser!(source, variadic_arg(), (expected, loc));
+        test_parser!(source, variadic_arg, (expected, loc));
     }
 }
 
 use crate::combinators::foundation::between;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::or;
-use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg_expr;
 use crate::combinators::func_arg_list;
 use crate::combinators::sort_clause;
 use crate::result::Optional;
 use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::FuncArgExpr;
 use pg_ast::FuncArgsKind;
 use pg_ast::FuncArgsKind::All;

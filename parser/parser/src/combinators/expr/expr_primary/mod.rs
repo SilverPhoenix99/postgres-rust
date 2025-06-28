@@ -5,12 +5,12 @@ mod func_expr;
 mod param_expr;
 
 /// Alias: `c_expr`
-pub(super) fn expr_primary() -> impl Combinator<Output = ExprNode> {
-    match_first! {
-        param_expr(),
-        expr_const(),
-        func_expr()
-    }
+pub(super) fn expr_primary(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+    choice!(parsed stream =>
+        param_expr,
+        expr_const,
+        func_expr
+    )
 }
 
 #[cfg(test)]
@@ -25,7 +25,7 @@ mod tests {
     #[test_case("user")]
     fn test_expr_primary(source: &str) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = expr_primary().parse(&mut stream);
+        let actual = expr_primary(&mut stream);
 
         // This only quickly tests that statement types aren't missing.
         // More in-depth testing is within each statement's module.
@@ -42,6 +42,7 @@ use self::{
     param_expr::param_expr,
 };
 use crate::combinators::expr::expr_const;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::choice;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::ExprNode;

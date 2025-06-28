@@ -1,5 +1,5 @@
 /// Alias: `AexprConst`
-pub(super) fn expr_const() -> impl Combinator<Output = ExprNode> {
+pub(super) fn expr_const(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     /*
           ICONST
@@ -13,7 +13,7 @@ pub(super) fn expr_const() -> impl Combinator<Output = ExprNode> {
         | ConstTypename SCONST
     */
 
-    match_first! {
+    choice!(parsed stream =>
         number.map(From::from),
         string.map(StringConst),
         bit_string
@@ -24,14 +24,13 @@ pub(super) fn expr_const() -> impl Combinator<Output = ExprNode> {
         True.map(|_| BooleanConst(true)),
         False.map(|_| BooleanConst(false)),
         Null.map(|_| NullConst),
-    }
+    )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use pg_ast::ExprNode::*;
     #[allow(unused_imports)]
     use pg_ast::TypeName::*;
@@ -48,17 +47,17 @@ mod tests {
     #[test_case("x'19af'", HexStringConst("19af".into()))]
     #[test_case("'string literal'", StringConst("string literal".into()))]
     fn test_expr_const(source: &str, expected: ExprNode) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = expr_const().parse(&mut stream);
-        assert_eq!(Ok(expected), actual);
+        test_parser!(source, expr_const, expected)
     }
 }
 
 use crate::combinators::foundation::bit_string;
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::number;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::BinaryStringConst;
 use pg_ast::ExprNode::BooleanConst;

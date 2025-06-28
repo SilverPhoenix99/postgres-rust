@@ -5,16 +5,16 @@
 // * [`check_func_name()`](https://github.com/postgres/postgres/blob/ae4569161a27823793ca24825bbabce2a91a0bc9/src/backend/parser/gram.y#L18866-L18882)
 // * [`check_indirection()`](https://github.com/postgres/postgres/blob/ae4569161a27823793ca24825bbabce2a91a0bc9/src/backend/parser/gram.y#L18884-L18903)
 // * [`makeRangeVarFromQualifiedName(..., List *namelist, ...)`](https://github.com/postgres/postgres/blob/ae4569161a27823793ca24825bbabce2a91a0bc9/src/backend/parser/gram.y#L19335)
-pub(super) fn indirection() -> impl Combinator<Output = Vec<Indirection>> {
+pub(super) fn indirection(stream: &mut TokenStream) -> scan::Result<Vec<Indirection>> {
 
     /*
         ( indirection_el )+
     */
 
-    many!(indirection_el())
+    many!(stream => indirection_el)
 }
 
-fn indirection_el() -> impl Combinator<Output = Indirection> {
+fn indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
 
     /*
           '.' '*'
@@ -26,30 +26,31 @@ fn indirection_el() -> impl Combinator<Output = Indirection> {
         | '[' a_expr ':' a_expr ']'
     */
 
-    match_first!(
+    choice!(stream =>
 
-        Dot.and_right(or(
-            Mul.map(|_| All),
-            col_label.map(Property),
-        )),
+        seq!(=>
+            Dot.parse(stream),
+            choice!(parsed stream =>
+                Mul.map(|_| All),
+                col_label.map(Property),
+            )
+        )
+            .map(|(_, indirection)| indirection),
 
-        parser(|stream| between!(square : stream =>
-            match_first!(
-                Colon
-                    .and_right(
-                        a_expr()
-                            .map(|index| Slice(None, Some(index)))
-                            .optional()
+        between!(square : stream =>
+            choice!(stream =>
+                seq!(stream =>
+                    Colon,
+                    a_expr.map(|index| Slice(None, Some(index)))
+                        .optional()
                     )
-                    .map(|expr| expr.unwrap_or(Slice(None, None))),
-    
-                (
-                    a_expr(),
-                    optional(
-                        Colon.and_right(
-                            a_expr().optional()
-                        ),
-                    )
+                    .map(|(_, expr)| expr.unwrap_or(Slice(None, None))),
+
+                seq!(=>
+                    a_expr(stream),
+                    seq!(stream => Colon, a_expr.optional())
+                        .map(|(_, expr)| expr)
+                        .optional()
                 )
                     .map(|(left, right)| match right {
                         None => Index(left),
@@ -57,8 +58,7 @@ fn indirection_el() -> impl Combinator<Output = Indirection> {
                         Some(Some(right)) => Slice(Some(left), Some(right)),
                     })
             )
-            .parse(stream)
-        ))
+        )
     )
 }
 
@@ -84,8 +84,7 @@ pub(super) fn check_indirection(indirection: Located<Vec<Indirection>>) -> scan:
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
     use pg_ast::Indirection;
@@ -102,21 +101,20 @@ mod tests {
     #[test_case("[3:]", Slice(Some(IntegerConst(3)), None))]
     #[test_case("[4:5]", Slice(Some(IntegerConst(4)), Some(IntegerConst(5))))]
     fn test_indirection_el(source: &str, expected: Indirection) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(expected), indirection_el().parse(&mut stream));
+        test_parser!(source, indirection_el, expected)
     }
 
     #[test]
     fn test_indirection() {
-        let mut stream = TokenStream::new(".some_property[:].*", DEFAULT_CONFIG);
-
-        let expected = vec![
-            Property("some_property".into()),
-            Slice(None, None),
-            All,
-        ];
-
-        assert_eq!(Ok(expected), indirection().parse(&mut stream));
+        test_parser!(
+            source = ".some_property[:].*",
+            parser = indirection,
+            expected = vec![
+                Property("some_property".into()),
+                Slice(None, None),
+                All,
+            ]
+        )
     }
 
     #[test]
@@ -150,13 +148,13 @@ mod tests {
 use crate::combinators::col_label;
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::between;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::optional;
-use crate::combinators::foundation::or;
-use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::result::Optional;
 use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::Indirection;
 use pg_ast::Indirection::All;
 use pg_ast::Indirection::Index;

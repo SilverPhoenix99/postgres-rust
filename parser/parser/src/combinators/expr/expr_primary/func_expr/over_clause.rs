@@ -1,15 +1,20 @@
-pub(super) fn over_clause() -> impl Combinator<Output = Option<OverClause>> {
+pub(super) fn over_clause(stream: &mut TokenStream) -> scan::Result<Option<OverClause>> {
 
     /*
           OVER ColId
         | OVER window_specification
     */
 
-    Over.and_right(or(
-        col_id.map(WindowName),
-        window_specification().map(WindowDefinition),
-    ))
-        .optional()
+    let expr = seq!(=>
+        Over.parse(stream),
+        choice!(parsed stream =>
+            col_id.map(WindowName),
+            window_specification.map(WindowDefinition)
+        )
+    );
+
+    let expr = expr.map(|(_, expr)| expr).optional()?;
+    Ok(expr)
 }
 
 #[cfg(test)]
@@ -26,14 +31,18 @@ mod tests {
         )
     ))]
     fn test_over_clause(source: &str, expected: Option<OverClause>) {
-        test_parser!(source, over_clause(), expected);
+        test_parser!(source, over_clause, expected);
     }
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::window_specification;
+use crate::result::Optional;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::OverClause;
 use pg_ast::OverClause::WindowDefinition;
 use pg_ast::OverClause::WindowName;

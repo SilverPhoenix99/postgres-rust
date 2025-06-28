@@ -1,14 +1,18 @@
-pub(super) fn filter_clause() -> impl Combinator<Output = Option<ExprNode>> {
+pub(super) fn filter_clause(stream: &mut TokenStream) -> scan::Result<Option<ExprNode>> {
 
     /*
         FILTER '(' WHERE a_expr ')'
     */
 
-    Filter
-        .and_right(parser(|stream| between!(paren : stream =>
-            Where.and_right(a_expr()).parse(stream)
-        )))
-        .optional()
+    let expr = seq!(=>
+        Filter.parse(stream),
+        between!(paren : stream =>
+            seq!(stream => Where, a_expr)
+        )
+    );
+
+    let expr = expr.map(|(_, (_, expr))| expr).optional()?;
+    Ok(expr)
 }
 
 #[cfg(test)]
@@ -20,7 +24,7 @@ mod tests {
     fn test_filter_clause() {
         test_parser!(
             source = "filter (where true)",
-            parser = filter_clause(),
+            parser = filter_clause,
             expected = Some(ExprNode::BooleanConst(true))
         )
     }
@@ -28,8 +32,11 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::between;
-use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::result::Optional;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::ExprNode;
 use pg_lexer::Keyword::Filter;
 use pg_lexer::Keyword::Where;

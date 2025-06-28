@@ -4,7 +4,7 @@ pub(super) fn expr_list(stream: &mut TokenStream) -> scan::Result<Vec<ExprNode>>
         a_expr ( ',' a_expr )*
     */
 
-    many!(stream => sep = Comma, a_expr())
+    many!(stream => sep = Comma, a_expr)
 }
 
 #[cfg(test)]

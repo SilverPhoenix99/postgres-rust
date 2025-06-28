@@ -19,12 +19,12 @@ pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<FuncAr
         Some((first, Operator(ColonEquals | EqualsGreater))) if is_type_function_name(first) => {
             let name = type_function_name(stream)?;
             choice!(parsed stream => ColonEquals, EqualsGreater).required()?;
-            let value = a_expr().parse(stream)?;
+            let value = a_expr(stream)?;
             let arg = NamedValue { name, value };
             Ok(arg)
         },
         _ => {
-            let value = a_expr().parse(stream)?;
+            let value = a_expr(stream)?;
             let arg = Unnamed(value);
             Ok(arg)
         },
@@ -59,7 +59,6 @@ mod tests {
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::type_function_name;
 use crate::result::Required;
 use crate::scan;

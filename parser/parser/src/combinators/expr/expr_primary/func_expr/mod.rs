@@ -2,31 +2,27 @@ mod filter_clause;
 mod over_clause;
 mod within_group_clause;
 
-pub(super) fn func_expr() -> impl Combinator<Output = ExprNode> {
+pub(super) fn func_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
-    match_first! {
-        Kw::CurrentRole.map(|_| CurrentRole),
-        Kw::CurrentUser.map(|_| CurrentUser),
-        Kw::SessionUser.map(|_| SessionUser),
-        Kw::SystemUser.map(|_| SystemUser),
-        Kw::User.map(|_| User),
-        Kw::CurrentCatalog.map(|_| CurrentCatalog),
-        Kw::CurrentDate.map(|_| CurrentDate),
-        Kw::CurrentTime
-            .and_right(opt_precision)
-            .map(|precision| CurrentTime { precision }),
-        Kw::CurrentTimestamp
-            .and_right(opt_precision)
-            .map(|precision| CurrentTimestamp { precision }),
-        Kw::Localtime
-            .and_right(opt_precision)
-            .map(|precision| LocalTime { precision }),
-        Kw::Localtimestamp
-            .and_right(opt_precision)
-            .map(|precision| LocalTimestamp { precision }),
-        case_expr().map(From::from),
-        cast_expr().map(From::from),
-    }
+    choice!(stream =>
+        Kw::CurrentRole.parse(stream).map(|_| CurrentRole),
+        Kw::CurrentUser.parse(stream).map(|_| CurrentUser),
+        Kw::SessionUser.parse(stream).map(|_| SessionUser),
+        Kw::SystemUser.parse(stream).map(|_| SystemUser),
+        Kw::User.parse(stream).map(|_| User),
+        Kw::CurrentCatalog.parse(stream).map(|_| CurrentCatalog),
+        Kw::CurrentDate.parse(stream).map(|_| CurrentDate),
+        seq!(stream => Kw::CurrentTime, opt_precision)
+            .map(|(_, precision)| CurrentTime { precision }),
+        seq!(stream => Kw::CurrentTimestamp, opt_precision)
+            .map(|(_, precision)| CurrentTimestamp { precision }),
+        seq!(stream => Kw::Localtime, opt_precision)
+            .map(|(_, precision)| LocalTime { precision }),
+        seq!(stream => Kw::Localtimestamp, opt_precision)
+            .map(|(_, precision)| LocalTimestamp { precision }),
+        case_expr(stream).map(From::from),
+        cast_expr(stream).map(From::from),
+    )
 }
 
 #[cfg(test)]
@@ -53,14 +49,14 @@ mod tests {
     #[test_case("localtimestamp", ExprNode::LocalTimestamp { precision: None })]
     #[test_case("localtimestamp(4)", ExprNode::LocalTimestamp { precision: Some(4) })]
     fn test_func_expr(source: &str, expected: ExprNode) {
-        test_parser!(source, func_expr(), expected)
+        test_parser!(source, func_expr, expected)
     }
 
     #[test_case("case when 1 then 2 end")]
     #[test_case("cast ('1' as int)")]
     fn test_func_expr_calls(source: &str) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = func_expr().parse(&mut stream);
+        let actual = func_expr(&mut stream);
 
         assert_matches!(actual, Ok(_),
             r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
@@ -70,9 +66,12 @@ mod tests {
 
 use crate::combinators::expr::expr_primary::case_expr;
 use crate::combinators::expr::expr_primary::cast_expr;
-use crate::combinators::foundation::match_first;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_precision;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::CurrentCatalog;
 use pg_ast::ExprNode::CurrentDate;

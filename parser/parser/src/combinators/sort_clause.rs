@@ -29,7 +29,7 @@ fn sortby(stream: &mut TokenStream) -> scan::Result<SortBy> {
     */
 
     let (expr, direction, nulls) = seq!(=>
-        a_expr().parse(stream),
+        a_expr(stream),
         choice!(stream =>
             seq!(stream => Kw::Using, qual_all_op)
                 .map(|(_, op)| Some(Using(op))),
@@ -115,7 +115,6 @@ use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_asc_desc;
 use crate::combinators::opt_nulls_order;
 use crate::combinators::qual_all_op;

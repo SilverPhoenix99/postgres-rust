@@ -1,4 +1,4 @@
-pub(super) fn case_expr() -> impl Combinator<Output = CaseExpr> {
+pub(super) fn case_expr(stream: &mut TokenStream) -> scan::Result<CaseExpr> {
 
     /*
         CASE ( a_expr )?
@@ -7,29 +7,31 @@ pub(super) fn case_expr() -> impl Combinator<Output = CaseExpr> {
         END
     */
 
-    (
-        Case.skip(),
-        a_expr().optional(),
-        many!(when_clause()),
-        else_clause()
-    ).map(|(_, target, when_clauses, default)|
-        CaseExpr::new(target, when_clauses, default)
-    )
+    let (_, target, when_clauses, default) = seq!(=>
+        Case.parse(stream),
+        a_expr(stream).optional(),
+        many!(stream => when_clause),
+        else_clause(stream)
+    )?;
+
+    let expr = CaseExpr::new(target, when_clauses, default);
+    Ok(expr)
 }
 
-fn when_clause() -> impl Combinator<Output = CaseWhen> {
-    (
-        When.and_right(a_expr()),
-        Then.and_right(a_expr()),
-    ).map(|(condition, body)|
-        CaseWhen::new(condition, body)
-    )
+fn when_clause(stream: &mut TokenStream) -> scan::Result<CaseWhen> {
+
+    let (_, condition, _, body) = seq!(stream => When, a_expr, Then, a_expr)?;
+
+    let expr = CaseWhen::new(condition, body);
+    Ok(expr)
 }
 
-fn else_clause() -> impl Combinator<Output = Option<ExprNode>> {
-    Else
-        .and_right(a_expr())
+fn else_clause(stream: &mut TokenStream) -> scan::Result<Option<ExprNode>> {
+
+    seq!(stream => Else, a_expr)
+        .map(|(_, expr)| expr)
         .optional()
+        .map_err(From::from)
 }
 
 #[cfg(test)]
@@ -46,7 +48,7 @@ mod tests {
                     ELSE 3
                 END
             ",
-            parser = case_expr(),
+            parser = case_expr,
             expected = CaseExpr::new(
                 Some(ExprNode::StringConst("foo".into())),
                 vec![
@@ -68,7 +70,7 @@ mod tests {
                     WHEN 1 THEN 2
                 END
             ",
-            parser = case_expr(),
+            parser = case_expr,
             expected = CaseExpr::new(
                 None,
                 vec![
@@ -84,8 +86,12 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::many;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::foundation::many;
+use crate::result::Optional;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::CaseExpr;
 use pg_ast::CaseWhen;
 use pg_ast::ExprNode;
