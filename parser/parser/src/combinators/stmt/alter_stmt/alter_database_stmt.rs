@@ -2,7 +2,7 @@ enum Change {
     RefreshVersion,
     Owner(RoleSpec),
     Name(Str),
-    SetTablespace(Str),
+    Tablespace(Str),
     SetOption(SetRest),
     ResetOption(VariableTarget),
     Options(Vec<AlterdbOption>)
@@ -39,7 +39,7 @@ pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> scan::Result<RawS
                         choice!(
                             (Kw::Tablespace, col_id)
                                 .right()
-                                .map(Change::SetTablespace),
+                                .map(Change::Tablespace),
                             set_rest
                                 .map(Change::SetOption)
                         )
@@ -72,7 +72,7 @@ pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> scan::Result<RawS
                     new_name
                 ).into()
             }
-            Change::SetTablespace(tablespace) => {
+            Change::Tablespace(tablespace) => {
                 let option = AlterdbOption::new(Tablespace, tablespace);
                 AlterDatabaseStmt::new(name, vec![option]).into()
             }
@@ -115,7 +115,7 @@ fn alterdb_opt_item(stream: &mut TokenStream) -> scan::Result<AlterdbOption> {
 
 fn alterdb_opt_name(stream: &mut TokenStream) -> scan::Result<AlterdbOptionKind> {
 
-    choice! (
+    choice!(
         Connection.and(Limit).map(|_| ConnectionLimit),
         Kw::Tablespace.map(|_| Tablespace),
         identifier.map(|ident| match ident.as_ref() {

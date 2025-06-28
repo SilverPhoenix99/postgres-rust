@@ -1,14 +1,17 @@
-pub(super) fn alter_generic_options() -> impl Combinator<Output = Vec<GenericOptionKind>> {
+pub(super) fn alter_generic_options(stream: &mut TokenStream) -> scan::Result<Vec<GenericOptionKind>> {
 
     /*
         OPTIONS '(' alter_generic_option_list ')'
     */
 
-    Options.and_right(
-        parser(|stream| between!(paren : stream =>
+    let (_, options) = seq!(=>
+        Options.parse(stream),
+        between!(paren : stream =>
             alter_generic_option_list(stream)
-        ))
-    )
+        )
+    )?;
+
+    Ok(options)
 }
 
 fn alter_generic_option_list(stream: &mut TokenStream) -> scan::Result<Vec<GenericOptionKind>> {
@@ -30,44 +33,35 @@ fn alter_generic_option(stream: &mut TokenStream) -> scan::Result<GenericOptionK
         | generic_option_elem
     */
 
-    let parser = choice!(
-        (Kw::Set, generic_option)
-            .right()
-            .map(Set),
-        (Kw::Add, generic_option)
-            .right()
-            .map(Add),
-        (DropKw, col_label)
-            .right()
-            .map(Drop),
-        generic_option
+    choice!(stream =>
+        seq!(stream => Kw::Set, generic_option)
+            .map(|(_, opt)| Set(opt)),
+        seq!(stream => Kw::Add, generic_option)
+            .map(|(_, opt)| Add(opt)),
+        seq!(stream => DropKw, col_label)
+            .map(|(_, opt)| Drop(opt)),
+        generic_option(stream)
             .map(Unspecified)
-    );
-
-    parser.parse(stream)
+    )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
     use crate::tests::test_parser;
-    use crate::tests::DEFAULT_CONFIG;
     use pg_ast::GenericOption;
     use test_case::test_case;
 
     #[test]
     fn test_alter_generic_options() {
-        let source = "options ( add a 'b', set c 'd' )";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = alter_generic_options().parse(&mut stream);
-
-        let expected = vec![
-            Add(GenericOption::new("a", "b")),
-            Set(GenericOption::new("c", "d"))
-        ];
-
-        assert_eq!(Ok(expected), actual);
+        test_parser!(
+            source = "options ( add a 'b', set c 'd' )",
+            parser = alter_generic_options,
+            expected = vec![
+                Add(GenericOption::new("a", "b")),
+                Set(GenericOption::new("c", "d"))
+            ]
+        )
     }
 
     #[test]
@@ -97,7 +91,7 @@ use crate::combinators::col_label;
 use crate::combinators::foundation::between;
 use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_option;
 use crate::scan;

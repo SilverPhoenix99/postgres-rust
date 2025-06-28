@@ -1,7 +1,16 @@
+enum Change {
+    Schema(Str),
+    Options(Option<Vec<Str>>),
+    Contents {
+        action: AddDrop,
+        target: AlterExtensionContentsTarget,
+    }
+}
+
 /// Aliases:
 /// * `AlterExtensionContentsStmt`
 /// * `AlterExtensionStmt`
-pub(super) fn alter_extension_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn alter_extension_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
         ALTER EXTENSION ColId (
@@ -11,35 +20,41 @@ pub(super) fn alter_extension_stmt() -> impl Combinator<Output = RawStmt> {
         )
     */
 
-    Kw::Extension.and_right(col_id)
-        .chain(match_first_with_state!{|extension, stream| {
-            {
-                Kw::Set.and(Kw::Schema)
-                    .and_right(col_id)
-            } => (schema) {
-                AlterObjectSchemaStmt::new(
-                    AlterObjectSchemaTarget::Extension(extension),
-                    schema
-                ).into()
-            },
-            {
-                Kw::Update
-                    .and_right(alter_extension_options)
-            } => (options) {
-                AlterExtensionStmt::new(extension, options).into()
-            },
-            {
-                (
-                    or(
-                        Add.map(|_| AddDrop::Add),
-                        DropKw.map(|_| AddDrop::Drop),
-                    ),
-                    alter_extension_target()
-                )
-            } => ((action, target)) {
-                AlterExtensionContentsStmt::new(extension, action, target).into()
-            }
-        }})
+    let (_, extension, change) = seq!(=>
+        Kw::Extension.parse(stream),
+        col_id(stream),
+        choice!(stream =>
+            seq!(stream => Kw::Set, Kw::Schema, col_id)
+                .map(|(.., new_schema)| Change::Schema(new_schema)),
+            seq!(stream => Kw::Update, alter_extension_options)
+                .map(|(_, options)| Change::Options(options)),
+            seq!(=>
+                choice!(parsed stream =>
+                    Add.map(|_| AddDrop::Add),
+                    DropKw.map(|_| AddDrop::Drop),
+                ),
+                alter_extension_target(stream)
+            )
+                .map(|(action, target)| Change::Contents { action, target })
+        )
+    )?;
+
+    let stmt = match change {
+        Change::Schema(new_schema) => {
+            AlterObjectSchemaStmt::new(
+                AlterObjectSchemaTarget::Extension(extension),
+                new_schema
+            ).into()
+        },
+        Change::Options(options) => {
+            AlterExtensionStmt::new(extension, options).into()
+        },
+        Change::Contents { action, target } => {
+            AlterExtensionContentsStmt::new(extension, action, target).into()
+        },
+    };
+
+    Ok(stmt)
 }
 
 /// Alias: `alter_extension_opt_list`
@@ -60,7 +75,7 @@ fn alter_extension_options(stream: &mut TokenStream) -> scan::Result<Option<Vec<
     Ok(options)
 }
 
-fn alter_extension_target() -> impl Combinator<Output = AlterExtensionContentsTarget> {
+fn alter_extension_target(stream: &mut TokenStream) -> scan::Result<AlterExtensionContentsTarget> {
 
     /*
           ACCESS METHOD ColId
@@ -101,7 +116,7 @@ fn alter_extension_target() -> impl Combinator<Output = AlterExtensionContentsTa
         | VIEW any_name
     */
 
-    match_first! {
+    choice!(parsed stream =>
         access_method.map(AccessMethod),
         aggregate.map(Aggregate),
         typecast.map(Typecast),
@@ -144,7 +159,7 @@ fn alter_extension_target() -> impl Combinator<Output = AlterExtensionContentsTa
         transform.map(Transform),
         type_name.map(Type),
         view.map(View),
-    }
+    )
 }
 
 #[cfg(test)]
@@ -192,7 +207,7 @@ mod tests {
         ).into()
     )]
     fn test_alter_extension_stmt(source: &str, expected: RawStmt) {
-        test_parser!(source, alter_extension_stmt(), expected);
+        test_parser!(source, alter_extension_stmt, expected);
     }
 
     #[test]
@@ -264,15 +279,13 @@ mod tests {
     #[test_case("type int", Type(Int4.into()))]
     #[test_case("view some_view", View(vec!["some_view".into()]))]
     fn test_alter_extension_target(source: &str, expected: AlterExtensionContentsTarget) {
-        test_parser!(source, alter_extension_target(), expected);
+        test_parser!(source, alter_extension_target, expected);
     }
 }
 
 use crate::combinators::col_id;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::match_first_with_state;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word_or_sconst;

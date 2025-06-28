@@ -16,22 +16,26 @@ mod set_reset_clause;
 
 pub(super) fn alter_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
-    Alter.and_right(choice!(
-        alter_aggregate_stmt,
-        alter_collation_stmt,
-        alter_conversion_stmt,
-        alter_database_stmt,
-        alter_default_privileges_stmt(),
-        alter_event_trigger_stmt(),
-        alter_extension_stmt(),
-        alter_function_stmt(),
-        alter_group_stmt(),
-        alter_language_stmt(),
-        alter_large_object_stmt(),
-        alter_system_stmt(),
-        alter_user_stmt()
-    ))
-        .parse(stream)
+    let (_, stmt) = seq!(=>
+        Alter.parse(stream),
+        choice!(parsed stream =>
+            alter_aggregate_stmt,
+            alter_collation_stmt,
+            alter_conversion_stmt,
+            alter_database_stmt,
+            alter_default_privileges_stmt.map(From::from),
+            alter_event_trigger_stmt,
+            alter_extension_stmt,
+            alter_function_stmt,
+            alter_group_stmt,
+            alter_language_stmt,
+            alter_large_object_stmt,
+            alter_system_stmt.map(From::from),
+            alter_user_stmt
+        )
+    )?;
+
+    Ok(stmt)
 }
 
 #[cfg(test)]
@@ -85,6 +89,7 @@ use self::{
     set_reset_clause::set_reset_clause
 };
 use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

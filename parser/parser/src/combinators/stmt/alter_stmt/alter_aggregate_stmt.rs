@@ -27,7 +27,7 @@ pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> scan::Result<Raw
         )
     )?;
 
-    let change = match change {
+    let stmt = match change {
         Change::Owner(new_owner) => {
             AlterOwnerStmt::new(
                 AlterOwnerTarget::Aggregate(aggregate),
@@ -48,7 +48,7 @@ pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> scan::Result<Raw
         },
     };
 
-    Ok(change)
+    Ok(stmt)
 }
 
 #[cfg(test)]

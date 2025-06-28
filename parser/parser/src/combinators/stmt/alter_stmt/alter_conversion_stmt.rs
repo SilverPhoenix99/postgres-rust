@@ -11,8 +11,8 @@ pub(super) fn alter_conversion_stmt(stream: &mut TokenStream) -> scan::Result<Ra
         ALTER CONVERSION any_name RENAME TO ColId
         ALTER CONVERSION any_name SET SCHEMA ColId
     */
-    
-    seq!(=>
+
+    let (_, name, change) = seq!(=>
         Conversion.parse(stream),
         any_name(stream),
         choice!(stream =>
@@ -23,27 +23,30 @@ pub(super) fn alter_conversion_stmt(stream: &mut TokenStream) -> scan::Result<Ra
             seq!(stream => Set, Schema, col_id)
                 .map(|(.., new_schema)| Change::Schema(new_schema))
         )
-    )
-        .map(|(_, name, change)| match change {
-            Change::Owner(new_owner) => {
-                AlterOwnerStmt::new(
-                    AlterOwnerTarget::Conversion(name),
-                    new_owner
-                ).into()
-            },
-            Change::Name(new_name) => {
-                RenameStmt::new(
-                    RenameTarget::Conversion(name),
-                    new_name
-                ).into()
-            },
-            Change::Schema(new_schema) => {
-                AlterObjectSchemaStmt::new(
-                    AlterObjectSchemaTarget::Conversion(name),
-                    new_schema
-                ).into()
-            },
-        })
+    )?;
+
+    let stmt = match change {
+        Change::Owner(new_owner) => {
+            AlterOwnerStmt::new(
+                AlterOwnerTarget::Conversion(name),
+                new_owner
+            ).into()
+        },
+        Change::Name(new_name) => {
+            RenameStmt::new(
+                RenameTarget::Conversion(name),
+                new_name
+            ).into()
+        },
+        Change::Schema(new_schema) => {
+            AlterObjectSchemaStmt::new(
+                AlterObjectSchemaTarget::Conversion(name),
+                new_schema
+            ).into()
+        },
+    };
+
+    Ok(stmt)
 }
 
 #[cfg(test)]

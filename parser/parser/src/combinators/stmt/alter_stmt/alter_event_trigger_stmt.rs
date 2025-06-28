@@ -1,5 +1,11 @@
+enum Change {
+    EnableTrigger(EventTriggerState),
+    Owner(RoleSpec),
+    Name(Str),
+}
+
 /// Includes: `AlterEventTrigStmt`
-pub(super) fn alter_event_trigger_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn alter_event_trigger_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
         ALTER EVENT TRIGGER ColId enable_trigger
@@ -7,35 +13,42 @@ pub(super) fn alter_event_trigger_stmt() -> impl Combinator<Output = RawStmt> {
         ALTER EVENT TRIGGER ColId RENAME TO ColId
     */
 
-    (
-        Event.and(Trigger).skip(),
-        col_id,
-    ).chain(match_first_with_state!(|(_, trigger), stream| {
-        { enable_trigger() } => (state) {
-            AlterEventTrigStmt::new(trigger, state).into()
+    let (.., event_trigger, change) = seq!(=>
+        Event.parse(stream),
+        Trigger.parse(stream),
+        col_id(stream),
+        choice!(stream =>
+            enable_trigger(stream)
+                .map(Change::EnableTrigger),
+            seq!(stream => Owner, To, role_spec)
+                .map(|(.., new_owner)| Change::Owner(new_owner)),
+            seq!(stream => Rename, To, col_id)
+                .map(|(.., new_name)| Change::Name(new_name))
+        )
+    )?;
+
+    let stmt = match change {
+        Change::EnableTrigger(state) => {
+            AlterEventTrigStmt::new(event_trigger, state).into()
         },
-        {
-            Owner.and(To)
-                .and_right(role_spec)
-        } => (new_owner) {
+        Change::Owner(new_owner) => {
             AlterOwnerStmt::new(
-                AlterOwnerTarget::EventTrigger(trigger),
-                new_owner
+                AlterOwnerTarget::EventTrigger(event_trigger),
+                new_owner,
             ).into()
         },
-        {
-            Rename.and(To)
-                .and_right(col_id)
-        } => (new_name) {
+        Change::Name(new_name) => {
             RenameStmt::new(
-                RenameTarget::EventTrigger(trigger),
-                new_name
+                RenameTarget::EventTrigger(event_trigger),
+                new_name,
             ).into()
-        }
-    }))
+        },
+    };
+
+    Ok(stmt)
 }
 
-fn enable_trigger() -> impl Combinator<Output = EventTriggerState> {
+fn enable_trigger(stream: &mut TokenStream) -> scan::Result<EventTriggerState> {
 
     /*
         ENABLE_P
@@ -44,60 +57,48 @@ fn enable_trigger() -> impl Combinator<Output = EventTriggerState> {
       | DISABLE_P
     */
 
-    match_first! {
-        Disable.map(|_| Disabled),
-        (
-            Enable.skip(),
-            or(
+    choice!(stream =>
+        Disable.parse(stream).map(|_| Disabled),
+        seq!(=>
+            Enable.parse(stream),
+            choice!(parsed stream =>
                 Replica.map(|_| FiresOnReplica),
                 Always.map(|_| FiresAlways)
             )
             .optional()
-        ).map(|(_, enable)|
-            enable.unwrap_or(FiresOnOrigin)
         )
-    }
+            .map(|(_, enable)| enable.unwrap_or(FiresOnOrigin))
+    )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
+    #[allow(unused_imports)]
     use pg_ast::RoleSpec;
     use test_case::test_case;
 
-    #[test]
-    fn test_alter_enable() {
-        let mut stream = TokenStream::new("event trigger trigger_name enable", DEFAULT_CONFIG);
-
-        let expected = AlterEventTrigStmt::new("trigger_name", FiresOnOrigin);
-
-        assert_eq!(Ok(expected.into()), alter_event_trigger_stmt().parse(&mut stream));
-    }
-
-    #[test]
-    fn test_alter_owner() {
-        let mut stream = TokenStream::new("event trigger trigger_name owner to public", DEFAULT_CONFIG);
-
-        let expected = AlterOwnerStmt::new(
+    #[test_case(
+        "event trigger trigger_name enable",
+        AlterEventTrigStmt::new("trigger_name", FiresOnOrigin).into()
+    )]
+    #[test_case(
+        "event trigger trigger_name owner to public",
+        AlterOwnerStmt::new(
             AlterOwnerTarget::EventTrigger("trigger_name".into()),
             RoleSpec::Public,
-        );
-
-        assert_eq!(Ok(expected.into()), alter_event_trigger_stmt().parse(&mut stream));
-    }
-
-    #[test]
-    fn test_alter_rename() {
-        let mut stream = TokenStream::new("event trigger trigger_name rename to another_trigger", DEFAULT_CONFIG);
-
-        let expected = RenameStmt::new(
+        ).into()
+    )]
+    #[test_case(
+        "event trigger trigger_name rename to another_trigger",
+        RenameStmt::new(
             RenameTarget::EventTrigger("trigger_name".into()),
             "another_trigger"
-        );
-
-        assert_eq!(Ok(expected.into()), alter_event_trigger_stmt().parse(&mut stream));
+        ).into()
+    )]
+    fn test_alter_enable(source: &str, expected: RawStmt) {
+        test_parser!(source, alter_event_trigger_stmt, expected)
     }
 
     #[test_case("disable", Disabled)]
@@ -105,17 +106,18 @@ mod tests {
     #[test_case("enable replica", FiresOnReplica)]
     #[test_case("enable always", FiresAlways)]
     fn test_enable_trigger(source: &str, expected: EventTriggerState) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(expected), enable_trigger().parse(&mut stream));
+        test_parser!(source, enable_trigger, expected)
     }
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::match_first_with_state;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
+use crate::result::Optional;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::AlterEventTrigStmt;
 use pg_ast::AlterOwnerStmt;
 use pg_ast::AlterOwnerTarget;
@@ -127,6 +129,8 @@ use pg_ast::EventTriggerState::FiresOnReplica;
 use pg_ast::RawStmt;
 use pg_ast::RenameStmt;
 use pg_ast::RenameTarget;
+use pg_ast::RoleSpec;
+use pg_basics::Str;
 use pg_lexer::Keyword::Always;
 use pg_lexer::Keyword::Disable;
 use pg_lexer::Keyword::Enable;

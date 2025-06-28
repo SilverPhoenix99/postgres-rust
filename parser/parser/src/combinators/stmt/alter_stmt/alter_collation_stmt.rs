@@ -30,7 +30,7 @@ pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> scan::Result<Raw
         )
     )?;
 
-    let change = match change {
+    let stmt = match change {
         Change::RefreshVersion => {
             RefreshCollationVersionStmt(name)
         }
@@ -54,7 +54,7 @@ pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> scan::Result<Raw
         }
     };
 
-    Ok(change)
+    Ok(stmt)
 }
 
 #[cfg(test)]

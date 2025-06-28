@@ -1,5 +1,16 @@
+enum Change {
+    Extension {
+        action: AddDrop,
+        extension: Str,
+    },
+    Owner(RoleSpec),
+    Name(Str),
+    Schema(Str),
+    Options(Vec<AlterFunctionOption>),
+}
+
 /// Alias: `AlterFunctionStmt`
-pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
+pub(super) fn alter_function_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
         ALTER (FUNCTION|PROCEDURE|ROUTINE) function_with_argtypes
@@ -15,87 +26,128 @@ pub(super) fn alter_function_stmt() -> impl Combinator<Output = RawStmt> {
 
     // SET SCHEMA is inlined, because it conflicts with `alter_function_option -> SET set_rest_more`.
 
-    (
-        func_type(),
-        function_with_argtypes
-    )
-        .chain(match_first_with_state!{|(func_type, func_sig), stream| {
-            {
-                (Depends, On, Extension)
-                    .and_right(col_id)
-            } => (extension) {
-                let target = match func_type {
-                    AlterFunctionKind::Function => AlterObjectDependsTarget::Function(func_sig),
-                    AlterFunctionKind::Procedure => AlterObjectDependsTarget::Procedure(func_sig),
-                    AlterFunctionKind::Routine => AlterObjectDependsTarget::Routine(func_sig),
-                };
-                AlterObjectDependsStmt::new(target, extension, AddDrop::Add).into()
-            },
-            {
-                (No, Depends, On, Extension)
-                    .and_right(col_id)
-            } => (extension) {
-                let target = match func_type {
-                    AlterFunctionKind::Function => AlterObjectDependsTarget::Function(func_sig),
-                    AlterFunctionKind::Procedure => AlterObjectDependsTarget::Procedure(func_sig),
-                    AlterFunctionKind::Routine => AlterObjectDependsTarget::Routine(func_sig),
-                };
-                AlterObjectDependsStmt::new(target, extension, AddDrop::Drop).into()
-            },
-            {
-                (Owner, To)
-                    .and_right(role_spec)
-            } => (new_owner) {
-                let target = match func_type {
-                    AlterFunctionKind::Function => AlterOwnerTarget::Function(func_sig),
-                    AlterFunctionKind::Procedure => AlterOwnerTarget::Procedure(func_sig),
-                    AlterFunctionKind::Routine => AlterOwnerTarget::Routine(func_sig),
-                };
-                AlterOwnerStmt::new(target, new_owner).into()
-            },
-            {
-                (Rename, To)
-                    .and_right(col_id)
-            } => (new_name) {
-                let target = match func_type {
-                    AlterFunctionKind::Function => RenameTarget::Function(func_sig),
-                    AlterFunctionKind::Procedure => RenameTarget::Procedure(func_sig),
-                    AlterFunctionKind::Routine => RenameTarget::Routine(func_sig),
-                };
-                RenameStmt::new(target, new_name).into()
-            },
-            {
-                (Set, Schema)
-                    .and_right(or(
-                        col_id,
-                        string
-                            .map(From::from)
-                            .and_left(Restrict.optional())
-                    ))
-            } => (new_schema) {
-                let target = match func_type {
-                    AlterFunctionKind::Function => AlterObjectSchemaTarget::Function(func_sig),
-                    AlterFunctionKind::Procedure => AlterObjectSchemaTarget::Procedure(func_sig),
-                    AlterFunctionKind::Routine => AlterObjectSchemaTarget::Routine(func_sig),
-                };
-                AlterObjectSchemaStmt::new(target, new_schema).into()
-            },
-            {
-                alterfunc_opt_list
-                    .and_left(Restrict.optional())
-            } => (options) {
-                AlterFunctionStmt::new(func_type, func_sig, options).into()
-            }
-        }})
+    let (func_type, signature, stmt) = seq!(=>
+        func_type(stream),
+        function_with_argtypes(stream),
+        choice!(stream =>
+            change_extension(stream)
+                .map(|(action, extension)| Change::Extension { action, extension }),
+            change_owner(stream)
+                .map(Change::Owner),
+            rename(stream)
+                .map(Change::Name),
+            set_schema(stream)
+                .map(Change::Schema),
+            seq!(stream => alterfunc_opt_list, Restrict.optional())
+                .map(|(options, _)| Change::Options(options))
+        )
+    )?;
+
+    let stmt = match (func_type, stmt) {
+        (AlterFunctionKind::Function, Change::Extension { action, extension }) => {
+            let target = AlterObjectDependsTarget::Function(signature);
+            AlterObjectDependsStmt::new(target, extension, action).into()
+        },
+        (AlterFunctionKind::Function, Change::Owner(new_owner)) => {
+            let target = AlterOwnerTarget::Function(signature);
+            AlterOwnerStmt::new(target, new_owner).into()
+        },
+        (AlterFunctionKind::Function, Change::Name(new_name)) => {
+            let target = RenameTarget::Function(signature);
+            RenameStmt::new(target, new_name).into()
+        },
+        (AlterFunctionKind::Function, Change::Schema(new_schema)) => {
+            let target = AlterObjectSchemaTarget::Function(signature);
+            AlterObjectSchemaStmt::new(target, new_schema).into()
+        },
+
+        (AlterFunctionKind::Procedure, Change::Extension { action, extension }) => {
+            let target = AlterObjectDependsTarget::Procedure(signature);
+            AlterObjectDependsStmt::new(target, extension, action).into()
+        },
+        (AlterFunctionKind::Procedure, Change::Owner(new_owner)) => {
+            let target = AlterOwnerTarget::Procedure(signature);
+            AlterOwnerStmt::new(target, new_owner).into()
+        },
+        (AlterFunctionKind::Procedure, Change::Name(new_name)) => {
+            let target = RenameTarget::Procedure(signature);
+            RenameStmt::new(target, new_name).into()
+        },
+        (AlterFunctionKind::Procedure, Change::Schema(new_schema)) => {
+            let target = AlterObjectSchemaTarget::Procedure(signature);
+            AlterObjectSchemaStmt::new(target, new_schema).into()
+        },
+
+        (AlterFunctionKind::Routine, Change::Extension { action, extension }) => {
+            let target = AlterObjectDependsTarget::Routine(signature);
+            AlterObjectDependsStmt::new(target, extension, action).into()
+        },
+        (AlterFunctionKind::Routine, Change::Owner(new_owner)) => {
+            let target = AlterOwnerTarget::Routine(signature);
+            AlterOwnerStmt::new(target, new_owner).into()
+        },
+        (AlterFunctionKind::Routine, Change::Name(new_name)) => {
+            let target = RenameTarget::Routine(signature);
+            RenameStmt::new(target, new_name).into()
+        },
+        (AlterFunctionKind::Routine, Change::Schema(new_schema)) => {
+            let target = AlterObjectSchemaTarget::Routine(signature);
+            AlterObjectSchemaStmt::new(target, new_schema).into()
+        },
+
+        (_, Change::Options(options)) => {
+            AlterFunctionStmt::new(func_type, signature, options).into()
+        },
+    };
+
+    Ok(stmt)
 }
 
-fn func_type() -> impl Combinator<Output = AlterFunctionKind> {
+fn change_extension(stream: &mut TokenStream) -> scan::Result<(AddDrop, Str)> {
 
-    match_first! {
+    seq!(=>
+        choice!(stream =>
+            seq!(stream => No, Depends, On, Extension).map(|_| AddDrop::Drop),
+            seq!(stream => Depends, On, Extension).map(|_| AddDrop::Add)
+        ),
+        col_id(stream)
+    )
+}
+
+fn change_owner(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
+
+    let (.., new_owner) = seq!(stream => Owner, To, role_spec)?;
+    Ok(new_owner)
+}
+
+fn rename(stream: &mut TokenStream) -> scan::Result<Str> {
+
+    let (.., new_name) = seq!(stream => Rename, To, col_id)?;
+    Ok(new_name)
+}
+
+fn set_schema(stream: &mut TokenStream) -> scan::Result<Str> {
+
+    let (.., new_schema) = seq!(=>
+        Set.parse(stream),
+        Schema.parse(stream),
+        choice!(stream =>
+            col_id(stream),
+            seq!(stream => string, Restrict.optional())
+                .map(|(new_schema, _)| new_schema.into())
+        )
+    )?;
+
+    Ok(new_schema)
+}
+
+fn func_type(stream: &mut TokenStream) -> scan::Result<AlterFunctionKind> {
+
+    choice!(parsed stream =>
         Kw::Function.map(|_| AlterFunctionKind::Function),
         Kw::Procedure.map(|_| AlterFunctionKind::Procedure),
         Kw::Routine.map(|_| AlterFunctionKind::Routine),
-    }
+    )
 }
 
 fn alterfunc_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<AlterFunctionOption>> {
@@ -235,14 +287,14 @@ mod tests {
         ).into()
     )]
     fn test_alter_function_stmt(source: &str, expected: RawStmt) {
-        test_parser!(source, alter_function_stmt(), expected);
+        test_parser!(source, alter_function_stmt, expected);
     }
 
     #[test_case("function", AlterFunctionKind::Function)]
     #[test_case("procedure", AlterFunctionKind::Procedure)]
     #[test_case("routine", AlterFunctionKind::Routine)]
     fn test_func_type(source: &str, expected: AlterFunctionKind) {
-        test_parser!(source, func_type(), expected);
+        test_parser!(source, func_type, expected);
     }
 
     #[test]
@@ -259,10 +311,9 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::match_first;
-use crate::combinators::foundation::match_first_with_state;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::function_with_argtypes;
@@ -283,6 +334,8 @@ use pg_ast::AlterOwnerTarget;
 use pg_ast::RawStmt;
 use pg_ast::RenameStmt;
 use pg_ast::RenameTarget;
+use pg_ast::RoleSpec;
+use pg_basics::Str;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Depends;
 use pg_lexer::Keyword::Extension;

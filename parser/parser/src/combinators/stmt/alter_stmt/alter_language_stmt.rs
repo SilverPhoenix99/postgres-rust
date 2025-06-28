@@ -1,81 +1,88 @@
-pub(super) fn alter_language_stmt() -> impl Combinator<Output = RawStmt> {
+enum Change {
+    Owner(RoleSpec),
+    Name(Str),
+}
+
+pub(super) fn alter_language_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
         ALTER (PROCEDURAL)? LANGUAGE ColId OWNER TO RoleSpec # AlterOwnerStmt
         ALTER (PROCEDURAL)? LANGUAGE ColId RENAME TO ColId # RenameStmt
     */
 
-    or(
-        Procedural.and(Language).skip(),
-        Language.skip()
-    )
-        .and_right(col_id)
-        .chain(match_first_with_state!(|name, stream| {
-            {
-                Owner.and(To)
-                    .and_right(role_spec)
-            } => (role) {
-                AlterOwnerStmt::new(
-                    AlterOwnerTarget::Language(name),
-                    role
-                ).into()
-            },
-            {
-                Rename.and(To)
-                    .and_right(col_id)
-            } => (new_name) {
-                RenameStmt::new(
-                    RenameTarget::Language(name),
-                    new_name
-                ).into()
-            },
-        }))
+    let (_, language, stmt) = seq!(=>
+        choice!(stream =>
+            seq!(stream => Procedural, Language).map(|_| ()),
+            Language.parse(stream).map(|_| ())
+        ),
+        col_id(stream),
+        choice!(stream =>
+            seq!(stream => Owner, To, role_spec)
+                .map(|(.., new_owner)| Change::Owner(new_owner)),
+            seq!(stream => Rename, To, col_id)
+                .map(|(.., new_name)| Change::Name(new_name))
+        )
+    )?;
+
+    let stmt = match stmt {
+        Change::Owner(new_owner) => {
+            AlterOwnerStmt::new(
+                AlterOwnerTarget::Language(language),
+                new_owner
+            ).into()
+        },
+        Change::Name(new_name) => {
+            RenameStmt::new(
+                RenameTarget::Language(language),
+                new_name
+            ).into()
+        },
+    };
+
+    Ok(stmt)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
+    #[allow(unused_imports)]
     use pg_ast::RoleSpec::Public;
+    use test_case::test_case;
 
-    #[test]
-    fn test_alter_owner() {
-        let source = "procedural language some_language owner to public";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        let expected = AlterOwnerStmt::new(
+    #[test_case(
+        "procedural language some_language owner to public",
+        AlterOwnerStmt::new(
             AlterOwnerTarget::Language("some_language".into()),
             Public
-        );
-
-        assert_eq!(Ok(expected.into()), alter_language_stmt().parse(&mut stream));
-    }
-
-    #[test]
-    fn test_rename() {
-        let source = "language some_language rename to new_lang";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        let expected = RenameStmt::new(
+        ).into()
+    )]
+    #[test_case(
+        "language some_language rename to new_lang",
+        RenameStmt::new(
             RenameTarget::Language("some_language".into()),
             "new_lang"
-        );
-
-        assert_eq!(Ok(expected.into()), alter_language_stmt().parse(&mut stream));
+        ).into()
+    )]
+    fn test_alter_language_stmt(source: &str, expected: RawStmt) {
+        test_parser!(source, alter_language_stmt, expected);
     }
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::match_first_with_state;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::choice;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
+use crate::scan;
+use crate::stream::TokenStream;
 use pg_ast::AlterOwnerStmt;
 use pg_ast::AlterOwnerTarget;
 use pg_ast::RawStmt;
 use pg_ast::RenameStmt;
 use pg_ast::RenameTarget;
+use pg_ast::RoleSpec;
+use pg_basics::Str;
 use pg_lexer::Keyword::Language;
 use pg_lexer::Keyword::Owner;
 use pg_lexer::Keyword::Procedural;
