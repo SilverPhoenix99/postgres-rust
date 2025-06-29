@@ -5,15 +5,15 @@ pub(super) fn prepare_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
         PREPARE ColId ( '(' type_list ')' )? AS PreparableStmt
     */
 
-    let (_, stmt) = seq!(=>
-        Prepare.parse(stream),
-        choice!(stream =>
-            seq!(stream => Transaction, string)
+    let (_, stmt) = (
+        Prepare,
+        or((
+            (Transaction, string)
                 .map(|(_, tx_id)| PrepareTransactionStmt(tx_id)),
-            col_id(stream)
+            col_id
                 .map(|_name| todo!())
-        )
-    )?;
+        ))
+    ).parse(stream)?;
 
     Ok(stmt)
 }
@@ -34,8 +34,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::scan;

@@ -5,12 +5,11 @@ pub(super) fn notify_stmt(stream: &mut TokenStream) -> scan::Result<NotifyStmt> 
         NOTIFY ColId ( ',' SCONST )?
     */
 
-    let (_, condition_name, payload) = seq!(=>
-        Notify.parse(stream),
-        col_id(stream),
-        seq!(stream => Comma, string)
-            .optional()
-    )?;
+    let (_, condition_name, payload) = (
+        Notify,
+        col_id,
+        (Comma, string).optional()
+    ).parse(stream)?;
 
     let stmt = if let Some((_, payload)) = payload {
         NotifyStmt::with_payload(condition_name, payload)
@@ -47,10 +46,8 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
-use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::NotifyStmt;

@@ -20,24 +20,24 @@ pub(super) fn alter_extension_stmt(stream: &mut TokenStream) -> scan::Result<Raw
         )
     */
 
-    let (_, extension, change) = seq!(=>
-        Kw::Extension.parse(stream),
-        col_id(stream),
-        choice!(stream =>
-            seq!(stream => Kw::Set, Kw::Schema, col_id)
+    let (_, extension, change) = (
+        Kw::Extension,
+        col_id,
+        or((
+            (Kw::Set, Kw::Schema, col_id)
                 .map(|(.., new_schema)| Change::Schema(new_schema)),
-            seq!(stream => Kw::Update, alter_extension_options)
+            (Kw::Update, alter_extension_options)
                 .map(|(_, options)| Change::Options(options)),
-            seq!(=>
-                choice!(parsed stream =>
+            (
+                or((
                     Add.map(|_| AddDrop::Add),
                     DropKw.map(|_| AddDrop::Drop),
-                ),
-                alter_extension_target(stream)
+                )),
+                alter_extension_target
             )
                 .map(|(action, target)| Change::Contents { action, target })
-        )
-    )?;
+        ))
+    ).parse(stream)?;
 
     let stmt = match change {
         Change::Schema(new_schema) => {
@@ -65,10 +65,10 @@ fn alter_extension_options(stream: &mut TokenStream) -> scan::Result<Option<Vec<
         ( TO NonReservedWord_or_Sconst )*
     */
 
-    let options = many!(=>
-        seq!(stream => To, non_reserved_word_or_sconst)
+    let options = many(
+        (To, non_reserved_word_or_sconst)
             .map(|(_, opt)| opt)
-    );
+    ).parse(stream);
 
     let options = options.optional()?;
 
@@ -116,15 +116,39 @@ fn alter_extension_target(stream: &mut TokenStream) -> scan::Result<AlterExtensi
         | VIEW any_name
     */
 
-    choice!(parsed stream =>
+    // Broken down into smaller combinators, due to large Rust type names.
+    or((
+        alter_extension_target_1,
+        alter_extension_target_2,
+        alter_extension_target_3,
+        alter_extension_target_4,
+        alter_extension_target_5,
+        alter_extension_target_6,
+        alter_extension_target_7,
+        alter_extension_target_8,
+    )).parse(stream)
+}
+
+fn alter_extension_target_1(stream: &mut TokenStream) -> scan::Result<AlterExtensionContentsTarget> {
+    or((
         access_method.map(AccessMethod),
         aggregate.map(Aggregate),
         typecast.map(Typecast),
         collation.map(Collation),
+    )).parse(stream)
+}
+
+fn alter_extension_target_2(stream: &mut TokenStream) -> scan::Result<AlterExtensionContentsTarget> {
+    or((
         conversion.map(Conversion),
         database.map(Database),
         domain.map(Domain),
         event_trigger.map(EventTrigger),
+    )).parse(stream)
+}
+
+fn alter_extension_target_3(stream: &mut TokenStream) -> scan::Result<AlterExtensionContentsTarget> {
+    or((
         extension.map(Extension),
         foreign.map(|foreign| match foreign {
             Foreign::DataWrapper(foreign) => ForeignDataWrapper(foreign),
@@ -132,6 +156,11 @@ fn alter_extension_target(stream: &mut TokenStream) -> scan::Result<AlterExtensi
         }),
         function.map(Function),
         index.map(Index),
+    )).parse(stream)
+}
+
+fn alter_extension_target_4(stream: &mut TokenStream) -> scan::Result<AlterExtensionContentsTarget> {
+    or((
         materialized_view.map(MaterializedView),
         operator.map(|op| match op {
             Op::WithArgs(op) => Operator(op),
@@ -139,14 +168,29 @@ fn alter_extension_target(stream: &mut TokenStream) -> scan::Result<AlterExtensi
             Op::Family { name, index_method } => OperatorFamily { name, index_method },
         }),
         language.map(Language),
+    )).parse(stream)
+}
+
+fn alter_extension_target_5(stream: &mut TokenStream) -> scan::Result<AlterExtensionContentsTarget> {
+    or((
         procedure.map(Procedure),
         publication.map(Publication),
         role.map(Role),
         routine.map(Routine),
+    )).parse(stream)
+}
+
+fn alter_extension_target_6(stream: &mut TokenStream) -> scan::Result<AlterExtensionContentsTarget> {
+    or((
         schema.map(Schema),
         sequence.map(Sequence),
         server.map(ForeignServer),
         statistics.map(ExtendedStatistics),
+    )).parse(stream)
+}
+
+fn alter_extension_target_7(stream: &mut TokenStream) -> scan::Result<AlterExtensionContentsTarget> {
+    or((
         subscription.map(Subscription),
         table.map(Table),
         tablespace.map(Tablespace),
@@ -156,16 +200,22 @@ fn alter_extension_target(stream: &mut TokenStream) -> scan::Result<AlterExtensi
             TextSearch::Parser(name) => TextSearchParser(name),
             TextSearch::Template(name) => TextSearchTemplate(name),
         }),
+    )).parse(stream)
+}
+
+fn alter_extension_target_8(stream: &mut TokenStream) -> scan::Result<AlterExtensionContentsTarget> {
+    or((
         transform.map(Transform),
         type_name.map(Type),
         view.map(View),
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::tests::test_parser;
+    use pg_ast::RawStmt;
     #[allow(unused_imports)]
     use pg_ast::{
         AggregateWithArgs,
@@ -284,9 +334,8 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::stmt::access_method;

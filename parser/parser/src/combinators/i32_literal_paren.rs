@@ -1,10 +1,9 @@
 /// Production: `'(' ICONST ')'`
 pub(super) fn i32_literal_paren(stream: &mut TokenStream) -> scan::Result<i32> {
 
-    between!(paren : stream =>
-        integer(stream)
-            .map(From::from)
-    )
+    between_paren(integer)
+        .parse(stream)
+        .map(From::from)
 }
 
 #[cfg(test)]
@@ -22,7 +21,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between;
+use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::integer;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

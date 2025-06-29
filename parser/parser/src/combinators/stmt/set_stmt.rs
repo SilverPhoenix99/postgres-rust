@@ -9,23 +9,23 @@ pub(super) fn set_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
         | SET ( SESSION )? set_rest
     */
 
-    let (_, stmt) = seq!(=>
-        Set.parse(stream),
-        choice!(stream =>
-            seq!(stream => Constraints, constraints_set_list, constraints_set_mode)
+    let (_, stmt) = (
+        Set,
+        or((
+            (Constraints, constraints_set_list, constraints_set_mode)
                 .map(|(_, constraints, mode)|
                     ConstraintsSetStmt::new(constraints, mode).into()
                 ),
-            seq!(stream => Local, set_rest)
+            (Local, set_rest)
                 .map(|(_, stmt)|
                     VariableSetStmt::local(stmt).into()
                 ),
-            seq!(stream => Session.optional(), set_rest)
+            (Session.optional(), set_rest)
                 .map(|(_, stmt)|
                     VariableSetStmt::session(stmt).into()
                 )
-        )
-    )?;
+        ))
+    ).parse(stream)?;
 
     Ok(stmt)
 }
@@ -37,10 +37,10 @@ fn constraints_set_list(stream: &mut TokenStream) -> scan::Result<OneOrAll<Vec<R
         | qualified_name_list
     */
 
-    choice!(parsed stream =>
+    or((
         All.map(|_| OneOrAll::All),
         qualified_name_list.map(OneOrAll::One)
-    )
+    )).parse(stream)
 }
 
 fn constraints_set_mode(stream: &mut TokenStream) -> scan::Result<ConstraintsSetMode> {
@@ -50,10 +50,10 @@ fn constraints_set_mode(stream: &mut TokenStream) -> scan::Result<ConstraintsSet
         | IMMEDIATE
     */
 
-    choice!(parsed stream =>
+    or((
         Kw::Immediate.map(|_| Immediate),
         Kw::Deferred.map(|_| Deferred)
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -101,8 +101,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::qualified_name::qualified_name_list;
 use crate::combinators::stmt::set_rest;

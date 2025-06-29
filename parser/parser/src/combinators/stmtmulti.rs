@@ -1,4 +1,3 @@
-use crate::result::Optional;
 pub(crate) fn stmtmulti(stream: &mut TokenStream) -> scan::Result<Option<Vec<RawStmt>>> {
 
     // This production is slightly cheating, not because it's more efficient,
@@ -8,13 +7,10 @@ pub(crate) fn stmtmulti(stream: &mut TokenStream) -> scan::Result<Option<Vec<Raw
     // Original production:
     //     toplevel_stmt? ( ';' toplevel_stmt? )*
 
-    let (_, stmts) = seq!(=>
-        semicolons(stream).optional(),
-        many!(=>
-            sep = semicolons(stream),
-            toplevel_stmt(stream)
-        ).optional()
-    )?;
+    let (_, stmts) = (
+        semicolons.optional(),
+        many_sep(semicolons, toplevel_stmt).optional()
+    ).parse(stream)?;
 
     Ok(stmts)
 }
@@ -24,26 +20,26 @@ fn semicolons(stream: &mut TokenStream) -> scan::Result<()> {
 
     // Production: ( ';' )+
 
-    many!(stream => Semicolon.skip())?;
+    many(Semicolon.skip()).parse(stream)?;
 
     Ok(())
 }
 
 fn toplevel_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
-    choice!(parsed stream =>
+    or((
         transaction_stmt_legacy.map(RawStmt::from),
         stmt
-    )
+    )).parse(stream)
 }
 
 /// Alias: `TransactionStmtLegacy`
 fn transaction_stmt_legacy(stream: &mut TokenStream) -> scan::Result<TransactionStmt> {
 
-    choice!(parsed stream =>
+    or((
         begin_stmt,
         end_stmt
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -77,9 +73,9 @@ mod tests {
 }
 
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::choice;
 use crate::combinators::stmt;
 use crate::combinators::stmt::begin_stmt;
 use crate::combinators::stmt::end_stmt;

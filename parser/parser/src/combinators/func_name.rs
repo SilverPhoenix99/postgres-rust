@@ -16,36 +16,27 @@ pub(super) fn func_name(stream: &mut TokenStream) -> scan::Result<QualifiedName>
             | IDENT ( attrs )?
     */
 
-    choice!(stream =>
-        {
-            TypeFuncName.parse(stream)
-                .map(|kw| vec![kw.into()])
-        },
-        {
-            attrs!(stream =>
-                choice!(parsed stream =>
-                    Unreserved.map(Str::from),
-                    identifier.map(Str::from)
-                )
-            )
-        },
-        {
-            column_name(stream)
-        }
-    )
+    or((
+        TypeFuncName.map(|kw| vec![kw.into()]),
+        attrs(
+            or((
+                Unreserved.map(Str::from),
+                identifier.map(Str::from)
+            ))
+        ),
+        column_name
+    )).parse(stream)
 }
 
 fn column_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
 
     let loc = stream.current_location();
-    let name = attrs!(stream =>
-        ColumnName.parse(stream)
-            .map(Str::from)
-    )?;
+    let name = attrs(ColumnName.map(Str::from)).parse(stream)?;
 
     if name.len() == 1 {
         return Err(syntax(loc))
     }
+
     Ok(name)
 }
 
@@ -80,9 +71,9 @@ mod tests {
     }
 }
 
-use crate::combinators::attrs;
-use crate::combinators::foundation::choice;
+use crate::combinators::attrs::attrs;
 use crate::combinators::foundation::identifier;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

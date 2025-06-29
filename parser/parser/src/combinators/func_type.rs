@@ -25,7 +25,7 @@ pub(super) fn func_type(stream: &mut TokenStream) -> scan::Result<FuncType> {
     }
 
     // `%TYPE`
-    if seq!(stream => Percent, Type).optional()?.is_none() {
+    if (Percent, Type).parse(stream).optional()?.is_none() {
         // If it isn't a type reference, just return the type
         return Ok(FuncType::Type(typ))
     }
@@ -78,7 +78,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
 use crate::result::Optional;
 use crate::scan;

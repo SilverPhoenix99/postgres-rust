@@ -1,7 +1,8 @@
 /// Alias: `AlterOptRoleList`
 pub(super) fn alter_role_options(stream: &mut TokenStream) -> scan::Result<Option<Vec<AlterRoleOption>>> {
 
-    many!(stream => alter_role_option)
+    many(alter_role_option)
+        .parse(stream)
         .optional()
         .map_err(From::from)
 }
@@ -21,29 +22,18 @@ pub(super) fn alter_role_option(stream: &mut TokenStream) -> scan::Result<AlterR
         | IDENT
     */
 
-    choice!(stream =>
-        password_option(stream),
-        {
-            seq!(stream =>
-                Connection,
-                Limit,
-                signed_i32_literal,
-            )
-            .map(|(.., limit)| ConnectionLimit(limit))
-        },
-        {
-            seq!(stream => Valid, Until, string)
-                .map(|(.., valid)| ValidUntil(valid))
-        },
-        {
-            // Supported but not documented for roles, for use by ALTER GROUP.
-            seq!(stream =>User, role_list)
-                .map(|(_, roles)| RoleMembers(roles))
-        },
-        Kw::Inherit.parse(stream)
-            .map(|_| Inherit(true)),
-        ident_option(stream)
-    )
+    or((
+        password_option,
+        (Connection, Limit, signed_i32_literal)
+            .map(|(.., limit)| ConnectionLimit(limit)),
+        (Valid, Until, string)
+            .map(|(.., valid)| ValidUntil(valid)),
+        // Supported but not documented for roles, for use by ALTER GROUP.
+        (User, role_list)
+            .map(|(_, roles)| RoleMembers(roles)),
+        Kw::Inherit.map(|_| Inherit(true)),
+        ident_option
+    )).parse(stream)
 }
 
 fn password_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
@@ -55,39 +45,31 @@ fn password_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
         | UNENCRYPTED PASSWORD SCONST
     */
 
-    choice!(stream =>
-        {
-            seq!(=>
-                Kw::Password.parse(stream),
-                choice!(parsed stream =>
-                    string.map(Some),
-                    Null.map(|_| None)
-                )
-            )
-            .map(|(_, pw)| Password(pw))
-        },
-        {
-            /*
-             * These days, passwords are always stored in encrypted
-             * form, so there is no difference between PASSWORD and
-             * ENCRYPTED PASSWORD.
-             */
-            seq!(stream => Encrypted, Kw::Password, string)
-                .map(|(.., pw)|
-                    Password(Some(pw))
-                )
-        },
-        {
-            unencrypted_password_option(stream)
-        }
-    )
+    or((
+        (
+            Kw::Password,
+            or((
+                string.map(Some),
+                Null.map(|_| None)
+            ))
+        )
+            .map(|(_, pw)| Password(pw)),
+        /*
+         * These days, passwords are always stored in encrypted
+         * form, so there is no difference between PASSWORD and
+         * ENCRYPTED PASSWORD.
+         */
+        (Encrypted, Kw::Password, string)
+            .map(|(.., pw)| Password(Some(pw))),
+        unencrypted_password_option
+    )).parse(stream)
 }
 
 fn unencrypted_password_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
 
     let loc = stream.current_location();
 
-    let _ = seq!(stream => Unencrypted, Kw::Password, string)?;
+    let _ = (Unencrypted, Kw::Password, string).parse(stream)?;
 
     let err = UnencryptedPassword.at(loc).into();
     Err::<AlterRoleOption, _>(ScanErr(err))
@@ -95,7 +77,7 @@ fn unencrypted_password_option(stream: &mut TokenStream) -> scan::Result<AlterRo
 
 fn ident_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
 
-    let (ident, loc) = located!(stream => identifier)?;
+    let (ident, loc) = located(identifier).parse(stream)?;
 
     let option = match &*ident {
         "superuser" => SuperUser(true),
@@ -174,11 +156,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_list;

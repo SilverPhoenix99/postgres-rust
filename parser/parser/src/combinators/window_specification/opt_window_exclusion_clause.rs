@@ -7,15 +7,15 @@ pub(super) fn opt_window_exclusion_clause(stream: &mut TokenStream<'_>) -> scan:
         | EXCLUDE NO OTHERS
     */
 
-    let exclusion = seq!(=>
-        Exclude.parse(stream),
-        choice!(stream =>
-            seq!(stream => Current, Row).map(|_| Some(CurrentRow)),
-            Kw::Group.parse(stream).map(|_| Some(Group)),
-            Kw::Ties.parse(stream).map(|_| Some(Ties)),
-            seq!(stream => No, Others).map(|_| None)
-        )
-    );
+    let exclusion = (
+        Exclude,
+        or((
+            (Current, Row).map(|_| Some(CurrentRow)),
+            Kw::Group.map(|_| Some(Group)),
+            Kw::Ties.map(|_| Some(Ties)),
+            (No, Others).map(|_| None)
+        ))
+    ).parse(stream);
 
     let exclusion = exclusion.optional()?
         .and_then(|(_, exclusion)| exclusion);
@@ -40,8 +40,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
 use crate::scan;

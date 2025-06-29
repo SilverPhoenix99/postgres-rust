@@ -4,27 +4,27 @@ pub(super) fn subquery_op(stream: &mut TokenStream) -> scan::Result<QualifiedOpe
     // Intentionally excludes NOT LIKE/NOT ILIKE, due to conflicts.
     // Those will have to be checked separately.
 
-    choice!(parsed stream =>
+    or((
         qual_all_op,
         like_op.map(From::from)
-    )
+    )).parse(stream)
 }
 
 /// Alias: `qual_all_Op`
 pub(super) fn qual_all_op(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
-    choice!(parsed stream =>
+    or((
         all_op.map(From::from),
         explicit_op
-    )
+    )).parse(stream)
 }
 
 /// Alias: `qual_Op`
 pub(super) fn qual_op(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
-    choice!(parsed stream =>
+    or((
         user_defined_operator
             .map(|op| UserDefined(op).into()),
         explicit_op,
-    )
+    )).parse(stream)
 }
 
 pub(super) fn explicit_op(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
@@ -33,10 +33,8 @@ pub(super) fn explicit_op(stream: &mut TokenStream) -> scan::Result<QualifiedOpe
         OPERATOR '(' any_operator ')'
     */
 
-    let (_, op) = seq!(=>
-        OperatorKw.parse(stream),
-        between!(paren : stream => any_operator(stream))
-    )?;
+    let (_, op) = (OperatorKw, between_paren(any_operator))
+        .parse(stream)?;
 
     Ok(op)
 }
@@ -47,19 +45,15 @@ pub(super) fn any_operator(stream: &mut TokenStream) -> scan::Result<QualifiedOp
         ( col_id '.' )* all_op
     */
 
-    let (qn, op) = seq!(=>
-        {
-            many!(=>
-                seq!(stream => col_id, Dot)
-                    .map(|(qn, _)| qn)
-            )
+    let (qn, op) = (
+        many(
+            (col_id, Dot)
+                .map(|(qn, _)| qn)
+        )
             .optional()
-            .map(Option::unwrap_or_default)
-        },
-        {
-            all_op(stream)
-        }
-    )?;
+            .map(Option::unwrap_or_default),
+        all_op
+    ).parse(stream)?;
 
     Ok(QualifiedOperator(qn, op))
 }
@@ -68,28 +62,28 @@ pub(super) fn any_operator(stream: &mut TokenStream) -> scan::Result<QualifiedOp
 ///
 /// Inlined: `MathOp`
 fn all_op(stream: &mut TokenStream) -> scan::Result<Operator> {
-    choice!(parsed stream =>
+    or((
         additive_op,
         multiplicative_op,
         exponentiation_op,
         boolean_op,
         user_defined_operator.map(UserDefined)
-    )
+    )).parse(stream)
 }
 
 fn additive_op(stream: &mut TokenStream) -> scan::Result<Operator> {
-    choice!(parsed stream =>
+    or((
         Plus.map(|_| Addition),
         Minus.map(|_| Subtraction)
-    )
+    )).parse(stream)
 }
 
 fn multiplicative_op(stream: &mut TokenStream) -> scan::Result<Operator> {
-    choice!(parsed stream =>
+    or((
         Mul.map(|_| Multiplication),
         Div.map(|_| Division),
         Percent.map(|_| Modulo),
-    )
+    )).parse(stream)
 }
 
 fn exponentiation_op(stream: &mut TokenStream) -> scan::Result<Operator> {
@@ -98,21 +92,21 @@ fn exponentiation_op(stream: &mut TokenStream) -> scan::Result<Operator> {
 }
 
 fn boolean_op(stream: &mut TokenStream) -> scan::Result<Operator> {
-    choice!(parsed stream =>
+    or((
         Less.map(|_| Operator::Less),
         Equals.map(|_| Operator::Equals),
         Greater.map(|_| Operator::Greater),
         LessEquals.map(|_| Operator::LessEquals),
         GreaterEquals.map(|_| Operator::GreaterEquals),
         NotEquals.map(|_| Operator::NotEquals),
-    )
+    )).parse(stream)
 }
 
 fn like_op(stream: &mut TokenStream) -> scan::Result<Operator> {
-    choice!(parsed stream =>
+    or((
         Like.map(|_| Operator::Like),
         Ilike.map(|_| ILike)
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -212,13 +206,11 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::between;
-use crate::combinators::foundation::choice;
+use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::user_defined_operator;
 use crate::combinators::foundation::Combinator;
-use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::Operator;

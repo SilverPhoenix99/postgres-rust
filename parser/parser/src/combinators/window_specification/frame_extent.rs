@@ -5,17 +5,18 @@ pub(super) fn frame_extent(stream: &mut TokenStream<'_>) -> scan::Result<FrameEx
         | BETWEEN frame_bound AND frame_bound
     */
 
-    choice!(parsed stream => between_frame_bounds, single_frame_bound)
+    or(( between_frame_bounds, single_frame_bound))
+        .parse(stream)
 }
 
 fn between_frame_bounds(stream: &mut TokenStream<'_>) -> scan::Result<FrameExtent> {
 
-    let (_, start, _, (end, loc)) = seq!(=>
-        Between.parse(stream),
-        frame_bound(stream),
-        And.parse(stream),
-        located!(stream => frame_bound)
-    )?;
+    let (_, start, _, (end, loc)) = (
+        Between,
+        frame_bound,
+        And,
+        located(frame_bound)
+    ).parse(stream)?;
 
     let frame = match (start, end) {
         (UnboundedPreceding, UnboundedFollowing) => {
@@ -113,7 +114,7 @@ fn between_frame_bounds(stream: &mut TokenStream<'_>) -> scan::Result<FrameExten
 
 fn single_frame_bound(stream: &mut TokenStream<'_>) -> scan::Result<FrameExtent> {
 
-    let (bound, loc) = located!(stream => frame_bound)?;
+    let (bound, loc) = located(frame_bound).parse(stream)?;
 
     let frame = match bound {
         UnboundedPreceding => FrameExtent::Unbounded { end: None },
@@ -216,9 +217,8 @@ mod tests {
 }
 
 use super::frame_bound::frame_bound;
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::window_specification::frame_bound::FrameBound::CurrentRow;
 use crate::combinators::window_specification::frame_bound::FrameBound::OffsetFollowing;

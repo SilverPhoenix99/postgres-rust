@@ -5,11 +5,7 @@ pub(super) fn abort_stmt(stream: &mut TokenStream) -> scan::Result<TransactionSt
         ABORT_P opt_transaction opt_transaction_chain
     */
 
-    let (.., chain) = seq!(stream =>
-        Abort,
-        opt_transaction,
-        opt_transaction_chain
-    )?;
+    let (.., chain) = (Abort, opt_transaction, opt_transaction_chain).parse(stream)?;
 
     Ok(TransactionStmt::Rollback { chain })
 }
@@ -31,7 +27,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_transaction;
 use crate::combinators::opt_transaction_chain;
 use crate::scan;

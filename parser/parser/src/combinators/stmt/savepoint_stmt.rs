@@ -5,7 +5,8 @@ pub(super) fn savepoint_stmt(stream: &mut TokenStream) -> scan::Result<Transacti
         SAVEPOINT ColId
     */
 
-    let (_, name) = seq!(stream => Savepoint, col_id)?;
+    let (_, name) = (Savepoint, col_id)
+        .parse(stream)?;
 
     let stmt = TransactionStmt::Savepoint(name);
 
@@ -28,7 +29,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::TransactionStmt;

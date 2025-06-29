@@ -1,9 +1,9 @@
 pub(super) fn type_function_name(stream: &mut TokenStream) -> scan::Result<Str> {
-    choice!(parsed stream =>
+    or((
         identifier.map(Str::from),
         Unreserved.map(Str::from),
         TypeFuncName.map(Str::from),
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -23,8 +23,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

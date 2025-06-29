@@ -4,7 +4,8 @@ pub(super) fn role(stream: &mut TokenStream) -> scan::Result<Str> {
         ROLE name
     */
 
-    let (_, name) = seq!(stream => Role, col_id)?;
+    let (_, name) = (Role, col_id)
+        .parse(stream)?;
 
     Ok(name)
 }
@@ -25,7 +26,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::Str;

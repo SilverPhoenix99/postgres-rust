@@ -6,10 +6,10 @@ pub(super) fn param_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         E.g: $1.foo[0].*
     */
 
-    let (index, indirection) = seq!(=>
-        param(stream),
-        located!(stream => indirection).optional()
-    )?;
+    let (index, indirection) = (
+        param,
+        located(indirection).optional()
+    ).parse(stream)?;
 
     let param = ParamRef { index };
     let expr = match indirection {
@@ -46,8 +46,7 @@ use crate::combinators::expr::check_indirection;
 use crate::combinators::expr::indirection;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::param;
-use crate::combinators::foundation::seq;
-use crate::result::Optional;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::ExprNode;

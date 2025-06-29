@@ -5,14 +5,14 @@ pub(super) fn transaction_mode_list(stream: &mut TokenStream) -> scan::Result<Ve
         transaction_mode ( (',')? transaction_mode )*
     */
 
-    many!(=>
-        pre = transaction_mode(stream),
-        choice!(stream =>
-            seq!(stream => Comma, transaction_mode)
+    many_pre(
+        transaction_mode,
+        or((
+            (Comma, transaction_mode)
                 .map(|(_, mode)| mode),
-            transaction_mode(stream)
-        )
-    )
+            transaction_mode
+        ))
+    ).parse(stream)
 }
 
 /// Alias: `transaction_mode_item`
@@ -26,24 +26,24 @@ fn transaction_mode(stream: &mut TokenStream) -> scan::Result<TransactionMode> {
         | NOT DEFERRABLE
     */
 
-    choice!(stream =>
-        Kw::Deferrable.parse(stream)
+    or((
+        Kw::Deferrable
             .map(|_| Deferrable),
-        seq!(stream => Not, Kw::Deferrable)
+        (Not, Kw::Deferrable)
             .map(|_| NotDeferrable),
-        seq!(=>
-            Read.parse(stream),
-            choice!(parsed stream =>
+        (
+            Read,
+            or((
                 Only.map(|_| ReadOnly),
                 Write.map(|_| ReadWrite)
-            )
+            ))
         )
             .map(|(_, mode)| mode),
-        seq!(stream => Isolation, Level, isolation_level)
+        (Isolation, Level, isolation_level)
             .map(|(.., mode)|
                 TransactionMode::IsolationLevel(mode)
             )
-    )
+    )).parse(stream)
 }
 
 /// Alias: `iso_level`
@@ -56,20 +56,20 @@ fn isolation_level(stream: &mut TokenStream) -> scan::Result<IsolationLevel> {
         | SERIALIZABLE
     */
 
-    choice!(stream =>
-        Kw::Serializable.parse(stream)
+    or((
+        Kw::Serializable
             .map(|_| Serializable),
-        seq!(stream => Repeatable, Read)
+        (Repeatable, Read)
             .map(|_| RepeatableRead),
-        seq!(=>
-            Read.parse(stream),
-            choice!(parsed stream =>
+        (
+            Read,
+            or((
                 Committed.map(|_| ReadCommitted),
                 Uncommitted.map(|_| ReadUncommitted)
-            )
+            ))
         )
             .map(|(_, isolation)| isolation)
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -158,9 +158,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::many_pre;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

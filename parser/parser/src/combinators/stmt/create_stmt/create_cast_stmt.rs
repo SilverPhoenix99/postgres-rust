@@ -4,7 +4,8 @@ pub(super) fn create_cast_stmt(stream: &mut TokenStream) -> scan::Result<CreateC
         typecast cast_conversion cast_context
     */
 
-    let (typecast, conversion, coercion) = seq!(stream => typecast, cast_conversion, cast_context)?;
+    let (typecast, conversion, coercion) = (typecast, cast_conversion, cast_context)
+        .parse(stream)?;
 
     let stmt = CreateCastStmt::new(typecast, conversion, coercion);
     Ok(stmt)
@@ -18,18 +19,18 @@ fn cast_conversion(stream: &mut TokenStream) -> scan::Result<CastConversion> {
         | WITHOUT FUNCTION
     */
 
-    choice!(stream =>
-        seq!(=>
-            With.parse(stream),
-            choice!(stream =>
-                Inout.parse(stream).map(|_| WithInout),
-                seq!(stream => Function, function_with_argtypes)
+    or((
+        (
+            With,
+            or((
+                Inout.map(|_| WithInout),
+                (Function, function_with_argtypes)
                     .map(|(_, signature)| WithFunction(signature))
-            )
+            ))
         )
             .map(|(_, conversion)| conversion),
-        seq!(stream => Without, Function).map(|_| WithoutFunction),
-    )
+        (Without, Function).map(|_| WithoutFunction),
+    )).parse(stream)
 }
 
 fn cast_context(stream: &mut TokenStream) -> scan::Result<CoercionContext> {
@@ -38,15 +39,17 @@ fn cast_context(stream: &mut TokenStream) -> scan::Result<CoercionContext> {
           ( AS (IMPLICIT | ASSIGNMENT) )?
     */
 
-    let context = seq!(=>
-        As.parse(stream),
-        choice!(parsed stream =>
+    let context = (
+        As,
+        or((
             Kw::Implicit.map(|_| CoercionContext::Implicit),
             Kw::Assignment.map(|_| CoercionContext::Assignment)
-        )
+        ))
     );
 
-    let Some((_, context)) = context.optional()? else {
+    let context = context.parse(stream).optional()?;
+
+    let Some((_, context)) = context else {
         return Ok(CoercionContext::default());
     };
 
@@ -93,8 +96,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::function_with_argtypes;
 use crate::combinators::stmt::typecast;

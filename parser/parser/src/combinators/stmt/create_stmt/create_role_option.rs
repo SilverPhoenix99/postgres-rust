@@ -1,7 +1,7 @@
 /// Alias: `OptRoleList`
 pub(super) fn create_role_options(stream: &mut TokenStream) -> scan::Result<Vec<CreateRoleOption>> {
 
-    many!(stream => create_role_option)
+    many(create_role_option).parse(stream)
 }
 
 /// Alias: `CreateOptRoleElem`
@@ -16,24 +16,39 @@ fn create_role_option(stream: &mut TokenStream) -> scan::Result<CreateRoleOption
         | alter_role_option
     */
 
-    choice!(stream =>
-        seq!(stream => Sysid, integer)
-            .map(|(_, id)| CreateRoleOption::SysId(id)),
-        seq!(stream => Admin, role_list)
-            .map(|(_, members)| CreateRoleOption::AdminMembers(members)),
-        seq!(stream => Role, role_list)
-            .map(|(_, roles)| CreateRoleOption::AddRoleTo(roles)),
-        seq!(=>
-            Inherit.parse(stream),
-            choice!(parsed stream => Role, Group),
-            role_list(stream)
-        )
-            .map(|(.., opt)|
-                CreateRoleOption::AddRoleTo(opt)
-            ),
-        alter_role_option(stream)
-            .map(CreateRoleOption::from)
-    )
+    or((
+        sysid,
+        admin,
+        role,
+        inherit,
+        alter_role_option.map(CreateRoleOption::from)
+    )).parse(stream)
+}
+
+fn sysid(stream: &mut TokenStream) -> scan::Result<CreateRoleOption> {
+    let (_, id) = (Sysid, integer).parse(stream)?;
+    Ok(CreateRoleOption::SysId(id))
+}
+
+fn admin(stream: &mut TokenStream) -> scan::Result<CreateRoleOption> {
+    let (_, members) = (Admin, role_list).parse(stream)?;
+    Ok(CreateRoleOption::AdminMembers(members))
+}
+
+fn role(stream: &mut TokenStream) -> scan::Result<CreateRoleOption> {
+    let (_, roles) = (Role, role_list).parse(stream)?;
+    Ok(CreateRoleOption::AddRoleTo(roles))
+}
+
+fn inherit(stream: &mut TokenStream) -> scan::Result<CreateRoleOption> {
+
+    let (.., roles) = (
+        Inherit,
+        or((Role, Group)),
+        role_list
+    ).parse(stream)?;
+
+    Ok(CreateRoleOption::AddRoleTo(roles))
 }
 
 #[cfg(test)]
@@ -68,10 +83,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::integer;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role::role_list;
 use crate::combinators::stmt::alter_role_option;

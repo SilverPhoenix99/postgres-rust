@@ -5,11 +5,8 @@ pub(in crate::combinators) fn end_stmt(stream: &mut TokenStream) -> scan::Result
         END_P opt_transaction opt_transaction_chain
     */
 
-    let (.., chain) = seq!(stream =>
-        End,
-        opt_transaction,
-        opt_transaction_chain
-    )?;
+    let (.., chain) = (End, opt_transaction, opt_transaction_chain)
+        .parse(stream)?;
 
     Ok(Commit { chain })
 }
@@ -31,7 +28,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_transaction;
 use crate::combinators::opt_transaction_chain;
 use crate::scan;

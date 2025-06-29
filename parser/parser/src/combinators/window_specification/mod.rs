@@ -11,14 +11,14 @@ pub(super) fn window_specification(stream: &mut TokenStream) -> scan::Result<Win
         '(' opt_existing_window_name opt_partition_clause ( sort_clause )? opt_frame_clause ')'
     */
 
-    let (name, partition, order, frame) = between!(paren : stream =>
-        seq!(stream =>
+    let (name, partition, order, frame) = between_paren(
+        (
             opt_existing_window_name,
             opt_partition_clause,
             sort_clause.optional(),
             opt_frame_clause
         )
-    )?;
+    ).parse(stream)?;
 
     let expr = WindowDefinition::new(name, partition, order, frame);
     Ok(expr)
@@ -34,8 +34,7 @@ use self::{
     opt_window_exclusion_clause::opt_window_exclusion_clause,
 };
 
-use crate::combinators::foundation::between;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::sort_clause;
 use crate::scan;

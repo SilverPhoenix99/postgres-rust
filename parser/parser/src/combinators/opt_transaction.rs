@@ -2,7 +2,8 @@ pub(super) fn opt_transaction(stream: &mut TokenStream) -> scan::Result<()> {
 
     // Skips over WORK | TRANSACTION
 
-    choice!(parsed stream => Work, Transaction)
+    or((Work, Transaction))
+        .parse(stream)
         .optional()?;
 
     Ok(())
@@ -23,7 +24,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
+use crate::combinators::foundation::or;
+use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;

@@ -6,10 +6,10 @@ pub(super) fn opt_asc_desc(stream: &mut TokenStream) -> scan::Result<Option<Sort
         | // empty
     */
 
-    let sort = choice!(parsed stream =>
+    let sort = or((
         Asc.map(|_| Ascending),
         Desc.map(|_| Descending),
-    );
+    )).parse(stream);
 
     let sort = sort.optional()?;
     Ok(sort)
@@ -30,8 +30,8 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::choice;
 use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;

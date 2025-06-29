@@ -1,11 +1,11 @@
 /// Alias: `SetResetClause`
 pub(super) fn set_reset_clause(stream: &mut TokenStream) -> scan::Result<SetResetClause> {
 
-    choice!(stream =>
-        seq!(stream => Set, set_rest)
+    or((
+        (Set, set_rest)
             .map(|(_, option)| SetResetClause::Set(option)),
-        reset_stmt(stream).map(SetResetClause::Reset)
-    )
+        reset_stmt.map(SetResetClause::Reset)
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -34,8 +34,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
+use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::reset_stmt::reset_stmt;
 use crate::combinators::stmt::set_rest;
 use crate::scan;

@@ -4,7 +4,7 @@ pub(super) fn func_arg_list(stream: &mut TokenStream<'_>) -> scan::Result<Vec<Fu
         func_arg_expr ( COMMA func_arg_expr )*
     */
 
-    many!(stream => sep = Comma, func_arg_expr)
+    many_sep(Comma, func_arg_expr).parse(stream)
 }
 
 pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<FuncArgExpr> {
@@ -17,9 +17,13 @@ pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<FuncAr
 
     match stream.peek2_option() {
         Some((first, Operator(ColonEquals | EqualsGreater))) if is_type_function_name(first) => {
-            let name = type_function_name(stream)?;
-            choice!(parsed stream => ColonEquals, EqualsGreater).required()?;
-            let value = a_expr(stream)?;
+
+            let (name, _, value) = (
+                type_function_name,
+                or((ColonEquals, EqualsGreater)),
+                a_expr
+            ).parse(stream)?;
+
             let arg = NamedValue { name, value };
             Ok(arg)
         },
@@ -57,10 +61,10 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::many;
+use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::or;
+use crate::combinators::foundation::Combinator;
 use crate::combinators::type_function_name;
-use crate::result::Required;
 use crate::scan;
 use crate::stream::TokenValue::Identifier;
 use crate::stream::TokenValue::Keyword;

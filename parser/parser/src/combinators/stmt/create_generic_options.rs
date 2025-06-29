@@ -4,14 +4,10 @@ pub(super) fn create_generic_options(stream: &mut TokenStream) -> scan::Result<O
         OPTIONS '(' generic_option_list ')'
     */
 
-    let result = seq!(=>
-        Options.parse(stream),
-        between!(paren : stream =>
-            generic_options(stream)
-        )
-    );
+    let result = (Options, between_paren(generic_options));
 
-    let stmt = result.optional()?
+    let stmt = result.parse(stream)
+        .optional()?
         .map(|(_, options)| options);
 
     Ok(stmt)
@@ -35,8 +31,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_options;
 use crate::result::Optional;

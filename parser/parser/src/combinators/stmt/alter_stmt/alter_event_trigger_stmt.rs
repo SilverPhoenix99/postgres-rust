@@ -13,19 +13,7 @@ pub(super) fn alter_event_trigger_stmt(stream: &mut TokenStream) -> scan::Result
         ALTER EVENT TRIGGER ColId RENAME TO ColId
     */
 
-    let (.., event_trigger, change) = seq!(=>
-        Event.parse(stream),
-        Trigger.parse(stream),
-        col_id(stream),
-        choice!(stream =>
-            enable_trigger(stream)
-                .map(Change::EnableTrigger),
-            seq!(stream => Owner, To, role_spec)
-                .map(|(.., new_owner)| Change::Owner(new_owner)),
-            seq!(stream => Rename, To, col_id)
-                .map(|(.., new_name)| Change::Name(new_name))
-        )
-    )?;
+    let (.., event_trigger, change) = (Event, Trigger, col_id, changes).parse(stream)?;
 
     let stmt = match change {
         Change::EnableTrigger(state) => {
@@ -48,6 +36,16 @@ pub(super) fn alter_event_trigger_stmt(stream: &mut TokenStream) -> scan::Result
     Ok(stmt)
 }
 
+fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
+    or((
+        enable_trigger.map(Change::EnableTrigger),
+        (Owner, To, role_spec)
+            .map(|(.., new_owner)| Change::Owner(new_owner)),
+        (Rename, To, col_id)
+            .map(|(.., new_name)| Change::Name(new_name))
+    )).parse(stream)
+}
+
 fn enable_trigger(stream: &mut TokenStream) -> scan::Result<EventTriggerState> {
 
     /*
@@ -57,18 +55,18 @@ fn enable_trigger(stream: &mut TokenStream) -> scan::Result<EventTriggerState> {
       | DISABLE_P
     */
 
-    choice!(stream =>
-        Disable.parse(stream).map(|_| Disabled),
-        seq!(=>
-            Enable.parse(stream),
-            choice!(parsed stream =>
+    or((
+        Disable.map(|_| Disabled),
+        (
+            Enable,
+            or((
                 Replica.map(|_| FiresOnReplica),
                 Always.map(|_| FiresAlways)
-            )
+            ))
             .optional()
         )
             .map(|(_, enable)| enable.unwrap_or(FiresOnOrigin))
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -111,11 +109,9 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
-use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::AlterEventTrigStmt;

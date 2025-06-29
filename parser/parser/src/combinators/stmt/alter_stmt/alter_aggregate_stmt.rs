@@ -14,18 +14,7 @@ pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> scan::Result<Raw
         )
     */
 
-    let (_, aggregate, change) = seq!(=>
-        Aggregate.parse(stream),
-        aggregate_with_argtypes(stream),
-        choice!(stream =>
-            seq!(stream => Owner, To, role_spec)
-                .map(|(.., new_owner)| Change::Owner(new_owner)),
-            seq!(stream => Rename, To, col_id)
-                .map(|(.., new_name)| Change::Name(new_name)),
-            seq!(stream => Set, Schema, col_id)
-                .map(|(.., new_schema)| Change::Schema(new_schema))
-        )
-    )?;
+    let (_, aggregate, change) = (Aggregate, aggregate_with_argtypes, changes).parse(stream)?;
 
     let stmt = match change {
         Change::Owner(new_owner) => {
@@ -49,6 +38,17 @@ pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> scan::Result<Raw
     };
 
     Ok(stmt)
+}
+
+fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
+    or((
+        (Owner, To, role_spec)
+            .map(|(.., new_owner)| Change::Owner(new_owner)),
+        (Rename, To, col_id)
+            .map(|(.., new_name)| Change::Name(new_name)),
+        (Set, Schema, col_id)
+            .map(|(.., new_schema)| Change::Schema(new_schema))
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -102,8 +102,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role::role_spec;
 use crate::combinators::stmt::aggregate_with_argtypes;

@@ -6,7 +6,8 @@ pub(super) fn release_savepoint_stmt(stream: &mut TokenStream) -> scan::Result<T
         RELEASE ColId
     */
 
-    let (.., name) = seq!(stream => Release, Savepoint.optional(), col_id)?;
+    let (.., name) = (Release, Savepoint.optional(), col_id)
+        .parse(stream)?;
 
     Ok(TransactionStmt::Release(name))
 }
@@ -36,7 +37,6 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

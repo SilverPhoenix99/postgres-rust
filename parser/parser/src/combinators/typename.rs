@@ -5,13 +5,13 @@ pub(super) fn typename(stream: &mut TokenStream) -> scan::Result<Type> {
         ( SETOF )? SimpleTypename opt_array_bounds
     */
 
-    choice!(stream =>
-        seq!(stream => Setof, record_typename)
+    or((
+        (Setof, record_typename)
             .map(|(_, typename)| {
                 typename.returning_table()
             }),
-        record_typename(stream),
-    )
+        record_typename,
+    )).parse(stream)
 }
 
 fn record_typename(stream: &mut TokenStream) -> scan::Result<Type> {
@@ -20,13 +20,13 @@ fn record_typename(stream: &mut TokenStream) -> scan::Result<Type> {
         SimpleTypename opt_array_bounds
     */
 
-    let (typename, array_bounds) = seq!(stream => simple_typename, opt_array_bounds)?;
+    let (typename, array_bounds) = (simple_typename, opt_array_bounds)
+        .parse(stream)?;
 
     let typename = typename.with_array_bounds(array_bounds);
 
     Ok(typename)
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -62,8 +62,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
-use crate::combinators::foundation::choice;
+use crate::combinators::foundation::or;
+use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_array_bounds;
 use crate::combinators::simple_typename;
 use crate::scan;

@@ -4,13 +4,13 @@ pub(super) fn language(stream: &mut TokenStream) -> scan::Result<Str> {
         opt_procedural LANGUAGE name
     */
 
-    let (_, name) = seq!(=>
-        choice!(stream =>
-            Language.parse(stream).map(|_| ()),
-            seq!(stream => Procedural, Language).map(|_| ())
-        ),
-        col_id(stream)
-    )?;
+    let (_, name) = (
+        or((
+            Language.skip(),
+            (Procedural, Language).skip()
+        )),
+        col_id
+    ).parse(stream)?;
 
     Ok(name)
 }
@@ -40,8 +40,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

@@ -4,7 +4,7 @@ pub(super) fn extension(stream: &mut TokenStream) -> scan::Result<Str> {
         EXTENSION ColId
     */
 
-    let (_, name) = seq!(stream => Extension, col_id)?;
+    let (_, name) = (Extension, col_id).parse(stream)?;
 
     Ok(name)
 }
@@ -25,7 +25,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::Str;

@@ -4,7 +4,8 @@ pub(super) fn server(stream: &mut TokenStream) -> scan::Result<Str> {
         SERVER ColId
     */
 
-    let (_, name) = seq!(stream => Server, col_id)?;
+    let (_, name) = (Server, col_id)
+        .parse(stream)?;
 
     Ok(name)
 }
@@ -25,7 +26,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::Str;

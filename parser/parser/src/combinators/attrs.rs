@@ -1,18 +1,16 @@
-/// `prefix ( '.' col_label )*`
-macro_rules! attrs {
-    ($stream:ident => $prefix:expr) => {
-        $crate::combinators::foundation::many!(=>
-            pre = $prefix,
-            $crate::combinators::foundation::seq!($stream =>
-                pg_lexer::OperatorKind::Dot,
-                $crate::combinators::col_label
-            )
-                .map(|(_, item)| item)
-        )
-    };
-}
+pub(in crate::combinators) fn attrs<P>(prefix: P) -> impl Combinator<Output = QualifiedName>
+where
+    P: Combinator<Output = Str>
+{
+    /*
+        prefix ( '.' col_label )*
+    */
 
-pub(in crate::combinators) use attrs;
+    many_pre(
+        prefix,
+        (Dot, col_label).map(|(_, name)| name)
+    )
+}
 
 #[cfg(test)]
 mod tests {
@@ -26,11 +24,9 @@ mod tests {
 
         test_parser!(
             source = ".qualified_.name_",
-            parser = parser(|stream|
-                attrs!(stream =>
-                    Ok::<_, scan::Error>("*some*".into())
-                )
-            ),
+            parser = attrs(parser(|_|
+                Ok::<_, scan::Error>("*some*".into())
+            )),
             expected = vec![
                 "*some*".into(),
                 "qualified_".into(),
@@ -39,3 +35,10 @@ mod tests {
         )
     }
 }
+
+use crate::combinators::col_label::col_label;
+use crate::combinators::foundation::many_pre;
+use crate::combinators::foundation::Combinator;
+use pg_basics::QualifiedName;
+use pg_basics::Str;
+use pg_lexer::OperatorKind::Dot;

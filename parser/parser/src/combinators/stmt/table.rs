@@ -4,7 +4,8 @@ pub(super) fn table(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
         TABLE any_name
     */
 
-    let (_, name) = seq!(stream => Table, any_name)?;
+    let (_, name) = (Table, any_name)
+        .parse(stream)?;
 
     Ok(name)
 }
@@ -25,7 +26,7 @@ mod tests {
 }
 
 use crate::combinators::any_name;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::QualifiedName;

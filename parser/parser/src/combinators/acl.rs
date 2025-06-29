@@ -4,7 +4,7 @@ pub(super) fn grantee_list(stream: &mut TokenStream) -> scan::Result<Vec<RoleSpe
         grantee ( ',' grantee )*
     */
 
-    many!(stream => sep = Comma, grantee)
+    many_sep(Comma, grantee).parse(stream)
 }
 
 fn grantee(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
@@ -13,7 +13,9 @@ fn grantee(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
         ( GROUP )? role_spec
     */
 
-    let (_, role) = seq!(stream => Group.optional(), role_spec)?;
+    let (_, role) = (Group.optional(), role_spec)
+        .parse(stream)?;
+
     Ok(role)
 }
 
@@ -24,7 +26,8 @@ pub(super) fn opt_grant_option(stream: &mut TokenStream<'_>) -> scan::Result<boo
         ( WITH GRANT OPTION )?
     */
 
-    let grant = seq!(stream => With, Grant, OptionKw)
+    let grant = (With, Grant, OptionKw)
+        .parse(stream)
         .optional()?
         .is_some();
 
@@ -37,10 +40,10 @@ pub(super) fn opt_drop_behavior(stream: &mut TokenStream<'_>) -> scan::Result<Dr
         ( CASCADE | RESTRICT )?
     */
 
-    let behaviour = choice!(parsed stream =>
+    let behaviour = or((
         Cascade.map(|_| DropBehavior::Cascade),
         Restrict.map(|_| DropBehavior::Restrict)
-    );
+    )).parse(stream);
 
     let behaviour = behaviour.optional()?
         .unwrap_or_default();
@@ -54,8 +57,10 @@ pub(super) fn opt_granted_by(stream: &mut TokenStream<'_>) -> scan::Result<RoleS
         GRANTED BY role_spec
     */
 
-    seq!(stream => Granted, By, role_spec)
-        .map(|(.., role)| role)
+    let (.., role) = (Granted, By, role_spec)
+        .parse(stream)?;
+
+    Ok(role)
 }
 
 #[cfg(test)]
@@ -109,9 +114,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::result::Optional;

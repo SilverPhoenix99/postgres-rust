@@ -11,7 +11,7 @@ pub(super) fn indirection(stream: &mut TokenStream) -> scan::Result<Vec<Indirect
         ( indirection_el )+
     */
 
-    many!(stream => indirection_el)
+    many(indirection_el).parse(stream)
 }
 
 fn indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
@@ -26,40 +26,60 @@ fn indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
         | '[' a_expr ':' a_expr ']'
     */
 
-    choice!(stream =>
+    or((
+        dot_indirection_el,
+        between_square(index_indirection_el)
+    )).parse(stream)
+}
 
-        seq!(=>
-            Dot.parse(stream),
-            choice!(parsed stream =>
-                Mul.map(|_| All),
-                col_label.map(Property),
-            )
+fn dot_indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
+
+    /*
+          '.' '*'
+        | '.' ColLabel
+    */
+
+    let (_, indirection) = (
+        Dot,
+        or((
+            Mul.map(|_| All),
+            col_label.map(Property),
+        ))
+    ).parse(stream)?;
+
+    Ok(indirection)
+}
+
+fn index_indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
+
+    /*
+          '[' ':' ']'
+        | '[' ':' a_expr ']'
+        | '[' a_expr ']'
+        | '[' a_expr ':' ']'
+        | '[' a_expr ':' a_expr ']'
+    */
+
+    or((
+        (
+            Colon,
+            a_expr.map(|index| Slice(None, Some(index)))
+                .optional()
         )
-            .map(|(_, indirection)| indirection),
+            .map(|(_, expr)| expr.unwrap_or(Slice(None, None))),
 
-        between!(square : stream =>
-            choice!(stream =>
-                seq!(stream =>
-                    Colon,
-                    a_expr.map(|index| Slice(None, Some(index)))
-                        .optional()
-                    )
-                    .map(|(_, expr)| expr.unwrap_or(Slice(None, None))),
-
-                seq!(=>
-                    a_expr(stream),
-                    seq!(stream => Colon, a_expr.optional())
-                        .map(|(_, expr)| expr)
-                        .optional()
-                )
-                    .map(|(left, right)| match right {
-                        None => Index(left),
-                        Some(None) => Slice(Some(left), None),
-                        Some(Some(right)) => Slice(Some(left), Some(right)),
-                    })
-            )
+        (
+            a_expr,
+            (Colon, a_expr.optional())
+                .map(|(_, expr)| expr)
+                .optional()
         )
-    )
+            .map(|(left, right)| match right {
+                None => Index(left),
+                Some(None) => Slice(Some(left), None),
+                Some(Some(right)) => Slice(Some(left), Some(right)),
+            })
+    )).parse(stream)
 }
 
 pub(super) fn check_indirection(indirection: Located<Vec<Indirection>>) -> scan::Result<Vec<Indirection>> {
@@ -147,12 +167,10 @@ mod tests {
 
 use crate::combinators::col_label;
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::between;
-use crate::combinators::foundation::choice;
+use crate::combinators::foundation::between_square;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
-use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::Indirection;

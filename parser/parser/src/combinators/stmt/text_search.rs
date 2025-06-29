@@ -17,20 +17,20 @@ pub(super) fn text_search(stream: &mut TokenStream) -> scan::Result<TextSearch> 
          ) any_name
     */
 
-    let (.., search_type) = seq!(=>
-        Text.parse(stream),
-        Search.parse(stream),
-        choice!(stream =>
-            seq!(stream => Configuration, any_name)
+    let (.., search_type) = (
+        Text,
+        Search,
+        or((
+            (Configuration, any_name)
                 .map(|(_, name)| TextSearch::Configuration(name)),
-            seq!(stream => Dictionary, any_name)
+            (Dictionary, any_name)
                 .map(|(_, name)| TextSearch::Dictionary(name)),
-            seq!(stream => ParserKw, any_name)
+            (ParserKw, any_name)
                 .map(|(_, name)| TextSearch::Parser(name)),
-            seq!(stream => Template, any_name)
+            (Template, any_name)
                 .map(|(_, name)| TextSearch::Template(name))
-        )
-    )?;
+        ))
+    ).parse(stream)?;
 
     Ok(search_type)
 }
@@ -51,8 +51,7 @@ mod tests {
 }
 
 use crate::combinators::any_name;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

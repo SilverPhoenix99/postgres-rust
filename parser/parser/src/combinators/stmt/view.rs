@@ -4,7 +4,7 @@ pub(super) fn view(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
         VIEW any_name
     */
 
-    let (_, view) = seq!(stream => View, any_name)?;
+    let (_, view) = (View, any_name).parse(stream)?;
 
     Ok(view)
 }
@@ -25,7 +25,7 @@ mod tests {
 }
 
 use crate::combinators::any_name;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::QualifiedName;

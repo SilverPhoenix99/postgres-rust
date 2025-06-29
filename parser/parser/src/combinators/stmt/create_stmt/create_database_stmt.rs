@@ -1,12 +1,12 @@
 /// Alias: `CreatedbStmt`
 pub(super) fn create_database_stmt(stream: &mut TokenStream) -> scan::Result<CreateDatabaseStmt> {
 
-    let (_, name, _, options) = seq!(stream =>
+    let (_, name, _, options) = (
         Database,
         col_id,
         With.optional(),
         createdb_opt_list
-    )?;
+    ).parse(stream)?;
 
     let stmt = CreateDatabaseStmt::new(name, options);
     Ok(stmt)
@@ -14,7 +14,7 @@ pub(super) fn create_database_stmt(stream: &mut TokenStream) -> scan::Result<Cre
 
 fn createdb_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<CreatedbOption>> {
 
-    many!(stream => createdb_opt_item)
+    many(createdb_opt_item).parse(stream)
 }
 
 fn createdb_opt_item(stream: &mut TokenStream) -> scan::Result<CreatedbOption> {
@@ -24,11 +24,11 @@ fn createdb_opt_item(stream: &mut TokenStream) -> scan::Result<CreatedbOption> {
         | createdb_opt_name ( '=' )? var_value
     */
 
-    let (kind, _, value) = seq!(stream =>
+    let (kind, _, value) = (
         createdb_opt_name,
         Equals.optional(),
         createdb_opt_value
-    )?;
+    ).parse(stream)?;
 
     let option = CreatedbOption::new(kind, value);
     Ok(option)
@@ -36,15 +36,15 @@ fn createdb_opt_item(stream: &mut TokenStream) -> scan::Result<CreatedbOption> {
 
 fn createdb_opt_name(stream: &mut TokenStream) -> scan::Result<CreatedbOptionKind> {
 
-    choice!(stream =>
-        seq!(stream => Connection, Limit).map(|_| ConnectionLimit),
-        Kw::Encoding.parse(stream).map(|_| Encoding),
-        LocationKw.parse(stream).map(|_| Location),
-        Kw::Owner.parse(stream).map(|_| Owner),
-        Kw::Tablespace.parse(stream).map(|_| Tablespace),
-        Kw::Template.parse(stream).map(|_| Template),
+    or((
+        (Connection, Limit).map(|_| ConnectionLimit),
+        Kw::Encoding.map(|_| Encoding),
+        LocationKw.map(|_| Location),
+        Kw::Owner.map(|_| Owner),
+        Kw::Tablespace.map(|_| Tablespace),
+        Kw::Template.map(|_| Template),
         // Unless quoted, identifiers are lower case
-        identifier(stream).map(|ident| match ident.as_ref() {
+        identifier.map(|ident| match ident.as_ref() {
             "allow_connections" => AllowConnections,
             "builtin_locale" => BuiltinLocale,
             "collation_version" => CollationVersion,
@@ -59,7 +59,7 @@ fn createdb_opt_name(stream: &mut TokenStream) -> scan::Result<CreatedbOptionKin
             "strategy" => Strategy,
             _ => Unknown(ident)
         })
-    )
+    )).parse(stream)
 }
 
 pub(in crate::combinators::stmt) fn createdb_opt_value(stream: &mut TokenStream) -> scan::Result<CreatedbOptionValue> {
@@ -69,10 +69,10 @@ pub(in crate::combinators::stmt) fn createdb_opt_value(stream: &mut TokenStream)
         | var_value
     */
 
-    choice!(parsed stream =>
+    or((
         DefaultKw.map(|_| CreatedbOptionValue::Default),
         var_value.map(From::from)
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -150,10 +150,9 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::var_value;
 use crate::scan;

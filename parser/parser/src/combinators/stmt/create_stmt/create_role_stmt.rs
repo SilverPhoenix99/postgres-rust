@@ -3,12 +3,12 @@
 /// * `CreateRoleStmt`
 pub(super) fn create_role_stmt(stream: &mut TokenStream) -> scan::Result<CreateRoleStmt> {
 
-    let (kind, name, _, options) = seq!(stream =>
+    let (kind, name, _, options) = (
         role_kind,
         role_id,
         With.optional(),
         create_role_options
-    )?;
+    ).parse(stream)?;
 
     let stmt = CreateRoleStmt::new(name, kind, options);
     Ok(stmt)
@@ -16,10 +16,10 @@ pub(super) fn create_role_stmt(stream: &mut TokenStream) -> scan::Result<CreateR
 
 fn role_kind(stream: &mut TokenStream) -> scan::Result<RoleKind> {
 
-    choice!(parsed stream =>
+    or((
         Group.map(|_| RoleKind::Group),
         Role.map(|_| RoleKind::Role)
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -58,8 +58,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_id;
 use crate::combinators::stmt::create_stmt::create_role_options;

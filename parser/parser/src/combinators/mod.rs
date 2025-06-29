@@ -61,7 +61,6 @@ use self::{
     acl::{grantee_list, opt_drop_behavior, opt_grant_option, opt_granted_by},
     all_or_var_name::all_or_var_name,
     any_name::{any_name, any_name_list},
-    attrs::attrs,
     bare_col_label::bare_col_label,
     boolean_or_string::{boolean_or_string, boolean_or_string_list},
     col_id::col_id,

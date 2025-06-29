@@ -4,12 +4,10 @@ pub(super) fn alter_generic_options(stream: &mut TokenStream) -> scan::Result<Ve
         OPTIONS '(' alter_generic_option_list ')'
     */
 
-    let (_, options) = seq!(=>
-        Options.parse(stream),
-        between!(paren : stream =>
-            alter_generic_option_list(stream)
-        )
-    )?;
+    let (_, options) = (
+        Options,
+        between_paren(alter_generic_option_list)
+    ).parse(stream)?;
 
     Ok(options)
 }
@@ -20,7 +18,7 @@ fn alter_generic_option_list(stream: &mut TokenStream) -> scan::Result<Vec<Gener
         alter_generic_option ( ',' alter_generic_option )*
     */
 
-    many!(stream => sep = Comma, alter_generic_option)
+    many_sep(Comma, alter_generic_option).parse(stream)
 }
 
 /// Alias: `alter_generic_option_elem`
@@ -33,16 +31,16 @@ fn alter_generic_option(stream: &mut TokenStream) -> scan::Result<GenericOptionK
         | generic_option_elem
     */
 
-    choice!(stream =>
-        seq!(stream => Kw::Set, generic_option)
+    or((
+        (Kw::Set, generic_option)
             .map(|(_, opt)| Set(opt)),
-        seq!(stream => Kw::Add, generic_option)
+        (Kw::Add, generic_option)
             .map(|(_, opt)| Add(opt)),
-        seq!(stream => DropKw, col_label)
+        (DropKw, col_label)
             .map(|(_, opt)| Drop(opt)),
-        generic_option(stream)
+        generic_option
             .map(Unspecified)
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -88,10 +86,9 @@ mod tests {
 }
 
 use crate::combinators::col_label;
-use crate::combinators::foundation::between;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_option;
 use crate::scan;

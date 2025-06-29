@@ -4,14 +4,15 @@ pub(super) fn filter_clause(stream: &mut TokenStream) -> scan::Result<Option<Exp
         FILTER '(' WHERE a_expr ')'
     */
 
-    let expr = seq!(=>
-        Filter.parse(stream),
-        between!(paren : stream =>
-            seq!(stream => Where, a_expr)
-        )
+    let expr = (
+        Filter,
+        between_paren((Where, a_expr))
     );
 
-    let expr = expr.map(|(_, (_, expr))| expr).optional()?;
+    let expr = expr.parse(stream)
+        .map(|(_, (_, expr))| expr)
+        .optional()?;
+
     Ok(expr)
 }
 
@@ -31,8 +32,7 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::between;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
 use crate::scan;

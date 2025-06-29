@@ -1,6 +1,7 @@
 pub(super) fn transform(stream: &mut TokenStream) -> scan::Result<Transform> {
 
-    let (_, _, for_type, _, language) = seq!(stream => Kw::Transform, For, typename, Language, col_id)?;
+    let (_, _, for_type, _, language) = (Kw::Transform, For, typename, Language, col_id)
+        .parse(stream)?;
 
     Ok(Transform::new(for_type, language))
 }
@@ -22,7 +23,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
 use crate::scan;
 use crate::stream::TokenStream;

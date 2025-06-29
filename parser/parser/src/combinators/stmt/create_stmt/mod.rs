@@ -10,17 +10,17 @@ pub(super) use create_database_stmt::createdb_opt_value;
 
 pub(super) fn create_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
-    let (_, stmt) = seq!(=>
-        Create.parse(stream),
-        choice!(parsed stream =>
+    let (_, stmt) = (
+        Create,
+        or((
             create_access_method_stmt.map(From::from),
             create_cast_stmt.map(From::from),
             create_conversion_stmt.map(From::from),
             create_database_stmt.map(From::from),
             create_role_stmt.map(From::from),
             create_user_stmt,
-        )
-    )?;
+        ))
+    ).parse(stream)?;
 
     Ok(stmt)
 }
@@ -59,8 +59,7 @@ use self::{
     create_role_stmt::create_role_stmt,
     create_user_stmt::create_user_stmt,
 };
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

@@ -12,22 +12,21 @@ pub(super) fn alter_user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt>
         | ALTER ( ROLE | USER ) user_stmt                                       => RawStmt
     */
 
-    choice!(stream =>
-        seq!(=>
-            User.parse(stream),
-            choice!(stream =>
-                seq!(stream => Mapping, For, auth_ident, Server, col_id, alter_generic_options)
-                    .map(
-                        |(_, _, user, _, servername, options)|
-                            AlterUserMappingStmt::new(user, servername, options).into()
+    or((
+        (
+            User,
+            or((
+                (Mapping, For, auth_ident, Server, col_id, alter_generic_options)
+                    .map(|(_, _, user, _, servername, options)|
+                        AlterUserMappingStmt::new(user, servername, options).into()
                     ),
-                user_stmt(stream)
-            )
+                user_stmt
+            ))
         )
             .map(|(_, stmt)| stmt),
-        seq!(stream => Kw::Role, user_stmt)
+        (Kw::Role, user_stmt)
             .map(|(_, stmt)| stmt)
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -75,8 +74,7 @@ mod tests {
 
 use self::user_stmt::user_stmt;
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::alter_stmt::alter_generic_options;
 use crate::combinators::stmt::auth_ident;

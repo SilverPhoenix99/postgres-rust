@@ -16,13 +16,14 @@ pub(super) fn drop_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
         DROP TYPE_P type_name_list opt_drop_behavior
     */
 
-    let (_, stmt) = seq!(stream => DropKw, parser(|_| todo!()))?;
+    let (_, stmt) = (DropKw, parser(|_| todo!()))
+        .parse(stream)?;
 
     Ok(stmt)
 }
 
 use crate::combinators::foundation::parser;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::RawStmt;

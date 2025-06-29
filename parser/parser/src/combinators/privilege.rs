@@ -5,16 +5,16 @@ pub(super) fn privileges(stream: &mut TokenStream) -> scan::Result<AccessPrivile
         | privilege_list
     */
 
-    choice!(stream =>
-        seq!(stream =>
+    or((
+        (
             AllKw,
             Privileges.optional(),
             paren_name_list.optional()
         )
             .map(|(.., columns)| All { columns }),
-        privilege_list(stream)
+        privilege_list
             .map(Specific)
-    )
+    )).parse(stream)
 }
 
 pub(super) fn privilege_list(stream: &mut TokenStream) -> scan::Result<Vec<SpecificAccessPrivilege>> {
@@ -23,7 +23,7 @@ pub(super) fn privilege_list(stream: &mut TokenStream) -> scan::Result<Vec<Speci
         privilege ( ',' privilege )*
     */
 
-    many!(stream => sep = Comma, privilege)
+    many_sep(Comma, privilege).parse(stream)
 }
 
 fn privilege(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
@@ -36,18 +36,18 @@ fn privilege(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> 
         | col_id opt_column_list
     */
 
-    choice!(stream =>
-        seq!(stream => Alter, SystemKw)
+    or((
+        (Alter, SystemKw)
             .map(|_| AlterSystem),
-        seq!(stream => CreateKw, paren_name_list.optional())
+        (CreateKw, paren_name_list.optional())
             .map(|(_, columns)| Create { columns }),
-        seq!(stream => ReferencesKw, paren_name_list.optional())
+        (ReferencesKw, paren_name_list.optional())
             .map(|(_, columns)| References { columns }),
-        seq!(stream => SelectKw, paren_name_list.optional())
+        (SelectKw, paren_name_list.optional())
             .map(|(_, columns)| Select { columns }),
-        seq!(stream => col_id, paren_name_list.optional())
+        (col_id, paren_name_list.optional())
             .map(|(privilege, columns)| Named { privilege, columns })
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -98,9 +98,8 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::paren_name_list;
 use crate::scan;

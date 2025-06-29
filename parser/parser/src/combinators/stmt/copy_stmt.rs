@@ -6,13 +6,14 @@ pub(super) fn copy_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
         COPY '(' PreparableStmt ')' TO opt_program copy_file_name opt_with copy_options
     */
 
-    let (_, stmt) = seq!(stream => CopyKw, parser(|_| todo!()))?;
+    let (_, stmt) = (CopyKw, parser(|_| todo!()))
+        .parse(stream)?;
 
     Ok(stmt)
 }
 
 use crate::combinators::foundation::parser;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::RawStmt;

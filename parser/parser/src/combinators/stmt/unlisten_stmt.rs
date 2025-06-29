@@ -6,13 +6,13 @@ pub(super) fn unlisten_stmt(stream: &mut TokenStream) -> scan::Result<OneOrAll<S
         UNLISTEN ColId
     */
 
-    let (_, stmt) = seq!(=>
-        Unlisten.parse(stream),
-        choice!(parsed stream =>
+    let (_, stmt) = (
+        Unlisten,
+        or((
             Mul.map(|_| OneOrAll::All),
             col_id.map(OneOrAll::One)
-        )
-    )?;
+        ))
+    ).parse(stream)?;
 
     Ok(stmt)
 }
@@ -33,8 +33,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

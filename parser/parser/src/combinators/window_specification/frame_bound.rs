@@ -34,10 +34,10 @@ pub(super) fn frame_bound(stream: &mut TokenStream<'_>) -> scan::Result<FrameBou
         }
     }
 
-    let (expr, bound) = seq!(=>
-        a_expr(stream),
-        choice!(parsed stream => Preceding, Following)
-    )?;
+    let (expr, bound) = (
+        a_expr,
+        or(( Preceding, Following))
+    ).parse(stream)?;
 
     let bound = if bound == Preceding {
         OffsetPreceding(expr)
@@ -73,8 +73,8 @@ use self::FrameBound::OffsetPreceding;
 use self::FrameBound::UnboundedFollowing;
 use self::FrameBound::UnboundedPreceding;
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Keyword as Kw;

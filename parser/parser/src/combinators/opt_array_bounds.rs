@@ -5,20 +5,16 @@ pub(super) fn opt_array_bounds(stream: &mut TokenStream) -> scan::Result<Option<
         | ( '[' ( ICONST )? ']' )*
     */
 
-    let bounds = choice!(stream =>
-        seq!(=>
-            Array.parse(stream),
-            between!(square : stream => i32_literal(stream))
-                .optional()
+    let bounds = or((
+        (
+            Array,
+            between_square(i32_literal).optional()
         )
             .map(|(_, dim)| vec![dim]),
-        many!(=>
-            between!(square : stream =>
-                i32_literal(stream)
-                    .optional()
-            )
+        many(
+            between_square(i32_literal.optional())
         )
-    );
+    )).parse(stream);
 
     let bounds = bounds.optional()?;
     Ok(bounds)
@@ -43,10 +39,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between;
-use crate::combinators::foundation::choice;
+use crate::combinators::foundation::between_square;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::i32_literal;
 use crate::result::Optional;

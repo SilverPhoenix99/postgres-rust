@@ -10,13 +10,14 @@ pub(super) fn revoke_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
         REVOKE ColId OPTION FOR privilege_list FROM role_list opt_granted_by opt_drop_behavior
     */
 
-    let (_, stmt) = seq!(stream => Revoke, parser(|_| todo!()))?;
+    let (_, stmt) = (Revoke, parser(|_| todo!()))
+        .parse(stream)?;
 
     Ok(stmt)
 }
 
 use crate::combinators::foundation::parser;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::RawStmt;

@@ -14,23 +14,11 @@ pub(super) fn alter_group_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt
         ALTER GROUP role_spec (ADD | DROP) USER role_list
     */
 
-    let (_, (group, loc), stmt) = seq!(=>
-        Group.parse(stream),
-        located!(stream => role_spec),
-        choice!(stream =>
-            seq!(stream => Rename, To, role_id)
-                .map(|(.., new_name)| Change::Rename(new_name)),
-            seq!(=>
-                choice!(parsed stream =>
-                    Add.map(|_| AddDrop::Add),
-                    DropKw.map(|_| AddDrop::Drop)
-                ),
-                User.parse(stream),
-                role_list(stream)
-            )
-                .map(|(action, _, roles)| Change::Role { action, roles })
-        )
-    )?;
+    let (_, (group, loc), stmt) = (
+        Group,
+        located(role_spec),
+        or((rename, change_role))
+    ).parse(stream)?;
 
     let stmt = match stmt {
         Change::Rename(new_name) => {
@@ -45,6 +33,26 @@ pub(super) fn alter_group_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt
     };
 
     Ok(stmt)
+}
+
+fn rename(stream: &mut TokenStream) -> scan::Result<Change> {
+
+    let (.., new_name) = (Rename, To, role_id).parse(stream)?;
+    Ok(Change::Rename(new_name))
+}
+
+fn change_role(stream: &mut TokenStream) -> scan::Result<Change> {
+
+    let (action, _, roles) = (
+        or((
+            Add.map(|_| AddDrop::Add),
+            DropKw.map(|_| AddDrop::Drop)
+        )),
+        User,
+        role_list
+    ).parse(stream)?;
+
+    Ok(Change::Role { action, roles })
 }
 
 #[cfg(test)]
@@ -87,9 +95,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_id;
 use crate::combinators::role_list;

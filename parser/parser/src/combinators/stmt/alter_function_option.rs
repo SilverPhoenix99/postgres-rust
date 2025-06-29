@@ -23,54 +23,76 @@ pub(super) fn alter_function_option(stream: &mut TokenStream) -> scan::Result<Al
         | reset_stmt
     */
 
-    choice!(stream =>
-        seq!(stream => Called, On, Null, Input)
-            .map(|_| Strict(false)),
-        seq!(stream => Returns, Null, On, Null, Input)
-            .map(|_| Strict(true)),
-        Kw::Strict.parse(stream).map(|_| Strict(true)),
-        Kw::Immutable.parse(stream).map(|_| Volatility(Immutable)),
-        Kw::Stable.parse(stream).map(|_| Volatility(Stable)),
-        Kw::Volatile.parse(stream).map(|_| Volatility(Volatile)),
+    // Broken down into smaller combinators, due to large Rust type names.
+    or((
+        alter_function_option_1,
+        alter_function_option_2,
+        alter_function_option_3,
+        alter_function_option_4,
+    )).parse(stream)
+}
+
+fn alter_function_option_1(stream: &mut TokenStream) -> scan::Result<AlterFunctionOption> {
+    or((
+        (Called, On, Null, Input).map(|_| Strict(false)),
+        (Returns, Null, On, Null, Input).map(|_| Strict(true)),
+        Kw::Strict.map(|_| Strict(true)),
+        Kw::Immutable.map(|_| Volatility(Immutable)),
+    )).parse(stream)
+}
+
+fn alter_function_option_2(stream: &mut TokenStream) -> scan::Result<AlterFunctionOption> {
+    or((
+        Kw::Stable.map(|_| Volatility(Stable)),
+        Kw::Volatile.map(|_| Volatility(Volatile)),
         {
-            seq!(=>
-                External.parse(stream),
-                Kw::Security.parse(stream),
-                choice!(parsed stream =>
+            (
+                External,
+                Kw::Security,
+                or((
                     Definer.map(|_| true),
                     Invoker.map(|_| false)
-                )
+                ))
             )
-            .map(|(.., opt)| Security(opt))
+                .map(|(.., opt)| Security(opt))
         },
         {
-            seq!(=>
-                Kw::Security.parse(stream),
-                choice!(parsed stream =>
+            (
+                Kw::Security,
+                or((
                     Definer.map(|_| true),
                     Invoker.map(|_| false)
-                )
+                ))
             )
-            .map(|(.., opt)| opt)
-            .map(Security)
+                .map(|(.., opt)| opt)
+                .map(Security)
         },
-        Kw::Leakproof.parse(stream)
+    )).parse(stream)
+}
+
+fn alter_function_option_3(stream: &mut TokenStream) -> scan::Result<AlterFunctionOption> {
+    or((
+        Kw::Leakproof
             .map(|_| Leakproof(true)),
-        seq!(stream => Not, Kw::Leakproof)
+        (Not, Kw::Leakproof)
             .map(|_| Leakproof(false)),
-        seq!(stream => Kw::Cost, signed_number)
+        (Kw::Cost, signed_number)
             .map(|(_, execution_cost)| Cost(execution_cost)),
-        seq!(stream => Kw::Rows, signed_number)
+        (Kw::Rows, signed_number)
             .map(|(_, result_rows)| Rows(result_rows)),
-        seq!(stream => Kw::Support, any_name)
+    )).parse(stream)
+}
+
+fn alter_function_option_4(stream: &mut TokenStream) -> scan::Result<AlterFunctionOption> {
+    or((
+        (Kw::Support, any_name)
             .map(|(_, support_function)| Support(support_function)),
-        seq!(stream => Kw::Parallel, col_id)
+        (Kw::Parallel, col_id)
             .map(|(_, mode)| Parallel(mode)),
-        seq!(stream => Kw::Set, set_rest_more)
+        (Kw::Set, set_rest_more)
             .map(|(_, option)| Set(option)),
-        reset_stmt(stream)
-            .map(Reset)
-    )
+        reset_stmt.map(Reset)
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -110,8 +132,8 @@ mod tests {
 }
 
 use crate::combinators::any_name;
-use crate::combinators::col_id::col_id;
-use crate::combinators::foundation::{choice, seq};
+use crate::combinators::col_id;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::signed_number;
 use crate::combinators::stmt::reset_stmt;

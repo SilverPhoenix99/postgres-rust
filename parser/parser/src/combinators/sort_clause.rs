@@ -7,7 +7,8 @@ pub(super) fn sort_clause(stream: &mut TokenStream) -> scan::Result<Vec<SortBy>>
         ORDER BY sortby_list
     */
 
-    let (.., sorts) = seq!(stream => Order, By, sortby_list)?;
+    let (.., sorts) = (Order, By, sortby_list)
+        .parse(stream)?;
 
     Ok(sorts)
 }
@@ -18,7 +19,7 @@ fn sortby_list(stream: &mut TokenStream) -> scan::Result<Vec<SortBy>> {
         sortby ( ',' sortby )*
     */
 
-    many!(stream => sep = Comma, sortby)
+    many_sep(Comma, sortby).parse(stream)
 }
 
 fn sortby(stream: &mut TokenStream) -> scan::Result<SortBy> {
@@ -28,17 +29,17 @@ fn sortby(stream: &mut TokenStream) -> scan::Result<SortBy> {
         | a_expr opt_asc_desc opt_nulls_order
     */
 
-    let (expr, direction, nulls) = seq!(=>
-        a_expr(stream),
-        choice!(stream =>
-            seq!(stream => Kw::Using, qual_all_op)
+    let (expr, direction, nulls) = (
+        a_expr,
+        or((
+            (Kw::Using, qual_all_op)
                 .map(|(_, op)| Some(Using(op))),
-            opt_asc_desc(stream)
-        )
+            opt_asc_desc
+        ))
             .optional()
             .map(Option::unwrap_or_default),
-        opt_nulls_order(stream)
-    )?;
+        opt_nulls_order
+    ).parse(stream)?;
 
     Ok(SortBy::new(expr, direction, nulls))
 }
@@ -112,9 +113,9 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::or;
+use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_asc_desc;
 use crate::combinators::opt_nulls_order;
 use crate::combinators::qual_all_op;
@@ -126,4 +127,3 @@ use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Order;
 use pg_lexer::OperatorKind::Comma;
-use crate::result::Optional;

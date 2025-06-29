@@ -1,3 +1,12 @@
+enum Change {
+    Name { new_name: Str },
+    Options(Option<Vec<AlterRoleOption>>),
+    Role {
+        db_name: Option<Str>,
+        set_stmt: SetResetClause
+    }
+}
+
 pub(super) fn user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
@@ -9,50 +18,27 @@ pub(super) fn user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
         | RoleSpec AlterOptRoleList             => AlterRoleStmt
     */
 
-    choice!(stream =>
-        seq!(stream => All, in_database.optional(), set_reset_clause)
+    or((
+        (All, in_database.optional(), set_reset_clause)
             .map(|(_, dbname, set_stmt)|
                 AlterRoleSetStmt::new(OneOrAll::All, dbname, set_stmt).into()
             ),
-        user_role_stmt(stream)
-    )
+        user_role_stmt
+    )).parse(stream)
 }
 
 fn user_role_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
-    enum Change {
-        Name { new_name: Str },
-        Options(Option<Vec<AlterRoleOption>>),
-        Role {
-            db_name: Option<Str>,
-            set_stmt: SetResetClause
-        }
-    }
-
-    let ((role, loc), stmt) = seq!(=>
-        located!(stream => role_spec),
-        choice!(stream =>
-            seq!(stream => Rename, To, role_id)
-                .map(|(.., new_name)| Change::Name { new_name }),
-            seq!(stream => in_database, set_reset_clause)
-                .map(|(db_name, set_stmt)|
-                    Change::Role {
-                        db_name: Some(db_name),
-                        set_stmt
-                    }
-                ),
-            seq!(stream => With, alter_role_options)
+    let ((role, loc), stmt) = (
+        located(role_spec),
+        or((
+            rename,
+            change_role,
+            (With, alter_role_options)
                 .map(|(_, options)| Change::Options(options)),
-            set_reset_clause(stream)
-                .map(|set_stmt|
-                    Change::Role {
-                        db_name: None,
-                        set_stmt
-                    }
-                ),
-            alter_role_options(stream).map(Change::Options)
-        )
-    )?;
+            alter_role_options.map(Change::Options)
+        ))
+    ).parse(stream)?;
 
     let stmt = match stmt {
         Change::Name { new_name } => {
@@ -69,6 +55,32 @@ fn user_role_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
     };
 
     Ok(stmt)
+}
+
+fn rename(stream: &mut TokenStream) -> scan::Result<Change> {
+
+    let (.., new_name) = (Rename, To, role_id).parse(stream)?;
+    Ok(Change::Name { new_name })
+}
+
+fn change_role(stream: &mut TokenStream) -> scan::Result<Change> {
+
+    or((
+        (in_database, set_reset_clause)
+            .map(|(db_name, set_stmt)|
+                Change::Role {
+                    db_name: Some(db_name),
+                    set_stmt
+                }
+            ),
+        set_reset_clause
+            .map(|set_stmt|
+                Change::Role {
+                    db_name: None,
+                    set_stmt
+                }
+            ),
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -153,9 +165,8 @@ mod tests {
 }
 
 use super::in_database::in_database;
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_id;
 use crate::combinators::role_spec;

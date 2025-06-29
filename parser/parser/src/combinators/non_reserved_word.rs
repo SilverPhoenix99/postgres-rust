@@ -1,11 +1,11 @@
 /// Alias: `NonReservedWord`
 pub(super) fn non_reserved_word(stream: &mut TokenStream) -> scan::Result<Str> {
-    choice!(parsed stream =>
+    or((
         identifier.map(Str::from),
         Unreserved.map(Str::from),
         ColumnName.map(Str::from),
         TypeFuncName.map(Str::from),
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -26,8 +26,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

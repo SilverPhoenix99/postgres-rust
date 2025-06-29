@@ -1,6 +1,7 @@
 pub(super) fn if_not_exists(stream: &mut TokenStream) -> scan::Result<bool> {
 
-    let opt = seq!(stream => If, Not, Exists)
+    let opt = (If, Not, Exists)
+        .parse(stream)
         .optional()?;
 
     Ok(opt.is_some())
@@ -20,7 +21,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;

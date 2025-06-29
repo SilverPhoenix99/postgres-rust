@@ -4,7 +4,7 @@ pub(super) fn access_method(stream: &mut TokenStream) -> scan::Result<Str> {
         ACCESS METHOD ColId
     */
 
-    let (.., name) = seq!(stream => Access, Method, col_id)?;
+    let (.., name) = (Access, Method, col_id).parse(stream)?;
 
     Ok(name)
 }
@@ -25,7 +25,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::Str;

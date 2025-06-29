@@ -7,24 +7,25 @@ pub(super) fn rollback_stmt(stream: &mut TokenStream) -> scan::Result<Transactio
         ROLLBACK opt_transaction opt_transaction_chain
     */
 
-    seq!(=>
-        Rollback.parse(stream),
-        choice!(stream =>
-            seq!(stream => Prepared, string)
+    let (_, stmt) = (
+        Rollback,
+        or((
+            (Prepared, string)
                 .map(|(_, name)| RollbackPrepared(name)),
-            seq!(=>
-                opt_transaction(stream),
-                choice!(stream =>
-                    seq!(stream => To, Savepoint.optional(), col_id)
+            (
+                opt_transaction,
+                or((
+                    ( To, Savepoint.optional(), col_id)
                         .map(|(.., name)| RollbackTo(name)),
-                    opt_transaction_chain(stream)
+                    opt_transaction_chain
                         .map(|chain| TransactionStmt::Rollback { chain })
-                )
+                ))
             )
                 .map(|(_, stmt)| stmt)
-        )
-    )
-        .map(|(_, stmt)| stmt)
+        ))
+    ).parse(stream)?;
+    
+    Ok(stmt)
 }
 
 #[cfg(test)]
@@ -50,8 +51,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_transaction;

@@ -51,7 +51,7 @@ function ParseTypes {
 
     $ErrorActionPreference = 'Stop'
 
-    cargo rustc -- --emit=llvm-ir -Awarnings
+    cargo +beta rustc -- --emit=llvm-ir
 
     if (!$Global:target_directory) {
         $j = cargo metadata --format-version=1 --no-deps | ConvertFrom-Json

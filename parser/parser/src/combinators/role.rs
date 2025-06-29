@@ -4,7 +4,7 @@ pub(super) fn role_list(stream: &mut TokenStream) -> scan::Result<Vec<RoleSpec>>
         role_spec ( ',' role_spec )*
     */
 
-    many!(stream => sep = Comma, role_spec)
+    many_sep(Comma, role_spec).parse(stream)
 }
 
 /// Alias: `RoleId`
@@ -12,7 +12,7 @@ pub(super) fn role_id(stream: &mut TokenStream) -> scan::Result<Str> {
 
     // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
-    let (role, loc) = located!(stream => role_spec)?;
+    let (role, loc) = located(role_spec).parse(stream)?;
 
     role.into_role_id()
         .map_err(|err| err.at(loc).into())
@@ -31,7 +31,7 @@ pub(super) fn role_spec(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
             | non_reserved_word
     */
 
-    choice!(parsed stream =>
+    or((
         CurrentRole.map(|_| RoleSpec::CurrentRole),
         CurrentUser.map(|_| RoleSpec::CurrentUser),
         SessionUser.map(|_| RoleSpec::SessionUser),
@@ -41,12 +41,12 @@ pub(super) fn role_spec(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
             "public" => RoleSpec::Public,
             _ => RoleSpec::Name(ident)
         })
-    )
+    )).parse(stream)
 }
 
 fn role_none(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
 
-    let (_, loc) = located!(stream => NoneKw)?;
+    let (_, loc) = located(NoneKw).parse(stream)?;
     let err = ReservedRoleSpec("none").at(loc);
     Err(err.into())
 }
@@ -135,9 +135,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::many;
+use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word;
 use crate::scan;

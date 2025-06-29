@@ -23,36 +23,7 @@ pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> scan::Result<RawS
         )
     */
 
-    let (_, name, change) = seq!(=>
-        Database.parse(stream),
-        col_id(stream),
-        choice!(stream =>
-            seq!(stream => Refresh, Collation, Version)
-                .map(|_| Change::RefreshVersion),
-            seq!(stream => Owner, To, role_spec)
-                .map(|(.., new_owner)| Change::Owner(new_owner)),
-            seq!(stream => Rename, To, col_id)
-                .map(|(.., new_name)| Change::Name(new_name)),
-            {
-                seq!(=>
-                    Set.parse(stream),
-                    choice!(stream =>
-                        seq!(stream => Kw::Tablespace, col_id)
-                            .map(|(_, tablespace)| Change::Tablespace(tablespace)),
-                        set_rest(stream)
-                            .map(Change::SetOption)
-                    )
-                )
-                .map(|(_, change)| change)
-            },
-            reset_stmt(stream)
-                .map(Change::ResetOption),
-            seq!(stream => With, alterdb_opt_list)
-                .map(|(_, options)| Change::Options(options)),
-            alterdb_opt_list(stream)
-                .map(Change::Options),
-        )
-    )?;
+    let (_, name, change) = (Database, col_id, changes).parse(stream)?;
 
     let stmt = match change {
         Change::RefreshVersion => {
@@ -90,9 +61,56 @@ pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> scan::Result<RawS
     Ok(stmt)
 }
 
+fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
+    or((
+        refresh_collation_version,
+        change_owner,
+        rename,
+        set_option,
+        reset_stmt
+            .map(Change::ResetOption),
+        (With, alterdb_opt_list)
+            .map(|(_, options)| Change::Options(options)),
+        alterdb_opt_list
+            .map(Change::Options),
+    )).parse(stream)
+}
+
+fn refresh_collation_version(stream: &mut TokenStream) -> scan::Result<Change> {
+
+    (Refresh, Collation, Version).parse(stream)?;
+    Ok(Change::RefreshVersion)
+}
+
+fn change_owner(stream: &mut TokenStream) -> scan::Result<Change> {
+
+    let (.., new_owner) = (Owner, To, role_spec).parse(stream)?;
+    Ok(Change::Owner(new_owner))
+}
+
+fn rename(stream: &mut TokenStream) -> scan::Result<Change> {
+
+    let (.., new_name) = (Rename, To, col_id).parse(stream)?;
+    Ok(Change::Name(new_name))
+}
+
+fn set_option(stream: &mut TokenStream) -> scan::Result<Change> {
+
+    let (_, change) = (
+        Set,
+        or((
+            (Kw::Tablespace, col_id)
+                .map(|(_, tablespace)| Change::Tablespace(tablespace)),
+            set_rest
+                .map(Change::SetOption)
+        ))
+    ).parse(stream)?;
+    Ok(change)
+}
+
 fn alterdb_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<AlterdbOption>> {
 
-    many!(stream => alterdb_opt_item)
+    many(alterdb_opt_item).parse(stream)
 }
 
 fn alterdb_opt_item(stream: &mut TokenStream) -> scan::Result<AlterdbOption> {
@@ -102,11 +120,11 @@ fn alterdb_opt_item(stream: &mut TokenStream) -> scan::Result<AlterdbOption> {
         | alterdb_opt_name ( '=' )? var_value
     */
 
-    let (kind, _, value) = seq!(stream =>
+    let (kind, _, value) = (
         alterdb_opt_name,
         Equals.optional(),
         createdb_opt_value
-    )?;
+    ).parse(stream)?;
 
     let option = AlterdbOption::new(kind, value);
     Ok(option)
@@ -114,15 +132,15 @@ fn alterdb_opt_item(stream: &mut TokenStream) -> scan::Result<AlterdbOption> {
 
 fn alterdb_opt_name(stream: &mut TokenStream) -> scan::Result<AlterdbOptionKind> {
 
-    choice!(stream =>
-        seq!(stream => Connection, Limit).map(|_| ConnectionLimit),
-        Kw::Tablespace.parse(stream).map(|_| Tablespace),
-        identifier(stream).map(|ident| match ident.as_ref() {
+    or((
+        (Connection, Limit).map(|_| ConnectionLimit),
+        Kw::Tablespace.map(|_| Tablespace),
+        identifier.map(|ident| match ident.as_ref() {
             "allow_connections" => AllowConnections,
             "is_template" => IsTemplate,
             _ => Unknown(ident)
         })
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -222,10 +240,9 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::combinators::stmt::createdb_opt_value;

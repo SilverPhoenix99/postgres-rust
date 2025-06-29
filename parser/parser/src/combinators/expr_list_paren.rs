@@ -4,11 +4,12 @@ pub(super) fn expr_list_paren(stream: &mut TokenStream) -> scan::Result<Vec<Expr
         '(' expr_list ')'
     */
 
-    between!(paren : stream => expr_list(stream))
+    between_paren(expr_list).parse(stream)
 }
 
 use crate::combinators::expr_list;
-use crate::combinators::foundation::between;
+use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::ExprNode;

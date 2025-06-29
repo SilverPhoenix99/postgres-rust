@@ -5,13 +5,13 @@ pub(super) fn over_clause(stream: &mut TokenStream) -> scan::Result<Option<OverC
         | OVER window_specification
     */
 
-    let expr = seq!(=>
-        Over.parse(stream),
-        choice!(parsed stream =>
+    let expr = (
+        Over,
+        or((
             col_id.map(WindowName),
             window_specification.map(WindowDefinition)
-        )
-    );
+        ))
+    ).parse(stream);
 
     let expr = expr.map(|(_, expr)| expr).optional()?;
     Ok(expr)
@@ -36,8 +36,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::window_specification;
 use crate::result::Optional;

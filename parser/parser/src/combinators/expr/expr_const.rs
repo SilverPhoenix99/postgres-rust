@@ -13,7 +13,7 @@ pub(super) fn expr_const(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         | ConstTypename SCONST
     */
 
-    choice!(parsed stream =>
+    or((
         number.map(From::from),
         string.map(StringConst),
         bit_string
@@ -24,7 +24,7 @@ pub(super) fn expr_const(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         True.map(|_| BooleanConst(true)),
         False.map(|_| BooleanConst(false)),
         Null.map(|_| NullConst),
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -52,8 +52,8 @@ mod tests {
 }
 
 use crate::combinators::foundation::bit_string;
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::number;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::scan;

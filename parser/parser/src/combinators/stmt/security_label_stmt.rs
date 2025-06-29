@@ -5,14 +5,14 @@ pub(super) fn security_label_stmt(stream: &mut TokenStream) -> scan::Result<Secu
         SECURITY LABEL opt_provider ON label_target IS security_label
     */
 
-    let (_, _, provider, _, target, label) = seq!(stream =>
+    let (_, _, provider, _, target, label) = (
         Security,
         Label,
         opt_provider,
         On,
         label_target,
         security_label
-    )?;
+    ).parse(stream)?;
 
     let stmt = SecurityLabelStmt::new(provider, target, label);
 
@@ -25,9 +25,9 @@ fn opt_provider(stream: &mut TokenStream) -> scan::Result<Option<Str>> {
         ( FOR NonReservedWord_or_Sconst )?
     */
 
-    let provider = seq!(stream => For, non_reserved_word_or_sconst);
-
-    let provider = provider.optional()?
+    let provider = (For, non_reserved_word_or_sconst)
+        .parse(stream)
+        .optional()?
         .map(|(_, provider)| provider);
 
     Ok(provider)
@@ -71,12 +71,29 @@ fn label_target(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
       | VIEW any_name
     */
 
-    choice!(parsed stream =>
+    // Broken down into smaller combinators, due to large Rust type names.
+    or((
+        label_target_1,
+        label_target_2,
+        label_target_3,
+        label_target_4,
+        label_target_5,
+        label_target_6,
+    )).parse(stream)
+}
+
+fn label_target_1(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
+    or((
         access_method.map(AccessMethod),
         aggregate.map(Aggregate),
         collation.map(Collation),
         column.map(Column),
         conversion.map(Conversion),
+    )).parse(stream)
+}
+
+fn label_target_2(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
+    or((
         database.map(Database),
         domain.map(Domain),
         event_trigger.map(EventTrigger),
@@ -85,21 +102,41 @@ fn label_target(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
             Foreign::DataWrapper(name) => ForeignDataWrapper(name),
             Foreign::Table(name) => ForeignTable(name),
         }),
+    )).parse(stream)
+}
+
+fn label_target_3(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
+    or((
         function.map(Function),
         index.map(Index),
         large_object.map(LargeObject),
         materialized_view.map(MaterializedView),
         language.map(Language),
+    )).parse(stream)
+}
+
+fn label_target_4(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
+    or((
         procedure.map(Procedure),
         publication.map(Publication),
         role.map(Role),
         routine.map(Routine),
         schema.map(Schema),
+    )).parse(stream)
+}
+
+fn label_target_5(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
+    or((
         sequence.map(Sequence),
         server.map(ForeignServer),
         statistics.map(ExtendedStatistics),
         subscription.map(Subscription),
         table.map(Table),
+    )).parse(stream)
+}
+
+fn label_target_6(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
+    or((
         tablespace.map(Tablespace),
         text_search.map(|text_search| match text_search {
             TextSearch::Configuration(name) => TextSearchConfiguration(name),
@@ -109,7 +146,7 @@ fn label_target(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
         }),
         type_name.map(Type),
         view.map(View),
-    )
+    )).parse(stream)
 }
 
 fn security_label(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
@@ -119,7 +156,8 @@ fn security_label(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
         | IS NULL
     */
 
-    let (_, label) = seq!(stream => Is, string_or_null)?;
+    let (_, label) = (Is, string_or_null)
+        .parse(stream)?;
 
     Ok(label)
 }
@@ -215,8 +253,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::stmt::access_method;

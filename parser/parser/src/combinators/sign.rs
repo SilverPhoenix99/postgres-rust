@@ -1,13 +1,12 @@
 /// '+' | '-'
 pub(super) fn sign(stream: &mut TokenStream) -> scan::Result<OperatorKind> {
 
-    choice!(parsed stream =>
-        Minus,
-        Plus
-    )
+    or((Minus, Plus))
+        .parse(stream)
 }
 
-use crate::combinators::foundation::choice;
+use crate::combinators::foundation::or;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_lexer::OperatorKind;

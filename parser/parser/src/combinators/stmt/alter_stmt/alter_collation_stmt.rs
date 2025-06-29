@@ -15,20 +15,7 @@ pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> scan::Result<Raw
         ALTER COLLATION any_name SET SCHEMA ColId
     */
 
-    let (_, name, change) = seq!(=>
-        Collation.parse(stream),
-        any_name(stream),
-        choice!(stream =>
-            seq!(stream => Refresh, Version)
-                .map(|_| Change::RefreshVersion),
-            seq!(stream => Owner, To, role_spec)
-                .map(|(.., role)| Change::Owner(role)),
-            seq!(stream => Rename, To, col_id)
-                .map(|(.., name)| Change::Name(name)),
-            seq!(stream => Set, Schema, col_id)
-                .map(|(.., schema)| Change::Schema(schema))
-        )
-    )?;
+    let (_, name, change) = (Collation, any_name, changes).parse(stream)?;
 
     let stmt = match change {
         Change::RefreshVersion => {
@@ -55,6 +42,19 @@ pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> scan::Result<Raw
     };
 
     Ok(stmt)
+}
+
+fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
+    or((
+        (Refresh, Version)
+            .map(|_| Change::RefreshVersion),
+        (Owner, To, role_spec)
+            .map(|(.., role)| Change::Owner(role)),
+        (Rename, To, col_id)
+            .map(|(.., name)| Change::Name(name)),
+        (Set, Schema, col_id)
+            .map(|(.., schema)| Change::Schema(schema))
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -111,12 +111,12 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::scan;
 use crate::stream::TokenStream;
+use pg_ast::AlterObjectSchemaStmt;
 use pg_ast::AlterObjectSchemaTarget;
 use pg_ast::AlterOwnerStmt;
 use pg_ast::AlterOwnerTarget;
@@ -124,7 +124,7 @@ use pg_ast::RawStmt;
 use pg_ast::RawStmt::RefreshCollationVersionStmt;
 use pg_ast::RenameStmt;
 use pg_ast::RenameTarget;
-use pg_ast::{AlterObjectSchemaStmt, RoleSpec};
+use pg_ast::RoleSpec;
 use pg_basics::Str;
 use pg_lexer::Keyword::Collation;
 use pg_lexer::Keyword::Owner;

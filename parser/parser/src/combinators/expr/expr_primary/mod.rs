@@ -6,11 +6,11 @@ mod param_expr;
 
 /// Alias: `c_expr`
 pub(super) fn expr_primary(stream: &mut TokenStream) -> scan::Result<ExprNode> {
-    choice!(parsed stream =>
+    or((
         param_expr,
         expr_const,
         func_expr
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -42,7 +42,8 @@ use self::{
     param_expr::param_expr,
 };
 use crate::combinators::expr::expr_const;
-use crate::combinators::foundation::choice;
+use crate::combinators::foundation::or;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::ExprNode;

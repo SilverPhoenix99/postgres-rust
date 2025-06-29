@@ -4,12 +4,10 @@ pub(super) fn typecast(stream: &mut TokenStream) -> scan::Result<Typecast> {
         CAST '(' Typename AS Typename ')'
     */
 
-    let (_, (from_type, _, to_type)) = seq!(=>
-        Cast.parse(stream),
-        between!(paren : stream =>
-            seq!(stream => typename, As, typename)
-        )
-    )?;
+    let (_, (from_type, _, to_type)) = (
+        Cast,
+        between_paren((typename, As, typename))
+    ).parse(stream)?;
 
     Ok(Typecast::new(from_type, to_type))
 }
@@ -31,8 +29,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
 use crate::scan;

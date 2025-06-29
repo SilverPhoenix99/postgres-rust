@@ -4,7 +4,7 @@ pub(super) fn operator_with_argtypes_list(stream: &mut TokenStream) -> scan::Res
         operator_with_argtypes ( ',' operator_with_argtypes )*
     */
 
-    many!(stream => sep = Comma, operator_with_argtypes)
+    many_sep(Comma, operator_with_argtypes).parse(stream)
 }
 
 pub(super) fn operator_with_argtypes(stream: &mut TokenStream) -> scan::Result<OperatorWithArgs> {
@@ -13,7 +13,7 @@ pub(super) fn operator_with_argtypes(stream: &mut TokenStream) -> scan::Result<O
         any_operator oper_argtypes
     */
 
-    let (name, args) = seq!(stream => any_operator, oper_argtypes)?;
+    let (name, args) = (any_operator, oper_argtypes).parse(stream)?;
 
     Ok(OperatorWithArgs::new(name, args))
 }
@@ -27,34 +27,36 @@ fn oper_argtypes(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
         | '(' Typename ')' => Err
     */
 
-    between!(paren : stream =>
-        choice!(stream =>
-            seq!(stream => NoneKw, Comma, typename)
-                .map(|(.., typ)| OneOrBoth::Right(typ)),
-            seq!(=>
-                typename(stream),
-                choice!(stream =>
-                    close_paren(stream),
-                    seq!(=>
-                        Comma.parse(stream),
-                        choice!(parsed stream =>
-                            NoneKw.map(|_| None),
-                            typename.map(Some)
-                        )
-                    ).map(|(_, typ)| typ)
-                )
-            )
-                .map(|(typ1, typ2)| match typ2 {
-                    Some(typ2) => OneOrBoth::Both(typ1, typ2),
-                    None => OneOrBoth::Left(typ1)
-                })
+    between_paren(oper_argtypes_between).parse(stream)
+}
+
+fn oper_argtypes_between(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
+    or((
+        (NoneKw, Comma, typename)
+            .map(|(.., typ)| OneOrBoth::Right(typ)),
+        (
+            typename,
+            or((
+                close_paren,
+                (
+                    Comma,
+                    or((
+                        NoneKw.map(|_| None),
+                        typename.map(Some)
+                    ))
+                ).map(|(_, typ)| typ)
+            ))
         )
-    )
+            .map(|(typ1, typ2)| match typ2 {
+                Some(typ2) => OneOrBoth::Both(typ1, typ2),
+                None => OneOrBoth::Left(typ1)
+            })
+    )).parse(stream)
 }
 
 fn close_paren(stream: &mut TokenStream) -> scan::Result<Option<Type>> {
 
-    let (_, loc) = located!(stream => CloseParenthesis)?;
+    let (_, loc) = located(CloseParenthesis).parse(stream)?;
     let err = MissingOperatorArgumentType.at(loc).into();
     Err(ScanErr(err))
 }
@@ -100,16 +102,15 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between;
-use crate::combinators::foundation::choice;
+use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::operators::any_operator;
 use crate::combinators::typename;
-use crate::scan::Error::ScanErr;
 use crate::scan;
+use crate::scan::Error::ScanErr;
 use crate::stream::TokenStream;
 use pg_ast::OneOrBoth;
 use pg_ast::OperatorWithArgs;

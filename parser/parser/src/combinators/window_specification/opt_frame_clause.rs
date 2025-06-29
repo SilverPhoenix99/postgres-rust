@@ -6,15 +6,15 @@ pub(super) fn opt_frame_clause(stream: &mut TokenStream<'_>) -> scan::Result<Opt
       | GROUPS frame_extent opt_window_exclusion_clause
     */
 
-    let clause = seq!(=>
-        choice!(parsed stream =>
+    let clause = (
+        or((
             RangeKw.map(|_| Range),
             Kw::Rows.map(|_| Rows),
             Kw::Groups.map(|_| Groups),
-        ),
-        frame_extent(stream),
-        opt_window_exclusion_clause(stream)
-    );
+        )),
+        frame_extent,
+        opt_window_exclusion_clause
+    ).parse(stream);
 
     let clause = clause.optional()?
         .map(|(kind, extent, exclusion)|
@@ -65,8 +65,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::window_specification::frame_extent;
 use crate::combinators::window_specification::opt_window_exclusion_clause;

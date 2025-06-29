@@ -26,22 +26,7 @@ pub(super) fn alter_function_stmt(stream: &mut TokenStream) -> scan::Result<RawS
 
     // SET SCHEMA is inlined, because it conflicts with `alter_function_option -> SET set_rest_more`.
 
-    let (func_type, signature, stmt) = seq!(=>
-        func_type(stream),
-        function_with_argtypes(stream),
-        choice!(stream =>
-            change_extension(stream)
-                .map(|(action, extension)| Change::Extension { action, extension }),
-            change_owner(stream)
-                .map(Change::Owner),
-            rename(stream)
-                .map(Change::Name),
-            set_schema(stream)
-                .map(Change::Schema),
-            seq!(stream => alterfunc_opt_list, Restrict.optional())
-                .map(|(options, _)| Change::Options(options))
-        )
-    )?;
+    let (func_type, signature, stmt) = (func_type, function_with_argtypes, changes).parse(stream)?;
 
     let stmt = match (func_type, stmt) {
         (AlterFunctionKind::Function, Change::Extension { action, extension }) => {
@@ -103,56 +88,71 @@ pub(super) fn alter_function_stmt(stream: &mut TokenStream) -> scan::Result<RawS
     Ok(stmt)
 }
 
+fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
+    or((
+        change_extension
+            .map(|(action, extension)| Change::Extension { action, extension }),
+        change_owner
+            .map(Change::Owner),
+        rename
+            .map(Change::Name),
+        set_schema
+            .map(Change::Schema),
+        (alterfunc_opt_list, Restrict.optional())
+            .map(|(options, _)| Change::Options(options))
+    )).parse(stream)
+}
+
 fn change_extension(stream: &mut TokenStream) -> scan::Result<(AddDrop, Str)> {
 
-    seq!(=>
-        choice!(stream =>
-            seq!(stream => No, Depends, On, Extension).map(|_| AddDrop::Drop),
-            seq!(stream => Depends, On, Extension).map(|_| AddDrop::Add)
-        ),
-        col_id(stream)
-    )
+    (
+        or((
+            (No, Depends, On, Extension).map(|_| AddDrop::Drop),
+            (Depends, On, Extension).map(|_| AddDrop::Add)
+        )),
+        col_id
+    ).parse(stream)
 }
 
 fn change_owner(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
 
-    let (.., new_owner) = seq!(stream => Owner, To, role_spec)?;
+    let (.., new_owner) = (Owner, To, role_spec).parse(stream)?;
     Ok(new_owner)
 }
 
 fn rename(stream: &mut TokenStream) -> scan::Result<Str> {
 
-    let (.., new_name) = seq!(stream => Rename, To, col_id)?;
+    let (.., new_name) = (Rename, To, col_id).parse(stream)?;
     Ok(new_name)
 }
 
 fn set_schema(stream: &mut TokenStream) -> scan::Result<Str> {
 
-    let (.., new_schema) = seq!(=>
-        Set.parse(stream),
-        Schema.parse(stream),
-        choice!(stream =>
-            col_id(stream),
-            seq!(stream => string, Restrict.optional())
+    let (.., new_schema) = (
+        Set,
+        Schema,
+        or((
+            col_id,
+            (string, Restrict.optional())
                 .map(|(new_schema, _)| new_schema.into())
-        )
-    )?;
+        ))
+    ).parse(stream)?;
 
     Ok(new_schema)
 }
 
 fn func_type(stream: &mut TokenStream) -> scan::Result<AlterFunctionKind> {
 
-    choice!(parsed stream =>
+    or((
         Kw::Function.map(|_| AlterFunctionKind::Function),
         Kw::Procedure.map(|_| AlterFunctionKind::Procedure),
         Kw::Routine.map(|_| AlterFunctionKind::Routine),
-    )
+    )).parse(stream)
 }
 
 fn alterfunc_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<AlterFunctionOption>> {
 
-    many!(stream => alter_function_option)
+    many(alter_function_option).parse(stream)
 }
 
 #[cfg(test)]
@@ -311,9 +311,8 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::function_with_argtypes;

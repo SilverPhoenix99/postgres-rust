@@ -9,19 +9,15 @@ pub(super) fn foreign(stream: &mut TokenStream) -> scan::Result<Foreign> {
         FOREIGN any_name
     */
 
-    let (_, foreign) = seq!(=>
-        Kw::Foreign.parse(stream),
-        choice!(stream =>
-            seq!(stream => Data, Wrapper, col_id)
-                .map(|(.., name)|
-                    Foreign::DataWrapper(name)
-                ),
-            seq!(stream => Kw::Table, any_name)
-                .map(|(_, name)|
-                    Foreign::Table(name)
-                )
-        )
-    )?;
+    let (_, foreign) = (
+        Kw::Foreign,
+        or((
+            (Data, Wrapper, col_id)
+                .map(|(.., name)| Foreign::DataWrapper(name)),
+            (Kw::Table, any_name)
+                .map(|(_, name)| Foreign::Table(name))
+        ))
+    ).parse(stream)?;
 
     Ok(foreign)
 }
@@ -52,8 +48,7 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

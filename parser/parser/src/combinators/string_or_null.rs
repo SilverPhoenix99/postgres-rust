@@ -3,10 +3,10 @@
 /// * `security_label`
 pub(super) fn string_or_null(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
 
-    choice!(parsed stream =>
+    or((
         string.map(Some),
         Null.map(|_| None)
-    )
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -22,7 +22,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::scan;

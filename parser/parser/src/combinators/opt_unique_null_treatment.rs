@@ -4,12 +4,12 @@ pub(super) fn opt_unique_null_treatment(stream: &mut TokenStream) -> scan::Resul
         ( NULLS (NOT)? DISTINCT )?
     */
 
-    let nulls = seq!(stream =>
+    let nulls = (
         Nulls,
         Not.optional()
             .map(|not| not.is_none()),
         Distinct
-    );
+    ).parse(stream);
 
     let nulls = match nulls.optional()? {
         Some((_, nulls, _)) => nulls.into(),
@@ -33,7 +33,6 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
 use crate::scan;

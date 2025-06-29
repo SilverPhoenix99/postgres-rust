@@ -1,7 +1,15 @@
 /// Alias: `SimpleTypename`
 pub(super) fn simple_typename(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
-    choice!(parsed stream =>
+    // Broken down into smaller combinators, due to large Rust type names.
+    or((
+        simple_typename_1,
+        simple_typename_2,
+    )).parse(stream)
+}
+
+fn simple_typename_1(stream: &mut TokenStream) -> scan::Result<TypeName> {
+    or((
         Kw::Json.map(|_| Json),
         Boolean.map(|_| Bool),
         Smallint.map(|_| Int2),
@@ -9,6 +17,11 @@ pub(super) fn simple_typename(stream: &mut TokenStream) -> scan::Result<TypeName
         Real.map(|_| Float4),
         decimal,
         int,
+    )).parse(stream)
+}
+
+fn simple_typename_2(stream: &mut TokenStream) -> scan::Result<TypeName> {
+    or((
         float,
         bit,
         character,
@@ -16,7 +29,7 @@ pub(super) fn simple_typename(stream: &mut TokenStream) -> scan::Result<TypeName
         time,
         interval.map(From::from),
         generic_type
-    )
+    )).parse(stream)
 }
 
 fn int(stream: &mut TokenStream) -> scan::Result<TypeName> {
@@ -25,7 +38,7 @@ fn int(stream: &mut TokenStream) -> scan::Result<TypeName> {
         INT | INTEGER
     */
 
-    choice!(parsed stream => Int, Integer)?;
+    or((Int, Integer)).parse(stream)?;
     Ok(Int4)
 }
 
@@ -37,10 +50,10 @@ fn decimal(stream: &mut TokenStream) -> scan::Result<TypeName> {
         | DEC ( '(' ICONST ')' )?
     */
 
-    let (_, typ) = seq!(=>
-        choice!(parsed stream => Dec, Decimal, Kw::Numeric),
-        opt_type_modifiers(stream).map(Numeric),
-    )?;
+    let (_, typ) = (
+        or(( Dec, Decimal, Kw::Numeric)),
+        opt_type_modifiers.map(Numeric),
+    ).parse(stream)?;
 
     Ok(typ)
 }
@@ -52,10 +65,10 @@ fn float(stream: &mut TokenStream) -> scan::Result<TypeName> {
         FLOAT ( '(' ICONST ')' )?
     */
 
-    let (_, (precision, loc)) = seq!(=>
-        Float.parse(stream),
-        located!(stream => opt_precision)
-    )?;
+    let (_, (precision, loc)) = (
+        Float,
+        located(opt_precision)
+    ).parse(stream)?;
 
     match precision {
         None | Some(25..=53) => Ok(Float8),
@@ -82,11 +95,11 @@ fn bit(stream: &mut TokenStream) -> scan::Result<TypeName> {
         BIT opt_varying ( '(' expr_list ')' )?
     */
 
-    let (_, varying, mut modifiers) = seq!(stream =>
+    let (_, varying, mut modifiers) = (
         Kw::Bit,
         opt_varying,
         opt_type_modifiers
-    )?;
+    ).parse(stream)?;
 
     if varying {
         return Ok(Varbit(modifiers))
@@ -114,26 +127,26 @@ fn character(stream: &mut TokenStream) -> scan::Result<TypeName> {
         | NATIONAL (CHAR | CHARACTER) opt_varying opt_paren_i32
     */
 
-    let (varying, mut length) = seq!(=>
-        choice!(stream =>
-            Kw::Varchar.parse(stream).map(|_| true),
-            seq!(=>
-                choice!(stream =>
-                    Char.skip().parse(stream),
-                    Character.skip().parse(stream),
-                    Nchar.skip().parse(stream),
-                    seq!(=>
-                        National.parse(stream),
-                        choice!(parsed stream => Char, Character)
+    let (varying, mut length) = (
+        or((
+            Kw::Varchar.map(|_| true),
+            (
+                or((
+                    Char.skip(),
+                    Character.skip(),
+                    Nchar.skip(),
+                    (
+                        National,
+                        or((Char, Character))
                     )
-                        .map(|_| ())
-                ),
-                opt_varying(stream)
+                        .skip()
+                )),
+                opt_varying
             )
                 .map(|(_, varying)| varying),
-        ),
-        opt_precision(stream)
-    )?;
+        )),
+        opt_precision
+    ).parse(stream)?;
 
     if varying {
         return Ok(Varchar { max_length: length })
@@ -154,11 +167,8 @@ fn timestamp(stream: &mut TokenStream) -> scan::Result<TypeName> {
         TIMESTAMP ( '(' ICONST ')' )? opt_timezone
     */
 
-    let (_, precision, with_tz) = seq!(stream =>
-        Kw::Timestamp,
-        opt_precision,
-        opt_timezone
-    )?;
+    let (_, precision, with_tz) = (Kw::Timestamp, opt_precision, opt_timezone)
+        .parse(stream)?;
 
     let typ = if with_tz {
         TimestampTz { precision }
@@ -177,11 +187,8 @@ fn time(stream: &mut TokenStream) -> scan::Result<TypeName> {
         TIMESTAMP ( '(' ICONST ')' )? opt_timezone
     */
 
-    let (_, precision, with_tz) = seq!(stream =>
-        Kw::Time,
-        opt_precision,
-        opt_timezone
-    )?;
+    let (_, precision, with_tz) = (Kw::Time, opt_precision, opt_timezone)
+        .parse(stream)?;
 
     let typ = if with_tz {
         TimeTz { precision }
@@ -200,15 +207,15 @@ fn interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
         | INTERVAL opt_interval
     */
 
-    let (_, interval) = seq!(=>
-        Kw::Interval.parse(stream),
-        choice!(parsed stream =>
+    let (_, interval) = (
+        Kw::Interval,
+        or((
             i32_literal_paren
                 .map(|precision| Full { precision: Some(precision) }),
             opt_interval
-        )
+        ))
             .optional()
-    )?;
+    ).parse(stream)?;
 
     Ok(interval.unwrap_or_default())
 }
@@ -227,15 +234,15 @@ fn generic_type(stream: &mut TokenStream) -> scan::Result<TypeName> {
     // If it's followed by `Precision`, then it's a Float8.
     // Otherwise, it's a plain `Unreserved` keyword, which can be its own User Defined Type.
     if matches!(stream.peek2_option(), Some((TokenValue::Keyword(Double), TokenValue::Keyword(Precision)))) {
-        // Shouldn't fail, since it was already tested
-        seq!(stream => Double, Precision).required()?;
+        stream.next();
+        stream.next();
         return Ok(Float8)
     }
 
-    let (name, type_modifiers) = seq!(=>
-        attrs!(stream => type_function_name(stream)),
-        opt_type_modifiers(stream)
-    )?;
+    let (name, type_modifiers) = (
+        attrs(type_function_name),
+        opt_type_modifiers
+    ).parse(stream)?;
 
     Ok(Generic { name, type_modifiers })
 }
@@ -314,10 +321,9 @@ mod tests {
     }
 }
 
-use crate::combinators::attrs;
-use crate::combinators::foundation::choice;
+use crate::combinators::attrs::attrs;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::i32_literal_paren;
 use crate::combinators::opt_interval;
@@ -326,8 +332,6 @@ use crate::combinators::opt_timezone;
 use crate::combinators::opt_type_modifiers;
 use crate::combinators::opt_varying;
 use crate::combinators::type_function_name;
-use crate::result::Optional;
-use crate::result::Required;
 use crate::scan;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue;

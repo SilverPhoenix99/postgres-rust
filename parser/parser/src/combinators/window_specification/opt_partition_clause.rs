@@ -4,7 +4,8 @@ pub(super) fn opt_partition_clause(stream: &mut TokenStream) -> scan::Result<Opt
         PARTITION BY expr_list
     */
 
-    let exprs = seq!(stream => Partition, By, expr_list)
+    let exprs = (Partition, By, expr_list)
+        .parse(stream)
         .optional()?
         .map(|(.., exprs)| exprs);
 
@@ -28,7 +29,7 @@ mod tests {
 }
 
 use crate::combinators::expr_list;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;

@@ -4,7 +4,8 @@ pub(super) fn materialized_view(stream: &mut TokenStream) -> scan::Result<Qualif
         MATERIALIZED VIEW any_name
     */
 
-    let (.., name) = seq!(stream => Materialized, View, any_name)?;
+    let (.., name) = (Materialized, View, any_name)
+        .parse(stream)?;
 
     Ok(name)
 }
@@ -25,7 +26,7 @@ mod tests {
 }
 
 use crate::combinators::any_name;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::QualifiedName;

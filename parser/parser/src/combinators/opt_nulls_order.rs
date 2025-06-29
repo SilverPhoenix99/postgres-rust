@@ -6,13 +6,13 @@ pub(super) fn opt_nulls_order(stream: &mut TokenStream) -> scan::Result<Option<S
         | // empty
     */
 
-    let order = seq!(=>
-        Nulls.parse(stream),
-        choice!(parsed stream =>
+    let order = (
+        Nulls,
+        or((
             First.map(|_| NullsFirst),
             Last.map(|_| NullsLast),
-        )
-    );
+        ))
+    ).parse(stream);
 
     let order = order.optional()?
         .map(|(_, order)| order);
@@ -35,8 +35,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
 use crate::scan;

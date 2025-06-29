@@ -4,11 +4,7 @@ pub(super) fn within_group_clause(stream: &mut TokenStream) -> scan::Result<Vec<
         WITHIN GROUP_P '(' sort_clause ')'
     */
 
-    let (.., sorts) = seq!(=>
-        Within.parse(stream),
-        Group.parse(stream),
-        between!(paren : stream => sort_clause(stream))
-    )?;
+    let (.., sorts) = (Within, Group, between_paren(sort_clause)).parse(stream)?;
 
     Ok(sorts)
 }
@@ -31,8 +27,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::sort_clause;
 use crate::scan;

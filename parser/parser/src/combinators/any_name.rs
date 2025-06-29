@@ -4,7 +4,7 @@ pub(in crate::combinators) fn any_name_list(stream: &mut TokenStream) -> scan::R
         any_name ( ',' any_name )*
     */
 
-    many!(stream => sep = Comma, any_name)
+    many_sep(Comma, any_name).parse(stream)
 }
 
 /// Alias: `handler_name`
@@ -14,7 +14,7 @@ pub(in crate::combinators) fn any_name(stream: &mut TokenStream) -> scan::Result
         col_id attrs
     */
 
-    attrs!(stream => col_id(stream))
+    attrs(col_id).parse(stream)
 }
 
 #[cfg(test)]
@@ -48,9 +48,10 @@ mod tests {
     }
 }
 
-use crate::combinators::attrs;
+use crate::combinators::attrs::attrs;
 use crate::combinators::col_id;
-use crate::combinators::foundation::many;
+use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::QualifiedName;

@@ -1,6 +1,6 @@
 pub(super) fn type_name(stream: &mut TokenStream) -> scan::Result<Type> {
 
-    let (_, typ) = seq!(stream => Kw::Type, typename)?;
+    let (_, typ) = (Kw::Type, typename).parse(stream)?;
 
     Ok(typ)
 }
@@ -21,7 +21,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
 use crate::scan;
 use crate::stream::TokenStream;

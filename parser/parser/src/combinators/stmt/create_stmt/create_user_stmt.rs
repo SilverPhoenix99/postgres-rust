@@ -5,20 +5,20 @@ pub(super) fn create_user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt
         | USER RoleId opt_with OptRoleList => CreateRoleStmt
     */
 
-    let (_, stmt) = seq!(=>
-        User.parse(stream),
-        choice!(parsed stream =>
+    let (_, stmt) = (
+        User,
+        or((
             create_user_mapping.map(From::from),
             create_user_role.map(From::from)
-        )
-    )?;
+        ))
+    ).parse(stream)?;
 
     Ok(stmt)
 }
 
 fn create_user_mapping(stream: &mut TokenStream) -> scan::Result<CreateUserMappingStmt> {
 
-    let (_, if_not_exists, _, user, _, server, options) = seq!(stream =>
+    let (_, if_not_exists, _, user, _, server, options) = (
         Mapping,
         if_not_exists,
         For,
@@ -26,7 +26,7 @@ fn create_user_mapping(stream: &mut TokenStream) -> scan::Result<CreateUserMappi
         Server,
         col_id,
         create_generic_options
-    )?;
+    ).parse(stream)?;
 
     let stmt = CreateUserMappingStmt::new(user, server, options, if_not_exists);
     Ok(stmt)
@@ -34,11 +34,11 @@ fn create_user_mapping(stream: &mut TokenStream) -> scan::Result<CreateUserMappi
 
 fn create_user_role(stream: &mut TokenStream) -> scan::Result<CreateRoleStmt> {
 
-    let (name, _, options) = seq!(stream =>
+    let (name, _, options) = (
         role_id,
         With.optional(),
         create_role_options
-    )?;
+    ).parse(stream)?;
 
     let stmt = CreateRoleStmt::new(name, RoleKind::User, options);
     Ok(stmt)
@@ -106,8 +106,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_id;
 use crate::combinators::stmt::auth_ident;

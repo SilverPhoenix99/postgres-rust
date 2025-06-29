@@ -4,7 +4,7 @@ pub(super) fn function_with_argtypes_list(stream: &mut TokenStream) -> scan::Res
         function_with_argtypes ( ',' function_with_argtypes )*
     */
 
-    many!(stream => sep = Comma, function_with_argtypes)
+    many_sep(Comma, function_with_argtypes).parse(stream)
 }
 
 pub(super) fn function_with_argtypes(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
@@ -27,30 +27,26 @@ pub(super) fn function_with_argtypes(stream: &mut TokenStream) -> scan::Result<F
             | col_name_keyword ( attrs ( func_args )? )?
     */
 
-    choice!(stream =>
-        {
-            seq!(stream => TypeFuncName, func_args)
-                .map(|(name, args)| {
-                    let name = vec![name.text().into()];
-                    FunctionWithArgs::new(name, args)
-                })
-        },
-        {
-            seq!(=>
-                attrs!(stream =>
-                    choice!(parsed stream =>
-                        Unreserved.map(Str::from),
-                        identifier.map(Str::from)
-                    )
-                ),
-                func_args(stream)
-            )
-                .map(|(name, args)| {
-                    FunctionWithArgs::new(name, args)
-                })
-        },
-        func_column_name(stream)
-    )
+    or((
+        (TypeFuncName, func_args)
+            .map(|(name, args)| {
+                let name = vec![name.text().into()];
+                FunctionWithArgs::new(name, args)
+            }),
+        (
+            attrs(
+                or((
+                    Unreserved.map(Str::from),
+                    identifier.map(Str::from)
+                ))
+            ),
+            func_args
+        )
+            .map(|(name, args)| {
+                FunctionWithArgs::new(name, args)
+            }),
+        func_column_name
+    )).parse(stream)
 }
 
 /// # Return
@@ -65,12 +61,9 @@ fn func_args(stream: &mut TokenStream) -> scan::Result<Option<Option<Vec<Functio
         ( '(' ( func_args_list )? ')' )?
     */
 
-    let args = between!(paren : stream =>
-        func_args_list(stream)
-            .optional()
-    );
-
-    let args = args.optional()?;
+    let args = between_paren(func_args_list.optional())
+        .parse(stream)
+        .optional()?;
 
     Ok(args)
 }
@@ -81,12 +74,13 @@ fn func_args_list(stream: &mut TokenStream) -> scan::Result<Vec<FunctionParamete
         func_arg ( ',' func_arg )*
     */
 
-    many!(stream => sep = Comma, func_arg)
+    many_sep(Comma, func_arg).parse(stream)
 }
 
 fn func_column_name(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
 
-    let name = attrs!(stream => ColumnName.parse(stream).map(From::from))?;
+    let name = attrs(ColumnName.map(From::from))
+        .parse(stream)?;
 
     if name.len() == 1 {
         return Ok(FunctionWithArgs::new(name, None))
@@ -142,12 +136,11 @@ mod tests {
     }
 }
 
-use crate::combinators::attrs;
-use crate::combinators::foundation::between;
-use crate::combinators::foundation::choice;
+use crate::combinators::attrs::attrs;
+use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::identifier;
-use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg;
 use crate::result::Optional;

@@ -4,14 +4,14 @@ pub(super) fn opt_timezone(stream: &mut TokenStream) -> scan::Result<bool> {
         ( (WITH | WITHOUT) TIME ZONE )?
     */
 
-    let tz = seq!(=>
-        choice!(parsed stream =>
+    let tz = (
+        or((
             With.map(|_| true),
             Without.map(|_| false)
-        ),
-        Time.parse(stream),
-        Zone.parse(stream)
-    );
+        )),
+        Time,
+        Zone
+    ).parse(stream);
 
     let tz = match tz.optional()? {
         Some((tz, ..)) => tz,
@@ -36,8 +36,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
 use crate::scan;

@@ -6,11 +6,11 @@ pub(super) fn opt_transaction_chain(stream: &mut TokenStream) -> scan::Result<bo
         | /* EMPTY */
     */
 
-    let chain = seq!(stream =>
+    let chain = (
         And,
         No.optional(),
         Chain
-    );
+    ).parse(stream);
 
     let chain = match chain.optional()? {
         Some((_, no, _)) => no.is_none(),
@@ -34,7 +34,6 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::result::Optional;
 use crate::scan;

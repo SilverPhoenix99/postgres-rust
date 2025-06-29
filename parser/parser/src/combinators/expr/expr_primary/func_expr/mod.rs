@@ -4,25 +4,47 @@ mod within_group_clause;
 
 pub(super) fn func_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
-    choice!(stream =>
-        Kw::CurrentRole.parse(stream).map(|_| CurrentRole),
-        Kw::CurrentUser.parse(stream).map(|_| CurrentUser),
-        Kw::SessionUser.parse(stream).map(|_| SessionUser),
-        Kw::SystemUser.parse(stream).map(|_| SystemUser),
-        Kw::User.parse(stream).map(|_| User),
-        Kw::CurrentCatalog.parse(stream).map(|_| CurrentCatalog),
-        Kw::CurrentDate.parse(stream).map(|_| CurrentDate),
-        seq!(stream => Kw::CurrentTime, opt_precision)
+    // Broken down into smaller combinators, due to large Rust type names.
+    or((
+        func_expr_1,
+        func_expr_2,
+        func_expr_3,
+    )).parse(stream)
+}
+
+fn func_expr_1(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    or((
+        (Kw::CurrentTime, opt_precision)
             .map(|(_, precision)| CurrentTime { precision }),
-        seq!(stream => Kw::CurrentTimestamp, opt_precision)
+        (Kw::CurrentTimestamp, opt_precision)
             .map(|(_, precision)| CurrentTimestamp { precision }),
-        seq!(stream => Kw::Localtime, opt_precision)
+        (Kw::Localtime, opt_precision)
             .map(|(_, precision)| LocalTime { precision }),
-        seq!(stream => Kw::Localtimestamp, opt_precision)
+        (Kw::Localtimestamp, opt_precision)
             .map(|(_, precision)| LocalTimestamp { precision }),
-        case_expr(stream).map(From::from),
-        cast_expr(stream).map(From::from),
-    )
+    )).parse(stream)
+}
+
+fn func_expr_2(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    or((
+        Kw::CurrentRole.map(|_| CurrentRole),
+        Kw::CurrentUser.map(|_| CurrentUser),
+        Kw::SessionUser.map(|_| SessionUser),
+        Kw::SystemUser.map(|_| SystemUser),
+        Kw::User.map(|_| User),
+        Kw::CurrentCatalog.map(|_| CurrentCatalog),
+        Kw::CurrentDate.map(|_| CurrentDate),
+    )).parse(stream)
+}
+
+fn func_expr_3(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    or((
+        case_expr.map(From::from),
+        cast_expr.map(From::from),
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -31,6 +53,7 @@ mod tests {
     use crate::stream::TokenStream;
     use crate::tests::test_parser;
     use crate::tests::DEFAULT_CONFIG;
+    use pg_ast::ExprNode;
     use test_case::test_case;
 
     #[test_case("CURRENT_role", ExprNode::CurrentRole)]
@@ -66,8 +89,7 @@ mod tests {
 
 use crate::combinators::expr::expr_primary::case_expr;
 use crate::combinators::expr::expr_primary::cast_expr;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_precision;
 use crate::scan;

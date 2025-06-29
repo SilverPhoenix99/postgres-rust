@@ -6,21 +6,21 @@ pub(super) fn alter_system_stmt(stream: &mut TokenStream) -> scan::Result<AlterS
         | ALTER SYSTEM SET var_name generic_set_tail
     */
 
-    let (_, stmt) = seq!(=>
-        SystemKw.parse(stream),
-        choice!(stream =>
-            seq!(stream => Reset, all_or_var_name)
+    let (_, stmt) = (
+        SystemKw,
+        or((
+            (Reset, all_or_var_name)
                 .map(|(_, reset)| match reset {
                     OneOrAll::All => AlterSystemStmt::ResetAll,
                     OneOrAll::One(name) => AlterSystemStmt::Reset { name }
                 }),
-            seq!(stream => Set, var_name, generic_set_tail)
+            (Set, var_name, generic_set_tail)
                 .map(|(_, name, set)| match set {
                     ValueOrDefault::Default => AlterSystemStmt::SetDefault { name },
                     ValueOrDefault::Value(values) => AlterSystemStmt::Set { name, values }
                 })
-        )
-    )?;
+        ))
+    ).parse(stream)?;
 
     Ok(stmt)
 }
@@ -41,8 +41,7 @@ mod tests {
 }
 
 use crate::combinators::all_or_var_name;
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_set_tail;
 use crate::combinators::var_name;

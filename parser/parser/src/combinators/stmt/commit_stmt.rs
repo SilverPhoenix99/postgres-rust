@@ -5,15 +5,15 @@ pub(super) fn commit_stmt(stream: &mut TokenStream) -> scan::Result<TransactionS
         COMMIT opt_transaction opt_transaction_chain
     */
 
-    let (_, stmt) = seq!(=>
-        Commit.parse(stream),
-        choice!(stream =>
-            seq!(stream => Prepared, string)
+    let (_, stmt) = (
+        Commit,
+        or((
+            (Prepared, string)
                 .map(|(_, tx_name)| CommitPrepared(tx_name)),
-            seq!(stream => opt_transaction, opt_transaction_chain)
+            (opt_transaction, opt_transaction_chain)
                 .map(|(_, chain)| TransactionStmt::Commit { chain })
-        )
-    )?;
+        ))
+    ).parse(stream)?;
 
     Ok(stmt)
 }
@@ -44,8 +44,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::choice;
-use crate::combinators::foundation::seq;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::opt_transaction;
