@@ -46,28 +46,24 @@ fn alter_function_option_2(stream: &mut TokenStream) -> scan::Result<AlterFuncti
         Kw::Stable.map(|_| Volatility(Stable)),
         Kw::Volatile.map(|_| Volatility(Volatile)),
         {
-            (
-                External,
-                Kw::Security,
-                or((
-                    Definer.map(|_| true),
-                    Invoker.map(|_| false)
-                ))
-            )
-                .map(|(.., opt)| Security(opt))
+            (External, security)
+                .map(|(_, option)| option)
         },
-        {
-            (
-                Kw::Security,
-                or((
-                    Definer.map(|_| true),
-                    Invoker.map(|_| false)
-                ))
-            )
-                .map(|(.., opt)| opt)
-                .map(Security)
-        },
+        security,
     )).parse(stream)
+}
+
+fn security(stream: &mut TokenStream) -> scan::Result<AlterFunctionOption> {
+
+    let (_, definer) = (
+        Kw::Security,
+        or((
+            Definer.map(|_| true),
+            Invoker.map(|_| false)
+        ))
+    ).parse(stream)?;
+
+    Ok(Security(definer))
 }
 
 fn alter_function_option_3(stream: &mut TokenStream) -> scan::Result<AlterFunctionOption> {

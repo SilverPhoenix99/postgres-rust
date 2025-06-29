@@ -90,43 +90,40 @@ pub(super) fn alter_function_stmt(stream: &mut TokenStream) -> scan::Result<RawS
 
 fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
     or((
-        change_extension
-            .map(|(action, extension)| Change::Extension { action, extension }),
-        change_owner
-            .map(Change::Owner),
-        rename
-            .map(Change::Name),
-        set_schema
-            .map(Change::Schema),
-        (alterfunc_opt_list, Restrict.optional())
-            .map(|(options, _)| Change::Options(options))
+        change_extension,
+        change_owner,
+        rename,
+        set_schema,
+        options
     )).parse(stream)
 }
 
-fn change_extension(stream: &mut TokenStream) -> scan::Result<(AddDrop, Str)> {
+fn change_extension(stream: &mut TokenStream) -> scan::Result<Change> {
 
-    (
+    let (action, extension) = (
         or((
             (No, Depends, On, Extension).map(|_| AddDrop::Drop),
             (Depends, On, Extension).map(|_| AddDrop::Add)
         )),
         col_id
-    ).parse(stream)
+    ).parse(stream)?;
+
+    Ok(Change::Extension { action, extension })
 }
 
-fn change_owner(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
+fn change_owner(stream: &mut TokenStream) -> scan::Result<Change> {
 
     let (.., new_owner) = (Owner, To, role_spec).parse(stream)?;
-    Ok(new_owner)
+    Ok(Change::Owner(new_owner))
 }
 
-fn rename(stream: &mut TokenStream) -> scan::Result<Str> {
+fn rename(stream: &mut TokenStream) -> scan::Result<Change> {
 
     let (.., new_name) = (Rename, To, col_id).parse(stream)?;
-    Ok(new_name)
+    Ok(Change::Name(new_name))
 }
 
-fn set_schema(stream: &mut TokenStream) -> scan::Result<Str> {
+fn set_schema(stream: &mut TokenStream) -> scan::Result<Change> {
 
     let (.., new_schema) = (
         Set,
@@ -138,7 +135,15 @@ fn set_schema(stream: &mut TokenStream) -> scan::Result<Str> {
         ))
     ).parse(stream)?;
 
-    Ok(new_schema)
+    Ok(Change::Schema(new_schema))
+}
+
+fn options(stream: &mut TokenStream) -> scan::Result<Change> {
+
+    let (options, _) = (alterfunc_opt_list, Restrict.optional())
+        .parse(stream)?;
+
+    Ok(Change::Options(options))
 }
 
 fn func_type(stream: &mut TokenStream) -> scan::Result<AlterFunctionKind> {

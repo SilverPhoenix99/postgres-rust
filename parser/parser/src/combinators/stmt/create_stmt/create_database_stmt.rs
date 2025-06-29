@@ -35,12 +35,24 @@ fn createdb_opt_item(stream: &mut TokenStream) -> scan::Result<CreatedbOption> {
 }
 
 fn createdb_opt_name(stream: &mut TokenStream) -> scan::Result<CreatedbOptionKind> {
+    // Broken down into smaller combinators, due to large Rust type names.
+    or((
+        createdb_opt_name_1,
+        createdb_opt_name_2,
+    )).parse(stream)
+}
 
+fn createdb_opt_name_1(stream: &mut TokenStream) -> scan::Result<CreatedbOptionKind> {
     or((
         (Connection, Limit).map(|_| ConnectionLimit),
         Kw::Encoding.map(|_| Encoding),
         LocationKw.map(|_| Location),
         Kw::Owner.map(|_| Owner),
+    )).parse(stream)
+}
+
+fn createdb_opt_name_2(stream: &mut TokenStream) -> scan::Result<CreatedbOptionKind> {
+    or((
         Kw::Tablespace.map(|_| Tablespace),
         Kw::Template.map(|_| Template),
         // Unless quoted, identifiers are lower case

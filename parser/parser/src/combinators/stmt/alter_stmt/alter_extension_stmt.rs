@@ -24,18 +24,9 @@ pub(super) fn alter_extension_stmt(stream: &mut TokenStream) -> scan::Result<Raw
         Kw::Extension,
         col_id,
         or((
-            (Kw::Set, Kw::Schema, col_id)
-                .map(|(.., new_schema)| Change::Schema(new_schema)),
-            (Kw::Update, alter_extension_options)
-                .map(|(_, options)| Change::Options(options)),
-            (
-                or((
-                    Add.map(|_| AddDrop::Add),
-                    DropKw.map(|_| AddDrop::Drop),
-                )),
-                alter_extension_target
-            )
-                .map(|(action, target)| Change::Contents { action, target })
+            change_schema,
+            update_options,
+            change_content
         ))
     ).parse(stream)?;
 
@@ -55,6 +46,35 @@ pub(super) fn alter_extension_stmt(stream: &mut TokenStream) -> scan::Result<Raw
     };
 
     Ok(stmt)
+}
+
+fn change_schema(stream: &mut TokenStream) -> scan::Result<Change> {
+
+    let (.., new_schema) = (Kw::Set, Kw::Schema, col_id)
+        .parse(stream)?;
+
+    Ok(Change::Schema(new_schema))
+}
+
+fn update_options(stream: &mut TokenStream) -> scan::Result<Change> {
+
+    let (_, options) = (Kw::Update, alter_extension_options)
+        .parse(stream)?;
+
+    Ok(Change::Options(options))
+}
+
+fn change_content(stream: &mut TokenStream) -> scan::Result<Change> {
+
+    let (action, target) = (
+        or((
+            Add.map(|_| AddDrop::Add),
+            DropKw.map(|_| AddDrop::Drop),
+        )),
+        alter_extension_target
+    ).parse(stream)?;
+
+    Ok(Change::Contents { action, target })
 }
 
 /// Alias: `alter_extension_opt_list`

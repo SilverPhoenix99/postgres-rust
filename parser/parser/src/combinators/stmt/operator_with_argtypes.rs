@@ -32,25 +32,43 @@ fn oper_argtypes(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
 
 fn oper_argtypes_between(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
     or((
-        (NoneKw, Comma, typename)
-            .map(|(.., typ)| OneOrBoth::Right(typ)),
+        none_type,
+        both_types
+    )).parse(stream)
+}
+
+fn none_type(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
+
+    let (.., typ) = (NoneKw, Comma, typename)
+        .parse(stream)?;
+
+    Ok(OneOrBoth::Right(typ))
+}
+
+fn both_types(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
+
+    let (typ1, typ2) = (typename, right_type)
+        .parse(stream)?;
+
+    let pair = match typ2 {
+        Some(typ2) => OneOrBoth::Both(typ1, typ2),
+        None => OneOrBoth::Left(typ1)
+    };
+
+    Ok(pair)
+}
+
+fn right_type(stream: &mut TokenStream) -> scan::Result<Option<Type>> {
+
+    or((
+        close_paren,
         (
-            typename,
+            Comma,
             or((
-                close_paren,
-                (
-                    Comma,
-                    or((
-                        NoneKw.map(|_| None),
-                        typename.map(Some)
-                    ))
-                ).map(|(_, typ)| typ)
+                NoneKw.map(|_| None),
+                typename.map(Some)
             ))
-        )
-            .map(|(typ1, typ2)| match typ2 {
-                Some(typ2) => OneOrBoth::Both(typ1, typ2),
-                None => OneOrBoth::Left(typ1)
-            })
+        ).map(|(_, typ)| typ)
     )).parse(stream)
 }
 
