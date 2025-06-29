@@ -27,26 +27,37 @@ pub(super) fn function_with_argtypes(stream: &mut TokenStream) -> scan::Result<F
             | col_name_keyword ( attrs ( func_args )? )?
     */
 
+    // Broken down into smaller combinators, due to large Rust type names.
     or((
-        (TypeFuncName, func_args)
-            .map(|(name, args)| {
-                let name = vec![name.text().into()];
-                FunctionWithArgs::new(name, args)
-            }),
-        (
-            attrs(
-                or((
-                    Unreserved.map(Str::from),
-                    identifier.map(Str::from)
-                ))
-            ),
-            func_args
-        )
-            .map(|(name, args)| {
-                FunctionWithArgs::new(name, args)
-            }),
+        function_with_argtypes_1,
+        function_with_argtypes_2,
         func_column_name
     )).parse(stream)
+}
+
+fn function_with_argtypes_1(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
+
+    let (name, args) = (TypeFuncName, func_args)
+        .parse(stream)?;
+
+    let name = vec![name.text().into()];
+
+    Ok(FunctionWithArgs::new(name, args))
+}
+
+fn function_with_argtypes_2(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
+
+    let (name, args) = (
+        attrs(
+            or((
+                Unreserved.map(Str::from),
+                identifier.map(Str::from)
+            ))
+        ),
+        func_args
+    ).parse(stream)?;
+
+    Ok(FunctionWithArgs::new(name, args))
 }
 
 /// # Return

@@ -37,17 +37,49 @@ fn privilege(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> 
     */
 
     or((
-        (Alter, SystemKw)
-            .map(|_| AlterSystem),
-        (CreateKw, paren_name_list.optional())
-            .map(|(_, columns)| Create { columns }),
-        (ReferencesKw, paren_name_list.optional())
-            .map(|(_, columns)| References { columns }),
-        (SelectKw, paren_name_list.optional())
-            .map(|(_, columns)| Select { columns }),
-        (col_id, paren_name_list.optional())
-            .map(|(privilege, columns)| Named { privilege, columns })
+        alter_system,
+        create,
+        references,
+        select,
+        named
     )).parse(stream)
+}
+
+fn alter_system(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
+    let _ = (Alter, SystemKw).parse(stream)?;
+    Ok(AlterSystem)
+}
+
+fn create(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
+
+    let (_, columns) = (CreateKw, paren_name_list.optional())
+        .parse(stream)?;
+
+    Ok(Create { columns })
+}
+
+fn references(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
+
+    let (_, columns) = (ReferencesKw, paren_name_list.optional())
+        .parse(stream)?;
+
+    Ok(References { columns })
+}
+
+fn select(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
+
+    let (_, columns) = (SelectKw, paren_name_list.optional())
+        .parse(stream)?;
+
+    Ok(Select { columns })
+}
+
+fn named(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
+
+    let (privilege, columns) = (col_id, paren_name_list.optional())
+        .parse(stream)?;
+
+    Ok(Named { privilege, columns })
 }
 
 #[cfg(test)]
