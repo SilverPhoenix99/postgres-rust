@@ -17,6 +17,7 @@ mod binary_expr;
 mod bool_expr;
 mod boolean_or_string;
 mod case_expr;
+mod column_ref;
 mod comment_stmt;
 mod constraints_set_mode;
 mod constraints_set_stmt;
@@ -26,7 +27,6 @@ mod create_conversion_stmt;
 mod create_database_stmt;
 mod create_role_stmt;
 mod create_user_mapping_stmt;
-mod value_or_default;
 mod discard_stmt;
 mod drop_behavior;
 mod frame_extent;
@@ -67,6 +67,7 @@ mod typecast_expr;
 mod unary_expr;
 mod unique_null_treatment;
 mod unsigned_number;
+mod value_or_default;
 mod var_value;
 mod variable_set_stmt;
 mod variable_target;
@@ -95,6 +96,7 @@ pub use self::{
     bool_expr::BoolExpr,
     boolean_or_string::BooleanOrString,
     case_expr::{CaseExpr, CaseWhen},
+    column_ref::ColumnRef,
     comment_stmt::{CommentStmt, CommentTarget},
     constraints_set_mode::ConstraintsSetMode,
     constraints_set_stmt::ConstraintsSetStmt,
@@ -245,6 +247,7 @@ pub enum ExprNode {
     User,
     CurrentCatalog,
     Indirection(Box<IndirectionExpr>),
+    ColumnRef(Box<ColumnRef>),
 
     /* Xml operations */
     IsXmlDocument(Box<ExprNode>),
@@ -257,8 +260,9 @@ pub enum ExprNode {
 }
 
 impl_from!(box BinaryExpr for ExprNode);
-impl_from!(box IndirectionExpr for ExprNode::Indirection);
 impl_from!(box CaseExpr for ExprNode);
+impl_from!(box ColumnRef for ExprNode);
+impl_from!(box IndirectionExpr for ExprNode::Indirection);
 impl_from!(box TypecastExpr for ExprNode::Typecast);
 impl_from!(box UnaryExpr for ExprNode);
 impl_from!(box XmlParse for ExprNode);

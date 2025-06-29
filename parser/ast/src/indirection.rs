@@ -2,7 +2,7 @@
 pub enum Indirection {
 
     /// `.*`
-    All,
+    Wildcard,
 
     /// `.ColLabel`
     Property(Str),

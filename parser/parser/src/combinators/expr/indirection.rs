@@ -42,7 +42,7 @@ fn dot_indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
     let (_, indirection) = (
         Dot,
         or((
-            Mul.map(|_| All),
+            Mul.map(|_| Wildcard),
             col_label.map(Property),
         ))
     ).parse(stream)?;
@@ -89,7 +89,7 @@ pub(super) fn check_indirection(indirection: Located<Vec<Indirection>>) -> scan:
     let (indirection, location) = indirection;
 
     let valid = indirection.iter()
-        .position(|ind| matches!(ind, All))
+        .position(|ind| matches!(ind, Wildcard))
         .is_none_or(|index| index == indirection.len() - 1);
 
     if valid {
@@ -113,7 +113,7 @@ mod tests {
     use pg_basics::Location;
     use test_case::test_case;
 
-    #[test_case(".*", All)]
+    #[test_case(".*", Wildcard)]
     #[test_case(".some_property", Property("some_property".into()))]
     #[test_case("[:]", Slice(None, None))]
     #[test_case("[:1]", Slice(None, Some(IntegerConst(1))))]
@@ -132,7 +132,7 @@ mod tests {
             expected = vec![
                 Property("some_property".into()),
                 Slice(None, None),
-                All,
+                Wildcard,
             ]
         )
     }
@@ -141,7 +141,7 @@ mod tests {
     fn test_check_indirection() {
         assert_matches!(
             check_indirection((
-                vec![Property("some_property".into()), All],
+                vec![Property("some_property".into()), Wildcard],
                 Location::new(0..0, 0, 0)
             )),
             Ok(_)
@@ -157,7 +157,7 @@ mod tests {
 
         assert_matches!(
             check_indirection((
-                vec![All, Property("some_property".into())],
+                vec![Wildcard, Property("some_property".into())],
                 Location::new(0..0, 0, 0)
             )),
             Err(_)
@@ -174,10 +174,10 @@ use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::Indirection;
-use pg_ast::Indirection::All;
 use pg_ast::Indirection::Index;
 use pg_ast::Indirection::Property;
 use pg_ast::Indirection::Slice;
+use pg_ast::Indirection::Wildcard;
 use pg_basics::Located;
 use pg_elog::parser::Error::ImproperUseOfStar;
 use pg_lexer::OperatorKind::Colon;

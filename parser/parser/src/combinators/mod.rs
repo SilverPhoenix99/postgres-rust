@@ -21,6 +21,7 @@ mod function_with_argtypes;
 mod generic_option;
 mod generic_set_tail;
 mod i32_literal_paren;
+mod make_column_ref;
 mod name_list;
 mod non_reserved_word;
 mod non_reserved_word_or_sconst;
@@ -77,6 +78,7 @@ use self::{
     generic_option::{generic_option, generic_options},
     generic_set_tail::generic_set_tail,
     i32_literal_paren::i32_literal_paren,
+    make_column_ref::make_column_ref,
     name_list::name_list,
     non_reserved_word::non_reserved_word,
     non_reserved_word_or_sconst::non_reserved_word_or_sconst,
