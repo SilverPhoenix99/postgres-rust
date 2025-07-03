@@ -4,13 +4,11 @@ pub(super) fn func_application_args(stream: &mut TokenStream) -> scan::Result<Fu
         '(' ( func_call_args )? ')'
     */
 
-    between_paren(
-        func_call_args
-            .optional()
-            .map(|args| {
-                args.unwrap_or(Empty { order_within_group: None })
-            })
-    ).parse(stream)
+    let args = between_paren(func_call_args.optional())
+        .parse(stream)?
+        .unwrap_or(Empty { order_within_group: None });
+
+    Ok(args)
 }
 
 fn func_call_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
@@ -23,14 +21,14 @@ fn func_call_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
     */
 
     or((
-        star_args,
+        wildcard_args,
         all_args,
         distinct_args,
         simple_args,
     )).parse(stream)
 }
 
-fn star_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
+fn wildcard_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
 
     let _ = Mul.parse(stream)?;
     Ok(Wildcard { order_within_group: None })

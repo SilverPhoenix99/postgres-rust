@@ -2,35 +2,41 @@ pub(in crate::combinators) fn end_stmt(stream: &mut TokenStream) -> scan::Result
 
     /*
     TransactionStmtLegacy:
-        END_P opt_transaction opt_transaction_chain
+        END_P ( work_or_transaction )? ( transaction_chain )?
     */
 
-    let (.., chain) = (End, opt_transaction, opt_transaction_chain)
-        .parse(stream)?;
+    let (.., chain) = (
+        End,
+        work_or_transaction.optional(),
+        transaction_chain.optional()
+            .map(Option::unwrap_or_default)
+    )
+    .parse(stream)?;
 
-    Ok(Commit { chain })
+    Ok(Commit(chain))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::tests::test_parser;
+    use pg_ast::TransactionChain;
     use test_case::test_case;
 
-    #[test_case("end", false)]
-    #[test_case("end and chain", true)]
-    #[test_case("end and no chain", false)]
-    #[test_case("end transaction", false)]
-    #[test_case("end transaction and chain", true)]
-    #[test_case("end transaction and no chain", false)]
-    fn test_end(source: &str, expected: bool) {
-        test_parser!(source, end_stmt, Commit { chain: expected });
+    #[test_case("end", TransactionChain::NoChain)]
+    #[test_case("end and chain", TransactionChain::WithChain)]
+    #[test_case("end and no chain", TransactionChain::NoChain)]
+    #[test_case("end transaction", TransactionChain::NoChain)]
+    #[test_case("end transaction and chain", TransactionChain::WithChain)]
+    #[test_case("end transaction and no chain", TransactionChain::NoChain)]
+    fn test_end(source: &str, expected: TransactionChain) {
+        test_parser!(source, end_stmt, Commit(expected));
     }
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::combinators::opt_transaction;
-use crate::combinators::opt_transaction_chain;
+use crate::combinators::transaction_chain;
+use crate::combinators::work_or_transaction;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::TransactionStmt;

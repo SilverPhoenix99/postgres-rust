@@ -2,7 +2,7 @@
 pub(super) fn create_conversion_stmt(stream: &mut TokenStream) -> scan::Result<CreateConversionStmt> {
 
     /*
-        opt_default CONVERSION_P any_name FOR SCONST TO SCONST FROM any_name
+        ( DEFAULT )? CONVERSION_P any_name FOR SCONST TO SCONST FROM any_name
     */
 
     let (is_default, name, _, for_encoding, _, to_encoding, _, function) = (

@@ -28,7 +28,7 @@ mod tests {
     #[test_case("on", "on".into())]
     #[test_case("off", "off".into())]
     #[test_case("'value'", "value".into())]
-    fn test_opt_boolean_or_string(source: &str, expected: BooleanOrString) {
+    fn test_boolean_or_string(source: &str, expected: BooleanOrString) {
         test_parser!(source, boolean_or_string, expected)
     }
 }

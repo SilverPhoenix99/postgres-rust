@@ -1,7 +1,7 @@
 pub(super) fn language(stream: &mut TokenStream) -> scan::Result<Str> {
 
     /*
-        opt_procedural LANGUAGE name
+        ( PROCEDURAL )? LANGUAGE name
     */
 
     let (_, name) = (

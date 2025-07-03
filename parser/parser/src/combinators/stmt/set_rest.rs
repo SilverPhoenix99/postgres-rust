@@ -46,7 +46,7 @@ pub(super) fn set_rest_more(stream: &mut TokenStream) -> scan::Result<SetRestMor
         | TIME ZONE zone_value
         | CATALOG_P SCONST
         | SCHEMA SCONST
-        | NAMES opt_encoding
+        | NAMES ( encoding )?
         | ROLE NonReservedWord_or_Sconst
         | XML_P OPTION document_or_content
         | var_name FROM CURRENT_P
@@ -79,8 +79,8 @@ fn set_rest_more_2(stream: &mut TokenStream) -> scan::Result<SetRestMore> {
     or((
         (Kw::Schema, string)
             .map(|(_, schema)| SetRestMore::Schema(schema)),
-        (Names, opt_encoding)
-            .map(|(_, encoding)| SetRestMore::ClientEncoding(encoding)),
+        (Names, encoding.optional())
+            .map(|(_, encoding)| SetRestMore::ClientEncoding(encoding.unwrap_or_default())),
         (Kw::Role, non_reserved_word_or_sconst)
             .map(|(_, role)| SetRestMore::Role(role)),
         (Xml, OptionKw, document_or_content)
@@ -127,7 +127,7 @@ fn zone_value(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
         | NumericOnly
         | SCONST
         | IDENT
-        | INTERVAL SCONST opt_interval
+        | INTERVAL SCONST ( interval )?
         | INTERVAL '(' ICONST ')' SCONST
     */
 
@@ -146,7 +146,7 @@ fn zone_value(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
 fn zone_interval(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
 
     /*
-        | INTERVAL SCONST opt_interval
+        | INTERVAL SCONST ( interval )?
         | INTERVAL '(' ICONST ')' SCONST
     */
 
@@ -170,7 +170,10 @@ fn zone_interval(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
 
 fn zone_value_interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
 
-    let (zone, loc) = located(opt_interval).parse(stream)?;
+    let (zone, loc) = located(
+        interval.optional()
+            .map(Option::unwrap_or_default)
+    ).parse(stream)?;
 
     if matches!(zone, Full { .. } | Hour | HourToMinute) {
         return Ok(zone)
@@ -180,17 +183,17 @@ fn zone_value_interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> 
     Err(err.into())
 }
 
-fn opt_encoding(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<Box<str>>> {
+fn encoding(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<Box<str>>> {
 
-    let value = or((
+    /*
+          DEFAULT
+        | SCONST
+    */
+
+    or((
         DefaultKw.map(|_| ValueOrDefault::Default),
         string.map(ValueOrDefault::Value)
-    )).parse(stream);
-
-    let value = value.optional()?;
-    let value = value.unwrap_or(ValueOrDefault::Default);
-
-    Ok(value)
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -221,6 +224,8 @@ mod tests {
     #[test_case("catalog 'def'", SetRestMore::Catalog("def".into()))]
     #[test_case("schema 'ghi'", SetRestMore::Schema("ghi".into()))]
     #[test_case("names default", SetRestMore::ClientEncoding(ValueOrDefault::Default))]
+    #[test_case("names 'utf8'", SetRestMore::ClientEncoding(ValueOrDefault::Value("utf8".into())))]
+    #[test_case("names", SetRestMore::ClientEncoding(ValueOrDefault::Default))]
     #[test_case("role action", SetRestMore::Role("action".into()))]
     #[test_case("xml option document", SetRestMore::XmlOption(Document))]
     #[test_case("_var from current", SetRestMore::FromCurrent { name: vec!["_var".into()] })]
@@ -255,10 +260,9 @@ mod tests {
     }
 
     #[test_case("default", ValueOrDefault::Default)]
-    #[test_case("", ValueOrDefault::Default)]
     #[test_case("'utf8'", ValueOrDefault::Value("utf8".into()))]
-    fn test_opt_encoding(source: &str, expected: ValueOrDefault<Box<str>>) {
-        test_parser!(source, opt_encoding, expected)
+    fn test_encoding(source: &str, expected: ValueOrDefault<Box<str>>) {
+        test_parser!(source, encoding, expected)
     }
 }
 
@@ -271,11 +275,10 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_set_tail;
 use crate::combinators::i32_literal_paren;
 use crate::combinators::non_reserved_word_or_sconst;
-use crate::combinators::opt_interval;
+use crate::combinators::interval;
 use crate::combinators::signed_number;
 use crate::combinators::transaction_mode_list;
 use crate::combinators::var_name;
-use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::IntervalRange;

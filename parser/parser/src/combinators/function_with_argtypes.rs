@@ -21,41 +21,62 @@ pub(super) fn function_with_argtypes(stream: &mut TokenStream) -> scan::Result<F
         See [function_with_argtypes](https://github.com/postgres/postgres/blob/e974f1c2164bc677d55f98edaf99f80c0b6b89d9/src/backend/parser/gram.y#L8471).
 
         Refactored production to remove conflicts:
-              type_func_name_keyword ( func_args )?
-            | unreserved_keyword ( attrs )? ( func_args )?
-            | IDENT ( attrs )? ( func_args )?
-            | col_name_keyword ( attrs ( func_args )? )?
+              type_func_name_keyword            ( func_args )?
+            | unreserved_keyword     ( attrs )? ( func_args )?
+            | IDENT                  ( attrs )? ( func_args )?
+            | col_name_keyword       ( attrs ( func_args )? )?
     */
 
     // Broken down into smaller combinators, due to large Rust type names.
     or((
         function_with_argtypes_1,
         function_with_argtypes_2,
-        func_column_name
     )).parse(stream)
 }
 
 fn function_with_argtypes_1(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
 
-    let (name, args) = (TypeFuncName, func_args)
-        .parse(stream)?;
+    /*
+        function_name func_args
+    */
 
-    let name = vec![name.text().into()];
+    let (name, args) = (function_name, func_args)
+        .parse(stream)?;
 
     Ok(FunctionWithArgs::new(name, args))
 }
 
-fn function_with_argtypes_2(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
+fn function_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
 
-    let (name, args) = (
+    /*
+          type_func_name
+        | ( unreserved_keyword | identifier ) ( attrs )?
+    */
+
+    or((
+        TypeFuncName
+            .map(|name| vec![name.text().into()]),
         attrs(
             or((
                 Unreserved.map(Str::from),
                 identifier.map(Str::from)
             ))
-        ),
-        func_args
-    ).parse(stream)?;
+        )
+    )).parse(stream)
+}
+
+fn function_with_argtypes_2(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
+
+
+    let name = attrs(ColumnName.map(From::from))
+        .parse(stream)?;
+
+    if name.len() == 1 {
+        return Ok(FunctionWithArgs::new(name, None))
+    }
+
+    // arguments are only allowed when the function name is qualified
+    let args = func_args(stream)?;
 
     Ok(FunctionWithArgs::new(name, args))
 }
@@ -86,21 +107,6 @@ fn func_args_list(stream: &mut TokenStream) -> scan::Result<Vec<FunctionParamete
     */
 
     many_sep(Comma, func_arg).parse(stream)
-}
-
-fn func_column_name(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
-
-    let name = attrs(ColumnName.map(From::from))
-        .parse(stream)?;
-
-    if name.len() == 1 {
-        return Ok(FunctionWithArgs::new(name, None))
-    }
-
-    // arguments are only allowed when the function name is qualified
-    let args = func_args(stream)?;
-
-    Ok(FunctionWithArgs::new(name, args))
 }
 
 #[cfg(test)]
@@ -137,6 +143,7 @@ mod tests {
     }
 
     #[test_case("", None)]
+    #[test_case("won't match", None)]
     #[test_case("()", Some(None))]
     #[test_case("(json, int)", Some(Some(vec![
         FuncType::Type(TypeName::Json.into()).into(),
@@ -159,6 +166,7 @@ use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionWithArgs;
+use pg_basics::QualifiedName;
 use pg_basics::Str;
 use pg_lexer::KeywordCategory::ColumnName;
 use pg_lexer::KeywordCategory::TypeFuncName;

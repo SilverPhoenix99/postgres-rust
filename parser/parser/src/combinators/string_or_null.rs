@@ -1,6 +1,9 @@
 /// Aliases:
 /// * `comment_text`
 /// * `security_label`
+///
+/// The `Option` result does not come from an absence of value.
+/// It returns `None` when the token is the keyword `NULL`.
 pub(super) fn string_or_null(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
 
     or((

@@ -1,40 +1,36 @@
-pub(super) fn create_generic_options(stream: &mut TokenStream) -> scan::Result<Option<Vec<GenericOption>>> {
+pub(super) fn create_generic_options(stream: &mut TokenStream) -> scan::Result<Vec<GenericOption>> {
 
     /*
         OPTIONS '(' generic_option_list ')'
     */
 
-    let result = (Options, between_paren(generic_options));
+    let (_, options) = (Options, between_paren(generic_options))
+        .parse(stream)?;
 
-    let stmt = result.parse(stream)
-        .optional()?
-        .map(|(_, options)| options);
-
-    Ok(stmt)
+    Ok(options)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use test_case::test_case;
 
-    #[test_case("options (option1 'value1', option2 'value2')",
-        Some(vec![
-            GenericOption::new("option1", "value1"),
-            GenericOption::new("option2", "value2")
-        ])
-    )]
-    #[test_case("", None)]
-    fn test_create_generic_options(source: &str, expected: Option<Vec<GenericOption>>) {
-        test_parser!(source, create_generic_options, expected);
+    #[test]
+    fn test_create_generic_options() {
+        test_parser!(
+            source = "options (option1 'value1', option2 'value2')",
+            parser = create_generic_options,
+            expected = vec![
+                GenericOption::new("option1", "value1"),
+                GenericOption::new("option2", "value2")
+            ]
+        );
     }
 }
 
 use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_options;
-use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::GenericOption;

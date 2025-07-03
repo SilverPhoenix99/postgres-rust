@@ -1,18 +1,15 @@
-pub(super) fn opt_asc_desc(stream: &mut TokenStream) -> scan::Result<Option<SortDirection>> {
+/// Alias: `opt_asc_desc`
+pub(super) fn asc_desc(stream: &mut TokenStream) -> scan::Result<SortDirection> {
 
     /*
           ASC
         | DESC
-        | // empty
     */
 
-    let sort = or((
+    or((
         Asc.map(|_| Ascending),
         Desc.map(|_| Descending),
-    )).parse(stream);
-
-    let sort = sort.optional()?;
-    Ok(sort)
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -21,18 +18,15 @@ mod tests {
     use crate::tests::test_parser;
     use test_case::test_case;
 
-    #[test_case("asc", Some(Ascending))]
-    #[test_case("desc", Some(Descending))]
-    #[test_case("foo", None)]
-    #[test_case("", None)]
-    fn test_opt_asc_desc(source: &str, expected: Option<SortDirection>) {
-        test_parser!(source, opt_asc_desc, expected)
+    #[test_case("asc", Ascending)]
+    #[test_case("desc", Descending)]
+    fn test_asc_desc(source: &str, expected: SortDirection) {
+        test_parser!(source, asc_desc, expected)
     }
 }
 
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
-use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::SortDirection;

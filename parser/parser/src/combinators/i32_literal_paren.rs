@@ -3,7 +3,7 @@ pub(super) fn i32_literal_paren(stream: &mut TokenStream) -> scan::Result<i32> {
 
     between_paren(integer)
         .parse(stream)
-        .map(From::from)
+        .map(i32::from)
 }
 
 #[cfg(test)]

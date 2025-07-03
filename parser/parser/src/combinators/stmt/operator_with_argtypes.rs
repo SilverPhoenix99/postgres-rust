@@ -39,6 +39,10 @@ fn oper_argtypes_between(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Typ
 
 fn none_type(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
 
+    /*
+        '(' NONE ',' Typename ')'
+    */
+
     let (.., typ) = (NoneKw, Comma, typename)
         .parse(stream)?;
 
@@ -47,6 +51,10 @@ fn none_type(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
 
 fn both_types(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
 
+    /*
+        '(' Typename ',' (Typename | NONE) ')'
+    */
+    
     let (typ1, typ2) = (typename, right_type)
         .parse(stream)?;
 
@@ -58,8 +66,16 @@ fn both_types(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
     Ok(pair)
 }
 
+/// The `Option` result does not come from an absence of value.
+/// It returns `None` when the token is the keyword `NONE`.
 fn right_type(stream: &mut TokenStream) -> scan::Result<Option<Type>> {
 
+    /*
+          ',' Typename ')'
+        | ',' NONE ')'
+        | ')' => Err
+    */
+    
     or((
         close_paren,
         (
@@ -72,6 +88,7 @@ fn right_type(stream: &mut TokenStream) -> scan::Result<Option<Type>> {
     )).parse(stream)
 }
 
+/// The `Result<Option>` needs to match the caller's return type.
 fn close_paren(stream: &mut TokenStream) -> scan::Result<Option<Type>> {
 
     let (_, loc) = located(CloseParenthesis).parse(stream)?;

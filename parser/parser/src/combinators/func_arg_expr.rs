@@ -15,8 +15,8 @@ pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<FuncAr
       | a_expr
     */
 
-    match stream.peek2_option() {
-        Some((first, Operator(ColonEquals | EqualsGreater))) if is_type_function_name(first) => {
+    match stream.peek2() {
+        Ok((first, Operator(ColonEquals | EqualsGreater))) if is_type_function_name(first) => {
 
             let (name, _, value) = (
                 type_function_name,

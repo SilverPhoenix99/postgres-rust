@@ -20,14 +20,15 @@ pub enum TransactionStmt {
     Begin(Vec<TransactionMode>),
     /// Semantically identical to `BEGIN`.
     Start(Vec<TransactionMode>),
-    Commit { chain: bool },
+    Commit(TransactionChain),
     CommitPrepared(Box<str>),
     Savepoint(Str),
     Release(Str),
     Prepare(Box<str>),
-    Rollback { chain: bool },
+    Rollback(TransactionChain),
     RollbackTo(Str),
     RollbackPrepared(Box<str>),
 }
 
+use crate::TransactionChain;
 use pg_basics::Str;

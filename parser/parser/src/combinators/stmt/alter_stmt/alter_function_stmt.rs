@@ -15,12 +15,12 @@ pub(super) fn alter_function_stmt(stream: &mut TokenStream) -> scan::Result<RawS
     /*
         ALTER (FUNCTION|PROCEDURE|ROUTINE) function_with_argtypes
         (
-              opt_no DEPENDS ON EXTENSION ColId => AlterObjectDependsStmt
-            | OWNER TO RoleSpec                 => AlterOwnerStmt
-            | RENAME TO ColId                   => RenameStmt
-            | SET SCHEMA ColId                  => AlterObjectSchemaStmt
-            | SET SCHEMA SCONST opt_restrict    => AlterObjectSchemaStmt
-            | alterfunc_opt_list opt_restrict   => AlterFunctionStmt
+              ( NO )? DEPENDS ON EXTENSION ColId => AlterObjectDependsStmt
+            | OWNER TO RoleSpec                  => AlterOwnerStmt
+            | RENAME TO ColId                    => RenameStmt
+            | SET SCHEMA ColId                   => AlterObjectSchemaStmt
+            | SET SCHEMA SCONST ( RESTRICT )?    => AlterObjectSchemaStmt
+            | alterfunc_opt_list ( RESTRICT )?   => AlterFunctionStmt
         )
     */
 

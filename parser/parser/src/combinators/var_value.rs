@@ -6,7 +6,7 @@ pub(super) fn var_list(stream: &mut TokenStream) -> scan::Result<Vec<VarValue>> 
 pub(super) fn var_value(stream: &mut TokenStream) -> scan::Result<VarValue> {
 
     /*
-          opt_boolean_or_string
+          boolean_or_string
         | signed_number
     */
 

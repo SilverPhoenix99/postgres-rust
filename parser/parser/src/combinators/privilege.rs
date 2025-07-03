@@ -1,7 +1,7 @@
 pub(super) fn privileges(stream: &mut TokenStream) -> scan::Result<AccessPrivilege> {
 
     /*
-          ALL ( PRIVILEGES )? opt_column_list
+          ALL ( PRIVILEGES )? ( paren_name_list )?
         | privilege_list
     */
 
@@ -30,10 +30,10 @@ fn privilege(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> 
 
     /*
           ALTER SYSTEM
-        | SELECT opt_column_list
-        | REFERENCES opt_column_list
-        | CREATE opt_column_list
-        | col_id opt_column_list
+        | SELECT ( paren_name_list )?
+        | REFERENCES ( paren_name_list )?
+        | CREATE ( paren_name_list )?
+        | col_id ( paren_name_list )?
     */
 
     or((

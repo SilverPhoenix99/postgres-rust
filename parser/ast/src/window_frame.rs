@@ -2,11 +2,11 @@
 pub struct WindowFrame {
     kind: WindowFrameKind,
     frame_extent: FrameExtent,
-    window_exclusion: Option<WindowExclusion>,
+    window_exclusion: WindowExclusion,
 }
 
 impl WindowFrame {
-    pub fn new(kind: WindowFrameKind, frame_extent: FrameExtent, window_exclusion: Option<WindowExclusion>) -> Self {
+    pub fn new(kind: WindowFrameKind, frame_extent: FrameExtent, window_exclusion: WindowExclusion) -> Self {
         Self { kind, frame_extent, window_exclusion }
     }
 
@@ -18,7 +18,7 @@ impl WindowFrame {
         &self.frame_extent
     }
 
-    pub fn window_exclusion(&self) -> Option<WindowExclusion> {
+    pub fn window_exclusion(&self) -> WindowExclusion {
         self.window_exclusion
     }
 }
@@ -28,7 +28,7 @@ impl Default for WindowFrame {
         Self {
             kind: WindowFrameKind::Range,
             frame_extent: FrameExtent::Unbounded { end: Some(PrecedingEnd::CurrentRow) },
-            window_exclusion: None,
+            window_exclusion: WindowExclusion::default(),
         }
     }
 }
@@ -40,8 +40,10 @@ pub enum WindowFrameKind {
     Groups,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum WindowExclusion {
+    #[default]
+    NoOthers,
     CurrentRow,
     Group,
     Ties,

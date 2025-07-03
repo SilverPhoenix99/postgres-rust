@@ -25,8 +25,8 @@ fn sortby_list(stream: &mut TokenStream) -> scan::Result<Vec<SortBy>> {
 fn sortby(stream: &mut TokenStream) -> scan::Result<SortBy> {
 
     /*
-          a_expr USING qual_all_Op opt_nulls_order
-        | a_expr opt_asc_desc opt_nulls_order
+          a_expr USING qual_all_Op ( nulls_order )?
+        | a_expr ( asc_desc )? ( nulls_order )?
     */
 
     let (expr, direction, nulls) = (
@@ -34,11 +34,11 @@ fn sortby(stream: &mut TokenStream) -> scan::Result<SortBy> {
         or((
             (Kw::Using, qual_all_op)
                 .map(|(_, op)| Some(Using(op))),
-            opt_asc_desc
+            asc_desc.optional()
         ))
             .optional()
             .map(Option::unwrap_or_default),
-        opt_nulls_order
+        nulls_order.optional()
     ).parse(stream)?;
 
     Ok(SortBy::new(expr, direction, nulls))
@@ -112,12 +112,12 @@ mod tests {
     }
 }
 
+use crate::combinators::asc_desc;
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::opt_asc_desc;
-use crate::combinators::opt_nulls_order;
+use crate::combinators::nulls_order;
 use crate::combinators::qual_all_op;
 use crate::scan;
 use crate::stream::TokenStream;

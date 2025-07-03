@@ -49,18 +49,6 @@ impl<'src> TokenStream<'src> {
         }
     }
 
-    pub fn slice(&mut self) -> Option<&'src str> {
-
-        let source = self.source();
-
-        let Ok((_, loc)) = self.peek_mut() else {
-            return None
-        };
-
-        let slice = loc.slice(source);
-        Some(slice)
-    }
-
     pub fn next(&mut self) {
         self.buf.pop_front();
     }
@@ -81,7 +69,8 @@ impl<'src> TokenStream<'src> {
         self.buf.front_mut().unwrap()
     }
 
-    pub fn peek2(&mut self) -> (eof::Result<&TokenValue>, eof::Result<&TokenValue>) {
+    /// Either returns both tokens, or the first error between the two.
+    pub fn peek2(&mut self) -> eof::Result<(&TokenValue, &TokenValue)> {
 
         self.fill_buf();
 
@@ -93,24 +82,16 @@ impl<'src> TokenStream<'src> {
             .expect("second element missing: `fill_buf()` should have filled 2 elements into `self.buf`");
 
         let first = match first {
-            Ok((tok, _)) => Ok(tok),
-            Err(err) => Err(err.clone()),
+            Ok((tok, _)) => tok,
+            Err(err) => return Err(err.clone()),
         };
 
         let second = match second {
-            Ok((tok, _)) => Ok(tok),
-            Err(err) => Err(err.clone()),
+            Ok((tok, _)) => tok,
+            Err(err) => return  Err(err.clone()),
         };
 
-        (first, second)
-    }
-
-    pub fn peek2_option(&mut self) -> Option<(&TokenValue, &TokenValue)> {
-
-        match self.peek2() {
-            (Ok(first), Ok(second)) => Some((first, second)),
-            (Err(_), _) | (_, Err(_)) => None,
-        }
+        Ok((first, second))
     }
 
     fn fill_buf(&mut self) {
@@ -330,22 +311,22 @@ mod tests {
         let mut buffer =  TokenStream::new("three identifiers innit", DEFAULT_CONFIG);
 
         let result = buffer.peek2();
-        assert_matches!(result, (Ok(Identifier(_)), Ok(Identifier(_))));
+        assert_matches!(result, Ok((Identifier(_), Identifier(_))));
         assert_eq!(Location::new(0..5, 1, 1), buffer.current_location());
 
         buffer.next();
         let result = buffer.peek2();
-        assert_matches!(result, (Ok(Identifier(_)), Ok(Identifier(_))));
+        assert_matches!(result, Ok((Identifier(_), Identifier(_))));
         assert_eq!(Location::new(6..17, 1, 7), buffer.current_location());
 
         buffer.next();
         let result = buffer.peek2();
-        assert_matches!(result, (Ok(Identifier(_)), Err(Eof(_))));
+        assert_matches!(result, Err(Eof(_)));
         assert_eq!(Location::new(18..23, 1, 19), buffer.current_location());
 
         buffer.next();
         let result = buffer.peek2();
-        assert_matches!(result, (Err(Eof(_)), Err(Eof(_))));
+        assert_matches!(result, Err(Eof(_)));
         assert_eq!(Location::new(23..23, 1, 24), buffer.current_location());
     }
 }

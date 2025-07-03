@@ -1,10 +1,6 @@
 /// Alias: `AlterOptRoleList`
-pub(super) fn alter_role_options(stream: &mut TokenStream) -> scan::Result<Option<Vec<AlterRoleOption>>> {
-
-    many(alter_role_option)
-        .parse(stream)
-        .optional()
-        .map_err(From::from)
+pub(super) fn alter_role_options(stream: &mut TokenStream) -> scan::Result<Vec<AlterRoleOption>> {
+    many(alter_role_option).parse(stream)
 }
 
 /// Alias: `AlterOptRoleElem`
@@ -117,7 +113,7 @@ mod tests {
         test_parser!(
             source = "inherit password null",
             parser = alter_role_options,
-            expected = Some(vec![Inherit(true), Password(None)])
+            expected = vec![Inherit(true), Password(None)]
         )
     }
 
@@ -164,7 +160,6 @@ use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_list;
 use crate::combinators::signed_i32_literal;
-use crate::result::Optional;
 use crate::scan;
 use crate::scan::Error::ScanErr;
 use crate::stream::TokenStream;

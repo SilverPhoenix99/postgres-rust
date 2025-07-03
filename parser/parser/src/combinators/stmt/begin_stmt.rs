@@ -2,10 +2,14 @@ pub(in crate::combinators) fn begin_stmt(stream: &mut TokenStream) -> scan::Resu
 
     /*
     TransactionStmtLegacy:
-        BEGIN_P opt_transaction opt_transaction_mode_list
+        BEGIN_P ( work_or_transaction )? ( transaction_mode_list )?
     */
 
-    let (.., tx_modes) = (Begin, opt_transaction, transaction_mode_list.optional()).parse(stream)?;
+    let (.., tx_modes) = (
+        Begin,
+        work_or_transaction.optional(),
+        transaction_mode_list.optional()
+    ).parse(stream)?;
 
     let tx_modes = tx_modes.unwrap_or_default();
     Ok(TransactionStmt::Begin(tx_modes))
@@ -32,8 +36,8 @@ mod tests {
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::combinators::opt_transaction;
 use crate::combinators::transaction_mode_list;
+use crate::combinators::work_or_transaction;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::TransactionStmt;

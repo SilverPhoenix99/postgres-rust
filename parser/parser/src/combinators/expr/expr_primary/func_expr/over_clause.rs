@@ -1,19 +1,18 @@
-pub(super) fn over_clause(stream: &mut TokenStream) -> scan::Result<Option<OverClause>> {
+pub(super) fn over_clause(stream: &mut TokenStream) -> scan::Result<OverClause> {
 
     /*
           OVER ColId
         | OVER window_specification
     */
 
-    let expr = (
+    let (_, expr) = (
         Over,
         or((
             col_id.map(WindowName),
             window_specification.map(WindowDefinition)
         ))
-    ).parse(stream);
+    ).parse(stream)?;
 
-    let expr = expr.map(|(_, expr)| expr).optional()?;
     Ok(expr)
 }
 
@@ -24,13 +23,13 @@ mod tests {
     use pg_ast::WindowDefinition;
     use test_case::test_case;
 
-    #[test_case("over foo", Some(WindowName("foo".into())))]
-    #[test_case("over (foo)", Some(
+    #[test_case("over foo", WindowName("foo".into()))]
+    #[test_case("over (foo)",
         OverClause::WindowDefinition(
             WindowDefinition::new(Some("foo".into()), None, None, None)
         )
-    ))]
-    fn test_over_clause(source: &str, expected: Option<OverClause>) {
+    )]
+    fn test_over_clause(source: &str, expected: OverClause) {
         test_parser!(source, over_clause, expected);
     }
 }
@@ -39,7 +38,6 @@ use crate::combinators::col_id;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::window_specification;
-use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::OverClause;

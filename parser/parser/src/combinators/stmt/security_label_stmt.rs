@@ -2,13 +2,13 @@
 pub(super) fn security_label_stmt(stream: &mut TokenStream) -> scan::Result<SecurityLabelStmt> {
 
     /*
-        SECURITY LABEL opt_provider ON label_target IS security_label
+        SECURITY LABEL ( provider )? ON label_target IS security_label
     */
 
     let (_, _, provider, _, target, label) = (
         Security,
         Label,
-        opt_provider,
+        provider.optional(),
         On,
         label_target,
         security_label
@@ -19,16 +19,14 @@ pub(super) fn security_label_stmt(stream: &mut TokenStream) -> scan::Result<Secu
     Ok(stmt)
 }
 
-fn opt_provider(stream: &mut TokenStream) -> scan::Result<Option<Str>> {
+/// Alias: `opt_provider`
+fn provider(stream: &mut TokenStream) -> scan::Result<Str> {
 
     /*
-        ( FOR NonReservedWord_or_Sconst )?
+        FOR NonReservedWord_or_Sconst
     */
 
-    let provider = (For, non_reserved_word_or_sconst)
-        .parse(stream)
-        .optional()?
-        .map(|(_, provider)| provider);
+    let (_, provider) = (For, non_reserved_word_or_sconst).parse(stream)?;
 
     Ok(provider)
 }
@@ -51,7 +49,7 @@ fn label_target(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
       | INDEX any_name
       | LARGE_P OBJECT_P NumericOnly
       | MATERIALIZED VIEW any_name
-      | opt_procedural LANGUAGE name
+      | ( PROCEDURAL )? LANGUAGE name
       | PROCEDURE function_with_argtypes
       | PUBLICATION name
       | ROLE name
@@ -149,6 +147,8 @@ fn label_target_6(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget>
     )).parse(stream)
 }
 
+/// The `Option` result does not come from an absence of value.
+/// It returns `None` when the token is the keyword `NULL`.
 fn security_label(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
 
     /*
@@ -175,23 +175,29 @@ mod tests {
     };
     use test_case::test_case;
 
-    #[test]
-    fn test_security_label_stmt() {
-        test_parser!(
-            source = "SECURITY LABEL ON access method some_method IS 'foo'",
-            parser = security_label_stmt,
-            expected = SecurityLabelStmt::new(
-                None,
-                AccessMethod("some_method".into()),
-                Some("foo".into())
-            )
+    #[test_case(
+        "SECURITY LABEL ON access method some_method IS 'foo'",
+        SecurityLabelStmt::new(
+            None,
+            AccessMethod("some_method".into()),
+            Some("foo".into())
         )
+    )]
+    #[test_case(
+        "SECURITY LABEL FOR 'some_label' ON access method some_method IS 'foo'",
+        SecurityLabelStmt::new(
+            Some("some_label".into()),
+            AccessMethod("some_method".into()),
+            Some("foo".into())
+        )
+    )]
+    fn test_security_label_stmt(source: &str, expected: SecurityLabelStmt) {
+        test_parser!(source, security_label_stmt, expected)
     }
 
-    #[test_case("", None)]
-    #[test_case("for 'foo'", Some("foo".into()))]
-    fn test_opt_provider(source: &str, expected: Option<Str>) {
-        test_parser!(source, opt_provider, expected);
+    #[test_case("for 'foo'", "foo".into())]
+    fn test_provider(source: &str, expected: Str) {
+        test_parser!(source, provider, expected);
     }
 
     #[test_case("access method some_method", AccessMethod("some_method".into()))]
@@ -288,7 +294,6 @@ use crate::combinators::stmt::view;
 use crate::combinators::stmt::Foreign;
 use crate::combinators::stmt::TextSearch;
 use crate::combinators::string_or_null;
-use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::SecurityLabelStmt;

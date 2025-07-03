@@ -11,7 +11,7 @@ pub(super) fn case_expr(stream: &mut TokenStream) -> scan::Result<CaseExpr> {
         Case,
         a_expr.optional(),
         many(when_clause),
-        else_clause
+        else_clause.optional()
     ).parse(stream)?;
 
     let expr = CaseExpr::new(target, when_clauses, default);
@@ -26,12 +26,12 @@ fn when_clause(stream: &mut TokenStream) -> scan::Result<CaseWhen> {
     Ok(expr)
 }
 
-fn else_clause(stream: &mut TokenStream) -> scan::Result<Option<ExprNode>> {
+fn else_clause(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
-    (Else, a_expr).parse(stream)
-        .map(|(_, expr)| expr)
-        .optional()
-        .map_err(From::from)
+    let (_, expr) = (Else, a_expr).parse(stream)?;
+
+    Ok(expr)
+
 }
 
 #[cfg(test)]
@@ -88,7 +88,6 @@ mod tests {
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
-use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::CaseExpr;

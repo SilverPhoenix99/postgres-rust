@@ -1,4 +1,4 @@
-pub(crate) fn stmtmulti(stream: &mut TokenStream) -> scan::Result<Option<Vec<RawStmt>>> {
+pub(crate) fn stmtmulti(stream: &mut TokenStream) -> scan::Result<Vec<RawStmt>> {
 
     // This production is slightly cheating, not because it's more efficient,
     // but helps simplify capturing the combinator.
@@ -12,13 +12,30 @@ pub(crate) fn stmtmulti(stream: &mut TokenStream) -> scan::Result<Option<Vec<Raw
         many_sep(semicolons, toplevel_stmt).optional()
     ).parse(stream)?;
 
-    Ok(stmts)
+    // Note that `many_sep` returns `NoMatch` if the Vec would be empty.
+    match stmts {
+        Some(stmts) => Ok(stmts),
+        None if stream.eof() => {
+            // The content didn't have any statements.
+            // The stream is either empty, or whitespaces and/or semicolons.
+            let loc = stream.current_location();
+            Err(Eof(loc))
+        },
+        None => {
+            // It's not Eof, so there was a syntax error.
+            let loc = stream.current_location();
+            Err(NoMatch(loc))
+        },
+    }
 }
 
 /// Returns `Ok` if it consumed at least 1 `;` (semicolon).
 fn semicolons(stream: &mut TokenStream) -> scan::Result<()> {
 
     // Production: ( ';' )+
+
+    // skip() might look unnecessary, but it makes the elements have 0 bytes,
+    // so the Vec never allocates.
 
     many(Semicolon.skip()).parse(stream)?;
 
@@ -48,7 +65,10 @@ mod tests {
     use crate::stream::TokenStream;
     use crate::tests::{test_parser, DEFAULT_CONFIG};
     #[allow(unused_imports)]
-    use pg_ast::TransactionMode::ReadOnly;
+    use pg_ast::{
+        TransactionChain::NoChain,
+        TransactionMode::ReadOnly
+    };
     use test_case::test_case;
 
     #[test_case("begin transaction")]
@@ -66,7 +86,7 @@ mod tests {
     }
 
     #[test_case("begin transaction read only", TransactionStmt::Begin(vec![ReadOnly]))]
-    #[test_case("end transaction", TransactionStmt::Commit { chain: false })]
+    #[test_case("end transaction", TransactionStmt::Commit(NoChain))]
     fn test_transaction(source: &str, expected: TransactionStmt) {
         test_parser!(source, transaction_stmt_legacy, expected)
     }
@@ -80,6 +100,8 @@ use crate::combinators::stmt;
 use crate::combinators::stmt::begin_stmt;
 use crate::combinators::stmt::end_stmt;
 use crate::scan;
+use crate::scan::Error::Eof;
+use crate::scan::Error::NoMatch;
 use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_ast::TransactionStmt;

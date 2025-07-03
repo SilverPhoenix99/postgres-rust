@@ -35,7 +35,7 @@ fn comment_target(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
         | OPERATOR CLASS any_name USING name
         | OPERATOR FAMILY any_name USING name
         | OPERATOR operator_with_argtypes
-        | opt_procedural LANGUAGE name
+        | ( PROCEDURAL )? LANGUAGE name
         | POLICY name ON any_name
         | PROCEDURE function_with_argtypes
         | PUBLICATION name
@@ -231,6 +231,8 @@ fn trigger(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
     Ok(Trigger { name, table })
 }
 
+/// The `Option` result does not come from an absence of value.
+/// It returns `None` when the token is the keyword `NULL`.
 fn comment_text(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
 
     /*

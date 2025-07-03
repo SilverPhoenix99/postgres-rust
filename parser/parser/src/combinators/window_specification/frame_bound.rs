@@ -18,7 +18,7 @@ pub(super) fn frame_bound(stream: &mut TokenStream<'_>) -> scan::Result<FrameBou
     */
 
     // A single keyword is ambiguous with a_expr, so we need to check 2.
-    if let Some((first, second)) = stream.peek2_option() {
+    if let Ok((first, second)) = stream.peek2() {
 
         let res = match (first, second) {
             (Kw(Unbounded), Kw(Preceding)) => Some(UnboundedPreceding),

@@ -20,38 +20,33 @@ fn grantee(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
 }
 
 /// Alias: `opt_grant_grant_option`
-pub(super) fn opt_grant_option(stream: &mut TokenStream<'_>) -> scan::Result<bool> {
+pub(super) fn with_grant_option(stream: &mut TokenStream<'_>) -> scan::Result<GrantOption> {
 
     /*
-        ( WITH GRANT OPTION )?
+        WITH GRANT OPTION
     */
 
-    let grant = (With, Grant, OptionKw)
-        .parse(stream)
-        .optional()?
-        .is_some();
+    let _ = (With, Grant, OptionKw)
+        .parse(stream)?;
 
-    Ok(grant)
+    Ok(GrantOption::WithGrant)
 }
 
-pub(super) fn opt_drop_behavior(stream: &mut TokenStream<'_>) -> scan::Result<DropBehavior> {
+/// Alias: `opt_drop_behavior`
+pub(super) fn drop_behavior(stream: &mut TokenStream<'_>) -> scan::Result<DropBehavior> {
 
     /*
-        ( CASCADE | RESTRICT )?
+        CASCADE | RESTRICT
     */
 
-    let behaviour = or((
+    or((
         Cascade.map(|_| DropBehavior::Cascade),
         Restrict.map(|_| DropBehavior::Restrict)
-    )).parse(stream);
-
-    let behaviour = behaviour.optional()?
-        .unwrap_or_default();
-
-    Ok(behaviour)
+    )).parse(stream)
 }
 
-pub(super) fn opt_granted_by(stream: &mut TokenStream<'_>) -> scan::Result<RoleSpec> {
+/// Alias: `opt_granted_by`
+pub(super) fn granted_by(stream: &mut TokenStream<'_>) -> scan::Result<RoleSpec> {
 
     /*
         GRANTED BY role_spec
@@ -90,25 +85,26 @@ mod tests {
     }
 
     #[test]
-    fn test_opt_grant_option() {
-        let mut stream = TokenStream::new("with grant option", DEFAULT_CONFIG);
-        assert_eq!(Ok(true), opt_grant_option(&mut stream));
-        assert_eq!(Ok(false), opt_grant_option(&mut stream));
+    fn test_with_grant_option() {
+        test_parser!(
+            source = "with grant option",
+            parser = with_grant_option,
+            expected = GrantOption::WithGrant
+        )
     }
 
     #[test]
-    fn test_opt_drop_behavior() {
+    fn test_drop_behavior() {
         let mut stream = TokenStream::new("restrict cascade", DEFAULT_CONFIG);
-        assert_eq!(Ok(DropBehavior::Restrict), opt_drop_behavior(&mut stream));
-        assert_eq!(Ok(DropBehavior::Cascade), opt_drop_behavior(&mut stream));
-        assert_eq!(Ok(DropBehavior::Restrict), opt_drop_behavior(&mut stream));
+        assert_eq!(Ok(DropBehavior::Restrict), drop_behavior(&mut stream));
+        assert_eq!(Ok(DropBehavior::Cascade), drop_behavior(&mut stream));
     }
 
     #[test]
-    fn test_opt_granted_by() {
+    fn test_granted_by() {
         test_parser!(
             source = "granted by public",
-            parser = opt_granted_by,
+            parser = granted_by,
             expected = RoleSpec::Public
         )
     }
@@ -118,10 +114,10 @@ use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
-use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::DropBehavior;
+use pg_ast::GrantOption;
 use pg_ast::RoleSpec;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Cascade;

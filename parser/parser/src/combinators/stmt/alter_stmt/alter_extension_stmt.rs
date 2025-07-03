@@ -58,8 +58,10 @@ fn change_schema(stream: &mut TokenStream) -> scan::Result<Change> {
 
 fn update_options(stream: &mut TokenStream) -> scan::Result<Change> {
 
-    let (_, options) = (Kw::Update, alter_extension_options)
-        .parse(stream)?;
+    let (_, options) = (
+        Kw::Update,
+        alter_extension_options.optional()
+    ).parse(stream)?;
 
     Ok(Change::Options(options))
 }
@@ -79,7 +81,7 @@ fn change_content(stream: &mut TokenStream) -> scan::Result<Change> {
 
 /// Alias: `alter_extension_opt_list`
 /// Includes: `alter_extension_opt_item`
-fn alter_extension_options(stream: &mut TokenStream) -> scan::Result<Option<Vec<Str>>> {
+fn alter_extension_options(stream: &mut TokenStream) -> scan::Result<Vec<Str>> {
 
     /*
         ( TO NonReservedWord_or_Sconst )*
@@ -88,9 +90,7 @@ fn alter_extension_options(stream: &mut TokenStream) -> scan::Result<Option<Vec<
     let options = many(
         (To, non_reserved_word_or_sconst)
             .map(|(_, opt)| opt)
-    ).parse(stream);
-
-    let options = options.optional()?;
+    ).parse(stream)?;
 
     Ok(options)
 }
@@ -115,7 +115,7 @@ fn alter_extension_target(stream: &mut TokenStream) -> scan::Result<AlterExtensi
         | OPERATOR CLASS any_name USING ColId
         | OPERATOR FAMILY any_name USING ColId
         | OPERATOR operator_with_argtypes
-        | opt_procedural LANGUAGE ColId
+        | ( PROCEDURAL )? LANGUAGE ColId
         | PROCEDURE function_with_argtypes
         | PUBLICATION ColId
         | ROLE ColId
@@ -285,13 +285,13 @@ mod tests {
         test_parser!(
             source = r#"to "ident" to 'string' to reassign to trim to natural"#,
             parser = alter_extension_options,
-            expected = Some(vec![
+            expected = vec![
                 "ident".into(),
                 "string".into(),
                 "reassign".into(),
                 "trim".into(),
                 "natural".into()
-            ])
+            ]
         );
     }
 
@@ -391,7 +391,6 @@ use crate::combinators::stmt::view;
 use crate::combinators::stmt::Foreign;
 use crate::combinators::stmt::Operator as Op;
 use crate::combinators::stmt::TextSearch;
-use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::AddDrop;

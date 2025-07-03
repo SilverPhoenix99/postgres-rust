@@ -80,7 +80,7 @@ mod tests {
     use crate::tests::DEFAULT_CONFIG;
 
     #[test]
-    fn test_opt_transaction_mode_list() {
+    fn test_transaction_mode_list() {
 
         let mut stream = TokenStream::new("no_match", DEFAULT_CONFIG);
         assert_matches!(transaction_mode_list(&mut stream), Err(NoMatch(_)));

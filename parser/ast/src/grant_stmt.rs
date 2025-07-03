@@ -4,7 +4,7 @@ pub struct GrantStmt {
     privileges: AccessPrivilege,
     object_type: PrivilegeDefaultsTarget,
     grantees: Vec<RoleSpec>,
-    grant_option: bool,
+    grant_option: GrantOption,
     drop_behavior: DropBehavior,
 }
 
@@ -13,7 +13,7 @@ impl GrantStmt {
         privileges: AccessPrivilege,
         object_type: PrivilegeDefaultsTarget,
         grantees: Vec<RoleSpec>,
-        grant_option: bool
+        grant_option: GrantOption
     ) -> Self {
         Self {
             is_grant: true,
@@ -29,7 +29,7 @@ impl GrantStmt {
         privileges: AccessPrivilege,
         object_type: PrivilegeDefaultsTarget,
         grantees: Vec<RoleSpec>,
-        grant_option: bool,
+        grant_option: GrantOption,
         drop_behavior: DropBehavior
     ) -> Self {
         Self {
@@ -62,13 +62,13 @@ impl GrantStmt {
         &self.grantees
     }
 
-    pub fn grant_option(&self) -> bool {
+    pub fn grant_option(&self) -> GrantOption {
         self.grant_option
     }
 }
 
-
 use crate::AccessPrivilege;
 use crate::DropBehavior;
+use crate::GrantOption;
 use crate::PrivilegeDefaultsTarget;
 use crate::RoleSpec;

@@ -27,7 +27,7 @@ fn simple_typename_2(stream: &mut TokenStream) -> scan::Result<TypeName> {
         character,
         timestamp,
         time,
-        interval.map(From::from),
+        interval_type.map(From::from),
         generic_type
     )).parse(stream)
 }
@@ -52,7 +52,9 @@ fn decimal(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     let (_, typ) = (
         or(( Dec, Decimal, Kw::Numeric)),
-        opt_type_modifiers.map(Numeric),
+        type_modifiers
+            .optional()
+            .map(Numeric),
     ).parse(stream)?;
 
     Ok(typ)
@@ -67,7 +69,7 @@ fn float(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     let (_, (precision, loc)) = (
         Float,
-        located(opt_precision)
+        located(precision.optional())
     ).parse(stream)?;
 
     match precision {
@@ -92,16 +94,17 @@ fn float(stream: &mut TokenStream) -> scan::Result<TypeName> {
 fn bit(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
-        BIT opt_varying ( '(' expr_list ')' )?
+        BIT ( VARYING )? ( '(' expr_list ')' )?
     */
 
     let (_, varying, mut modifiers) = (
         Kw::Bit,
-        opt_varying,
-        opt_type_modifiers
+        Varying.optional()
+            .map(|varying| varying),
+        type_modifiers.optional()
     ).parse(stream)?;
 
-    if varying {
+    if varying.is_some() {
         return Ok(Varbit(modifiers))
     }
 
@@ -122,9 +125,9 @@ fn bit(stream: &mut TokenStream) -> scan::Result<TypeName> {
 fn character(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
-          VARCHAR opt_paren_i32
-        | (CHAR | CHARACTER | NCHAR) opt_varying opt_paren_i32
-        | NATIONAL (CHAR | CHARACTER) opt_varying opt_paren_i32
+          VARCHAR ( precision )?
+        | (CHAR | CHARACTER | NCHAR) ( VARYING )? ( precision )?
+        | NATIONAL (CHAR | CHARACTER) ( VARYING )? ( precision )?
     */
 
     let (varying, mut length) = (
@@ -141,11 +144,12 @@ fn character(stream: &mut TokenStream) -> scan::Result<TypeName> {
                     )
                         .skip()
                 )),
-                opt_varying
+                Varying.optional()
+                    .map(|varying| varying.is_some())
             )
                 .map(|(_, varying)| varying),
         )),
-        opt_precision
+        precision.optional()
     ).parse(stream)?;
 
     if varying {
@@ -164,11 +168,15 @@ fn character(stream: &mut TokenStream) -> scan::Result<TypeName> {
 fn timestamp(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
-        TIMESTAMP ( '(' ICONST ')' )? opt_timezone
+        TIMESTAMP ( '(' ICONST ')' )? ( with_timezone )?
     */
 
-    let (_, precision, with_tz) = (Kw::Timestamp, opt_precision, opt_timezone)
-        .parse(stream)?;
+    let (_, precision, with_tz) = (
+        Kw::Timestamp,
+        precision.optional(),
+        with_timezone.optional()
+            .map(Option::unwrap_or_default)
+    ).parse(stream)?;
 
     let typ = if with_tz {
         TimestampTz { precision }
@@ -184,10 +192,15 @@ fn timestamp(stream: &mut TokenStream) -> scan::Result<TypeName> {
 fn time(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
-        TIMESTAMP ( '(' ICONST ')' )? opt_timezone
+        TIMESTAMP ( '(' ICONST ')' )? ( with_timezone )?
     */
 
-    let (_, precision, with_tz) = (Kw::Time, opt_precision, opt_timezone)
+    let (_, precision, with_tz) = (
+        Kw::Time,
+        precision.optional(),
+        with_timezone.optional()
+            .map(Option::unwrap_or_default)
+    )
         .parse(stream)?;
 
     let typ = if with_tz {
@@ -200,11 +213,11 @@ fn time(stream: &mut TokenStream) -> scan::Result<TypeName> {
     Ok(typ)
 }
 
-fn interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
+fn interval_type(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
 
     /*
           INTERVAL '(' ICONST ')'
-        | INTERVAL opt_interval
+        | INTERVAL ( interval )?
     */
 
     let (_, interval) = (
@@ -212,12 +225,12 @@ fn interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
         or((
             i32_literal_paren
                 .map(|precision| Full { precision: Some(precision) }),
-            opt_interval
+            interval.optional()
+                .map(Option::unwrap_or_default)
         ))
-            .optional()
     ).parse(stream)?;
 
-    Ok(interval.unwrap_or_default())
+    Ok(interval)
 }
 
 /// Alias: `GenericType`
@@ -227,13 +240,13 @@ fn generic_type(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
           DOUBLE PRECISION
-        | type_function_name ( attrs )? opt_type_modifiers
+        | type_function_name ( attrs )? ( type_modifiers )?
     */
 
     // `Double` conflicts with, and has lower precedence than, any other `Keyword::Unreserved`.
     // If it's followed by `Precision`, then it's a Float8.
     // Otherwise, it's a plain `Unreserved` keyword, which can be its own User Defined Type.
-    if matches!(stream.peek2_option(), Some((TokenValue::Keyword(Double), TokenValue::Keyword(Precision)))) {
+    if matches!(stream.peek2(), Ok((TokenValue::Keyword(Double), TokenValue::Keyword(Precision)))) {
         stream.next();
         stream.next();
         return Ok(Float8)
@@ -241,7 +254,7 @@ fn generic_type(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     let (name, type_modifiers) = (
         attrs(type_function_name),
-        opt_type_modifiers
+        type_modifiers.optional()
     ).parse(stream)?;
 
     Ok(Generic { name, type_modifiers })
@@ -321,17 +334,16 @@ mod tests {
     }
 }
 
-use crate::combinators::attrs::attrs;
+use crate::combinators::attrs;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::i32_literal_paren;
-use crate::combinators::opt_interval;
-use crate::combinators::opt_precision;
-use crate::combinators::opt_timezone;
-use crate::combinators::opt_type_modifiers;
-use crate::combinators::opt_varying;
+use crate::combinators::interval;
+use crate::combinators::precision;
 use crate::combinators::type_function_name;
+use crate::combinators::type_modifiers;
+use crate::combinators::with_timezone;
 use crate::scan;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue;
@@ -374,3 +386,4 @@ use pg_lexer::Keyword::Nchar;
 use pg_lexer::Keyword::Precision;
 use pg_lexer::Keyword::Real;
 use pg_lexer::Keyword::Smallint;
+use pg_lexer::Keyword::Varying;

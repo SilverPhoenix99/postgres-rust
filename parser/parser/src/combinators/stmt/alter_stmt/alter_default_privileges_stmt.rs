@@ -50,8 +50,8 @@ fn def_acl_option(stream: &mut TokenStream) -> scan::Result<AclOption> {
 fn def_acl_action(stream: &mut TokenStream) -> scan::Result<GrantStmt> {
 
     /*
-          GRANT privileges ON defacl_privilege_target TO grantee_list opt_grant_option
-        | REVOKE ( GRANT OPTION FOR )? privileges ON defacl_privilege_target FROM grantee_list opt_drop_behavior
+          GRANT privileges ON defacl_privilege_target TO grantee_list ( grant_option )?
+        | REVOKE ( GRANT OPTION FOR )? privileges ON defacl_privilege_target FROM grantee_list ( drop_behavior )?
     */
 
     or((
@@ -62,6 +62,10 @@ fn def_acl_action(stream: &mut TokenStream) -> scan::Result<GrantStmt> {
 
 fn grant_stmt(stream: &mut TokenStream) -> scan::Result<GrantStmt> {
 
+    /*
+        GRANT privileges ON defacl_privilege_target TO grantee_list ( with_grant_option )?
+    */
+
     let (_, privileges, _, object_type, _, grantees, grant_option) = (
         Grant,
         privileges,
@@ -69,7 +73,8 @@ fn grant_stmt(stream: &mut TokenStream) -> scan::Result<GrantStmt> {
         def_acl_privilege_target,
         To,
         grantee_list,
-        opt_grant_option
+        with_grant_option.optional()
+            .map(Option::unwrap_or_default)
     ).parse(stream)?;
 
     let stmt = GrantStmt::grant(privileges, object_type, grantees, grant_option);
@@ -78,21 +83,37 @@ fn grant_stmt(stream: &mut TokenStream) -> scan::Result<GrantStmt> {
 
 fn revoke_stmt(stream: &mut TokenStream) -> scan::Result<GrantStmt> {
 
+    /*
+        REVOKE ( GRANT OPTION FOR )? privileges ON defacl_privilege_target FROM grantee_list ( drop_behavior )?
+    */
+
     let (_, grant_option, privileges, _, object_type, _, grantees, drop_behavior) = (
         Revoke,
-        (Grant, OptionKw, For)
+        grant_option_for
             .optional()
-            .map(|grant_option| grant_option.is_some()),
+            .map(Option::unwrap_or_default),
         privileges,
         On,
         def_acl_privilege_target,
         FromKw,
         grantee_list,
-        opt_drop_behavior
+        drop_behavior.optional()
+            .map(Option::unwrap_or_default)
     ).parse(stream)?;
 
     let stmt = GrantStmt::revoke(privileges, object_type, grantees, grant_option, drop_behavior);
     Ok(stmt)
+}
+
+fn grant_option_for(stream: &mut TokenStream) -> scan::Result<GrantOption> {
+
+    /*
+        GRANT OPTION FOR
+    */
+
+    let _ = (Grant, OptionKw, For).parse(stream)?;
+
+    Ok(GrantOption::WithGrant)
 }
 
 /// Alias: `defacl_privilege_target`
@@ -113,6 +134,7 @@ mod tests {
     use super::*;
     use crate::tests::test_parser;
     use pg_ast::AccessPrivilege;
+    #[allow(unused_imports)]
     use pg_ast::DropBehavior;
     use pg_ast::RoleSpec::*;
     use test_case::test_case;
@@ -128,7 +150,7 @@ mod tests {
                     AccessPrivilege::All { columns: None },
                     Tables,
                     vec![Public],
-                    false
+                    GrantOption::WithoutGrant
                 )
             )
         }
@@ -147,93 +169,45 @@ mod tests {
         )
     }
 
-    #[test]
-    fn test_def_acl_option_in_schema() {
-        test_parser! {
-            source = "in schema a,b,c",
-            parser = def_acl_option,
-            expected = AclOption::Schemas(vec![
-                "a".into(),
-                "b".into(),
-                "c".into()
-            ])
-        }
+    #[test_case("in schema a,b,c", AclOption::Schemas(vec![
+        "a".into(),
+        "b".into(),
+        "c".into()
+    ]))]
+    #[test_case("for role public,current_role", AclOption::Roles(vec![Public, CurrentRole]))]
+    #[test_case("for user my_user,session_user", AclOption::Roles(vec![Name("my_user".into()), SessionUser]))]
+    fn test_def_acl_option(source: &str, expected: AclOption) {
+        test_parser!(source, def_acl_option, expected)
     }
 
-    #[test]
-    fn test_def_acl_option_for_role() {
-        test_parser! {
-            source = "for role public,current_role",
-            parser = def_acl_option,
-            expected = AclOption::Roles(vec![Public, CurrentRole])
-        }
-    }
-
-    #[test]
-    fn test_def_acl_option_for_user() {
-        test_parser! {
-            source = "for user my_user,session_user",
-            parser = def_acl_option,
-            expected = AclOption::Roles(vec![Name("my_user".into()), SessionUser])
-        }
-    }
-
-    #[test]
-    fn test_grant_def_acl_action() {
-        test_parser! {
-            source = "grant all on tables to public",
-            parser = def_acl_action,
-            expected = GrantStmt::grant(
-                AccessPrivilege::All { columns: None },
-                Tables,
-                vec![Public],
-                false
-            )
-        }
-    }
-
-    #[test]
-    fn test_grant_with_option_def_acl_action() {
-        test_parser! {
-            source = "grant all privileges on tables to public with grant option",
-            parser = def_acl_action,
-            expected = GrantStmt::grant(
-                AccessPrivilege::All { columns: None },
-                Tables,
-                vec![Public],
-                true
-            )
-        }
-    }
-
-    #[test]
-    fn test_revoke_def_acl_action() {
-        test_parser! {
-            source = "revoke all privileges on tables from public",
-            parser = def_acl_action,
-            expected = GrantStmt::revoke(
-                AccessPrivilege::All { columns: None },
-                Tables,
-                vec![Public],
-                false,
-                DropBehavior::Restrict
-            )
-        }
-    }
-
-    #[test]
-    fn test_revoke_grant_option_cascade_def_acl_action() {
-        test_parser! {
-            source = "revoke grant option for all privileges on tables from public cascade",
-            parser = def_acl_action,
-            expected = GrantStmt::revoke(
-                AccessPrivilege::All { columns: None },
-                Tables,
-                vec![Public],
-                true,
-                DropBehavior::Cascade
-            )
-        }
+    #[test_case("grant all on tables to public", GrantStmt::grant(
+        AccessPrivilege::All { columns: None },
+        Tables,
+        vec![Public],
+        GrantOption::WithoutGrant
+    ))]
+    #[test_case("grant all privileges on tables to public with grant option", GrantStmt::grant(
+        AccessPrivilege::All { columns: None },
+        Tables,
+        vec![Public],
+        GrantOption::WithGrant
+    ))]
+    #[test_case("revoke all privileges on tables from public", GrantStmt::revoke(
+        AccessPrivilege::All { columns: None },
+        Tables,
+        vec![Public],
+        GrantOption::WithoutGrant,
+        DropBehavior::Restrict
+    ))]
+    #[test_case("revoke grant option for all privileges on tables from public cascade", GrantStmt::revoke(
+        AccessPrivilege::All { columns: None },
+        Tables,
+        vec![Public],
+        GrantOption::WithGrant,
+        DropBehavior::Cascade
+    ))]
+    fn test_def_acl_action(source: &str, expected: GrantStmt) {
+        test_parser!(source, def_acl_action, expected)
     }
 
     #[test_case("functions", Functions)]
@@ -248,19 +222,20 @@ mod tests {
     }
 }
 
+use crate::combinators::drop_behavior;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::grantee_list;
 use crate::combinators::name_list;
-use crate::combinators::opt_drop_behavior;
-use crate::combinators::opt_grant_option;
 use crate::combinators::privileges;
 use crate::combinators::role_list;
+use crate::combinators::with_grant_option;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::AclOption;
 use pg_ast::AlterDefaultPrivilegesStmt;
+use pg_ast::GrantOption;
 use pg_ast::GrantStmt;
 use pg_ast::PrivilegeDefaultsTarget;
 use pg_ast::PrivilegeDefaultsTarget::Functions;

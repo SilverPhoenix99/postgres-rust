@@ -4,8 +4,12 @@ pub(super) fn create_cast_stmt(stream: &mut TokenStream) -> scan::Result<CreateC
         typecast cast_conversion cast_context
     */
 
-    let (typecast, conversion, coercion) = (typecast, cast_conversion, cast_context)
-        .parse(stream)?;
+    let (typecast, conversion, coercion) = (
+        typecast,
+        cast_conversion,
+        cast_context.optional()
+            .map(Option::unwrap_or_default)
+    ).parse(stream)?;
 
     let stmt = CreateCastStmt::new(typecast, conversion, coercion);
     Ok(stmt)
@@ -36,22 +40,16 @@ fn cast_conversion(stream: &mut TokenStream) -> scan::Result<CastConversion> {
 fn cast_context(stream: &mut TokenStream) -> scan::Result<CoercionContext> {
 
     /*
-          ( AS (IMPLICIT | ASSIGNMENT) )?
+          AS (IMPLICIT | ASSIGNMENT)
     */
 
-    let context = (
+    let (_, context) = (
         As,
         or((
             Kw::Implicit.map(|_| CoercionContext::Implicit),
             Kw::Assignment.map(|_| CoercionContext::Assignment)
         ))
-    );
-
-    let context = context.parse(stream).optional()?;
-
-    let Some((_, context)) = context else {
-        return Ok(CoercionContext::default());
-    };
+    ).parse(stream)?;
 
     Ok(context)
 }
@@ -89,8 +87,6 @@ mod tests {
 
     #[test_case("as implicit", CoercionContext::Implicit)]
     #[test_case("as assignment", CoercionContext::Assignment)]
-    #[test_case("", CoercionContext::Explicit)]
-    #[test_case("something else", CoercionContext::Explicit)]
     fn test_cast_context(source: &str, expected: CoercionContext) {
         test_parser!(source, cast_context, expected);
     }
@@ -100,7 +96,6 @@ use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::function_with_argtypes;
 use crate::combinators::stmt::typecast;
-use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::CastConversion;

@@ -19,11 +19,21 @@ impl<'src> Parser<'src> {
     /// The TokenStream state is changed.
     pub fn parse(&mut self) -> ParserResult {
 
-        let mut result = stmtmulti(&mut self.stream)
-            .required();
+        let mut result = match stmtmulti(&mut self.stream) {
+            Ok(stmts) => Ok(Some(stmts)),
+            Err(Eof(_)) => {
+                // Empty input or no statements is valid.
+                Ok(None)
+            },
+            Err(NoMatch(_)) => {
+                // If it's not Eof, then something didn't match properly.
+                // Mark the current location as a Syntax error.
+                let loc = self.stream.current_location();
+                Err(syntax(loc))
+            },
+            Err(ScanErr(err)) => Err(err)
+        };
 
-        // If it's not Eof, then something didn't match properly.
-        // Discard the previous result, and mark the current location as a Syntax error.
         if !self.stream.eof() {
             let loc = self.stream.current_location();
             result = Err(syntax(loc));
@@ -39,7 +49,9 @@ impl<'src> Parser<'src> {
 }
 
 use crate::combinators::stmtmulti;
-use crate::result::Required;
+use crate::scan::Error::Eof;
+use crate::scan::Error::NoMatch;
+use crate::scan::Error::ScanErr;
 use crate::stream::TokenStream;
 use crate::ParserConfig;
 use core::mem;

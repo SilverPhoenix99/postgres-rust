@@ -1,30 +1,24 @@
-pub(super) fn opt_existing_window_name(stream: &mut TokenStream<'_>) -> scan::Result<Option<Str>> {
+/// Alias: `opt_existing_window_name`
+pub(super) fn existing_window_name(stream: &mut TokenStream<'_>) -> scan::Result<Str> {
 
     /*
-        ( col_id )?
+        col_id
     */
 
-    let Some((first, second)) = stream.peek2_option() else {
-        return Ok(None)
-    };
+    let tokens = stream.peek2()?;
 
-    match (first, second) {
-        // These 2 rules need to come first, due to conflicts with Unreserved keywords.
-        (Kw(Partition), Kw(By)) => Ok(None),
-        (Kw(RangeKw | Rows | Groups), Kw(Unbounded | Current | Between)) => Ok(None),
-
-        // ColId:
-        (Identifier(_), _) => {
-            let name = identifier(stream)?;
-            Ok(Some(name.into()))
-        },
-        (Kw(kw), _) if matches!(kw.category(), Unreserved | ColumnName) => {
-            let name = any_keyword(stream)?;
-            Ok(Some(name.into()))
-        },
-
-        _ => Ok(None),
+    // These 2 rules need to be checked first, due to conflicts with Unreserved keywords.
+    if {
+        matches!(tokens,
+            (Kw(Partition), Kw(By))
+            | (Kw(RangeKw | Rows | Groups), Kw(Unbounded | Current | Between))
+        )
+    } {
+        let loc = stream.current_location();
+        return Err(NoMatch(loc))
     }
+
+    col_id(stream)
 }
 
 #[cfg(test)]
@@ -61,16 +55,15 @@ mod tests {
     #[test_case("groups groups", Some("groups".into()))]
     #[test_case("something else", Some("something".into()))]
     #[test_case("", None)]
-    fn test_opt_existing_window_name(source: &str, expected: Option<Str>) {
-        test_parser!(source, opt_existing_window_name, expected);
+    fn test_existing_window_name(source: &str, expected: Option<Str>) {
+        test_parser!(source, existing_window_name.optional(), expected);
     }
 }
 
-use crate::combinators::foundation::any_keyword;
-use crate::combinators::foundation::identifier;
+use crate::combinators::col_id;
 use crate::scan;
+use crate::scan::Error::NoMatch;
 use crate::stream::TokenStream;
-use crate::stream::TokenValue::Identifier;
 use crate::stream::TokenValue::Keyword as Kw;
 use pg_basics::Str;
 use pg_lexer::Keyword::Between;
@@ -81,5 +74,3 @@ use pg_lexer::Keyword::Partition;
 use pg_lexer::Keyword::RangeKw;
 use pg_lexer::Keyword::Rows;
 use pg_lexer::Keyword::Unbounded;
-use pg_lexer::KeywordCategory::ColumnName;
-use pg_lexer::KeywordCategory::Unreserved;

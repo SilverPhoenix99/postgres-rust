@@ -1,5 +1,10 @@
 
 # Notes
+* Avoid returning `Option` from combinators where possible.
+  * Instead, combinators should add `.optional()` to dependent combinators.
+  * This way there's no guessing whether the combinator returns a required value or not.
+  * There are exceptions, where `None` is represented by tokens, like `NULL` or `NONE`.
+    * Examples include `string_or_null`, and `right_type`.
 * Where a `Vec` can be empty, use `Option<Vec>`.
   * A lot of productions return non-empty Vecs, so Option makes it clearer when Vecs can be empty.
   * `Option<Vec>` has no overhead.
@@ -14,7 +19,7 @@
   * `makeColumnRef`:
     * splits the name (`.`) from subscripts (`[]`)
     * `*` is only allowed as the last item of the whole source list, if there are no indexes.
-    * `*` is allowed in any position after an index, and can show multiple times.
+    * `*` is allowed in any position after an index, and can show up multiple times.
     * examples:
       * `x` -> `(["x"], [])`
       * `x.y` -> `(["x", "y"], [])`

@@ -3,7 +3,7 @@ pub struct CreateUserMappingStmt {
     user: RoleSpec,
     server: Str,
     options: Option<Vec<GenericOption>>,
-    if_not_exists: bool
+    existence: Presence
 }
 
 impl CreateUserMappingStmt {
@@ -11,13 +11,13 @@ impl CreateUserMappingStmt {
         user: RoleSpec,
         server: T,
         options: Option<Vec<GenericOption>>,
-        if_not_exists: bool
+        existence: Presence
     ) -> Self {
         Self {
             user,
             server: server.into(),
             options,
-            if_not_exists
+            existence
         }
     }
 
@@ -33,11 +33,12 @@ impl CreateUserMappingStmt {
         self.options.as_deref()
     }
 
-    pub fn if_not_exists(&self) -> bool {
-        self.if_not_exists
+    pub fn existence(&self) -> Presence {
+        self.existence
     }
 }
 
 use crate::GenericOption;
+use crate::Presence;
 use crate::RoleSpec;
 use pg_basics::Str;

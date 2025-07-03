@@ -11,7 +11,7 @@ pub(super) fn func_arg(stream: &mut TokenStream<'_>) -> scan::Result<FunctionPar
 
     let mut mode = arg_class(stream).optional()?;
 
-    let has_name = stream.peek2_option()
+    let has_name = stream.peek2()
         .map(|(first, second)| is_arg_name(first, second))
         .unwrap_or_default();
 

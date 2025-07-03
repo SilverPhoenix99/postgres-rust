@@ -2,7 +2,7 @@ pub(super) fn commit_stmt(stream: &mut TokenStream) -> scan::Result<TransactionS
 
     /*
         COMMIT PREPARED SCONST
-        COMMIT opt_transaction opt_transaction_chain
+        COMMIT ( work_or_transaction )? ( transaction_chain )?
     */
 
     let (_, stmt) = (
@@ -10,8 +10,12 @@ pub(super) fn commit_stmt(stream: &mut TokenStream) -> scan::Result<TransactionS
         or((
             (Prepared, string)
                 .map(|(_, tx_name)| CommitPrepared(tx_name)),
-            (opt_transaction, opt_transaction_chain)
-                .map(|(_, chain)| TransactionStmt::Commit { chain })
+            (
+                work_or_transaction.optional(),
+                transaction_chain
+                    .optional()
+                    .map(Option::unwrap_or_default)
+            ).map(|(_, chain)| TransactionStmt::Commit(chain))
         ))
     ).parse(stream)?;
 
@@ -22,16 +26,17 @@ pub(super) fn commit_stmt(stream: &mut TokenStream) -> scan::Result<TransactionS
 mod tests {
     use super::*;
     use crate::tests::test_parser;
+    use pg_ast::TransactionChain;
     use test_case::test_case;
 
-    #[test_case("commit", false)]
-    #[test_case("commit and chain", true)]
-    #[test_case("commit and no chain", false)]
-    #[test_case("commit transaction", false)]
-    #[test_case("commit transaction and chain", true)]
-    #[test_case("commit transaction and no chain", false)]
-    fn test_commit(source: &str, expected: bool) {
-        test_parser!(source, commit_stmt, TransactionStmt::Commit { chain: expected })
+    #[test_case("commit", TransactionChain::NoChain)]
+    #[test_case("commit and chain", TransactionChain::WithChain)]
+    #[test_case("commit and no chain", TransactionChain::NoChain)]
+    #[test_case("commit transaction", TransactionChain::NoChain)]
+    #[test_case("commit transaction and chain", TransactionChain::WithChain)]
+    #[test_case("commit transaction and no chain", TransactionChain::NoChain)]
+    fn test_commit(source: &str, expected: TransactionChain) {
+        test_parser!(source, commit_stmt, TransactionStmt::Commit(expected))
     }
 
     #[test]
@@ -47,8 +52,8 @@ mod tests {
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::opt_transaction;
-use crate::combinators::opt_transaction_chain;
+use crate::combinators::transaction_chain;
+use crate::combinators::work_or_transaction;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::TransactionStmt;

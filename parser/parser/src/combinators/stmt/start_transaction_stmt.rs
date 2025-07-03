@@ -1,7 +1,7 @@
 pub(super) fn start_transaction_stmt(stream: &mut TokenStream) -> scan::Result<TransactionStmt> {
 
     /*
-        START TRANSACTION opt_transaction_mode_list
+        START TRANSACTION ( transaction_mode_list )?
     */
 
     let (.., tx_modes) = (

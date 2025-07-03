@@ -3,7 +3,7 @@ pub(super) fn analyze_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
         (ANALYSE | ANALYZE) '(' utility_option_list ')' opt_vacuum_relation_list
-        (ANALYSE | ANALYZE) (VERBOSE)? opt_vacuum_relation_list
+        (ANALYSE | ANALYZE) ( VERBOSE )? opt_vacuum_relation_list
     */
 
     let (_, stmt) = (

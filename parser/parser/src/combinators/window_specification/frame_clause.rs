@@ -1,27 +1,26 @@
-pub(super) fn opt_frame_clause(stream: &mut TokenStream<'_>) -> scan::Result<Option<WindowFrame>> {
+/// Alias: `opt_frame_clause`
+pub(super) fn frame_clause(stream: &mut TokenStream<'_>) -> scan::Result<WindowFrame> {
 
     /*
-        RANGE frame_extent opt_window_exclusion_clause
-      | ROWS frame_extent opt_window_exclusion_clause
-      | GROUPS frame_extent opt_window_exclusion_clause
+        RANGE frame_extent  ( window_exclusion_clause )?
+      | ROWS frame_extent   ( window_exclusion_clause )?
+      | GROUPS frame_extent ( window_exclusion_clause )?
     */
 
-    let clause = (
+    let (kind, extent, exclusion) = (
         or((
             RangeKw.map(|_| Range),
             Kw::Rows.map(|_| Rows),
             Kw::Groups.map(|_| Groups),
         )),
         frame_extent,
-        opt_window_exclusion_clause
-    ).parse(stream);
+        window_exclusion_clause.optional()
+            .map(Option::unwrap_or_default),
+    ).parse(stream)?;
 
-    let clause = clause.optional()?
-        .map(|(kind, extent, exclusion)|
-            WindowFrame::new(kind, extent, exclusion)
-        );
+    let frame = WindowFrame::new(kind, extent, exclusion);
 
-    Ok(clause)
+    Ok(frame)
 }
 
 #[cfg(test)]
@@ -33,43 +32,40 @@ mod tests {
         CurrentRowEnd,
         ExprNode::IntegerConst,
         FrameExtent,
-        WindowExclusion::Ties,
+        WindowExclusion::{NoOthers, Ties},
     };
     use test_case::test_case;
 
-    #[test_case("range between current row and unbounded following", Some(
+    #[test_case("range between current row and unbounded following",
         WindowFrame::new(
             Range,
             FrameExtent::CurrentRow { end: Some(CurrentRowEnd::Unbounded) },
-            None
+            NoOthers
         )
-    ))]
-    #[test_case("rows current row exclude ties", Some(
+    )]
+    #[test_case("rows current row exclude ties",
         WindowFrame::new(
             Rows,
             FrameExtent::CurrentRow { end: None },
-            Some(Ties)
+            Ties
         )
-    ))]
-    #[test_case("groups unbounded preceding", Some(
+    )]
+    #[test_case("groups unbounded preceding", 
         WindowFrame::new(
             Groups,
             FrameExtent::Unbounded { end: None },
-            None
+            NoOthers
         )
-    ))]
-    #[test_case("something else", None)]
-    #[test_case("", None)]
-    fn test_opt_frame_clause(source: &str, expected: Option<WindowFrame>) {
-        test_parser!(source, opt_frame_clause, expected);
+    )]
+    fn test_frame_clause(source: &str, expected: WindowFrame) {
+        test_parser!(source, frame_clause, expected);
     }
 }
 
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::window_specification::frame_extent;
-use crate::combinators::window_specification::opt_window_exclusion_clause;
-use crate::result::Optional;
+use crate::combinators::window_specification::window_exclusion_clause;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::WindowFrame;

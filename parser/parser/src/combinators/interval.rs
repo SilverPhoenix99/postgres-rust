@@ -1,4 +1,5 @@
-pub(super) fn opt_interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
+/// Alias: `opt_interval`
+pub(super) fn interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
 
     /*
           YEAR
@@ -14,22 +15,17 @@ pub(super) fn opt_interval(stream: &mut TokenStream) -> scan::Result<IntervalRan
         | MINUTE
         | MINUTE TO SECOND ( '(' ICONST ')' )?
         | SECOND ( '(' ICONST ')' )?
-        | /* EMPTY */
     */
 
-    let interval = or((
+    or((
         year,
         MonthKw.map(|_| Month),
         day,
         hour,
         minute,
-        (SecondKw, opt_precision)
+        (SecondKw, precision.optional())
             .map(|(_, precision)| Second { precision }),
-    )).parse(stream);
-
-    let interval = interval.optional()?;
-
-    Ok(interval.unwrap_or_default())
+    )).parse(stream)
 }
 
 fn year(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
@@ -64,7 +60,7 @@ fn day(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
             or((
                 HourKw.map(|_| DayToHour),
                 MinuteKw.map(|_| DayToMinute),
-                (SecondKw, opt_precision)
+                (SecondKw, precision.optional())
                     .map(|(_, precision)| DayToSecond { precision })
             ))
         )
@@ -90,7 +86,7 @@ fn hour(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
             To,
             or((
                 MinuteKw.map(|_| HourToMinute),
-                (SecondKw, opt_precision)
+                (SecondKw, precision.optional())
                     .map(|(_, precision)| HourToSecond { precision })
             ))
         )
@@ -111,7 +107,7 @@ fn minute(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
 
     let (_, precision) = (
         MinuteKw,
-        (To, SecondKw, opt_precision)
+        (To, SecondKw, precision.optional())
             .map(|(.., precision)| precision)
             .optional()
     ).parse(stream)?;
@@ -130,7 +126,6 @@ mod tests {
     use crate::tests::test_parser;
     use test_case::test_case;
 
-    #[test_case("",                  IntervalRange::default())]
     #[test_case("year",              IntervalRange::Year)]
     #[test_case("year to month",     IntervalRange::YearToMonth)]
     #[test_case("month",             IntervalRange::Month)]
@@ -144,15 +139,14 @@ mod tests {
     #[test_case("hour to second(5)", IntervalRange::HourToSecond { precision: Some(5) })]
     #[test_case("second",            IntervalRange::Second { precision: None })]
     #[test_case("second(3)",         IntervalRange::Second { precision: Some(3) })]
-    fn test_opt_interval(source: &str, expected: IntervalRange) {
-        test_parser!(source, opt_interval, expected)
+    fn test_interval(source: &str, expected: IntervalRange) {
+        test_parser!(source, interval, expected)
     }
 }
 
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::opt_precision;
-use crate::result::Optional;
+use crate::combinators::precision;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::IntervalRange;

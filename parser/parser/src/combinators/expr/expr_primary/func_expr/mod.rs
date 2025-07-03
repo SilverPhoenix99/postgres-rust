@@ -15,13 +15,13 @@ pub(super) fn func_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 fn func_expr_1(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     or((
-        (Kw::CurrentTime, opt_precision)
+        (Kw::CurrentTime, precision.optional())
             .map(|(_, precision)| CurrentTime { precision }),
-        (Kw::CurrentTimestamp, opt_precision)
+        (Kw::CurrentTimestamp, precision.optional())
             .map(|(_, precision)| CurrentTimestamp { precision }),
-        (Kw::Localtime, opt_precision)
+        (Kw::Localtime, precision.optional())
             .map(|(_, precision)| LocalTime { precision }),
-        (Kw::Localtimestamp, opt_precision)
+        (Kw::Localtimestamp, precision.optional())
             .map(|(_, precision)| LocalTimestamp { precision }),
     )).parse(stream)
 }
@@ -91,7 +91,7 @@ use crate::combinators::expr::expr_primary::case_expr;
 use crate::combinators::expr::expr_primary::cast_expr;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::opt_precision;
+use crate::combinators::precision;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::ExprNode;

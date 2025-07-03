@@ -1,15 +1,15 @@
 pub(super) fn create_user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
-          USER MAPPING if_not_exists FOR auth_ident SERVER ColId create_generic_options => CreateUserMappingStmt
-        | USER RoleId opt_with OptRoleList => CreateRoleStmt
+          USER MAPPING ( if_not_exists )? FOR auth_ident SERVER ColId create_generic_options => CreateUserMappingStmt
+        | USER RoleId ( WITH )? OptRoleList => CreateRoleStmt
     */
 
     let (_, stmt) = (
         User,
         or((
-            create_user_mapping.map(From::from),
-            create_user_role.map(From::from)
+            create_user_mapping.map(RawStmt::from),
+            create_user_role.map(RawStmt::from)
         ))
     ).parse(stream)?;
 
@@ -18,17 +18,18 @@ pub(super) fn create_user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt
 
 fn create_user_mapping(stream: &mut TokenStream) -> scan::Result<CreateUserMappingStmt> {
 
-    let (_, if_not_exists, _, user, _, server, options) = (
+    let (_, existence, _, user, _, server, options) = (
         Mapping,
-        if_not_exists,
+        if_not_exists.optional()
+            .map(Option::unwrap_or_default),
         For,
         auth_ident,
         Server,
         col_id,
-        create_generic_options
+        create_generic_options.optional()
     ).parse(stream)?;
 
-    let stmt = CreateUserMappingStmt::new(user, server, options, if_not_exists);
+    let stmt = CreateUserMappingStmt::new(user, server, options, existence);
     Ok(stmt)
 }
 
@@ -53,6 +54,7 @@ mod tests {
     use pg_ast::CreateRoleOption;
     #[allow(unused_imports)]
     use pg_ast::{
+        Presence,
         GenericOption,
         RoleSpec
     };
@@ -76,7 +78,7 @@ mod tests {
             RoleSpec::Name("test_user".into()),
             "test_server",
             Some(vec![GenericOption::new("foo", "42")]),
-            true
+            Presence::Ignore
         )
     )]
     #[test_case("mapping for foo server bar",
@@ -84,7 +86,7 @@ mod tests {
             RoleSpec::Name("foo".into()),
             "bar",
             None,
-            false
+            Presence::Fail
         )
     )]
     fn test_create_user_mapping(source: &str, expected: CreateUserMappingStmt) {

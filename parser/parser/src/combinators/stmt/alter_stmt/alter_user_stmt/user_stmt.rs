@@ -29,14 +29,27 @@ pub(super) fn user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
 fn user_role_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
+    /*
+          RoleId RENAME TO RoleId               => RenameStmt
+        | RoleSpec in_database SetResetClause   => AlterRoleSetStmt
+        | RoleSpec WITH AlterOptRoleList        => AlterRoleStmt
+        | RoleSpec SetResetClause               => AlterRoleSetStmt
+        | RoleSpec AlterOptRoleList             => AlterRoleStmt
+    */
+    
     let ((role, loc), stmt) = (
         located(role_spec),
         or((
             rename,
             change_role,
-            (With, alter_role_options)
+            (
+                With,
+                alter_role_options.optional()
+            )
                 .map(|(_, options)| Change::Options(options)),
-            alter_role_options.map(Change::Options)
+            alter_role_options
+                .optional()
+                .map(Change::Options)
         ))
     ).parse(stream)?;
 
@@ -157,6 +170,10 @@ mod tests {
     )]
     #[test_case(
         "public",
+        AlterRoleStmt::new(RoleSpec::Public, Add, None).into()
+    )]
+    #[test_case(
+        "public with",
         AlterRoleStmt::new(RoleSpec::Public, Add, None).into()
     )]
     fn test_user_stmt(source: &str, expected: RawStmt) {

@@ -1,22 +1,27 @@
+mod existing_window_name;
 mod frame_bound;
+mod frame_clause;
 mod frame_extent;
-mod opt_existing_window_name;
-mod opt_frame_clause;
-mod opt_partition_clause;
-mod opt_window_exclusion_clause;
+mod partition_clause;
+mod window_exclusion_clause;
 
 pub(super) fn window_specification(stream: &mut TokenStream) -> scan::Result<WindowDefinition> {
 
     /*
-        '(' opt_existing_window_name opt_partition_clause ( sort_clause )? opt_frame_clause ')'
+        '('
+            ( existing_window_name )?
+            ( partition_clause )?
+            ( sort_clause )?
+            ( frame_clause )?
+        ')'
     */
 
     let (name, partition, order, frame) = between_paren(
         (
-            opt_existing_window_name,
-            opt_partition_clause,
+            existing_window_name.optional(),
+            partition_clause.optional(),
             sort_clause.optional(),
-            opt_frame_clause
+            frame_clause.optional()
         )
     ).parse(stream)?;
 
@@ -26,12 +31,12 @@ pub(super) fn window_specification(stream: &mut TokenStream) -> scan::Result<Win
 
 #[allow(unused_imports)]
 use self::{
+    existing_window_name::existing_window_name,
     frame_bound::frame_bound,
+    frame_clause::frame_clause,
     frame_extent::frame_extent,
-    opt_existing_window_name::opt_existing_window_name,
-    opt_frame_clause::opt_frame_clause,
-    opt_partition_clause::opt_partition_clause,
-    opt_window_exclusion_clause::opt_window_exclusion_clause,
+    partition_clause::partition_clause,
+    window_exclusion_clause::window_exclusion_clause,
 };
 
 use crate::combinators::foundation::between_paren;

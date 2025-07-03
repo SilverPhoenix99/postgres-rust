@@ -32,6 +32,7 @@ mod extension;
 mod fetch_stmt;
 mod foreign;
 mod function;
+mod if_exists;
 mod if_not_exists;
 mod import_stmt;
 mod index;
