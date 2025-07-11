@@ -5,6 +5,7 @@ mod aggregate_with_argtypes;
 mod alter_function_option;
 mod alter_role_option;
 mod alter_stmt;
+mod analyze_keyword;
 mod analyze_stmt;
 mod auth_ident;
 mod begin_stmt;
@@ -217,6 +218,7 @@ use self::{
     alter_function_option::*,
     alter_role_option::*,
     alter_stmt::*,
+    analyze_keyword::*,
     analyze_stmt::*,
     auth_ident::*,
     call_stmt::*,

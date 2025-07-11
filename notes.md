@@ -27,6 +27,7 @@
       * `x.y[0].*.foo.bar.*` -> `(["x", "y"], [i(0), All, "foo", "bar", All])`
       * `*[foo]` -> `([All], [i("foo")])`
   * `makeRangeVarFromQualifiedName`: qualified name == `( attrs ){1, 3}`
+* Combinators should use specific enums, instead of using the generic `makeDefElem`/`DefElem` from C code.
 
 # TO DO
 * Allow case-insensitive search on Mphf, specifically to search for keywords.
