@@ -15,7 +15,6 @@ pub enum RawStmt {
     AlterRoleStmt(AlterRoleStmt),
     AlterSystemStmt(AlterSystemStmt),
     AlterUserMappingStmt(AlterUserMappingStmt),
-    CheckPoint,
     ClosePortalStmt(OneOrAll<Str>),
     CommentStmt(CommentStmt),
     ConstraintsSetStmt(ConstraintsSetStmt),

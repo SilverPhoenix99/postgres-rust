@@ -57,7 +57,7 @@ stmt :
   | AlterUserMappingStmt
   | AnalyzeStmt
   | CallStmt
-  | CHECKPOINT
+  | CheckPointStmt
   | ClosePortalStmt
   | ClusterStmt
   | CommentStmt
@@ -419,6 +419,11 @@ constraints_set_list :
 constraints_set_mode :
     DEFERRED
   | IMMEDIATE
+;
+
+CheckPointStmt :
+    CHECKPOINT
+  | CHECKPOINT '(' utility_option_list ')'
 ;
 
 DiscardStmt :
@@ -1996,13 +2001,13 @@ FetchStmt :
 fetch_args :
     ColId
   | from_in ColId
+  | SignedIconst opt_from_in ColId
   | NEXT opt_from_in ColId
   | PRIOR opt_from_in ColId
   | FIRST_P opt_from_in ColId
   | LAST_P opt_from_in ColId
   | ABSOLUTE_P SignedIconst opt_from_in ColId
   | RELATIVE_P SignedIconst opt_from_in ColId
-  | SignedIconst opt_from_in ColId
   | ALL opt_from_in ColId
   | FORWARD opt_from_in ColId
   | FORWARD SignedIconst opt_from_in ColId
