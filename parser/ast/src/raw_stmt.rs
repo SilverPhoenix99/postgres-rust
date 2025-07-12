@@ -15,6 +15,7 @@ pub enum RawStmt {
     AlterRoleStmt(AlterRoleStmt),
     AlterSystemStmt(AlterSystemStmt),
     AlterUserMappingStmt(AlterUserMappingStmt),
+    CheckPointStmt(Option<Vec<UtilityOption>>),
     ClosePortalStmt(OneOrAll<Str>),
     CommentStmt(CommentStmt),
     ConstraintsSetStmt(ConstraintsSetStmt),
@@ -103,6 +104,7 @@ use crate::ReassignOwnedStmt;
 use crate::RenameStmt;
 use crate::SecurityLabelStmt;
 use crate::TransactionStmt;
+use crate::UtilityOption;
 use crate::VariableSetStmt;
 use crate::VariableTarget;
 use pg_basics::impl_from;

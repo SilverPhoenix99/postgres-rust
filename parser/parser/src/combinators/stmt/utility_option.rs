@@ -72,16 +72,16 @@ mod tests {
             source = "analyze false, format csv, bar true",
             parser = utility_option_list,
             expected = vec![
-                UtilityOption::new(Analyze, Some(false.into())),
-                UtilityOption::new(Format, Some("csv".into())),
-                UtilityOption::new(Generic("bar".into()), Some(true.into()))
+                Analyze.with_value(false),
+                Format.with_value("csv"),
+                Generic("bar".into()).with_value(true)
             ]
         )
     }
 
-    #[test_case("format 'json'", UtilityOption::new(Format, Some("json".into())))]
-    #[test_case("analyse", UtilityOption::new(Analyze, None))]
-    #[test_case("foo false", UtilityOption::new(Generic("foo".into()), Some(false.into())))]
+    #[test_case("format 'json'", Format.with_value("json"))]
+    #[test_case("analyse", Analyze.into())]
+    #[test_case("foo false", Generic("foo".into()).with_value(false))]
     fn test_utility_option(source: &str, expected: UtilityOption) {
         test_parser!(source, utility_option, expected)
     }

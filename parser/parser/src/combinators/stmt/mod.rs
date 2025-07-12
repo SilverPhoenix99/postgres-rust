@@ -177,6 +177,7 @@ mod tests {
 
     #[test_case("abort transaction")]
     #[test_case("alter group some_group add user public")]
+    #[test_case("checkpoint")]
     #[test_case("close all")]
     #[test_case("comment on type int is 'comment'")]
     #[test_case("commit and no chain")]

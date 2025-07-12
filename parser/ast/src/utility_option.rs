@@ -25,5 +25,17 @@ pub enum UtilityOptionName {
     Generic(Str)
 }
 
+impl UtilityOptionName {
+    pub fn with_value<T: Into<VarValue>>(self, value: T) -> UtilityOption {
+        UtilityOption::new(self, Some(value.into()))
+    }
+}
+
+impl From<UtilityOptionName> for UtilityOption {
+    fn from(name: UtilityOptionName) -> Self {
+        Self::new(name, None)
+    }
+}
+
 use crate::VarValue;
 use pg_basics::Str;
