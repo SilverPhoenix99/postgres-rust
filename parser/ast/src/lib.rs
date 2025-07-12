@@ -70,6 +70,7 @@ mod typecast_expr;
 mod unary_expr;
 mod unique_null_treatment;
 mod unsigned_number;
+mod utility_option;
 mod value_or_default;
 mod var_value;
 mod variable_set_stmt;
@@ -152,6 +153,7 @@ pub use self::{
     unary_expr::*,
     unique_null_treatment::*,
     unsigned_number::*,
+    utility_option::*,
     value_or_default::*,
     var_value::*,
     variable_set_stmt::*,

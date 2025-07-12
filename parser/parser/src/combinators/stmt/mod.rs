@@ -79,6 +79,7 @@ mod truncate_stmt;
 mod type_name;
 mod typecast;
 mod unlisten_stmt;
+mod utility_option;
 mod vacuum_stmt;
 mod variable_target;
 mod view;
@@ -289,6 +290,7 @@ use self::{
     type_name::*,
     typecast::*,
     unlisten_stmt::*,
+    utility_option::*,
     vacuum_stmt::*,
     variable_target::*,
     view::*,
