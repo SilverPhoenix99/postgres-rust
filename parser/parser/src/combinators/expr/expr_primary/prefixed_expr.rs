@@ -1,7 +1,7 @@
-pub(super) fn identifier_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn prefixed_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     /*
-        IDENT
+        (IDENT | unreserved_keyword)
         (
             | ( indirection )? => columnref
             | ( attrs )?
@@ -14,12 +14,23 @@ pub(super) fn identifier_expr(stream: &mut TokenStream) -> scan::Result<ExprNode
         )
     */
 
+    // This check needs to be first, due to conflicts with the other Unreserved keywords.
+    if let Ok((Keyword(Double), Keyword(Precision))) = stream.peek2() {
+        // Due to the condition, this will never return `NoMatch`.
+        let (.., value) = (Double, Precision, string).parse(stream)?;
+        let expr = TypecastExpr::new(StringConst(value), TypeName::Float8);
+        return Ok(expr.into())
+    }
+
     let (name, indirection) = (
-        identifier,
+        or((
+            identifier.map(Str::from),
+            Unreserved.map(|kw| Str::from(kw.text()))
+        )),
         located(indirection).optional()
     ).parse(stream)?;
 
-    let column_ref = make_column_ref(name.into(), indirection)?;
+    let column_ref = make_column_ref(name, indirection)?;
 
     let attrs = match QualifiedName::try_from(column_ref) {
         Ok(attrs) => attrs,
@@ -41,7 +52,7 @@ pub(super) fn identifier_expr(stream: &mut TokenStream) -> scan::Result<ExprNode
         },
         Some(AttrSuffix::String(value)) => {
             // AexprConst
-            let arg = ExprNode::StringConst(value);
+            let arg = StringConst(value);
             let type_name = TypeName::Generic { name: attrs, type_modifiers: None };
             let expr = TypecastExpr::new(arg, type_name);
             return Ok(expr.into())
@@ -91,7 +102,7 @@ pub(super) fn identifier_expr(stream: &mut TokenStream) -> scan::Result<ExprNode
 
         // AexprConst
         let typecast = TypecastExpr::new(
-            ExprNode::StringConst(value),
+            StringConst(value),
             type_name
         );
 
@@ -179,6 +190,15 @@ mod tests {
     )]
     #[test_case("foo.*",
         ColumnRef::WildcardName(vec!["foo".into()]).into()
+    )]
+    #[test_case("double.*",
+        ColumnRef::WildcardName(vec!["double".into()]).into()
+    )]
+    #[test_case("double precision '123'",
+        TypecastExpr::new(
+            StringConst("123".into()),
+            TypeName::Float8
+        ).into()
     )]
     #[test_case("foo.bar 'baz'",
         TypecastExpr::new(
@@ -279,6 +299,17 @@ mod tests {
             None
         ).into()
     )]
+    #[test_case("double(7) '123'",
+        TypecastExpr::new(
+            StringConst("123".into()),
+            TypeName::Generic {
+                name: vec!["double".into()],
+                type_modifiers: Some(vec![
+                    IntegerConst(7)
+                ])
+            }
+        ).into()
+    )]
     #[test_case("foo(7) '123'",
         TypecastExpr::new(
             StringConst("123".into()),
@@ -290,8 +321,8 @@ mod tests {
             }
         ).into()
     )]
-    fn test_identifier_expr(source: &str, expected: ExprNode) {
-        test_parser!(source, identifier_expr, expected)
+    fn test_prefixed_expr(source: &str, expected: ExprNode) {
+        test_parser!(source, prefixed_expr, expected)
     }
 
     #[test_case("'some string'", AttrSuffix::String("some string".into()))]
@@ -317,9 +348,11 @@ use crate::combinators::make_column_ref;
 use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
+use crate::stream::TokenValue::Keyword;
 use core::mem;
 use pg_ast::ColumnRef;
 use pg_ast::ExprNode;
+use pg_ast::ExprNode::StringConst;
 use pg_ast::FuncArgExpr;
 use pg_ast::FuncArgsKind;
 use pg_ast::FuncArgsOrder;
@@ -327,8 +360,12 @@ use pg_ast::FuncCall;
 use pg_ast::TypeName;
 use pg_ast::TypecastExpr;
 use pg_basics::QualifiedName;
+use pg_basics::Str;
 use pg_elog::parser::Error::DistinctWithinGroup;
 use pg_elog::parser::Error::InvalidNamedTypeModifier;
 use pg_elog::parser::Error::InvalidOrderedTypeModifiers;
 use pg_elog::parser::Error::MultipleOrderBy;
 use pg_elog::parser::Error::VariadicWithinGroup;
+use pg_lexer::Keyword::Double;
+use pg_lexer::Keyword::Precision;
+use pg_lexer::KeywordCategory::Unreserved;
