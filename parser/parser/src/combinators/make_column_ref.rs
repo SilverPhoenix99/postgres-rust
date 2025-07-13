@@ -3,7 +3,7 @@ pub(in crate::combinators) fn make_column_ref(
     name: Str,
     indirection: Option<Located<Vec<Indirection>>>
 )
-    -> Result<ColumnRef>
+    -> scan::Result<ColumnRef>
 {
     /*
         - splits the name (`.`) from subscripts (`[]`)
@@ -50,12 +50,12 @@ pub(in crate::combinators) fn make_column_ref(
     qname.insert(0, name);
 
     match indirection.as_slice() {
-        // `All` is not the last element
+        // `Wildcard` is not the last element
         [Wildcard, _, ..] => Err(ImproperUseOfStar.at(loc).into()),
         [Wildcard] => Ok(WildcardName(qname)),
         [] => Ok(Name(qname)),
-        // `All` and `Property` won't be the 1st element,
-        // so the indirection must start with `Index` or `Slice`
+        // `Wildcard` and `Property` won't be the 1st element,
+        // so the indirection starts with `Index` or `Slice`
         _ => Ok(IndirectionRef { name: qname, indirection }),
     }
 }
@@ -97,7 +97,7 @@ mod tests {
         indirection: Option<Located<Vec<Indirection>>>,
         expected: ColumnRef
     )
-        -> Result<()>
+        -> scan::Result<()>
     {
         let actual = make_column_ref(name.into(), indirection)?;
         assert_eq!(expected, actual);
@@ -105,7 +105,7 @@ mod tests {
     }
 }
 
-use crate::scan::Result;
+use crate::scan;
 use pg_ast::ColumnRef;
 use pg_ast::ColumnRef::Indirection as IndirectionRef;
 use pg_ast::ColumnRef::Name;

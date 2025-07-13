@@ -25,6 +25,8 @@ pub(super) fn window_specification(stream: &mut TokenStream) -> scan::Result<Win
         )
     ).parse(stream)?;
 
+    let order = order.map(|(order, _)| order);
+
     let expr = WindowDefinition::new(name, partition, order, frame);
     Ok(expr)
 }

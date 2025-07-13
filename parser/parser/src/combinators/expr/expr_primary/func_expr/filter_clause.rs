@@ -1,4 +1,5 @@
-pub(super) fn filter_clause(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(in crate::combinators::expr::expr_primary)
+fn filter_clause(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     /*
         FILTER '(' WHERE a_expr ')'

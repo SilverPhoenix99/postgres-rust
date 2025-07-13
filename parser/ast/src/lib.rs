@@ -32,6 +32,7 @@ mod drop_behavior;
 mod frame_extent;
 mod func_arg_expr;
 mod func_args_kind;
+mod func_call;
 mod function_parameter;
 mod function_with_args;
 mod generic_option;
@@ -115,6 +116,7 @@ pub use self::{
     frame_extent::*,
     func_arg_expr::*,
     func_args_kind::*,
+    func_call::*,
     function_parameter::*,
     function_with_args::*,
     generic_option::*,
@@ -247,6 +249,7 @@ pub enum ExprNode {
     CurrentCatalog,
     Indirection(Box<IndirectionExpr>),
     ColumnRef(Box<ColumnRef>),
+    FuncCall(Box<FuncCall>),
 
     /* Xml operations */
     IsXmlDocument(Box<ExprNode>),
@@ -258,17 +261,18 @@ pub enum ExprNode {
     XmlRoot(Box<XmlRoot>),
 }
 
+impl_from!(BoolExpr for ExprNode);
+impl_from!(XmlElement for ExprNode);
 impl_from!(box BinaryExpr for ExprNode);
 impl_from!(box CaseExpr for ExprNode);
 impl_from!(box ColumnRef for ExprNode);
+impl_from!(box FuncCall for ExprNode);
 impl_from!(box IndirectionExpr for ExprNode::Indirection);
 impl_from!(box TypecastExpr for ExprNode::Typecast);
 impl_from!(box UnaryExpr for ExprNode);
 impl_from!(box XmlParse for ExprNode);
 impl_from!(box XmlProcessingInstruction for ExprNode);
 impl_from!(box XmlRoot for ExprNode);
-impl_from!(BoolExpr for ExprNode);
-impl_from!(XmlElement for ExprNode);
 
 impl From<UnsignedNumber> for ExprNode {
     fn from(value: UnsignedNumber) -> Self {

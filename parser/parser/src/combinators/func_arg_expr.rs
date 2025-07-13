@@ -1,4 +1,4 @@
-pub(super) fn func_arg_list(stream: &mut TokenStream<'_>) -> scan::Result<Vec<FuncArgExpr>> {
+pub(super) fn func_arg_list(stream: &mut TokenStream<'_>) -> scan::Result<Vec<Located<FuncArgExpr>>> {
 
     /*
         func_arg_expr ( COMMA func_arg_expr )*
@@ -7,7 +7,7 @@ pub(super) fn func_arg_list(stream: &mut TokenStream<'_>) -> scan::Result<Vec<Fu
     many_sep(Comma, func_arg_expr).parse(stream)
 }
 
-pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<FuncArgExpr> {
+pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<Located<FuncArgExpr>> {
 
     /*
         type_function_name COLON_EQUALS a_expr
@@ -18,19 +18,19 @@ pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<FuncAr
     match stream.peek2() {
         Ok((first, Operator(ColonEquals | EqualsGreater))) if is_type_function_name(first) => {
 
-            let (name, _, value) = (
+            let ((name, _, value), loc) = located((
                 type_function_name,
                 or((ColonEquals, EqualsGreater)),
                 a_expr
-            ).parse(stream)?;
+            )).parse(stream)?;
 
             let arg = NamedValue { name, value };
-            Ok(arg)
+            Ok((arg, loc))
         },
         _ => {
-            let value = a_expr(stream)?;
+            let (value, loc) = located(a_expr).parse(stream)?;
             let arg = Unnamed(value);
-            Ok(arg)
+            Ok((arg, loc))
         },
     }
 }
@@ -47,7 +47,7 @@ fn is_type_function_name(tok: &TokenValue) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use crate::tests::stream;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
     use test_case::test_case;
@@ -56,23 +56,28 @@ mod tests {
     #[test_case("foo := 2", NamedValue { name: "foo".into(), value: IntegerConst(2) })]
     #[test_case("bar => 3", NamedValue { name: "bar".into(), value: IntegerConst(3) })]
     fn test_func_arg_expr(source: &str, expected: FuncArgExpr) {
-        test_parser!(source, func_arg_expr, expected);
+        let mut stream = stream(source);
+        let (actual, _) = func_arg_expr(&mut stream).unwrap();
+        assert_eq!(expected, actual)
     }
 }
 
 use crate::combinators::expr::a_expr;
+use crate::combinators::foundation::located;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::type_function_name;
 use crate::scan;
+use crate::stream::TokenStream;
+use crate::stream::TokenValue;
 use crate::stream::TokenValue::Identifier;
 use crate::stream::TokenValue::Keyword;
 use crate::stream::TokenValue::Operator;
-use crate::stream::{TokenStream, TokenValue};
 use pg_ast::FuncArgExpr;
 use pg_ast::FuncArgExpr::NamedValue;
 use pg_ast::FuncArgExpr::Unnamed;
+use pg_basics::Located;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_lexer::KeywordCategory::Unreserved;
 use pg_lexer::OperatorKind::ColonEquals;

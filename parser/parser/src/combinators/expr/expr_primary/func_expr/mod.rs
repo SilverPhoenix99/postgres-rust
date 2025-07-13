@@ -2,6 +2,13 @@ mod filter_clause;
 mod over_clause;
 mod within_group_clause;
 
+#[allow(unused_imports)]
+pub(super) use {
+    filter_clause::*,
+    over_clause::*,
+    within_group_clause::*,
+};
+
 pub(super) fn func_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     // Broken down into smaller combinators, due to large Rust type names.

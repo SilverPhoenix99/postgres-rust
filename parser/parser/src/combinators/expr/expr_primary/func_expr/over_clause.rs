@@ -1,4 +1,5 @@
-pub(super) fn over_clause(stream: &mut TokenStream) -> scan::Result<OverClause> {
+pub(in crate::combinators::expr::expr_primary)
+fn over_clause(stream: &mut TokenStream) -> scan::Result<OverClause> {
 
     /*
           OVER ColId

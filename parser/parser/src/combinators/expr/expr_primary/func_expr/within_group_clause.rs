@@ -1,10 +1,12 @@
-pub(super) fn within_group_clause(stream: &mut TokenStream) -> scan::Result<Vec<SortBy>> {
+pub(in crate::combinators::expr::expr_primary)
+fn within_group_clause(stream: &mut TokenStream) -> scan::Result<Vec<SortBy>> {
 
     /*
         WITHIN GROUP_P '(' sort_clause ')'
     */
 
-    let (.., sorts) = (Within, Group, between_paren(sort_clause)).parse(stream)?;
+    let (.., (sorts, _)) = (Within, Group, between_paren(sort_clause))
+        .parse(stream)?;
 
     Ok(sorts)
 }

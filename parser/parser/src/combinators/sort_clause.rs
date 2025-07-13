@@ -1,16 +1,16 @@
 /// Aliases:
 /// * `opt_sort_clause`
 /// * `json_array_aggregate_order_by_clause_opt`
-pub(super) fn sort_clause(stream: &mut TokenStream) -> scan::Result<Vec<SortBy>> {
+pub(super) fn sort_clause(stream: &mut TokenStream) -> scan::Result<Located<Vec<SortBy>>> {
 
     /*
         ORDER BY sortby_list
     */
 
-    let (.., sorts) = (Order, By, sortby_list)
+    let ((.., sorts), loc) = located((Order, By, sortby_list))
         .parse(stream)?;
 
-    Ok(sorts)
+    Ok((sorts, loc))
 }
 
 fn sortby_list(stream: &mut TokenStream) -> scan::Result<Vec<SortBy>> {
@@ -47,6 +47,7 @@ fn sortby(stream: &mut TokenStream) -> scan::Result<SortBy> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::tests::stream;
     use crate::tests::test_parser;
     use pg_ast::ExprNode::IntegerConst;
     use pg_ast::Operator::Less;
@@ -58,14 +59,16 @@ mod tests {
 
     #[test]
     fn test_sort_clause() {
-        test_parser!(
-            source = "order by 1, 2",
-            parser = sort_clause,
-            expected = vec![
-                SortBy::new(IntegerConst(1), None, None),
-                SortBy::new(IntegerConst(2), None, None),
-            ]
-        )
+        let mut stream = stream("order by 1, 2");
+
+        let (actual, _) = sort_clause(&mut stream).unwrap();
+
+        let expected = vec![
+            SortBy::new(IntegerConst(1), None, None),
+            SortBy::new(IntegerConst(2), None, None),
+        ];
+
+        assert_eq!(expected, actual);
     }
 
     #[test]
@@ -114,6 +117,7 @@ mod tests {
 
 use crate::combinators::asc_desc;
 use crate::combinators::expr::a_expr;
+use crate::combinators::foundation::located;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
@@ -123,6 +127,7 @@ use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::SortBy;
 use pg_ast::SortDirection::Using;
+use pg_basics::Located;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Order;

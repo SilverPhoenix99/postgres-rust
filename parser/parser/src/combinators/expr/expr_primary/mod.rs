@@ -3,13 +3,15 @@ mod cast_expr;
 mod func_application;
 mod func_expr;
 mod param_expr;
+mod identifier_expr;
 
 /// Alias: `c_expr`
 pub(super) fn expr_primary(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     or((
         param_expr,
         expr_const,
-        func_expr
+        func_expr,
+        identifier_expr,
     )).parse(stream)
 }
 
@@ -37,9 +39,10 @@ mod tests {
 
 use self::{
     case_expr::case_expr,
-    cast_expr::cast_expr,
+    cast_expr::cast_expr, 
     func_expr::func_expr,
     param_expr::param_expr,
+    identifier_expr::identifier_expr,
 };
 use crate::combinators::expr::expr_const;
 use crate::combinators::foundation::or;
