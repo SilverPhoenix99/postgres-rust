@@ -24,4 +24,4 @@ use crate::eof::Error::Eof;
 use crate::eof::Error::NotEof;
 use crate::result::Optional;
 use crate::result::Required;
-use pg_elog::syntax;
+use crate::syntax;

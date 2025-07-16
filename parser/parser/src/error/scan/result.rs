@@ -40,4 +40,4 @@ use crate::scan;
 use crate::scan::Error::Eof as ScanEof;
 use crate::scan::Error::NoMatch;
 use crate::scan::Error::ScanErr;
-use pg_elog::syntax;
+use crate::syntax;

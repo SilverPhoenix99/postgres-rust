@@ -27,3 +27,10 @@ pub use self::{
     config::ParserConfig,
     parser::{Parser, ParserResult}
 };
+
+fn syntax<T>(location: pg_basics::Location) -> T
+where
+    pg_elog::LocatedError: Into<T>
+{
+    pg_elog::LocatedError::new(pg_elog::parser::Error::Syntax, location).into()
+}

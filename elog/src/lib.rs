@@ -28,7 +28,7 @@ mod sql_state;
 
 pub use self::{
     error::located_message::LocatedMessage,
-    error::{syntax, Error, LocatedError, LocatedResult},
+    error::{Error, LocatedError, LocatedResult},
     has_location::HasLocation,
     log_level::LogLevel,
     log_message::LogMessage,

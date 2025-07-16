@@ -8,13 +8,6 @@ pub(super) mod unicode_string;
 pub type LocatedError = LocatedMessage<Error>;
 pub type LocatedResult<T> = Result<T, LocatedError>;
 
-pub fn syntax<T>(location: Location) -> T
-where
-    LocatedError: Into<T>
-{
-    LocatedError::new(Syntax, location).into()
-}
-
 #[derive(Debug, Clone, Eq, PartialEq, thiserror::Error)]
 pub enum Error {
     #[error("{0}")] Lexer(#[from] lexer::Error),
@@ -111,8 +104,6 @@ use self::Error::Lexer;
 use self::Error::Parser;
 use self::Error::Role;
 use self::Error::UnicodeString;
-use crate::parser::Error::Syntax;
 use crate::LocatedMessage;
 use crate::LogMessage;
 use crate::SqlState;
-use pg_basics::Location;

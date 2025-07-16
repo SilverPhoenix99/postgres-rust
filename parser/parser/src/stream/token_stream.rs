@@ -212,9 +212,9 @@ impl TokenConsumer<TokenValue, bool> for TokenStream<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::syntax;
     use crate::tests::DEFAULT_CONFIG;
     use pg_elog::parser::Error::Syntax;
-    use pg_elog::syntax;
     use pg_elog::Error::Parser;
     use TokenValue::Identifier;
 
