@@ -19,21 +19,20 @@ mod user_defined_operator;
 
 pub(crate) use self::combinator::Combinator;
 
-#[allow(unused_imports)] // TODO: eventually remove
 pub(in crate::combinators) use self::{
-    between::{between_paren, between_square},
-    bit_string::bit_string,
-    identifier::identifier,
-    integer::integer,
-    keyword::{any_keyword, keyword_if, keyword_result, KeywordCondCombi},
-    located::located,
-    many::{many, many_pre, many_sep},
-    map::{map, MapResultCombi},
-    number::number,
-    optional::{optional, OptionalCombi},
-    or::or,
-    param::param,
-    parser::{parser, ClosureCombi},
-    string::string,
-    user_defined_operator::user_defined_operator,
+    between::*,
+    bit_string::*,
+    identifier::*,
+    integer::*,
+    keyword::*,
+    located::*,
+    many::*,
+    map::*,
+    number::*,
+    optional::*,
+    or::*,
+    param::*,
+    parser::*,
+    string::*,
+    user_defined_operator::*,
 };

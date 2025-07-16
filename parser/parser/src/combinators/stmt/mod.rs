@@ -211,7 +211,6 @@ mod tests {
     }
 }
 
-#[allow(unused_imports)] // TODO: eventually remove
 use self::{
     abort_stmt::*,
     access_method::*,
@@ -234,7 +233,6 @@ use self::{
     conversion::*,
     copy_stmt::*,
     create_generic_options::*,
-    create_stmt::*,
     create_stmt::*,
     database::*,
     deallocate_stmt::*,

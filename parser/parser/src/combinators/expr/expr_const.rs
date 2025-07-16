@@ -10,7 +10,7 @@ pub(super) fn expr_const(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         | TRUE
         | FALSE
         | NULL
-        | ConstTypename SCONST
+        | ConstTypename SCONST (moved to prefixed_expr)
     */
 
     or((

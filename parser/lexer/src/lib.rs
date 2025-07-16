@@ -632,7 +632,7 @@ impl<'src> Lexer<'src> {
         // Postgres:
         //   Returns Ok(true) if the whitespace contains \n and no block comments.
         //   https://github.com/postgres/postgres/blob/1d80d6b50e6401828fc445151375f9bde3f99ac6/src/backend/parser/scan.l#L244
-
+        //
         // SQL Standard:
         //   Returns Ok(true) if the whitespace contains \n.
         //   https://sql-99.readthedocs.io/en/latest/chapters/02.html#separator
