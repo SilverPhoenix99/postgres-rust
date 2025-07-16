@@ -1,4 +1,3 @@
-mod ambiguous_prefix_expr;
 mod attr_tail;
 mod identifier_prefixed_expr;
 mod tailed_expr;
@@ -7,9 +6,6 @@ mod type_func_name_prefixed_expr;
 pub(super) fn prefixed_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     or((
-        // This need to be first, due to conflicts with some keywords.
-        ambiguous_prefix_expr,
-
         identifier_prefixed_expr,
         type_func_name_prefixed_expr
     )).parse(stream)
@@ -35,7 +31,6 @@ mod tests {
         pg_basics::Location,
     };
 
-    #[test_case("double precision '987'")] // ambiguous_prefix_expr
     #[test_case("foo.bar")] // identifier_prefixed_expr
     #[test_case("inner()")] // type_func_name_prefixed_expr
     fn test_prefixed_expr(source: &str) {
@@ -49,7 +44,6 @@ mod tests {
 }
 
 use self::{
-    ambiguous_prefix_expr::*,
     attr_tail::*,
     identifier_prefixed_expr::*,
     tailed_expr::*,

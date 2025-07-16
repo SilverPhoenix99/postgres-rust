@@ -13,6 +13,9 @@ pub(super) fn func_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     // Broken down into smaller combinators, due to large Rust type names.
     or((
+        // Must be first, to avoid conflicts with ambiguous prefix_expr.
+        ambiguous_prefix_expr,
+
         func_expr_1,
         func_expr_2,
         func_expr_3,
@@ -54,6 +57,52 @@ fn func_expr_3(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     )).parse(stream)
 }
 
+fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    /*
+          COLLATION FOR '(' a_expr ')'
+        | CURRENT_SCHEMA
+    */
+
+    match stream.peek2() {
+
+        // TypeFuncName conflicts
+        Ok((Keyword(Collation), Keyword(For))) => {
+            return collation_for(stream)
+        },
+        Ok((Keyword(CurrentSchema), Operator(OpenParenthesis))) => {
+            // `current_schema()` is valid syntax, so exclude that case.
+            return Err(NoMatch(stream.current_location()))
+        },
+        Ok((Keyword(CurrentSchema), _)) => {
+            stream.next(); // Consume the `current_schema` keyword.
+            return Ok(ExprNode::CurrentSchema)
+        },
+
+        _ => {}
+    }
+
+    // If we reach here, it could be that there are 1 or fewer tokens left in the stream,
+    // or there are more tokens, but they didn't match any of the above patterns.
+
+    let _ = CurrentSchema.parse(stream)?;
+    Ok(ExprNode::CurrentSchema)
+}
+
+fn collation_for(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    /*
+        COLLATION FOR '(' a_expr ')'
+    */
+
+    let (.., expr) = (Collation, For, between_paren(a_expr))
+        .parse(stream)?;
+
+    let expr = Box::new(expr);
+    let expr = CollationFor(expr);
+    Ok(expr)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -61,6 +110,8 @@ mod tests {
     use crate::tests::test_parser;
     use crate::tests::DEFAULT_CONFIG;
     use pg_ast::ExprNode;
+    use pg_ast::ExprNode::StringConst;
+    use pg_basics::Location;
     use test_case::test_case;
 
     #[test_case("CURRENT_role", ExprNode::CurrentRole)]
@@ -69,6 +120,7 @@ mod tests {
     #[test_case("system_user", ExprNode::SystemUser)]
     #[test_case("uSeR", ExprNode::User)]
     #[test_case("current_catalog", ExprNode::CurrentCatalog)]
+    #[test_case("current_schema", ExprNode::CurrentSchema)]
     #[test_case("current_date", ExprNode::CurrentDate)]
     #[test_case("current_time", ExprNode::CurrentTime { precision: None })]
     #[test_case("current_time(3)", ExprNode::CurrentTime { precision: Some(3) })]
@@ -78,6 +130,7 @@ mod tests {
     #[test_case("localtime(6)", ExprNode::LocalTime { precision: Some(6) })]
     #[test_case("localtimestamp", ExprNode::LocalTimestamp { precision: None })]
     #[test_case("localtimestamp(4)", ExprNode::LocalTimestamp { precision: Some(4) })]
+    #[test_case("collation for (5)", CollationFor(Box::new(ExprNode::IntegerConst(5))))]
     fn test_func_expr(source: &str, expected: ExprNode) {
         test_parser!(source, func_expr, expected)
     }
@@ -92,16 +145,53 @@ mod tests {
             r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
         )
     }
+
+    #[test_case("collation for ('foo')",
+        CollationFor(
+            Box::new(StringConst("foo".into()))
+        )
+    )]
+    #[test_case("current_schema 1", ExprNode::CurrentSchema)]
+    #[test_case("current_schema", ExprNode::CurrentSchema)]
+    fn test_ambiguous_prefix_expr(source: &str, expected: ExprNode) {
+        test_parser!(source, ambiguous_prefix_expr, expected)
+    }
+
+    #[test]
+    fn test_ambiguous_prefix_expr_no_match() {
+        test_parser!(
+            source = "current_schema(",
+            parser = ambiguous_prefix_expr,
+            expected = Err(NoMatch(Location::new(0..14, 1, 1)))
+        )
+    }
+
+    #[test]
+    fn test_collation_for() {
+        test_parser!(
+            source = "collation for ('foo')",
+            parser = collation_for,
+            expected = CollationFor(
+                Box::new(StringConst("foo".into()))
+            )
+        )
+    }
 }
 
+use crate::combinators::expr::a_expr;
 use crate::combinators::expr::expr_primary::case_expr;
 use crate::combinators::expr::expr_primary::cast_expr;
+use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::precision;
 use crate::scan;
+use crate::scan::Error::NoMatch;
 use crate::stream::TokenStream;
+use crate::stream::TokenValue::Keyword;
+use crate::stream::TokenValue::Operator;
 use pg_ast::ExprNode;
+use pg_ast::ExprNode::CollationFor;
 use pg_ast::ExprNode::CurrentCatalog;
 use pg_ast::ExprNode::CurrentDate;
 use pg_ast::ExprNode::CurrentRole;
@@ -114,3 +204,7 @@ use pg_ast::ExprNode::SessionUser;
 use pg_ast::ExprNode::SystemUser;
 use pg_ast::ExprNode::User;
 use pg_lexer::Keyword as Kw;
+use pg_lexer::Keyword::Collation;
+use pg_lexer::Keyword::CurrentSchema;
+use pg_lexer::Keyword::For;
+use pg_lexer::OperatorKind::OpenParenthesis;
