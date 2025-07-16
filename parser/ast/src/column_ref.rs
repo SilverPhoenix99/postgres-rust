@@ -22,7 +22,7 @@ impl TryFrom<ColumnRef> for QualifiedName {
 
     /// Returns the input parameter in `Err`,
     /// if it's not possible to convert the `ColumnRef` into a `QualifiedName`.
-    fn try_from(value: ColumnRef) -> Result<Self, Self::Error> {
+    fn try_from(value: ColumnRef) -> Result<Self, ColumnRef> {
 
         match value {
             ColumnRef::SingleName(name) => Ok(vec![name]),

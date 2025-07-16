@@ -1,4 +1,6 @@
 pub type LocatedError = LocatedMessage<Error>;
+pub type Result<T> = core::result::Result<T, Error>;
+pub type LocatedResult<T> = core::result::Result<T, LocatedError>;
 
 #[derive(Debug, Default, Clone, Eq, PartialEq, thiserror::Error)]
 pub enum Error {

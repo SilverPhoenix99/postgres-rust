@@ -3,7 +3,6 @@ pub(super) fn tailed_expr(name: Vec<Str>, tail: AttrTail) -> ExprNode {
         AttrTail::Typecast { type_modifiers, value } => {
             // AexprConst
 
-            // TODO: Check if it's a known type name, like "numeric", etc.
             let type_name = TypeName::Generic {
                 name,
                 type_modifiers
@@ -21,6 +20,50 @@ pub(super) fn tailed_expr(name: Vec<Str>, tail: AttrTail) -> ExprNode {
             let func_call = FuncCall::new(name, args, filter, over);
             func_call.into()
         },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[allow(unused_imports)]
+    use pg_ast::{
+        ExprNode::IntegerConst,
+        FuncArgsKind,
+        FuncCall,
+        OverClause::WindowName,
+    };
+    use test_case::test_case;
+
+    #[test_case(
+        AttrTail::Typecast {
+            value: "123".into(),
+            type_modifiers: Some(vec![IntegerConst(234)]),
+        },
+        TypecastExpr::new(
+            StringConst("123".into()),
+            TypeName::Generic {
+                    name: vec!["foo".into()],
+                    type_modifiers: Some(vec![IntegerConst(234)]),
+                }
+        ).into()
+    )]
+    #[test_case(
+        AttrTail::FuncTail {
+            args: FuncArgsKind::Wildcard { order_within_group: None },
+            filter: Some(IntegerConst(123)),
+            over: Some(WindowName("bar".into()))
+        },
+        FuncCall::new(
+            vec!["foo".into()],
+            FuncArgsKind::Wildcard { order_within_group: None },
+            Some(IntegerConst(123)),
+            Some(WindowName("bar".into()))
+        ).into()
+    )]
+    fn test_tailed_expr(tail: AttrTail, expected: ExprNode) {
+        let actual = tailed_expr(vec!["foo".into()], tail);
+        assert_eq!(expected, actual)
     }
 }
 

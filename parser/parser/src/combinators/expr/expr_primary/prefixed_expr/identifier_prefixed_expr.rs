@@ -40,8 +40,156 @@ pub fn identifier_prefixed_expr(stream: &mut TokenStream) -> scan::Result<ExprNo
         return Ok(expr.into())
     };
 
-    let expr = tailed_expr::tailed_expr(name, tail);
+    let expr = tailed_expr(name, tail);
     Ok(expr)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tests::test_parser;
+    #[allow(unused_imports)]
+    use pg_ast::{
+        ExprNode::{IntegerConst, StringConst},
+        FuncArgsKind,
+        FuncCall,
+        OverClause,
+        TypeName,
+        TypecastExpr,
+    };
+    use test_case::test_case;
+
+    #[test_case("foo",
+        ColumnRef::SingleName("foo".into()).into()
+    )]
+    #[test_case("double",
+        ColumnRef::SingleName("double".into()).into()
+    )]
+    #[test_case("foo.bar",
+        ColumnRef::Name(vec!["foo".into(), "bar".into()]).into()
+    )]
+    #[test_case("double.baz",
+        ColumnRef::Name(vec!["double".into(), "baz".into()]).into()
+    )]
+    #[test_case("foo.* '123'",
+        ColumnRef::WildcardName(vec!["foo".into()]).into()
+    )]
+    #[test_case("double.* '123'",
+        ColumnRef::WildcardName(vec!["double".into()]).into()
+    )]
+    #[test_case("foo.*()",
+        ColumnRef::WildcardName(vec!["foo".into()]).into()
+    )]
+    #[test_case("double.*()",
+        ColumnRef::WildcardName(vec!["double".into()]).into()
+    )]
+    #[test_case("foo '123'",
+        TypecastExpr::new(
+            StringConst("123".into()),
+            TypeName::Generic {
+                name: vec!["foo".into()],
+                type_modifiers: None,
+            }
+        ).into()
+    )]
+    #[test_case("double '123'",
+        TypecastExpr::new(
+            StringConst("123".into()),
+            TypeName::Generic {
+                name: vec!["double".into()],
+                type_modifiers: None,
+            }
+        ).into()
+    )]
+    #[test_case("foo.bar '123'",
+        TypecastExpr::new(
+            StringConst("123".into()),
+            TypeName::Generic {
+                name: vec!["foo".into(), "bar".into()],
+                type_modifiers: None,
+            }
+        ).into()
+    )]
+    #[test_case("double.baz '123'",
+        TypecastExpr::new(
+            StringConst("123".into()),
+            TypeName::Generic {
+                name: vec!["double".into(), "baz".into()],
+                type_modifiers: None,
+            }
+        ).into()
+    )]
+    #[test_case("foo(1) '123'",
+        TypecastExpr::new(
+            StringConst("123".into()),
+            TypeName::Generic {
+                name: vec!["foo".into()],
+                type_modifiers: Some(vec![IntegerConst(1)]),
+            }
+        ).into()
+    )]
+    #[test_case("double(1) '123'",
+        TypecastExpr::new(
+            StringConst("123".into()),
+            TypeName::Generic {
+                name: vec!["double".into()],
+                type_modifiers: Some(vec![IntegerConst(1)]),
+            }
+        ).into()
+    )]
+    #[test_case("foo.bar(1) '123'",
+        TypecastExpr::new(
+            StringConst("123".into()),
+            TypeName::Generic {
+                name: vec!["foo".into(), "bar".into()],
+                type_modifiers: Some(vec![IntegerConst(1)]),
+            }
+        ).into()
+    )]
+    #[test_case("double.baz(1) '123'",
+        TypecastExpr::new(
+            StringConst("123".into()),
+            TypeName::Generic {
+                name: vec!["double".into(), "baz".into()],
+                type_modifiers: Some(vec![IntegerConst(1)]),
+            }
+        ).into()
+    )]
+    #[test_case("foo() '123'",
+        FuncCall::new(
+            vec!["foo".into()],
+            FuncArgsKind::Empty { order_within_group: None },
+            None,
+            None
+        ).into()
+    )]
+    #[test_case("double() '123'",
+        FuncCall::new(
+            vec!["double".into()],
+            FuncArgsKind::Empty { order_within_group: None },
+            None,
+            None
+        ).into()
+    )]
+    #[test_case("foo.bar() over qux",
+        FuncCall::new(
+            vec!["foo".into(), "bar".into()],
+            FuncArgsKind::Empty { order_within_group: None },
+            None,
+            Some(OverClause::WindowName("qux".into()))
+        ).into()
+    )]
+    #[test_case("double.baz() filter (where 1)",
+        FuncCall::new(
+            vec!["double".into(), "baz".into()],
+            FuncArgsKind::Empty { order_within_group: None },
+            Some(IntegerConst(1)),
+            None
+        ).into()
+    )]
+    fn test_identifier_prefixed_expr(source: &str, expected: ExprNode) {
+        test_parser!(source, identifier_prefixed_expr, expected)
+    }
 }
 
 use super::attr_tail;
