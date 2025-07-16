@@ -3,15 +3,8 @@
 pub(crate) static DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, SafeEncoding);
 
 macro_rules! test_parser {
-    (
-        source = $source:expr,
-        parser = $parser:expr,
-        expected = $expected:expr
-    ) => {
-        test_parser!($source, $parser, $expected)
-    };
 
-    (
+    (internal =>
         $source:expr,
         $parser:expr,
         $expected:expr
@@ -23,10 +16,58 @@ macro_rules! test_parser {
         let mut stream = stream($source);
         let actual = $parser.parse(&mut stream);
 
-        let expected = $expected.into();
+        let expected = $expected;
 
-        assert_eq!(Ok(expected), actual);
+        assert_eq!(expected, actual);
     }};
+
+    (
+        source = $source:expr,
+        parser = $parser:expr,
+        expected = Err($expected:expr)
+    ) => {
+        test_parser!(internal => $source, $parser, Err($expected.into()))
+    };
+
+    (
+        source = $source:expr,
+        parser = $parser:expr,
+        expected = Ok($expected:expr)
+    ) => {
+        test_parser!(internal => $source, $parser, Ok($expected.into()))
+    };
+
+    (
+        source = $source:expr,
+        parser = $parser:expr,
+        expected = $expected:expr
+    ) => {
+        test_parser!(internal => $source, $parser, Ok($expected.into()))
+    };
+
+    (
+        $source:expr,
+        $parser:expr,
+        Err($expected:expr)
+    ) => {
+        test_parser!(internal => $source, $parser, Err($expected.into()))
+    };
+
+    (
+        $source:expr,
+        $parser:expr,
+        Ok($expected:expr)
+    ) => {
+        test_parser!(internal => $source, $parser, Ok($expected.into()))
+    };
+
+    (
+        $source:expr,
+        $parser:expr,
+        $expected:expr
+    ) => {
+        test_parser!(internal => $source, $parser, Ok($expected.into()))
+    };
 }
 
 pub(crate) fn stream(source: &str) -> TokenStream<'_> {
