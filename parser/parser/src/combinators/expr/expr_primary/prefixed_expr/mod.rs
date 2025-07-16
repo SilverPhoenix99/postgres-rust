@@ -2,6 +2,7 @@ mod ambiguous_prefix_expr;
 mod attr_tail;
 mod identifier_prefixed_expr;
 mod tailed_expr;
+mod type_func_name_prefixed_expr;
 
 pub(super) fn prefixed_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
@@ -10,6 +11,7 @@ pub(super) fn prefixed_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> 
         ambiguous_prefix_expr,
 
         identifier_prefixed_expr,
+        type_func_name_prefixed_expr
     )).parse(stream)
 }
 
@@ -182,6 +184,7 @@ use self::{
     attr_tail::*,
     identifier_prefixed_expr::*,
     tailed_expr::*,
+    type_func_name_prefixed_expr::*,
 };
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;

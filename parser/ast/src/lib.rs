@@ -247,9 +247,11 @@ pub enum ExprNode {
     SystemUser,
     User,
     CurrentCatalog,
+    CurrentSchema,
     Indirection(Box<IndirectionExpr>),
     ColumnRef(Box<ColumnRef>),
     FuncCall(Box<FuncCall>),
+    CollationFor(Box<ExprNode>),
 
     /* Xml operations */
     IsXmlDocument(Box<ExprNode>),
