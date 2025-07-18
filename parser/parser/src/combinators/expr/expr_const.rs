@@ -14,8 +14,8 @@ pub(super) fn expr_const(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         | ConstTypename SCONST    TODO
     */
 
+    // Broken down into smaller combinators, due to large Rust type names.
     or((
-        // Must be first, to avoid conflicts with ambiguous prefix_expr.
         ambiguous_prefix_expr,
 
         number.map(From::from),
@@ -39,15 +39,41 @@ fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     // Lookahead is required to disambiguate with `prefixed_expr`.
 
-    let (Keyword(Double), Keyword(Precision)) = stream.peek2()? else {
-        return Err(NoMatch(stream.current_location()))
-    };
+    match stream.peek2()? {
+        (Keyword(Double), Keyword(Precision)) => return double_precision_typecast(stream),
+        (Keyword(Kw::Json), String(_)) => return json_typecast(stream),
+        _ => {}
+    }
 
-    stream.next(); // Double
-    stream.next(); // Precision
+    Err(NoMatch(stream.current_location()))
+}
+
+fn double_precision_typecast(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    /*
+        DOUBLE PRECISION SCONST
+    */
+
+    // If it was called, then the lookahead already matched.
+    stream.next(); // "double"
+    stream.next(); // "precision"
 
     let value = string(stream).required()?;
     let expr = TypecastExpr::new(StringConst(value), Float8);
+    Ok(expr.into())
+}
+
+fn json_typecast(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    /*
+        JSON SCONST
+    */
+
+    // If it was called, then the lookahead already matched.
+    stream.next(); // "json"
+
+    let value = string(stream).required()?;
+    let expr = TypecastExpr::new(StringConst(value), Json);
     Ok(expr.into())
 }
 
@@ -80,18 +106,21 @@ mod tests {
         test_parser!(source, expr_const, expected)
     }
 
-    #[test]
-    fn test_ambiguous_prefix_expr() {
-        test_parser!(
-            source = "double precision '1.23'",
-            parser = ambiguous_prefix_expr,
-            expected = ExprNode::from(
-                TypecastExpr::new(
-                    StringConst("1.23".into()),
-                    Float8
-                )
-            )
-        )
+    // NB: Methods using `stream.next()` cannot be tested directly with `test_parser!`.
+    #[test_case("double precision '1.23'",
+        TypecastExpr::new(
+            StringConst("1.23".into()),
+            Float8
+        ).into()
+    )]
+    #[test_case("json '{}'",
+        TypecastExpr::new(
+            StringConst("{}".into()),
+            Json
+        ).into()
+    )]
+    fn test_ambiguous_prefix_expr(source: &str, expected: ExprNode) {
+        test_parser!(source, ambiguous_prefix_expr, expected)
     }
 }
 
@@ -105,6 +134,7 @@ use crate::scan;
 use crate::scan::Error::NoMatch;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Keyword;
+use crate::stream::TokenValue::String;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::BinaryStringConst;
 use pg_ast::ExprNode::BooleanConst;
@@ -112,8 +142,10 @@ use pg_ast::ExprNode::HexStringConst;
 use pg_ast::ExprNode::NullConst;
 use pg_ast::ExprNode::StringConst;
 use pg_ast::TypeName::Float8;
+use pg_ast::TypeName::Json;
 use pg_ast::TypecastExpr;
 use pg_lexer::BitStringKind;
+use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Double;
 use pg_lexer::Keyword::False;
 use pg_lexer::Keyword::Null;

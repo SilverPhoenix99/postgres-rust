@@ -2,7 +2,6 @@ mod filter_clause;
 mod over_clause;
 mod within_group_clause;
 
-#[allow(unused_imports)]
 pub(super) use {
     filter_clause::*,
     over_clause::*,
@@ -13,7 +12,6 @@ pub(super) fn func_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     // Broken down into smaller combinators, due to large Rust type names.
     or((
-        // Must be first, to avoid conflicts with ambiguous prefix_expr.
         ambiguous_prefix_expr,
 
         func_expr_1,

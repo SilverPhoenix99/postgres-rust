@@ -12,7 +12,7 @@ pub(super) fn expr_primary(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         expr_const,
         func_expr,
 
-        // Must be after `expr_const` and `func_expr`,
+        // ❗ Must be after `expr_const` and `func_expr`,
         // due to conflicts with the 1st keyword.
         prefixed_expr,
     )).parse(stream)
