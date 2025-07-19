@@ -15,16 +15,17 @@ fn simple_typename_1(stream: &mut TokenStream) -> scan::Result<TypeName> {
         Smallint.map(|_| Int2),
         Bigint.map(|_| Int8),
         Real.map(|_| Float4),
-        decimal,
+        numeric,
         int,
     )).parse(stream)
 }
 
 fn simple_typename_2(stream: &mut TokenStream) -> scan::Result<TypeName> {
+
     or((
         float,
-        bit,
-        character,
+        bit(Some(1)), // BitWithoutLength: `bit` defaults to `bit(1)`
+        character(Some(1)), // CharacterWithoutLength: `char` defaults to `char(1)`
         timestamp,
         time,
         interval_type.map(From::from),
@@ -42,16 +43,16 @@ fn int(stream: &mut TokenStream) -> scan::Result<TypeName> {
     Ok(Int4)
 }
 
-fn decimal(stream: &mut TokenStream) -> scan::Result<TypeName> {
+pub(super) fn numeric(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
-          DECIMAL ( '(' ICONST ')' )?
-        | NUMERIC ( '(' ICONST ')' )?
+          NUMERIC ( '(' ICONST ')' )?
         | DEC ( '(' ICONST ')' )?
+        | DECIMAL ( '(' ICONST ')' )?
     */
 
     let (_, typ) = (
-        or(( Dec, Decimal, Kw::Numeric)),
+        or((Dec, Decimal, Kw::Numeric)),
         type_modifiers
             .optional()
             .map(Numeric),
@@ -61,7 +62,7 @@ fn decimal(stream: &mut TokenStream) -> scan::Result<TypeName> {
 }
 
 /// Inlined: `opt_float`
-fn float(stream: &mut TokenStream) -> scan::Result<TypeName> {
+pub(super) fn float(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
         FLOAT ( '(' ICONST ')' )?
@@ -91,29 +92,31 @@ fn float(stream: &mut TokenStream) -> scan::Result<TypeName> {
 /// Inlined:
 /// * `BitWithLength`
 /// * `BitWithoutLength`
-fn bit(stream: &mut TokenStream) -> scan::Result<TypeName> {
+pub(super) fn bit(default_type_modifiers:  Option<i32>) -> impl Combinator<Output = TypeName> {
 
     /*
         BIT ( VARYING )? ( '(' expr_list ')' )?
     */
 
-    let (_, varying, mut modifiers) = (
-        Kw::Bit,
-        Varying.optional()
-            .map(|varying| varying),
-        type_modifiers.optional()
-    ).parse(stream)?;
+    parser(move |stream| {
+        let (_, varying, mut modifiers) = (
+            Kw::Bit,
+            Varying.optional()
+                .map(|varying| varying),
+            type_modifiers.optional()
+        ).parse(stream)?;
 
-    if varying.is_some() {
-        return Ok(Varbit(modifiers))
-    }
+        if varying.is_some() {
+            return Ok(Varbit(modifiers))
+        }
 
-    if modifiers.is_none() {
-        // BitWithoutLength: `bit` defaults to `bit(1)`
-        modifiers = Some(vec![IntegerConst(1)]);
-    }
+        modifiers = modifiers.or_else(||
+            default_type_modifiers
+                .map(|len| vec![IntegerConst(len)])
+        );
 
-    Ok(Bit(modifiers))
+        Ok(Bit(modifiers))
+    })
 }
 
 /// Alias: `Character`
@@ -122,7 +125,7 @@ fn bit(stream: &mut TokenStream) -> scan::Result<TypeName> {
 /// * `CharacterWithLength`
 /// * `CharacterWithoutLength`
 /// * `character` (lowercase rule)
-fn character(stream: &mut TokenStream) -> scan::Result<TypeName> {
+pub(super) fn character(default_len: Option<i32>) -> impl Combinator<Output = TypeName> {
 
     /*
           VARCHAR ( precision )?
@@ -130,42 +133,41 @@ fn character(stream: &mut TokenStream) -> scan::Result<TypeName> {
         | NATIONAL (CHAR | CHARACTER) ( VARYING )? ( precision )?
     */
 
-    let (varying, mut length) = (
-        or((
-            Kw::Varchar.map(|_| true),
-            (
-                or((
-                    Char.skip(),
-                    Character.skip(),
-                    Nchar.skip(),
-                    (
-                        National,
-                        or((Char, Character))
-                    )
-                        .skip()
-                )),
-                Varying.optional()
-                    .map(|varying| varying.is_some())
-            )
-                .map(|(_, varying)| varying),
-        )),
-        precision.optional()
-    ).parse(stream)?;
+    parser(move |stream| {
+        let (varying, mut length) = (
+            or((
+                Kw::Varchar.map(|_| true),
+                (
+                    or((
+                        Char.skip(),
+                        Character.skip(),
+                        Nchar.skip(),
+                        (
+                            National,
+                            or((Char, Character))
+                        )
+                            .skip()
+                    )),
+                    Varying.optional()
+                        .map(|varying| varying.is_some())
+                )
+                    .map(|(_, varying)| varying),
+            )),
+            precision.optional()
+        ).parse(stream)?;
 
-    if varying {
-        return Ok(Varchar { max_length: length })
-    }
+        if varying {
+            return Ok(Varchar { max_length: length })
+        }
 
-    if length.is_none() {
-        // CharacterWithoutLength: `char` defaults to `char(1)`
-        length = Some(1)
-    }
+        length = length.or(default_len);
 
-    Ok(Bpchar { length })
+        Ok(Bpchar { length })
+    })
 }
 
 /// Inlined: `ConstDatetime`
-fn timestamp(stream: &mut TokenStream) -> scan::Result<TypeName> {
+pub(super) fn timestamp(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
         TIMESTAMP ( '(' ICONST ')' )? ( with_timezone )?
@@ -189,7 +191,7 @@ fn timestamp(stream: &mut TokenStream) -> scan::Result<TypeName> {
 }
 
 /// Inlined: `ConstDatetime`
-fn time(stream: &mut TokenStream) -> scan::Result<TypeName> {
+pub(super) fn time(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     /*
         TIMESTAMP ( '(' ICONST ')' )? ( with_timezone )?
@@ -337,6 +339,7 @@ mod tests {
 use crate::combinators::attrs;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::i32_literal_paren;
 use crate::combinators::interval;
@@ -348,7 +351,6 @@ use crate::scan;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue;
 use pg_ast::ExprNode::IntegerConst;
-use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Full;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Bit;
@@ -368,6 +370,7 @@ use pg_ast::TypeName::Timestamp;
 use pg_ast::TypeName::TimestampTz;
 use pg_ast::TypeName::Varbit;
 use pg_ast::TypeName::Varchar;
+use pg_ast::IntervalRange;
 use pg_elog::parser::Error::FloatPrecisionOverflow;
 use pg_elog::parser::Error::FloatPrecisionUnderflow;
 use pg_lexer::Keyword as Kw;
