@@ -225,7 +225,7 @@ fn interval_type(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
     let (_, interval) = (
         Kw::Interval,
         or((
-            i32_literal_paren
+            precision
                 .map(|precision| Full { precision: Some(precision) }),
             interval.optional()
                 .map(Option::unwrap_or_default)
@@ -341,7 +341,6 @@ use crate::combinators::foundation::located;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::parser;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::i32_literal_paren;
 use crate::combinators::interval;
 use crate::combinators::precision;
 use crate::combinators::type_function_name;
@@ -351,6 +350,7 @@ use crate::scan;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue;
 use pg_ast::ExprNode::IntegerConst;
+use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Full;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Bit;
@@ -370,7 +370,6 @@ use pg_ast::TypeName::Timestamp;
 use pg_ast::TypeName::TimestampTz;
 use pg_ast::TypeName::Varbit;
 use pg_ast::TypeName::Varchar;
-use pg_ast::IntervalRange;
 use pg_elog::parser::Error::FloatPrecisionOverflow;
 use pg_elog::parser::Error::FloatPrecisionUnderflow;
 use pg_lexer::Keyword as Kw;

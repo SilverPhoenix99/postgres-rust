@@ -51,8 +51,8 @@ fn const_typename(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         | NATIONAL ( CHAR | CHARACTER ) ( VARYING )? ( precision )? SCONST
         | TIMESTAMP ( precision )? ( with_timezone )? SCONST
         | TIME ( precision )? ( with_timezone )? SCONST
-        | INTERVAL '(' ICONST ')' SCONST    TODO
-        | INTERVAL SCONST ( interval )?     TODO
+        | INTERVAL precision SCONST
+        | INTERVAL SCONST ( interval )?
     */
 
     // Lookahead is required to disambiguate with `prefixed_expr`,
@@ -110,6 +110,12 @@ fn const_typename(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
             O(OpenParenthesis) | K(With | Without) | String(_)
         ) =>
             time_typecast(stream),
+
+        (
+            K(Interval),
+            O(OpenParenthesis) | String(_)
+        ) =>
+            interval_typecast(stream),
 
         _ => Err(NoMatch(stream.current_location()))
     }
@@ -267,7 +273,8 @@ fn char_string_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> 
     */
 
     let (type_name, value) = (character(None), string)
-        .parse(stream)?;
+        .parse(stream)
+        .required()?;
 
     let expr = TypecastExpr::new(StringConst(value), type_name);
     Ok(expr)
@@ -301,17 +308,49 @@ fn time_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
     Ok(expr)
 }
 
+fn interval_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+
+    /*
+          INTERVAL '(' ICONST ')' SCONST
+        | INTERVAL SCONST ( interval )?
+    */
+
+    // If it was called, then the lookahead already matched.
+    stream.next(); // "interval"
+
+    let (interval, value) = or((
+        (
+            precision
+                .map(|precision| Full { precision: Some(precision) }),
+            string
+        ),
+        (
+            string,
+            interval.optional()
+        ).map(|(value, interval)|
+            (interval.unwrap_or_default(), value)
+        )
+    )).parse(stream)
+        .required()?;
+
+    let type_name = TypeName::Interval(interval);
+    let expr = TypecastExpr::new(StringConst(value), type_name);
+    Ok(expr)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::tests::test_parser;
     use pg_ast::ExprNode::*;
     use pg_ast::TypeName;
-    #[allow(unused_imports)]
-    use pg_ast::TypeName::*;
-    #[allow(unused_imports)]
-    use pg_basics::NumberRadix::Decimal;
     use test_case::test_case;
+    #[allow(unused_imports)]
+    use {
+        pg_ast::IntervalRange::YearToMonth,
+        pg_ast::TypeName::*,
+        pg_basics::NumberRadix::Decimal,
+    };
 
     #[test_case("123", IntegerConst(123))]
     #[test_case("123.45", NumericConst { radix: Decimal, value: "123.45".into() })]
@@ -333,21 +372,24 @@ mod tests {
 
     // NB: Methods using `stream.next()` cannot be tested directly with `test_parser!`.
     // NB2: A lot of cases are already tested in `simple_typename()`.
-    #[test_case("json '{}'",                      Json, "{}")]
-    #[test_case("double precision '1.23'",        Float8, "1.23")]
-    #[test_case("boolean 'true'",                 Bool, "true")]
-    #[test_case("smallint '11'",                  Int2, "11")]
-    #[test_case("int '42'",                       Int4, "42")]
-    #[test_case("integer '420'",                  Int4, "420")]
-    #[test_case("bigint '1'",                     Int8, "1")]
-    #[test_case("real '42.0'",                    Float4, "42.0")]
-    #[test_case("numeric '123.45'",               Numeric(None), "123.45")]
-    #[test_case("float(25) '123.45'",             Float8, "123.45")]
-    #[test_case("bit varying(6) '7'",             Varbit(Some(vec![IntegerConst(6)])), "7")]
-    #[test_case("character varying 'foo'",        Varchar { max_length: None }, "foo")]
-    #[test_case("timestamp with time zone 'foo'", TimestampTz { precision: None }, "foo")]
-    #[test_case("time(1) with time zone 'foo'",   TimeTz { precision: Some(1) }, "foo")]
-    fn test_ambiguous_prefix_expr(source: &str, expected_type: TypeName, value: &str) {
+    #[test_case("json '{}'",                        Json, "{}")]
+    #[test_case("double precision '1.23'",          Float8, "1.23")]
+    #[test_case("boolean 'true'",                   Bool, "true")]
+    #[test_case("smallint '11'",                    Int2, "11")]
+    #[test_case("int '42'",                         Int4, "42")]
+    #[test_case("integer '420'",                    Int4, "420")]
+    #[test_case("bigint '1'",                       Int8, "1")]
+    #[test_case("real '42.0'",                      Float4, "42.0")]
+    #[test_case("numeric '123.45'",                 Numeric(None), "123.45")]
+    #[test_case("float(25) '123.45'",               Float8, "123.45")]
+    #[test_case("bit varying(6) '7'",               Varbit(Some(vec![IntegerConst(6)])), "7")]
+    #[test_case("character varying 'foo'",          Varchar { max_length: None }, "foo")]
+    #[test_case("timestamp with time zone 'foo'",   TimestampTz { precision: None }, "foo")]
+    #[test_case("time(1) with time zone 'foo'",     TimeTz { precision: Some(1) }, "foo")]
+    #[test_case("interval '1 day'",                 TypeName::Interval(Full { precision: None }), "1 day")]
+    #[test_case("interval(3) '1 day'",              TypeName::Interval(Full { precision: Some(3) }), "1 day")]
+    #[test_case("interval '1970-01' year to month", TypeName::Interval(YearToMonth), "1970-01")]
+    fn test_const_typename(source: &str, expected_type: TypeName, value: &str) {
 
         let expected = TypecastExpr::new(
             StringConst(value.into()),
@@ -364,6 +406,8 @@ use crate::combinators::foundation::number;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::interval::interval;
+use crate::combinators::precision::precision;
 use crate::combinators::simple_typename::bit;
 use crate::combinators::simple_typename::character;
 use crate::combinators::simple_typename::float;
@@ -383,6 +427,8 @@ use pg_ast::ExprNode::BooleanConst;
 use pg_ast::ExprNode::HexStringConst;
 use pg_ast::ExprNode::NullConst;
 use pg_ast::ExprNode::StringConst;
+use pg_ast::IntervalRange::Full;
+use pg_ast::TypeName;
 use pg_ast::TypeName::Bool;
 use pg_ast::TypeName::Float4;
 use pg_ast::TypeName::Float8;
@@ -404,6 +450,7 @@ use pg_lexer::Keyword::False;
 use pg_lexer::Keyword::Float;
 use pg_lexer::Keyword::Int;
 use pg_lexer::Keyword::Integer;
+use pg_lexer::Keyword::Interval;
 use pg_lexer::Keyword::National;
 use pg_lexer::Keyword::Nchar;
 use pg_lexer::Keyword::Null;
