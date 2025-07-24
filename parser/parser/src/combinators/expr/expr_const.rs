@@ -16,7 +16,6 @@ pub(super) fn expr_const(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     // Broken down into smaller combinators, due to large Rust type names.
     or((
         const_typename.map(ExprNode::from),
-
         number.map(ExprNode::from),
         string.map(StringConst),
         bit_string

@@ -231,11 +231,17 @@ pub enum ExprNode {
 
     BinaryExpr(Box<BinaryExpr>),
     UnaryExpr(Box<UnaryExpr>),
+    BoolExpr(BoolExpr),
     /// `IS DISTINCT FROM`
     Distinct(BinaryOperands),
     /// `IS NOT DISTINCT FROM`
     NotDistinct(BinaryOperands),
-    BoolExpr(BoolExpr),
+
+    // TODO: Are these 2 the same?
+    Indirection(Box<IndirectionExpr>),
+    ColumnRef(Box<ColumnRef>),
+
+    /* Function calls */
     CurrentDate,
     CurrentTime { precision: Option<i32> },
     CurrentTimestamp { precision: Option<i32> },
@@ -248,8 +254,6 @@ pub enum ExprNode {
     User,
     CurrentCatalog,
     CurrentSchema,
-    Indirection(Box<IndirectionExpr>),
-    ColumnRef(Box<ColumnRef>),
     FuncCall(Box<FuncCall>),
     CollationFor(Box<ExprNode>),
 
