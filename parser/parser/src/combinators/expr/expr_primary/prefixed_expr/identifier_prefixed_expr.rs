@@ -1,26 +1,15 @@
 pub fn identifier_prefixed_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     /*
-        (IDENT | unreserved_keyword) (
-              indirection => columnref
-            | ( attrs )? (
-                  SCONST                                             => AexprConst
-                | '(' func_arg_list ')' SCONST                       => AexprConst
-                | '(' ( func_application_args )? ')' func_args_tail  => func_expr
-                | ε                                                  => columnref
-            )
+        column_ref (
+              SCONST                                                => AexprConst
+            | '(' func_arg_list ')' SCONST                          => AexprConst
+            | '(' ( func_application_args )? ')' func_args_tail     => func_expr
+            | ε                                                     => columnref
         )
     */
 
-    let (name, indirection) = (
-        or((
-            identifier.map(Str::from),
-            Unreserved.map(Str::from)
-        )),
-        located(indirection).optional()
-    ).parse(stream)?;
-
-    let column_ref = make_column_ref(name, indirection)?;
+    let column_ref = column_ref(stream)?;
 
     let name = match QualifiedName::try_from(column_ref) {
         Ok(name) => name,
@@ -44,6 +33,31 @@ pub fn identifier_prefixed_expr(stream: &mut TokenStream) -> scan::Result<ExprNo
     Ok(expr)
 }
 
+fn column_ref(stream: &mut TokenStream) -> scan::Result<ColumnRef> {
+
+    /*
+          (IDENT | unreserved_keyword) ( indirection )?
+        | col_name_keyword indirection
+    */
+
+    let (name, indirection) = or((
+        (
+            or((
+                identifier.map(Str::from),
+                Unreserved.map(Str::from)
+            )),
+            located(indirection).optional()
+        ),
+        (
+            ColumnName.map(Str::from),
+            located(indirection).map(Some)
+        )
+    )).parse(stream)?;
+
+    let column_ref = make_column_ref(name, indirection)?;
+    Ok(column_ref)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -65,11 +79,14 @@ mod tests {
     #[test_case("double",
         ColumnRef::SingleName("double".into()).into()
     )]
-    #[test_case("foo.bar",
+    #[test_case("foo.bar", // identifier
         ColumnRef::Name(vec!["foo".into(), "bar".into()]).into()
     )]
-    #[test_case("double.baz",
+    #[test_case("double.baz", // Unreserved
         ColumnRef::Name(vec!["double".into(), "baz".into()]).into()
+    )]
+    #[test_case("between.qux", // ColumnName
+        ColumnRef::Name(vec!["between".into(), "qux".into()]).into()
     )]
     #[test_case("foo.* '123'",
         ColumnRef::WildcardName(vec!["foo".into()]).into()
@@ -77,11 +94,17 @@ mod tests {
     #[test_case("double.* '123'",
         ColumnRef::WildcardName(vec!["double".into()]).into()
     )]
+    #[test_case("between.* '123'",
+        ColumnRef::WildcardName(vec!["between".into()]).into()
+    )]
     #[test_case("foo.*()",
         ColumnRef::WildcardName(vec!["foo".into()]).into()
     )]
     #[test_case("double.*()",
         ColumnRef::WildcardName(vec!["double".into()]).into()
+    )]
+    #[test_case("between.*()",
+        ColumnRef::WildcardName(vec!["between".into()]).into()
     )]
     #[test_case("foo '123'",
         TypecastExpr::new(
@@ -115,6 +138,15 @@ mod tests {
             StringConst("123".into()),
             TypeName::Generic {
                 name: vec!["double".into(), "baz".into()],
+                type_modifiers: None,
+            }
+        ).into()
+    )]
+    #[test_case("between.qux '123'",
+        TypecastExpr::new(
+            StringConst("123".into()),
+            TypeName::Generic {
+                name: vec!["between".into(), "qux".into()],
                 type_modifiers: None,
             }
         ).into()
@@ -155,6 +187,15 @@ mod tests {
             }
         ).into()
     )]
+    #[test_case("between.qux(1) '123'",
+        TypecastExpr::new(
+            StringConst("123".into()),
+            TypeName::Generic {
+                name: vec!["between".into(), "qux".into()],
+                type_modifiers: Some(vec![IntegerConst(1)]),
+            }
+        ).into()
+    )]
     #[test_case("foo() '123'",
         FuncCall::new(
             vec!["foo".into()],
@@ -187,6 +228,14 @@ mod tests {
             None
         ).into()
     )]
+    #[test_case("between.qux() filter (where 1)",
+        FuncCall::new(
+            vec!["between".into(), "qux".into()],
+            FuncArgsKind::Empty { order_within_group: None },
+            Some(IntegerConst(1)),
+            None
+        ).into()
+    )]
     fn test_identifier_prefixed_expr(source: &str, expected: ExprNode) {
         test_parser!(source, identifier_prefixed_expr, expected)
     }
@@ -208,4 +257,5 @@ use pg_ast::ColumnRef;
 use pg_ast::ExprNode;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
+use pg_lexer::KeywordCategory::ColumnName;
 use pg_lexer::KeywordCategory::Unreserved;

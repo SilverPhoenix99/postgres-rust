@@ -3,9 +3,9 @@ pub(super) fn type_func_name_prefixed_expr(stream: &mut TokenStream) -> scan::Re
     /*
         type_func_name_keyword
         (
-              SCONST                                             => AexprConst
-            | '(' func_arg_list ')' SCONST                       => AexprConst
-            | '(' ( func_application_args )? ')' func_args_tail  => func_expr
+              SCONST                                            => AexprConst
+            | '(' func_arg_list ')' SCONST                      => AexprConst
+            | '(' ( func_application_args )? ')' func_args_tail => func_expr
         )
     */
 
