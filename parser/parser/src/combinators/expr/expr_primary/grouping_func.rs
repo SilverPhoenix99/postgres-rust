@@ -8,9 +8,8 @@ pub(super) fn grouping_func(stream: &mut TokenStream) -> scan::Result<ExprNode> 
         return no_match(stream);
     };
 
-    stream.next(); // "grouping"
-
-    let args = expr_list_paren(stream).required()?;
+    let args = skip_prefix(1, expr_list_paren)
+        .parse(stream)?;
 
     Ok(GroupingFunc(args))
 }
@@ -32,8 +31,9 @@ mod tests {
 }
 
 use crate::combinators::expr_list_paren;
+use crate::combinators::foundation::skip_prefix;
+use crate::combinators::foundation::Combinator;
 use crate::no_match;
-use crate::result::Required;
 use crate::scan;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Keyword;

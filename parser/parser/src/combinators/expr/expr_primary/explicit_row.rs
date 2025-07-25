@@ -8,11 +8,8 @@ pub(super) fn explicit_row(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         return no_match(stream)
     };
 
-    stream.next(); // "row"
-
-    let col_values = between_paren(expr_list.optional())
-        .parse(stream)
-        .required()?;
+    let col_values = skip_prefix(1, between_paren(expr_list.optional()))
+        .parse(stream)?;
 
     Ok(Row(col_values))
 }
@@ -35,9 +32,9 @@ mod tests {
 
 use crate::combinators::expr_list;
 use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;
-use crate::result::Required;
 use crate::scan;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Keyword;

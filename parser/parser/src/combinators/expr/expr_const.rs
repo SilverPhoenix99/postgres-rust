@@ -126,10 +126,9 @@ fn json_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         JSON SCONST
     */
 
-    // If it was called, then the lookahead already matched.
-    stream.next(); // "json"
+    let value = skip_prefix(1, string)
+        .parse(stream)?;
 
-    let value = string(stream).required()?;
     let expr = TypecastExpr::new(StringConst(value), Json);
     Ok(expr)
 }
@@ -140,11 +139,9 @@ fn double_precision_typecast(stream: &mut TokenStream) -> scan::Result<TypecastE
         DOUBLE PRECISION SCONST
     */
 
-    // If it was called, then the lookahead already matched.
-    stream.next(); // "double"
-    stream.next(); // "precision"
+    let value = skip_prefix(2, string)
+        .parse(stream)?;
 
-    let value = string(stream).required()?;
     let expr = TypecastExpr::new(StringConst(value), Float8);
     Ok(expr)
 }
@@ -155,10 +152,9 @@ fn bool_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         BOOLEAN SCONST
     */
 
-    // If it was called, then the lookahead already matched.
-    stream.next(); // "boolean"
+    let value = skip_prefix(1, string)
+        .parse(stream)?;
 
-    let value = string(stream).required()?;
     let expr = TypecastExpr::new(StringConst(value), Bool);
     Ok(expr)
 }
@@ -169,10 +165,9 @@ fn smallint_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         SMALLINT SCONST
     */
 
-    // If it was called, then the lookahead already matched.
-    stream.next(); // "smallint"
+    let value = skip_prefix(1, string)
+        .parse(stream)?;
 
-    let value = string(stream).required()?;
     let expr = TypecastExpr::new(StringConst(value), Int2);
     Ok(expr)
 }
@@ -183,10 +178,9 @@ fn int_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         ( INT | INTEGER ) SCONST
     */
 
-    // If it was called, then the lookahead already matched.
-    stream.next(); // "int" or "integer"
+    let value = skip_prefix(1, string)
+        .parse(stream)?;
 
-    let value = string(stream).required()?;
     let expr = TypecastExpr::new(StringConst(value), Int4);
     Ok(expr)
 }
@@ -197,10 +191,9 @@ fn bigint_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         BIGINT SCONST
     */
 
-    // If it was called, then the lookahead already matched.
-    stream.next(); // "bigint"
+    let value = skip_prefix(1, string)
+        .parse(stream)?;
 
-    let value = string(stream).required()?;
     let expr = TypecastExpr::new(StringConst(value), Int8);
     Ok(expr)
 }
@@ -211,10 +204,9 @@ fn real_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         REAL SCONST
     */
 
-    // If it was called, then the lookahead already matched.
-    stream.next(); // "real"
+    let value = skip_prefix(1, string)
+        .parse(stream)?;
 
-    let value = string(stream).required()?;
     let expr = TypecastExpr::new(StringConst(value), Float4);
     Ok(expr)
 }
@@ -314,23 +306,21 @@ fn interval_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         | INTERVAL SCONST ( interval )?
     */
 
-    // If it was called, then the lookahead already matched.
-    stream.next(); // "interval"
-
-    let (interval, value) = or((
-        (
-            precision
-                .map(|precision| Full { precision: Some(precision) }),
-            string
-        ),
-        (
-            string,
-            interval.optional()
-        ).map(|(value, interval)|
-            (interval.unwrap_or_default(), value)
-        )
-    )).parse(stream)
-        .required()?;
+    let (interval, value) = skip_prefix(1,
+        or((
+            (
+                precision
+                    .map(|precision| Full { precision: Some(precision) }),
+                string
+            ),
+            (
+                string,
+                interval.optional()
+            ).map(|(value, interval)|
+                (interval.unwrap_or_default(), value)
+            )
+        ))
+    ).parse(stream)?;
 
     let type_name = TypeName::Interval(interval);
     let expr = TypecastExpr::new(StringConst(value), type_name);
@@ -402,6 +392,7 @@ mod tests {
 use crate::combinators::foundation::bit_string;
 use crate::combinators::foundation::number;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::interval;

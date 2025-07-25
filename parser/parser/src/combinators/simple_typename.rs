@@ -249,8 +249,7 @@ fn generic_type(stream: &mut TokenStream) -> scan::Result<TypeName> {
     // If it's followed by `Precision`, then it's a Float8.
     // Otherwise, it's a plain `Unreserved` keyword, which can be its own User Defined Type.
     if matches!(stream.peek2(), Ok((TokenValue::Keyword(Double), TokenValue::Keyword(Precision)))) {
-        stream.next();
-        stream.next();
+        stream.skip(2);
         return Ok(Float8)
     }
 

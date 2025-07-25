@@ -53,6 +53,18 @@ impl<'src> TokenStream<'src> {
         self.buf.pop_front();
     }
 
+    pub fn skip(&mut self, n: usize) {
+
+        if n == 0 {
+            return;
+        }
+
+        for _ in 0..n {
+            self.fill_buf();
+            self.next();
+        }
+    }
+
     pub fn peek(&mut self) -> eof::Result<&TokenValue> {
         match self.peek_mut() {
             Ok((tok, _)) => Ok(tok),

@@ -28,8 +28,7 @@ pub(super) fn frame_bound(stream: &mut TokenStream<'_>) -> scan::Result<FrameBou
         };
 
         if let Some(bound) = res {
-            stream.next();
-            stream.next();
+            stream.skip(2);
             return Ok(bound);
         }
     }

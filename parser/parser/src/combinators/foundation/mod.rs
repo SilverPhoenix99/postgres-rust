@@ -14,6 +14,7 @@ mod optional;
 mod or;
 mod param;
 mod parser;
+mod skip;
 mod string;
 mod user_defined_operator;
 
@@ -33,6 +34,7 @@ pub(in crate::combinators) use self::{
     or::*,
     param::*,
     parser::*,
+    skip::*,
     string::*,
     user_defined_operator::*,
 };

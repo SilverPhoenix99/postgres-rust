@@ -16,10 +16,10 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
         // TypeFuncName conflicts
 
         // `current_schema()` is valid syntax, so exclude that case.
-        Ok((K(CurrentSchema), Op(OpenParenthesis))) => return no_match(stream),
-        Ok((K(CurrentSchema), _)) => {
-            stream.next(); // Consume the `current_schema` keyword.
-            return Ok(ExprNode::CurrentSchema)
+        Ok((K(Kw::CurrentSchema), Op(OpenParenthesis))) => return no_match(stream),
+        Ok((K(Kw::CurrentSchema), _)) => {
+            stream.skip(1); // Consume the `current_schema` keyword.
+            return Ok(CurrentSchema)
         },
 
         Ok((K(Collation), K(For))) => return collation_for(stream),
@@ -41,8 +41,8 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
     // If we reach here, it could be that there are 1 or fewer tokens left in the stream,
     // or there are more tokens, but they didn't match any of the above patterns.
 
-    let _ = CurrentSchema.parse(stream)?;
-    Ok(ExprNode::CurrentSchema)
+    let _ = Kw::CurrentSchema.parse(stream)?;
+    Ok(CurrentSchema)
 }
 
 fn collation_for(stream: &mut TokenStream) -> scan::Result<ExprNode> {
@@ -51,16 +51,11 @@ fn collation_for(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         COLLATION FOR '(' a_expr ')'
     */
 
-    stream.next(); // "collation" keyword
-    stream.next(); // "for" keyword
-
-    let expr = between_paren(a_expr)
-        .parse(stream)
-        .required()?;
+    let expr = skip_prefix(2, between_paren(a_expr))
+        .parse(stream)?;
 
     let expr = Box::new(expr);
-    let expr = CollationFor(expr);
-    Ok(expr)
+    Ok(CollationFor(expr))
 }
 
 fn coalesce_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
@@ -69,9 +64,8 @@ fn coalesce_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         COALESCE '(' expr_list ')'
     */
 
-    stream.next(); // "coalesce" keyword
-
-    let args = expr_list_paren(stream).required()?;
+    let args = skip_prefix(1, expr_list_paren)
+        .parse(stream)?;
 
     Ok(CoalesceExpr(args))
 }
@@ -82,11 +76,8 @@ fn extract_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         EXTRACT '(' extract_list ')'
     */
 
-    stream.next(); // "extract" keyword
-
-    let expr = between_paren(extract_args)
-        .parse(stream)
-        .required()?;
+    let expr = skip_prefix(1, between_paren(extract_args))
+        .parse(stream)?;
 
     Ok(expr.into())
 }
@@ -97,9 +88,8 @@ fn greatest_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         GREATEST '(' expr_list ')'
     */
 
-    stream.next(); // "greatest" keyword
-
-    let args = expr_list_paren(stream).required()?;
+    let args = skip_prefix(1, expr_list_paren)
+        .parse(stream)?;
 
     Ok(GreatestFunc(args))
 }
@@ -110,9 +100,8 @@ fn least_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         LEAST '(' expr_list ')'
     */
 
-    stream.next(); // "least" keyword
-
-    let args = expr_list_paren(stream).required()?;
+    let args = skip_prefix(1, expr_list_paren)
+        .parse(stream)?;
 
     Ok(LeastFunc(args))
 }
@@ -131,8 +120,8 @@ mod tests {
     use pg_basics::Location;
     use test_case::test_case;
 
-    #[test_case("current_schema 1", ExprNode::CurrentSchema)]
-    #[test_case("current_schema", ExprNode::CurrentSchema)]
+    #[test_case("current_schema 1", CurrentSchema)]
+    #[test_case("current_schema", CurrentSchema)]
     #[test_case("collation for ('foo')",
         CollationFor(
             Box::new(StringConst("foo".into()))
@@ -180,6 +169,7 @@ use super::extract_list::extract_args;
 use crate::combinators::expr::a_expr;
 use crate::combinators::expr_list_paren;
 use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;
 use crate::result::Required;
@@ -188,11 +178,12 @@ use crate::stream::TokenStream;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::CoalesceExpr;
 use pg_ast::ExprNode::CollationFor;
+use pg_ast::ExprNode::CurrentSchema;
 use pg_ast::ExprNode::GreatestFunc;
 use pg_ast::ExprNode::LeastFunc;
+use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Coalesce;
 use pg_lexer::Keyword::Collation;
-use pg_lexer::Keyword::CurrentSchema;
 use pg_lexer::Keyword::Extract;
 use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::Greatest;
