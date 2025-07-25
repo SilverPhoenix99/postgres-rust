@@ -56,6 +56,8 @@ fn func_expr_3(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 }
 
 fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+    use TokenValue::Keyword as K;
+    use TokenValue::Operator as Op;
 
     /*
           COLLATION FOR '(' a_expr ')'
@@ -65,14 +67,17 @@ fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     match stream.peek2() {
 
         // TypeFuncName conflicts
-        Ok((Keyword(Collation), Keyword(For))) => {
+        Ok((K(Collation), K(For))) => {
             return collation_for(stream)
         },
-        Ok((Keyword(CurrentSchema), Operator(OpenParenthesis))) => {
+        Ok((K(Kw::Coalesce), Op(OpenParenthesis))) => {
+            return coalesce_expr(stream)
+        },
+        Ok((K(CurrentSchema), Op(OpenParenthesis))) => {
             // `current_schema()` is valid syntax, so exclude that case.
             return no_match(stream)
         },
-        Ok((Keyword(CurrentSchema), _)) => {
+        Ok((K(CurrentSchema), _)) => {
             stream.next(); // Consume the `current_schema` keyword.
             return Ok(ExprNode::CurrentSchema)
         },
@@ -93,12 +98,29 @@ fn collation_for(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         COLLATION FOR '(' a_expr ')'
     */
 
-    let (.., expr) = (Collation, For, between_paren(a_expr))
-        .parse(stream)?;
+    stream.next(); // "collation" keyword
+    stream.next(); // "for" keyword
+
+    let expr = between_paren(a_expr)
+        .parse(stream)
+        .required()?;
 
     let expr = Box::new(expr);
     let expr = CollationFor(expr);
     Ok(expr)
+}
+
+fn coalesce_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    /*
+        COALESCE '(' expr_list ')'
+    */
+
+    stream.next(); // "coalesce" keyword
+
+    let args = expr_list_paren(stream).required()?;
+
+    Ok(CoalesceExpr(args))
 }
 
 #[cfg(test)]
@@ -109,6 +131,8 @@ mod tests {
     use crate::tests::test_parser;
     use crate::tests::DEFAULT_CONFIG;
     use pg_ast::ExprNode;
+    #[allow(unused_imports)]
+    use pg_ast::ExprNode::IntegerConst;
     use pg_ast::ExprNode::StringConst;
     use pg_basics::Location;
     use test_case::test_case;
@@ -130,6 +154,12 @@ mod tests {
     #[test_case("localtimestamp", ExprNode::LocalTimestamp { precision: None })]
     #[test_case("localtimestamp(4)", ExprNode::LocalTimestamp { precision: Some(4) })]
     #[test_case("collation for (5)", CollationFor(Box::new(ExprNode::IntegerConst(5))))]
+    #[test_case("coalesce (1, 'foo')",
+        CoalesceExpr(vec![
+            IntegerConst(1),
+            StringConst("foo".into())
+        ])
+    )]
     fn test_func_expr(source: &str, expected: ExprNode) {
         test_parser!(source, func_expr, expected)
     }
@@ -150,6 +180,12 @@ mod tests {
             Box::new(StringConst("foo".into()))
         )
     )]
+    #[test_case("coalesce ('foo', 'bar')",
+        CoalesceExpr(vec![
+            StringConst("foo".into()),
+            StringConst("bar".into())
+        ])
+    )]
     #[test_case("current_schema 1", ExprNode::CurrentSchema)]
     #[test_case("current_schema", ExprNode::CurrentSchema)]
     fn test_ambiguous_prefix_expr(source: &str, expected: ExprNode) {
@@ -164,32 +200,23 @@ mod tests {
             expected = Err(NoMatch(Location::new(0..14, 1, 1)))
         )
     }
-
-    #[test]
-    fn test_collation_for() {
-        test_parser!(
-            source = "collation for ('foo')",
-            parser = collation_for,
-            expected = CollationFor(
-                Box::new(StringConst("foo".into()))
-            )
-        )
-    }
 }
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::expr::expr_primary::case_expr;
 use crate::combinators::expr::expr_primary::cast_expr;
+use crate::combinators::expr_list_paren;
 use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::precision;
 use crate::no_match;
+use crate::result::Required;
 use crate::scan;
 use crate::stream::TokenStream;
-use crate::stream::TokenValue::Keyword;
-use crate::stream::TokenValue::Operator;
+use crate::stream::TokenValue;
 use pg_ast::ExprNode;
+use pg_ast::ExprNode::CoalesceExpr;
 use pg_ast::ExprNode::CollationFor;
 use pg_ast::ExprNode::CurrentCatalog;
 use pg_ast::ExprNode::CurrentDate;

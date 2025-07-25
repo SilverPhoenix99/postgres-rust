@@ -258,6 +258,7 @@ pub enum ExprNode {
     FuncCall(Box<FuncCall>),
     CollationFor(Box<ExprNode>),
     GroupingFunc(Vec<ExprNode>),
+    CoalesceExpr(Vec<ExprNode>),
 
     /* Xml operations */
     IsXmlDocument(Box<ExprNode>),
