@@ -29,6 +29,7 @@ mod create_role_stmt;
 mod create_user_mapping_stmt;
 mod discard_stmt;
 mod drop_behavior;
+mod extract_expr;
 mod frame_extent;
 mod func_arg_expr;
 mod func_args_kind;
@@ -113,6 +114,7 @@ pub use self::{
     create_user_mapping_stmt::*,
     discard_stmt::*,
     drop_behavior::*,
+    extract_expr::*,
     frame_extent::*,
     func_arg_expr::*,
     func_args_kind::*,
@@ -259,6 +261,7 @@ pub enum ExprNode {
     CollationFor(Box<ExprNode>),
     GroupingFunc(Vec<ExprNode>),
     CoalesceExpr(Vec<ExprNode>),
+    ExtractFunc(Box<ExtractFunc>),
 
     /* Xml operations */
     IsXmlDocument(Box<ExprNode>),
@@ -282,6 +285,7 @@ impl_from!(box UnaryExpr for ExprNode);
 impl_from!(box XmlParse for ExprNode);
 impl_from!(box XmlProcessingInstruction for ExprNode);
 impl_from!(box XmlRoot for ExprNode);
+impl_from!(box ExtractFunc for ExprNode);
 
 impl From<UnsignedNumber> for ExprNode {
     fn from(value: UnsignedNumber) -> Self {

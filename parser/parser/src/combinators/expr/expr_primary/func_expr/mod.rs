@@ -1,4 +1,5 @@
 mod ambiguous_prefix_expr;
+mod extract_list;
 mod filter_clause;
 mod over_clause;
 mod within_group_clause;
