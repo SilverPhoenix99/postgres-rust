@@ -34,6 +34,12 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
 
         Ok((K(Least), Op(OpenParenthesis))) => return least_func(stream),
 
+        Ok((K(MergeAction), Op(OpenParenthesis))) => {
+            skip_prefix(2, CloseParenthesis)
+                .parse(stream)?;
+            return Ok(MergeSupportFunc)
+        },
+
         _ => {}
     }
 
@@ -151,6 +157,7 @@ mod tests {
             IntegerConst(2)
         ])
     )]
+    #[test_case("merge_action()", MergeSupportFunc)]
     fn test_ambiguous_prefix_expr(source: &str, expected: ExprNode) {
         test_parser!(source, ambiguous_prefix_expr, expected)
     }
@@ -172,7 +179,6 @@ use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;
-use crate::result::Required;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::ExprNode;
@@ -181,6 +187,7 @@ use pg_ast::ExprNode::CollationFor;
 use pg_ast::ExprNode::CurrentSchema;
 use pg_ast::ExprNode::GreatestFunc;
 use pg_ast::ExprNode::LeastFunc;
+use pg_ast::ExprNode::MergeSupportFunc;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Coalesce;
 use pg_lexer::Keyword::Collation;
@@ -188,4 +195,6 @@ use pg_lexer::Keyword::Extract;
 use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::Greatest;
 use pg_lexer::Keyword::Least;
+use pg_lexer::Keyword::MergeAction;
+use pg_lexer::OperatorKind::CloseParenthesis;
 use pg_lexer::OperatorKind::OpenParenthesis;

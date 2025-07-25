@@ -264,6 +264,7 @@ pub enum ExprNode {
     ExtractFunc(Box<ExtractFunc>),
     GreatestFunc(Vec<ExprNode>),
     LeastFunc(Vec<ExprNode>),
+    MergeSupportFunc,
 
     /* Xml operations */
     IsXmlDocument(Box<ExprNode>),
