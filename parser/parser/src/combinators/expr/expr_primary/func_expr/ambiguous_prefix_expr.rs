@@ -7,6 +7,8 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
         | CURRENT_SCHEMA
         | COALESCE '(' expr_list ')'
         | EXTRACT '(' extract_list ')'
+        | GREATEST '(' expr_list ')'
+        | LEAST '(' expr_list ')'
     */
 
     match stream.peek2() {
@@ -27,6 +29,10 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
         Ok((K(Coalesce), Op(OpenParenthesis))) => return coalesce_expr(stream),
 
         Ok((K(Extract), Op(OpenParenthesis))) => return extract_func(stream),
+
+        Ok((K(Greatest), Op(OpenParenthesis))) => return greatest_func(stream),
+
+        Ok((K(Least), Op(OpenParenthesis))) => return least_func(stream),
 
         _ => {}
     }
@@ -85,6 +91,32 @@ fn extract_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     Ok(expr.into())
 }
 
+fn greatest_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    /*
+        GREATEST '(' expr_list ')'
+    */
+
+    stream.next(); // "greatest" keyword
+
+    let args = expr_list_paren(stream).required()?;
+
+    Ok(GreatestFunc(args))
+}
+
+fn least_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    /*
+        LEAST '(' expr_list ')'
+    */
+
+    stream.next(); // "least" keyword
+
+    let args = expr_list_paren(stream).required()?;
+
+    Ok(LeastFunc(args))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -92,7 +124,7 @@ mod tests {
     use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
-        ExprNode::StringConst,
+        ExprNode::{IntegerConst, StringConst},
         ExtractArg,
         ExtractFunc,
     };
@@ -106,17 +138,29 @@ mod tests {
             Box::new(StringConst("foo".into()))
         )
     )]
-    #[test_case("coalesce ('foo', 'bar')",
+    #[test_case("coalesce('foo', 'bar')",
         CoalesceExpr(vec![
             StringConst("foo".into()),
             StringConst("bar".into())
         ])
     )]
-    #[test_case("extract (year from 'foo')",
+    #[test_case("extract(year from 'foo')",
         ExtractFunc::new(
             ExtractArg::Year,
             StringConst("foo".into())
         ).into()
+    )]
+    #[test_case("greatest(1, 2)",
+        GreatestFunc(vec![
+            IntegerConst(1),
+            IntegerConst(2)
+        ])
+    )]
+    #[test_case("least(1, 2)",
+        LeastFunc(vec![
+            IntegerConst(1),
+            IntegerConst(2)
+        ])
     )]
     fn test_ambiguous_prefix_expr(source: &str, expected: ExprNode) {
         test_parser!(source, ambiguous_prefix_expr, expected)
@@ -144,9 +188,13 @@ use crate::stream::TokenStream;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::CoalesceExpr;
 use pg_ast::ExprNode::CollationFor;
+use pg_ast::ExprNode::GreatestFunc;
+use pg_ast::ExprNode::LeastFunc;
 use pg_lexer::Keyword::Coalesce;
 use pg_lexer::Keyword::Collation;
 use pg_lexer::Keyword::CurrentSchema;
 use pg_lexer::Keyword::Extract;
 use pg_lexer::Keyword::For;
+use pg_lexer::Keyword::Greatest;
+use pg_lexer::Keyword::Least;
 use pg_lexer::OperatorKind::OpenParenthesis;

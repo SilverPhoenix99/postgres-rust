@@ -262,6 +262,8 @@ pub enum ExprNode {
     GroupingFunc(Vec<ExprNode>),
     CoalesceExpr(Vec<ExprNode>),
     ExtractFunc(Box<ExtractFunc>),
+    GreatestFunc(Vec<ExprNode>),
+    LeastFunc(Vec<ExprNode>),
 
     /* Xml operations */
     IsXmlDocument(Box<ExprNode>),
