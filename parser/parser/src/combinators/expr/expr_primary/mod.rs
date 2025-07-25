@@ -1,5 +1,6 @@
 mod case_expr;
 mod cast_expr;
+mod explicit_row;
 mod func_application;
 mod func_expr;
 mod param_expr;
@@ -11,8 +12,9 @@ pub(super) fn expr_primary(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         param_expr,
         expr_const,
         func_expr,
+        explicit_row,
 
-        // ❗ Must be after `expr_const` and `func_expr`,
+        // ❗ Must be after most other productions,
         // due to conflicts with the 1st keyword.
         prefixed_expr,
     )).parse(stream)
@@ -28,7 +30,8 @@ mod tests {
     #[test_case("$3")] // param_expr
     #[test_case("true")] // expr_const
     #[test_case("user")] // func_expr
-    #[test_case("current_schema")] // ambiguous_prefix_expr
+    #[test_case("row()")] // explicit_row
+    #[test_case("current_schema")] // prefix_expr
     fn test_expr_primary(source: &str) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
         let actual = expr_primary(&mut stream);
@@ -44,6 +47,7 @@ mod tests {
 use self::{
     case_expr::case_expr,
     cast_expr::cast_expr,
+    explicit_row::explicit_row,
     func_expr::func_expr,
     param_expr::param_expr,
     prefixed_expr::prefixed_expr,

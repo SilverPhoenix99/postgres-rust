@@ -228,6 +228,7 @@ pub enum ExprNode {
     Typecast(Box<TypecastExpr>),
     CaseExpr(Box<CaseExpr>),
     ParamRef { index: i32 },
+    Row(Option<Vec<ExprNode>>),
 
     BinaryExpr(Box<BinaryExpr>),
     UnaryExpr(Box<UnaryExpr>),
