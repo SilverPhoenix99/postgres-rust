@@ -257,6 +257,7 @@ pub enum ExprNode {
     CurrentSchema,
     FuncCall(Box<FuncCall>),
     CollationFor(Box<ExprNode>),
+    GroupingFunc(Vec<ExprNode>),
 
     /* Xml operations */
     IsXmlDocument(Box<ExprNode>),

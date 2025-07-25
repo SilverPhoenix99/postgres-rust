@@ -3,6 +3,7 @@ mod cast_expr;
 mod explicit_row;
 mod func_application;
 mod func_expr;
+mod grouping_func;
 mod param_expr;
 mod prefixed_expr;
 
@@ -13,6 +14,7 @@ pub(super) fn expr_primary(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         expr_const,
         func_expr,
         explicit_row,
+        grouping_func,
 
         // ❗ Must be after most other productions,
         // due to conflicts with the 1st keyword.
@@ -31,6 +33,7 @@ mod tests {
     #[test_case("true")] // expr_const
     #[test_case("user")] // func_expr
     #[test_case("row()")] // explicit_row
+    #[test_case("grouping(1)")] // explicit_row
     #[test_case("current_schema")] // prefix_expr
     fn test_expr_primary(source: &str) {
         let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
@@ -49,6 +52,7 @@ use self::{
     cast_expr::cast_expr,
     explicit_row::explicit_row,
     func_expr::func_expr,
+    grouping_func::grouping_func,
     param_expr::param_expr,
     prefixed_expr::prefixed_expr,
 };

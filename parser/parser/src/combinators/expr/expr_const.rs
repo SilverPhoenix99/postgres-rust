@@ -397,7 +397,6 @@ mod tests {
 
         test_parser!(source, const_typename, expected)
     }
-
 }
 
 use crate::combinators::foundation::bit_string;

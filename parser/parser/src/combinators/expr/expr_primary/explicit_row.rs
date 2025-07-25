@@ -25,11 +25,11 @@ mod tests {
     use pg_ast::ExprNode::{IntegerConst, StringConst};
     use test_case::test_case;
 
-    #[test_case("row()", Row(None))]
-    #[test_case("row(1)", Row(Some(vec![IntegerConst(1)])))]
-    #[test_case("row(1, 'foo')", Row(Some(vec![IntegerConst(1), StringConst("foo".into())])))]
-    fn test_explicit_row(source: &str, expected: ExprNode) {
-        test_parser!(source, explicit_row, expected)
+    #[test_case("row()", None)]
+    #[test_case("row(1)", Some(vec![IntegerConst(1)]))]
+    #[test_case("row(1, 'foo')", Some(vec![IntegerConst(1), StringConst("foo".into())]))]
+    fn test_explicit_row(source: &str, expected: Option<Vec<ExprNode>>) {
+        test_parser!(source, explicit_row, Row(expected))
     }
 }
 
