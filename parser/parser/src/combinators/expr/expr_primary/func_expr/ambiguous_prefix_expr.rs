@@ -9,6 +9,7 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
         | EXTRACT '(' extract_list ')'
         | GREATEST '(' expr_list ')'
         | LEAST '(' expr_list ')'
+        | NORMALIZE '(' a_expr ( ',' unicode_normal_form )? ')'
     */
 
     match stream.peek2() {
@@ -39,6 +40,8 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
                 .parse(stream)?;
             return Ok(MergeSupportFunc)
         },
+
+        Ok((K(Normalize), Op(OpenParenthesis))) => return normalize_func(stream),
 
         _ => {}
     }
@@ -112,6 +115,25 @@ fn least_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     Ok(LeastFunc(args))
 }
 
+fn normalize_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    /*
+        NORMALIZE '(' a_expr ( ',' unicode_normal_form )? ')'
+    */
+
+    let (expr, normal_form) = skip_prefix(1,
+        between_paren((
+            a_expr,
+            (Comma, unicode_normal_form)
+                .map(|(_, normal_form)| normal_form)
+                .optional()
+        ))
+    ).parse(stream)?;
+
+    let expr = NormalizeFunc::new(expr, normal_form);
+    Ok(expr.into())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -122,6 +144,7 @@ mod tests {
         ExprNode::{IntegerConst, StringConst},
         ExtractArg,
         ExtractFunc,
+        UnicodeNormalForm::CanonicalComposition,
     };
     use pg_basics::Location;
     use test_case::test_case;
@@ -158,6 +181,18 @@ mod tests {
         ])
     )]
     #[test_case("merge_action()", MergeSupportFunc)]
+    #[test_case("normalize('foo')",
+        NormalizeFunc::new(
+            StringConst("foo".into()),
+            None
+        ).into()
+    )]
+    #[test_case("normalize('foo', nfc)",
+        NormalizeFunc::new(
+            StringConst("foo".into()),
+            Some(CanonicalComposition)
+        ).into()
+    )]
     fn test_ambiguous_prefix_expr(source: &str, expected: ExprNode) {
         test_parser!(source, ambiguous_prefix_expr, expected)
     }
@@ -174,6 +209,7 @@ mod tests {
 
 use super::extract_list::extract_args;
 use crate::combinators::expr::a_expr;
+use crate::combinators::expr::unicode_normal_form;
 use crate::combinators::expr_list_paren;
 use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::skip_prefix;
@@ -188,6 +224,7 @@ use pg_ast::ExprNode::CurrentSchema;
 use pg_ast::ExprNode::GreatestFunc;
 use pg_ast::ExprNode::LeastFunc;
 use pg_ast::ExprNode::MergeSupportFunc;
+use pg_ast::NormalizeFunc;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Coalesce;
 use pg_lexer::Keyword::Collation;
@@ -196,5 +233,7 @@ use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::Greatest;
 use pg_lexer::Keyword::Least;
 use pg_lexer::Keyword::MergeAction;
+use pg_lexer::Keyword::Normalize;
 use pg_lexer::OperatorKind::CloseParenthesis;
+use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::OpenParenthesis;

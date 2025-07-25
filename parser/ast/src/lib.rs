@@ -41,6 +41,7 @@ mod grant_option;
 mod grant_stmt;
 mod indirection;
 mod indirection_expr;
+mod normalize_func;
 mod notify_stmt;
 mod numeric_spec;
 mod one_or_all;
@@ -70,6 +71,7 @@ mod transform;
 mod typecast;
 mod typecast_expr;
 mod unary_expr;
+mod unicode_normal_form;
 mod unique_null_treatment;
 mod unsigned_number;
 mod utility_option;
@@ -126,6 +128,7 @@ pub use self::{
     grant_stmt::*,
     indirection::*,
     indirection_expr::*,
+    normalize_func::*,
     notify_stmt::*,
     numeric_spec::*,
     one_or_all::*,
@@ -155,6 +158,7 @@ pub use self::{
     typecast::*,
     typecast_expr::*,
     unary_expr::*,
+    unicode_normal_form::*,
     unique_null_treatment::*,
     unsigned_number::*,
     utility_option::*,
@@ -265,6 +269,7 @@ pub enum ExprNode {
     GreatestFunc(Vec<ExprNode>),
     LeastFunc(Vec<ExprNode>),
     MergeSupportFunc,
+    NormalizeFunc(Box<NormalizeFunc>),
 
     /* Xml operations */
     IsXmlDocument(Box<ExprNode>),
@@ -281,14 +286,15 @@ impl_from!(XmlElement for ExprNode);
 impl_from!(box BinaryExpr for ExprNode);
 impl_from!(box CaseExpr for ExprNode);
 impl_from!(box ColumnRef for ExprNode);
+impl_from!(box ExtractFunc for ExprNode);
 impl_from!(box FuncCall for ExprNode);
 impl_from!(box IndirectionExpr for ExprNode::Indirection);
+impl_from!(box NormalizeFunc for ExprNode);
 impl_from!(box TypecastExpr for ExprNode::Typecast);
 impl_from!(box UnaryExpr for ExprNode);
 impl_from!(box XmlParse for ExprNode);
 impl_from!(box XmlProcessingInstruction for ExprNode);
 impl_from!(box XmlRoot for ExprNode);
-impl_from!(box ExtractFunc for ExprNode);
 
 impl From<UnsignedNumber> for ExprNode {
     fn from(value: UnsignedNumber) -> Self {
