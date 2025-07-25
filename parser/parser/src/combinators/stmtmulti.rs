@@ -23,8 +23,7 @@ pub(crate) fn stmtmulti(stream: &mut TokenStream) -> scan::Result<Vec<RawStmt>> 
         },
         None => {
             // It's not Eof, so there was a syntax error.
-            let loc = stream.current_location();
-            Err(NoMatch(loc))
+            no_match(stream)
         },
     }
 }
@@ -99,9 +98,9 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt;
 use crate::combinators::stmt::begin_stmt;
 use crate::combinators::stmt::end_stmt;
+use crate::no_match;
 use crate::scan;
 use crate::scan::Error::Eof;
-use crate::scan::Error::NoMatch;
 use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_ast::TransactionStmt;

@@ -70,7 +70,7 @@ fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         },
         Ok((Keyword(CurrentSchema), Operator(OpenParenthesis))) => {
             // `current_schema()` is valid syntax, so exclude that case.
-            return Err(NoMatch(stream.current_location()))
+            return no_match(stream)
         },
         Ok((Keyword(CurrentSchema), _)) => {
             stream.next(); // Consume the `current_schema` keyword.
@@ -104,6 +104,7 @@ fn collation_for(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::scan::Error::NoMatch;
     use crate::stream::TokenStream;
     use crate::tests::test_parser;
     use crate::tests::DEFAULT_CONFIG;
@@ -183,8 +184,8 @@ use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::precision;
+use crate::no_match;
 use crate::scan;
-use crate::scan::Error::NoMatch;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Keyword;
 use crate::stream::TokenValue::Operator;

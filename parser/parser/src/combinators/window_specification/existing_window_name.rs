@@ -14,8 +14,7 @@ pub(super) fn existing_window_name(stream: &mut TokenStream<'_>) -> scan::Result
             | (Kw(RangeKw | Rows | Groups), Kw(Unbounded | Current | Between))
         )
     } {
-        let loc = stream.current_location();
-        return Err(NoMatch(loc))
+        return no_match(stream)
     }
 
     col_id(stream)
@@ -61,8 +60,8 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::no_match;
 use crate::scan;
-use crate::scan::Error::NoMatch;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Keyword as Kw;
 use pg_basics::Str;

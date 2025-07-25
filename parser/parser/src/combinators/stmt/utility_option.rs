@@ -1,4 +1,6 @@
-/// Alias: `utility_option_list`
+/// Aliases:
+/// * `utility_option_list`
+/// * `opt_utility_option_list`
 pub(super) fn utility_options(stream: &mut TokenStream) -> scan::Result<Vec<UtilityOption>> {
 
     /*

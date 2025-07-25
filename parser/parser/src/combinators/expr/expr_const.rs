@@ -116,7 +116,7 @@ fn const_typename(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         ) =>
             interval_typecast(stream),
 
-        _ => Err(NoMatch(stream.current_location()))
+        _ => no_match(stream)
     }
 }
 
@@ -405,17 +405,17 @@ use crate::combinators::foundation::number;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::interval::interval;
-use crate::combinators::precision::precision;
+use crate::combinators::interval;
+use crate::combinators::precision;
 use crate::combinators::simple_typename::bit;
 use crate::combinators::simple_typename::character;
 use crate::combinators::simple_typename::float;
 use crate::combinators::simple_typename::numeric;
 use crate::combinators::simple_typename::time;
 use crate::combinators::simple_typename::timestamp;
+use crate::no_match;
 use crate::result::Required;
 use crate::scan;
-use crate::scan::Error::NoMatch;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Keyword;
 use crate::stream::TokenValue::Operator;

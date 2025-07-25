@@ -34,3 +34,7 @@ where
 {
     pg_elog::LocatedError::new(pg_elog::parser::Error::Syntax, location).into()
 }
+
+fn no_match<T>(stream: &mut stream::TokenStream) -> scan::Result<T> {
+    Err(scan::Error::NoMatch(stream.current_location()))
+}
