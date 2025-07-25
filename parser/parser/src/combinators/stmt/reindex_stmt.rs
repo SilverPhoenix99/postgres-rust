@@ -2,9 +2,9 @@
 pub(super) fn reindex_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
-        REINDEX opt_reindex_option_list reindex_target_relation opt_concurrently qualified_name
-        REINDEX opt_reindex_option_list SCHEMA opt_concurrently ColId
-        REINDEX opt_reindex_option_list reindex_target_all opt_concurrently opt_single_name
+        REINDEX ( utility_options )? reindex_target_relation opt_concurrently qualified_name
+        REINDEX ( utility_options )? SCHEMA opt_concurrently ColId
+        REINDEX ( utility_options )? reindex_target_all opt_concurrently opt_single_name
     */
 
     let (_, stmt) = (Reindex, parser(|_| todo!()))

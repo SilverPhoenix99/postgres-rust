@@ -2,11 +2,11 @@
 pub(super) fn cluster_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
-        CLUSTER '(' utility_option_list ')'
-        CLUSTER '(' utility_option_list ')' qualified_name cluster_index_specification
-        CLUSTER opt_verbose
-        CLUSTER opt_verbose name ON qualified_name
-        CLUSTER opt_verbose qualified_name cluster_index_specification
+          CLUSTER utility_options qualified_name cluster_index_specification
+        | CLUSTER ( utility_options )?
+        | CLUSTER ( VERBOSE )? qualified_name cluster_index_specification
+        | CLUSTER VERBOSE
+        | CLUSTER ( VERBOSE )? ColId ON qualified_name
     */
 
     let (_, stmt) = (Cluster, parser(|_| todo!()))

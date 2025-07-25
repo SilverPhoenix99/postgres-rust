@@ -2,8 +2,7 @@
 pub(super) fn check_point_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
-          CHECKPOINT
-        | CHECKPOINT '(' utility_option_list ')'
+        CHECKPOINT ( utility_options )?
     */
 
     let (_, options) = (

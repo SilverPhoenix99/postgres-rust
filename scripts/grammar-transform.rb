@@ -6,7 +6,6 @@ module GrammarTransform
 
   INCLUDE_PRODS = %i[
     attr_name
-    CheckPointStmt
     columnElem
     ConstInterval
     copy_generic_opt_arg_list_item

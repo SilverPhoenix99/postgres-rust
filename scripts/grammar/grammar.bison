@@ -171,6 +171,37 @@ opt_drop_behavior :
   | __empty
 ;
 
+opt_utility_option_list :
+    '(' utility_option_list ')'
+  | __empty
+;
+
+utility_option_list :
+    utility_option_elem utility_option_list_1
+  | utility_option_elem
+;
+
+utility_option_list_1 :
+    ',' utility_option_elem utility_option_list_1
+  | ',' utility_option_elem
+;
+
+utility_option_elem :
+    utility_option_name utility_option_arg
+;
+
+utility_option_name :
+    NonReservedWord
+  | analyze_keyword
+  | FORMAT_LA
+;
+
+utility_option_arg :
+    opt_boolean_or_string
+  | NumericOnly
+  | __empty
+;
+
 CallStmt :
     CALL func_application
 ;
@@ -422,8 +453,7 @@ constraints_set_mode :
 ;
 
 CheckPointStmt :
-    CHECKPOINT
-  | CHECKPOINT '(' utility_option_list ')'
+    CHECKPOINT opt_utility_option_list
 ;
 
 DiscardStmt :
@@ -2586,9 +2616,9 @@ DropTransformStmt :
 ;
 
 ReindexStmt :
-    REINDEX opt_reindex_option_list reindex_target_relation opt_concurrently qualified_name
-  | REINDEX opt_reindex_option_list SCHEMA opt_concurrently ColId
-  | REINDEX opt_reindex_option_list reindex_target_all opt_concurrently opt_single_name
+    REINDEX opt_utility_option_list reindex_target_relation opt_concurrently qualified_name
+  | REINDEX opt_utility_option_list SCHEMA opt_concurrently ColId
+  | REINDEX opt_utility_option_list reindex_target_all opt_concurrently opt_single_name
 ;
 
 reindex_target_relation :
@@ -2599,11 +2629,6 @@ reindex_target_relation :
 reindex_target_all :
     SYSTEM_P
   | DATABASE
-;
-
-opt_reindex_option_list :
-    '(' utility_option_list ')'
-  | __empty
 ;
 
 AlterTblSpcStmt :
@@ -3093,9 +3118,9 @@ CreateConversionStmt :
 
 ClusterStmt :
     CLUSTER '(' utility_option_list ')' qualified_name cluster_index_specification
-  | CLUSTER '(' utility_option_list ')'
+  | CLUSTER opt_utility_option_list
   | CLUSTER opt_verbose qualified_name cluster_index_specification
-  | CLUSTER opt_verbose
+  | CLUSTER VERBOSE
   | CLUSTER opt_verbose ColId ON qualified_name
 ;
 
@@ -3110,39 +3135,13 @@ VacuumStmt :
 ;
 
 AnalyzeStmt :
-    analyze_keyword opt_verbose opt_vacuum_relation_list
-  | analyze_keyword '(' utility_option_list ')' opt_vacuum_relation_list
-;
-
-utility_option_list :
-    utility_option_elem utility_option_list_1
-  | utility_option_elem
-;
-
-utility_option_list_1 :
-    ',' utility_option_elem utility_option_list_1
-  | ',' utility_option_elem
+    analyze_keyword opt_utility_option_list opt_vacuum_relation_list
+  | analyze_keyword VERBOSE opt_vacuum_relation_list
 ;
 
 analyze_keyword :
     ANALYZE
   | ANALYSE
-;
-
-utility_option_elem :
-    utility_option_name utility_option_arg
-;
-
-utility_option_name :
-    NonReservedWord
-  | analyze_keyword
-  | FORMAT_LA
-;
-
-utility_option_arg :
-    opt_boolean_or_string
-  | NumericOnly
-  | __empty
 ;
 
 opt_analyze :
