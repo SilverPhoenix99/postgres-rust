@@ -246,6 +246,7 @@ pub enum ExprNode {
     /// `IS NOT DISTINCT FROM`
     NotDistinct(BinaryOperands),
     NullIf(BinaryOperands),
+    Treat(Box<TypecastExpr>),
 
     // TODO: Are these 2 the same?
     Indirection(Box<IndirectionExpr>),

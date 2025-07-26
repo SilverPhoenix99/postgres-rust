@@ -12,6 +12,7 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
         | NORMALIZE '(' a_expr ( ',' unicode_normal_form )? ')'
         | NULLIF '(' a_expr ',' a_expr ')'
         | POSITION '(' b_expr IN b_expr ')'
+        | TREAT '(' a_expr AS Typename ')'
     */
 
     match stream.peek2() {
@@ -48,6 +49,8 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
         Ok((K(Nullif), Op(OpenParenthesis))) => return nullif(stream),
 
         Ok((K(Position), Op(OpenParenthesis))) => return position(stream),
+
+        Ok((K(Kw::Treat), Op(OpenParenthesis))) => return treat(stream),
 
         _ => {}
     }
@@ -173,6 +176,27 @@ fn position(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     Ok(expr.into())
 }
 
+fn treat(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    /*
+        TREAT '(' a_expr AS Typename ')'
+
+        Converts the expression of a particular type to a target type,
+        which is defined to be a subtype of the original expression.
+        In SQL99, this is intended for use with structured UDTs,
+        but let's make this a generally useful form allowing stronger
+        coercions than are handled by implicit casting.
+    */
+
+    let (expr, _, typename) = skip_prefix(1,
+        between_paren((a_expr, As, typename))
+    ).parse(stream)?;
+
+    let cast = TypecastExpr::new(expr, typename);
+    let expr = Treat(Box::new(cast));
+    Ok(expr)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -183,6 +207,7 @@ mod tests {
         ExprNode::{IntegerConst, StringConst},
         ExtractArg,
         ExtractFunc,
+        TypeName,
         UnicodeNormalForm::CanonicalComposition,
     };
     use pg_basics::Location;
@@ -244,6 +269,12 @@ mod tests {
             StringConst("foo".into())
         ).into()
     )]
+    #[test_case("treat(123 as int)",
+        Treat(Box::new(TypecastExpr::new(
+            IntegerConst(123),
+            TypeName::Int4
+        )))
+    )]
     fn test_ambiguous_prefix_expr(source: &str, expected: ExprNode) {
         test_parser!(source, ambiguous_prefix_expr, expected)
     }
@@ -266,6 +297,7 @@ use crate::combinators::expr_list_paren;
 use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::typename;
 use crate::no_match;
 use crate::scan;
 use crate::stream::TokenStream;
@@ -277,9 +309,12 @@ use pg_ast::ExprNode::GreatestFunc;
 use pg_ast::ExprNode::LeastFunc;
 use pg_ast::ExprNode::MergeSupportFunc;
 use pg_ast::ExprNode::NullIf;
+use pg_ast::ExprNode::Treat;
 use pg_ast::NormalizeFunc;
 use pg_ast::PositionFunc;
+use pg_ast::TypecastExpr;
 use pg_lexer::Keyword as Kw;
+use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Coalesce;
 use pg_lexer::Keyword::Collation;
 use pg_lexer::Keyword::Extract;
