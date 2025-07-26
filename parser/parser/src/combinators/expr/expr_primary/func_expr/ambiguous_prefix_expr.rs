@@ -11,6 +11,7 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
         | LEAST '(' expr_list ')'
         | NORMALIZE '(' a_expr ( ',' unicode_normal_form )? ')'
         | NULLIF '(' a_expr ',' a_expr ')'
+        | POSITION '(' b_expr IN b_expr ')'
     */
 
     match stream.peek2() {
@@ -45,6 +46,8 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
         Ok((K(Normalize), Op(OpenParenthesis))) => return normalize_func(stream),
 
         Ok((K(Nullif), Op(OpenParenthesis))) => return nullif(stream),
+
+        Ok((K(Position), Op(OpenParenthesis))) => return position(stream),
 
         _ => {}
     }
@@ -151,6 +154,25 @@ fn nullif(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     Ok(NullIf(operands))
 }
 
+/// Inlined: `position_list`
+fn position(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    /*
+        POSITION '(' b_expr IN b_expr ')'
+
+        A "plain syntax" option is deliberately not offered
+        for position(), because the reversal of the arguments
+        creates too much risk of confusion.
+    */
+
+    let (needle, _, haystack) = skip_prefix(1,
+        between_paren((b_expr, In, b_expr))
+    ).parse(stream)?;
+
+    let expr = PositionFunc::new(needle, haystack);
+    Ok(expr.into())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -216,6 +238,12 @@ mod tests {
             StringConst("foo".into())
         )))
     )]
+    #[test_case("position('f' in 'foo')",
+        PositionFunc::new(
+            StringConst("f".into()),
+            StringConst("foo".into())
+        ).into()
+    )]
     fn test_ambiguous_prefix_expr(source: &str, expected: ExprNode) {
         test_parser!(source, ambiguous_prefix_expr, expected)
     }
@@ -232,6 +260,7 @@ mod tests {
 
 use super::extract_list::extract_args;
 use crate::combinators::expr::a_expr;
+use crate::combinators::expr::b_expr;
 use crate::combinators::expr::unicode_normal_form;
 use crate::combinators::expr_list_paren;
 use crate::combinators::foundation::between_paren;
@@ -249,16 +278,19 @@ use pg_ast::ExprNode::LeastFunc;
 use pg_ast::ExprNode::MergeSupportFunc;
 use pg_ast::ExprNode::NullIf;
 use pg_ast::NormalizeFunc;
+use pg_ast::PositionFunc;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Coalesce;
 use pg_lexer::Keyword::Collation;
 use pg_lexer::Keyword::Extract;
 use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::Greatest;
+use pg_lexer::Keyword::In;
 use pg_lexer::Keyword::Least;
 use pg_lexer::Keyword::MergeAction;
 use pg_lexer::Keyword::Normalize;
 use pg_lexer::Keyword::Nullif;
+use pg_lexer::Keyword::Position;
 use pg_lexer::OperatorKind::CloseParenthesis;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::OpenParenthesis;

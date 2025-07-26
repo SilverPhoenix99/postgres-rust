@@ -49,6 +49,7 @@ mod one_or_both;
 mod operator;
 mod operator_with_args;
 mod over_clause;
+mod position_func;
 mod prepare_stmt;
 mod presence;
 mod privilege_target;
@@ -136,6 +137,7 @@ pub use self::{
     operator::*,
     operator_with_args::*,
     over_clause::*,
+    position_func::*,
     prepare_stmt::*,
     presence::*,
     privilege_target::*,
@@ -271,6 +273,7 @@ pub enum ExprNode {
     LeastFunc(Vec<ExprNode>),
     MergeSupportFunc,
     NormalizeFunc(Box<NormalizeFunc>),
+    PositionFunc(Box<PositionFunc>),
 
     /* Xml operations */
     IsXmlDocument(Box<ExprNode>),
@@ -291,6 +294,7 @@ impl_from!(box ExtractFunc for ExprNode);
 impl_from!(box FuncCall for ExprNode);
 impl_from!(box IndirectionExpr for ExprNode::Indirection);
 impl_from!(box NormalizeFunc for ExprNode);
+impl_from!(box PositionFunc for ExprNode);
 impl_from!(box TypecastExpr for ExprNode::Typecast);
 impl_from!(box UnaryExpr for ExprNode);
 impl_from!(box XmlParse for ExprNode);
