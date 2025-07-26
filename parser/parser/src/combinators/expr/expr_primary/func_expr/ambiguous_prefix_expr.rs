@@ -10,6 +10,7 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
         | GREATEST '(' expr_list ')'
         | LEAST '(' expr_list ')'
         | NORMALIZE '(' a_expr ( ',' unicode_normal_form )? ')'
+        | NULLIF '(' a_expr ',' a_expr ')'
     */
 
     match stream.peek2() {
@@ -42,6 +43,8 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
         },
 
         Ok((K(Normalize), Op(OpenParenthesis))) => return normalize_func(stream),
+
+        Ok((K(Nullif), Op(OpenParenthesis))) => return nullif(stream),
 
         _ => {}
     }
@@ -134,6 +137,20 @@ fn normalize_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     Ok(expr.into())
 }
 
+fn nullif(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    /*
+        NULLIF '(' a_expr ',' a_expr ')'
+    */
+
+    let (left, _, right) = skip_prefix(1,
+        between_paren((a_expr, Comma, a_expr))
+    ).parse(stream)?;
+
+    let operands = Box::new((left, right));
+    Ok(NullIf(operands))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -193,6 +210,12 @@ mod tests {
             Some(CanonicalComposition)
         ).into()
     )]
+    #[test_case("nullif(null, 'foo')",
+        NullIf(Box::new((
+            ExprNode::NullConst,
+            StringConst("foo".into())
+        )))
+    )]
     fn test_ambiguous_prefix_expr(source: &str, expected: ExprNode) {
         test_parser!(source, ambiguous_prefix_expr, expected)
     }
@@ -224,6 +247,7 @@ use pg_ast::ExprNode::CurrentSchema;
 use pg_ast::ExprNode::GreatestFunc;
 use pg_ast::ExprNode::LeastFunc;
 use pg_ast::ExprNode::MergeSupportFunc;
+use pg_ast::ExprNode::NullIf;
 use pg_ast::NormalizeFunc;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Coalesce;
@@ -234,6 +258,7 @@ use pg_lexer::Keyword::Greatest;
 use pg_lexer::Keyword::Least;
 use pg_lexer::Keyword::MergeAction;
 use pg_lexer::Keyword::Normalize;
+use pg_lexer::Keyword::Nullif;
 use pg_lexer::OperatorKind::CloseParenthesis;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::OpenParenthesis;
