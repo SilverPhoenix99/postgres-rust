@@ -1,3 +1,4 @@
+/// Alias: `func_expr_common_subexpr`
 pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     use crate::stream::TokenValue::Keyword as K;
     use crate::stream::TokenValue::Operator as Op;
@@ -13,6 +14,7 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
         | NULLIF '(' a_expr ',' a_expr ')'
         | POSITION '(' b_expr IN b_expr ')'
         | TREAT '(' a_expr AS Typename ')'
+        | TRIM '(' trim_args ')'
     */
 
     match stream.peek2() {
@@ -51,6 +53,8 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
         Ok((K(Position), Op(OpenParenthesis))) => return position(stream),
 
         Ok((K(Kw::Treat), Op(OpenParenthesis))) => return treat(stream),
+
+        Ok((K(Trim), Op(OpenParenthesis))) => return trim(stream),
 
         _ => {}
     }
@@ -197,6 +201,79 @@ fn treat(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     Ok(expr)
 }
 
+fn trim(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    /*
+        TRIM '(' trim_args ')'
+    */
+
+    let expr = skip_prefix(1, between_paren(trim_args))
+        .parse(stream)?;
+
+    Ok(expr.into())
+}
+
+fn trim_args(stream: &mut TokenStream) -> scan::Result<TrimFunc> {
+    use TrimSide::*;
+
+    /*
+          LEADING   trim_list
+        | TRAILING  trim_list
+        | ( BOTH )? trim_list
+    */
+
+    let (trim_side, args) = or((
+
+        (Kw::Leading.map(|_| Leading), trim_list),
+
+        (Kw::Trailing.map(|_| Trailing), trim_list),
+
+        (
+            Kw::Both.map(|_| Both)
+                .optional()
+                .map(Option::unwrap_or_default),
+            trim_list
+        )
+
+    )).parse(stream)?;
+
+    let expr = TrimFunc::new(trim_side, args);
+    Ok(expr)
+}
+
+fn trim_list(stream: &mut TokenStream) -> scan::Result<Vec<ExprNode>> {
+
+    /*
+          FROM expr_list
+        | a_expr ( ( FROM | ',') expr_list )?
+    */
+
+    or((
+        (FromKw, expr_list).map(|(_, args)| args),
+        (a_expr,
+            (
+                or((
+                    Comma.map(|_| true),  // Prepend
+                    FromKw.map(|_| false) // Append
+                )),
+                expr_list
+            ).optional()
+                .map(|opt|
+                    opt.unwrap_or_else(|| (false, Vec::with_capacity(1)))
+                )
+        )
+            .map(|(arg, (prepend, mut args))| {
+                if prepend {
+                    args.insert(0, arg);
+                }
+                else {
+                    args.push(arg);
+                }
+                args
+            })
+    )).parse(stream)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -275,6 +352,12 @@ mod tests {
             TypeName::Int4
         )))
     )]
+    #[test_case("trim('foo' from 'bar')",
+        TrimFunc::new(
+            TrimSide::Both,
+            vec![StringConst("bar".into()), StringConst("foo".into())]
+        ).into()
+    )]
     fn test_ambiguous_prefix_expr(source: &str, expected: ExprNode) {
         test_parser!(source, ambiguous_prefix_expr, expected)
     }
@@ -287,14 +370,48 @@ mod tests {
             expected = Err(NoMatch(Location::new(0..14, 1, 1)))
         )
     }
+
+    #[test_case("leading from 'foo'", TrimSide::Leading, vec![StringConst("foo".into())])]
+    #[test_case("trailing 'foo' from 'bar'", TrimSide::Trailing,
+        vec![StringConst("bar".into()), StringConst("foo".into())]
+    )]
+    #[test_case("both 'foo'", TrimSide::Both, vec![StringConst("foo".into())])]
+    #[test_case("'foo', 'bar'", TrimSide::Both,
+        vec![StringConst("foo".into()), StringConst("bar".into())]
+    )]
+    fn test_trim_args(source: &str, trim_side: TrimSide, args: Vec<ExprNode>) {
+        let expected = TrimFunc::new(trim_side, args);
+        test_parser!(source, trim_args, expected)
+    }
+
+    #[test_case("from 'foo'", vec![StringConst("foo".into())])]
+    #[test_case("from 'foo', 'bar'", vec![StringConst("foo".into()), StringConst("bar".into())])]
+    #[test_case("'foo'", vec![StringConst("foo".into())])]
+    #[test_case("'foo' from 'bar'", vec![StringConst("bar".into()), StringConst("foo".into())])]
+    #[test_case("'foo' from 'bar', 'baz'", vec![
+        StringConst("bar".into()),
+        StringConst("baz".into()),
+        StringConst("foo".into())
+    ])]
+    #[test_case("'foo', 'bar'", vec![StringConst("foo".into()), StringConst("bar".into())])]
+    #[test_case("'foo', 'bar', 'baz'", vec![
+        StringConst("foo".into()),
+        StringConst("bar".into()),
+        StringConst("baz".into()),
+    ])]
+    fn test_trim_list(source: &str, expected: Vec<ExprNode>) {
+        test_parser!(source, trim_list, expected)
+    }
 }
 
 use super::extract_list::extract_args;
 use crate::combinators::expr::a_expr;
 use crate::combinators::expr::b_expr;
 use crate::combinators::expr::unicode_normal_form;
+use crate::combinators::expr_list::expr_list;
 use crate::combinators::expr_list_paren;
 use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::or;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
@@ -312,6 +429,8 @@ use pg_ast::ExprNode::NullIf;
 use pg_ast::ExprNode::Treat;
 use pg_ast::NormalizeFunc;
 use pg_ast::PositionFunc;
+use pg_ast::TrimFunc;
+use pg_ast::TrimSide;
 use pg_ast::TypecastExpr;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::As;
@@ -319,6 +438,7 @@ use pg_lexer::Keyword::Coalesce;
 use pg_lexer::Keyword::Collation;
 use pg_lexer::Keyword::Extract;
 use pg_lexer::Keyword::For;
+use pg_lexer::Keyword::FromKw;
 use pg_lexer::Keyword::Greatest;
 use pg_lexer::Keyword::In;
 use pg_lexer::Keyword::Least;
@@ -326,6 +446,7 @@ use pg_lexer::Keyword::MergeAction;
 use pg_lexer::Keyword::Normalize;
 use pg_lexer::Keyword::Nullif;
 use pg_lexer::Keyword::Position;
+use pg_lexer::Keyword::Trim;
 use pg_lexer::OperatorKind::CloseParenthesis;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::OpenParenthesis;

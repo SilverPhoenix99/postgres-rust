@@ -69,6 +69,7 @@ mod system_type;
 mod transaction_chain;
 mod transaction_stmt;
 mod transform;
+mod trim_func;
 mod typecast;
 mod typecast_expr;
 mod unary_expr;
@@ -157,6 +158,7 @@ pub use self::{
     transaction_chain::*,
     transaction_stmt::*,
     transform::*,
+    trim_func::*,
     typecast::*,
     typecast_expr::*,
     unary_expr::*,
@@ -250,7 +252,7 @@ pub enum ExprNode {
 
     // TODO: Are these 2 the same?
     Indirection(Box<IndirectionExpr>),
-    ColumnRef(Box<ColumnRef>),
+    ColumnRef(ColumnRef),
 
     /* Function calls */
     CurrentDate,
@@ -275,6 +277,7 @@ pub enum ExprNode {
     MergeSupportFunc,
     NormalizeFunc(Box<NormalizeFunc>),
     PositionFunc(Box<PositionFunc>),
+    TrimFunc(TrimFunc),
 
     /* Xml operations */
     IsXmlDocument(Box<ExprNode>),
@@ -287,10 +290,11 @@ pub enum ExprNode {
 }
 
 impl_from!(BoolExpr for ExprNode);
+impl_from!(ColumnRef for ExprNode);
+impl_from!(TrimFunc for ExprNode);
 impl_from!(XmlElement for ExprNode);
 impl_from!(box BinaryExpr for ExprNode);
 impl_from!(box CaseExpr for ExprNode);
-impl_from!(box ColumnRef for ExprNode);
 impl_from!(box ExtractFunc for ExprNode);
 impl_from!(box FuncCall for ExprNode);
 impl_from!(box IndirectionExpr for ExprNode::Indirection);
