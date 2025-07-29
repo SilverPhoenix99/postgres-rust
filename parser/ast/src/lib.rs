@@ -43,9 +43,11 @@ pg_basics::reexport! { pub
     indirection,
     indirection_expr,
     json_array_agg,
+    json_array_agg_expr,
     json_format,
     json_key_value,
     json_object_agg,
+    json_object_agg_expr,
     json_output,
     json_value_expr,
     normalize_func,
@@ -196,6 +198,8 @@ pub enum ExprNode {
     NormalizeFunc(Box<NormalizeFunc>),
     PositionFunc(Box<PositionFunc>),
     TrimFunc(TrimFunc),
+    JsonArrayAgg(Box<JsonArrayAggExpr>),
+    JsonObjectAgg(Box<JsonObjectAggExpr>),
 
     /* Xml operations */
     IsXmlDocument(Box<ExprNode>),
@@ -216,6 +220,8 @@ impl_from!(box CaseExpr for ExprNode);
 impl_from!(box ExtractFunc for ExprNode);
 impl_from!(box FuncCall for ExprNode);
 impl_from!(box IndirectionExpr for ExprNode::Indirection);
+impl_from!(box JsonArrayAggExpr for ExprNode::JsonArrayAgg);
+impl_from!(box JsonObjectAggExpr for ExprNode::JsonObjectAgg);
 impl_from!(box NormalizeFunc for ExprNode);
 impl_from!(box PositionFunc for ExprNode);
 impl_from!(box TypecastExpr for ExprNode::Typecast);
