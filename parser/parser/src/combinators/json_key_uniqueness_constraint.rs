@@ -5,7 +5,7 @@ pub(super) fn json_key_uniqueness_constraint(stream: &mut TokenStream) -> scan::
         ( WITH | WITHOUT ) UNIQUE ( KEYS )?
     */
 
-    let (with_unique_keys, ..) = (
+    let (unique, ..) = (
         or((
             With.map(|_| true),
             Without.map(|_| false)
@@ -14,7 +14,7 @@ pub(super) fn json_key_uniqueness_constraint(stream: &mut TokenStream) -> scan::
         Keys.optional()
     ).parse(stream)?;
 
-    Ok(with_unique_keys)
+    Ok(unique)
 }
 
 #[cfg(test)]

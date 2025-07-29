@@ -4,19 +4,19 @@
 pub(super) fn json_constructor_null_clause(stream: &mut TokenStream) -> scan::Result<bool> {
 
     /*
-        ( NULL | ABSENT ) ON NULL
+        ( ABSENT | NULL ) ON NULL
     */
 
-    let (remove_nulls, ..) = (
+    let (absent_on_null, ..) = (
         or((
+            Absent.map(|_| true),
             Null.map(|_| false),
-            Absent.map(|_| true)
         )),
         On,
         Null
     ).parse(stream)?;
 
-    Ok(remove_nulls)
+    Ok(absent_on_null)
 }
 
 #[cfg(test)]
