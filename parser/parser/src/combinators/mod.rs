@@ -30,6 +30,7 @@ pg_basics::reexport! {
     generic_set_tail,
     i32_literal_paren,
     interval,
+    json_aggregate_func,
     json_constructor_null_clause,
     json_format_clause,
     json_key_uniqueness_constraint,
