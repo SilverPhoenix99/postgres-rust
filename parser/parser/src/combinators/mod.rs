@@ -24,6 +24,7 @@ mod generic_set_tail;
 mod i32_literal_paren;
 mod interval;
 mod json_format_clause;
+mod json_value_expr;
 mod make_column_ref;
 mod name_list;
 mod non_reserved_word;
@@ -82,6 +83,7 @@ use self::{
     i32_literal_paren::*,
     interval::*,
     json_format_clause::*,
+    json_value_expr::*,
     make_column_ref::*,
     name_list::*,
     non_reserved_word::*,

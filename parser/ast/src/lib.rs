@@ -42,6 +42,7 @@ mod grant_stmt;
 mod indirection;
 mod indirection_expr;
 mod json_format;
+mod json_value_expr;
 mod normalize_func;
 mod notify_stmt;
 mod numeric_spec;
@@ -132,6 +133,7 @@ pub use self::{
     indirection::*,
     indirection_expr::*,
     json_format::*,
+    json_value_expr::*,
     normalize_func::*,
     notify_stmt::*,
     numeric_spec::*,
