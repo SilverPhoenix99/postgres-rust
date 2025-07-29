@@ -43,6 +43,7 @@ pg_basics::reexport! { pub
     indirection,
     indirection_expr,
     json_format,
+    json_key_value,
     json_output,
     json_value_expr,
     normalize_func,
