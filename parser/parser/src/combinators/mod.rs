@@ -32,6 +32,7 @@ pg_basics::reexport! {
     json_constructor_null_clause,
     json_format_clause,
     json_key_uniqueness_constraint,
+    json_returning_clause,
     json_value_expr,
     make_column_ref,
     name_list,
