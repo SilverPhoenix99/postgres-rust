@@ -77,6 +77,9 @@ pub enum Error {
 
     #[error("cannot use VARIADIC with WITHIN GROUP")]
     VariadicWithinGroup,
+
+    #[error("unrecognized JSON encoding: {}", .0.as_ref())]
+    UnrecognizedJsonEncoding(Str),
 }
 
 impl Error {
@@ -131,6 +134,7 @@ impl LogMessage for Error {
             Self::MultipleOrderBy => SyntaxError,
             Self::DistinctWithinGroup => SyntaxError,
             Self::VariadicWithinGroup => SyntaxError,
+            Self::UnrecognizedJsonEncoding(_) => InvalidParameterValue,
         }
     }
 
@@ -160,6 +164,7 @@ impl LogMessage for Error {
             Self::MultipleOrderBy => None,
             Self::DistinctWithinGroup => None,
             Self::VariadicWithinGroup => None,
+            Self::UnrecognizedJsonEncoding(_) => None,
         }
     }
 }
@@ -176,3 +181,4 @@ use core::fmt::Display;
 use core::fmt::Formatter;
 use pg_basics::Location;
 use pg_basics::QualifiedName;
+use pg_basics::Str;

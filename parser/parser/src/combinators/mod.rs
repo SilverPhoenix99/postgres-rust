@@ -1,5 +1,3 @@
-pub(super) mod foundation;
-
 mod acl;
 mod all_or_var_name;
 mod any_name;
@@ -15,6 +13,7 @@ mod document_or_content;
 mod expr;
 mod expr_list;
 mod expr_list_paren;
+mod foundation;
 mod func_arg;
 mod func_arg_expr;
 mod func_name;
@@ -24,6 +23,7 @@ mod generic_option;
 mod generic_set_tail;
 mod i32_literal_paren;
 mod interval;
+mod json_format_clause;
 mod make_column_ref;
 mod name_list;
 mod non_reserved_word;
@@ -81,6 +81,7 @@ use self::{
     generic_set_tail::*,
     i32_literal_paren::*,
     interval::*,
+    json_format_clause::*,
     make_column_ref::*,
     name_list::*,
     non_reserved_word::*,
