@@ -1,5 +1,6 @@
+pub(crate) mod foundation;
+
 mod expr;
-mod foundation;
 mod stmtmulti;
 
 // Entrypoint:
