@@ -20,17 +20,12 @@ pub mod unicode_string {
     pub use crate::error::unicode_string::*;
 }
 
-mod error;
-mod has_location;
-mod log_level;
-mod log_message;
-mod sql_state;
+pub use error::located_message::*;
 
-pub use self::{
-    error::located_message::LocatedMessage,
-    error::{Error, LocatedError, LocatedResult},
-    has_location::HasLocation,
-    log_level::LogLevel,
-    log_message::LogMessage,
-    sql_state::{SqlState, SqlStateCategory, UnknownSqlState},
-};
+pg_basics::reexport! { pub
+    error,
+    has_location,
+    log_level,
+    log_message,
+    sql_state,
+}

@@ -1,11 +1,14 @@
-mod case_expr;
-mod cast_expr;
-mod explicit_row;
 mod func_application;
-mod func_expr;
-mod grouping_func;
-mod param_expr;
-mod prefixed_expr;
+
+pg_basics::reexport! {
+    case_expr,
+    cast_expr,
+    explicit_row,
+    func_expr,
+    grouping_func,
+    param_expr,
+    prefixed_expr,
+}
 
 /// Alias: `c_expr`
 pub(super) fn expr_primary(stream: &mut TokenStream) -> scan::Result<ExprNode> {
@@ -47,15 +50,6 @@ mod tests {
     }
 }
 
-use self::{
-    case_expr::case_expr,
-    cast_expr::cast_expr,
-    explicit_row::explicit_row,
-    func_expr::func_expr,
-    grouping_func::grouping_func,
-    param_expr::param_expr,
-    prefixed_expr::prefixed_expr,
-};
 use crate::combinators::expr::expr_const;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;

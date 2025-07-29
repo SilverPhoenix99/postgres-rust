@@ -41,26 +41,19 @@ pub mod ascii;
 pub mod guc;
 pub mod mphf;
 pub mod wchar;
-mod char_buffer;
-mod concealable;
-mod fn_info;
-mod impl_from;
-mod location;
-mod named;
-mod non_negative;
-mod number_radix;
-mod str;
+mod reexport;
 
-pub use self::{
-    char_buffer::{CharBuffer, Position, UnicodeChar, UnicodeCharError},
-    concealable::Concealable,
-    fn_info::FnInfo,
-    location::{Located, Location},
-    named::Named,
-    non_negative::NonNegative,
-    number_radix::NumberRadix,
-    str::Str,
-};
+reexport! { pub
+    char_buffer,
+    concealable,
+    fn_info,
+    impl_from,
+    location,
+    named,
+    non_negative,
+    number_radix,
+    str,
+}
 
 pub type Oid = u32;
 pub type QualifiedName = Vec<Str>;

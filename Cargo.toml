@@ -23,6 +23,7 @@ useless_conversion = "deny"
 
 [workspace.lints.rust]
 unused_imports = "deny"
+macro_expanded_macro_exports_accessed_by_absolute_paths = "warn"
 
 [workspace.dependencies]
 assert_matches = "1"

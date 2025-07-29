@@ -6,9 +6,7 @@ extern crate assert_matches;
 extern crate core;
 
 mod combinators;
-mod config;
 mod error;
-mod parser;
 mod result;
 mod stream;
 mod tests;
@@ -23,10 +21,10 @@ mod scan {
     pub(crate) use crate::error::scan::result::*;
 }
 
-pub use self::{
-    config::ParserConfig,
-    parser::{Parser, ParserResult}
-};
+pg_basics::reexport! { pub
+    config,
+    parser,
+}
 
 fn syntax<T>(location: pg_basics::Location) -> T
 where

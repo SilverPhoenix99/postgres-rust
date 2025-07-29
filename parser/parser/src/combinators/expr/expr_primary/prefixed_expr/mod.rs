@@ -1,7 +1,9 @@
-mod attr_tail;
-mod identifier_prefixed_expr;
-mod tailed_expr;
-mod type_func_name_prefixed_expr;
+pg_basics::reexport! {
+    attr_tail,
+    identifier_prefixed_expr,
+    tailed_expr,
+    type_func_name_prefixed_expr,
+}
 
 pub(super) fn prefixed_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
@@ -37,12 +39,6 @@ mod tests {
     }
 }
 
-use self::{
-    attr_tail::*,
-    identifier_prefixed_expr::*,
-    tailed_expr::*,
-    type_func_name_prefixed_expr::*,
-};
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::scan;

@@ -1,14 +1,11 @@
 mod extract_list;
-mod filter_clause;
 mod func_expr_common_subexpr;
-mod over_clause;
-mod within_group_clause;
 
-pub(super) use {
-    filter_clause::*,
-    over_clause::*,
-    within_group_clause::*,
-};
+pg_basics::reexport! { pub(super)
+    filter_clause,
+    over_clause,
+    within_group_clause,
+}
 
 pub(super) fn func_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 

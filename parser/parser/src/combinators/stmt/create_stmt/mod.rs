@@ -1,10 +1,12 @@
-mod create_access_method_stmt;
-mod create_cast_stmt;
-mod create_conversion_stmt;
-mod create_database_stmt;
-mod create_role_option;
-mod create_role_stmt;
-mod create_user_stmt;
+pg_basics::reexport! {
+    create_access_method_stmt,
+    create_cast_stmt,
+    create_conversion_stmt,
+    create_database_stmt,
+    create_role_option,
+    create_role_stmt,
+    create_user_stmt,
+}
 
 pub(super) use create_database_stmt::createdb_opt_value;
 
@@ -50,15 +52,6 @@ mod tests {
     }
 }
 
-use self::{
-    create_access_method_stmt::create_access_method_stmt,
-    create_cast_stmt::create_cast_stmt,
-    create_conversion_stmt::create_conversion_stmt,
-    create_database_stmt::create_database_stmt,
-    create_role_option::create_role_options,
-    create_role_stmt::create_role_stmt,
-    create_user_stmt::create_user_stmt,
-};
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::scan;

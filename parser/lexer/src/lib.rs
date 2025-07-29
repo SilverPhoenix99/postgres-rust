@@ -2,19 +2,10 @@
 #[macro_use]
 extern crate assert_matches;
 
-mod keyword;
-mod token_kind;
-
-pub use self::{
-    keyword::{Keyword, KeywordCategory, KeywordDetails},
-    token_kind::{
-        BitStringKind,
-        IdentifierKind,
-        OperatorKind,
-        RawTokenKind,
-        StringKind,
-    },
-};
+pg_basics::reexport! { pub
+    keyword,
+    token_kind,
+}
 
 pub(crate) type LocatedResult = lexer::LocatedResult<Located<RawTokenKind>>;
 type Result<T = RawTokenKind> = lexer::Result<T>;

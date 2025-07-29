@@ -262,10 +262,10 @@ mod tests {
     }
 }
 
+use crate::combinators::expr::expr_primary::filter_clause;
 use crate::combinators::expr::expr_primary::func_application::func_application_args;
-use crate::combinators::expr::expr_primary::func_expr::filter_clause;
-use crate::combinators::expr::expr_primary::func_expr::over_clause;
-use crate::combinators::expr::expr_primary::func_expr::within_group_clause;
+use crate::combinators::expr::expr_primary::over_clause;
+use crate::combinators::expr::expr_primary::within_group_clause;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::string;
