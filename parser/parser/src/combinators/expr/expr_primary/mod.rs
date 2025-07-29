@@ -12,6 +12,7 @@ pub(super) fn expr_primary(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     or((
         param_expr,
         expr_const,
+        case_expr.map(From::from),
         func_expr,
         explicit_row,
         grouping_func,
@@ -25,25 +26,24 @@ pub(super) fn expr_primary(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
-    use test_case::test_case;
+    use crate::tests::test_parser;
+    use test_case::test_matrix;
 
-    #[test_case("$3")] // param_expr
-    #[test_case("true")] // expr_const
-    #[test_case("user")] // func_expr
-    #[test_case("row()")] // explicit_row
-    #[test_case("grouping(1)")] // explicit_row
-    #[test_case("current_schema")] // prefix_expr
-    fn test_expr_primary(source: &str) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = expr_primary(&mut stream);
-
-        // This only quickly tests that statement types aren't missing.
-        // More in-depth testing is within each statement's module.
-        assert_matches!(actual, Ok(_),
-            r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
-        )
+    // These only quickly check that statements aren't missing:
+    #[test_matrix(
+        [
+            "$3",                     // param_expr
+            "true",                   // expr_const
+            "case when 1 then 2 end", // case_expr
+            "user",                   // func_expr
+            "row()",                  // explicit_row
+            "grouping(1)",            // explicit_row
+            "current_schema",         // prefix_expr
+        ]
+        => matches Ok(_)
+    )]
+    fn test_expr_primary(source: &str) -> scan::Result<ExprNode> {
+        test_parser!(source, expr_primary)
     }
 }
 

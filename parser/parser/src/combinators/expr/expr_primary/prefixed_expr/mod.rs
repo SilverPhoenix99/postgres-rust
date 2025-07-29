@@ -5,6 +5,13 @@ mod type_func_name_prefixed_expr;
 
 pub(super) fn prefixed_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
+    /*
+          func_name                              => columnref
+        | func_name SCONST                       => AexprConst
+        | func_name '(' func_arg_list ')' SCONST => AexprConst
+        | func_application func_args_tail        => func_expr
+    */
+
     or((
         identifier_prefixed_expr,
         type_func_name_prefixed_expr
@@ -14,32 +21,19 @@ pub(super) fn prefixed_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::stream;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ColumnRef,
-        pg_ast::ExprNode::{IntegerConst, StringConst},
-        pg_ast::FuncArgExpr,
-        pg_ast::FuncArgsKind,
-        pg_ast::FuncArgsOrder,
-        pg_ast::FuncCall,
-        pg_ast::OverClause,
-        pg_ast::SortBy,
-        pg_ast::TypeName,
-        pg_ast::TypecastExpr,
-        pg_basics::Location,
-    };
+    use crate::tests::test_parser;
+    use test_case::test_matrix;
 
-    #[test_case("foo.bar")] // identifier_prefixed_expr
-    #[test_case("inner()")] // type_func_name_prefixed_expr
-    fn test_prefixed_expr(source: &str) {
-        let mut stream = stream(source);
-        let actual = prefixed_expr(&mut stream);
-
-        assert_matches!(actual, Ok(_),
-            r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
-        )
+    // These only quickly check that statements aren't missing:
+    #[test_matrix(
+        [
+            "foo.bar", // identifier_prefixed_expr
+            "inner()", // type_func_name_prefixed_expr
+        ]
+        => matches Ok(_)
+    )]
+    fn test_prefixed_expr(source: &str) -> scan::Result<ExprNode> {
+        test_parser!(source, prefixed_expr)
     }
 }
 

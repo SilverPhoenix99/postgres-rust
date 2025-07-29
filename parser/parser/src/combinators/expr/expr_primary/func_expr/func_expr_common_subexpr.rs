@@ -1,11 +1,22 @@
-/// Alias: `func_expr_common_subexpr`
-pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     use crate::stream::TokenValue::Keyword as K;
     use crate::stream::TokenValue::Operator as Op;
 
     /*
           COLLATION FOR '(' a_expr ')'
+        | CURRENT_DATE
+        | CURRENT_TIME ( '(' ICONST ')' )?
+        | CURRENT_TIMESTAMP ( '(' ICONST ')' )?
+        | LOCALTIME ( '(' ICONST ')' )?
+        | LOCALTIMESTAMP ( '(' ICONST ')' )?
+        | CURRENT_ROLE
+        | CURRENT_USER
+        | SESSION_USER
+        | SYSTEM_USER
+        | USER
+        | CURRENT_CATALOG
         | CURRENT_SCHEMA
+        | CAST '(' a_expr AS Typename ')'
         | COALESCE '(' expr_list ')'
         | EXTRACT '(' extract_list ')'
         | GREATEST '(' expr_list ')'
@@ -15,11 +26,12 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
         | POSITION '(' b_expr IN b_expr ')'
         | TREAT '(' a_expr AS Typename ')'
         | TRIM '(' trim_args ')'
+        | MERGE_ACTION '(' ')'
     */
 
     match stream.peek2() {
 
-        // TypeFuncName conflicts
+        // TypeFuncName conflicts:
 
         // `current_schema()` is valid syntax, so exclude that case.
         Ok((K(Kw::CurrentSchema), Op(OpenParenthesis))) => return no_match(stream),
@@ -30,7 +42,7 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
 
         Ok((K(Collation), K(For))) => return collation_for(stream),
 
-        // ColumnName conflicts
+        // ColumnName conflicts:
 
         Ok((K(Coalesce), Op(OpenParenthesis))) => return coalesce_expr(stream),
 
@@ -59,12 +71,48 @@ pub(super) fn ambiguous_prefix_expr(stream: &mut TokenStream) -> scan::Result<Ex
         _ => {}
     }
 
-
     // If we reach here, it could be that there are 1 or fewer tokens left in the stream,
     // or there are more tokens, but they didn't match any of the above patterns.
 
-    let _ = Kw::CurrentSchema.parse(stream)?;
-    Ok(CurrentSchema)
+    // Broken down into smaller combinators, due to large Rust type names.
+    or((
+        Kw::CurrentSchema.map(|_| CurrentSchema),
+        Kw::CurrentCatalog.map(|_| CurrentCatalog),
+        time,
+        role,
+        cast_expr.map(From::from),
+    )).parse(stream)
+}
+
+fn time(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    or((
+        Kw::CurrentDate.map(|_| CurrentDate),
+
+        (Kw::CurrentTime, precision.optional())
+            .map(|(_, precision)| CurrentTime { precision }),
+
+        (Kw::CurrentTimestamp, precision.optional())
+            .map(|(_, precision)| CurrentTimestamp { precision }),
+
+        (Kw::Localtime, precision.optional())
+            .map(|(_, precision)| LocalTime { precision }),
+
+        (Kw::Localtimestamp, precision.optional())
+            .map(|(_, precision)| LocalTimestamp { precision }),
+
+    )).parse(stream)
+}
+
+fn role(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    or((
+        Kw::CurrentRole.map(|_| CurrentRole),
+        Kw::CurrentUser.map(|_| CurrentUser),
+        Kw::SessionUser.map(|_| SessionUser),
+        Kw::SystemUser.map(|_| SystemUser),
+        Kw::User.map(|_| User),
+    )).parse(stream)
 }
 
 fn collation_for(stream: &mut TokenStream) -> scan::Result<ExprNode> {
@@ -277,143 +325,181 @@ fn trim_list(stream: &mut TokenStream) -> scan::Result<Vec<ExprNode>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::scan::Error::NoMatch;
     use crate::tests::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        ExprNode::{IntegerConst, StringConst},
-        ExtractArg,
-        ExtractFunc,
-        TypeName,
-        UnicodeNormalForm::CanonicalComposition,
-    };
-    use pg_basics::Location;
     use test_case::test_case;
+    #[allow(unused_imports)]
+    use {
+        crate::scan::Error::NoMatch,
+        pg_ast::ExprNode::{IntegerConst, StringConst},
+        pg_ast::ExtractArg,
+        pg_ast::ExtractFunc,
+        pg_ast::TypeName,
+        pg_ast::UnicodeNormalForm::CanonicalComposition,
+    };
 
-    #[test_case("current_schema 1", CurrentSchema)]
-    #[test_case("current_schema", CurrentSchema)]
-    #[test_case("collation for ('foo')",
+    #[test_case("current_schema 1" => Ok(CurrentSchema))]
+    #[test_case("current_schema" => Ok(CurrentSchema))]
+    #[test_case("current_catalog" => Ok(CurrentCatalog))]
+    #[test_case("collation for ('foo')" => Ok(
         CollationFor(
             Box::new(StringConst("foo".into()))
         )
-    )]
-    #[test_case("coalesce('foo', 'bar')",
+    ))]
+    #[test_case("coalesce('foo', 'bar')" => Ok(
         CoalesceExpr(vec![
             StringConst("foo".into()),
             StringConst("bar".into())
         ])
-    )]
-    #[test_case("extract(year from 'foo')",
+    ))]
+    #[test_case("extract(year from 'foo')" => Ok(
         ExtractFunc::new(
             ExtractArg::Year,
             StringConst("foo".into())
         ).into()
-    )]
-    #[test_case("greatest(1, 2)",
+    ))]
+    #[test_case("greatest(1, 2)" => Ok(
         GreatestFunc(vec![
             IntegerConst(1),
             IntegerConst(2)
         ])
-    )]
-    #[test_case("least(1, 2)",
+    ))]
+    #[test_case("least(1, 2)" => Ok(
         LeastFunc(vec![
             IntegerConst(1),
             IntegerConst(2)
         ])
-    )]
-    #[test_case("merge_action()", MergeSupportFunc)]
-    #[test_case("normalize('foo')",
+    ))]
+    #[test_case("merge_action()" => Ok(MergeSupportFunc))]
+    #[test_case("normalize('foo')" => Ok(
         NormalizeFunc::new(
             StringConst("foo".into()),
             None
         ).into()
-    )]
-    #[test_case("normalize('foo', nfc)",
+    ))]
+    #[test_case("normalize('foo', nfc)" => Ok(
         NormalizeFunc::new(
             StringConst("foo".into()),
             Some(CanonicalComposition)
         ).into()
-    )]
-    #[test_case("nullif(null, 'foo')",
+    ))]
+    #[test_case("nullif(null, 'foo')" => Ok(
         NullIf(Box::new((
             ExprNode::NullConst,
             StringConst("foo".into())
         )))
-    )]
-    #[test_case("position('f' in 'foo')",
+    ))]
+    #[test_case("position('f' in 'foo')" => Ok(
         PositionFunc::new(
             StringConst("f".into()),
             StringConst("foo".into())
         ).into()
-    )]
-    #[test_case("treat(123 as int)",
-        Treat(Box::new(TypecastExpr::new(
-            IntegerConst(123),
-            TypeName::Int4
-        )))
-    )]
-    #[test_case("trim('foo' from 'bar')",
+    ))]
+    #[test_case("treat(123 as int)" => Ok(
+        Treat(Box::new(
+            TypecastExpr::new(
+                IntegerConst(123),
+                TypeName::Int4
+            )
+        ))
+    ))]
+    #[test_case("trim('foo' from 'bar')" => Ok(
         TrimFunc::new(
             TrimSide::Both,
             vec![StringConst("bar".into()), StringConst("foo".into())]
         ).into()
-    )]
-    fn test_ambiguous_prefix_expr(source: &str, expected: ExprNode) {
-        test_parser!(source, ambiguous_prefix_expr, expected)
+    ))]
+    #[test_case("current_schema(" => matches Err(NoMatch(_)))]
+    // These only quickly check that statements aren't missing:
+    #[test_case("current_date" => matches Ok(_))]
+    #[test_case("user" => matches Ok(_))]
+    #[test_case("cast ('1' as int)" => matches Ok(_))]
+    fn test_func_expr_common_subexpr(source: &str) -> scan::Result<ExprNode> {
+        test_parser!(source, func_expr_common_subexpr)
     }
 
-    #[test]
-    fn test_ambiguous_prefix_expr_no_match() {
-        test_parser!(
-            source = "current_schema(",
-            parser = ambiguous_prefix_expr,
-            expected = Err(NoMatch(Location::new(0..14, 1, 1)))
-        )
+    #[test_case("current_date" => Ok(CurrentDate))]
+    #[test_case("current_time" => Ok(CurrentTime { precision: None }))]
+    #[test_case("current_time(3)" => Ok(CurrentTime { precision: Some(3) }))]
+    #[test_case("current_timestamp" => Ok(CurrentTimestamp { precision: None }))]
+    #[test_case("current_timestamp(7)" => Ok(CurrentTimestamp { precision: Some(7) }))]
+    #[test_case("localtime" => Ok(LocalTime { precision: None }))]
+    #[test_case("localtime(6)" => Ok(LocalTime { precision: Some(6) }))]
+    #[test_case("localtimestamp" => Ok(LocalTimestamp { precision: None }))]
+    #[test_case("localtimestamp(4)" => Ok(LocalTimestamp { precision: Some(4) }))]
+    fn test_time(source: &str) -> scan::Result<ExprNode> {
+        test_parser!(source, time)
     }
 
-    #[test_case("leading from 'foo'", TrimSide::Leading, vec![StringConst("foo".into())])]
-    #[test_case("trailing 'foo' from 'bar'", TrimSide::Trailing,
+    #[test_case("CURRENT_role" => Ok(CurrentRole))]
+    #[test_case("current_USER" => Ok(CurrentUser))]
+    #[test_case("SESSION_USER" => Ok(SessionUser))]
+    #[test_case("system_user" => Ok(SystemUser))]
+    #[test_case("uSeR" => Ok(User))]
+    fn test_role(source: &str) -> scan::Result<ExprNode> {
+        test_parser!(source, role)
+    }
+
+    #[test_case("leading from 'foo'" => Ok(TrimFunc::new(
+        TrimSide::Leading,
+        vec![StringConst("foo".into())]
+    )))]
+    #[test_case("trailing 'foo' from 'bar'" => Ok(TrimFunc::new(
+        TrimSide::Trailing,
         vec![StringConst("bar".into()), StringConst("foo".into())]
-    )]
-    #[test_case("both 'foo'", TrimSide::Both, vec![StringConst("foo".into())])]
-    #[test_case("'foo', 'bar'", TrimSide::Both,
+    )))]
+    #[test_case("both 'foo'" => Ok(TrimFunc::new(
+        TrimSide::Both,
+        vec![StringConst("foo".into())]
+    )))]
+    #[test_case("'foo', 'bar'" => Ok(TrimFunc::new(
+        TrimSide::Both,
         vec![StringConst("foo".into()), StringConst("bar".into())]
-    )]
-    fn test_trim_args(source: &str, trim_side: TrimSide, args: Vec<ExprNode>) {
-        let expected = TrimFunc::new(trim_side, args);
-        test_parser!(source, trim_args, expected)
+    )))]
+    fn test_trim_args(source: &str) -> scan::Result<TrimFunc> {
+        test_parser!(source, trim_args)
     }
 
-    #[test_case("from 'foo'", vec![StringConst("foo".into())])]
-    #[test_case("from 'foo', 'bar'", vec![StringConst("foo".into()), StringConst("bar".into())])]
-    #[test_case("'foo'", vec![StringConst("foo".into())])]
-    #[test_case("'foo' from 'bar'", vec![StringConst("bar".into()), StringConst("foo".into())])]
-    #[test_case("'foo' from 'bar', 'baz'", vec![
+    #[test_case("from 'foo'" => Ok(vec![StringConst("foo".into())]))]
+    #[test_case("from 'foo', 'bar'" => Ok(vec![
+        StringConst("foo".into()),
+        StringConst("bar".into())
+    ]))]
+    #[test_case("'foo'" => Ok(vec![StringConst("foo".into())]))]
+    #[test_case("'foo' from 'bar'" => Ok(vec![
+        StringConst("bar".into()),
+        StringConst("foo".into())
+    ]))]
+    #[test_case("'foo' from 'bar', 'baz'" => Ok(vec![
         StringConst("bar".into()),
         StringConst("baz".into()),
         StringConst("foo".into())
-    ])]
-    #[test_case("'foo', 'bar'", vec![StringConst("foo".into()), StringConst("bar".into())])]
-    #[test_case("'foo', 'bar', 'baz'", vec![
+    ]))]
+    #[test_case("'foo', 'bar'" => Ok(vec![
+        StringConst("foo".into()),
+        StringConst("bar".into())
+    ]))]
+    #[test_case("'foo', 'bar', 'baz'" => Ok(vec![
         StringConst("foo".into()),
         StringConst("bar".into()),
         StringConst("baz".into()),
-    ])]
-    fn test_trim_list(source: &str, expected: Vec<ExprNode>) {
-        test_parser!(source, trim_list, expected)
+    ]))]
+    fn test_trim_list(source: &str) -> scan::Result<Vec<ExprNode>> {
+        test_parser!(source, trim_list)
     }
 }
 
 use super::extract_list::extract_args;
 use crate::combinators::expr::a_expr;
 use crate::combinators::expr::b_expr;
+use crate::combinators::expr::expr_primary::cast_expr;
 use crate::combinators::expr::unicode_normal_form;
-use crate::combinators::expr_list::expr_list;
+use crate::combinators::expr_list;
 use crate::combinators::expr_list_paren;
 use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::precision;
 use crate::combinators::typename;
 use crate::no_match;
 use crate::scan;
@@ -421,12 +507,23 @@ use crate::stream::TokenStream;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::CoalesceExpr;
 use pg_ast::ExprNode::CollationFor;
+use pg_ast::ExprNode::CurrentCatalog;
+use pg_ast::ExprNode::CurrentDate;
+use pg_ast::ExprNode::CurrentRole;
 use pg_ast::ExprNode::CurrentSchema;
+use pg_ast::ExprNode::CurrentTime;
+use pg_ast::ExprNode::CurrentTimestamp;
+use pg_ast::ExprNode::CurrentUser;
 use pg_ast::ExprNode::GreatestFunc;
 use pg_ast::ExprNode::LeastFunc;
+use pg_ast::ExprNode::LocalTime;
+use pg_ast::ExprNode::LocalTimestamp;
 use pg_ast::ExprNode::MergeSupportFunc;
 use pg_ast::ExprNode::NullIf;
+use pg_ast::ExprNode::SessionUser;
+use pg_ast::ExprNode::SystemUser;
 use pg_ast::ExprNode::Treat;
+use pg_ast::ExprNode::User;
 use pg_ast::NormalizeFunc;
 use pg_ast::PositionFunc;
 use pg_ast::TrimFunc;

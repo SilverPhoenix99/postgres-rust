@@ -9,17 +9,26 @@ macro_rules! test_parser {
         $parser:expr,
         $expected:expr
     ) => {{
+        let actual = test_parser!($source, $parser);
+        let expected = $expected;
+        assert_eq!(expected, actual);
+    }};
+
+    ($source:expr, $parser:expr) => {{
         #[allow(unused_imports)]
         use $crate::combinators::foundation::Combinator;
         use $crate::tests::stream;
 
         let mut stream = stream($source);
-        let actual = $parser.parse(&mut stream);
-
-        let expected = $expected;
-
-        assert_eq!(expected, actual);
+        $parser.parse(&mut stream)
     }};
+
+    (
+        source = $source:expr,
+        parser = $parser:expr
+    ) => {
+        test_parser!($source, $parser)
+    };
 
     (
         source = $source:expr,
