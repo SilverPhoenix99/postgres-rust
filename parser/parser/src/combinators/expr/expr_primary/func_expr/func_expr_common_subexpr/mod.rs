@@ -5,6 +5,7 @@ pg_basics::reexport! {
     current_schema,
     extract,
     greatest_expr,
+    json_scalar,
     least_expr,
     merge_action,
     normalize,
@@ -55,6 +56,7 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         func_expr_common_subexpr_2,
         treat_expr,
         trim.map(From::from),
+        json_scalar,
     )).parse(stream)
 }
 
@@ -101,6 +103,7 @@ mod tests {
     #[test_case("current_schema" => matches Ok(_))]
     #[test_case("extract(month from 1)" => matches Ok(_))]
     #[test_case("greatest(1)" => matches Ok(_))]
+    #[test_case("json_scalar(1)" => matches Ok(_))]
     #[test_case("least(1)" => matches Ok(_))]
     #[test_case("merge_action()" => matches Ok(_))]
     #[test_case("normalize('foo')" => matches Ok(_))]

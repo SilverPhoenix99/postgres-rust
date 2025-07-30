@@ -175,6 +175,7 @@ pub enum ExprNode {
     Least(Vec<ExprNode>),
     Treat(Box<TypecastExpr>),
     MergeAction,
+    JsonScalar(Box<ExprNode>),
 
     // TODO: Are these 2 the same?
     Indirection(Box<IndirectionExpr>),
