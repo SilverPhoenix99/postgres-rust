@@ -27,6 +27,7 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         | TREAT '(' a_expr AS Typename ')'
         | TRIM '(' trim_args ')'
         | MERGE_ACTION '(' ')'
+        | OVERLAY '(' ( overlay_args )? ')'
     */
 
     match stream.peek2() {
@@ -46,7 +47,7 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
 
         Ok((K(Coalesce), Op(OpenParenthesis))) => return coalesce_expr(stream),
 
-        Ok((K(Extract), Op(OpenParenthesis))) => return extract_func(stream),
+        Ok((K(Extract), Op(OpenParenthesis))) => return extract_func(stream).map(From::from),
 
         Ok((K(Greatest), Op(OpenParenthesis))) => return greatest_func(stream),
 
@@ -58,15 +59,17 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
             return Ok(MergeSupportFunc)
         },
 
-        Ok((K(Normalize), Op(OpenParenthesis))) => return normalize_func(stream),
+        Ok((K(Normalize), Op(OpenParenthesis))) => return normalize_func(stream).map(From::from),
 
         Ok((K(Nullif), Op(OpenParenthesis))) => return nullif(stream),
 
-        Ok((K(Position), Op(OpenParenthesis))) => return position(stream),
+        Ok((K(Position), Op(OpenParenthesis))) => return position(stream).map(From::from),
 
         Ok((K(Kw::Treat), Op(OpenParenthesis))) => return treat(stream),
 
-        Ok((K(Trim), Op(OpenParenthesis))) => return trim(stream),
+        Ok((K(Trim), Op(OpenParenthesis))) => return trim(stream).map(From::from),
+
+        Ok((K(Overlay), Op(OpenParenthesis))) => return overlay(stream).map(From::from),
 
         _ => {}
     }
@@ -140,7 +143,7 @@ fn coalesce_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     Ok(CoalesceExpr(args))
 }
 
-fn extract_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+fn extract_func(stream: &mut TokenStream) -> scan::Result<ExtractFunc> {
 
     /*
         EXTRACT '(' extract_list ')'
@@ -149,7 +152,7 @@ fn extract_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     let expr = skip_prefix(1, between_paren(extract_args))
         .parse(stream)?;
 
-    Ok(expr.into())
+    Ok(expr)
 }
 
 fn greatest_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
@@ -176,7 +179,7 @@ fn least_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     Ok(LeastFunc(args))
 }
 
-fn normalize_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+fn normalize_func(stream: &mut TokenStream) -> scan::Result<NormalizeFunc> {
 
     /*
         NORMALIZE '(' a_expr ( ',' unicode_normal_form )? ')'
@@ -185,14 +188,15 @@ fn normalize_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     let (expr, normal_form) = skip_prefix(1,
         between_paren((
             a_expr,
-            (Comma, unicode_normal_form)
-                .map(|(_, normal_form)| normal_form)
-                .optional()
+            (Comma, unicode_normal_form).optional()
         ))
     ).parse(stream)?;
 
+    let normal_form = normal_form
+        .map(|(_, normal_form)| normal_form);
+
     let expr = NormalizeFunc::new(expr, normal_form);
-    Ok(expr.into())
+    Ok(expr)
 }
 
 fn nullif(stream: &mut TokenStream) -> scan::Result<ExprNode> {
@@ -210,7 +214,7 @@ fn nullif(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 }
 
 /// Inlined: `position_list`
-fn position(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+fn position(stream: &mut TokenStream) -> scan::Result<PositionFunc> {
 
     /*
         POSITION '(' b_expr IN b_expr ')'
@@ -225,7 +229,7 @@ fn position(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     ).parse(stream)?;
 
     let expr = PositionFunc::new(needle, haystack);
-    Ok(expr.into())
+    Ok(expr)
 }
 
 fn treat(stream: &mut TokenStream) -> scan::Result<ExprNode> {
@@ -249,7 +253,7 @@ fn treat(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     Ok(expr)
 }
 
-fn trim(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+fn trim(stream: &mut TokenStream) -> scan::Result<TrimFunc> {
 
     /*
         TRIM '(' trim_args ')'
@@ -258,7 +262,7 @@ fn trim(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     let expr = skip_prefix(1, between_paren(trim_args))
         .parse(stream)?;
 
-    Ok(expr.into())
+    Ok(expr)
 }
 
 fn trim_args(stream: &mut TokenStream) -> scan::Result<TrimFunc> {
@@ -320,6 +324,55 @@ fn trim_list(stream: &mut TokenStream) -> scan::Result<Vec<ExprNode>> {
                 args
             })
     )).parse(stream)
+}
+
+fn overlay(stream: &mut TokenStream) -> scan::Result<OverlayFunc> {
+
+    /*
+        OVERLAY '(' ( overlay_args )? ')'
+    */
+
+    let args = skip_prefix(1, between_paren(overlay_args.optional()))
+        .parse(stream)?;
+
+    let args = args.unwrap_or(OverlayFunc::ExplicitCall(None));
+
+    Ok(args)
+}
+
+fn overlay_args(stream: &mut TokenStream) -> scan::Result<OverlayFunc> {
+
+    /*
+          func_arg_list
+        | overlay_list
+    */
+
+    let mut args: Vec<FuncArgExpr> = func_arg_list(stream)?
+        .into_iter()
+        .map(|(arg, _)| arg)
+        .collect();
+
+    if let [Unnamed(arg)] = args.as_mut_slice() {
+
+        /*
+            PLACING a_expr FROM a_expr ( FOR a_expr )?
+        */
+
+        let sql_args = (Placing, a_expr, FromKw, a_expr, (For, a_expr).optional())
+            .parse(stream)
+            .optional()?;
+
+        if let Some((_, placing, _, from, for_expr)) = sql_args {
+            let arg = mem::replace(arg, NullConst);
+            let for_expr = for_expr.map(|(_, expr)| expr);
+            let args = OverlaySqlArgs::new(arg, placing, from, for_expr);
+            let args = OverlayFunc::SqlSyntax(args);
+            return Ok(args);
+        }
+    }
+
+    let args = OverlayFunc::ExplicitCall(Some(args));
+    Ok(args)
 }
 
 #[cfg(test)]
@@ -408,6 +461,16 @@ mod tests {
             vec![StringConst("bar".into()), StringConst("foo".into())]
         ).into()
     ))]
+    #[test_case("overlay()" => Ok(
+        OverlayFunc::ExplicitCall(None).into()
+    ))]
+        #[test_case("overlay(1)" => Ok(
+        OverlayFunc::ExplicitCall(
+            Some(vec![
+                Unnamed(IntegerConst(1))
+            ])
+        ).into()
+    ))]
     #[test_case("current_schema(" => matches Err(NoMatch(_)))]
     // These only quickly check that statements aren't missing:
     #[test_case("current_date" => matches Ok(_))]
@@ -486,6 +549,52 @@ mod tests {
     fn test_trim_list(source: &str) -> scan::Result<Vec<ExprNode>> {
         test_parser!(source, trim_list)
     }
+
+    #[test_case("'foo'" => Ok(
+        OverlayFunc::ExplicitCall(
+            Some(vec![
+                Unnamed(StringConst("foo".into()))
+            ])
+        )
+    ))]
+    #[test_case("'foo', bar := 1, baz => 2" => Ok(
+        OverlayFunc::ExplicitCall(
+            Some(vec![
+                Unnamed(StringConst("foo".into())),
+                FuncArgExpr::NamedValue {
+                    name: "bar".into(),
+                    value: IntegerConst(1)
+                },
+                FuncArgExpr::NamedValue {
+                    name: "baz".into(),
+                    value: IntegerConst(2)
+                },
+            ])
+        )
+    ))]
+    #[test_case("'foo' placing 'bar' from 1" => Ok(
+        OverlayFunc::SqlSyntax(
+            OverlaySqlArgs::new(
+                StringConst("foo".into()),
+                StringConst("bar".into()),
+                IntegerConst(1),
+                None
+            )
+        )
+    ))]
+    #[test_case("'foo' placing 'bar' from 1 for 2" => Ok(
+        OverlayFunc::SqlSyntax(
+            OverlaySqlArgs::new(
+                StringConst("foo".into()),
+                StringConst("bar".into()),
+                IntegerConst(1),
+                Some(IntegerConst(2))
+            )
+        )
+    ))]
+    fn test_overlay_args(source: &str) -> scan::Result<OverlayFunc> {
+        test_parser!(source, overlay_args)
+    }
 }
 
 use super::extract_list::extract_args;
@@ -499,11 +608,14 @@ use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::func_arg_list;
 use crate::combinators::precision;
 use crate::combinators::typename;
 use crate::no_match;
+use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
+use core::mem;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::CoalesceExpr;
 use pg_ast::ExprNode::CollationFor;
@@ -519,12 +631,18 @@ use pg_ast::ExprNode::LeastFunc;
 use pg_ast::ExprNode::LocalTime;
 use pg_ast::ExprNode::LocalTimestamp;
 use pg_ast::ExprNode::MergeSupportFunc;
+use pg_ast::ExprNode::NullConst;
 use pg_ast::ExprNode::NullIf;
 use pg_ast::ExprNode::SessionUser;
 use pg_ast::ExprNode::SystemUser;
 use pg_ast::ExprNode::Treat;
 use pg_ast::ExprNode::User;
+use pg_ast::ExtractFunc;
+use pg_ast::FuncArgExpr;
+use pg_ast::FuncArgExpr::Unnamed;
 use pg_ast::NormalizeFunc;
+use pg_ast::OverlayFunc;
+use pg_ast::OverlaySqlArgs;
 use pg_ast::PositionFunc;
 use pg_ast::TrimFunc;
 use pg_ast::TrimSide;
@@ -542,6 +660,8 @@ use pg_lexer::Keyword::Least;
 use pg_lexer::Keyword::MergeAction;
 use pg_lexer::Keyword::Normalize;
 use pg_lexer::Keyword::Nullif;
+use pg_lexer::Keyword::Overlay;
+use pg_lexer::Keyword::Placing;
 use pg_lexer::Keyword::Position;
 use pg_lexer::Keyword::Trim;
 use pg_lexer::OperatorKind::CloseParenthesis;

@@ -58,6 +58,7 @@ pg_basics::reexport! { pub
     operator,
     operator_with_args,
     over_clause,
+    overlay_func,
     position_func,
     prepare_stmt,
     presence,
@@ -200,6 +201,7 @@ pub enum ExprNode {
     TrimFunc(TrimFunc),
     JsonArrayAgg(Box<JsonArrayAggExpr>),
     JsonObjectAgg(Box<JsonObjectAggExpr>),
+    OverlayFunc(Box<OverlayFunc>),
 
     /* Xml operations */
     IsXmlDocument(Box<ExprNode>),
@@ -223,6 +225,7 @@ impl_from!(box IndirectionExpr for ExprNode::Indirection);
 impl_from!(box JsonArrayAggExpr for ExprNode::JsonArrayAgg);
 impl_from!(box JsonObjectAggExpr for ExprNode::JsonObjectAgg);
 impl_from!(box NormalizeFunc for ExprNode);
+impl_from!(box OverlayFunc for ExprNode);
 impl_from!(box PositionFunc for ExprNode);
 impl_from!(box TypecastExpr for ExprNode::Typecast);
 impl_from!(box UnaryExpr for ExprNode);
