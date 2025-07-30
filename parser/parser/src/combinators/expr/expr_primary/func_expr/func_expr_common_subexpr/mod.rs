@@ -6,6 +6,7 @@ pg_basics::reexport! {
     extract,
     greatest_expr,
     json_exists_expr,
+    json_query_expr,
     json_scalar,
     least_expr,
     merge_action,
@@ -94,6 +95,7 @@ fn func_expr_common_subexpr_2(stream: &mut TokenStream) -> scan::Result<ExprNode
 fn json_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     or((
         json_exists_expr.map(From::from),
+        json_query_expr.map(From::from),
         json_scalar,
     )).parse(stream)
 }
@@ -114,6 +116,7 @@ mod tests {
     #[test_case("extract(month from 1)" => matches Ok(_))]
     #[test_case("greatest(1)" => matches Ok(_))]
     #[test_case("json_exists('{}', 'foo')" => matches Ok(_))]
+    #[test_case("json_query('{}', 'foo')" => matches Ok(_))]
     #[test_case("json_scalar(1)" => matches Ok(_))]
     #[test_case("least(1)" => matches Ok(_))]
     #[test_case("merge_action()" => matches Ok(_))]

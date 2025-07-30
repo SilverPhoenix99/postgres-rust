@@ -1,0 +1,105 @@
+pub(super) fn json_query_expr(stream: &mut TokenStream) -> scan::Result<JsonQueryExpr> {
+
+    /*
+        JSON_QUERY '('
+            json_value_expr
+            ','
+            a_expr
+            ( json_passing_clause )?
+            ( json_returning_clause )?
+            ( json_wrapper_behavior )?
+            ( json_quotes_clause )?
+            ( json_behavior_clause )?
+        ')'
+    */
+
+    if ! matches!(stream.peek2(), Ok((K(JsonQuery), Op(OpenParenthesis)))) {
+        return no_match(stream);
+    }
+
+    let (ctx, _, path_spec, passing, output, wrapper, quotes, behavior) = skip_prefix(1, between_paren((
+        json_value_expr,
+        Comma,
+        a_expr,
+        json_passing_clause.optional(),
+        json_returning_clause.optional(),
+        json_wrapper_behavior.optional(),
+        json_quotes_clause.optional(),
+        json_behavior_clause.optional(),
+    ))).parse(stream)?;
+
+    let mut expr = JsonQueryExpr::new(ctx, path_spec);
+    expr.set_passing(passing)
+        .set_output(output)
+        .set_wrapper(wrapper)
+        .set_quotes(quotes)
+        .set_behavior(behavior);
+
+    Ok(expr)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tests::test_parser;
+    use test_case::test_case;
+    #[allow(unused_imports)]
+    use {
+        pg_ast::ExprNode::{IntegerConst, StringConst},
+        pg_ast::JsonBehavior,
+        pg_ast::JsonBehaviorClause,
+        pg_ast::JsonQuotes,
+        pg_ast::JsonValueExpr,
+        pg_ast::JsonWrapperBehavior,
+        pg_ast::TypeName::Int4,
+        scan::Error::NoMatch,
+    };
+
+    #[test_case("json_query('{}', 'foo')" => Ok(
+        JsonQueryExpr::new(
+            JsonValueExpr::from(StringConst("{}".into())),
+            StringConst("foo".into())
+        )
+    ))]
+    #[test_case("json_query('{}', 'foo' passing 1 as a returning int with wrapper keep quotes error on empty)" => Ok(
+        JsonQueryExpr::new(
+            JsonValueExpr::from(StringConst("{}".into())),
+            StringConst("foo".into())
+        )
+        .with_passing(vec![
+            ("a".into(), JsonValueExpr::from(IntegerConst(1)))
+        ])
+        .with_output(Int4.into())
+        .with_wrapper(JsonWrapperBehavior::Unconditional)
+        .with_quotes(JsonQuotes::Keep)
+        .with_behavior(
+            JsonBehaviorClause::new()
+                .with_on_empty(JsonBehavior::Error)
+        )
+    ))]
+    #[test_case("json_query" => matches Err(NoMatch(_)))]
+    #[test_case("json_query 1" => matches Err(NoMatch(_)))]
+    fn test_json_query_expr(source: &str) -> scan::Result<JsonQueryExpr> {
+        test_parser!(source, json_query_expr)
+    }
+}
+
+use crate::combinators::expr::a_expr;
+use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::skip_prefix;
+use crate::combinators::foundation::Combinator;
+use crate::combinators::json_behavior_clause;
+use crate::combinators::json_passing_clause;
+use crate::combinators::json_quotes_clause;
+use crate::combinators::json_returning_clause;
+use crate::combinators::json_value_expr;
+use crate::combinators::json_wrapper_behavior;
+use crate::no_match;
+use crate::scan;
+use crate::stream::TokenStream;
+use crate::stream::TokenValue::Keyword as K;
+use crate::stream::TokenValue::Operator as Op;
+use pg_ast::JsonQueryExpr;
+use pg_lexer::Keyword::JsonQuery;
+use pg_lexer::OperatorKind::Comma;
+use pg_lexer::OperatorKind::OpenParenthesis;

@@ -11,8 +11,9 @@ pub(super) fn json_returning_clause(stream: &mut TokenStream) -> scan::Result<Js
         json_format_clause.optional()
     ).parse(stream)?;
 
-    let format = format.unwrap_or_default();
-    let output = JsonOutput::new(type_name, format);
+    let output = JsonOutput::new(type_name)
+        .with_format(format.unwrap_or_default());
+
     Ok(output)
 }
 
@@ -29,17 +30,18 @@ mod tests {
     use test_case::test_case;
 
     #[test_case("returning json" => Ok(
-        JsonOutput::new(Json, JsonFormat::default())
+        JsonOutput::new(Json)
     ))]
     #[test_case("returning json format json" => Ok(
-        JsonOutput::new(Json, JsonFormat::text())
+        JsonOutput::new(Json)
+            .with_format(JsonFormat::text())
     ))]
     #[test_case("returning json format json encoding utf8" => Ok(
-        JsonOutput::new(
-            Json,
-            JsonFormat::text()
-                .with_encoding(UTF8)
-        )
+        JsonOutput::new(Json)
+            .with_format(
+                JsonFormat::text()
+                    .with_encoding(UTF8)
+            )
     ))]
     fn test_json_returning_clause(source: &str) -> scan::Result<JsonOutput> {
         test_parser!(source, json_returning_clause)
