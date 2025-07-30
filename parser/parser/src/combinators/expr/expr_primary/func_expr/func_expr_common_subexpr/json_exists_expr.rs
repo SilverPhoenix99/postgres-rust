@@ -14,7 +14,7 @@ pub(super) fn json_exists_expr(stream: &mut TokenStream) -> scan::Result<JsonExi
         return no_match(stream)
     }
 
-    let (ctx, _, path, passing, on_error) = skip_prefix(1, between_paren((
+    let (ctx, _, path_spec, passing, on_error) = skip_prefix(1, between_paren((
         json_value_expr,
         Comma,
         a_expr,
@@ -22,7 +22,10 @@ pub(super) fn json_exists_expr(stream: &mut TokenStream) -> scan::Result<JsonExi
         json_on_error_clause.optional(),
     ))).parse(stream)?;
 
-    let expr = JsonExistsExpr::new(ctx, path, passing, on_error);
+    let mut expr = JsonExistsExpr::new(ctx, path_spec);
+    expr.set_passing(passing)
+        .set_on_error(on_error);
+
     Ok(expr)
 }
 
@@ -41,16 +44,18 @@ mod tests {
 
     #[test_case("json_exists('{}', 'foo')" => Ok(JsonExistsExpr::new(
         JsonValueExpr::from(StringConst("{}".into())),
-        StringConst("foo".into()),
-        None,
-        None
+        StringConst("foo".into())
     )))]
-    #[test_case("json_exists('{}', 'foo' passing 1 as a null on error)" => Ok(JsonExistsExpr::new(
-        JsonValueExpr::from(StringConst("{}".into())),
-        StringConst("foo".into()),
-        Some(vec![("a".into(), JsonValueExpr::from(IntegerConst(1)))]),
-        Some(JsonBehavior::Null)
-    )))]
+    #[test_case("json_exists('{}', 'foo' passing 1 as a null on error)" => Ok(
+        JsonExistsExpr::new(
+            JsonValueExpr::from(StringConst("{}".into())),
+            StringConst("foo".into())
+        )
+        .with_passing(vec![
+            ("a".into(), JsonValueExpr::from(IntegerConst(1)))
+        ])
+        .with_on_error(JsonBehavior::Null)
+    ))]
     #[test_case("json_exists" => matches Err(NoMatch(_)))]
     #[test_case("json_exists 1" => matches Err(NoMatch(_)))]
     fn test_json_exists_expr(source: &str) -> scan::Result<JsonExistsExpr> {

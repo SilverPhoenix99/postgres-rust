@@ -15,13 +15,13 @@ impl JsonBehaviorClause {
         self
     }
 
+    pub fn on_error(&self) -> Option<&JsonBehavior> {
+        self.on_error.as_ref()
+    }
+
     pub fn with_on_empty(mut self, behavior: JsonBehavior) -> Self {
         self.on_empty = Some(behavior);
         self
-    }
-
-    pub fn on_error(&self) -> Option<&JsonBehavior> {
-        self.on_error.as_ref()
     }
 
     pub fn on_empty(&self) -> Option<&JsonBehavior> {
