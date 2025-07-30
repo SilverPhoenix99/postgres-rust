@@ -75,6 +75,7 @@ pg_basics::reexport! { pub
     set_rest_more,
     signed_number,
     sort_by,
+    substring_func,
     system_type,
     transaction_chain,
     transaction_stmt,
@@ -202,6 +203,7 @@ pub enum ExprNode {
     JsonArrayAgg(Box<JsonArrayAggExpr>),
     JsonObjectAgg(Box<JsonObjectAggExpr>),
     OverlayFunc(Box<OverlayFunc>),
+    SubstringFunc(Box<SubstringFunc>),
 
     /* Xml operations */
     IsXmlDocument(Box<ExprNode>),
@@ -227,6 +229,7 @@ impl_from!(box JsonObjectAggExpr for ExprNode::JsonObjectAgg);
 impl_from!(box NormalizeFunc for ExprNode);
 impl_from!(box OverlayFunc for ExprNode);
 impl_from!(box PositionFunc for ExprNode);
+impl_from!(box SubstringFunc for ExprNode);
 impl_from!(box TypecastExpr for ExprNode::Typecast);
 impl_from!(box UnaryExpr for ExprNode);
 impl_from!(box XmlParse for ExprNode);

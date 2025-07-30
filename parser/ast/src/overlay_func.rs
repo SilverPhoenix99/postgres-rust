@@ -4,6 +4,12 @@ pub enum OverlayFunc {
     ExplicitCall(Option<Vec<FuncArgExpr>>),
 }
 
+impl Default for OverlayFunc {
+    fn default() -> Self {
+        OverlayFunc::ExplicitCall(None)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OverlaySqlArgs {
     arg: ExprNode,

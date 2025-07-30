@@ -28,6 +28,7 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         | TRIM '(' trim_args ')'
         | MERGE_ACTION '(' ')'
         | OVERLAY '(' ( overlay_args )? ')'
+        | SUBSTRING '(' ( substring_args )? ')'
     */
 
     match stream.peek2() {
@@ -70,6 +71,8 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         Ok((K(Trim), Op(OpenParenthesis))) => return trim(stream).map(From::from),
 
         Ok((K(Overlay), Op(OpenParenthesis))) => return overlay(stream).map(From::from),
+
+        Ok((K(Substring), Op(OpenParenthesis))) => return substring(stream).map(From::from),
 
         _ => {}
     }
@@ -335,8 +338,7 @@ fn overlay(stream: &mut TokenStream) -> scan::Result<OverlayFunc> {
     let args = skip_prefix(1, between_paren(overlay_args.optional()))
         .parse(stream)?;
 
-    let args = args.unwrap_or(OverlayFunc::ExplicitCall(None));
-
+    let args = args.unwrap_or_default();
     Ok(args)
 }
 
@@ -344,7 +346,7 @@ fn overlay_args(stream: &mut TokenStream) -> scan::Result<OverlayFunc> {
 
     /*
           func_arg_list
-        | overlay_list
+        | a_expr overlay_list
     */
 
     let mut args: Vec<FuncArgExpr> = func_arg_list(stream)?
@@ -352,26 +354,149 @@ fn overlay_args(stream: &mut TokenStream) -> scan::Result<OverlayFunc> {
         .map(|(arg, _)| arg)
         .collect();
 
-    if let [Unnamed(arg)] = args.as_mut_slice() {
-
-        /*
-            PLACING a_expr FROM a_expr ( FOR a_expr )?
-        */
-
-        let sql_args = (Placing, a_expr, FromKw, a_expr, (For, a_expr).optional())
-            .parse(stream)
-            .optional()?;
-
-        if let Some((_, placing, _, from, for_expr)) = sql_args {
-            let arg = mem::replace(arg, NullConst);
-            let for_expr = for_expr.map(|(_, expr)| expr);
-            let args = OverlaySqlArgs::new(arg, placing, from, for_expr);
-            let args = OverlayFunc::SqlSyntax(args);
-            return Ok(args);
-        }
+    if
+        let [Unnamed(arg)] = args.as_mut_slice()
+        && let Some((placing, from, r#for)) = overlay_list(stream).optional()?
+    {
+        let arg = mem::replace(arg, NullConst);
+        let args = OverlaySqlArgs::new(arg, placing, from, r#for);
+        let args = OverlayFunc::SqlSyntax(args);
+        return Ok(args);
     }
 
     let args = OverlayFunc::ExplicitCall(Some(args));
+    Ok(args)
+}
+
+fn overlay_list(stream: &mut TokenStream) -> scan::Result<(ExprNode, ExprNode, Option<ExprNode>)> {
+
+    /*
+        PLACING a_expr FROM a_expr ( FOR a_expr )?
+    */
+
+    let (_, placing, (from, r#for)) = (Placing, a_expr, from_for_args)
+        .parse(stream)?;
+
+    Ok((placing, from, r#for))
+}
+
+fn substring(stream: &mut TokenStream) -> scan::Result<SubstringFunc> {
+
+    /*
+        SUBSTRING '(' ( substring_args )? ')'
+    */
+
+    let args = skip_prefix(1, between_paren(substring_args.optional()))
+        .parse(stream)?;
+
+    let args = args.unwrap_or_default();
+    Ok(args)
+}
+
+fn substring_args(stream: &mut TokenStream) -> scan::Result<SubstringFunc> {
+
+    /*
+          func_arg_list
+        | a_expr substring_list
+    */
+
+    let mut args: Vec<FuncArgExpr> = func_arg_list(stream)?
+        .into_iter()
+        .map(|(arg, _)| arg)
+        .collect();
+
+    if
+        let [Unnamed(arg)] = args.as_mut_slice()
+        && let Some((from, r#for)) = substring_list(stream).optional()?
+    {
+        let arg = mem::replace(arg, NullConst);
+        let args = SubstringFunc::SqlSyntax(arg, from, r#for);
+        return Ok(args)
+    }
+
+    Ok(SubstringFunc::ExplicitCall(Some(args)))
+}
+
+fn substring_list(stream: &mut TokenStream) -> scan::Result<(ExprNode, Option<ExprNode>)> {
+
+    /*
+          SIMILAR a_expr ESCAPE a_expr
+        | FROM a_expr ( FOR a_expr )?
+        | FOR a_expr ( FROM a_expr )?
+    */
+
+    or((
+        similar_escape_args
+            .map(|(similar, escape)| (similar, Some(escape))),
+        from_for_args,
+        for_from_args
+    )).parse(stream)
+}
+
+fn similar_escape_args(stream: &mut TokenStream) -> scan::Result<(ExprNode, ExprNode)> {
+
+    /*
+        SIMILAR a_expr ESCAPE a_expr
+    */
+
+    let (_, similar, _, escape) = (Similar, a_expr, Escape, a_expr)
+        .parse(stream)?;
+
+    Ok((similar, escape))
+}
+
+fn from_for_args(stream: &mut TokenStream) -> scan::Result<(ExprNode, Option<ExprNode>)> {
+
+    /*
+        FROM a_expr ( FOR a_expr )?
+    */
+
+    /*
+        Because data types aren't restricted here,
+        the syntax without `FOR` can end up resolving to textregexsubstr().
+        C-PG historically allowed that to happen, so continue
+        to accept it.
+    */
+
+    let (_, from, r#for) = (FromKw, a_expr, (For, a_expr).optional())
+        .parse(stream)?;
+
+    let for_arg = r#for.map(|(_, expr)| expr);
+
+    Ok((from, for_arg))
+}
+
+fn for_from_args(stream: &mut TokenStream) -> scan::Result<(ExprNode, Option<ExprNode>)> {
+
+    /*
+        FOR a_expr ( FROM a_expr )?
+
+        not legal per SQL, but C-PG allows this
+    */
+
+    let (_, r#for, from) = (For, a_expr, (FromKw, a_expr).optional())
+        .parse(stream)?;
+
+    let args = match from {
+        Some((_, from)) => (from, Some(r#for)),
+        None => {
+
+            /*
+                Since there are no cases where this syntax allows
+                a textual FOR value, the argument is forcibly cast
+                to int4. The possible matches in pg_proc are
+                substring(text,int4) and substring(text,text),
+                and we don't want the parser to choose the latter,
+                which it is likely to do if the second argument
+                is unknown or doesn't have an implicit cast to int4.
+            */
+
+            let from = IntegerConst(1);
+            let r#for = TypecastExpr::new(r#for, TypeName::Int4).into();
+            (from, Some(r#for))
+        },
+    };
+
     Ok(args)
 }
 
@@ -383,7 +508,7 @@ mod tests {
     #[allow(unused_imports)]
     use {
         crate::scan::Error::NoMatch,
-        pg_ast::ExprNode::{IntegerConst, StringConst},
+        pg_ast::ExprNode::StringConst,
         pg_ast::ExtractArg,
         pg_ast::ExtractFunc,
         pg_ast::TypeName,
@@ -464,10 +589,20 @@ mod tests {
     #[test_case("overlay()" => Ok(
         OverlayFunc::ExplicitCall(None).into()
     ))]
-        #[test_case("overlay(1)" => Ok(
+    #[test_case("overlay(1)" => Ok(
         OverlayFunc::ExplicitCall(
             Some(vec![
                 Unnamed(IntegerConst(1))
+            ])
+        ).into()
+    ))]
+    #[test_case("substring()" => Ok(
+        SubstringFunc::ExplicitCall(None).into()
+    ))]
+    #[test_case("substring('foo')" => Ok(
+        SubstringFunc::ExplicitCall(
+            Some(vec![
+                Unnamed(StringConst("foo".into()))
             ])
         ).into()
     ))]
@@ -595,6 +730,64 @@ mod tests {
     fn test_overlay_args(source: &str) -> scan::Result<OverlayFunc> {
         test_parser!(source, overlay_args)
     }
+
+    #[test_case("'foo'" => Ok(
+        SubstringFunc::ExplicitCall(Some(vec![
+            Unnamed(StringConst("foo".into())),
+        ]))
+    ))]
+    #[test_case("'foo', bar => 1" => Ok(
+        SubstringFunc::ExplicitCall(Some(vec![
+            Unnamed(StringConst("foo".into())),
+            FuncArgExpr::NamedValue {
+                name: "bar".into(),
+                value: IntegerConst(1)
+            }
+        ]))
+    ))]
+    #[test_case("'foo' similar 'bar' escape 'baz'" => Ok(
+        SubstringFunc::SqlSyntax(
+            StringConst("foo".into()),
+            StringConst("bar".into()),
+            Some(StringConst("baz".into()))
+        )
+    ))]
+    #[test_case("'foo' from 1 for 2" => Ok(
+        SubstringFunc::SqlSyntax(
+            StringConst("foo".into()),
+            IntegerConst(1),
+            Some(IntegerConst(2))
+        )
+    ))]
+    #[test_case("'foo' for 2 from 1" => Ok(
+        SubstringFunc::SqlSyntax(
+            StringConst("foo".into()),
+            IntegerConst(1),
+            Some(IntegerConst(2))
+        )
+    ))]
+    #[test_case("'foo' from 1" => Ok(
+        SubstringFunc::SqlSyntax(
+            StringConst("foo".into()),
+            IntegerConst(1),
+            None
+        )
+    ))]
+    #[test_case("'foo' for 2" => Ok(
+        SubstringFunc::SqlSyntax(
+            StringConst("foo".into()),
+            IntegerConst(1),
+            Some(
+                TypecastExpr::new(
+                    IntegerConst(2),
+                    TypeName::Int4
+                ).into()
+            )
+        )
+    ))]
+    fn test_substring_args(source: &str) -> scan::Result<SubstringFunc> {
+        test_parser!(source, substring_args)
+    }
 }
 
 use super::extract_list::extract_args;
@@ -627,6 +820,7 @@ use pg_ast::ExprNode::CurrentTime;
 use pg_ast::ExprNode::CurrentTimestamp;
 use pg_ast::ExprNode::CurrentUser;
 use pg_ast::ExprNode::GreatestFunc;
+use pg_ast::ExprNode::IntegerConst;
 use pg_ast::ExprNode::LeastFunc;
 use pg_ast::ExprNode::LocalTime;
 use pg_ast::ExprNode::LocalTimestamp;
@@ -644,13 +838,16 @@ use pg_ast::NormalizeFunc;
 use pg_ast::OverlayFunc;
 use pg_ast::OverlaySqlArgs;
 use pg_ast::PositionFunc;
+use pg_ast::SubstringFunc;
 use pg_ast::TrimFunc;
 use pg_ast::TrimSide;
+use pg_ast::TypeName;
 use pg_ast::TypecastExpr;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Coalesce;
 use pg_lexer::Keyword::Collation;
+use pg_lexer::Keyword::Escape;
 use pg_lexer::Keyword::Extract;
 use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::FromKw;
@@ -663,6 +860,8 @@ use pg_lexer::Keyword::Nullif;
 use pg_lexer::Keyword::Overlay;
 use pg_lexer::Keyword::Placing;
 use pg_lexer::Keyword::Position;
+use pg_lexer::Keyword::Similar;
+use pg_lexer::Keyword::Substring;
 use pg_lexer::Keyword::Trim;
 use pg_lexer::OperatorKind::CloseParenthesis;
 use pg_lexer::OperatorKind::Comma;
