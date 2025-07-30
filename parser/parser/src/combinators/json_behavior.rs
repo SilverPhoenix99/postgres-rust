@@ -1,3 +1,15 @@
+pub(super) fn json_on_error_clause(stream: &mut TokenStream) -> scan::Result<JsonBehavior> {
+
+    /*
+        json_behavior ON ERROR
+    */
+
+    let (behavior, ..) = (json_behavior, On, ErrorKw)
+        .parse(stream)?;
+
+    Ok(behavior)
+}
+
 /// Inlined: `json_behavior_type`
 pub(super) fn json_behavior(stream: &mut TokenStream) -> scan::Result<JsonBehavior> {
 
@@ -55,10 +67,15 @@ fn default_behavior(stream: &mut TokenStream) -> scan::Result<JsonBehavior> {
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use pg_ast::JsonBehavior;
-    use test_case::test_case;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::{IntegerConst, StringConst};
+    use pg_ast::JsonBehavior;
+    use test_case::test_case;
+
+    #[test_case("null on error" => Ok(JsonBehavior::Null))]
+    fn test_json_on_error_clause(source: &str) -> scan::Result<JsonBehavior> {
+        test_parser!(source, json_on_error_clause)
+    }
 
     #[test_case("error" => Ok(Error))]
     #[test_case("null" => Ok(Null))]
@@ -93,3 +110,4 @@ use pg_lexer::Keyword::DefaultKw;
 use pg_lexer::Keyword::Empty;
 use pg_lexer::Keyword::ErrorKw;
 use pg_lexer::Keyword::Object;
+use pg_lexer::Keyword::On;
