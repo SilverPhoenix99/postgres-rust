@@ -94,7 +94,6 @@ mod tests {
     use {
         crate::scan::Error::{Eof, NoMatch},
         pg_ast::ExprNode::{IntegerConst, StringConst},
-        pg_ast::JsonFormat,
         pg_ast::JsonKeyValue,
         pg_ast::JsonOutput,
         pg_ast::JsonValueExpr,
@@ -106,10 +105,7 @@ mod tests {
         JsonObjectAgg::new(
             JsonKeyValue::new(
                 StringConst("foo".into()),
-                JsonValueExpr::new(
-                    IntegerConst(1),
-                    JsonFormat::default()
-                )
+                JsonValueExpr::from(IntegerConst(1))
             ),
             None,
             false,
@@ -120,25 +116,16 @@ mod tests {
         JsonObjectAgg::new(
             JsonKeyValue::new(
                 StringConst("bar".into()),
-                JsonValueExpr::new(
-                    IntegerConst(2),
-                    JsonFormat::default()
-                )
+                JsonValueExpr::from(IntegerConst(2))
             ),
-            Some(JsonOutput::new(
-                Int4,
-                JsonFormat::default()
-            )),
+            Some(JsonOutput::from(Int4)),
             true,
             true
         )
     )))]
     #[test_case("json_arrayagg(1)" => Ok(JsonAggFunc::Array(
         JsonArrayAgg::new(
-            JsonValueExpr::new(
-                IntegerConst(1),
-                JsonFormat::default()
-            ),
+            JsonValueExpr::from(IntegerConst(1)),
             None,
             true,
             None
@@ -146,14 +133,8 @@ mod tests {
     )))]
     #[test_case("json_arrayagg(2 order by 3 null on null returning bigint)" => Ok(JsonAggFunc::Array(
         JsonArrayAgg::new(
-            JsonValueExpr::new(
-                IntegerConst(2),
-                JsonFormat::default()
-            ),
-            Some(JsonOutput::new(
-                Int8,
-                JsonFormat::default()
-            )),
+            JsonValueExpr::from(IntegerConst(2)),
+            Some(JsonOutput::from(Int8)),
             false,
             Some(vec![SortBy::new(
                 IntegerConst(3),

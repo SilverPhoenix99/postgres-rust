@@ -5,6 +5,7 @@ pg_basics::reexport! {
     current_schema,
     extract,
     greatest_expr,
+    json_exists_expr,
     json_scalar,
     least_expr,
     merge_action,
@@ -49,15 +50,16 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         | SYSTEM_USER
         | USER
         | JSON_SCALAR '(' a_expr ')'
+        | JSON_EXISTS '(' ... ')'
     */
 
     // Broken down into smaller combinators, due to large Rust type names.
     or((
         func_expr_common_subexpr_1,
         func_expr_common_subexpr_2,
+        json_common_subexpr,
         treat_expr,
         trim.map(From::from),
-        json_scalar,
     )).parse(stream)
 }
 
@@ -89,6 +91,13 @@ fn func_expr_common_subexpr_2(stream: &mut TokenStream) -> scan::Result<ExprNode
     )).parse(stream)
 }
 
+fn json_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+    or((
+        json_exists_expr.map(From::from),
+        json_scalar,
+    )).parse(stream)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -104,6 +113,7 @@ mod tests {
     #[test_case("current_schema" => matches Ok(_))]
     #[test_case("extract(month from 1)" => matches Ok(_))]
     #[test_case("greatest(1)" => matches Ok(_))]
+    #[test_case("json_exists('{}', 'foo')" => matches Ok(_))]
     #[test_case("json_scalar(1)" => matches Ok(_))]
     #[test_case("least(1)" => matches Ok(_))]
     #[test_case("merge_action()" => matches Ok(_))]

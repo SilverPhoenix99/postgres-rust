@@ -24,5 +24,14 @@ impl JsonOutput {
     }
 }
 
+impl<T> From<T> for JsonOutput
+where
+    T: Into<Type>,
+{
+    fn from(type_name: T) -> Self {
+        Self::new(type_name, JsonFormat::default())
+    }
+}
+
 use crate::JsonFormat;
 use crate::Type;

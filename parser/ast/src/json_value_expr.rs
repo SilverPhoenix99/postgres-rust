@@ -18,5 +18,11 @@ impl JsonValueExpr {
     }
 }
 
+impl From<ExprNode> for JsonValueExpr {
+    fn from(expr: ExprNode) -> Self {
+        Self::new(expr, JsonFormat::default())
+    }
+}
+
 use crate::ExprNode;
 use crate::JsonFormat;

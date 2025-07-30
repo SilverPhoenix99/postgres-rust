@@ -1,5 +1,3 @@
-type JsonArgument = (Str, JsonValueExpr);
-
 /// Alias: `json_passing_clause_opt`
 ///
 /// Inlined: `json_arguments`
@@ -35,17 +33,18 @@ mod tests {
     #[allow(unused_imports)]
     use {
         pg_ast::ExprNode::{IntegerConst, StringConst},
+        pg_ast::JsonValueExpr,
         scan::Error::NoMatch,
     };
 
     #[test_case("passing 1 as a, 2 as b" => Ok(vec![
         (
-            Str::from("a"),
-            JsonValueExpr::new(IntegerConst(1), Default::default())
+            "a".into(),
+            JsonValueExpr::from(IntegerConst(1))
         ),
         (
-            Str::from("b"),
-            JsonValueExpr::new(IntegerConst(2), Default::default())
+            "b".into(),
+            JsonValueExpr::from(IntegerConst(2))
         )
     ]))]
     fn test_json_passing_clause(source: &str) -> scan::Result<Vec<JsonArgument>> {
@@ -54,10 +53,7 @@ mod tests {
 
     #[test_case("'foo' as bar" => Ok((
         "bar".into(),
-        JsonValueExpr::new(
-            StringConst("foo".into()),
-            Default::default()
-        )
+        JsonValueExpr::from(StringConst("foo".into()))
     )))]
     fn test_json_argument(source: &str) -> scan::Result<JsonArgument> {
         test_parser!(source, json_argument)
@@ -70,8 +66,7 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::json_value_expr;
 use crate::scan;
 use crate::stream::TokenStream;
-use pg_ast::JsonValueExpr;
-use pg_basics::Str;
+use pg_ast::JsonArgument;
 use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Passing;
 use pg_lexer::OperatorKind::Comma;

@@ -45,6 +45,7 @@ pg_basics::reexport! { pub
     json_array_agg,
     json_array_agg_expr,
     json_behavior,
+    json_exists,
     json_format,
     json_key_value,
     json_object_agg,
@@ -179,6 +180,7 @@ pub enum ExprNode {
     Treat(Box<TypecastExpr>),
     MergeAction,
     JsonScalar(Box<ExprNode>),
+    JsonExists(Box<JsonExistsExpr>),
 
     // TODO: Are these 2 the same?
     Indirection(Box<IndirectionExpr>),
@@ -229,6 +231,7 @@ impl_from!(box ExtractFunc for ExprNode);
 impl_from!(box FuncCall for ExprNode);
 impl_from!(box IndirectionExpr for ExprNode::Indirection);
 impl_from!(box JsonArrayAggExpr for ExprNode::JsonArrayAgg);
+impl_from!(box JsonExistsExpr for ExprNode::JsonExists);
 impl_from!(box JsonObjectAggExpr for ExprNode::JsonObjectAgg);
 impl_from!(box NormalizeFunc for ExprNode);
 impl_from!(box OverlayFunc for ExprNode);

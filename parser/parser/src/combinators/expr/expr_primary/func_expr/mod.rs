@@ -50,7 +50,6 @@ mod tests {
     use {
         pg_ast::ExprNode::{IntegerConst, StringConst},
         pg_ast::JsonArrayAgg,
-        pg_ast::JsonFormat,
         pg_ast::JsonKeyValue,
         pg_ast::JsonObjectAgg,
         pg_ast::JsonValueExpr,
@@ -59,10 +58,7 @@ mod tests {
     #[test_case("json_arrayagg(1)" => Ok(
         JsonArrayAggExpr::new(
             JsonArrayAgg::new(
-                JsonValueExpr::new(
-                    IntegerConst(1),
-                    JsonFormat::default()
-                ),
+                JsonValueExpr::from(IntegerConst(1)),
                 None,
                 true,
                 None
@@ -76,10 +72,7 @@ mod tests {
             JsonObjectAgg::new(
                 JsonKeyValue::new(
                     StringConst("foo".into()),
-                    JsonValueExpr::new(
-                        IntegerConst(1),
-                        JsonFormat::default()
-                    ),
+                    JsonValueExpr::from(IntegerConst(1)),
                 ),
                 None,
                 false,
