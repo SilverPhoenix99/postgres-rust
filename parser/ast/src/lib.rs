@@ -50,6 +50,7 @@ pg_basics::reexport! { pub
     json_object_agg,
     json_object_agg_expr,
     json_output,
+    json_quotes,
     json_value_expr,
     json_wrapper_behavior,
     normalize_func,

@@ -38,6 +38,7 @@ pg_basics::reexport! {
     json_key_uniqueness_constraint,
     json_name_and_value,
     json_passing_clause,
+    json_quotes_clause,
     json_returning_clause,
     json_value_expr,
     json_wrapper_behavior,
