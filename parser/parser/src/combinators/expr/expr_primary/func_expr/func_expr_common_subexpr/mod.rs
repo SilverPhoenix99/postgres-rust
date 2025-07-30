@@ -22,7 +22,22 @@ pg_basics::reexport! {
 pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     /*
-          COLLATION FOR '(' a_expr ')'
+          CAST '(' a_expr AS Typename ')'
+        | COALESCE '(' expr_list ')'
+        | COLLATION FOR '(' a_expr ')'
+        | CURRENT_CATALOG
+        | CURRENT_SCHEMA
+        | EXTRACT '(' extract_list ')'
+        | GREATEST '(' expr_list ')'
+        | LEAST '(' expr_list ')'
+        | MERGE_ACTION '(' ')'
+        | NORMALIZE '(' a_expr ( ',' unicode_normal_form )? ')'
+        | NULLIF '(' a_expr ',' a_expr ')'
+        | OVERLAY '(' ( overlay_args )? ')'
+        | POSITION '(' b_expr IN b_expr ')'
+        | SUBSTRING '(' ( substring_args )? ')'
+        | TREAT '(' a_expr AS Typename ')'
+        | TRIM '(' trim_args ')'
         | CURRENT_DATE
         | CURRENT_TIME ( '(' ICONST ')' )?
         | CURRENT_TIMESTAMP ( '(' ICONST ')' )?
@@ -33,21 +48,7 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         | SESSION_USER
         | SYSTEM_USER
         | USER
-        | CURRENT_CATALOG
-        | CURRENT_SCHEMA
-        | CAST '(' a_expr AS Typename ')'
-        | COALESCE '(' expr_list ')'
-        | EXTRACT '(' extract_list ')'
-        | GREATEST '(' expr_list ')'
-        | LEAST '(' expr_list ')'
-        | NORMALIZE '(' a_expr ( ',' unicode_normal_form )? ')'
-        | NULLIF '(' a_expr ',' a_expr ')'
-        | POSITION '(' b_expr IN b_expr ')'
-        | TREAT '(' a_expr AS Typename ')'
-        | TRIM '(' trim_args ')'
-        | MERGE_ACTION '(' ')'
-        | OVERLAY '(' ( overlay_args )? ')'
-        | SUBSTRING '(' ( substring_args )? ')'
+        | JSON_SCALAR '(' a_expr ')'
     */
 
     // Broken down into smaller combinators, due to large Rust type names.
