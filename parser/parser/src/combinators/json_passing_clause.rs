@@ -1,5 +1,7 @@
 type JsonArgument = (Str, JsonValueExpr);
 
+/// Alias: `json_passing_clause_opt`
+///
 /// Inlined: `json_arguments`
 pub(super) fn json_passing_clause(stream: &mut TokenStream) -> scan::Result<Vec<JsonArgument>> {
 

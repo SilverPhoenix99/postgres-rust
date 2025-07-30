@@ -1,3 +1,41 @@
+/// Alias: `json_behavior_clause_opt`
+pub(super) fn json_behavior_clause(stream: &mut TokenStream) -> scan::Result<JsonBehaviorClause> {
+
+    /*
+          json_behavior ON ERROR
+        | json_behavior ON EMPTY ( json_behavior ON ERROR )?
+    */
+
+    let (first, _, second) = (
+        json_behavior,
+        On,
+        or((
+            ErrorKw.map(|_| None),
+            (Empty, json_on_error_clause.optional())
+                .map(|(_, behavior)| Some(behavior))
+        ))
+    ).parse(stream)?;
+
+    let clause = match second {
+        Some(None) => {
+            JsonBehaviorClause::new()
+                .with_on_empty(first)
+        },
+        Some(Some(on_error)) => {
+            JsonBehaviorClause::new()
+                .with_on_empty(first)
+                .with_on_error(on_error)
+        },
+        None => {
+            JsonBehaviorClause::new()
+                .with_on_error(first)
+        }
+    };
+
+    Ok(clause)
+}
+
+/// Alias: `json_on_error_clause_opt`
 pub(super) fn json_on_error_clause(stream: &mut TokenStream) -> scan::Result<JsonBehavior> {
 
     /*
@@ -72,6 +110,23 @@ mod tests {
     use pg_ast::JsonBehavior;
     use test_case::test_case;
 
+    #[test_case("error on error" => Ok(
+        JsonBehaviorClause::new()
+            .with_on_error(JsonBehavior::Error)
+    ))]
+    #[test_case("false on empty" => Ok(
+        JsonBehaviorClause::new()
+            .with_on_empty(JsonBehavior::False)
+    ))]
+    #[test_case("true on empty false on error" => Ok(
+        JsonBehaviorClause::new()
+            .with_on_empty(JsonBehavior::True)
+            .with_on_error(JsonBehavior::False)
+    ))]
+    fn test_json_behavior_clause(source: &str) -> scan::Result<JsonBehaviorClause> {
+        test_parser!(source, json_behavior_clause)
+    }
+
     #[test_case("null on error" => Ok(JsonBehavior::Null))]
     fn test_json_on_error_clause(source: &str) -> scan::Result<JsonBehavior> {
         test_parser!(source, json_on_error_clause)
@@ -104,6 +159,7 @@ use pg_ast::JsonBehavior::False;
 use pg_ast::JsonBehavior::Null;
 use pg_ast::JsonBehavior::True;
 use pg_ast::JsonBehavior::Unknown;
+use pg_ast::JsonBehaviorClause;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Array;
 use pg_lexer::Keyword::DefaultKw;
