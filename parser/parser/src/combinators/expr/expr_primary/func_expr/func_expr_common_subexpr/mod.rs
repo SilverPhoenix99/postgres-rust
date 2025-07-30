@@ -21,6 +21,7 @@ pg_basics::reexport! {
     time,
     treat_expr,
     trim,
+    xml_attribute_list,
     xml_concat,
 }
 
