@@ -53,6 +53,7 @@ pg_basics::reexport! { pub
     json_output,
     json_query,
     json_quotes,
+    json_serialize,
     json_value_expr,
     json_wrapper_behavior,
     normalize_func,
@@ -183,6 +184,7 @@ pub enum ExprNode {
     JsonScalar(Box<ExprNode>),
     JsonExists(Box<JsonExistsExpr>),
     JsonQuery(Box<JsonQueryExpr>),
+    JsonSerialize(Box<JsonSerializeExpr>),
 
     // TODO: Are these 2 the same?
     Indirection(Box<IndirectionExpr>),
@@ -236,6 +238,7 @@ impl_from!(box JsonArrayAggExpr for ExprNode::JsonArrayAgg);
 impl_from!(box JsonExistsExpr for ExprNode::JsonExists);
 impl_from!(box JsonObjectAggExpr for ExprNode::JsonObjectAgg);
 impl_from!(box JsonQueryExpr for ExprNode::JsonQuery);
+impl_from!(box JsonSerializeExpr for ExprNode::JsonSerialize);
 impl_from!(box NormalizeFunc for ExprNode);
 impl_from!(box OverlayFunc for ExprNode);
 impl_from!(box PositionFunc for ExprNode);

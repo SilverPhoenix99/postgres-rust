@@ -8,6 +8,7 @@ pg_basics::reexport! {
     json_exists_expr,
     json_query_expr,
     json_scalar,
+    json_serialize_expr,
     least_expr,
     merge_action,
     normalize,
@@ -52,6 +53,8 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         | USER
         | JSON_SCALAR '(' a_expr ')'
         | JSON_EXISTS '(' ... ')'
+        | JSON_QUERY '(' ... ')'
+        | JSON_SERIALIZE '(' json_value_expr ( json_returning_clause )? ')'
     */
 
     // Broken down into smaller combinators, due to large Rust type names.
@@ -97,6 +100,7 @@ fn json_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         json_exists_expr.map(From::from),
         json_query_expr.map(From::from),
         json_scalar,
+        json_serialize_expr.map(From::from)
     )).parse(stream)
 }
 
@@ -118,6 +122,7 @@ mod tests {
     #[test_case("json_exists('{}', 'foo')" => matches Ok(_))]
     #[test_case("json_query('{}', 'foo')" => matches Ok(_))]
     #[test_case("json_scalar(1)" => matches Ok(_))]
+    #[test_case("json_serialize(1)" => matches Ok(_))]
     #[test_case("least(1)" => matches Ok(_))]
     #[test_case("merge_action()" => matches Ok(_))]
     #[test_case("normalize('foo')" => matches Ok(_))]
