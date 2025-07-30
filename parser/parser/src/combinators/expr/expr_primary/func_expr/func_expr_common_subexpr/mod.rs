@@ -23,6 +23,7 @@ pg_basics::reexport! {
     trim,
     xml_attribute_list,
     xml_concat,
+    xml_element,
 }
 
 pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
@@ -112,7 +113,10 @@ fn json_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 }
 
 fn xml_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
-    xml_concat(stream)
+    or((
+        xml_concat,
+        xml_element.map(From::from),
+    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -146,6 +150,7 @@ mod tests {
     #[test_case("trim('foo')" => matches Ok(_))]
     #[test_case("user" => matches Ok(_))]
     #[test_case("xmlconcat('foo')" => matches Ok(_))]
+    #[test_case("xmlelement(name foo)" => matches Ok(_))]
     fn test_func_expr_common_subexpr(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, func_expr_common_subexpr)
     }
