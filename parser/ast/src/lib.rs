@@ -101,7 +101,12 @@ pg_basics::reexport! { pub
     variable_target,
     window_definition,
     window_frame,
-    xml,
+    xml_element,
+    xml_node_kind,
+    xml_parse,
+    xml_processing_instruction,
+    xml_root,
+    xml_serialize,
     zone_value,
 }
 
@@ -218,13 +223,14 @@ pub enum ExprNode {
     SubstringFunc(Box<SubstringFunc>),
 
     /* Xml operations */
-    IsXmlDocument(Box<ExprNode>),
     XmlConcat(Vec<ExprNode>),
     XmlElement(XmlElement),
+    XmlExists(Box<ExprNode>),
     XmlForest(Vec<ExprNode>),
     XmlParse(Box<XmlParse>),
     XmlProcessingInstruction(Box<XmlProcessingInstruction>),
     XmlRoot(Box<XmlRoot>),
+    XmlSerialize(Box<XmlSerialize>),
 }
 
 impl_from!(BoolExpr for ExprNode);
@@ -251,6 +257,7 @@ impl_from!(box UnaryExpr for ExprNode);
 impl_from!(box XmlParse for ExprNode);
 impl_from!(box XmlProcessingInstruction for ExprNode);
 impl_from!(box XmlRoot for ExprNode);
+impl_from!(box XmlSerialize for ExprNode);
 
 impl From<UnsignedNumber> for ExprNode {
     fn from(value: UnsignedNumber) -> Self {
