@@ -1,10 +1,11 @@
 pub(crate) mod foundation;
 
 mod expr;
-mod stmtmulti;
 
 // Entrypoint:
-pub(super) use stmtmulti::stmtmulti;
+pg_basics::reexport! { pub(super)
+    stmtmulti
+}
 
 pg_basics::reexport! {
     acl,
@@ -35,6 +36,7 @@ pg_basics::reexport! {
     json_format_clause,
     json_key_uniqueness_constraint,
     json_name_and_value,
+    json_passing_clause,
     json_returning_clause,
     json_value_expr,
     make_column_ref,
