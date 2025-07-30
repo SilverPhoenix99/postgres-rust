@@ -51,6 +51,7 @@ pg_basics::reexport! { pub
     json_object_agg_expr,
     json_output,
     json_value_expr,
+    json_wrapper_behavior,
     normalize_func,
     notify_stmt,
     numeric_spec,
