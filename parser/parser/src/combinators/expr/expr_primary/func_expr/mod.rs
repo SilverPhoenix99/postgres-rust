@@ -1,10 +1,11 @@
-mod extract_list;
-mod func_expr_common_subexpr;
-
 pg_basics::reexport! { pub(super)
     filter_clause,
     over_clause,
     within_group_clause,
+}
+
+pg_basics::reexport! {
+    func_expr_common_subexpr
 }
 
 pub(super) fn func_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
@@ -95,7 +96,6 @@ mod tests {
     }
 }
 
-use self::func_expr_common_subexpr::func_expr_common_subexpr;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_aggregate_func;

@@ -170,7 +170,11 @@ pub enum ExprNode {
     /// `IS NOT DISTINCT FROM`
     NotDistinct(BinaryOperands),
     NullIf(BinaryOperands),
+    Coalesce(Vec<ExprNode>),
+    Greatest(Vec<ExprNode>),
+    Least(Vec<ExprNode>),
     Treat(Box<TypecastExpr>),
+    MergeAction,
 
     // TODO: Are these 2 the same?
     Indirection(Box<IndirectionExpr>),
@@ -190,13 +194,9 @@ pub enum ExprNode {
     CurrentCatalog,
     CurrentSchema,
     FuncCall(Box<FuncCall>),
-    CollationFor(Box<ExprNode>),
+    CollationForFunc(Box<ExprNode>),
     GroupingFunc(Vec<ExprNode>),
-    CoalesceExpr(Vec<ExprNode>),
     ExtractFunc(Box<ExtractFunc>),
-    GreatestFunc(Vec<ExprNode>),
-    LeastFunc(Vec<ExprNode>),
-    MergeSupportFunc,
     NormalizeFunc(Box<NormalizeFunc>),
     PositionFunc(Box<PositionFunc>),
     TrimFunc(TrimFunc),

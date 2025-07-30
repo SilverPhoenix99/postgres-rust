@@ -1,0 +1,125 @@
+pg_basics::reexport! {
+    cast_expr,
+    coalesce_expr,
+    collation_for,
+    current_schema,
+    extract,
+    greatest_expr,
+    least_expr,
+    merge_action,
+    normalize,
+    nullif_expr,
+    overlay,
+    position,
+    role,
+    substring,
+    time,
+    treat_expr,
+    trim,
+}
+
+pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    /*
+          COLLATION FOR '(' a_expr ')'
+        | CURRENT_DATE
+        | CURRENT_TIME ( '(' ICONST ')' )?
+        | CURRENT_TIMESTAMP ( '(' ICONST ')' )?
+        | LOCALTIME ( '(' ICONST ')' )?
+        | LOCALTIMESTAMP ( '(' ICONST ')' )?
+        | CURRENT_ROLE
+        | CURRENT_USER
+        | SESSION_USER
+        | SYSTEM_USER
+        | USER
+        | CURRENT_CATALOG
+        | CURRENT_SCHEMA
+        | CAST '(' a_expr AS Typename ')'
+        | COALESCE '(' expr_list ')'
+        | EXTRACT '(' extract_list ')'
+        | GREATEST '(' expr_list ')'
+        | LEAST '(' expr_list ')'
+        | NORMALIZE '(' a_expr ( ',' unicode_normal_form )? ')'
+        | NULLIF '(' a_expr ',' a_expr ')'
+        | POSITION '(' b_expr IN b_expr ')'
+        | TREAT '(' a_expr AS Typename ')'
+        | TRIM '(' trim_args ')'
+        | MERGE_ACTION '(' ')'
+        | OVERLAY '(' ( overlay_args )? ')'
+        | SUBSTRING '(' ( substring_args )? ')'
+    */
+
+    // Broken down into smaller combinators, due to large Rust type names.
+    or((
+        func_expr_common_subexpr_1,
+        func_expr_common_subexpr_2,
+        treat_expr,
+        trim.map(From::from),
+    )).parse(stream)
+}
+
+fn func_expr_common_subexpr_1(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    or((
+        Kw::CurrentCatalog.map(|_| CurrentCatalog),
+        cast_expr.map(From::from),
+        coalesce_expr,
+        collation_for,
+        current_schema,
+        extract.map(From::from),
+        greatest_expr,
+        least_expr,
+    )).parse(stream)
+}
+
+fn func_expr_common_subexpr_2(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+
+    or((
+        merge_action,
+        normalize.map(From::from),
+        nullif_expr,
+        overlay.map(From::from),
+        position.map(From::from),
+        role,
+        substring.map(From::from),
+        time,
+    )).parse(stream)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tests::test_parser;
+    use test_case::test_case;
+
+    #[test_case("current_catalog" => Ok(CurrentCatalog))]
+    // These only quickly check that statements aren't missing:
+    #[test_case("cast ('1' as int)" => matches Ok(_))]
+    #[test_case("coalesce(1)" => matches Ok(_))]
+    #[test_case("collation for(1)" => matches Ok(_))]
+    #[test_case("current_date" => matches Ok(_))]
+    #[test_case("current_schema" => matches Ok(_))]
+    #[test_case("extract(month from 1)" => matches Ok(_))]
+    #[test_case("greatest(1)" => matches Ok(_))]
+    #[test_case("least(1)" => matches Ok(_))]
+    #[test_case("merge_action()" => matches Ok(_))]
+    #[test_case("normalize('foo')" => matches Ok(_))]
+    #[test_case("nullif(1, 2)" => matches Ok(_))]
+    #[test_case("overlay('foo')" => matches Ok(_))]
+    #[test_case("position('f' in 'foo')" => matches Ok(_))]
+    #[test_case("substring('foo')" => matches Ok(_))]
+    #[test_case("treat(1 as int)" => matches Ok(_))]
+    #[test_case("trim('foo')" => matches Ok(_))]
+    #[test_case("user" => matches Ok(_))]
+    fn test_func_expr_common_subexpr(source: &str) -> scan::Result<ExprNode> {
+        test_parser!(source, func_expr_common_subexpr)
+    }
+}
+
+use crate::combinators::foundation::or;
+use crate::combinators::foundation::Combinator;
+use crate::scan;
+use crate::stream::TokenStream;
+use pg_ast::ExprNode;
+use pg_ast::ExprNode::CurrentCatalog;
+use pg_lexer::Keyword as Kw;

@@ -1,4 +1,5 @@
 pub(super) fn cast_expr(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+
     /*
         CAST '(' a_expr AS Typename ')'
     */

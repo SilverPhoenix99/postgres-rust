@@ -2,7 +2,6 @@ mod func_application;
 
 pg_basics::reexport! {
     case_expr,
-    cast_expr,
     explicit_row,
     func_expr,
     grouping_func,
