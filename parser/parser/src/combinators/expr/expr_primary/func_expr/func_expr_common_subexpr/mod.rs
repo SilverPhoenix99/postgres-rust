@@ -21,6 +21,7 @@ pg_basics::reexport! {
     time,
     treat_expr,
     trim,
+    xml_concat,
 }
 
 pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
@@ -57,6 +58,7 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         | JSON_SCALAR '(' a_expr ')'
         | JSON_SERIALIZE '(' json_value_expr ( json_returning_clause )? ')'
         | JSON_VALUE '(' ... ')'
+        | XMLCONCAT '(' expr_list ')'
     */
 
     // Broken down into smaller combinators, due to large Rust type names.
@@ -66,6 +68,7 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         json_common_subexpr,
         treat_expr,
         trim.map(From::from),
+        xml_common_subexpr,
     )).parse(stream)
 }
 
@@ -107,6 +110,10 @@ fn json_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     )).parse(stream)
 }
 
+fn xml_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+    xml_concat(stream)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -137,6 +144,7 @@ mod tests {
     #[test_case("treat(1 as int)" => matches Ok(_))]
     #[test_case("trim('foo')" => matches Ok(_))]
     #[test_case("user" => matches Ok(_))]
+    #[test_case("xmlconcat('foo')" => matches Ok(_))]
     fn test_func_expr_common_subexpr(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, func_expr_common_subexpr)
     }
