@@ -1,6 +1,6 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SubstringFunc {
-    ExplicitCall(Option<Vec<FuncArgExpr>>),
+    ExplicitCall(Option<Vec<NamedValue>>),
     SqlSyntax(ExprNode, ExprNode, Option<ExprNode>),
 }
 
@@ -11,4 +11,4 @@ impl Default for SubstringFunc {
 }
 
 use crate::ExprNode;
-use crate::FuncArgExpr;
+use crate::NamedValue;

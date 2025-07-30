@@ -39,9 +39,14 @@ pub(super) fn attr_tail(stream: &mut TokenStream) -> scan::Result<AttrTail> {
         // so it's accepted here.
 
         let type_modifiers = args.drain(..)
-            .map(|(arg, loc)| match arg {
-                FuncArgExpr::Unnamed(value) => Ok(value),
-                _ => Err(InvalidNamedTypeModifier.at(loc)),
+            .map(|(arg, loc)| {
+                if arg.name().is_none() {
+                    let (_, arg) = arg.into();
+                    Ok(arg)
+                }
+                else {
+                    Err(InvalidNamedTypeModifier.at(loc))
+                }
             })
             .collect::<parser::LocatedResult<Vec<_>>>()?;
 
@@ -142,38 +147,38 @@ mod tests {
     use super::*;
     use crate::tests::test_parser;
     use pg_basics::Str;
-    use pg_elog::parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
         pg_ast::ExprNode::IntegerConst,
-        pg_basics::Location
+        pg_ast::NamedValue,
+        pg_basics::Location,
     };
 
-    #[test_case("'foo'",
+    #[test_case("'foo'" => Ok(
         AttrTail::Typecast {
             value: "foo".into(),
             type_modifiers: None
         }
-    )]
-    #[test_case("() 'foo'",
+    ))]
+    #[test_case("() 'foo'" => Ok(
         AttrTail::FuncTail {
             args: FuncArgsKind::Empty { order_within_group: None },
             filter: None,
             over: None
         }
-    )]
-    #[test_case("(1) 'foo'",
+    ))]
+    #[test_case("(1) 'foo'" => Ok(
         AttrTail::Typecast {
             value: "foo".into(),
             type_modifiers: Some(vec![IntegerConst(1)]),
         }
-    )]
-    #[test_case("(1) over bar",
+    ))]
+    #[test_case("(1) over bar" => Ok(
         AttrTail::FuncTail {
             args: FuncArgsKind::All {
                 args: vec![(
-                    FuncArgExpr::Unnamed(IntegerConst(1)),
+                    NamedValue::unnamed(IntegerConst(1)),
                     Location::new(1..2, 1, 2)
                 )],
                 order: None
@@ -181,56 +186,52 @@ mod tests {
             filter: None,
             over: Some(OverClause::WindowName("bar".into()))
         }
-    )]
-    fn test_attr_tail(source: &str, expected: AttrTail) {
-        test_parser!(source, attr_tail, expected)
-    }
-
-    #[test_case("(a := 1) 'foo'",
-        InvalidNamedTypeModifier.at(
-            Location::new(1..2, 1, 2)
-        )
-    )]
-    #[test_case("(1 order by 2) 'foo'",
-        InvalidOrderedTypeModifiers.at(
-            Location::new(3..8, 1, 4)
-        )
-    )]
-    #[test_case("(1 order by 2) within group (order by 3)",
-        MultipleOrderBy.at(
-            Location::new(15..21, 1, 16)
-        )
-    )]
-    #[test_case("(distinct 1) within group (order by 3)",
-        DistinctWithinGroup.at(
-            Location::new(13..19, 1, 14)
-        )
-    )]
-    #[test_case("(distinct 1 order by 2) within group (order by 3)",
-        MultipleOrderBy.at(
-            Location::new(24..30, 1, 25)
-        )
-    )]
-    #[test_case("(variadic 1) within group (order by 3)",
-        VariadicWithinGroup.at(
-            Location::new(13..19, 1, 14)
-        )
-    )]
-    #[test_case("(variadic 1 order by 2) within group (order by 3)",
-        MultipleOrderBy.at(
-            Location::new(24..30, 1, 25)
-        )
-    )]
-    fn test_attr_tail_err(source: &str, expected: parser::LocatedError) {
-        test_parser!(source, attr_tail, Err(expected))
-    }
-
-    #[test_case("'some string'", AttrSuffix::String("some string".into()))]
-    #[test_case("()", AttrSuffix::FuncArgs(
-        FuncArgsKind::Empty { order_within_group: None }
     ))]
-    fn test_attr_suffix(source: &str, expected: AttrSuffix) {
-        test_parser!(source, attr_suffix, expected)
+    #[test_case("(a := 1) 'foo'" => Err(
+        InvalidNamedTypeModifier
+            .at(Location::new(1..2, 1, 2))
+            .into()
+    ))]
+    #[test_case("(1 order by 2) 'foo'" => Err(
+        InvalidOrderedTypeModifiers
+            .at(Location::new(3..8, 1, 4))
+            .into()
+    ))]
+    #[test_case("(1 order by 2) within group (order by 3)" => Err(
+        MultipleOrderBy
+            .at(Location::new(15..21, 1, 16))
+            .into()
+    ))]
+    #[test_case("(distinct 1) within group (order by 3)" => Err(
+        DistinctWithinGroup
+            .at(Location::new(13..19, 1, 14))
+            .into()
+    ))]
+    #[test_case("(distinct 1 order by 2) within group (order by 3)" => Err(
+        MultipleOrderBy
+            .at(Location::new(24..30, 1, 25))
+            .into()
+    ))]
+    #[test_case("(variadic 1) within group (order by 3)" => Err(
+        VariadicWithinGroup
+            .at(Location::new(13..19, 1, 14))
+            .into()
+    ))]
+    #[test_case("(variadic 1 order by 2) within group (order by 3)" => Err(
+        MultipleOrderBy
+            .at(Location::new(24..30, 1, 25))
+            .into()
+    ))]
+    fn test_attr_tail(source: &str) -> scan::Result<AttrTail> {
+        test_parser!(source, attr_tail)
+    }
+
+    #[test_case("'some string'" => Ok(AttrSuffix::String("some string".into())))]
+    #[test_case("()" => Ok(AttrSuffix::FuncArgs(
+        FuncArgsKind::Empty { order_within_group: None }
+    )))]
+    fn test_attr_suffix(source: &str) -> scan::Result<AttrSuffix> {
+        test_parser!(source, attr_suffix)
     }
 
     #[test_case("", None, None, None)]
@@ -274,7 +275,6 @@ use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::ExprNode;
-use pg_ast::FuncArgExpr;
 use pg_ast::FuncArgsKind;
 use pg_ast::FuncArgsOrder;
 use pg_ast::OverClause;

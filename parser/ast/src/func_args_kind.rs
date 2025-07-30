@@ -8,15 +8,15 @@ pub enum FuncArgsKind {
         order_within_group: Option<Vec<SortBy>>,
     },
     All {
-        args: Vec<Located<FuncArgExpr>>,
+        args: Vec<Located<NamedValue>>,
         order: Option<Located<FuncArgsOrder>>,
     },
     Variadic {
-        args: Vec<FuncArgExpr>,
+        args: Vec<NamedValue>,
         order: Option<Vec<SortBy>>,
     },
     Distinct {
-        args: Vec<FuncArgExpr>,
+        args: Vec<NamedValue>,
         order: Option<Vec<SortBy>>,
     }
 }
@@ -27,6 +27,6 @@ pub enum FuncArgsOrder {
     WithinGroup(Vec<SortBy>),
 }
 
-use crate::FuncArgExpr;
+use crate::NamedValue;
 use crate::SortBy;
 use pg_basics::Located;

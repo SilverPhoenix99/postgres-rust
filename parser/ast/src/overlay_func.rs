@@ -1,7 +1,7 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum OverlayFunc {
     SqlSyntax(OverlaySqlArgs),
-    ExplicitCall(Option<Vec<FuncArgExpr>>),
+    ExplicitCall(Option<Vec<NamedValue>>),
 }
 
 impl Default for OverlayFunc {
@@ -25,4 +25,4 @@ impl OverlaySqlArgs {
 }
 
 use crate::ExprNode;
-use crate::FuncArgExpr;
+use crate::NamedValue;

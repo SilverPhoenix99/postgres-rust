@@ -24,16 +24,17 @@ fn substring_args(stream: &mut TokenStream) -> scan::Result<SubstringFunc> {
         | a_expr substring_list
     */
 
-    let mut args: Vec<FuncArgExpr> = func_arg_list(stream)?
+    let mut args: Vec<_> = func_arg_list(stream)?
         .into_iter()
         .map(|(arg, _)| arg)
         .collect();
 
     if
-    let [Unnamed(arg)] = args.as_mut_slice()
+    let [arg] = args.as_mut_slice()
+        && arg.name().is_none()
         && let Some((from, r#for)) = substring_list(stream).optional()?
     {
-        let arg = mem::replace(arg, NullConst);
+        let (_, arg) = mem::replace(arg, NamedValue::unnamed(NullConst)).into();
         let args = SubstringFunc::SqlSyntax(arg, from, r#for);
         return Ok(args)
     }
@@ -141,7 +142,7 @@ mod tests {
     #[test_case("substring('foo')" => Ok(
         SubstringFunc::ExplicitCall(
             Some(vec![
-                Unnamed(StringConst("foo".into()))
+                NamedValue::unnamed(StringConst("foo".into()))
             ])
         )
     ))]
@@ -153,16 +154,13 @@ mod tests {
 
     #[test_case("'foo'" => Ok(
         SubstringFunc::ExplicitCall(Some(vec![
-            Unnamed(StringConst("foo".into())),
+            NamedValue::unnamed(StringConst("foo".into())),
         ]))
     ))]
     #[test_case("'foo', bar => 1" => Ok(
         SubstringFunc::ExplicitCall(Some(vec![
-            Unnamed(StringConst("foo".into())),
-            FuncArgExpr::NamedValue {
-                name: "bar".into(),
-                value: IntegerConst(1)
-            }
+            NamedValue::unnamed(StringConst("foo".into())),
+            NamedValue::new(Some("bar".into()), IntegerConst(1))
         ]))
     ))]
     #[test_case("'foo' similar 'bar' escape 'baz'" => Ok(
@@ -224,8 +222,7 @@ use core::mem;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::IntegerConst;
 use pg_ast::ExprNode::NullConst;
-use pg_ast::FuncArgExpr;
-use pg_ast::FuncArgExpr::Unnamed;
+use pg_ast::NamedValue;
 use pg_ast::SubstringFunc;
 use pg_ast::TypeName;
 use pg_ast::TypecastExpr;

@@ -1,4 +1,4 @@
-pub(super) fn func_arg_list(stream: &mut TokenStream<'_>) -> scan::Result<Vec<Located<FuncArgExpr>>> {
+pub(super) fn func_arg_list(stream: &mut TokenStream<'_>) -> scan::Result<Vec<Located<NamedValue>>> {
 
     /*
         func_arg_expr ( COMMA func_arg_expr )*
@@ -7,7 +7,7 @@ pub(super) fn func_arg_list(stream: &mut TokenStream<'_>) -> scan::Result<Vec<Lo
     many_sep(Comma, func_arg_expr).parse(stream)
 }
 
-pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<Located<FuncArgExpr>> {
+pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<Located<NamedValue>> {
 
     /*
         type_function_name COLON_EQUALS a_expr
@@ -24,12 +24,12 @@ pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<Locate
                 a_expr
             )).parse(stream)?;
 
-            let arg = NamedValue { name, value };
+            let arg = NamedValue::new(Some(name), value);
             Ok((arg, loc))
         },
         _ => {
             let (value, loc) = located(a_expr).parse(stream)?;
-            let arg = Unnamed(value);
+            let arg = NamedValue::unnamed(value);
             Ok((arg, loc))
         },
     }
@@ -47,18 +47,19 @@ fn is_type_function_name(tok: &TokenValue) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::stream;
+    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
     use test_case::test_case;
 
-    #[test_case("1", Unnamed(IntegerConst(1)))]
-    #[test_case("foo := 2", NamedValue { name: "foo".into(), value: IntegerConst(2) })]
-    #[test_case("bar => 3", NamedValue { name: "bar".into(), value: IntegerConst(3) })]
-    fn test_func_arg_expr(source: &str, expected: FuncArgExpr) {
-        let mut stream = stream(source);
-        let (actual, _) = func_arg_expr(&mut stream).unwrap();
-        assert_eq!(expected, actual)
+    #[test_case("1" => Ok(NamedValue::unnamed(IntegerConst(1))))]
+    #[test_case("foo := 2" => Ok(NamedValue::new(Some("foo".into()), IntegerConst(2))))]
+    #[test_case("bar => 3" => Ok(NamedValue::new(Some("bar".into()), IntegerConst(3))))]
+    fn test_func_arg_expr(source: &str) -> scan::Result<NamedValue> {
+        test_parser!(
+            source,
+            func_arg_expr.map(|(arg, _)| arg)
+        )
     }
 }
 
@@ -74,9 +75,7 @@ use crate::stream::TokenValue;
 use crate::stream::TokenValue::Identifier;
 use crate::stream::TokenValue::Keyword;
 use crate::stream::TokenValue::Operator;
-use pg_ast::FuncArgExpr;
-use pg_ast::FuncArgExpr::NamedValue;
-use pg_ast::FuncArgExpr::Unnamed;
+use pg_ast::NamedValue;
 use pg_basics::Located;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_lexer::KeywordCategory::Unreserved;

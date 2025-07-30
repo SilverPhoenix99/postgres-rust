@@ -94,7 +94,7 @@ fn simple_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
     Ok(All { args, order })
 }
 
-fn variadic_func_args(stream: &mut TokenStream) -> scan::Result<(Vec<Located<FuncArgExpr>>, bool)> {
+fn variadic_func_args(stream: &mut TokenStream) -> scan::Result<(Vec<Located<NamedValue>>, bool)> {
 
     /*
           func_arg_list
@@ -110,9 +110,9 @@ fn variadic_func_args(stream: &mut TokenStream) -> scan::Result<(Vec<Located<Fun
 }
 
 fn sanitize_variadic_args(
-    args: Vec<(Located<FuncArgExpr>, Option<Location>)>
+    args: Vec<(Located<NamedValue>, Option<Location>)>
 )
-    -> scan::Result<(Vec<Located<FuncArgExpr>>, bool)>
+    -> scan::Result<(Vec<Located<NamedValue>>, bool)>
 {
     let (args, variadics): (Vec<_>, Vec<_>) = args.into_iter()
         .enumerate()
@@ -149,7 +149,7 @@ fn sanitize_variadic_args(
     Ok((args, true))
 }
 
-fn variadic_args(stream: &mut TokenStream) -> scan::Result<Vec<(Located<FuncArgExpr>, Option<Location>)>> {
+fn variadic_args(stream: &mut TokenStream) -> scan::Result<Vec<(Located<NamedValue>, Option<Location>)>> {
 
     /*
         ( VARIADIC )? func_arg_expr ( ',' ( VARIADIC )? func_arg_expr )*
@@ -158,7 +158,7 @@ fn variadic_args(stream: &mut TokenStream) -> scan::Result<Vec<(Located<FuncArgE
     many_sep(Comma, variadic_arg).parse(stream)
 }
 
-fn variadic_arg(stream: &mut TokenStream) -> scan::Result<(Located<FuncArgExpr>, Option<Location>)> {
+fn variadic_arg(stream: &mut TokenStream) -> scan::Result<(Located<NamedValue>, Option<Location>)> {
 
     /*
         ( VARIADIC )? func_arg_expr
@@ -178,24 +178,23 @@ mod tests {
     use crate::tests::stream;
     use crate::tests::test_parser;
     use pg_ast::ExprNode::IntegerConst;
-    use pg_ast::FuncArgExpr;
-    use pg_ast::FuncArgExpr::NamedValue;
-    use pg_ast::FuncArgExpr::Unnamed;
-    use pg_ast::FuncArgsKind;
     use test_case::test_case;
 
-    #[test_case("(*)", Wildcard { order_within_group: None })]
-    #[test_case("(distinct 1, 2)", Distinct {
-        args: vec![Unnamed(IntegerConst(1)), Unnamed(IntegerConst(2))],
+    #[test_case("(*)" => Ok(Wildcard { order_within_group: None }))]
+    #[test_case("(distinct 1, 2)" => Ok(Distinct {
+        args: vec![
+            NamedValue::unnamed(IntegerConst(1)),
+            NamedValue::unnamed(IntegerConst(2)),
+        ],
         order: None
-    })]
-    #[test_case("(variadic 1)", Variadic {
-        args: vec![Unnamed(IntegerConst(1))],
+    }))]
+    #[test_case("(variadic 1)" => Ok(Variadic {
+        args: vec![NamedValue::unnamed(IntegerConst(1))],
         order: None
-    })]
-    #[test_case("()", Empty { order_within_group: None })]
-    fn test_func_application_args(source: &str, expected: FuncArgsKind) {
-        test_parser!(source, func_application_args, expected);
+    }))]
+    #[test_case("()" => Ok(Empty { order_within_group: None }))]
+    fn test_func_application_args(source: &str) -> scan::Result<FuncArgsKind> {
+        test_parser!(source, func_application_args)
     }
 
     #[test]
@@ -207,12 +206,16 @@ mod tests {
             panic!("Expected All variant, but got {actual:?}");
         };
 
-        assert_matches!(
-            args.as_slice(),
-            [
-                (Unnamed(IntegerConst(1)), _),
-                (Unnamed(IntegerConst(2)), _),
-            ]
+        let args = args.into_iter()
+            .map(|(arg, _)| arg)
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            vec![
+                NamedValue::unnamed(IntegerConst(1)),
+                NamedValue::unnamed(IntegerConst(2)),
+            ],
+            args
         )
     }
 
@@ -224,89 +227,93 @@ mod tests {
         let All { args, order: None } = actual else {
             panic!("Expected All variant, but got {actual:?}");
         };
-
-        assert_matches!(
-            args.as_slice(),
-            [
-                (Unnamed(IntegerConst(1)), _),
-                (Unnamed(IntegerConst(2)), _),
-                (Unnamed(IntegerConst(3)), _),
-            ]
-        )
-    }
-
-    #[test_case("1, 2, variadic 3", (
-        vec![
-            Unnamed(IntegerConst(1)),
-            Unnamed(IntegerConst(2)),
-            Unnamed(IntegerConst(3)),
-        ],
-        true
-    ))]
-    #[test_case("1, 2, 3", (
-        vec![
-            Unnamed(IntegerConst(1)),
-            Unnamed(IntegerConst(2)),
-            Unnamed(IntegerConst(3)),
-        ],
-        false
-    ))]
-    fn test_variadic_func_args(source: &str, expected: (Vec<FuncArgExpr>, bool)) {
-        let mut stream = stream(source);
-        let (args, is_variadic) = variadic_func_args(&mut stream).unwrap();
-
+        
         let args = args.into_iter()
             .map(|(arg, _)| arg)
             .collect::<Vec<_>>();
 
-        assert_eq!(expected, (args, is_variadic))
+        assert_eq!(
+            vec![
+                NamedValue::unnamed(IntegerConst(1)),
+                NamedValue::unnamed(IntegerConst(2)),
+                NamedValue::unnamed(IntegerConst(3)),
+            ],
+            args
+        )
+    }
+
+    #[test_case("1, 2, variadic 3" => Ok((
+        vec![
+            NamedValue::unnamed(IntegerConst(1)),
+            NamedValue::unnamed(IntegerConst(2)),
+            NamedValue::unnamed(IntegerConst(3)),
+        ],
+        true
+    )))]
+    #[test_case("1, 2, 3" => Ok((
+        vec![
+            NamedValue::unnamed(IntegerConst(1)),
+            NamedValue::unnamed(IntegerConst(2)),
+            NamedValue::unnamed(IntegerConst(3)),
+        ],
+        false
+    )))]
+    fn test_variadic_func_args(source: &str) -> scan::Result<(Vec<NamedValue>, bool)> {
+        test_parser!(
+            source,
+            variadic_func_args
+                .map(|(args, is_variadic)| {
+                    let args = args.into_iter()
+                        .map(|(arg, _)| arg)
+                        .collect::<Vec<_>>();
+        
+                    (args, is_variadic)
+                })
+        )
     }
 
     #[test]
     fn test_variadic_args() {
-        let mut stream = stream("1, variadic 2, 3, variadic foo := 4, bar => 5");
-        let actual = variadic_args(&mut stream).unwrap()
-            .into_iter()
-            .map(|((arg, _), _)| arg)
-            .collect::<Vec<_>>();
-
-        let expected = vec![
-            Unnamed(IntegerConst(1)),
-            Unnamed(IntegerConst(2)),
-            Unnamed(IntegerConst(3)),
-            NamedValue { name: "foo".into(), value: IntegerConst(4) },
-            NamedValue { name: "bar".into(), value: IntegerConst(5) },
-        ];
-
-        assert_eq!(expected, actual)
+        
+        test_parser!(
+            source = "1, variadic 2, 3, variadic foo := 4, bar => 5",
+            parser = variadic_args
+                .map(|args|
+                    args.into_iter()
+                        .map(|((arg, _), _)| arg)
+                        .collect::<Vec<_>>()
+                ),
+            expected = vec![
+                NamedValue::unnamed(IntegerConst(1)),
+                NamedValue::unnamed(IntegerConst(2)),
+                NamedValue::unnamed(IntegerConst(3)),
+                NamedValue::new(Some("foo".into()), IntegerConst(4)),
+                NamedValue::new(Some("bar".into()), IntegerConst(5)),
+            ]
+        )
     }
 
-    #[test_case("1",
-        Unnamed(IntegerConst(1)),
+    #[test_case("1" => Ok((
+        NamedValue::unnamed(IntegerConst(1)),
         false
-    )]
-    #[test_case("VARIADIC 2",
-        Unnamed(IntegerConst(2)),
+    )))]
+    #[test_case("VARIADIC 2" => Ok((
+        NamedValue::unnamed(IntegerConst(2)),
         true
-    )]
-    #[test_case("foo := 3",
-        NamedValue {
-            name: "foo".into(),
-            value: IntegerConst(3)
-        },
+    )))]
+    #[test_case("foo := 3" => Ok((
+        NamedValue::new(Some("foo".into()), IntegerConst(3)),
         false
-    )]
-    #[test_case("VARIADIC bar => 4",
-        NamedValue { name: "bar".into(), value: IntegerConst(4) },
+    )))]
+    #[test_case("VARIADIC bar => 4" => Ok((
+        NamedValue::new(Some("bar".into()), IntegerConst(4)),
         true
-    )]
-    fn test_variadic_arg(source: &str, expected: FuncArgExpr, has_loc: bool) {
-        let mut stream = stream(source);
-        let ((variadic_arg, _), loc) = variadic_arg(&mut stream).unwrap();
-
-        let expected = (expected, loc.is_some());
-
-        assert_eq!(expected, (variadic_arg, has_loc))
+    )))]
+    fn test_variadic_arg(source: &str) -> scan::Result<(NamedValue, bool)> {
+        test_parser!(source, variadic_arg)
+            .map(|((variadic_arg, _), loc)|
+                (variadic_arg, loc.is_some())
+            )
     }
 }
 
@@ -321,7 +328,6 @@ use crate::combinators::sort_clause;
 use crate::scan;
 use crate::stream::TokenStream;
 use crate::syntax;
-use pg_ast::FuncArgExpr;
 use pg_ast::FuncArgsKind;
 use pg_ast::FuncArgsKind::All;
 use pg_ast::FuncArgsKind::Distinct;
@@ -329,6 +335,7 @@ use pg_ast::FuncArgsKind::Empty;
 use pg_ast::FuncArgsKind::Variadic;
 use pg_ast::FuncArgsKind::Wildcard;
 use pg_ast::FuncArgsOrder;
+use pg_ast::NamedValue;
 use pg_basics::Located;
 use pg_basics::Location;
 use pg_lexer::Keyword as Kw;

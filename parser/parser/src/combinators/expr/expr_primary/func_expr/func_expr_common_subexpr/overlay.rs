@@ -24,16 +24,17 @@ fn overlay_args(stream: &mut TokenStream) -> scan::Result<OverlayFunc> {
         | a_expr overlay_list
     */
 
-    let mut args: Vec<FuncArgExpr> = func_arg_list(stream)?
+    let mut args: Vec<_> = func_arg_list(stream)?
         .into_iter()
         .map(|(arg, _)| arg)
         .collect();
 
     if
-    let [Unnamed(arg)] = args.as_mut_slice()
+        let [arg] = args.as_mut_slice()
+        && arg.name().is_none()
         && let Some((placing, from, r#for)) = overlay_list(stream).optional()?
     {
-        let arg = mem::replace(arg, NullConst);
+        let (_, arg) = mem::replace(arg, NamedValue::unnamed(NullConst)).into();
         let args = OverlaySqlArgs::new(arg, placing, from, r#for);
         let args = OverlayFunc::SqlSyntax(args);
         return Ok(args);
@@ -70,7 +71,7 @@ mod tests {
     #[test_case("overlay(1)" => Ok(
         OverlayFunc::ExplicitCall(
             Some(vec![
-                Unnamed(IntegerConst(1))
+                NamedValue::unnamed(IntegerConst(1))
             ])
         )
     ))]
@@ -83,22 +84,16 @@ mod tests {
     #[test_case("'foo'" => Ok(
         OverlayFunc::ExplicitCall(
             Some(vec![
-                Unnamed(StringConst("foo".into()))
+                NamedValue::unnamed(StringConst("foo".into()))
             ])
         )
     ))]
     #[test_case("'foo', bar := 1, baz => 2" => Ok(
         OverlayFunc::ExplicitCall(
             Some(vec![
-                Unnamed(StringConst("foo".into())),
-                FuncArgExpr::NamedValue {
-                    name: "bar".into(),
-                    value: IntegerConst(1)
-                },
-                FuncArgExpr::NamedValue {
-                    name: "baz".into(),
-                    value: IntegerConst(2)
-                },
+                NamedValue::unnamed(StringConst("foo".into())),
+                NamedValue::new(Some("bar".into()), IntegerConst(1)),
+                NamedValue::new(Some("baz".into()), IntegerConst(2)),
             ])
         )
     ))]
@@ -140,8 +135,7 @@ use crate::stream::TokenStream;
 use core::mem;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::NullConst;
-use pg_ast::FuncArgExpr;
-use pg_ast::FuncArgExpr::Unnamed;
+use pg_ast::NamedValue;
 use pg_ast::OverlayFunc;
 use pg_ast::OverlaySqlArgs;
 use pg_lexer::Keyword::Overlay;
