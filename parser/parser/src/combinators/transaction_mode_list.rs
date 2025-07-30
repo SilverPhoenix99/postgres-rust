@@ -75,7 +75,7 @@ fn isolation_level(stream: &mut TokenStream) -> scan::Result<IsolationLevel> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::scan::Error::NoMatch;
+    use scan::Error::NoMatch;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
 

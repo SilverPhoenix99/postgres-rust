@@ -44,6 +44,7 @@ pg_basics::reexport! { pub
     indirection_expr,
     json_array_agg,
     json_array_agg_expr,
+    json_behavior,
     json_format,
     json_key_value,
     json_object_agg,
