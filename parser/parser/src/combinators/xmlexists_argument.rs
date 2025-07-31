@@ -1,6 +1,8 @@
 pub(super) fn xmlexists_argument(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     /*
+        Several variants are allowed for SQL and other compatibility.
+
         PASSING ( xml_passing_mech )? c_expr ( xml_passing_mech )?
     */
 

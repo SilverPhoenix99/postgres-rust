@@ -102,6 +102,7 @@ pg_basics::reexport! { pub
     window_definition,
     window_frame,
     xml_element,
+    xml_exists,
     xml_node_kind,
     xml_parse,
     xml_processing_instruction,
@@ -225,7 +226,7 @@ pub enum ExprNode {
     /* Xml operations */
     XmlConcat(Vec<ExprNode>),
     XmlElement(XmlElement),
-    XmlExists(Box<ExprNode>),
+    XmlExists(Box<XmlExists>),
     XmlForest(Vec<ExprNode>),
     XmlParse(Box<XmlParse>),
     XmlProcessingInstruction(Box<XmlProcessingInstruction>),
@@ -254,6 +255,7 @@ impl_from!(box PositionFunc for ExprNode);
 impl_from!(box SubstringFunc for ExprNode);
 impl_from!(box TypecastExpr for ExprNode::Typecast);
 impl_from!(box UnaryExpr for ExprNode);
+impl_from!(box XmlExists for ExprNode);
 impl_from!(box XmlParse for ExprNode);
 impl_from!(box XmlProcessingInstruction for ExprNode);
 impl_from!(box XmlRoot for ExprNode);
