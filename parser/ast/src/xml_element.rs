@@ -10,7 +10,7 @@ impl XmlElement {
         Self { name, attributes: None, content: None }
     }
 
-    pub fn name(&self) -> &Str {
+    pub fn name(&self) -> &str {
         &self.name
     }
 
