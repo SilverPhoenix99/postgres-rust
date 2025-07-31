@@ -6,6 +6,7 @@ pg_basics::reexport! {
     extract,
     greatest_expr,
     json_exists_expr,
+    json_object,
     json_query_expr,
     json_scalar,
     json_serialize_expr,
@@ -62,6 +63,7 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         | SYSTEM_USER
         | USER
         | JSON_EXISTS '(' ... ')'
+        | JSON_OBJECT '(' ( json_object_args )? ')'
         | JSON_QUERY '(' ... ')'
         | JSON_SCALAR '(' a_expr ')'
         | JSON_SERIALIZE '(' json_value_expr ( json_returning_clause )? ')'
@@ -118,6 +120,7 @@ fn func_expr_common_subexpr_2(stream: &mut TokenStream) -> scan::Result<ExprNode
 fn json_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     or((
         json_exists_expr.map(From::from),
+        json_object.map(From::from),
         json_query_expr.map(From::from),
         json_scalar,
         json_serialize_expr.map(From::from),
@@ -154,6 +157,7 @@ mod tests {
     #[test_case("extract(month from 1)" => matches Ok(_))]
     #[test_case("greatest(1)" => matches Ok(_))]
     #[test_case("json_exists('{}', 'foo')" => matches Ok(_))]
+    #[test_case("json_object()" => matches Ok(_))]
     #[test_case("json_query('{}', 'foo')" => matches Ok(_))]
     #[test_case("json_scalar(1)" => matches Ok(_))]
     #[test_case("json_serialize(1)" => matches Ok(_))]

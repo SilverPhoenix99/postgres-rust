@@ -47,6 +47,7 @@ pg_basics::reexport! { pub
     json_exists,
     json_format,
     json_key_value,
+    json_object,
     json_object_agg,
     json_object_agg_expr,
     json_output,
@@ -219,6 +220,7 @@ pub enum ExprNode {
     PositionFunc(Box<PositionFunc>),
     TrimFunc(TrimFunc),
     JsonArrayAgg(Box<JsonArrayAggExpr>),
+    JsonObject(JsonObjectExpr),
     JsonObjectAgg(Box<JsonObjectAggExpr>),
     OverlayFunc(Box<OverlayFunc>),
     SubstringFunc(Box<SubstringFunc>),
@@ -236,6 +238,7 @@ pub enum ExprNode {
 
 impl_from!(BoolExpr for ExprNode);
 impl_from!(ColumnRef for ExprNode);
+impl_from!(JsonObjectExpr for ExprNode::JsonObject);
 impl_from!(TrimFunc for ExprNode);
 impl_from!(XmlElement for ExprNode);
 impl_from!(box BinaryExpr for ExprNode);
