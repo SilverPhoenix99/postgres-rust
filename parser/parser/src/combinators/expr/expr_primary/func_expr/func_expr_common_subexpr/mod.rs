@@ -29,6 +29,7 @@ pg_basics::reexport! {
     xml_parse,
     xml_processing_instruction,
     xml_root,
+    xml_serialize,
 }
 
 pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
@@ -72,6 +73,7 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         | XMLPARSE '(' ... ')'
         | XMLPI '(' ... ')'
         | XMLROOT '(' ... ')'
+        | XMLSERIALIZE '(' ... ')'
     */
 
     // Broken down into smaller combinators, due to large Rust type names.
@@ -132,6 +134,7 @@ fn xml_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         xml_parse.map(From::from),
         xml_processing_instruction.map(From::from),
         xml_root.map(From::from),
+        xml_serialize.map(From::from),
     )).parse(stream)
 }
 
@@ -172,6 +175,7 @@ mod tests {
     #[test_case("xmlparse(document 'foo')" => matches Ok(_))]
     #[test_case("xmlpi(name foo)" => matches Ok(_))]
     #[test_case("xmlroot('foo', version no value)" => matches Ok(_))]
+    #[test_case("xmlserialize(document '123' as int)" => matches Ok(_))]
     fn test_func_expr_common_subexpr(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, func_expr_common_subexpr)
     }
