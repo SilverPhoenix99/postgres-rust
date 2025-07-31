@@ -1,7 +1,7 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct XmlSerialize {
     kind: XmlNodeKind,
-    value: ExprNode,
+    content: ExprNode,
     type_name: TypeName,
     indent: bool,
 }

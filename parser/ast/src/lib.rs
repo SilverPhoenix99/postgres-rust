@@ -227,7 +227,7 @@ pub enum ExprNode {
     XmlConcat(Vec<ExprNode>),
     XmlElement(XmlElement),
     XmlExists(Box<XmlExists>),
-    XmlForest(Vec<ExprNode>),
+    XmlForest(Vec<NamedValue>),
     XmlParse(Box<XmlParse>),
     XmlProcessingInstruction(Box<XmlProcessingInstruction>),
     XmlRoot(Box<XmlRoot>),

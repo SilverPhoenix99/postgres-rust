@@ -8,7 +8,7 @@ pub enum XmlWhitespaceOption {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct XmlParse {
     kind: XmlNodeKind,
-    value: ExprNode,
+    content: ExprNode,
     whitespace: XmlWhitespaceOption
 }
 

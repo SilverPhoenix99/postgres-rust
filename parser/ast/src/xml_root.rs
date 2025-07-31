@@ -7,8 +7,8 @@ pub enum XmlStandalone {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct XmlRoot {
-    value: ExprNode,
-    version: ExprNode,
+    content: ExprNode,
+    version: Option<ExprNode>,
     standalone: Option<XmlStandalone>,
 }
 
