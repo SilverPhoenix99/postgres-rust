@@ -28,7 +28,7 @@ impl XmlProcessingInstruction {
     where
         T: Into<ExprNode>,
     {
-        self.set_value(Some(value.into()));
+        self.value = Some(value.into());
         self
     }
 

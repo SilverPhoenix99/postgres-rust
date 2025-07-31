@@ -26,7 +26,7 @@ fn xml_passing_mech(stream: &mut TokenStream) -> scan::Result<()> {
         return no_match(stream)
     }
 
-    skip(2).parse(stream)?;
+    stream.skip(2);
     Ok(())
 }
 
@@ -58,7 +58,6 @@ mod tests {
 }
 
 use crate::combinators::expr::expr_primary;
-use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;
 use crate::scan;
