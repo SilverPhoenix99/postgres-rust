@@ -46,5 +46,6 @@ impl XmlElement {
     }
 }
 
-use crate::{ExprNode, NamedValue};
+use crate::ExprNode;
+use crate::NamedValue;
 use pg_basics::Str;

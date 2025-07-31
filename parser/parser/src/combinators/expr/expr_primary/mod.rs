@@ -10,7 +10,7 @@ pg_basics::reexport! {
 }
 
 /// Alias: `c_expr`
-pub(super) fn expr_primary(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(in crate::combinators) fn expr_primary(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     or((
         param_expr,
         expr_const,

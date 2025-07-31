@@ -69,4 +69,5 @@ pg_basics::reexport! {
     window_specification,
     with_timezone,
     work_or_transaction,
+    xmlexists_argument,
 }
