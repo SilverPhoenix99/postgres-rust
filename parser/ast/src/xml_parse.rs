@@ -12,5 +12,23 @@ pub struct XmlParse {
     whitespace: XmlWhitespaceOption
 }
 
+impl XmlParse {
+    pub fn new(kind: XmlNodeKind, content: ExprNode, whitespace: XmlWhitespaceOption) -> Self {
+        Self { kind, content, whitespace }
+    }
+
+    pub fn kind(&self) -> XmlNodeKind {
+        self.kind
+    }
+
+    pub fn content(&self) -> &ExprNode {
+        &self.content
+    }
+
+    pub fn whitespace(&self) -> XmlWhitespaceOption {
+        self.whitespace
+    }
+}
+
 use crate::ExprNode;
 use crate::XmlNodeKind;

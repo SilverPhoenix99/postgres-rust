@@ -26,6 +26,7 @@ pg_basics::reexport! {
     xml_element,
     xml_exists,
     xml_forest,
+    xml_parse,
 }
 
 pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
@@ -66,6 +67,7 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         | XMLELEMENT '(' ... ')'
         | XMLEXISTS '(' c_expr xmlexists_argument ')'
         | XMLFOREST '(' xml_attribute_list ')'
+        | XMLPARSE '(' ... ')'
     */
 
     // Broken down into smaller combinators, due to large Rust type names.
@@ -123,6 +125,7 @@ fn xml_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         xml_element.map(From::from),
         xml_exists.map(From::from),
         xml_forest,
+        xml_parse.map(From::from),
     )).parse(stream)
 }
 
@@ -160,6 +163,7 @@ mod tests {
     #[test_case("xmlelement(name foo)" => matches Ok(_))]
     #[test_case("xmlexists('foo' passing 'bar')" => matches Ok(_))]
     #[test_case("xmlforest('foo')" => matches Ok(_))]
+    #[test_case("xmlparse(document 'foo')" => matches Ok(_))]
     fn test_func_expr_common_subexpr(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, func_expr_common_subexpr)
     }
