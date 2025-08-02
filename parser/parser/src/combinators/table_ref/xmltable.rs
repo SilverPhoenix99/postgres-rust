@@ -1,3 +1,12 @@
+fn xml_namespace_list(stream: &mut TokenStream) -> scan::Result<Vec<NamedValue>> {
+
+    /*
+        xml_namespace_el ( ',' xml_namespace_el )*
+    */
+
+    many_sep(Comma, xml_namespace_el).parse(stream)
+}
+
 fn xml_namespace_el(stream: &mut TokenStream) -> scan::Result<NamedValue> {
 
     /*
@@ -41,6 +50,7 @@ use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::NamedValue;
 use pg_lexer::Keyword::{As, DefaultKw};
+use pg_lexer::OperatorKind::Comma;
 use crate::combinators::col_label::col_label;
 use crate::combinators::expr::b_expr;
-use crate::combinators::foundation::{or, Combinator};
+use crate::combinators::foundation::{many_sep, or, Combinator};
