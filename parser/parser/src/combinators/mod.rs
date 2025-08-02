@@ -47,7 +47,6 @@ pg_basics::reexport! {
     non_reserved_word_or_sconst,
     nulls_order,
     operators,
-    paren_name_list,
     precision,
     privilege,
     qualified_name,

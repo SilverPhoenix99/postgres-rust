@@ -6,8 +6,6 @@ pub(super) fn role(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         | SESSION_USER
         | SYSTEM_USER
         | USER
-        | CURRENT_CATALOG
-        | CURRENT_SCHEMA
     */
 
     or((

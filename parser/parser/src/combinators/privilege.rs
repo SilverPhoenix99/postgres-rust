@@ -1,7 +1,7 @@
 pub(super) fn privileges(stream: &mut TokenStream) -> scan::Result<AccessPrivilege> {
 
     /*
-          ALL ( PRIVILEGES )? ( paren_name_list )?
+          ALL ( PRIVILEGES )? ( '(' name_list ')' )?
         | privilege_list
     */
 
@@ -9,7 +9,7 @@ pub(super) fn privileges(stream: &mut TokenStream) -> scan::Result<AccessPrivile
         (
             AllKw,
             Privileges.optional(),
-            paren_name_list.optional()
+            paren(name_list).optional()
         )
             .map(|(.., columns)| All { columns }),
         privilege_list
@@ -30,10 +30,10 @@ fn privilege(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> 
 
     /*
           ALTER SYSTEM
-        | SELECT ( paren_name_list )?
-        | REFERENCES ( paren_name_list )?
-        | CREATE ( paren_name_list )?
-        | col_id ( paren_name_list )?
+        | SELECT ( '(' name_list ')' )?
+        | REFERENCES ( '(' name_list ')' )?
+        | CREATE ( '(' name_list ')' )?
+        | col_id ( '(' name_list ')' )?
     */
 
     or((
@@ -52,7 +52,7 @@ fn alter_system(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivileg
 
 fn create(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
 
-    let (_, columns) = (CreateKw, paren_name_list.optional())
+    let (_, columns) = (CreateKw, paren(name_list).optional())
         .parse(stream)?;
 
     Ok(Create { columns })
@@ -60,7 +60,7 @@ fn create(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
 
 fn references(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
 
-    let (_, columns) = (ReferencesKw, paren_name_list.optional())
+    let (_, columns) = (ReferencesKw, paren(name_list).optional())
         .parse(stream)?;
 
     Ok(References { columns })
@@ -68,7 +68,7 @@ fn references(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege>
 
 fn select(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
 
-    let (_, columns) = (SelectKw, paren_name_list.optional())
+    let (_, columns) = (SelectKw, paren(name_list).optional())
         .parse(stream)?;
 
     Ok(Select { columns })
@@ -76,7 +76,7 @@ fn select(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
 
 fn named(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
 
-    let (privilege, columns) = (col_id, paren_name_list.optional())
+    let (privilege, columns) = (col_id, paren(name_list).optional())
         .parse(stream)?;
 
     Ok(Named { privilege, columns })
@@ -132,8 +132,9 @@ mod tests {
 use crate::combinators::col_id;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::paren_name_list;
+use crate::combinators::name_list;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::AccessPrivilege;
