@@ -1,3 +1,4 @@
+/// Alias: `json_quotes_clause_opt`
 pub(super) fn json_quotes_clause(stream: &mut TokenStream) -> scan::Result<JsonQuotes> {
 
     /*

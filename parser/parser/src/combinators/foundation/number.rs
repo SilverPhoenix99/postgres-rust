@@ -1,4 +1,6 @@
 /// Returns `ICONST | FCONST`.
+///
+/// Alias: `I_or_F_const`
 pub(in crate::combinators) fn number(stream: &mut TokenStream<'_>) -> scan::Result<UnsignedNumber> {
     stream.consume(|tok| {
         let TokenValue::UnsignedNumber(value) = tok else {
