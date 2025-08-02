@@ -78,7 +78,7 @@ pub enum Error {
     #[error("cannot use VARIADIC with WITHIN GROUP")]
     VariadicWithinGroup,
 
-    #[error("unrecognized JSON encoding: {}", .0.as_ref())]
+    #[error("unrecognized JSON encoding: {0}")]
     UnrecognizedJsonEncoding(Str),
 
     #[error(r#"option name "{0}" cannot be used in XMLTABLE"#)]
@@ -106,7 +106,7 @@ impl Display for NameList {
 
         let name = self.0
             .iter()
-            .fold(String::new(), |acc, s| acc + "." + s.as_ref());
+            .fold(String::new(), |acc, s| acc + "." + s);
 
         let name = &name[1..];
 

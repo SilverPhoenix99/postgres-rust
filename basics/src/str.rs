@@ -65,6 +65,17 @@ impl PartialOrd for Str {
     }
 }
 
+impl Display for Str {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        match self {
+            Self::Boxed(boxed) => f.write_str(boxed),
+            Self::Static(string) => f.write_str(string),
+        }
+    }
+}
+
 use crate::impl_from;
 use core::cmp::Ordering;
+use core::fmt::Display;
+use core::fmt::Formatter;
 use core::ops::Deref;
