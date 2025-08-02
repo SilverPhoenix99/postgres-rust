@@ -52,6 +52,7 @@ pg_basics::reexport! {
     precision,
     privilege,
     qualified_name,
+    relation_expr,
     role,
     sign,
     simple_typename,

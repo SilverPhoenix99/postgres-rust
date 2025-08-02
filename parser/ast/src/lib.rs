@@ -75,6 +75,7 @@ pg_basics::reexport! { pub
     range_var,
     raw_stmt,
     reassign_owned_stmt,
+    relation_expr,
     rename_stmt,
     role_spec,
     security_label_stmt,
@@ -118,11 +119,6 @@ pub type BinaryOperands = Box<(ExprNode, ExprNode)>;
 pub enum AddDrop {
     Add,
     Drop,
-}
-
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct RelationExpr {
-    // TODO
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
