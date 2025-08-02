@@ -83,6 +83,9 @@ pub enum Error {
 
     #[error(r#"option name "{0}" cannot be used in XMLTABLE"#)]
     InvalidXmlTableOptionName(Box<str>),
+
+    #[error(r#"unrecognized column option "{0}""#)]
+    UnrecognizedColumnOption(Box<str>),
 }
 
 impl Error {
@@ -164,6 +167,7 @@ impl_log_message! {
     VariadicWithinGroup => [SyntaxError, None],
     UnrecognizedJsonEncoding => [InvalidParameterValue, None],
     InvalidXmlTableOptionName => [SyntaxError, None],
+    UnrecognizedColumnOption => [SyntaxError, None],
 }
 
 use crate::sql_state::SqlState;

@@ -23,14 +23,16 @@ fn xmltable_column_option_el(stream: &mut TokenStream) -> scan::Result<XmltableC
 
 fn xmltable_column_ident_option(stream: &mut TokenStream) -> scan::Result<XmltableColumnOption> {
 
-    let ((option, loc), value) = (located(identifier), b_expr).parse(stream)?;
+    let ((option, loc), _) = (located(identifier), b_expr).parse(stream)?;
 
-    if option.as_ref() == "__pg__is_not_null" {
-        let err = InvalidXmlTableOptionName(option).at(loc);
-        return Err(err.into())
+    let err = if option.as_ref() == "__pg__is_not_null" {
+        InvalidXmlTableOptionName(option)
     }
+    else {
+        UnrecognizedColumnOption(option)
+    };
 
-    Ok(Generic { option, value })
+    Err(err.at(loc).into())
 }
 
 fn xml_namespace_list(stream: &mut TokenStream) -> scan::Result<Vec<NamedValue>> {
@@ -64,7 +66,8 @@ mod tests {
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
-        pg_ast::ExprNode::StringConst,
+        pg_ast::ExprNode::{IntegerConst, StringConst},
+        pg_ast::TypeName::Int4,
         pg_basics::Location,
     };
 
@@ -72,10 +75,11 @@ mod tests {
     #[test_case("not null" => Ok(NotNull))]
     #[test_case("default 'foo'" => Ok(DefaultOption(StringConst("foo".into()))))]
     #[test_case("path 'foo'" => Ok(Path(StringConst("foo".into()))))]
-    #[test_case("foo 'bar'" => Ok(Generic {
-        option: "foo".into(),
-        value: StringConst("bar".into())
-    }))]
+    #[test_case("foo 'bar'" => Err(
+        UnrecognizedColumnOption("foo".into())
+            .at(Location::new(0..3, 1, 1))
+            .into()
+    ))]
     #[test_case("__pg__is_not_null 'foo'" => Err(
         InvalidXmlTableOptionName("__pg__is_not_null".into())
             .at(Location::new(0..17, 1, 1))
@@ -107,9 +111,10 @@ use crate::combinators::foundation::{identifier, located, many_sep, or, Combinat
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::XmltableColumnOption::Default as DefaultOption;
-use pg_ast::XmltableColumnOption::{Generic, NotNull, Null, Path};
+use pg_ast::XmltableColumnOption::{NotNull, Null, Path};
 use pg_ast::{NamedValue, XmltableColumnOption};
 use pg_elog::parser::Error::InvalidXmlTableOptionName;
+use pg_elog::parser::Error::UnrecognizedColumnOption;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::{As, DefaultKw, Not};
 use pg_lexer::OperatorKind::Comma;

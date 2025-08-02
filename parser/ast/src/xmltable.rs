@@ -4,10 +4,6 @@ pub enum XmltableColumnOption {
     NotNull,
     Default(ExprNode),
     Path(ExprNode),
-    Generic {
-        option: Box<str>,
-        value: ExprNode
-    },
 }
 
 use crate::ExprNode;
