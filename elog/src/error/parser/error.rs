@@ -108,65 +108,58 @@ impl Display for NameList {
     }
 }
 
-impl LogMessage for Error {
+macro_rules! impl_log_message {
+    (
+        $(
+            $variant:ident => [$state:path, $hint:expr]
+        ),+
+        $(,)?
+    ) => {
+        impl LogMessage for Error {
 
-    fn sql_state(&self) -> SqlState {
-        match self {
-            Self::FloatPrecisionOverflow(_) => InvalidParameterValue,
-            Self::FloatPrecisionUnderflow(_) => InvalidParameterValue,
-            Self::InvalidUescapeDelimiter => SyntaxError,
-            Self::Syntax => SyntaxError,
-            Self::UescapeDelimiterMissing => SyntaxError,
-            Self::UnencryptedPassword => FeatureNotSupported,
-            Self::UnrecognizedRoleOption(_) => SyntaxError,
-            Self::ImproperQualifiedName(_) => SyntaxError,
-            Self::InvalidZoneValue => SyntaxError,
-            Self::MissingOperatorArgumentType => SyntaxError,
-            Self::AggregateWithOutputParameters => FeatureNotSupported,
-            Self::ImproperUseOfStar => SyntaxError,
-            Self::InvalidUnboundedFollowingFrame => WindowingError,
-            Self::InvalidOffsetFollowingFrame => WindowingError,
-            Self::InvalidUnboundedPrecedingFrame => WindowingError,
-            Self::InvalidCurrentRowFrame => WindowingError,
-            Self::InvalidStartFollowingEndPrecedingFrame => WindowingError,
-            Self::InvalidNamedTypeModifier => SyntaxError,
-            Self::InvalidOrderedTypeModifiers => SyntaxError,
-            Self::MultipleOrderBy => SyntaxError,
-            Self::DistinctWithinGroup => SyntaxError,
-            Self::VariadicWithinGroup => SyntaxError,
-            Self::UnrecognizedJsonEncoding(_) => InvalidParameterValue,
-        }
-    }
+            fn sql_state(&self) -> SqlState {
+                match self {
+                    $(
+                        Self::$variant { .. } => $state,
+                    )+
+                }
+            }
 
-    fn hint(&self) -> Option<&str> {
-        match self {
-            Self::UnencryptedPassword
-                => Some("Remove UNENCRYPTED to store the password in encrypted form instead."),
-            Self::FloatPrecisionOverflow(_) => None,
-            Self::FloatPrecisionUnderflow(_) => None,
-            Self::InvalidUescapeDelimiter => None,
-            Self::Syntax => None,
-            Self::UescapeDelimiterMissing => None,
-            Self::UnrecognizedRoleOption(_) => None,
-            Self::ImproperQualifiedName(_) => None,
-            Self::InvalidZoneValue => None,
-            Self::MissingOperatorArgumentType
-                => Some("Use NONE to denote the missing argument of a unary operator."),
-            Self::AggregateWithOutputParameters => None,
-            Self::ImproperUseOfStar => None,
-            Self::InvalidUnboundedFollowingFrame => None,
-            Self::InvalidOffsetFollowingFrame => None,
-            Self::InvalidUnboundedPrecedingFrame => None,
-            Self::InvalidCurrentRowFrame => None,
-            Self::InvalidStartFollowingEndPrecedingFrame => None,
-            Self::InvalidNamedTypeModifier => None,
-            Self::InvalidOrderedTypeModifiers => None,
-            Self::MultipleOrderBy => None,
-            Self::DistinctWithinGroup => None,
-            Self::VariadicWithinGroup => None,
-            Self::UnrecognizedJsonEncoding(_) => None,
+            fn hint(&self) -> Option<&str> {
+                match self {
+                    $(
+                        Self::$variant { .. } => $hint,
+                    )+
+                }
+            }
         }
-    }
+    };
+}
+
+impl_log_message! {
+    Syntax => [SyntaxError, None],
+    UescapeDelimiterMissing => [SyntaxError, None],
+    InvalidUescapeDelimiter => [SyntaxError, None],
+    FloatPrecisionUnderflow => [InvalidParameterValue, None],
+    FloatPrecisionOverflow => [InvalidParameterValue, None],
+    UnrecognizedRoleOption => [SyntaxError, None],
+    UnencryptedPassword => [FeatureNotSupported, Some("Remove UNENCRYPTED to store the password in encrypted form instead.")],
+    ImproperQualifiedName => [SyntaxError, None],
+    InvalidZoneValue => [SyntaxError, None],
+    MissingOperatorArgumentType => [SyntaxError, Some("Use NONE to denote the missing argument of a unary operator.")],
+    AggregateWithOutputParameters => [FeatureNotSupported, None],
+    ImproperUseOfStar => [SyntaxError, None],
+    InvalidUnboundedFollowingFrame => [WindowingError, None],
+    InvalidOffsetFollowingFrame => [WindowingError, None],
+    InvalidUnboundedPrecedingFrame => [WindowingError, None],
+    InvalidCurrentRowFrame => [WindowingError, None],
+    InvalidStartFollowingEndPrecedingFrame => [WindowingError, None],
+    InvalidNamedTypeModifier => [SyntaxError, None],
+    InvalidOrderedTypeModifiers => [SyntaxError, None],
+    MultipleOrderBy => [SyntaxError, None],
+    DistinctWithinGroup => [SyntaxError, None],
+    VariadicWithinGroup => [SyntaxError, None],
+    UnrecognizedJsonEncoding => [InvalidParameterValue, None],
 }
 
 use crate::sql_state::SqlState;
