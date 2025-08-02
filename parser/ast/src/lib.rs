@@ -110,6 +110,7 @@ pg_basics::reexport! { pub
     xml_processing_instruction,
     xml_root,
     xml_serialize,
+    xmltable,
     zone_value,
 }
 
