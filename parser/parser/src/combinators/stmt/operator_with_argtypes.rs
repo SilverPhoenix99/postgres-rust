@@ -27,7 +27,7 @@ fn oper_argtypes(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
         | '(' Typename ')' => Err
     */
 
-    between_paren(oper_argtypes_between).parse(stream)
+    paren(oper_argtypes_between).parse(stream)
 }
 
 fn oper_argtypes_between(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
@@ -137,10 +137,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::operators::any_operator;
 use crate::combinators::typename;

@@ -8,7 +8,7 @@ pub(super) fn greatest_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> 
         return no_match(stream)
     }
 
-    let args = skip_prefix(1, expr_list_paren)
+    let args = skip_prefix(1, paren(expr_list))
         .parse(stream)?;
 
     Ok(Greatest(args))
@@ -38,7 +38,8 @@ mod tests {
     }
 }
 
-use crate::combinators::expr_list_paren;
+use crate::combinators::expr_list::expr_list;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;

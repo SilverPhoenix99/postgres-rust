@@ -20,7 +20,7 @@ fn explicit_array(stream: &mut TokenStream) -> scan::Result<Vec<Option<i32>>> {
 
     let (_, dim) = (
         Array,
-        between_square(i32_literal).optional()
+        brackets(i32_literal).optional()
     ).parse(stream)?;
 
     Ok(vec![dim])
@@ -33,7 +33,7 @@ fn implicit_array(stream: &mut TokenStream) -> scan::Result<Vec<Option<i32>>> {
     */
 
     many(
-        between_square(
+        brackets(
             i32_literal.optional()
         )
     ).parse(stream)
@@ -56,7 +56,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between_square;
+use crate::combinators::foundation::brackets;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;

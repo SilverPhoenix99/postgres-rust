@@ -1,4 +1,5 @@
-pub(in crate::combinators) fn between_paren<P>(parser: P) -> impl Combinator<Output = P::Output>
+/// Matches `'(' P ')'`, and returns the result of `P`, discarding both Parenthesis tokens.
+pub(in crate::combinators) fn paren<P>(parser: P) -> impl Combinator<Output = P::Output>
 where
     P: Combinator
 {
@@ -6,7 +7,8 @@ where
         .map(|(_, value, _)| value)
 }
 
-pub(in crate::combinators) fn between_square<P>(parser: P) -> impl Combinator<Output = P::Output>
+/// Matches `'[' P ']'`, and returns the result of `P`, discarding both Bracket tokens.
+pub(in crate::combinators) fn brackets<P>(parser: P) -> impl Combinator<Output = P::Output>
 where
     P: Combinator
 {
@@ -25,7 +27,7 @@ mod tests {
     fn test_between_paren() {
         test_parser!(
             source = "(1)",
-            parser = between_paren(integer),
+            parser = paren(integer),
             expected = NonNegative::from(1u32)
         )
     }
@@ -34,7 +36,7 @@ mod tests {
     fn test_between_brackets() {
         test_parser!(
             source = "[1]",
-            parser = between_square(integer),
+            parser = brackets(integer),
             expected = NonNegative::from(1u32)
         )
     }

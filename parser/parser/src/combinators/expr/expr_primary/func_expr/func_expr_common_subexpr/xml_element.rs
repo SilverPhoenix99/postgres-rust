@@ -13,7 +13,7 @@ pub(super) fn xml_element(stream: &mut TokenStream) -> scan::Result<XmlElement> 
         return no_match(stream)
     }
 
-    let (_, name, extra_args) = skip_prefix(1, between_paren((
+    let (_, name, extra_args) = skip_prefix(1, paren((
         Name,
         col_label,
         xml_element_extra_args.optional()
@@ -66,7 +66,7 @@ fn xml_attributes(stream: &mut TokenStream) -> scan::Result<Vec<NamedValue>> {
         XMLATTRIBUTES '(' xml_attribute_list ')'
     */
 
-    let (_, attrs) = (Xmlattributes, between_paren(xml_attribute_list))
+    let (_, attrs) = (Xmlattributes, paren(xml_attribute_list))
         .parse(stream)?;
 
     Ok(attrs)
@@ -119,8 +119,8 @@ mod tests {
 use super::xml_attribute_list;
 use crate::combinators::col_label;
 use crate::combinators::expr_list;
-use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;

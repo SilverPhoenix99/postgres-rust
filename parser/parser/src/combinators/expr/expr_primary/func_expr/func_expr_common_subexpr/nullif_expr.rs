@@ -9,7 +9,7 @@ pub(super) fn nullif_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     }
 
     let (left, _, right) = skip_prefix(1,
-        between_paren((a_expr, Comma, a_expr))
+        paren((a_expr, Comma, a_expr))
     ).parse(stream)?;
 
     let operands = Box::new((left, right));
@@ -41,7 +41,7 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;

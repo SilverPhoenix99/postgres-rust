@@ -10,7 +10,7 @@ pub(super) fn overlay(stream: &mut TokenStream) -> scan::Result<OverlayFunc> {
         return no_match(stream)
     }
 
-    let args = skip_prefix(1, between_paren(overlay_args.optional()))
+    let args = skip_prefix(1, paren(overlay_args.optional()))
         .parse(stream)?;
 
     let args = args.unwrap_or_default();
@@ -124,7 +124,7 @@ mod tests {
 
 use super::from_for_args;
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg_list;

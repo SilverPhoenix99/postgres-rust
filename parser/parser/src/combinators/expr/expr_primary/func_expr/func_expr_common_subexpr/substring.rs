@@ -10,7 +10,7 @@ pub(super) fn substring(stream: &mut TokenStream) -> scan::Result<SubstringFunc>
         return no_match(stream)
     }
 
-    let args = skip_prefix(1, between_paren(substring_args.optional()))
+    let args = skip_prefix(1, paren(substring_args.optional()))
         .parse(stream)?;
 
     let args = args.unwrap_or_default();
@@ -209,8 +209,8 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg_list;

@@ -28,7 +28,7 @@ fn indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
 
     or((
         dot_indirection_el,
-        between_square(index_indirection_el)
+        brackets(index_indirection_el)
     )).parse(stream)
 }
 
@@ -167,7 +167,7 @@ mod tests {
 
 use crate::combinators::col_label;
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::between_square;
+use crate::combinators::foundation::brackets;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;

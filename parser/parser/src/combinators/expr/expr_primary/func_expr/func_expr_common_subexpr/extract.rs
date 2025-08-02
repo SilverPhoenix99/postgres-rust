@@ -8,7 +8,7 @@ pub(super) fn extract(stream: &mut TokenStream) -> scan::Result<ExtractFunc> {
         return no_match(stream)
     }
 
-    let expr = skip_prefix(1, between_paren(extract_args))
+    let expr = skip_prefix(1, paren(extract_args))
         .parse(stream)?;
 
     Ok(expr)
@@ -105,9 +105,9 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;

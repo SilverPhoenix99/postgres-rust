@@ -14,7 +14,7 @@ pub(super) fn position(stream: &mut TokenStream) -> scan::Result<PositionFunc> {
     }
 
     let (needle, _, haystack) = skip_prefix(1,
-        between_paren((b_expr, In, b_expr))
+        paren((b_expr, In, b_expr))
     ).parse(stream)?;
 
     let expr = PositionFunc::new(needle, haystack);
@@ -46,7 +46,7 @@ mod tests {
 }
 
 use crate::combinators::expr::b_expr;
-use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;

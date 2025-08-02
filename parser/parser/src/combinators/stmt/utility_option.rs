@@ -7,7 +7,7 @@ pub(super) fn utility_options(stream: &mut TokenStream) -> scan::Result<Vec<Util
         '(' utility_option_list ')'
     */
 
-    between_paren(utility_option_list)
+    paren(utility_option_list)
         .parse(stream)
 }
 
@@ -100,9 +100,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word;
 use crate::combinators::stmt::analyze_keyword;

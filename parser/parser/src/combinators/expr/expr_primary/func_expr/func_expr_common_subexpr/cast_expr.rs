@@ -6,7 +6,7 @@ pub(super) fn cast_expr(stream: &mut TokenStream) -> scan::Result<TypecastExpr> 
 
     let (_, (arg, _, type_name)) = (
         Cast,
-        between_paren((a_expr, As, typename))
+        paren((a_expr, As, typename))
     ).parse(stream)?;
 
     let expr = TypecastExpr::new(arg, type_name);
@@ -34,7 +34,7 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
 use crate::scan;

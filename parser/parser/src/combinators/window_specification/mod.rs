@@ -18,7 +18,7 @@ pub(super) fn window_specification(stream: &mut TokenStream) -> scan::Result<Win
         ')'
     */
 
-    let (name, partition, order, frame) = between_paren(
+    let (name, partition, order, frame) = paren(
         (
             existing_window_name.optional(),
             partition_clause.optional(),
@@ -95,7 +95,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::sort_clause;
 use crate::scan;

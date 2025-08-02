@@ -8,7 +8,7 @@ pub(super) fn json_scalar(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         return no_match(stream)
     }
 
-    let arg = skip_prefix(1, between_paren(a_expr))
+    let arg = skip_prefix(1, paren(a_expr))
         .parse(stream)?;
 
     let arg = Box::new(arg);
@@ -39,7 +39,7 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;

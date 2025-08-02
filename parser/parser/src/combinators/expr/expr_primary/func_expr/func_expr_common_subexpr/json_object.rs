@@ -8,7 +8,7 @@ pub(super) fn json_object(stream: &mut TokenStream) -> scan::Result<JsonObjectEx
         return no_match(stream)
     }
 
-    let expr = skip_prefix(1, between_paren(
+    let expr = skip_prefix(1, paren(
         json_object_args.optional()
     )).parse(stream)?;
 
@@ -157,7 +157,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::{between_paren, or, skip_prefix};
+use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
+use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg_expr;
 use crate::combinators::func_arg_list;
@@ -166,9 +168,10 @@ use crate::combinators::json_key_uniqueness_constraint;
 use crate::combinators::json_name_and_value_list;
 use crate::combinators::json_returning_clause;
 use crate::combinators::json_value_expr;
+use crate::no_match;
 use crate::result::Optional;
 use crate::result::Required;
-use crate::{no_match, scan};
+use crate::scan;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Keyword as K;
 use crate::stream::TokenValue::Operator as Op;
@@ -178,7 +181,9 @@ use pg_ast::JsonObjectArgs;
 use pg_ast::JsonObjectExpr;
 use pg_ast::JsonObjectExpr::ExplicitCall;
 use pg_ast::JsonObjectExpr::SqlSyntax;
-use pg_lexer::Keyword::{JsonObject, Returning};
+use pg_lexer::Keyword::JsonObject;
+use pg_lexer::Keyword::Returning;
 use pg_lexer::Keyword::Value;
-use pg_lexer::OperatorKind::{Colon, OpenParenthesis};
+use pg_lexer::OperatorKind::Colon;
 use pg_lexer::OperatorKind::Comma;
+use pg_lexer::OperatorKind::OpenParenthesis;

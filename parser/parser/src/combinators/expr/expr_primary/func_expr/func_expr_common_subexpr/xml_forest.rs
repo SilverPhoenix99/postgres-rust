@@ -8,7 +8,7 @@ pub(super) fn xml_forest(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         return no_match(stream)
     }
 
-    let content = skip_prefix(1, between_paren(xml_attribute_list))
+    let content = skip_prefix(1, paren(xml_attribute_list))
         .parse(stream)?;
 
     Ok(XmlForest(content))
@@ -40,7 +40,7 @@ mod tests {
 }
 
 use super::xml_attribute_list;
-use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;

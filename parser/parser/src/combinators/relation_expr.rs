@@ -31,7 +31,7 @@ fn non_inherited_relation_expr(stream: &mut TokenStream) -> scan::Result<Relatio
     let (_, name) = (
         Only,
         or((
-            between_paren(qualified_name),
+            paren(qualified_name),
             qualified_name
         ))
     ).parse(stream)?;
@@ -82,9 +82,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::qualified_name;
 use crate::scan;

@@ -14,7 +14,7 @@ pub(super) fn xml_serialize(stream: &mut TokenStream) -> scan::Result<XmlSeriali
         return no_match(stream)
     }
 
-    let (kind, content, _, type_name, indent) = skip_prefix(1, between_paren((
+    let (kind, content, _, type_name, indent) = skip_prefix(1, paren((
         document_or_content,
         a_expr,
         As,
@@ -85,8 +85,8 @@ mod tests {
 
 use crate::combinators::document_or_content;
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::simple_typename;

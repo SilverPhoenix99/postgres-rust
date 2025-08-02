@@ -8,7 +8,7 @@ pub(super) fn collation_for(stream: &mut TokenStream) -> scan::Result<ExprNode> 
         return no_match(stream)
     }
 
-    let expr = skip_prefix(2, between_paren(a_expr))
+    let expr = skip_prefix(2, paren(a_expr))
         .parse(stream)?;
 
     let expr = Box::new(expr);
@@ -40,7 +40,7 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;

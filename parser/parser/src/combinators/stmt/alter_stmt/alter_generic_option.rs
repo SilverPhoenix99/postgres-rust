@@ -6,7 +6,7 @@ pub(super) fn alter_generic_options(stream: &mut TokenStream) -> scan::Result<Ve
 
     let (_, options) = (
         Options,
-        between_paren(alter_generic_option_list)
+        paren(alter_generic_option_list)
     ).parse(stream)?;
 
     Ok(options)
@@ -86,9 +86,9 @@ mod tests {
 }
 
 use crate::combinators::col_label;
-use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_option;
 use crate::scan;

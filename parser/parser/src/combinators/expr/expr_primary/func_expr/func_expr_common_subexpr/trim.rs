@@ -10,7 +10,7 @@ pub(super) fn trim(stream: &mut TokenStream) -> scan::Result<TrimFunc> {
         return no_match(stream)
     }
 
-    let expr = skip_prefix(1, between_paren(trim_args))
+    let expr = skip_prefix(1, paren(trim_args))
         .parse(stream)?;
 
     Ok(expr)
@@ -150,8 +150,8 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::expr_list;
-use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;

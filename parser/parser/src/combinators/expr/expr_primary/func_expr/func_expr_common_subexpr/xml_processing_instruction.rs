@@ -8,7 +8,7 @@ pub(super) fn xml_processing_instruction(stream: &mut TokenStream) -> scan::Resu
         return no_match(stream)
     }
 
-    let (_, name, value) = skip_prefix(1, between_paren((
+    let (_, name, value) = skip_prefix(1, paren((
         Name,
         col_label,
         (Comma, a_expr).optional()
@@ -49,7 +49,7 @@ mod tests {
 
 use crate::combinators::col_label::col_label;
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;

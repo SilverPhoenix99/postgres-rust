@@ -33,7 +33,7 @@ pub(super) fn explicit_op(stream: &mut TokenStream) -> scan::Result<QualifiedOpe
         OPERATOR '(' any_operator ')'
     */
 
-    let (_, op) = (OperatorKw, between_paren(any_operator))
+    let (_, op) = (OperatorKw, paren(any_operator))
         .parse(stream)?;
 
     Ok(op)
@@ -206,9 +206,9 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::user_defined_operator;
 use crate::combinators::foundation::Combinator;
 use crate::scan;

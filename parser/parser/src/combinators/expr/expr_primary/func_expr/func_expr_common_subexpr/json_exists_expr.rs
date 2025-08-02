@@ -14,7 +14,7 @@ pub(super) fn json_exists_expr(stream: &mut TokenStream) -> scan::Result<JsonExi
         return no_match(stream)
     }
 
-    let (ctx, _, path_spec, passing, on_error) = skip_prefix(1, between_paren((
+    let (ctx, _, path_spec, passing, on_error) = skip_prefix(1, paren((
         json_value_expr,
         Comma,
         a_expr,
@@ -64,7 +64,7 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_on_error_clause;

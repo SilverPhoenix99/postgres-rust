@@ -8,7 +8,7 @@ pub(super) fn json_serialize_expr(stream: &mut TokenStream) -> scan::Result<Json
         return no_match(stream);
     }
 
-    let (value, output) = skip_prefix(1, between_paren((
+    let (value, output) = skip_prefix(1, paren((
         json_value_expr,
         json_returning_clause.optional(),
     ))).parse(stream)?;
@@ -47,7 +47,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_returning_clause;

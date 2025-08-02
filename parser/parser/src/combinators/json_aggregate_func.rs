@@ -37,7 +37,7 @@ fn json_objectagg(stream: &mut TokenStream) -> scan::Result<JsonObjectAgg> {
     */
 
     let (arg, absent_on_null, unique, output) = skip_prefix(1,
-        between_paren((
+        paren((
             json_name_and_value,
             json_constructor_null_clause.optional(),
             json_key_uniqueness_constraint.optional(),
@@ -67,7 +67,7 @@ fn json_arrayagg(stream: &mut TokenStream) -> scan::Result<JsonArrayAgg> {
     */
 
     let (arg, sort, absent_on_null, output) = skip_prefix(1,
-        between_paren((
+        paren((
             json_value_expr,
             sort_clause.optional(),
             json_constructor_null_clause.optional(),
@@ -152,7 +152,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_constructor_null_clause;

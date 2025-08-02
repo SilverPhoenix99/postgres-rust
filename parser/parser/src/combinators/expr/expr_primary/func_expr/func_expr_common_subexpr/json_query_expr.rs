@@ -17,7 +17,7 @@ pub(super) fn json_query_expr(stream: &mut TokenStream) -> scan::Result<JsonQuer
         return no_match(stream);
     }
 
-    let (ctx, _, path_spec, passing, output, wrapper, quotes, behavior) = skip_prefix(1, between_paren((
+    let (ctx, _, path_spec, passing, output, wrapper, quotes, behavior) = skip_prefix(1, paren((
         json_value_expr,
         Comma,
         a_expr,
@@ -85,7 +85,7 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_behavior_clause;

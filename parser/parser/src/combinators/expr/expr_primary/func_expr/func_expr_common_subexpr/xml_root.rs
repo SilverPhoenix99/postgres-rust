@@ -13,7 +13,7 @@ pub(super) fn xml_root(stream: &mut TokenStream) -> scan::Result<XmlRoot> {
         return no_match(stream)
     }
 
-    let (content, _, version, standalone) = skip_prefix(1, between_paren((
+    let (content, _, version, standalone) = skip_prefix(1, paren((
         a_expr,
         Comma,
         xml_root_version,
@@ -131,8 +131,8 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;

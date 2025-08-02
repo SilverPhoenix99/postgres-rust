@@ -8,7 +8,7 @@ pub(super) fn explicit_row(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         return no_match(stream)
     };
 
-    let col_values = skip_prefix(1, between_paren(expr_list.optional()))
+    let col_values = skip_prefix(1, paren(expr_list.optional()))
         .parse(stream)?;
 
     Ok(Row(col_values))
@@ -31,7 +31,7 @@ mod tests {
 }
 
 use crate::combinators::expr_list;
-use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;

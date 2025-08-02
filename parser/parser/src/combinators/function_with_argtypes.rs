@@ -93,7 +93,7 @@ fn func_args(stream: &mut TokenStream) -> scan::Result<Option<Option<Vec<Functio
         ( '(' ( func_args_list )? ')' )?
     */
 
-    let args = between_paren(func_args_list.optional())
+    let args = paren(func_args_list.optional())
         .parse(stream)
         .optional()?;
 
@@ -155,10 +155,10 @@ mod tests {
 }
 
 use crate::combinators::attrs::attrs;
-use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg;
 use crate::result::Optional;

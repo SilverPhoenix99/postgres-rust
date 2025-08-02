@@ -4,7 +4,7 @@ pub(super) fn func_application_args(stream: &mut TokenStream) -> scan::Result<Fu
         '(' ( func_call_args )? ')'
     */
 
-    let args = between_paren(func_call_args.optional())
+    let args = paren(func_call_args.optional())
         .parse(stream)?
         .unwrap_or(Empty { order_within_group: None });
 
@@ -317,10 +317,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg_expr;
 use crate::combinators::func_arg_list;

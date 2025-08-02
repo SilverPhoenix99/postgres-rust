@@ -28,7 +28,7 @@ pub(super) fn aggr_args(stream: &mut TokenStream) -> scan::Result<(Vec<FunctionP
         | '(' aggr_args_list ( ORDER BY aggr_args_list )? ')'
     */
 
-    between_paren(any_aggr_arg).parse(stream)
+    paren(any_aggr_arg).parse(stream)
 }
 
 pub(super) fn any_aggr_arg(stream: &mut TokenStream) -> scan::Result<(Vec<FunctionParameter>, Vec<FunctionParameter>)> {
@@ -199,10 +199,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between_paren;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg;
 use crate::combinators::func_name;

@@ -6,7 +6,7 @@ pub(super) fn typecast(stream: &mut TokenStream) -> scan::Result<Typecast> {
 
     let (_, (from_type, _, to_type)) = (
         Cast,
-        between_paren((typename, As, typename))
+        paren((typename, As, typename))
     ).parse(stream)?;
 
     Ok(Typecast::new(from_type, to_type))
@@ -29,7 +29,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
 use crate::scan;

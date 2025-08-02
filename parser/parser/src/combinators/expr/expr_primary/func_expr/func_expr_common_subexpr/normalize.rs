@@ -9,7 +9,7 @@ pub(super) fn normalize(stream: &mut TokenStream) -> scan::Result<NormalizeFunc>
     }
 
     let (expr, normal_form) = skip_prefix(1,
-        between_paren((
+        paren((
             a_expr,
             (Comma, unicode_normal_form).optional()
         ))
@@ -30,8 +30,8 @@ mod tests {
     #[allow(unused_imports)]
     use {
         pg_ast::ExprNode::StringConst,
-        scan::Error::NoMatch,
         pg_ast::UnicodeNormalForm::CanonicalComposition,
+        scan::Error::NoMatch,
     };
 
     #[test_case("normalize('foo')" => Ok(
@@ -53,17 +53,17 @@ mod tests {
     }
 }
 
+use crate::combinators::expr::a_expr;
+use crate::combinators::expr::unicode_normal_form;
+use crate::combinators::foundation::paren;
+use crate::combinators::foundation::skip_prefix;
+use crate::combinators::foundation::Combinator;
+use crate::no_match;
+use crate::scan;
+use crate::stream::TokenStream;
 use crate::stream::TokenValue::Keyword as K;
 use crate::stream::TokenValue::Operator as Op;
 use pg_ast::NormalizeFunc;
 use pg_lexer::Keyword::Normalize;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::OpenParenthesis;
-use crate::combinators::expr::a_expr;
-use crate::combinators::expr::unicode_normal_form::unicode_normal_form;
-use crate::combinators::foundation::skip_prefix;
-use crate::combinators::foundation::between_paren;
-use crate::combinators::foundation::Combinator;
-use crate::no_match;
-use crate::scan;
-use crate::stream::TokenStream;

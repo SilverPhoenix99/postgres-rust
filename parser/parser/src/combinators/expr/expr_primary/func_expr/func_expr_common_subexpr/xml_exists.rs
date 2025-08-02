@@ -8,7 +8,7 @@ pub(super) fn xml_exists(stream: &mut TokenStream) -> scan::Result<XmlExists> {
         return no_match(stream);
     }
 
-    let (path_spec, content) = skip_prefix(1, between_paren((
+    let (path_spec, content) = skip_prefix(1, paren((
         expr_primary,
         xmlexists_argument
     ))).parse(stream)?;
@@ -42,7 +42,7 @@ mod tests {
 }
 
 use crate::combinators::expr::expr_primary;
-use crate::combinators::foundation::between_paren;
+use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::xmlexists_argument;
