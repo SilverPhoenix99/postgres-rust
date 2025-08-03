@@ -1,14 +1,14 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct XmltableColumn {
+pub struct XmlTableColumn {
     name: Str,
-    kind: XmltableColumnKind
+    kind: XmlTableColumnKind
 }
 
-impl XmltableColumn {
+impl XmlTableColumn {
     pub fn new<S, T>(name: S, kind: T) -> Self
     where
         S: Into<Str>,
-        T: Into<XmltableColumnKind>
+        T: Into<XmlTableColumnKind>
     {
         Self {
             name: name.into(),
@@ -20,26 +20,26 @@ impl XmltableColumn {
         &self.name
     }
 
-    pub fn kind(&self) -> &XmltableColumnKind {
+    pub fn kind(&self) -> &XmlTableColumnKind {
         &self.kind
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum XmltableColumnKind {
+pub enum XmlTableColumnKind {
     ForOrdinality,
-    ColumnDefinition(XmltableColumnDefinition),
+    ColumnDefinition(XmlTableColumnDefinition),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct XmltableColumnDefinition {
+pub struct XmlTableColumnDefinition {
     type_name: Type,
     is_not_null: bool,
     default_value: Option<ExprNode>,
     path_spec: Option<ExprNode>,
 }
 
-impl XmltableColumnDefinition {
+impl XmlTableColumnDefinition {
     pub fn new<T>(type_name: T) -> Self
     where
         T: Into<Type>
@@ -99,17 +99,17 @@ impl XmltableColumnDefinition {
     }
 }
 
-impl<T> From<T> for XmltableColumnDefinition
+impl<T> From<T> for XmlTableColumnDefinition
 where
     T: Into<Type>,
 {
     fn from(value: T) -> Self {
-        XmltableColumnDefinition::new(value)
+        XmlTableColumnDefinition::new(value)
     }
 }
 
-impl From<XmltableColumnDefinition> for XmltableColumnKind {
-    fn from(value: XmltableColumnDefinition) -> Self {
+impl From<XmlTableColumnDefinition> for XmlTableColumnKind {
+    fn from(value: XmlTableColumnDefinition) -> Self {
         Self::ColumnDefinition(value)
     }
 }

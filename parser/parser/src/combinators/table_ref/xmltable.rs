@@ -1,4 +1,4 @@
-fn xmltable_column_list(stream: &mut TokenStream) -> scan::Result<Vec<XmltableColumn>> {
+fn xmltable_column_list(stream: &mut TokenStream) -> scan::Result<Vec<XmlTableColumn>> {
 
     /*
         xmltable_column_el ( ',' xmltable_column_el )*
@@ -7,7 +7,7 @@ fn xmltable_column_list(stream: &mut TokenStream) -> scan::Result<Vec<XmltableCo
     many_sep(Comma, xmltable_column_el).parse(stream)
 }
 
-fn xmltable_column_el(stream: &mut TokenStream) -> scan::Result<XmltableColumn> {
+fn xmltable_column_el(stream: &mut TokenStream) -> scan::Result<XmlTableColumn> {
 
     /*
           col_id FOR ORDINALITY
@@ -23,11 +23,11 @@ fn xmltable_column_el(stream: &mut TokenStream) -> scan::Result<XmltableColumn> 
     ).parse(stream)?;
 
     let Some((type_name, options)) = kind else {
-        return Ok(XmltableColumn::new(column_name, ForOrdinality))
+        return Ok(XmlTableColumn::new(column_name, ForOrdinality))
     };
 
     let mut nullability_seen = false;
-    let mut column_def = XmltableColumnDefinition::from(type_name);
+    let mut column_def = XmlTableColumnDefinition::from(type_name);
 
     let options = options.into_iter().flatten();
     for (option, loc) in options {
@@ -61,18 +61,18 @@ fn xmltable_column_el(stream: &mut TokenStream) -> scan::Result<XmltableColumn> 
         }
     }
 
-    Ok(XmltableColumn::new(column_name, column_def))
+    Ok(XmlTableColumn::new(column_name, column_def))
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-enum XmltableColumnOption {
+enum XmlTableColumnOption {
     Null,
     NotNull,
     Default(ExprNode),
     Path(ExprNode),
 }
 
-fn xmltable_column_option_el(stream: &mut TokenStream) -> scan::Result<XmltableColumnOption> {
+fn xmltable_column_option_el(stream: &mut TokenStream) -> scan::Result<XmlTableColumnOption> {
 
     /*
           NULL
@@ -95,7 +95,7 @@ fn xmltable_column_option_el(stream: &mut TokenStream) -> scan::Result<XmltableC
     )).parse(stream)
 }
 
-fn xmltable_column_ident_option(stream: &mut TokenStream) -> scan::Result<XmltableColumnOption> {
+fn xmltable_column_ident_option(stream: &mut TokenStream) -> scan::Result<XmlTableColumnOption> {
 
     let ((option, loc), _) = (located(identifier), b_expr).parse(stream)?;
 
@@ -146,18 +146,18 @@ mod tests {
     };
 
     #[test_case("foo for ordinality" => Ok(
-        XmltableColumn::new("foo", ForOrdinality)
+        XmlTableColumn::new("foo", ForOrdinality)
     ))]
     #[test_case("bar int" => Ok(
-        XmltableColumn::new(
+        XmlTableColumn::new(
             "bar",
-            XmltableColumnDefinition::from(Int4)
+            XmlTableColumnDefinition::from(Int4)
         )
     ))]
     #[test_case("baz int not null default 1" => Ok(
-        XmltableColumn::new(
+        XmlTableColumn::new(
             "baz",
-            XmltableColumnDefinition::from(Int4)
+            XmlTableColumnDefinition::from(Int4)
                 .with_not_null(true)
                 .with_default_value(IntegerConst(1))
         )
@@ -192,7 +192,7 @@ mod tests {
             .at(Location::new(19..22, 1, 20))
             .into()
     ))]
-    fn test_xmltable_column_el(source: &str) -> scan::Result<XmltableColumn> {
+    fn test_xmltable_column_el(source: &str) -> scan::Result<XmlTableColumn> {
         test_parser!(source, xmltable_column_el)
     }
 
@@ -210,7 +210,7 @@ mod tests {
             .at(Location::new(0..17, 1, 1))
             .into()
     ))]
-    fn test_xmltable_column_option_el(source: &str) -> scan::Result<XmltableColumnOption> {
+    fn test_xmltable_column_option_el(source: &str) -> scan::Result<XmlTableColumnOption> {
         test_parser!(source, xmltable_column_option_el)
     }
 
@@ -237,13 +237,13 @@ use crate::combinators::foundation::{identifier, located, many, many_sep, or, Co
 use crate::combinators::typename::typename;
 use crate::scan;
 use crate::stream::TokenStream;
-use pg_ast::XmltableColumnKind::ForOrdinality;
-use pg_ast::{ExprNode, NamedValue, XmltableColumn, XmltableColumnDefinition};
+use pg_ast::XmlTableColumnKind::ForOrdinality;
+use pg_ast::{ExprNode, NamedValue, XmlTableColumn, XmlTableColumnDefinition};
 use pg_elog::parser::Error::InvalidXmlTableOptionName;
 use pg_elog::parser::Error::UnrecognizedColumnOption;
 use pg_elog::parser::Error::{ConflictingNullability, DefaultValueAlreadyDeclared, PathValueAlreadyDeclared};
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::{As, DefaultKw, For, Not, Ordinality};
 use pg_lexer::OperatorKind::Comma;
-use XmltableColumnOption::Default as DefaultOption;
-use XmltableColumnOption::{NotNull, Null, Path};
+use XmlTableColumnOption::Default as DefaultOption;
+use XmlTableColumnOption::{NotNull, Null, Path};
