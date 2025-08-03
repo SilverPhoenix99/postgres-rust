@@ -9,62 +9,31 @@ pub(in crate::combinators) use self::end_stmt::end_stmt;
 pub(super) fn stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     // Broken down into smaller combinators, due to large Rust type names.
-    or((
-        stmt_1,
-        stmt_2,
-        stmt_3,
-        stmt_4,
-        stmt_5,
-        stmt_6,
-    )).parse(stream)
-}
-
-fn stmt_1(stream: &mut TokenStream) -> scan::Result<RawStmt> {
-    or((
+    alt!(
         abort_stmt.map(From::from),
         alter_stmt,
         analyze_stmt,
         call_stmt,
         cluster_stmt,
         check_point_stmt,
-    )).parse(stream)
-}
-
-fn stmt_2(stream: &mut TokenStream) -> scan::Result<RawStmt> {
-    or((
         close_stmt.map(ClosePortalStmt),
         comment_stmt.map(From::from),
         commit_stmt.map(From::from),
         copy_stmt,
         create_stmt,
         deallocate_stmt.map(DeallocateStmt),
-    )).parse(stream)
-}
-
-fn stmt_3(stream: &mut TokenStream) -> scan::Result<RawStmt> {
-    or((
         discard_stmt.map(From::from),
         do_stmt,
         drop_stmt,
         explain_stmt,
         fetch_stmt,
         import_stmt,
-    )).parse(stream)
-}
-
-fn stmt_4(stream: &mut TokenStream) -> scan::Result<RawStmt> {
-    or((
         listen_stmt.map(ListenStmt),
         load_stmt.map(LoadStmt),
         lock_stmt,
         move_stmt,
         notify_stmt.map(From::from),
         prepare_stmt,
-    )).parse(stream)
-}
-
-fn stmt_5(stream: &mut TokenStream) -> scan::Result<RawStmt> {
-    or((
         reassign_owned_stmt.map(From::from),
         reindex_stmt,
         release_savepoint_stmt.map(From::from),
@@ -72,11 +41,6 @@ fn stmt_5(stream: &mut TokenStream) -> scan::Result<RawStmt> {
         revoke_stmt,
         rollback_stmt.map(From::from),
         savepoint_stmt.map(From::from),
-    )).parse(stream)
-}
-
-fn stmt_6(stream: &mut TokenStream) -> scan::Result<RawStmt> {
-    or((
         security_label_stmt.map(From::from),
         set_stmt,
         show_stmt.map(VariableShowStmt),
@@ -84,7 +48,7 @@ fn stmt_6(stream: &mut TokenStream) -> scan::Result<RawStmt> {
         truncate_stmt,
         unlisten_stmt.map(UnlistenStmt),
         vacuum_stmt,
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -214,7 +178,7 @@ pg_basics::reexport! {
     view,
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

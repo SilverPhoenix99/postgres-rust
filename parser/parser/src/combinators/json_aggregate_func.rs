@@ -36,8 +36,9 @@ fn json_objectagg(stream: &mut TokenStream) -> scan::Result<JsonObjectAgg> {
         ')'
     */
 
-    let (arg, absent_on_null, unique, output) = skip_prefix(1,
-        paren((
+    let (_, (arg, absent_on_null, unique, output)) = seq!(
+        skip(1),
+        paren(seq!(
             json_name_and_value,
             json_constructor_null_clause.optional(),
             json_key_uniqueness_constraint.optional(),
@@ -156,7 +157,6 @@ mod tests {
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
-use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_constructor_null_clause;
 use crate::combinators::json_key_uniqueness_constraint;

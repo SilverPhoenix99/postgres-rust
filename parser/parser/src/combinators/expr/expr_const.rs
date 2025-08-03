@@ -14,7 +14,7 @@ pub(super) fn expr_const(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     */
 
     // Broken down into smaller combinators, due to large Rust type names.
-    or((
+    alt!(
         const_typename.map(ExprNode::from),
         number.map(ExprNode::from),
         string.map(StringConst),
@@ -26,7 +26,7 @@ pub(super) fn expr_const(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         True.map(|_| BooleanConst(true)),
         False.map(|_| BooleanConst(false)),
         Null.map(|_| NullConst),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 /// Alias: `ConstTypename`
@@ -393,7 +393,6 @@ mod tests {
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::bit_string;
 use crate::combinators::foundation::number;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::foundation::skip_prefix;
