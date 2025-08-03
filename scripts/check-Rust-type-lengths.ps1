@@ -83,11 +83,14 @@ function Get-LlvmTypes {
         | Sort-Object Length -Descending
 }
 
-function Parse-LlvmType([string] $LlvmType) {
+function Parse-LlvmType {
+
+    [CmdletBinding()]
+    param([string] $LlvmType)
 
     $ErrorActionPreference = 'Stop'
 
-    $stream = $LlvmType -split '(\(\*\)|[}),])|[({]' | ? { -not [string]::IsNullOrWhiteSpace($_) }
+    $stream = $LlvmType -split '\{(?:\})?|\(\)|(\(\*\)|[}),])|\(' | ? { -not [string]::IsNullOrWhiteSpace($_) }
 
     $nodes = [Collections.Stack]::new()
 
@@ -98,6 +101,7 @@ function Parse-LlvmType([string] $LlvmType) {
             {$_ -in @('}', '},', ')', '),', ',')} {
 
                 $node = $nodes.Pop()
+                Write-Debug "Popped node: $($node.Name) [$($nodes.Count)]"
                 $node = [Collections.DictionaryEntry]::new(
                     $node.Name,
                     $node.Elements.ToArray()
@@ -127,6 +131,8 @@ function Parse-LlvmType([string] $LlvmType) {
                     Elements = [Collections.ArrayList] @($return)
                 })
 
+                Write-Debug "Pushed (*) with return node: $($return.Name) [$($nodes.Count)]"
+
                 break
             }
 
@@ -136,10 +142,14 @@ function Parse-LlvmType([string] $LlvmType) {
                     Elements = [Collections.ArrayList] @()
                 })
 
+                Write-Debug "Pushed node: $_ [$($nodes.Count)]"
+
                 break
             }
         }
     }
+
+    Write-Debug "Final stack size: $($nodes.Count)"
 
     $nodes.ToArray() | % {
         [Collections.DictionaryEntry]::new(
@@ -153,9 +163,19 @@ function Parse-LlvmType([string] $LlvmType) {
     }
 }
 
-function Format-LlvmTree([Collections.DictionaryEntry] $Node) {
+function Format-LlvmTree {
+
+    [CmdletBinding()]
+    param([Collections.DictionaryEntry] $Node)
 
     $ErrorActionPreference = 'Stop'
+
+    if ($null -eq $Node.Value) {
+        Write-Debug "Node $($Node.Name) has no value."
+    }
+    else {
+        Write-Debug "Formatting node: $($Node.Name) with $($Node.Value.Length) children"
+    }
 
     switch ($Node.Name) {
 
@@ -168,6 +188,10 @@ function Format-LlvmTree([Collections.DictionaryEntry] $Node) {
         }
 
         'tuple' {
+
+            if ($Node.Value.Length -eq 0) {
+                return '()'
+            }
 
             $children = $Node.Value | % { Format-LlvmTree $_ ; ',' }
             $children = $children[0..($children.Length - 2)]
@@ -246,8 +270,7 @@ function Format-LlvmTree([Collections.DictionaryEntry] $Node) {
 
 . ..\..\scripts\check-Rust-type-lengths.ps1
 
-$llvmTypes = Get-LlvmTypes
-$tree = Parse-LlvmType $llvmTypes[0].Name
+($llvmTypes = Get-LlvmTypes)[0..10] | Format-Table ; $tree = Parse-LlvmType $llvmTypes[0].Name ; Format-LlvmTree $tree | code -
 
 
 Format-LlvmTree $tree | code -
@@ -256,5 +279,12 @@ Format-LlvmTree $tree | code -
 
 Format-LlvmTree $tree | Set-Clipboard
 
+foreach ($value in $llvmTypes | sort Length) {
+    try {
+        Parse-LlvmType $value > $null
+    } catch {
+        # Return (output) the first error and stop processing
+        $value
+    }
+}
 #>
-
