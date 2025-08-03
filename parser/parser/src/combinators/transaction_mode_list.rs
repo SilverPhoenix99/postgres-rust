@@ -5,8 +5,8 @@ pub(super) fn transaction_mode_list(stream: &mut TokenStream) -> scan::Result<Ve
         transaction_mode ( (',')? transaction_mode )*
     */
 
-    many_pre(
-        transaction_mode,
+    many_m!(
+        pre = transaction_mode,
         or((
             (Comma, transaction_mode)
                 .map(|(_, mode)| mode),
@@ -75,9 +75,9 @@ fn isolation_level(stream: &mut TokenStream) -> scan::Result<IsolationLevel> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use scan::Error::NoMatch;
     use crate::stream::TokenStream;
     use crate::tests::DEFAULT_CONFIG;
+    use scan::Error::NoMatch;
 
     #[test]
     fn test_transaction_mode_list() {
@@ -158,7 +158,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::many_pre;
+use crate::combinators::foundation::many_m;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::scan;

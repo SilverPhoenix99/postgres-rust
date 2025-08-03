@@ -14,7 +14,7 @@ pub(in crate::combinators) fn any_name(stream: &mut TokenStream) -> scan::Result
         col_id attrs
     */
 
-    attrs(col_id).parse(stream)
+    attrs!(col_id).parse(stream)
 }
 
 #[cfg(test)]
@@ -48,7 +48,7 @@ mod tests {
     }
 }
 
-use crate::combinators::attrs::attrs;
+use crate::combinators::attrs;
 use crate::combinators::col_id;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::Combinator;

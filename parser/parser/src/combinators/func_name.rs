@@ -18,7 +18,7 @@ pub(super) fn func_name(stream: &mut TokenStream) -> scan::Result<QualifiedName>
 
     or((
         TypeFuncName.map(|kw| vec![kw.into()]),
-        attrs(
+        attrs!(
             or((
                 Unreserved.map(Str::from),
                 identifier.map(Str::from)
@@ -31,7 +31,7 @@ pub(super) fn func_name(stream: &mut TokenStream) -> scan::Result<QualifiedName>
 fn column_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
 
     let loc = stream.current_location();
-    let name = attrs(ColumnName.map(Str::from)).parse(stream)?;
+    let name = attrs!(ColumnName.map(Str::from)).parse(stream)?;
 
     if name.len() == 1 {
         return Err(syntax(loc))

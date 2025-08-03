@@ -254,7 +254,7 @@ fn generic_type(stream: &mut TokenStream) -> scan::Result<TypeName> {
     }
 
     let (name, type_modifiers) = (
-        attrs(type_function_name),
+        attrs!(type_function_name),
         type_modifiers.optional()
     ).parse(stream)?;
 

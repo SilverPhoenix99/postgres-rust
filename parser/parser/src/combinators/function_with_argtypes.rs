@@ -56,7 +56,7 @@ fn function_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
     or((
         TypeFuncName
             .map(|name| vec![name.text().into()]),
-        attrs(
+        attrs!(
             or((
                 Unreserved.map(Str::from),
                 identifier.map(Str::from)
@@ -68,7 +68,7 @@ fn function_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
 fn function_with_argtypes_2(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
 
 
-    let name = attrs(ColumnName.map(From::from))
+    let name = attrs!(ColumnName.map(From::from))
         .parse(stream)?;
 
     if name.len() == 1 {
