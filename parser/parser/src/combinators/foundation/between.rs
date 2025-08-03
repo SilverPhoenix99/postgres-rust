@@ -3,8 +3,11 @@ pub(in crate::combinators) fn paren<P>(parser: P) -> impl Combinator<Output = P:
 where
     P: Combinator
 {
-    (OpenParenthesis, parser, CloseParenthesis)
-        .map(|(_, value, _)| value)
+    let between = seq!(OpenParenthesis, parser, CloseParenthesis);
+    foundation::parser(move |stream| {
+        let (_, value, _) = between.parse(stream)?;
+        Ok(value)
+    })
 }
 
 /// Matches `'[' P ']'`, and returns the result of `P`, discarding both Bracket tokens.
@@ -12,8 +15,11 @@ pub(in crate::combinators) fn brackets<P>(parser: P) -> impl Combinator<Output =
 where
     P: Combinator
 {
-    (OpenBracket, parser, CloseBracket)
-        .map(|(_, value, _)| value)
+    let between = seq!(OpenBracket, parser, CloseBracket);
+    foundation::parser(move |stream| {
+        let (_, value, _) = between.parse(stream)?;
+        Ok(value)
+    })
 }
 
 #[cfg(test)]
@@ -42,6 +48,8 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use pg_lexer::OperatorKind::CloseBracket;
 use pg_lexer::OperatorKind::CloseParenthesis;
