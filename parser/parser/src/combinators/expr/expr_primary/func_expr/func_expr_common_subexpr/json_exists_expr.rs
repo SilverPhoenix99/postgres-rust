@@ -1,26 +1,34 @@
 pub(super) fn json_exists_expr(stream: &mut TokenStream) -> scan::Result<JsonExistsExpr> {
 
     /*
-        JSON_EXISTS '('
-            json_value_expr
-            ','
-            a_expr
-            ( json_passing_clause )?
-            ( json_on_error_clause )?
-        ')'
+        JSON_EXISTS '(' json_exists_args ')'
     */
 
     if ! matches!(stream.peek2(), Ok((K(JsonExists), Op(OpenParenthesis)))) {
         return no_match(stream)
     }
 
-    let (ctx, _, path_spec, passing, on_error) = skip_prefix(1, paren((
+    skip_prefix(1, paren(json_exists_args))
+        .parse(stream)
+}
+
+fn json_exists_args(stream: &mut TokenStream) -> scan::Result<JsonExistsExpr> {
+
+    /*
+        json_value_expr
+        ','
+        a_expr
+        ( json_passing_clause )?
+        ( json_on_error_clause )?
+    */
+
+    let (ctx, _, path_spec, passing, on_error) = seq!(
         json_value_expr,
         Comma,
         a_expr,
         json_passing_clause.optional(),
         json_on_error_clause.optional(),
-    ))).parse(stream)?;
+    ).parse(stream)?;
 
     let mut expr = JsonExistsExpr::new(ctx, path_spec);
     expr.set_passing(passing)
@@ -65,6 +73,7 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_on_error_clause;

@@ -40,19 +40,19 @@ fn column_ref(stream: &mut TokenStream) -> scan::Result<ColumnRef> {
         | col_name_keyword indirection
     */
 
-    let (name, indirection) = or((
-        (
-            or((
+    let (name, indirection) = alt!(
+        seq!(
+            alt!(
                 identifier.map(Str::from),
                 Unreserved.map(Str::from)
-            )),
+            ),
             located(indirection).optional()
         ),
-        (
+        seq!(
             ColumnName.map(Str::from),
             located(indirection).map(Some)
         )
-    )).parse(stream)?;
+    ).parse(stream)?;
 
     let column_ref = make_column_ref(name, indirection)?;
     Ok(column_ref)
@@ -244,9 +244,10 @@ mod tests {
 use super::attr_tail;
 use super::tailed_expr;
 use crate::combinators::expr::indirection;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::make_column_ref;
 use crate::result::Optional;

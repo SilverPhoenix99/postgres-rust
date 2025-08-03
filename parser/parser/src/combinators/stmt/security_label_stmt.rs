@@ -70,28 +70,12 @@ fn label_target(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
     */
 
     // Broken down into smaller combinators, due to large Rust type names.
-    or((
-        label_target_1,
-        label_target_2,
-        label_target_3,
-        label_target_4,
-        label_target_5,
-        label_target_6,
-    )).parse(stream)
-}
-
-fn label_target_1(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
-    or((
+    alt!(
         access_method.map(AccessMethod),
         aggregate.map(Aggregate),
         collation.map(Collation),
         column.map(Column),
         conversion.map(Conversion),
-    )).parse(stream)
-}
-
-fn label_target_2(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
-    or((
         database.map(Database),
         domain.map(Domain),
         event_trigger.map(EventTrigger),
@@ -100,41 +84,21 @@ fn label_target_2(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget>
             Foreign::DataWrapper(name) => ForeignDataWrapper(name),
             Foreign::Table(name) => ForeignTable(name),
         }),
-    )).parse(stream)
-}
-
-fn label_target_3(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
-    or((
         function.map(Function),
         index.map(Index),
         large_object.map(LargeObject),
         materialized_view.map(MaterializedView),
         language.map(Language),
-    )).parse(stream)
-}
-
-fn label_target_4(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
-    or((
         procedure.map(Procedure),
         publication.map(Publication),
         role.map(Role),
         routine.map(Routine),
         schema.map(Schema),
-    )).parse(stream)
-}
-
-fn label_target_5(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
-    or((
         sequence.map(Sequence),
         server.map(ForeignServer),
         statistics.map(ExtendedStatistics),
         subscription.map(Subscription),
         table.map(Table),
-    )).parse(stream)
-}
-
-fn label_target_6(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
-    or((
         tablespace.map(Tablespace),
         text_search.map(|text_search| match text_search {
             TextSearch::Configuration(name) => TextSearchConfiguration(name),
@@ -144,7 +108,7 @@ fn label_target_6(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget>
         }),
         type_name.map(Type),
         view.map(View),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 /// The `Option` result does not come from an absence of value.
@@ -259,7 +223,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::stmt::access_method;

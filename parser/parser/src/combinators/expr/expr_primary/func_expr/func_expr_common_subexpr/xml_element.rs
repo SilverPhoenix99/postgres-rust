@@ -13,11 +13,14 @@ pub(super) fn xml_element(stream: &mut TokenStream) -> scan::Result<XmlElement> 
         return no_match(stream)
     }
 
-    let (_, name, extra_args) = skip_prefix(1, paren((
-        Name,
-        col_label,
-        xml_element_extra_args.optional()
-    ))).parse(stream)?;
+    let (_, (_, name, extra_args)) = seq!(
+        skip(1),
+        paren((
+            Name,
+            col_label,
+            xml_element_extra_args.optional()
+        ))
+    ).parse(stream)?;
 
     let (attrs, content) = extra_args.unwrap_or_default();
 
@@ -121,7 +124,8 @@ use crate::combinators::col_label;
 use crate::combinators::expr_list;
 use crate::combinators::foundation::or;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::skip_prefix;
+use crate::combinators::foundation::seq;
+use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;
 use crate::scan;

@@ -40,7 +40,7 @@ fn extract_arg(stream: &mut TokenStream) -> scan::Result<ExtractArg> {
       | string
     */
 
-    or((
+    alt!(
         Kw::Year.map(|_| Year),
         Kw::Month.map(|_| Month),
         Kw::Day.map(|_| Day),
@@ -49,7 +49,7 @@ fn extract_arg(stream: &mut TokenStream) -> scan::Result<ExtractArg> {
         Kw::Second.map(|_| Second),
         string.map(Named),
         identifier.map(Named),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -105,8 +105,8 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::identifier;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::string;

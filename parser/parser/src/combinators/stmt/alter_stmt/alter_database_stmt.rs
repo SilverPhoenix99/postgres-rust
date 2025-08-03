@@ -62,7 +62,7 @@ pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> scan::Result<RawS
 }
 
 fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
-    or((
+    alt!(
         refresh_collation_version,
         change_owner,
         rename,
@@ -73,7 +73,7 @@ fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
             .map(|(_, options)| Change::Options(options)),
         alterdb_opt_list
             .map(Change::Options),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn refresh_collation_version(stream: &mut TokenStream) -> scan::Result<Change> {
@@ -240,6 +240,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::or;

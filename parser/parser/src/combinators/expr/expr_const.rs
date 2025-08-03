@@ -306,20 +306,21 @@ fn interval_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         | INTERVAL SCONST ( interval )?
     */
 
-    let (interval, value) = skip_prefix(1,
-        or((
-            (
+    let (_, (interval, value)) = seq!(
+        skip(1),
+        alt!(
+            seq!(
                 precision
                     .map(|precision| Full { precision: Some(precision) }),
                 string
             ),
-            (
+            seq!(
                 string,
                 interval.optional()
             ).map(|(value, interval)|
                 (interval.unwrap_or_default(), value)
             )
-        ))
+        )
     ).parse(stream)?;
 
     let type_name = TypeName::Interval(interval);
@@ -389,9 +390,12 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::bit_string;
 use crate::combinators::foundation::number;
 use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
+use crate::combinators::foundation::skip;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;

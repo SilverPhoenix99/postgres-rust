@@ -1,23 +1,31 @@
 pub(super) fn json_query_expr(stream: &mut TokenStream) -> scan::Result<JsonQueryExpr> {
 
     /*
-        JSON_QUERY '('
-            json_value_expr
-            ','
-            a_expr
-            ( json_passing_clause )?
-            ( json_returning_clause )?
-            ( json_wrapper_behavior )?
-            ( json_quotes_clause )?
-            ( json_behavior_clause )?
-        ')'
+        JSON_QUERY '(' json_query_args ')'
     */
 
     if ! matches!(stream.peek2(), Ok((K(JsonQuery), Op(OpenParenthesis)))) {
         return no_match(stream);
     }
 
-    let (ctx, _, path_spec, passing, output, wrapper, quotes, behavior) = skip_prefix(1, paren((
+    skip_prefix(1, paren(json_query_args))
+        .parse(stream)
+}
+
+fn json_query_args(stream: &mut TokenStream) -> scan::Result<JsonQueryExpr> {
+
+    /*
+        json_value_expr
+        ','
+        a_expr
+        ( json_passing_clause )?
+        ( json_returning_clause )?
+        ( json_wrapper_behavior )?
+        ( json_quotes_clause )?
+        ( json_behavior_clause )?
+    */
+
+    let (ctx, _, path_spec, passing, output, wrapper, quotes, behavior) = seq!(
         json_value_expr,
         Comma,
         a_expr,
@@ -26,7 +34,7 @@ pub(super) fn json_query_expr(stream: &mut TokenStream) -> scan::Result<JsonQuer
         json_wrapper_behavior.optional(),
         json_quotes_clause.optional(),
         json_behavior_clause.optional(),
-    ))).parse(stream)?;
+    ).parse(stream)?;
 
     let mut expr = JsonQueryExpr::new(ctx, path_spec);
     expr.set_passing(passing)
@@ -86,6 +94,7 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_behavior_clause;

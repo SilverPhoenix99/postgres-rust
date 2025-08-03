@@ -78,20 +78,7 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         | XMLSERIALIZE '(' ... ')'
     */
 
-    // Broken down into smaller combinators, due to large Rust type names.
-    or((
-        func_expr_common_subexpr_1,
-        func_expr_common_subexpr_2,
-        json_common_subexpr,
-        treat_expr,
-        trim.map(From::from),
-        xml_common_subexpr,
-    )).parse(stream)
-}
-
-fn func_expr_common_subexpr_1(stream: &mut TokenStream) -> scan::Result<ExprNode> {
-
-    or((
+    alt!(
         Kw::CurrentCatalog.map(|_| CurrentCatalog),
         cast_expr.map(From::from),
         coalesce_expr,
@@ -99,13 +86,8 @@ fn func_expr_common_subexpr_1(stream: &mut TokenStream) -> scan::Result<ExprNode
         current_schema,
         extract.map(From::from),
         greatest_expr,
+        json_common_subexpr,
         least_expr,
-    )).parse(stream)
-}
-
-fn func_expr_common_subexpr_2(stream: &mut TokenStream) -> scan::Result<ExprNode> {
-
-    or((
         merge_action,
         normalize.map(From::from),
         nullif_expr,
@@ -114,22 +96,25 @@ fn func_expr_common_subexpr_2(stream: &mut TokenStream) -> scan::Result<ExprNode
         role,
         substring.map(From::from),
         time,
-    )).parse(stream)
+        treat_expr,
+        trim.map(From::from),
+        xml_common_subexpr,
+    ).parse(stream)
 }
 
 fn json_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
-    or((
+    alt!(
         json_exists_expr.map(From::from),
         json_object.map(From::from),
         json_query_expr.map(From::from),
         json_scalar,
         json_serialize_expr.map(From::from),
         json_value_func.map(From::from),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn xml_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
-    or((
+    alt!(
         xml_concat,
         xml_element.map(From::from),
         xml_exists.map(From::from),
@@ -138,7 +123,7 @@ fn xml_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         xml_processing_instruction.map(From::from),
         xml_root.map(From::from),
         xml_serialize.map(From::from),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -185,7 +170,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

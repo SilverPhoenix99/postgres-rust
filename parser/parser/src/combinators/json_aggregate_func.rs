@@ -66,8 +66,9 @@ fn json_arrayagg(stream: &mut TokenStream) -> scan::Result<JsonArrayAgg> {
         ')'
     */
 
-    let (arg, sort, absent_on_null, output) = skip_prefix(1,
-        paren((
+    let (_, (arg, sort, absent_on_null, output)) = seq!(
+        skip(1),
+        paren(seq!(
             json_value_expr,
             sort_clause.optional(),
             json_constructor_null_clause.optional(),
@@ -153,6 +154,8 @@ mod tests {
 }
 
 use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
+use crate::combinators::foundation::skip;
 use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_constructor_null_clause;
