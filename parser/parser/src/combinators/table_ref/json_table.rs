@@ -1,13 +1,14 @@
-fn json_table_column_path_clause(stream: &mut TokenStream) -> scan::Result<Box<str>> {
+fn json_table_column_path_clause(stream: &mut TokenStream) -> scan::Result<JsonTablePathSpec> {
 
     /*
         PATH SCONST
     */
 
-    let (_, string) = seq!(Path, string)
+    let (_, path_spec) = seq!(Path, string)
         .parse(stream)?;
 
-    Ok(string)
+    let path_spec = JsonTablePathSpec::new(path_spec);
+    Ok(path_spec)
 }
 
 #[cfg(test)]
@@ -16,12 +17,13 @@ mod tests {
     use crate::tests::test_parser;
     use test_case::test_case;
 
-    #[test_case("path 'foo'" => Ok("foo".into()))]
-    fn test_json_table_column_path_clause(source: &str) -> scan::Result<Box<str>> {
+    #[test_case("path 'foo'" => Ok(JsonTablePathSpec::new("foo")))]
+    fn test_json_table_column_path_clause(source: &str) -> scan::Result<JsonTablePathSpec> {
         test_parser!(source, json_table_column_path_clause)
     }
 }
 
+use pg_ast::JsonTablePathSpec;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
