@@ -1,4 +1,49 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct XmlTable {
+    namespaces: Option<Vec<NamedValue>>,
+    row_spec: ExprNode,
+    doc: ExprNode,
+    columns: Vec<XmlTableColumn>,
+}
+
+impl XmlTable {
+    pub fn new(doc: ExprNode, row_spec: ExprNode, columns: Vec<XmlTableColumn>) -> Self {
+        Self {
+            namespaces: None,
+            row_spec,
+            doc,
+            columns
+        }
+    }
+
+    pub fn set_namespaces(&mut self, namespaces: Option<Vec<NamedValue>>) -> &mut Self {
+        self.namespaces = namespaces;
+        self
+    }
+
+    pub fn with_namespaces(mut self, namespaces: Vec<NamedValue>) -> Self {
+        self.namespaces = Some(namespaces);
+        self
+    }
+
+    pub fn namespaces(&self) -> Option<&Vec<NamedValue>> {
+        self.namespaces.as_ref()
+    }
+
+    pub fn row_spec(&self) -> &ExprNode {
+        &self.row_spec
+    }
+
+    pub fn doc(&self) -> &ExprNode {
+        &self.doc
+    }
+
+    pub fn columns(&self) -> &[XmlTableColumn] {
+        &self.columns
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct XmlTableColumn {
     name: Str,
     kind: XmlTableColumnKind
@@ -115,5 +160,5 @@ impl From<XmlTableColumnDefinition> for XmlTableColumnKind {
 }
 
 use pg_basics::Str;
-use crate::ExprNode;
+use crate::{ExprNode, NamedValue};
 use crate::Type;

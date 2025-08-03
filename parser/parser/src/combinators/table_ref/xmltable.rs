@@ -1,3 +1,31 @@
+pub(super) fn xmltable(stream: &mut TokenStream) -> scan::Result<XmlTable> {
+
+    /*
+        XMLTABLE '('
+            ( XMLNAMESPACES '(' xml_namespace_list ')' ',' )?
+            c_expr
+            xmlexists_argument
+            COLUMNS
+            xmltable_column_list
+        ')'
+    */
+
+    let (_, (namespaces, row_spec, doc, _, columns)) = (Xmltable, paren((
+        (Xmlnamespaces, paren(xml_namespace_list), Comma)
+            .map(|(_, namespaces, _)| namespaces)
+            .optional(),
+        expr_primary,
+        xmlexists_argument,
+        Columns,
+        xmltable_column_list
+    ))).parse(stream)?;
+
+    let mut xml_table = XmlTable::new(doc, row_spec, columns);
+    xml_table.set_namespaces(namespaces);
+
+    Ok(xml_table)
+}
+
 fn xmltable_column_list(stream: &mut TokenStream) -> scan::Result<Vec<XmlTableColumn>> {
 
     /*
@@ -145,6 +173,57 @@ mod tests {
         pg_basics::Location,
     };
 
+    #[test_case(
+        "xmltable(\
+            'path' \
+            passing by ref 'doc' \
+            columns \
+                a for ordinality, \
+                b int\
+        )"
+        => Ok(
+            XmlTable::new(
+                StringConst("doc".into()),
+                StringConst("path".into()),
+                vec![
+                    XmlTableColumn::new("a", ForOrdinality),
+                    XmlTableColumn::new("b",
+                        XmlTableColumnDefinition::from(Int4)
+                    ),
+                ]
+            )
+        )
+    )]
+    #[test_case(
+        "xmltable(\
+            xmlnamespaces(default 'foo', 'bar' as x), \
+            'path' \
+            passing 'doc' by value \
+            columns \
+                a int, \
+                b for ordinality\
+        )"
+        => Ok(
+            XmlTable::new(
+                StringConst("doc".into()),
+                StringConst("path".into()),
+                vec![
+                    XmlTableColumn::new("a",
+                        XmlTableColumnDefinition::from(Int4)
+                    ),
+                    XmlTableColumn::new("b", ForOrdinality),
+                ]
+            )
+            .with_namespaces(vec![
+                NamedValue::unnamed(StringConst("foo".into())),
+                NamedValue::new(Some("x".into()), StringConst("bar".into())),
+            ])
+        )
+    )]
+    fn test_xmltable(source: &str) -> scan::Result<XmlTable> {
+        test_parser!(source, xmltable)
+    }
+
     #[test_case("foo for ordinality" => Ok(
         XmlTableColumn::new("foo", ForOrdinality)
     ))]
@@ -230,20 +309,43 @@ mod tests {
     }
 }
 
-use crate::combinators::col_id::col_id;
-use crate::combinators::col_label::col_label;
+use crate::combinators::col_id;
+use crate::combinators::col_label;
 use crate::combinators::expr::b_expr;
-use crate::combinators::foundation::{identifier, located, many, many_sep, or, Combinator};
-use crate::combinators::typename::typename;
+use crate::combinators::expr::expr_primary;
+use crate::combinators::foundation::identifier;
+use crate::combinators::foundation::located;
+use crate::combinators::foundation::many;
+use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::or;
+use crate::combinators::foundation::paren;
+use crate::combinators::foundation::Combinator;
+use crate::combinators::typename;
+use crate::combinators::xmlexists_argument;
 use crate::scan;
 use crate::stream::TokenStream;
+use pg_ast::ExprNode;
+use pg_ast::NamedValue;
+use pg_ast::XmlTable;
+use pg_ast::XmlTableColumn;
+use pg_ast::XmlTableColumnDefinition;
 use pg_ast::XmlTableColumnKind::ForOrdinality;
-use pg_ast::{ExprNode, NamedValue, XmlTableColumn, XmlTableColumnDefinition};
+use pg_elog::parser::Error::ConflictingNullability;
+use pg_elog::parser::Error::DefaultValueAlreadyDeclared;
 use pg_elog::parser::Error::InvalidXmlTableOptionName;
+use pg_elog::parser::Error::PathValueAlreadyDeclared;
 use pg_elog::parser::Error::UnrecognizedColumnOption;
-use pg_elog::parser::Error::{ConflictingNullability, DefaultValueAlreadyDeclared, PathValueAlreadyDeclared};
 use pg_lexer::Keyword as Kw;
-use pg_lexer::Keyword::{As, DefaultKw, For, Not, Ordinality};
+use pg_lexer::Keyword::As;
+use pg_lexer::Keyword::Columns;
+use pg_lexer::Keyword::DefaultKw;
+use pg_lexer::Keyword::For;
+use pg_lexer::Keyword::Not;
+use pg_lexer::Keyword::Ordinality;
+use pg_lexer::Keyword::Xmlnamespaces;
+use pg_lexer::Keyword::Xmltable;
 use pg_lexer::OperatorKind::Comma;
 use XmlTableColumnOption::Default as DefaultOption;
-use XmlTableColumnOption::{NotNull, Null, Path};
+use XmlTableColumnOption::NotNull;
+use XmlTableColumnOption::Null;
+use XmlTableColumnOption::Path;
