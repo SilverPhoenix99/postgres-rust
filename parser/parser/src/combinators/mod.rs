@@ -9,6 +9,7 @@ pg_basics::reexport! { pub(super)
 
 pg_basics::reexport! {
     acl,
+    alias,
     all_or_var_name,
     any_name,
     array_bounds,
