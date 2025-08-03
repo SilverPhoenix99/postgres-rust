@@ -1,3 +1,4 @@
+/// Alias: `json_table_path_name_opt`
 pub(super) fn alias(stream: &mut TokenStream) -> scan::Result<Str> {
 
     /*
