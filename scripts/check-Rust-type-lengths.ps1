@@ -68,11 +68,15 @@ function Get-LlvmTypes {
         | Group-Object {$_} -NoElement `
         | ForEach-Object {&{
             $simplified = $_.Name `
-                -replace '(^|[<[(, ])(\w+?::)+','$1' `
                 -replace ',Global|Combi\b' `
                 -replace 'enum2\$<\s*(\w+)\s*>','$1' `
                 -replace '\s*\$?<','{' `
-                -replace '\s*\$?>','}'
+                -replace '\s*\$?>','}' `
+                -replace '\bpg_parser::combinators::(foundation::(\w+::)?)?' `
+                -replace '\bpg_lexer::keyword::keywords::' `
+                -replace '\bpg_parser::stream::token_stream::' `
+                -replace '\bpg_parser::error::scan::error::','scan::' `
+                -replace '\bcore::result::'
 
             [PSCustomObject]@{
                 Count = $_.Count
