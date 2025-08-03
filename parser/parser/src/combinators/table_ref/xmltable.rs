@@ -1,3 +1,77 @@
+fn xmltable_column_list(stream: &mut TokenStream) -> scan::Result<Vec<XmltableColumn>> {
+
+    /*
+        xmltable_column_el ( ',' xmltable_column_el )*
+    */
+
+    many_sep(Comma, xmltable_column_el).parse(stream)
+}
+
+fn xmltable_column_el(stream: &mut TokenStream) -> scan::Result<XmltableColumn> {
+
+    /*
+          col_id FOR ORDINALITY
+        | col_id Typename ( xmltable_column_option_el )*
+    */
+
+    let (column_name, kind) = (
+        col_id,
+        or((
+            (For, Ordinality).map(|_| None),
+            (typename, many(located(xmltable_column_option_el)).optional()).map(Some)
+        ))
+    ).parse(stream)?;
+
+    let Some((type_name, options)) = kind else {
+        return Ok(XmltableColumn::new(column_name, ForOrdinality))
+    };
+
+    let mut nullability_seen = false;
+    let mut column_def = XmltableColumnDefinition::from(type_name);
+
+    let options = options.into_iter().flatten();
+    for (option, loc) in options {
+        match option {
+            Null => {
+                if nullability_seen {
+                    return Err(ConflictingNullability(column_name).at(loc).into())
+                }
+                column_def.set_not_null(false);
+                nullability_seen = true;
+            }
+            NotNull => {
+                if nullability_seen {
+                    return Err(ConflictingNullability(column_name).at(loc).into())
+                }
+                column_def.set_not_null(true);
+                nullability_seen = true;
+            }
+            DefaultOption(value) => {
+                if column_def.default_value().is_some() {
+                    return Err(DefaultValueAlreadyDeclared.at(loc).into())
+                }
+                column_def.set_default_value(Some(value));
+            }
+            Path(value) => {
+                if column_def.path_spec().is_some() {
+                    return Err(PathValueAlreadyDeclared.at(loc).into())
+                }
+                column_def.set_path_spec(Some(value));
+            }
+        }
+    }
+
+    Ok(XmltableColumn::new(column_name, column_def))
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum XmltableColumnOption {
+    Null,
+    NotNull,
+    Default(ExprNode),
+    Path(ExprNode),
+}
+
 fn xmltable_column_option_el(stream: &mut TokenStream) -> scan::Result<XmltableColumnOption> {
 
     /*
@@ -71,6 +145,57 @@ mod tests {
         pg_basics::Location,
     };
 
+    #[test_case("foo for ordinality" => Ok(
+        XmltableColumn::new("foo", ForOrdinality)
+    ))]
+    #[test_case("bar int" => Ok(
+        XmltableColumn::new(
+            "bar",
+            XmltableColumnDefinition::from(Int4)
+        )
+    ))]
+    #[test_case("baz int not null default 1" => Ok(
+        XmltableColumn::new(
+            "baz",
+            XmltableColumnDefinition::from(Int4)
+                .with_not_null(true)
+                .with_default_value(IntegerConst(1))
+        )
+    ))]
+    #[test_case("qux int default 1 default 2" => Err(
+        DefaultValueAlreadyDeclared
+            .at(Location::new(18..25, 1, 19))
+            .into()
+    ))]
+    #[test_case("lorem int path 'x' path 'y'" => Err(
+        PathValueAlreadyDeclared
+            .at(Location::new(19..23, 1, 20))
+            .into()
+    ))]
+    #[test_case("yumyum int not null null" => Err(
+        ConflictingNullability("yumyum".into())
+            .at(Location::new(20..24, 1, 21))
+            .into()
+    ))]
+    #[test_case("narslog int null not null" => Err(
+        ConflictingNullability("narslog".into())
+            .at(Location::new(17..20, 1, 18))
+            .into()
+    ))]
+    #[test_case("umpus int null null" => Err(
+        ConflictingNullability("umpus".into())
+            .at(Location::new(15..19, 1, 16))
+            .into()
+    ))]
+    #[test_case("wawas int not null not null" => Err(
+        ConflictingNullability("wawas".into())
+            .at(Location::new(19..22, 1, 20))
+            .into()
+    ))]
+    fn test_xmltable_column_el(source: &str) -> scan::Result<XmltableColumn> {
+        test_parser!(source, xmltable_column_el)
+    }
+
     #[test_case("null" => Ok(Null))]
     #[test_case("not null" => Ok(NotNull))]
     #[test_case("default 'foo'" => Ok(DefaultOption(StringConst("foo".into()))))]
@@ -105,16 +230,20 @@ mod tests {
     }
 }
 
+use crate::combinators::col_id::col_id;
 use crate::combinators::col_label::col_label;
 use crate::combinators::expr::b_expr;
-use crate::combinators::foundation::{identifier, located, many_sep, or, Combinator};
+use crate::combinators::foundation::{identifier, located, many, many_sep, or, Combinator};
+use crate::combinators::typename::typename;
 use crate::scan;
 use crate::stream::TokenStream;
-use pg_ast::XmltableColumnOption::Default as DefaultOption;
-use pg_ast::XmltableColumnOption::{NotNull, Null, Path};
-use pg_ast::{NamedValue, XmltableColumnOption};
+use pg_ast::XmltableColumnKind::ForOrdinality;
+use pg_ast::{ExprNode, NamedValue, XmltableColumn, XmltableColumnDefinition};
 use pg_elog::parser::Error::InvalidXmlTableOptionName;
 use pg_elog::parser::Error::UnrecognizedColumnOption;
+use pg_elog::parser::Error::{ConflictingNullability, DefaultValueAlreadyDeclared, PathValueAlreadyDeclared};
 use pg_lexer::Keyword as Kw;
-use pg_lexer::Keyword::{As, DefaultKw, Not};
+use pg_lexer::Keyword::{As, DefaultKw, For, Not, Ordinality};
 use pg_lexer::OperatorKind::Comma;
+use XmltableColumnOption::Default as DefaultOption;
+use XmltableColumnOption::{NotNull, Null, Path};

@@ -86,6 +86,15 @@ pub enum Error {
 
     #[error(r#"unrecognized column option "{0}""#)]
     UnrecognizedColumnOption(Box<str>),
+
+    #[error("only one DEFAULT value is allowed")]
+    DefaultValueAlreadyDeclared,
+
+    #[error("only one PATH value per column is allowed")]
+    PathValueAlreadyDeclared,
+
+    #[error(r#"conflicting or redundant NULL / NOT NULL declarations for column "{0}""#)]
+    ConflictingNullability(Str),
 }
 
 impl Error {
@@ -168,6 +177,9 @@ impl_log_message! {
     UnrecognizedJsonEncoding => [InvalidParameterValue, None],
     InvalidXmlTableOptionName => [SyntaxError, None],
     UnrecognizedColumnOption => [SyntaxError, None],
+    DefaultValueAlreadyDeclared => [SyntaxError, None],
+    PathValueAlreadyDeclared => [SyntaxError, None],
+    ConflictingNullability => [SyntaxError, None],
 }
 
 use crate::sql_state::SqlState;
