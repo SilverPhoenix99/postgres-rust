@@ -1,7 +1,7 @@
 /// Alias: `CreatedbStmt`
 pub(super) fn create_database_stmt(stream: &mut TokenStream) -> scan::Result<CreateDatabaseStmt> {
 
-    let (_, name, _, options) = (
+    let (_, name, _, options) = seq!(
         Database,
         col_id,
         With.optional(),
@@ -24,7 +24,7 @@ fn createdb_opt_item(stream: &mut TokenStream) -> scan::Result<CreatedbOption> {
         | createdb_opt_name ( '=' )? var_value
     */
 
-    let (kind, _, value) = (
+    let (kind, _, value) = seq!(
         createdb_opt_name,
         Equals.optional(),
         createdb_opt_value
@@ -35,24 +35,11 @@ fn createdb_opt_item(stream: &mut TokenStream) -> scan::Result<CreatedbOption> {
 }
 
 fn createdb_opt_name(stream: &mut TokenStream) -> scan::Result<CreatedbOptionKind> {
-    // Broken down into smaller combinators, due to large Rust type names.
-    or((
-        createdb_opt_name_1,
-        createdb_opt_name_2,
-    )).parse(stream)
-}
-
-fn createdb_opt_name_1(stream: &mut TokenStream) -> scan::Result<CreatedbOptionKind> {
-    or((
-        (Connection, Limit).map(|_| ConnectionLimit),
+    alt!(
+        seq!(Connection, Limit).map(|_| ConnectionLimit),
         Kw::Encoding.map(|_| Encoding),
         LocationKw.map(|_| Location),
         Kw::Owner.map(|_| Owner),
-    )).parse(stream)
-}
-
-fn createdb_opt_name_2(stream: &mut TokenStream) -> scan::Result<CreatedbOptionKind> {
-    or((
         Kw::Tablespace.map(|_| Tablespace),
         Kw::Template.map(|_| Template),
         // Unless quoted, identifiers are lower case
@@ -71,7 +58,7 @@ fn createdb_opt_name_2(stream: &mut TokenStream) -> scan::Result<CreatedbOptionK
             "strategy" => Strategy,
             _ => Unknown(ident)
         })
-    )).parse(stream)
+    ).parse(stream)
 }
 
 pub(in crate::combinators::stmt) fn createdb_opt_value(stream: &mut TokenStream) -> scan::Result<CreatedbOptionValue> {
@@ -81,10 +68,10 @@ pub(in crate::combinators::stmt) fn createdb_opt_value(stream: &mut TokenStream)
         | var_value
     */
 
-    or((
+    alt!(
         DefaultKw.map(|_| CreatedbOptionValue::Default),
         var_value.map(From::from)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -162,9 +149,10 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::var_value;
 use crate::scan;

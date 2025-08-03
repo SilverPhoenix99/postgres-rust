@@ -26,7 +26,8 @@ pub(super) fn alter_function_stmt(stream: &mut TokenStream) -> scan::Result<RawS
 
     // SET SCHEMA is inlined, because it conflicts with `alter_function_option -> SET set_rest_more`.
 
-    let (func_type, signature, stmt) = (func_type, function_with_argtypes, changes).parse(stream)?;
+    let (func_type, signature, stmt) = seq!(func_type, function_with_argtypes, changes)
+        .parse(stream)?;
 
     let stmt = match (func_type, stmt) {
         (AlterFunctionKind::Function, Change::Extension { action, extension }) => {
@@ -89,22 +90,22 @@ pub(super) fn alter_function_stmt(stream: &mut TokenStream) -> scan::Result<RawS
 }
 
 fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
-    or((
+    alt!(
         change_extension,
         change_owner,
         rename,
         set_schema,
         options
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn change_extension(stream: &mut TokenStream) -> scan::Result<Change> {
 
-    let (action, extension) = (
-        or((
-            (No, Depends, On, Extension).map(|_| AddDrop::Drop),
-            (Depends, On, Extension).map(|_| AddDrop::Add)
-        )),
+    let (action, extension) = seq!(
+        alt!(
+            seq!(No, Depends, On, Extension).map(|_| AddDrop::Drop),
+            seq!(Depends, On, Extension).map(|_| AddDrop::Add)
+        ),
         col_id
     ).parse(stream)?;
 
@@ -113,26 +114,26 @@ fn change_extension(stream: &mut TokenStream) -> scan::Result<Change> {
 
 fn change_owner(stream: &mut TokenStream) -> scan::Result<Change> {
 
-    let (.., new_owner) = (Owner, To, role_spec).parse(stream)?;
+    let (.., new_owner) = seq!(Owner, To, role_spec).parse(stream)?;
     Ok(Change::Owner(new_owner))
 }
 
 fn rename(stream: &mut TokenStream) -> scan::Result<Change> {
 
-    let (.., new_name) = (Rename, To, col_id).parse(stream)?;
+    let (.., new_name) = seq!(Rename, To, col_id).parse(stream)?;
     Ok(Change::Name(new_name))
 }
 
 fn set_schema(stream: &mut TokenStream) -> scan::Result<Change> {
 
-    let (.., new_schema) = (
+    let (.., new_schema) = seq!(
         Set,
         Schema,
-        or((
+        alt!(
             col_id,
-            (string, Restrict.optional())
+            seq!(string, Restrict.optional())
                 .map(|(new_schema, _)| new_schema.into())
-        ))
+        )
     ).parse(stream)?;
 
     Ok(Change::Schema(new_schema))
@@ -140,7 +141,7 @@ fn set_schema(stream: &mut TokenStream) -> scan::Result<Change> {
 
 fn options(stream: &mut TokenStream) -> scan::Result<Change> {
 
-    let (options, _) = (alterfunc_opt_list, Restrict.optional())
+    let (options, _) = seq!(alterfunc_opt_list, Restrict.optional())
         .parse(stream)?;
 
     Ok(Change::Options(options))
@@ -148,11 +149,11 @@ fn options(stream: &mut TokenStream) -> scan::Result<Change> {
 
 fn func_type(stream: &mut TokenStream) -> scan::Result<AlterFunctionKind> {
 
-    or((
+    alt!(
         Kw::Function.map(|_| AlterFunctionKind::Function),
         Kw::Procedure.map(|_| AlterFunctionKind::Procedure),
         Kw::Routine.map(|_| AlterFunctionKind::Routine),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn alterfunc_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<AlterFunctionOption>> {
@@ -311,13 +312,14 @@ mod tests {
                 AlterFunctionOption::Cost(100.into()),
                 AlterFunctionOption::Leakproof(true)
             ]
-    );
+        );
     }
 }
 
 use crate::combinators::col_id;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::function_with_argtypes;

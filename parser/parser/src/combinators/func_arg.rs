@@ -48,13 +48,13 @@ pub(super) fn func_arg(stream: &mut TokenStream<'_>) -> scan::Result<FunctionPar
 
 fn arg_class(stream: &mut TokenStream<'_>) -> scan::Result<FunctionParameterMode> {
 
-    or((
-        (Kw::In, Kw::Out.optional())
+    alt!(
+        seq!(Kw::In, Kw::Out.optional())
             .map(|(_, out)| if out.is_some() { InOut } else { In }),
         Kw::Out.map(|_| Out),
         Kw::Inout.map(|_| InOut),
         Kw::Variadic.map(|_| Variadic),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn is_arg_name(first: &TokenValue, second: &TokenValue) -> bool {
@@ -122,7 +122,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_type;
 use crate::combinators::type_function_name;

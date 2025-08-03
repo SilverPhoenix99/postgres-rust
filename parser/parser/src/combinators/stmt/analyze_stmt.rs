@@ -6,7 +6,7 @@ pub(super) fn analyze_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
         | (ANALYSE | ANALYZE) VERBOSE opt_vacuum_relation_list
     */
 
-    let (_, stmt) = (
+    let (_, stmt) = seq!(
         analyze_keyword,
         parser(|_| todo!())
     ).parse(stream)?;
@@ -15,6 +15,7 @@ pub(super) fn analyze_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 }
 
 use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::analyze_keyword;
 use crate::scan;

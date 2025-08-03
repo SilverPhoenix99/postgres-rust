@@ -17,9 +17,9 @@ pub(crate) fn json_name_and_value(stream: &mut TokenStream) -> scan::Result<Json
         To avoid conflicts between `a_expr` and `c_expr`, `a_expr` is used instead of `c_expr`.
     */
 
-    let (name, _, value) = (
+    let (name, _, value) = seq!(
         a_expr,
-        or((Value.skip(), Colon.skip())),
+        alt!(Value.skip(), Colon.skip()),
         json_value_expr
     ).parse(stream)?;
 
@@ -59,8 +59,9 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_value_expr;
 use crate::scan;

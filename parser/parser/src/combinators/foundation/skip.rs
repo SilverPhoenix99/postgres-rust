@@ -3,14 +3,6 @@ pub(in crate::combinators) fn skip(n: usize) -> SkipCombi {
     SkipCombi(n)
 }
 
-pub(in crate::combinators) fn skip_prefix<P>(n: usize, suffix: P)
-    -> impl Combinator<Output = P::Output>
-where
-    P: Combinator
-{
-    (skip(n), suffix).map(|(_, expr)| expr)
-}
-
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub(in crate::combinators) struct SkipCombi(usize);
 

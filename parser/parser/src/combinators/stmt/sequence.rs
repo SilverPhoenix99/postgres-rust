@@ -4,7 +4,7 @@ pub(super) fn sequence(stream: &mut TokenStream) -> scan::Result<QualifiedName> 
         SEQUENCE any_name
     */
 
-    let (_, name) = (Sequence, any_name)
+    let (_, name) = seq!(Sequence, any_name)
         .parse(stream)?;
 
     Ok(name)
@@ -26,6 +26,7 @@ mod tests {
 }
 
 use crate::combinators::any_name;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

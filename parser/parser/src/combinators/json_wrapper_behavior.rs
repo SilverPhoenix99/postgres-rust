@@ -8,7 +8,7 @@ pub(super) fn json_wrapper_behavior(stream: &mut TokenStream) -> scan::Result<Js
         | WITH ( UNCONDITIONAL )? ( ARRAY )? WRAPPER
     */
 
-    let (behavior, ..) = (wrapper_behavior, Array.optional(), Wrapper)
+    let (behavior, ..) = seq!(wrapper_behavior, Array.optional(), Wrapper)
         .parse(stream)?;
 
     Ok(behavior)
@@ -16,16 +16,16 @@ pub(super) fn json_wrapper_behavior(stream: &mut TokenStream) -> scan::Result<Js
 
 fn wrapper_behavior(stream: &mut TokenStream) -> scan::Result<JsonWrapperBehavior> {
 
-    or((
+    alt!(
         Kw::Without.map(|_| Without),
-        (
+        seq!(
             With,
-            or((
+            alt!(
                 Kw::Conditional.map(|_| Conditional),
                 Kw::Unconditional.optional().map(|_| Unconditional),
-            ))
+            )
         ).map(|(_, behavior)| behavior),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -49,7 +49,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

@@ -5,18 +5,18 @@ pub(super) fn commit_stmt(stream: &mut TokenStream) -> scan::Result<TransactionS
         COMMIT ( work_or_transaction )? ( transaction_chain )?
     */
 
-    let (_, stmt) = (
+    let (_, stmt) = seq!(
         Commit,
-        or((
-            (Prepared, string)
+        alt!(
+            seq!(Prepared, string)
                 .map(|(_, tx_name)| CommitPrepared(tx_name)),
-            (
+            seq!(
                 work_or_transaction.optional(),
                 transaction_chain
                     .optional()
                     .map(Option::unwrap_or_default)
             ).map(|(_, chain)| TransactionStmt::Commit(chain))
-        ))
+        )
     ).parse(stream)?;
 
     Ok(stmt)
@@ -49,7 +49,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::transaction_chain;

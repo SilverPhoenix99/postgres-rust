@@ -7,7 +7,7 @@ pub(super) fn generic_options(stream: &mut TokenStream) -> scan::Result<Vec<Gene
 /// Alias: `generic_option_elem`
 pub(super) fn generic_option(stream: &mut TokenStream) -> scan::Result<GenericOption> {
 
-    let (name, arg) = (col_label, string).parse(stream)?;
+    let (name, arg) = seq!(col_label, string).parse(stream)?;
     let option = GenericOption::new(name, arg);
     Ok(option)
 }
@@ -41,6 +41,7 @@ mod tests {
 
 use crate::combinators::col_label;
 use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::scan;

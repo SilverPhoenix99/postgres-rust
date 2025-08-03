@@ -5,7 +5,7 @@ pub(super) fn check_point_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt
         CHECKPOINT ( utility_options )?
     */
 
-    let (_, options) = (
+    let (_, options) = seq!(
         Checkpoint,
         utility_options.optional()
     ).parse(stream)?;
@@ -30,6 +30,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::utility_options;
 use crate::scan;

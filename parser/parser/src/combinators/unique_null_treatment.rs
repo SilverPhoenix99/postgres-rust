@@ -5,7 +5,7 @@ pub(super) fn unique_null_treatment(stream: &mut TokenStream) -> scan::Result<Un
         NULLS ( NOT )? DISTINCT
     */
 
-    let (_, not, _) = (
+    let (_, not, _) = seq!(
         Nulls,
         Not.optional(),
         Distinct
@@ -29,6 +29,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

@@ -23,7 +23,7 @@ pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> scan::Result<RawS
         )
     */
 
-    let (_, name, change) = (Database, col_id, changes).parse(stream)?;
+    let (_, name, change) = seq!(Database, col_id, changes).parse(stream)?;
 
     let stmt = match change {
         Change::RefreshVersion => {
@@ -69,7 +69,7 @@ fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
         set_option,
         reset_stmt
             .map(Change::ResetOption),
-        (With, alterdb_opt_list)
+        seq!(With, alterdb_opt_list)
             .map(|(_, options)| Change::Options(options)),
         alterdb_opt_list
             .map(Change::Options),
@@ -78,32 +78,32 @@ fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
 
 fn refresh_collation_version(stream: &mut TokenStream) -> scan::Result<Change> {
 
-    (Refresh, Collation, Version).parse(stream)?;
+    seq!(Refresh, Collation, Version).parse(stream)?;
     Ok(Change::RefreshVersion)
 }
 
 fn change_owner(stream: &mut TokenStream) -> scan::Result<Change> {
 
-    let (.., new_owner) = (Owner, To, role_spec).parse(stream)?;
+    let (.., new_owner) = seq!(Owner, To, role_spec).parse(stream)?;
     Ok(Change::Owner(new_owner))
 }
 
 fn rename(stream: &mut TokenStream) -> scan::Result<Change> {
 
-    let (.., new_name) = (Rename, To, col_id).parse(stream)?;
+    let (.., new_name) = seq!(Rename, To, col_id).parse(stream)?;
     Ok(Change::Name(new_name))
 }
 
 fn set_option(stream: &mut TokenStream) -> scan::Result<Change> {
 
-    let (_, change) = (
+    let (_, change) = seq!(
         Set,
-        or((
-            (Kw::Tablespace, col_id)
+        alt!(
+            seq!(Kw::Tablespace, col_id)
                 .map(|(_, tablespace)| Change::Tablespace(tablespace)),
             set_rest
                 .map(Change::SetOption)
-        ))
+        )
     ).parse(stream)?;
     Ok(change)
 }
@@ -120,7 +120,7 @@ fn alterdb_opt_item(stream: &mut TokenStream) -> scan::Result<AlterdbOption> {
         | alterdb_opt_name ( '=' )? var_value
     */
 
-    let (kind, _, value) = (
+    let (kind, _, value) = seq!(
         alterdb_opt_name,
         Equals.optional(),
         createdb_opt_value
@@ -132,15 +132,15 @@ fn alterdb_opt_item(stream: &mut TokenStream) -> scan::Result<AlterdbOption> {
 
 fn alterdb_opt_name(stream: &mut TokenStream) -> scan::Result<AlterdbOptionKind> {
 
-    or((
-        (Connection, Limit).map(|_| ConnectionLimit),
+    alt!(
+        seq!(Connection, Limit).map(|_| ConnectionLimit),
         Kw::Tablespace.map(|_| Tablespace),
         identifier.map(|ident| match ident.as_ref() {
             "allow_connections" => AllowConnections,
             "is_template" => IsTemplate,
             _ => Unknown(ident)
         })
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -243,7 +243,7 @@ use crate::combinators::col_id;
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::combinators::stmt::createdb_opt_value;

@@ -5,13 +5,12 @@ pub(in crate::combinators) fn end_stmt(stream: &mut TokenStream) -> scan::Result
         END_P ( work_or_transaction )? ( transaction_chain )?
     */
 
-    let (.., chain) = (
+    let (.., chain) = seq!(
         End,
         work_or_transaction.optional(),
         transaction_chain.optional()
             .map(Option::unwrap_or_default)
-    )
-    .parse(stream)?;
+    ).parse(stream)?;
 
     Ok(Commit(chain))
 }
@@ -34,6 +33,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::transaction_chain;
 use crate::combinators::work_or_transaction;

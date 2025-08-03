@@ -14,13 +14,16 @@ pub(super) fn xml_serialize(stream: &mut TokenStream) -> scan::Result<XmlSeriali
         return no_match(stream)
     }
 
-    let (kind, content, _, type_name, indent) = skip_prefix(1, paren((
-        document_or_content,
-        a_expr,
-        As,
-        simple_typename,
-        xml_indent_option.optional()
-    ))).parse(stream)?;
+    let (_, (kind, content, _, type_name, indent)) = seq!(
+        skip(1),
+        paren(seq!(
+            document_or_content,
+            a_expr,
+            As,
+            simple_typename,
+            xml_indent_option.optional()
+        ))
+    ).parse(stream)?;
 
     let indent = indent.unwrap_or_default();
 
@@ -36,10 +39,10 @@ fn xml_indent_option(stream: &mut TokenStream) -> scan::Result<bool> {
         ( NO )? INDENT
     */
 
-    or((
+    alt!(
         Indent.map(|_| true),
-        (No, Indent).map(|_| false),
-    )).parse(stream)
+        seq!(No, Indent).map(|_| false),
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -85,9 +88,10 @@ mod tests {
 
 use crate::combinators::document_or_content;
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::skip_prefix;
+use crate::combinators::foundation::seq;
+use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::simple_typename;
 use crate::no_match;

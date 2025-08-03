@@ -31,7 +31,7 @@ pub(super) fn role_spec(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
             | non_reserved_word
     */
 
-    or((
+    alt!(
         CurrentRole.map(|_| RoleSpec::CurrentRole),
         CurrentUser.map(|_| RoleSpec::CurrentUser),
         SessionUser.map(|_| RoleSpec::SessionUser),
@@ -41,7 +41,7 @@ pub(super) fn role_spec(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
             "public" => RoleSpec::Public,
             _ => RoleSpec::Name(ident)
         })
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn role_none(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
@@ -135,9 +135,9 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word;
 use crate::scan;

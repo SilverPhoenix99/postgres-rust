@@ -4,7 +4,7 @@ pub(super) fn conversion(stream: &mut TokenStream) -> scan::Result<QualifiedName
         CONVERSION any_name
     */
 
-    let (_, name) = (Conversion, any_name)
+    let (_, name) = seq!(Conversion, any_name)
         .parse(stream)?;
 
     Ok(name)
@@ -26,6 +26,7 @@ mod tests {
 }
 
 use crate::combinators::any_name;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

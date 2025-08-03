@@ -15,7 +15,7 @@ pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> scan::Result<Raw
         ALTER COLLATION any_name SET SCHEMA ColId
     */
 
-    let (_, name, change) = (Collation, any_name, changes).parse(stream)?;
+    let (_, name, change) = seq!(Collation, any_name, changes).parse(stream)?;
 
     let stmt = match change {
         Change::RefreshVersion => {
@@ -45,16 +45,16 @@ pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> scan::Result<Raw
 }
 
 fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
-    or((
-        (Refresh, Version)
+    alt!(
+        seq!(Refresh, Version)
             .map(|_| Change::RefreshVersion),
-        (Owner, To, role_spec)
+        seq!(Owner, To, role_spec)
             .map(|(.., role)| Change::Owner(role)),
-        (Rename, To, col_id)
+        seq!(Rename, To, col_id)
             .map(|(.., name)| Change::Name(name)),
-        (Set, Schema, col_id)
+        seq!(Set, Schema, col_id)
             .map(|(.., schema)| Change::Schema(schema))
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -111,7 +111,8 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::scan;

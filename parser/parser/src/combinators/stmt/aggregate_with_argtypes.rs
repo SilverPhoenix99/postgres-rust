@@ -13,7 +13,7 @@ pub(super) fn aggregate_with_argtypes(stream: &mut TokenStream) -> scan::Result<
         func_name aggr_args
     */
 
-    let (name, (args, order_by)) = (func_name, aggr_args).parse(stream)?;
+    let (name, (args, order_by)) = seq!(func_name, aggr_args).parse(stream)?;
 
     Ok(AggregateWithArgs::new(name, args, order_by))
 }
@@ -32,16 +32,16 @@ pub(super) fn aggr_args(stream: &mut TokenStream) -> scan::Result<(Vec<FunctionP
 }
 
 pub(super) fn any_aggr_arg(stream: &mut TokenStream) -> scan::Result<(Vec<FunctionParameter>, Vec<FunctionParameter>)> {
-    or((
+    alt!(
         Mul.map(|_| (Vec::new(), Vec::new())),
         order_by_aggr_args.map(|args| (Vec::new(), args)),
-        (
+        seq!(
             aggr_args_list,
             order_by_aggr_args
                 .optional()
                 .map(Option::unwrap_or_default)
         )
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn order_by_aggr_args(stream: &mut TokenStream) -> scan::Result<Vec<FunctionParameter>> {
@@ -50,7 +50,7 @@ fn order_by_aggr_args(stream: &mut TokenStream) -> scan::Result<Vec<FunctionPara
         ORDER BY aggr_args_list
     */
 
-    let (.., args) = (Order, By, aggr_args_list).parse(stream)?;
+    let (.., args) = seq!(Order, By, aggr_args_list).parse(stream)?;
 
     Ok(args)
 }
@@ -199,10 +199,11 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg;
 use crate::combinators::func_name;

@@ -5,13 +5,13 @@ pub(super) fn frame_extent(stream: &mut TokenStream<'_>) -> scan::Result<FrameEx
         | BETWEEN frame_bound AND frame_bound
     */
 
-    or(( between_frame_bounds, single_frame_bound))
+    alt!(between_frame_bounds, single_frame_bound)
         .parse(stream)
 }
 
 fn between_frame_bounds(stream: &mut TokenStream<'_>) -> scan::Result<FrameExtent> {
 
-    let (_, start, _, (end, loc)) = (
+    let (_, start, _, (end, loc)) = seq!(
         Between,
         frame_bound,
         And,
@@ -217,8 +217,9 @@ mod tests {
 }
 
 use super::frame_bound::frame_bound;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::window_specification::frame_bound::FrameBound::CurrentRow;
 use crate::combinators::window_specification::frame_bound::FrameBound::OffsetFollowing;

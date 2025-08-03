@@ -6,12 +6,12 @@ pub(super) fn nulls_order(stream: &mut TokenStream) -> scan::Result<SortNulls> {
         | NULLS LAST
     */
 
-    let (_, order) = (
+    let (_, order) = seq!(
         Nulls,
-        or((
+        alt!(
             First.map(|_| NullsFirst),
             Last.map(|_| NullsLast),
-        ))
+        )
     ).parse(stream)?;
 
     Ok(order)
@@ -30,7 +30,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

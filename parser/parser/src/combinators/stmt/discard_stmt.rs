@@ -5,15 +5,15 @@ pub(super) fn discard_stmt(stream: &mut TokenStream) -> scan::Result<DiscardStmt
         DISCARD (ALL | PLANS | SEQUENCES | TEMP | TEMPORARY)
     */
 
-    let (_, stmt) = (
+    let (_, stmt) = seq!(
         Discard,
-        or((
+        alt!(
             All.map(|_| DiscardStmt::All),
             Plans.map(|_| DiscardStmt::Plans),
             Sequences.map(|_| DiscardStmt::Sequences),
-            or((Temp, Temporary))
+            alt!(Temp, Temporary)
                 .map(|_| DiscardStmt::Temporary),
-        ))
+        )
     ).parse(stream)?;
 
     Ok(stmt)
@@ -35,7 +35,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

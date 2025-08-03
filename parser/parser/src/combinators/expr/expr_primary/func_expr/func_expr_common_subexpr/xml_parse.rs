@@ -8,11 +8,14 @@ pub(super) fn xml_parse(stream: &mut TokenStream) -> scan::Result<XmlParse> {
         return no_match(stream)
     }
 
-    let (kind, content, whitespace) = skip_prefix(1, paren((
-        document_or_content,
-        a_expr,
-        xml_whitespace_option.optional()
-    ))).parse(stream)?;
+    let (_, (kind, content, whitespace)) = seq!(
+        skip(1),
+        paren(seq!(
+            document_or_content,
+            a_expr,
+            xml_whitespace_option.optional()
+        ))
+    ).parse(stream)?;
 
     let expr = XmlParse::new(
         kind,
@@ -29,11 +32,11 @@ fn xml_whitespace_option(stream: &mut TokenStream) -> scan::Result<XmlWhitespace
         ( PRESERVE | STRIP ) WHITESPACE
     */
 
-    let (option, _) = (
-        or((
+    let (option, _) = seq!(
+        alt!(
             Kw::Preserve.map(|_| Preserve),
             Kw::Strip.map(|_| Strip),
-        )),
+        ),
         Whitespace
     ).parse(stream)?;
 
@@ -81,9 +84,10 @@ mod tests {
 
 use crate::combinators::document_or_content;
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::skip_prefix;
+use crate::combinators::foundation::seq;
+use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;
 use crate::scan;

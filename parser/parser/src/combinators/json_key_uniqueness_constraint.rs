@@ -5,11 +5,11 @@ pub(super) fn json_key_uniqueness_constraint(stream: &mut TokenStream) -> scan::
         ( WITH | WITHOUT ) UNIQUE ( KEYS )?
     */
 
-    let (unique, ..) = (
-        or((
+    let (unique, ..) = seq!(
+        alt!(
             With.map(|_| true),
             Without.map(|_| false)
-        )),
+        ),
         Unique,
         Keys.optional()
     ).parse(stream)?;
@@ -32,7 +32,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

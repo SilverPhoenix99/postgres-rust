@@ -16,35 +16,35 @@ fn create_role_option(stream: &mut TokenStream) -> scan::Result<CreateRoleOption
         | alter_role_option
     */
 
-    or((
+    alt!(
         sysid,
         admin,
         role,
         inherit,
         alter_role_option.map(CreateRoleOption::from)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn sysid(stream: &mut TokenStream) -> scan::Result<CreateRoleOption> {
-    let (_, id) = (Sysid, integer).parse(stream)?;
+    let (_, id) = seq!(Sysid, integer).parse(stream)?;
     Ok(CreateRoleOption::SysId(id))
 }
 
 fn admin(stream: &mut TokenStream) -> scan::Result<CreateRoleOption> {
-    let (_, members) = (Admin, role_list).parse(stream)?;
+    let (_, members) = seq!(Admin, role_list).parse(stream)?;
     Ok(CreateRoleOption::AdminMembers(members))
 }
 
 fn role(stream: &mut TokenStream) -> scan::Result<CreateRoleOption> {
-    let (_, roles) = (Role, role_list).parse(stream)?;
+    let (_, roles) = seq!(Role, role_list).parse(stream)?;
     Ok(CreateRoleOption::AddRoleTo(roles))
 }
 
 fn inherit(stream: &mut TokenStream) -> scan::Result<CreateRoleOption> {
 
-    let (.., roles) = (
+    let (.., roles) = seq!(
         Inherit,
-        or((Role, Group)),
+        alt!(Role, Group),
         role_list
     ).parse(stream)?;
 
@@ -83,9 +83,10 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::integer;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role::role_list;
 use crate::combinators::stmt::alter_role_option;

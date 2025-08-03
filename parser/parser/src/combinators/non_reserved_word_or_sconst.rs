@@ -1,10 +1,10 @@
 /// Alias: `NonReservedWord_or_Sconst`
 pub(super) fn non_reserved_word_or_sconst(stream: &mut TokenStream) -> scan::Result<Str> {
 
-    or((
+    alt!(
         non_reserved_word,
         string.map(Str::from)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -20,7 +20,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word;

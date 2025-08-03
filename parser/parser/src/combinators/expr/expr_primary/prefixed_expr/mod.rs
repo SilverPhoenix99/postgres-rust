@@ -14,10 +14,10 @@ pub(super) fn prefixed_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> 
         | func_application func_args_tail        => func_expr
     */
 
-    or((
+    alt!(
         identifier_prefixed_expr,
         type_func_name_prefixed_expr
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -39,7 +39,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

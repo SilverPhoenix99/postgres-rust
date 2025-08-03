@@ -5,7 +5,7 @@ pub(super) fn transaction_chain(stream: &mut TokenStream) -> scan::Result<Transa
         AND ( NO )? CHAIN
     */
 
-    let (_, chain, _) = (
+    let (_, chain, _) = seq!(
         And,
         No.optional(),
         Chain
@@ -33,6 +33,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

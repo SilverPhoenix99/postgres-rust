@@ -15,7 +15,7 @@ pub(super) fn xml_element(stream: &mut TokenStream) -> scan::Result<XmlElement> 
 
     let (_, (_, name, extra_args)) = seq!(
         skip(1),
-        paren((
+        paren(seq!(
             Name,
             col_label,
             xml_element_extra_args.optional()
@@ -45,19 +45,19 @@ fn xml_element_extra_args(stream: &mut TokenStream) -> scan::Result<ExtraArgs>
         )
     */
 
-    let (_, (args, content)) = (
+    let (_, (args, content)) = seq!(
         Comma,
-        or((
-            (
+        alt!(
+            seq!(
                 xml_attributes.map(Some),
-                (Comma, expr_list)
+                seq!(Comma, expr_list)
                     .map(|(_, content)| content)
                     .optional()
             ),
             expr_list.map(|content| {
                 (None, Some(content))
             })
-        ))
+        )
     ).parse(stream)?;
 
     Ok((args, content))
@@ -69,7 +69,7 @@ fn xml_attributes(stream: &mut TokenStream) -> scan::Result<Vec<NamedValue>> {
         XMLATTRIBUTES '(' xml_attribute_list ')'
     */
 
-    let (_, attrs) = (Xmlattributes, paren(xml_attribute_list))
+    let (_, attrs) = seq!(Xmlattributes, paren(xml_attribute_list))
         .parse(stream)?;
 
     Ok(attrs)
@@ -122,7 +122,7 @@ mod tests {
 use super::xml_attribute_list;
 use crate::combinators::col_label;
 use crate::combinators::expr_list;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;

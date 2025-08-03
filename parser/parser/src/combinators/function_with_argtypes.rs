@@ -27,11 +27,10 @@ pub(super) fn function_with_argtypes(stream: &mut TokenStream) -> scan::Result<F
             | col_name_keyword       ( attrs ( func_args )? )?
     */
 
-    // Broken down into smaller combinators, due to large Rust type names.
-    or((
+    alt!(
         function_with_argtypes_1,
         function_with_argtypes_2,
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn function_with_argtypes_1(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
@@ -40,7 +39,7 @@ fn function_with_argtypes_1(stream: &mut TokenStream) -> scan::Result<FunctionWi
         function_name func_args
     */
 
-    let (name, args) = (function_name, func_args)
+    let (name, args) = seq!(function_name, func_args)
         .parse(stream)?;
 
     Ok(FunctionWithArgs::new(name, args))
@@ -53,20 +52,19 @@ fn function_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
         | ( unreserved_keyword | identifier ) ( attrs )?
     */
 
-    or((
+    alt!(
         TypeFuncName
             .map(|name| vec![name.text().into()]),
         attrs!(
-            or((
+            alt!(
                 Unreserved.map(Str::from),
                 identifier.map(Str::from)
-            ))
+            )
         )
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn function_with_argtypes_2(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
-
 
     let name = attrs!(ColumnName.map(From::from))
         .parse(stream)?;
@@ -155,10 +153,11 @@ mod tests {
 }
 
 use crate::combinators::attrs::attrs;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg;
 use crate::result::Optional;

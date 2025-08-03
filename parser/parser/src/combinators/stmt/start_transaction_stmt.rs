@@ -4,7 +4,7 @@ pub(super) fn start_transaction_stmt(stream: &mut TokenStream) -> scan::Result<T
         START TRANSACTION ( transaction_mode_list )?
     */
 
-    let (.., tx_modes) = (
+    let (.., tx_modes) = seq!(
         Start,
         Transaction,
         transaction_mode_list.optional()
@@ -42,6 +42,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::transaction_mode_list;
 use crate::scan;

@@ -16,8 +16,9 @@ pub(super) fn treat_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         return no_match(stream)
     }
 
-    let (expr, _, typename) = skip_prefix(1,
-        paren((a_expr, As, typename))
+    let (_, (expr, _, typename)) = seq!(
+        skip(1),
+        paren(seq!(a_expr, As, typename))
     ).parse(stream)?;
 
     let cast = TypecastExpr::new(expr, typename);
@@ -54,7 +55,8 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::skip_prefix;
+use crate::combinators::foundation::seq;
+use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
 use crate::no_match;

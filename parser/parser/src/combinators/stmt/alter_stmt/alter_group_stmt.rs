@@ -14,10 +14,10 @@ pub(super) fn alter_group_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt
         ALTER GROUP role_spec (ADD | DROP) USER role_list
     */
 
-    let (_, (group, loc), stmt) = (
+    let (_, (group, loc), stmt) = seq!(
         Group,
         located(role_spec),
-        or((rename, change_role))
+        alt!(rename, change_role)
     ).parse(stream)?;
 
     let stmt = match stmt {
@@ -37,17 +37,17 @@ pub(super) fn alter_group_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt
 
 fn rename(stream: &mut TokenStream) -> scan::Result<Change> {
 
-    let (.., new_name) = (Rename, To, role_id).parse(stream)?;
+    let (.., new_name) = seq!(Rename, To, role_id).parse(stream)?;
     Ok(Change::Rename(new_name))
 }
 
 fn change_role(stream: &mut TokenStream) -> scan::Result<Change> {
 
-    let (action, _, roles) = (
-        or((
+    let (action, _, roles) = seq!(
+        alt!(
             Add.map(|_| AddDrop::Add),
             DropKw.map(|_| AddDrop::Drop)
-        )),
+        ),
         User,
         role_list
     ).parse(stream)?;
@@ -95,8 +95,9 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_id;
 use crate::combinators::role_list;

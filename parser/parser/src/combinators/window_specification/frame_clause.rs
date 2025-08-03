@@ -7,12 +7,12 @@ pub(super) fn frame_clause(stream: &mut TokenStream<'_>) -> scan::Result<WindowF
       | GROUPS frame_extent ( window_exclusion_clause )?
     */
 
-    let (kind, extent, exclusion) = (
-        or((
+    let (kind, extent, exclusion) = seq!(
+        alt!(
             RangeKw.map(|_| Range),
             Kw::Rows.map(|_| Rows),
             Kw::Groups.map(|_| Groups),
-        )),
+        ),
         frame_extent,
         window_exclusion_clause.optional()
             .map(Option::unwrap_or_default),
@@ -62,7 +62,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::window_specification::frame_extent;
 use crate::combinators::window_specification::window_exclusion_clause;

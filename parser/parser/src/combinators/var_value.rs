@@ -10,10 +10,10 @@ pub(super) fn var_value(stream: &mut TokenStream) -> scan::Result<VarValue> {
         | signed_number
     */
 
-    or((
+    alt!(
         boolean_or_string.map(From::from),
         signed_number.map(From::from)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -34,8 +34,8 @@ mod tests {
 }
 
 use crate::combinators::boolean_or_string;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::signed_number;
 use crate::scan;

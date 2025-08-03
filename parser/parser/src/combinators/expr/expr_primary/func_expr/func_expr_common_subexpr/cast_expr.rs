@@ -4,9 +4,9 @@ pub(super) fn cast_expr(stream: &mut TokenStream) -> scan::Result<TypecastExpr> 
         CAST '(' a_expr AS Typename ')'
     */
 
-    let (_, (arg, _, type_name)) = (
+    let (_, (arg, _, type_name)) = seq!(
         Cast,
-        paren((a_expr, As, typename))
+        paren(seq!(a_expr, As, typename))
     ).parse(stream)?;
 
     let expr = TypecastExpr::new(arg, type_name);
@@ -35,6 +35,7 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
 use crate::scan;

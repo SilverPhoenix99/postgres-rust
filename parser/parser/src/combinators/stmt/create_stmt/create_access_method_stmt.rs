@@ -5,7 +5,7 @@ pub(super) fn create_access_method_stmt(stream: &mut TokenStream) -> scan::Resul
         ACCESS METHOD ColId TYPE_P am_type HANDLER any_name
     */
 
-    let (_, _, name, _, kind, _, handler) = (Access, Method, col_id, Type, am_type, Handler, any_name)
+    let (_, _, name, _, kind, _, handler) = seq!(Access, Method, col_id, Type, am_type, Handler, any_name)
         .parse(stream)?;
 
     let stmt = CreateAccessMethodStmt::new(name, kind, handler);
@@ -14,10 +14,10 @@ pub(super) fn create_access_method_stmt(stream: &mut TokenStream) -> scan::Resul
 
 fn am_type(stream: &mut TokenStream) -> scan::Result<AccessMethodKind> {
 
-    or((
+    alt!(
         Kw::Index.map(|_| Index),
         Kw::Table.map(|_| Table)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -44,7 +44,8 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

@@ -5,10 +5,10 @@ pub(super) fn document_or_content(stream: &mut TokenStream) -> scan::Result<XmlN
         | CONTENT
     */
 
-    or((
+    alt!(
         Kw::Document.map(|_| Document),
         Kw::Content.map(|_| Content)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -29,7 +29,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

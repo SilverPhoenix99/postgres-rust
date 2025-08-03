@@ -5,7 +5,7 @@ pub(super) fn abort_stmt(stream: &mut TokenStream) -> scan::Result<TransactionSt
         ABORT_P ( work_or_transaction )? ( transaction_chain )?
     */
 
-    let (.., chain) = (
+    let (.., chain) = seq!(
         Abort,
         work_or_transaction.optional(),
         transaction_chain
@@ -34,6 +34,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::transaction_chain;
 use crate::combinators::work_or_transaction;

@@ -8,10 +8,11 @@ pub(super) fn normalize(stream: &mut TokenStream) -> scan::Result<NormalizeFunc>
         return no_match(stream)
     }
 
-    let (expr, normal_form) = skip_prefix(1,
-        paren((
+    let (_, (expr, normal_form)) = seq!(
+        skip(1),
+        paren(seq!(
             a_expr,
-            (Comma, unicode_normal_form).optional()
+            seq!(Comma, unicode_normal_form).optional()
         ))
     ).parse(stream)?;
 
@@ -56,7 +57,8 @@ mod tests {
 use crate::combinators::expr::a_expr;
 use crate::combinators::expr::unicode_normal_form;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::skip_prefix;
+use crate::combinators::foundation::seq;
+use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;
 use crate::scan;

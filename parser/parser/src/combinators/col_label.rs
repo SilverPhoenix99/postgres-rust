@@ -3,10 +3,10 @@
 /// * `attr_name`
 pub(in crate::combinators) fn col_label(stream: &mut TokenStream) -> scan::Result<Str> {
 
-    or((
+    alt!(
         identifier.map(From::from),
         any_keyword.map(From::from)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -25,9 +25,9 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::any_keyword;
 use crate::combinators::foundation::identifier;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

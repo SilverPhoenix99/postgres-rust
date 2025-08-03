@@ -6,14 +6,14 @@ pub(super) fn json_behavior_clause(stream: &mut TokenStream) -> scan::Result<Jso
         | json_behavior ON EMPTY ( json_behavior ON ERROR )?
     */
 
-    let (first, _, second) = (
+    let (first, _, second) = seq!(
         json_behavior,
         On,
-        or((
+        alt!(
             ErrorKw.map(|_| None),
-            (Empty, json_on_error_clause.optional())
+            seq!(Empty, json_on_error_clause.optional())
                 .map(|(_, behavior)| Some(behavior))
-        ))
+        )
     ).parse(stream)?;
 
     let clause = match second {
@@ -42,7 +42,7 @@ pub(super) fn json_on_error_clause(stream: &mut TokenStream) -> scan::Result<Jso
         json_behavior ON ERROR
     */
 
-    let (behavior, ..) = (json_behavior, On, ErrorKw)
+    let (behavior, ..) = seq!(json_behavior, On, ErrorKw)
         .parse(stream)?;
 
     Ok(behavior)
@@ -61,7 +61,7 @@ pub(super) fn json_behavior(stream: &mut TokenStream) -> scan::Result<JsonBehavi
         | DEFAULT a_expr
     */
 
-    or((
+    alt!(
         ErrorKw.map(|_| Error),
         Kw::Null.map(|_| Null),
         Kw::True.map(|_| True),
@@ -69,7 +69,7 @@ pub(super) fn json_behavior(stream: &mut TokenStream) -> scan::Result<JsonBehavi
         Kw::Unknown.map(|_| Unknown),
         empty_behavior,
         default_behavior
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn empty_behavior(stream: &mut TokenStream) -> scan::Result<JsonBehavior> {
@@ -78,12 +78,12 @@ fn empty_behavior(stream: &mut TokenStream) -> scan::Result<JsonBehavior> {
         EMPTY (ARRAY | OBJECT)?
     */
 
-    let (_, behavior) = (
+    let (_, behavior) = seq!(
         Empty,
-        or((
+        alt!(
             Array.map(|_| EmptyArray),
             Object.map(|_| EmptyObject)
-        )).optional(/* non-standard, for Oracle compatibility only */)
+        ).optional(/* non-standard, for Oracle compatibility only */)
     ).parse(stream)?;
 
     let behavior = behavior.unwrap_or(EmptyArray);
@@ -97,7 +97,7 @@ fn default_behavior(stream: &mut TokenStream) -> scan::Result<JsonBehavior> {
         DEFAULT a_expr
     */
 
-    let (_, expr) = (DefaultKw, a_expr).parse(stream)?;
+    let (_, expr) = seq!(DefaultKw, a_expr).parse(stream)?;
     Ok(JsonBehavior::Default(expr))
 }
 
@@ -147,7 +147,8 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

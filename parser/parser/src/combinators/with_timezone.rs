@@ -5,11 +5,11 @@ pub(super) fn with_timezone(stream: &mut TokenStream) -> scan::Result<bool> {
         (WITH | WITHOUT) TIME ZONE
     */
 
-    let (with_tz, ..) = (
-        or((
+    let (with_tz, ..) = seq!(
+        alt!(
             With.map(|_| true),
             Without.map(|_| false)
-        )),
+        ),
         Time,
         Zone
     ).parse(stream)?;
@@ -30,7 +30,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

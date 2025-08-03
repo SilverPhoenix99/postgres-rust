@@ -4,7 +4,7 @@ pub(super) fn large_object(stream: &mut TokenStream) -> scan::Result<SignedNumbe
         LARGE OBJECT NumericOnly
     */
 
-    let (.., id) = (Large, Object, signed_number)
+    let (.., id) = seq!(Large, Object, signed_number)
         .parse(stream)?;
 
     Ok(id)
@@ -26,6 +26,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::signed_number;
 use crate::scan;

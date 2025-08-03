@@ -17,15 +17,15 @@ pub(super) fn interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> 
         | SECOND ( '(' ICONST ')' )?
     */
 
-    or((
+    alt!(
         year,
         MonthKw.map(|_| Month),
         day,
         hour,
         minute,
-        (SecondKw, precision.optional())
+        seq!(SecondKw, precision.optional())
             .map(|(_, precision)| Second { precision }),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn year(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
@@ -35,9 +35,9 @@ fn year(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
         | YEAR TO MONTH
     */
 
-    let (_, interval) = (
+    let (_, interval) = seq!(
         YearKw,
-        (To, MonthKw).optional()
+        seq!(To, MonthKw).optional()
     ).parse(stream)?;
 
     let interval = if interval.is_some() { YearToMonth } else { Year };
@@ -53,16 +53,16 @@ fn day(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
         | DAY TO SECOND ( '(' ICONST ')' )?
     */
 
-    let (_, interval) = (
+    let (_, interval) = seq!(
         DayKw,
-        (
+        seq!(
             To,
-            or((
+            alt!(
                 HourKw.map(|_| DayToHour),
                 MinuteKw.map(|_| DayToMinute),
-                (SecondKw, precision.optional())
+                seq!(SecondKw, precision.optional())
                     .map(|(_, precision)| DayToSecond { precision })
-            ))
+            )
         )
             .map(|(_, interval)| interval)
             .optional()
@@ -80,15 +80,15 @@ fn hour(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
         | HOUR TO SECOND ( '(' ICONST ')' )?
     */
 
-    let (_, interval) = (
+    let (_, interval) = seq!(
         HourKw,
-        (
+        seq!(
             To,
-            or((
+            alt!(
                 MinuteKw.map(|_| HourToMinute),
-                (SecondKw, precision.optional())
+                seq!(SecondKw, precision.optional())
                     .map(|(_, precision)| HourToSecond { precision })
-            ))
+            )
         )
             .map(|(_, interval)| interval)
             .optional()
@@ -105,9 +105,9 @@ fn minute(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
         | MINUTE TO SECOND ( '(' ICONST ')' )?
     */
 
-    let (_, precision) = (
+    let (_, precision) = seq!(
         MinuteKw,
-        (To, SecondKw, precision.optional())
+        seq!(To, SecondKw, precision.optional())
             .map(|(.., precision)| precision)
             .optional()
     ).parse(stream)?;
@@ -144,7 +144,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::precision;
 use crate::scan;

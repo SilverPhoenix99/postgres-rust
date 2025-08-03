@@ -4,7 +4,7 @@ pub(super) fn alter_generic_options(stream: &mut TokenStream) -> scan::Result<Ve
         OPTIONS '(' alter_generic_option_list ')'
     */
 
-    let (_, options) = (
+    let (_, options) = seq!(
         Options,
         paren(alter_generic_option_list)
     ).parse(stream)?;
@@ -31,16 +31,16 @@ fn alter_generic_option(stream: &mut TokenStream) -> scan::Result<GenericOptionK
         | generic_option_elem
     */
 
-    or((
-        (Kw::Set, generic_option)
+    alt!(
+        seq!(Kw::Set, generic_option)
             .map(|(_, opt)| Set(opt)),
-        (Kw::Add, generic_option)
+        seq!(Kw::Add, generic_option)
             .map(|(_, opt)| Add(opt)),
-        (DropKw, col_label)
+        seq!(DropKw, col_label)
             .map(|(_, opt)| Drop(opt)),
         generic_option
             .map(Unspecified)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -86,9 +86,10 @@ mod tests {
 }
 
 use crate::combinators::col_label;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_option;
 use crate::scan;

@@ -4,7 +4,7 @@ pub(super) fn create_generic_options(stream: &mut TokenStream) -> scan::Result<V
         OPTIONS '(' generic_option_list ')'
     */
 
-    let (_, options) = (Options, paren(generic_options))
+    let (_, options) = seq!(Options, paren(generic_options))
         .parse(stream)?;
 
     Ok(options)
@@ -29,6 +29,7 @@ mod tests {
 }
 
 use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_options;
 use crate::scan;

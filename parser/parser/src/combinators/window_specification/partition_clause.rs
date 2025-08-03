@@ -5,7 +5,7 @@ pub(super) fn partition_clause(stream: &mut TokenStream) -> scan::Result<Vec<Exp
         PARTITION BY expr_list
     */
 
-    let (.., exprs) = (Partition, By, expr_list)
+    let (.., exprs) = seq!(Partition, By, expr_list)
         .parse(stream)?;
 
     Ok(exprs)
@@ -26,6 +26,7 @@ mod tests {
 }
 
 use crate::combinators::expr_list;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

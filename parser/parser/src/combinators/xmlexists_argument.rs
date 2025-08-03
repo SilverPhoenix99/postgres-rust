@@ -6,7 +6,7 @@ pub(super) fn xmlexists_argument(stream: &mut TokenStream) -> scan::Result<ExprN
         PASSING ( xml_passing_mech )? c_expr ( xml_passing_mech )?
     */
 
-    let (_, _, expr, _) = (
+    let (_, _, expr, _) = seq!(
         Passing,
         xml_passing_mech.optional(),
         expr_primary,
@@ -58,6 +58,7 @@ mod tests {
 }
 
 use crate::combinators::expr::expr_primary;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;
 use crate::scan;

@@ -26,10 +26,10 @@ fn indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
         | '[' a_expr ':' a_expr ']'
     */
 
-    or((
+    alt!(
         dot_indirection_el,
         brackets(index_indirection_el)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn dot_indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
@@ -39,12 +39,12 @@ fn dot_indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
         | '.' ColLabel
     */
 
-    let (_, indirection) = (
+    let (_, indirection) = seq!(
         Dot,
-        or((
+        alt!(
             Mul.map(|_| Wildcard),
             col_label.map(Property),
-        ))
+        )
     ).parse(stream)?;
 
     Ok(indirection)
@@ -60,17 +60,17 @@ fn index_indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
         | '[' a_expr ':' a_expr ']'
     */
 
-    or((
-        (
+    alt!(
+        seq!(
             Colon,
             a_expr.map(|index| Slice(None, Some(index)))
                 .optional()
         )
             .map(|(_, expr)| expr.unwrap_or(Slice(None, None))),
 
-        (
+        seq!(
             a_expr,
-            (Colon, a_expr.optional())
+            seq!(Colon, a_expr.optional())
                 .map(|(_, expr)| expr)
                 .optional()
         )
@@ -79,7 +79,7 @@ fn index_indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
                 Some(None) => Slice(Some(left), None),
                 Some(Some(right)) => Slice(Some(left), Some(right)),
             })
-    )).parse(stream)
+    ).parse(stream)
 }
 
 pub(super) fn check_indirection(indirection: Located<Vec<Indirection>>) -> scan::Result<Vec<Indirection>> {
@@ -167,9 +167,10 @@ mod tests {
 
 use crate::combinators::col_label;
 use crate::combinators::expr::a_expr;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::brackets;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

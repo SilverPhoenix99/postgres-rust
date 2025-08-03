@@ -1,18 +1,18 @@
 pub(super) fn prepare_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
     /*
-        PREPARE TRANSACTION SCONST
-        PREPARE ColId ( '(' type_list ')' )? AS PreparableStmt
+          PREPARE TRANSACTION SCONST
+        | PREPARE ColId ( '(' type_list ')' )? AS PreparableStmt
     */
 
-    let (_, stmt) = (
+    let (_, stmt) = seq!(
         Prepare,
-        or((
-            (Transaction, string)
+        alt!(
+            seq!(Transaction, string)
                 .map(|(_, tx_id)| PrepareTransactionStmt(tx_id)),
             col_id
                 .map(|_name| todo!())
-        ))
+        )
     ).parse(stream)?;
 
     Ok(stmt)
@@ -34,7 +34,8 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::scan;

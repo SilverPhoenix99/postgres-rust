@@ -5,15 +5,15 @@ pub(super) fn generic_set_tail(stream: &mut TokenStream) -> scan::Result<ValueOr
         | (TO | '=') var_list
     */
 
-    let (_, value) = (
-        or((
+    let (_, value) = seq!(
+        alt!(
             To.skip(),
             Equals.skip()
-        )),
-        or((
+        ),
+        alt!(
             DefaultKw.map(|_| ValueOrDefault::Default),
             var_list.map(ValueOrDefault::Value)
-        ))
+        )
     ).parse(stream)?;
 
     Ok(value)
@@ -34,7 +34,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::var_list;
 use crate::scan;

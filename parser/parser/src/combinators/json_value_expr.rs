@@ -13,7 +13,7 @@ pub(super) fn json_value_expr(stream: &mut TokenStream) -> scan::Result<JsonValu
         a_expr ( json_format_clause )?
     */
 
-    let (expr, format) = (a_expr, json_format_clause.optional())
+    let (expr, format) = seq!(a_expr, json_format_clause.optional())
         .parse(stream)?;
 
     let format = format.unwrap_or_default();
@@ -59,6 +59,7 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_format_clause;
 use crate::scan;

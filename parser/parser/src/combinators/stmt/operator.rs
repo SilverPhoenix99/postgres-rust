@@ -7,20 +7,20 @@ pub(super) enum Operator {
 
 pub(super) fn operator(stream: &mut TokenStream) -> scan::Result<Operator> {
 
-    let (_, op) = (
+    let (_, op) = seq!(
         Kw::Operator,
-        or((
-            (Class, any_name, Using, col_id)
+        alt!(
+            seq!(Class, any_name, Using, col_id)
                 .map(|(_, name, _, index_method)|
                     Operator::Class { name, index_method }
                 ),
-            (Family, any_name, Using, col_id)
+            seq!(Family, any_name, Using, col_id)
                 .map(|(_, name, _, index_method)|
                     Operator::Family { name, index_method }
                 ),
             operator_with_argtypes
                 .map(Operator::WithArgs)
-        ))
+        )
     ).parse(stream)?;
 
     Ok(op)
@@ -64,7 +64,8 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::operator_with_argtypes;
 use crate::scan;

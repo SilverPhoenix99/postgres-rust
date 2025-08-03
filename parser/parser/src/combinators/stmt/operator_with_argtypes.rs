@@ -13,7 +13,7 @@ pub(super) fn operator_with_argtypes(stream: &mut TokenStream) -> scan::Result<O
         any_operator oper_argtypes
     */
 
-    let (name, args) = (any_operator, oper_argtypes).parse(stream)?;
+    let (name, args) = seq!(any_operator, oper_argtypes).parse(stream)?;
 
     Ok(OperatorWithArgs::new(name, args))
 }
@@ -31,10 +31,10 @@ fn oper_argtypes(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
 }
 
 fn oper_argtypes_between(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
-    or((
+    alt!(
         none_type,
         both_types
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn none_type(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
@@ -43,7 +43,7 @@ fn none_type(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
         '(' NONE ',' Typename ')'
     */
 
-    let (.., typ) = (NoneKw, Comma, typename)
+    let (.., typ) = seq!(NoneKw, Comma, typename)
         .parse(stream)?;
 
     Ok(OneOrBoth::Right(typ))
@@ -54,8 +54,8 @@ fn both_types(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
     /*
         '(' Typename ',' (Typename | NONE) ')'
     */
-    
-    let (typ1, typ2) = (typename, right_type)
+
+    let (typ1, typ2) = seq!(typename, right_type)
         .parse(stream)?;
 
     let pair = match typ2 {
@@ -75,17 +75,17 @@ fn right_type(stream: &mut TokenStream) -> scan::Result<Option<Type>> {
         | ',' NONE ')'
         | ')' => Err
     */
-    
-    or((
+
+    alt!(
         close_paren,
-        (
+        seq!(
             Comma,
-            or((
+            alt!(
                 NoneKw.map(|_| None),
                 typename.map(Some)
-            ))
+            )
         ).map(|(_, typ)| typ)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 /// The `Result<Option>` needs to match the caller's return type.
@@ -137,10 +137,11 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::operators::any_operator;
 use crate::combinators::typename;

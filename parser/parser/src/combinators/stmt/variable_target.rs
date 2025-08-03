@@ -8,19 +8,19 @@ pub(super) fn variable_target(stream: &mut TokenStream) -> scan::Result<Variable
         | all_or_var_name
     */
 
-    or((
-        (Time, Zone)
+    alt!(
+        seq!(Time, Zone)
             .map(|_| TimeZone),
-        (Transaction, Isolation, Level)
+        seq!(Transaction, Isolation, Level)
             .map(|_| TransactionIsolation),
-        (Session, Authorization)
+        seq!(Session, Authorization)
             .map(|_| SessionAuthorization),
         all_or_var_name
             .map(|reset| match reset {
                 OneOrAll::All => VariableTarget::All,
                 OneOrAll::One(name) => VariableTarget::Variable { name }
             })
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -40,7 +40,8 @@ mod tests {
 }
 
 use crate::combinators::all_or_var_name;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

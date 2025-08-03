@@ -5,7 +5,7 @@ pub(super) fn json_returning_clause(stream: &mut TokenStream) -> scan::Result<Js
         RETURNING Typename ( json_format_clause )?
     */
 
-    let (_, type_name, format) = (
+    let (_, type_name, format) = seq!(
         Returning,
         typename,
         json_format_clause.optional()
@@ -48,6 +48,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_format_clause;
 use crate::combinators::typename;

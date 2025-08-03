@@ -7,7 +7,7 @@ pub(super) fn json_passing_clause(stream: &mut TokenStream) -> scan::Result<Vec<
         PASSING json_argument ( ',' json_argument )*
     */
 
-    let (_, args) = (Passing, many_sep(Comma, json_argument))
+    let (_, args) = seq!(Passing, many_sep(Comma, json_argument))
         .parse(stream)?;
 
     Ok(args)
@@ -19,7 +19,7 @@ fn json_argument(stream: &mut TokenStream) -> scan::Result<JsonArgument> {
         json_value_expr AS col_label
     */
 
-    let (value, _, key) = (json_value_expr, As, col_label)
+    let (value, _, key) = seq!(json_value_expr, As, col_label)
         .parse(stream)?;
 
     Ok((key, value))
@@ -62,6 +62,7 @@ mod tests {
 
 use crate::combinators::col_label;
 use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_value_expr;
 use crate::scan;

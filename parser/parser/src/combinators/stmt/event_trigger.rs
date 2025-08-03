@@ -4,7 +4,7 @@ pub(super) fn event_trigger(stream: &mut TokenStream) -> scan::Result<Str> {
         EVENT TRIGGER ColId
     */
 
-    let (.., name) = (Event, Trigger, col_id)
+    let (.., name) = seq!(Event, Trigger, col_id)
         .parse(stream)?;
 
     Ok(name)
@@ -26,6 +26,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

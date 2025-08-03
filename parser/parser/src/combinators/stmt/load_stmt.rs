@@ -5,7 +5,7 @@ pub(super) fn load_stmt(stream: &mut TokenStream) -> scan::Result<Box<str>> {
         LOAD SCONST
     */
 
-    let (_, lib_name) = (Load, string)
+    let (_, lib_name) = seq!(Load, string)
         .parse(stream)?;
 
     Ok(lib_name)
@@ -26,6 +26,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::scan;

@@ -8,13 +8,13 @@ pub(super) fn role(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         | USER
     */
 
-    or((
+    alt!(
         Kw::CurrentRole.map(|_| CurrentRole),
         Kw::CurrentUser.map(|_| CurrentUser),
         Kw::SessionUser.map(|_| SessionUser),
         Kw::SystemUser.map(|_| SystemUser),
         Kw::User.map(|_| User),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -33,7 +33,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

@@ -5,10 +5,10 @@ pub(super) fn json_format_clause(stream: &mut TokenStream) -> scan::Result<JsonF
         FORMAT JSON ( ENCODING ColId )?
     */
 
-    let (_, _, encoding) = (
+    let (_, _, encoding) = seq!(
         Format,
         Json,
-        (Encoding, located(col_id)).optional()
+        seq!(Encoding, located(col_id)).optional()
     ).parse(stream)?;
 
     let encoding = encoding.map(|(_, encoding)| encoding);
@@ -42,8 +42,8 @@ mod tests {
     use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::JsonFormatKind::Text;
-    use test_case::test_case;
     use pg_elog::Error::Parser;
+    use test_case::test_case;
 
     #[test_case("format json" => Ok(JsonFormat::text()))]
     #[test_case("format json encoding UTF8" => Ok(
@@ -73,6 +73,7 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::located;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

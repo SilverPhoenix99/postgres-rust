@@ -10,7 +10,7 @@ pub(super) fn overlay(stream: &mut TokenStream) -> scan::Result<OverlayFunc> {
         return no_match(stream)
     }
 
-    let args = skip_prefix(1, paren(overlay_args.optional()))
+    let (_, args) = seq!(skip(1), paren(overlay_args.optional()))
         .parse(stream)?;
 
     let args = args.unwrap_or_default();
@@ -50,7 +50,7 @@ fn overlay_list(stream: &mut TokenStream) -> scan::Result<(ExprNode, ExprNode, O
         PLACING a_expr FROM a_expr ( FOR a_expr )?
     */
 
-    let (_, placing, (from, r#for)) = (Placing, a_expr, from_for_args)
+    let (_, placing, (from, r#for)) = seq!(Placing, a_expr, from_for_args)
         .parse(stream)?;
 
     Ok((placing, from, r#for))
@@ -125,7 +125,8 @@ mod tests {
 use super::from_for_args;
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::skip_prefix;
+use crate::combinators::foundation::seq;
+use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg_list;
 use crate::no_match;

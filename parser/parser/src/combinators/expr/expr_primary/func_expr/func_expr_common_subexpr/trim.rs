@@ -10,7 +10,7 @@ pub(super) fn trim(stream: &mut TokenStream) -> scan::Result<TrimFunc> {
         return no_match(stream)
     }
 
-    let expr = skip_prefix(1, paren(trim_args))
+    let (_, expr) = seq!(skip(1), paren(trim_args))
         .parse(stream)?;
 
     Ok(expr)
@@ -24,20 +24,20 @@ fn trim_args(stream: &mut TokenStream) -> scan::Result<TrimFunc> {
         | ( BOTH )? trim_list
     */
 
-    let (trim_side, args) = or((
+    let (trim_side, args) = alt!(
 
-        (Kw::Leading.map(|_| Leading), trim_list),
+        seq!(Kw::Leading.map(|_| Leading), trim_list),
 
-        (Kw::Trailing.map(|_| Trailing), trim_list),
+        seq!(Kw::Trailing.map(|_| Trailing), trim_list),
 
-        (
+        seq!(
             Kw::Both.map(|_| Both)
                 .optional()
                 .map(Option::unwrap_or_default),
             trim_list
         )
 
-    )).parse(stream)?;
+    ).parse(stream)?;
 
     let expr = TrimFunc::new(trim_side, args);
     Ok(expr)
@@ -50,14 +50,14 @@ fn trim_list(stream: &mut TokenStream) -> scan::Result<Vec<ExprNode>> {
         | a_expr ( ( FROM | ',') expr_list )?
     */
 
-    or((
-        (FromKw, expr_list).map(|(_, args)| args),
-        (a_expr,
-            (
-                or((
+    alt!(
+        seq!(FromKw, expr_list).map(|(_, args)| args),
+        seq!(a_expr,
+            seq!(
+                alt!(
                     Comma.map(|_| true),  // Prepend
                     FromKw.map(|_| false) // Append
-                )),
+                ),
                 expr_list
             ).optional()
                 .map(|opt|
@@ -73,7 +73,7 @@ fn trim_list(stream: &mut TokenStream) -> scan::Result<Vec<ExprNode>> {
                 }
                 args
             })
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -150,9 +150,10 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::expr_list;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::skip_prefix;
+use crate::combinators::foundation::seq;
+use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;
 use crate::scan;

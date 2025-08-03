@@ -4,7 +4,7 @@ pub(super) fn if_exists(stream: &mut TokenStream) -> scan::Result<Presence> {
         IF EXISTS
     */
 
-    let _ = (If, Exists).parse(stream)?;
+    let _ = seq!(If, Exists).parse(stream)?;
 
     Ok(Presence::Ignore)
 }
@@ -24,6 +24,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

@@ -10,7 +10,7 @@ pub(super) fn substring(stream: &mut TokenStream) -> scan::Result<SubstringFunc>
         return no_match(stream)
     }
 
-    let args = skip_prefix(1, paren(substring_args.optional()))
+    let (_, args) = seq!(skip(1), paren(substring_args.optional()))
         .parse(stream)?;
 
     let args = args.unwrap_or_default();
@@ -50,12 +50,12 @@ fn substring_list(stream: &mut TokenStream) -> scan::Result<(ExprNode, Option<Ex
         | FOR a_expr ( FROM a_expr )?
     */
 
-    or((
+    alt!(
         similar_escape_args
             .map(|(similar, escape)| (similar, Some(escape))),
         from_for_args,
         for_from_args
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn similar_escape_args(stream: &mut TokenStream) -> scan::Result<(ExprNode, ExprNode)> {
@@ -64,7 +64,7 @@ fn similar_escape_args(stream: &mut TokenStream) -> scan::Result<(ExprNode, Expr
         SIMILAR a_expr ESCAPE a_expr
     */
 
-    let (_, similar, _, escape) = (Similar, a_expr, Escape, a_expr)
+    let (_, similar, _, escape) = seq!(Similar, a_expr, Escape, a_expr)
         .parse(stream)?;
 
     Ok((similar, escape))
@@ -83,7 +83,7 @@ pub(super) fn from_for_args(stream: &mut TokenStream) -> scan::Result<(ExprNode,
         to accept it.
     */
 
-    let (_, from, r#for) = (FromKw, a_expr, (For, a_expr).optional())
+    let (_, from, r#for) = seq!(FromKw, a_expr, seq!(For, a_expr).optional())
         .parse(stream)?;
 
     let for_arg = r#for.map(|(_, expr)| expr);
@@ -99,7 +99,7 @@ fn for_from_args(stream: &mut TokenStream) -> scan::Result<(ExprNode, Option<Exp
         not legal per SQL, but C-PG allows this
     */
 
-    let (_, r#for, from) = (For, a_expr, (FromKw, a_expr).optional())
+    let (_, r#for, from) = seq!(For, a_expr, seq!(FromKw, a_expr).optional())
         .parse(stream)?;
 
     let args = match from {
@@ -209,9 +209,10 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::skip_prefix;
+use crate::combinators::foundation::seq;
+use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg_list;
 use crate::no_match;

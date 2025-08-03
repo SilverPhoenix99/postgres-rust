@@ -4,7 +4,7 @@ pub(super) fn publication(stream: &mut TokenStream) -> scan::Result<Str> {
         PUBLICATION ColId
     */
 
-    let (_, name) = (Publication, col_id)
+    let (_, name) = seq!(Publication, col_id)
         .parse(stream)?;
 
     Ok(name)
@@ -26,6 +26,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

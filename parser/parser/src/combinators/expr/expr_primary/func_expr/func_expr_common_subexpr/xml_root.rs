@@ -13,12 +13,15 @@ pub(super) fn xml_root(stream: &mut TokenStream) -> scan::Result<XmlRoot> {
         return no_match(stream)
     }
 
-    let (content, _, version, standalone) = skip_prefix(1, paren((
-        a_expr,
-        Comma,
-        xml_root_version,
-        (Comma, xml_root_standalone).optional()
-    ))).parse(stream)?;
+    let (_, (content, _, version, standalone)) = seq!(
+        skip(1),
+        paren(seq!(
+            a_expr,
+            Comma,
+            xml_root_version,
+            seq!(Comma, xml_root_standalone).optional()
+        ))
+    ).parse(stream)?;
 
     let standalone = standalone.map(|(_, standalone)| standalone);
 
@@ -37,12 +40,12 @@ fn xml_root_version(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         )
     */
 
-    let (_, version) = (
+    let (_, version) = seq!(
         Version,
-        or((
+        alt!(
             version_no_value,
             a_expr
-        ))
+        )
     ).parse(stream)?;
 
     Ok(version)
@@ -72,15 +75,15 @@ fn xml_root_standalone(stream: &mut TokenStream) -> scan::Result<XmlStandalone> 
         )
     */
 
-    let (_, standalone) = (
+    let (_, standalone) = seq!(
         Standalone,
-        or((
+        alt!(
             Kw::Yes.map(|_| Yes),
-            (Kw::No, Value.optional())
+            seq!(Kw::No, Value.optional())
                 .map(|(_, val)|
                     if val.is_some() { NoValue } else { No }
                 )
-        ))
+        )
     ).parse(stream)?;
 
     Ok(standalone)
@@ -131,9 +134,10 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::skip_prefix;
+use crate::combinators::foundation::seq;
+use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;
 use crate::scan;

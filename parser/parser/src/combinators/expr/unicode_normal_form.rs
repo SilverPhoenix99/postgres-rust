@@ -1,11 +1,11 @@
 pub(super) fn unicode_normal_form(stream: &mut TokenStream) -> scan::Result<UnicodeNormalForm> {
 
-    or((
+    alt!(
         Nfc.map(|_| CanonicalComposition),
         Nfd.map(|_| CanonicalDecomposition),
         Nfkc.map(|_| CompatibilityComposition),
         Nfkd.map(|_| CompatibilityDecomposition)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -23,7 +23,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

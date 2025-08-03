@@ -27,7 +27,7 @@ fn utility_option(stream: &mut TokenStream) -> scan::Result<UtilityOption> {
         utility_option_name ( var_value )?
     */
 
-    let (name, value) = (
+    let (name, value) = seq!(
         utility_option_name,
         var_value.optional()
     ).parse(stream)?;
@@ -43,11 +43,11 @@ fn utility_option_name(stream: &mut TokenStream) -> scan::Result<UtilityOptionNa
         | FORMAT
     */
 
-    or((
+    alt!(
         Kw::Format.map(|_| Format),
         analyze_keyword.map(|_| Analyze),
         non_reserved_word.map(Generic)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -100,9 +100,10 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word;
 use crate::combinators::stmt::analyze_keyword;

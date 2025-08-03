@@ -9,14 +9,14 @@ pub(super) fn foreign(stream: &mut TokenStream) -> scan::Result<Foreign> {
         FOREIGN any_name
     */
 
-    let (_, foreign) = (
+    let (_, foreign) = seq!(
         Kw::Foreign,
-        or((
-            (Data, Wrapper, col_id)
+        alt!(
+            seq!(Data, Wrapper, col_id)
                 .map(|(.., name)| Foreign::DataWrapper(name)),
-            (Kw::Table, any_name)
+            seq!(Kw::Table, any_name)
                 .map(|(_, name)| Foreign::Table(name))
-        ))
+        )
     ).parse(stream)?;
 
     Ok(foreign)
@@ -48,7 +48,8 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

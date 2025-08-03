@@ -4,7 +4,7 @@ pub(super) fn procedure(stream: &mut TokenStream) -> scan::Result<FunctionWithAr
         PROCEDURE function_with_argtypes
     */
 
-    let (_, signature) = (Procedure, function_with_argtypes)
+    let (_, signature) = seq!(Procedure, function_with_argtypes)
         .parse(stream)?;
 
     Ok(signature)
@@ -25,6 +25,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::function_with_argtypes;
 use crate::scan;

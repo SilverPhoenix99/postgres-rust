@@ -13,7 +13,7 @@ pub(super) fn alter_event_trigger_stmt(stream: &mut TokenStream) -> scan::Result
         ALTER EVENT TRIGGER ColId RENAME TO ColId
     */
 
-    let (.., event_trigger, change) = (Event, Trigger, col_id, changes).parse(stream)?;
+    let (.., event_trigger, change) = seq!(Event, Trigger, col_id, changes).parse(stream)?;
 
     let stmt = match change {
         Change::EnableTrigger(state) => {
@@ -37,13 +37,13 @@ pub(super) fn alter_event_trigger_stmt(stream: &mut TokenStream) -> scan::Result
 }
 
 fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
-    or((
+    alt!(
         enable_trigger.map(Change::EnableTrigger),
-        (Owner, To, role_spec)
+        seq!(Owner, To, role_spec)
             .map(|(.., new_owner)| Change::Owner(new_owner)),
-        (Rename, To, col_id)
+        seq!(Rename, To, col_id)
             .map(|(.., new_name)| Change::Name(new_name))
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn enable_trigger(stream: &mut TokenStream) -> scan::Result<EventTriggerState> {
@@ -55,18 +55,18 @@ fn enable_trigger(stream: &mut TokenStream) -> scan::Result<EventTriggerState> {
       | DISABLE_P
     */
 
-    or((
+    alt!(
         Disable.map(|_| Disabled),
-        (
+        seq!(
             Enable,
-            or((
+            alt!(
                 Replica.map(|_| FiresOnReplica),
                 Always.map(|_| FiresAlways)
-            ))
+            )
             .optional()
         )
             .map(|(_, enable)| enable.unwrap_or(FiresOnOrigin))
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -109,7 +109,8 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::scan;

@@ -8,8 +8,10 @@ pub(super) fn json_exists_expr(stream: &mut TokenStream) -> scan::Result<JsonExi
         return no_match(stream)
     }
 
-    skip_prefix(1, paren(json_exists_args))
-        .parse(stream)
+    let (_, expr) = seq!(skip(1), paren(json_exists_args))
+        .parse(stream)?;
+    
+    Ok(expr)
 }
 
 fn json_exists_args(stream: &mut TokenStream) -> scan::Result<JsonExistsExpr> {
@@ -74,7 +76,7 @@ mod tests {
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::skip_prefix;
+use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_on_error_clause;
 use crate::combinators::json_passing_clause;

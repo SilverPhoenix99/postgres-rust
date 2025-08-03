@@ -8,22 +8,22 @@ pub(super) fn time(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         | LOCALTIMESTAMP ( '(' ICONST ')' )?
     */
 
-    or((
+    alt!(
         Kw::CurrentDate.map(|_| CurrentDate),
 
-        (Kw::CurrentTime, precision.optional())
+        seq!(Kw::CurrentTime, precision.optional())
             .map(|(_, precision)| CurrentTime { precision }),
 
-        (Kw::CurrentTimestamp, precision.optional())
+        seq!(Kw::CurrentTimestamp, precision.optional())
             .map(|(_, precision)| CurrentTimestamp { precision }),
 
-        (Kw::Localtime, precision.optional())
+        seq!(Kw::Localtime, precision.optional())
             .map(|(_, precision)| LocalTime { precision }),
 
-        (Kw::Localtimestamp, precision.optional())
+        seq!(Kw::Localtimestamp, precision.optional())
             .map(|(_, precision)| LocalTimestamp { precision }),
 
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -47,7 +47,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::precision::precision;
 use crate::scan;

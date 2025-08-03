@@ -4,7 +4,7 @@ pub(super) fn aggregate(stream: &mut TokenStream) -> scan::Result<AggregateWithA
         AGGREGATE aggregate_with_argtypes
     */
 
-    let (_, signature) = (Aggregate, aggregate_with_argtypes).parse(stream)?;
+    let (_, signature) = seq!(Aggregate, aggregate_with_argtypes).parse(stream)?;
 
     Ok(signature)
 }
@@ -24,6 +24,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::aggregate_with_argtypes;
 use crate::scan;

@@ -5,7 +5,7 @@ pub(super) fn listen_stmt(stream: &mut TokenStream) -> scan::Result<Str> {
         LISTEN ColId
     */
 
-    let (_, channel) = (Listen, col_id)
+    let (_, channel) = seq!(Listen, col_id)
         .parse(stream)?;
 
     Ok(channel)
@@ -25,6 +25,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

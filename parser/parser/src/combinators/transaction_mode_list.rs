@@ -7,11 +7,11 @@ pub(super) fn transaction_mode_list(stream: &mut TokenStream) -> scan::Result<Ve
 
     many_m!(
         pre = transaction_mode,
-        or((
-            (Comma, transaction_mode)
+        alt!(
+            seq!(Comma, transaction_mode)
                 .map(|(_, mode)| mode),
             transaction_mode
-        ))
+        )
     ).parse(stream)
 }
 
@@ -26,24 +26,24 @@ fn transaction_mode(stream: &mut TokenStream) -> scan::Result<TransactionMode> {
         | NOT DEFERRABLE
     */
 
-    or((
+    alt!(
         Kw::Deferrable
             .map(|_| Deferrable),
-        (Not, Kw::Deferrable)
+        seq!(Not, Kw::Deferrable)
             .map(|_| NotDeferrable),
-        (
+        seq!(
             Read,
-            or((
+            alt!(
                 Only.map(|_| ReadOnly),
                 Write.map(|_| ReadWrite)
-            ))
+            )
         )
             .map(|(_, mode)| mode),
-        (Isolation, Level, isolation_level)
+        seq!(Isolation, Level, isolation_level)
             .map(|(.., mode)|
                 TransactionMode::IsolationLevel(mode)
             )
-    )).parse(stream)
+    ).parse(stream)
 }
 
 /// Alias: `iso_level`
@@ -56,20 +56,20 @@ fn isolation_level(stream: &mut TokenStream) -> scan::Result<IsolationLevel> {
         | SERIALIZABLE
     */
 
-    or((
+    alt!(
         Kw::Serializable
             .map(|_| Serializable),
-        (Repeatable, Read)
+        seq!(Repeatable, Read)
             .map(|_| RepeatableRead),
-        (
+        seq!(
             Read,
-            or((
+            alt!(
                 Committed.map(|_| ReadCommitted),
                 Uncommitted.map(|_| ReadUncommitted)
-            ))
+            )
         )
             .map(|(_, isolation)| isolation)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -158,8 +158,9 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many_m;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

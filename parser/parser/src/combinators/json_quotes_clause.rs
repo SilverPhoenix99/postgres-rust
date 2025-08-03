@@ -5,13 +5,13 @@ pub(super) fn json_quotes_clause(stream: &mut TokenStream) -> scan::Result<JsonQ
         ( KEEP | OMIT ) QUOTES ( ON SCALAR STRING )?
     */
 
-    let (quotes, ..) = (
-        or((
+    let (quotes, ..) = seq!(
+        alt!(
             Kw::Keep.map(|_| Keep),
             Kw::Omit.map(|_| Omit),
-        )),
+        ),
         Quotes,
-        (On, Scalar, StringKw).optional()
+        seq!(On, Scalar, StringKw).optional()
     ).parse(stream)?;
 
     Ok(quotes)
@@ -32,7 +32,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

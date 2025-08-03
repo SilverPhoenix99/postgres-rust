@@ -23,85 +23,60 @@ pub(super) fn privilege_target(stream: &mut TokenStream) -> scan::Result<Privile
       | ( TABLE )? qualified_name_list
     */
 
-    // Broken down into smaller combinators, due to large Rust type names.
-    or((
-        privilege_target_1,
-        privilege_target_2,
-        privilege_target_3,
-        privilege_target_4,
-    )).parse(stream)
-}
-
-fn privilege_target_1(stream: &mut TokenStream) -> scan::Result<PrivilegeTarget> {
-    or((
-        (
+    alt!(
+        seq!(
             All,
-            or((
-                (Functions, In, Kw::Schema, name_list)
+            alt!(
+                seq!(Functions, In, Kw::Schema, name_list)
                     .map(|(.., schemas)| AllFunctionsInSchema(schemas)),
-                (Procedures, In, Kw::Schema, name_list)
+                seq!(Procedures, In, Kw::Schema, name_list)
                     .map(|(.., schemas)| AllProceduresInSchema(schemas)),
-                (Routines, In, Kw::Schema, name_list)
+                seq!(Routines, In, Kw::Schema, name_list)
                     .map(|(.., schemas)| AllRoutinesInSchema(schemas)),
-                (Sequences, In, Kw::Schema, name_list)
+                seq!(Sequences, In, Kw::Schema, name_list)
                     .map(|(.., schemas)| AllSequencesInSchema(schemas)),
-                (Tables, In, Kw::Schema, name_list)
+                seq!(Tables, In, Kw::Schema, name_list)
                     .map(|(.., schemas)| AllTablesInSchema(schemas)),
-            ))
+            )
         )
             .map(|(_, target)| target),
-        (Kw::Database, name_list)
+        seq!(Kw::Database, name_list)
             .map(|(_, db_names)| Database(db_names)),
-        (Kw::Domain, any_name_list)
+        seq!(Kw::Domain, any_name_list)
             .map(|(_, domains)| Domain(domains)),
-        (
+        seq!(
             Foreign,
-            or((
-                (Data, Wrapper, name_list)
+            alt!(
+                seq!(Data, Wrapper, name_list)
                     .map(|(.., fdws)| ForeignDataWrapper(fdws)),
-                (Server, name_list)
+                seq!(Server, name_list)
                     .map(|(_, servers)| ForeignServer(servers)),
-            ))
+            )
         )
             .map(|(_, target)| target),
-    )).parse(stream)
-}
-
-fn privilege_target_2(stream: &mut TokenStream) -> scan::Result<PrivilegeTarget> {
-    or((
-        (Kw::Function, function_with_argtypes_list)
+        seq!(Kw::Function, function_with_argtypes_list)
             .map(|(_, signatures)| Function(signatures)),
-        (Kw::Language, name_list)
+        seq!(Kw::Language, name_list)
             .map(|(_, languages)| Language(languages)),
-        (Large, Object, signed_number_list)
+        seq!(Large, Object, signed_number_list)
             .map(|(.., lob_ids)| LargeObject(lob_ids)),
-        (Parameter, parameter_name_list)
+        seq!(Parameter, parameter_name_list)
             .map(|(_, config_parameters)| ParameterAcl(config_parameters)),
-    )).parse(stream)
-}
-
-fn privilege_target_3(stream: &mut TokenStream) -> scan::Result<PrivilegeTarget> {
-    or((
-        (Kw::Procedure, function_with_argtypes_list)
+        seq!(Kw::Procedure, function_with_argtypes_list)
             .map(|(_, signatures)| Procedure(signatures)),
-        (Kw::Routine, function_with_argtypes_list)
+        seq!(Kw::Routine, function_with_argtypes_list)
             .map(|(_, signatures)| Routine(signatures)),
-        (Kw::Schema, name_list)
+        seq!(Kw::Schema, name_list)
             .map(|(_, schemas)| Schema(schemas)),
-        (Kw::Sequence, qualified_name_list)
+        seq!(Kw::Sequence, qualified_name_list)
             .map(|(_, sequences)| Sequence(sequences)),
-    )).parse(stream)
-}
-
-fn privilege_target_4(stream: &mut TokenStream) -> scan::Result<PrivilegeTarget> {
-    or((
-        (Kw::Tablespace, name_list)
+        seq!(Kw::Tablespace, name_list)
             .map(|(_, tablespaces)| Tablespace(tablespaces)),
-        (Kw::Type, any_name_list)
+        seq!(Kw::Type, any_name_list)
             .map(|(_, types)| Type(types)),
-        (Kw::Table.optional(), qualified_name_list)
+        seq!(Kw::Table.optional(), qualified_name_list)
             .map(|(_, tables)| Table(tables))
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn parameter_name_list(stream: &mut TokenStream) -> scan::Result<Vec<QualifiedName>> {
@@ -270,8 +245,9 @@ mod tests {
 
 use crate::combinators::any_name_list;
 use crate::combinators::col_id;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::function_with_argtypes_list;
 use crate::combinators::name_list;

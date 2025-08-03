@@ -5,7 +5,7 @@ pub(super) fn in_database(stream: &mut TokenStream) -> scan::Result<Str> {
         IN DATABASE col_id
     */
 
-    let (.., dbname) = (In, Database, col_id).parse(stream)?;
+    let (.., dbname) = seq!(In, Database, col_id).parse(stream)?;
     Ok(dbname)
 }
 
@@ -25,6 +25,7 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

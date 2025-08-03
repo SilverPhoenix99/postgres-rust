@@ -1,15 +1,7 @@
 /// Alias: `SimpleTypename`
 pub(super) fn simple_typename(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
-    // Broken down into smaller combinators, due to large Rust type names.
-    or((
-        simple_typename_1,
-        simple_typename_2,
-    )).parse(stream)
-}
-
-fn simple_typename_1(stream: &mut TokenStream) -> scan::Result<TypeName> {
-    or((
+    alt!(
         Kw::Json.map(|_| Json),
         Boolean.map(|_| Bool),
         Smallint.map(|_| Int2),
@@ -17,12 +9,6 @@ fn simple_typename_1(stream: &mut TokenStream) -> scan::Result<TypeName> {
         Real.map(|_| Float4),
         numeric,
         int,
-    )).parse(stream)
-}
-
-fn simple_typename_2(stream: &mut TokenStream) -> scan::Result<TypeName> {
-
-    or((
         float,
         bit(Some(1)), // BitWithoutLength: `bit` defaults to `bit(1)`
         character(Some(1)), // CharacterWithoutLength: `char` defaults to `char(1)`
@@ -30,7 +16,7 @@ fn simple_typename_2(stream: &mut TokenStream) -> scan::Result<TypeName> {
         time,
         interval_type.map(From::from),
         generic_type
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn int(stream: &mut TokenStream) -> scan::Result<TypeName> {
@@ -39,7 +25,7 @@ fn int(stream: &mut TokenStream) -> scan::Result<TypeName> {
         INT | INTEGER
     */
 
-    or((Int, Integer)).parse(stream)?;
+    alt!(Int, Integer).parse(stream)?;
     Ok(Int4)
 }
 
@@ -51,8 +37,8 @@ pub(super) fn numeric(stream: &mut TokenStream) -> scan::Result<TypeName> {
         | DECIMAL ( '(' ICONST ')' )?
     */
 
-    let (_, typ) = (
-        or((Dec, Decimal, Kw::Numeric)),
+    let (_, typ) = seq!(
+        alt!(Dec, Decimal, Kw::Numeric),
         type_modifiers
             .optional()
             .map(Numeric),
@@ -68,7 +54,7 @@ pub(super) fn float(stream: &mut TokenStream) -> scan::Result<TypeName> {
         FLOAT ( '(' ICONST ')' )?
     */
 
-    let (_, (precision, loc)) = (
+    let (_, (precision, loc)) = seq!(
         Float,
         located(precision.optional())
     ).parse(stream)?;
@@ -99,7 +85,7 @@ pub(super) fn bit(default_type_modifiers:  Option<i32>) -> impl Combinator<Outpu
     */
 
     parser(move |stream| {
-        let (_, varying, mut modifiers) = (
+        let (_, varying, mut modifiers) = seq!(
             Kw::Bit,
             Varying.optional()
                 .map(|varying| varying),
@@ -134,25 +120,25 @@ pub(super) fn character(default_len: Option<i32>) -> impl Combinator<Output = Ty
     */
 
     parser(move |stream| {
-        let (varying, mut length) = (
-            or((
+        let (varying, mut length) = seq!(
+            alt!(
                 Kw::Varchar.map(|_| true),
-                (
-                    or((
+                seq!(
+                    alt!(
                         Char.skip(),
                         Character.skip(),
                         Nchar.skip(),
-                        (
+                        seq!(
                             National,
-                            or((Char, Character))
+                            alt!(Char, Character)
                         )
                             .skip()
-                    )),
+                    ),
                     Varying.optional()
                         .map(|varying| varying.is_some())
                 )
                     .map(|(_, varying)| varying),
-            )),
+            ),
             precision.optional()
         ).parse(stream)?;
 
@@ -173,7 +159,7 @@ pub(super) fn timestamp(stream: &mut TokenStream) -> scan::Result<TypeName> {
         TIMESTAMP ( '(' ICONST ')' )? ( with_timezone )?
     */
 
-    let (_, precision, with_tz) = (
+    let (_, precision, with_tz) = seq!(
         Kw::Timestamp,
         precision.optional(),
         with_timezone.optional()
@@ -197,13 +183,12 @@ pub(super) fn time(stream: &mut TokenStream) -> scan::Result<TypeName> {
         TIMESTAMP ( '(' ICONST ')' )? ( with_timezone )?
     */
 
-    let (_, precision, with_tz) = (
+    let (_, precision, with_tz) = seq!(
         Kw::Time,
         precision.optional(),
         with_timezone.optional()
             .map(Option::unwrap_or_default)
-    )
-        .parse(stream)?;
+    ).parse(stream)?;
 
     let typ = if with_tz {
         TimeTz { precision }
@@ -222,14 +207,14 @@ fn interval_type(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
         | INTERVAL ( interval )?
     */
 
-    let (_, interval) = (
+    let (_, interval) = seq!(
         Kw::Interval,
-        or((
+        alt!(
             precision
                 .map(|precision| Full { precision: Some(precision) }),
             interval.optional()
                 .map(Option::unwrap_or_default)
-        ))
+        )
     ).parse(stream)?;
 
     Ok(interval)
@@ -253,7 +238,7 @@ fn generic_type(stream: &mut TokenStream) -> scan::Result<TypeName> {
         return Ok(Float8)
     }
 
-    let (name, type_modifiers) = (
+    let (name, type_modifiers) = seq!(
         attrs!(type_function_name),
         type_modifiers.optional()
     ).parse(stream)?;
@@ -336,9 +321,10 @@ mod tests {
 }
 
 use crate::combinators::attrs;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::parser;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::interval;
 use crate::combinators::precision;

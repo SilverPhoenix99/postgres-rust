@@ -1,11 +1,11 @@
 /// '+' | '-'
 pub(super) fn sign(stream: &mut TokenStream) -> scan::Result<OperatorKind> {
 
-    or((Minus, Plus))
+    alt!(Minus, Plus)
         .parse(stream)
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

@@ -8,7 +8,7 @@ pub(super) fn merge_action(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         return no_match(stream)
     }
 
-    skip_prefix(2, CloseParenthesis).parse(stream)?;
+    seq!(skip(2), CloseParenthesis).parse(stream)?;
     Ok(MergeAction)
 }
 
@@ -28,7 +28,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::skip_prefix;
+use crate::combinators::foundation::seq;
+use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::no_match;
 use crate::scan;

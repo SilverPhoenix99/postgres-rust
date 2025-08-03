@@ -18,18 +18,18 @@ pub(super) fn alter_role_option(stream: &mut TokenStream) -> scan::Result<AlterR
         | IDENT
     */
 
-    or((
+    alt!(
         password_option,
-        (Connection, Limit, signed_i32_literal)
+        seq!(Connection, Limit, signed_i32_literal)
             .map(|(.., limit)| ConnectionLimit(limit)),
-        (Valid, Until, string)
+        seq!(Valid, Until, string)
             .map(|(.., valid)| ValidUntil(valid)),
         // Supported but not documented for roles, for use by ALTER GROUP.
-        (User, role_list)
+        seq!(User, role_list)
             .map(|(_, roles)| RoleMembers(roles)),
         Kw::Inherit.map(|_| Inherit(true)),
         ident_option
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn password_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
@@ -41,13 +41,13 @@ fn password_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
         | UNENCRYPTED PASSWORD SCONST
     */
 
-    or((
-        (
+    alt!(
+        seq!(
             Kw::Password,
-            or((
+            alt!(
                 string.map(Some),
                 Null.map(|_| None)
-            ))
+            )
         )
             .map(|(_, pw)| Password(pw)),
         /*
@@ -55,17 +55,17 @@ fn password_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
          * form, so there is no difference between PASSWORD and
          * ENCRYPTED PASSWORD.
          */
-        (Encrypted, Kw::Password, string)
+        seq!(Encrypted, Kw::Password, string)
             .map(|(.., pw)| Password(Some(pw))),
         unencrypted_password_option
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn unencrypted_password_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
 
     let loc = stream.current_location();
 
-    let _ = (Unencrypted, Kw::Password, string).parse(stream)?;
+    let _ = seq!(Unencrypted, Kw::Password, string).parse(stream)?;
 
     let err = UnencryptedPassword.at(loc).into();
     Err::<AlterRoleOption, _>(ScanErr(err))
@@ -152,10 +152,11 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_list;

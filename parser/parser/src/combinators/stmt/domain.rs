@@ -4,7 +4,7 @@ pub(super) fn domain(stream: &mut TokenStream) -> scan::Result<Type> {
         DOMAIN Typename
     */
 
-    let (_, typ) = (Domain, typename).parse(stream)?;
+    let (_, typ) = seq!(Domain, typename).parse(stream)?;
 
     Ok(typ)
 }
@@ -25,6 +25,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
 use crate::scan;

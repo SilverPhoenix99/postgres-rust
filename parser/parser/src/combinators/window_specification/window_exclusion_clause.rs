@@ -8,14 +8,14 @@ pub(super) fn window_exclusion_clause(stream: &mut TokenStream<'_>) -> scan::Res
         | EXCLUDE NO OTHERS
     */
 
-    let (_, exclusion) = (
+    let (_, exclusion) = seq!(
         Exclude,
-        or((
-            (Current, Row).map(|_| CurrentRow),
+        alt!(
+            seq!(Current, Row).map(|_| CurrentRow),
             Kw::Group.map(|_| Group),
             Kw::Ties.map(|_| Ties),
-            (No, Others).map(|_| NoOthers)
-        ))
+            seq!(No, Others).map(|_| NoOthers)
+        )
     ).parse(stream)?;
 
     Ok(exclusion)
@@ -36,7 +36,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

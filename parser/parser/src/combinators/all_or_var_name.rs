@@ -6,10 +6,10 @@ pub(in crate::combinators) fn all_or_var_name(stream: &mut TokenStream) -> scan:
         | var_name
     */
 
-    or((
+    alt!(
         Keyword::All.map(|_| OneOrAll::All),
         var_name.map(OneOrAll::One)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -28,7 +28,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::var_name;
 use crate::scan;

@@ -9,7 +9,7 @@ pub(super) fn type_func_name_prefixed_expr(stream: &mut TokenStream) -> scan::Re
         )
     */
 
-    let (kw, tail) = (TypeFuncName, attr_tail).parse(stream)?;
+    let (kw, tail) = seq!(TypeFuncName, attr_tail).parse(stream)?;
     let name = vec![Str::from(kw)];
 
     let expr = tailed_expr(name, tail);
@@ -63,6 +63,7 @@ mod tests {
 
 use super::attr_tail;
 use super::tailed_expr;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

@@ -14,8 +14,10 @@ fn xml_attribute(stream: &mut TokenStream) -> scan::Result<NamedValue> {
         a_expr ( AS col_label )?
     */
 
-    let (value, name) = (a_expr, (As, col_label).optional())
-        .parse(stream)?;
+    let (value, name) = seq!(
+        a_expr,
+        seq!(As, col_label).optional()
+    ).parse(stream)?;
 
     let name = name.map(|(_, name)| name);
     let value = NamedValue::new(name, value);
@@ -44,6 +46,7 @@ mod tests {
 use crate::combinators::col_label;
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

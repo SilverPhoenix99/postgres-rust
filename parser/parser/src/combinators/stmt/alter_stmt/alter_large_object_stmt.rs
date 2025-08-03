@@ -4,7 +4,7 @@ pub(super) fn alter_large_object_stmt(stream: &mut TokenStream) -> scan::Result<
         ALTER LARGE_P OBJECT_P NumericOnly OWNER TO RoleSpec
     */
 
-    let (_, _, oid, _, _, new_owner) = (Large, Object, signed_number, Owner, To, role_spec)
+    let (_, _, oid, _, _, new_owner) = seq!(Large, Object, signed_number, Owner, To, role_spec)
         .parse(stream)?;
 
     let stmt = AlterOwnerStmt::new(
@@ -35,6 +35,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::combinators::signed_number;

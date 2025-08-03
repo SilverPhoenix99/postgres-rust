@@ -18,9 +18,9 @@ pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<Locate
     match stream.peek2() {
         Ok((first, Operator(ColonEquals | EqualsGreater))) if is_type_function_name(first) => {
 
-            let ((name, _, value), loc) = located((
+            let ((name, _, value), loc) = located(seq!(
                 type_function_name,
-                or((ColonEquals, EqualsGreater)),
+                alt!(ColonEquals, EqualsGreater),
                 a_expr
             )).parse(stream)?;
 
@@ -64,9 +64,10 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::type_function_name;
 use crate::scan;

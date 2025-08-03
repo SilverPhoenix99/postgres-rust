@@ -6,13 +6,13 @@ pub(super) fn deallocate_stmt(stream: &mut TokenStream) -> scan::Result<OneOrAll
         DEALLOCATE (PREPARE)? ColId
     */
 
-    let (.., stmt) = (
+    let (.., stmt) = seq!(
         Deallocate,
         Prepare.optional(),
-        or((
+        alt!(
             All.map(|_| OneOrAll::All),
             col_id.map(OneOrAll::One)
-        ))
+        )
     ).parse(stream)?;
 
     Ok(stmt)
@@ -34,7 +34,8 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

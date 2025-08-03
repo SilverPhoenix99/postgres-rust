@@ -5,11 +5,11 @@ pub(super) fn create_conversion_stmt(stream: &mut TokenStream) -> scan::Result<C
         ( DEFAULT )? CONVERSION_P any_name FOR SCONST TO SCONST FROM any_name
     */
 
-    let (is_default, name, _, for_encoding, _, to_encoding, _, function) = (
-        or((
-            (DefaultKw, Conversion).map(|_| true),
+    let (is_default, name, _, for_encoding, _, to_encoding, _, function) = seq!(
+        alt!(
+            seq!(DefaultKw, Conversion).map(|_| true),
             Conversion.map(|_| false)
-        )),
+        ),
         any_name,
         For,
         string,
@@ -47,7 +47,8 @@ mod tests {
 }
 
 use crate::combinators::any_name;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::scan;

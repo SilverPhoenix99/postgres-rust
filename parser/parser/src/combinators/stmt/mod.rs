@@ -8,7 +8,6 @@ pub(in crate::combinators) use self::end_stmt::end_stmt;
 
 pub(super) fn stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
-    // Broken down into smaller combinators, due to large Rust type names.
     alt!(
         abort_stmt.map(From::from),
         alter_stmt,

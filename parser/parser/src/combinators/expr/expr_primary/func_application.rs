@@ -20,12 +20,12 @@ fn func_call_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
         | variadic_func_arg_list ( sort_clause )?
     */
 
-    or((
+    alt!(
         wildcard_args,
         all_args,
         distinct_args,
         simple_args,
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn wildcard_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
@@ -36,7 +36,7 @@ fn wildcard_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
 
 fn all_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
 
-    let (_, args, order) = (
+    let (_, args, order) = seq!(
         Kw::All,
         func_arg_list,
         sort_clause.optional()
@@ -54,7 +54,7 @@ fn all_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
 
 fn distinct_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
 
-    let (_, args, order) = (
+    let (_, args, order) = seq!(
         Kw::Distinct,
         func_arg_list,
         sort_clause.optional()
@@ -71,7 +71,7 @@ fn distinct_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
 
 fn simple_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
 
-    let ((args, variadic), order) = (
+    let ((args, variadic), order) = seq!(
         variadic_func_args,
         sort_clause.optional()
     ).parse(stream)?;
@@ -164,12 +164,12 @@ fn variadic_arg(stream: &mut TokenStream) -> scan::Result<(Located<NamedValue>, 
         ( VARIADIC )? func_arg_expr
     */
 
-    or((
-        (located(Kw::Variadic), func_arg_expr)
+    alt!(
+        seq!(located(Kw::Variadic), func_arg_expr)
             .map(|((_, loc), arg)| (arg, Some(loc))),
         func_arg_expr
             .map(|arg| (arg, None)),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -227,7 +227,7 @@ mod tests {
         let All { args, order: None } = actual else {
             panic!("Expected All variant, but got {actual:?}");
         };
-        
+
         let args = args.into_iter()
             .map(|(arg, _)| arg)
             .collect::<Vec<_>>();
@@ -266,7 +266,7 @@ mod tests {
                     let args = args.into_iter()
                         .map(|(arg, _)| arg)
                         .collect::<Vec<_>>();
-        
+
                     (args, is_variadic)
                 })
         )
@@ -274,7 +274,7 @@ mod tests {
 
     #[test]
     fn test_variadic_args() {
-        
+
         test_parser!(
             source = "1, variadic 2, 3, variadic foo := 4, bar => 5",
             parser = variadic_args
@@ -317,10 +317,11 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg_expr;
 use crate::combinators::func_arg_list;

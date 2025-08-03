@@ -1,9 +1,9 @@
 pub(super) fn auth_ident(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
 
-    or((
+    alt!(
         User.map(|_| CurrentUser),
         role_spec
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -19,7 +19,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::scan;

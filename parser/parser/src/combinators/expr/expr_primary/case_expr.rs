@@ -7,7 +7,7 @@ pub(super) fn case_expr(stream: &mut TokenStream) -> scan::Result<CaseExpr> {
         END
     */
 
-    let (_, target, when_clauses, default) = (
+    let (_, target, when_clauses, default) = seq!(
         Case,
         a_expr.optional(),
         many(when_clause),
@@ -20,7 +20,7 @@ pub(super) fn case_expr(stream: &mut TokenStream) -> scan::Result<CaseExpr> {
 
 fn when_clause(stream: &mut TokenStream) -> scan::Result<CaseWhen> {
 
-    let (_, condition, _, body) = (When, a_expr, Then, a_expr).parse(stream)?;
+    let (_, condition, _, body) = seq!(When, a_expr, Then, a_expr).parse(stream)?;
 
     let expr = CaseWhen::new(condition, body);
     Ok(expr)
@@ -28,7 +28,7 @@ fn when_clause(stream: &mut TokenStream) -> scan::Result<CaseWhen> {
 
 fn else_clause(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
-    let (_, expr) = (Else, a_expr).parse(stream)?;
+    let (_, expr) = seq!(Else, a_expr).parse(stream)?;
 
     Ok(expr)
 
@@ -87,6 +87,7 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::many;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

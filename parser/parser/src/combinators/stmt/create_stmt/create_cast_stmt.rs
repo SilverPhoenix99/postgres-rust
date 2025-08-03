@@ -4,7 +4,7 @@ pub(super) fn create_cast_stmt(stream: &mut TokenStream) -> scan::Result<CreateC
         typecast cast_conversion cast_context
     */
 
-    let (typecast, conversion, coercion) = (
+    let (typecast, conversion, coercion) = seq!(
         typecast,
         cast_conversion,
         cast_context.optional()
@@ -23,18 +23,18 @@ fn cast_conversion(stream: &mut TokenStream) -> scan::Result<CastConversion> {
         | WITHOUT FUNCTION
     */
 
-    or((
-        (
+    alt!(
+        seq!(
             With,
-            or((
+            alt!(
                 Inout.map(|_| WithInout),
-                (Function, function_with_argtypes)
+                seq!(Function, function_with_argtypes)
                     .map(|(_, signature)| WithFunction(signature))
-            ))
+            )
         )
             .map(|(_, conversion)| conversion),
-        (Without, Function).map(|_| WithoutFunction),
-    )).parse(stream)
+        seq!(Without, Function).map(|_| WithoutFunction),
+    ).parse(stream)
 }
 
 fn cast_context(stream: &mut TokenStream) -> scan::Result<CoercionContext> {
@@ -43,12 +43,12 @@ fn cast_context(stream: &mut TokenStream) -> scan::Result<CoercionContext> {
           AS (IMPLICIT | ASSIGNMENT)
     */
 
-    let (_, context) = (
+    let (_, context) = seq!(
         As,
-        or((
+        alt!(
             Kw::Implicit.map(|_| CoercionContext::Implicit),
             Kw::Assignment.map(|_| CoercionContext::Assignment)
-        ))
+        )
     ).parse(stream)?;
 
     Ok(context)
@@ -92,7 +92,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::function_with_argtypes;
 use crate::combinators::stmt::typecast;

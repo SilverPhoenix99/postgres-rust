@@ -5,12 +5,12 @@ pub(super) fn create_user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt
         | USER RoleId ( WITH )? OptRoleList => CreateRoleStmt
     */
 
-    let (_, stmt) = (
+    let (_, stmt) = seq!(
         User,
-        or((
+        alt!(
             create_user_mapping.map(RawStmt::from),
             create_user_role.map(RawStmt::from)
-        ))
+        )
     ).parse(stream)?;
 
     Ok(stmt)
@@ -18,7 +18,7 @@ pub(super) fn create_user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt
 
 fn create_user_mapping(stream: &mut TokenStream) -> scan::Result<CreateUserMappingStmt> {
 
-    let (_, existence, _, user, _, server, options) = (
+    let (_, existence, _, user, _, server, options) = seq!(
         Mapping,
         if_not_exists.optional()
             .map(Option::unwrap_or_default),
@@ -35,7 +35,7 @@ fn create_user_mapping(stream: &mut TokenStream) -> scan::Result<CreateUserMappi
 
 fn create_user_role(stream: &mut TokenStream) -> scan::Result<CreateRoleStmt> {
 
-    let (name, _, options) = (
+    let (name, _, options) = seq!(
         role_id,
         With.optional(),
         create_role_options
@@ -54,8 +54,8 @@ mod tests {
     use pg_ast::CreateRoleOption;
     #[allow(unused_imports)]
     use pg_ast::{
-        Presence,
         GenericOption,
+        Presence,
         RoleSpec
     };
     use test_case::test_case;
@@ -108,7 +108,8 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_id;
 use crate::combinators::stmt::auth_ident;

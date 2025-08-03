@@ -6,12 +6,12 @@ fn over_clause(stream: &mut TokenStream) -> scan::Result<OverClause> {
         | OVER window_specification
     */
 
-    let (_, expr) = (
+    let (_, expr) = seq!(
         Over,
-        or((
+        alt!(
             col_id.map(WindowName),
             window_specification.map(WindowDefinition)
-        ))
+        )
     ).parse(stream)?;
 
     Ok(expr)
@@ -36,7 +36,8 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::window_specification;
 use crate::scan;

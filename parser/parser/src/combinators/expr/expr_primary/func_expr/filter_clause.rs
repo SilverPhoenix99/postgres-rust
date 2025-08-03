@@ -5,9 +5,9 @@ fn filter_clause(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         FILTER '(' WHERE a_expr ')'
     */
 
-    let (_, (_, expr)) = (
+    let (_, (_, expr)) = seq!(
         Filter,
-        paren((Where, a_expr))
+        paren(seq!(Where, a_expr))
     ).parse(stream)?;
 
     Ok(expr)
@@ -30,6 +30,7 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

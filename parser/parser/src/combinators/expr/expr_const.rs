@@ -13,7 +13,6 @@ pub(super) fn expr_const(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         | ConstTypename SCONST (ambiguous prefix_expr)
     */
 
-    // Broken down into smaller combinators, due to large Rust type names.
     alt!(
         const_typename.map(ExprNode::from),
         number.map(ExprNode::from),
@@ -126,7 +125,7 @@ fn json_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         JSON SCONST
     */
 
-    let value = skip_prefix(1, string)
+    let (_, value) = seq!(skip(1), string)
         .parse(stream)?;
 
     let expr = TypecastExpr::new(StringConst(value), Json);
@@ -139,7 +138,7 @@ fn double_precision_typecast(stream: &mut TokenStream) -> scan::Result<TypecastE
         DOUBLE PRECISION SCONST
     */
 
-    let value = skip_prefix(2, string)
+    let (_, value) = seq!(skip(2), string)
         .parse(stream)?;
 
     let expr = TypecastExpr::new(StringConst(value), Float8);
@@ -152,7 +151,7 @@ fn bool_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         BOOLEAN SCONST
     */
 
-    let value = skip_prefix(1, string)
+    let (_, value) = seq!(skip(1), string)
         .parse(stream)?;
 
     let expr = TypecastExpr::new(StringConst(value), Bool);
@@ -165,7 +164,7 @@ fn smallint_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         SMALLINT SCONST
     */
 
-    let value = skip_prefix(1, string)
+    let (_, value) = seq!(skip(1), string)
         .parse(stream)?;
 
     let expr = TypecastExpr::new(StringConst(value), Int2);
@@ -178,7 +177,7 @@ fn int_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         ( INT | INTEGER ) SCONST
     */
 
-    let value = skip_prefix(1, string)
+    let (_, value) = seq!(skip(1), string)
         .parse(stream)?;
 
     let expr = TypecastExpr::new(StringConst(value), Int4);
@@ -191,7 +190,7 @@ fn bigint_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         BIGINT SCONST
     */
 
-    let value = skip_prefix(1, string)
+    let (_, value) = seq!(skip(1), string)
         .parse(stream)?;
 
     let expr = TypecastExpr::new(StringConst(value), Int8);
@@ -204,7 +203,7 @@ fn real_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         REAL SCONST
     */
 
-    let value = skip_prefix(1, string)
+    let (_, value) = seq!(skip(1), string)
         .parse(stream)?;
 
     let expr = TypecastExpr::new(StringConst(value), Float4);
@@ -219,7 +218,7 @@ fn numeric_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         | DECIMAL ( type_modifiers )? SCONST
     */
 
-    let (type_name, value) = (numeric, string)
+    let (type_name, value) = seq!(numeric, string)
         .parse(stream)
         .required()?;
 
@@ -233,7 +232,7 @@ fn float_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         FLOAT ( type_modifiers )? SCONST
     */
 
-    let (type_name, value) = (float, string)
+    let (type_name, value) = seq!(float, string)
         .parse(stream)
         .required()?;
 
@@ -247,7 +246,7 @@ fn bit_string_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         BIT ( VARYING )? ( '(' expr_list ')' )? SCONST
     */
 
-    let (type_name, value) = (bit(None), string)
+    let (type_name, value) = seq!(bit(None), string)
         .parse(stream)
         .required()?;
 
@@ -263,7 +262,7 @@ fn char_string_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> 
         | NATIONAL ( CHAR | CHARACTER ) ( VARYING )? ( precision )? SCONST
     */
 
-    let (type_name, value) = (character(None), string)
+    let (type_name, value) = seq!(character(None), string)
         .parse(stream)
         .required()?;
 
@@ -277,7 +276,7 @@ fn timestamp_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         TIMESTAMP ( precision )? ( with_timezone )? SCONST
     */
 
-    let (type_name, value) = (timestamp, string)
+    let (type_name, value) = seq!(timestamp, string)
         .parse(stream)
         .required()?;
 
@@ -291,7 +290,7 @@ fn time_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         TIME ( precision )? ( with_timezone )? SCONST
     */
 
-    let (type_name, value) = (time, string)
+    let (type_name, value) = seq!(time, string)
         .parse(stream)
         .required()?;
 
@@ -395,7 +394,6 @@ use crate::combinators::foundation::bit_string;
 use crate::combinators::foundation::number;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
-use crate::combinators::foundation::skip_prefix;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::interval;

@@ -23,72 +23,51 @@ pub(super) fn alter_function_option(stream: &mut TokenStream) -> scan::Result<Al
         | reset_stmt
     */
 
-    // Broken down into smaller combinators, due to large Rust type names.
-    or((
-        alter_function_option_1,
-        alter_function_option_2,
-        alter_function_option_3,
-        alter_function_option_4,
-    )).parse(stream)
-}
-
-fn alter_function_option_1(stream: &mut TokenStream) -> scan::Result<AlterFunctionOption> {
-    or((
-        (Called, On, Null, Input).map(|_| Strict(false)),
-        (Returns, Null, On, Null, Input).map(|_| Strict(true)),
-        Kw::Strict.map(|_| Strict(true)),
-        Kw::Immutable.map(|_| Volatility(Immutable)),
-    )).parse(stream)
-}
-
-fn alter_function_option_2(stream: &mut TokenStream) -> scan::Result<AlterFunctionOption> {
-    or((
-        Kw::Stable.map(|_| Volatility(Stable)),
-        Kw::Volatile.map(|_| Volatility(Volatile)),
-        {
-            (External, security)
-                .map(|(_, option)| option)
-        },
+    alt!(
+        seq!(Called, On, Null, Input)
+            .map(|_| Strict(false)),
+        seq!(Returns, Null, On, Null, Input)
+            .map(|_| Strict(true)),
+        Kw::Strict
+            .map(|_| Strict(true)),
+        Kw::Immutable
+            .map(|_| Volatility(Immutable)),
+        Kw::Stable
+            .map(|_| Volatility(Stable)),
+        Kw::Volatile
+            .map(|_| Volatility(Volatile)),
+        seq!(External, security)
+            .map(|(_, option)| option),
         security,
-    )).parse(stream)
+        Kw::Leakproof
+            .map(|_| Leakproof(true)),
+        seq!(Not, Kw::Leakproof)
+            .map(|_| Leakproof(false)),
+        seq!(Kw::Cost, signed_number)
+            .map(|(_, execution_cost)| Cost(execution_cost)),
+        seq!(Kw::Rows, signed_number)
+            .map(|(_, result_rows)| Rows(result_rows)),
+        seq!(Kw::Support, any_name)
+            .map(|(_, support_function)| Support(support_function)),
+        seq!(Kw::Parallel, col_id)
+            .map(|(_, mode)| Parallel(mode)),
+        seq!(Kw::Set, set_rest_more)
+            .map(|(_, option)| Set(option)),
+        reset_stmt.map(Reset)
+    ).parse(stream)
 }
 
 fn security(stream: &mut TokenStream) -> scan::Result<AlterFunctionOption> {
 
-    let (_, definer) = (
+    let (_, definer) = seq!(
         Kw::Security,
-        or((
+        alt!(
             Definer.map(|_| true),
             Invoker.map(|_| false)
-        ))
+        )
     ).parse(stream)?;
 
     Ok(Security(definer))
-}
-
-fn alter_function_option_3(stream: &mut TokenStream) -> scan::Result<AlterFunctionOption> {
-    or((
-        Kw::Leakproof
-            .map(|_| Leakproof(true)),
-        (Not, Kw::Leakproof)
-            .map(|_| Leakproof(false)),
-        (Kw::Cost, signed_number)
-            .map(|(_, execution_cost)| Cost(execution_cost)),
-        (Kw::Rows, signed_number)
-            .map(|(_, result_rows)| Rows(result_rows)),
-    )).parse(stream)
-}
-
-fn alter_function_option_4(stream: &mut TokenStream) -> scan::Result<AlterFunctionOption> {
-    or((
-        (Kw::Support, any_name)
-            .map(|(_, support_function)| Support(support_function)),
-        (Kw::Parallel, col_id)
-            .map(|(_, mode)| Parallel(mode)),
-        (Kw::Set, set_rest_more)
-            .map(|(_, option)| Set(option)),
-        reset_stmt.map(Reset)
-    )).parse(stream)
 }
 
 #[cfg(test)]
@@ -129,7 +108,8 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::signed_number;
 use crate::combinators::stmt::reset_stmt;

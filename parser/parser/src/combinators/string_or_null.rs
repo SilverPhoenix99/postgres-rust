@@ -6,10 +6,10 @@
 /// It returns `None` when the token is the keyword `NULL`.
 pub(super) fn string_or_null(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
 
-    or((
+    alt!(
         string.map(Some),
         Null.map(|_| None)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -25,7 +25,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::scan;

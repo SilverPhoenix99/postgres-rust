@@ -18,13 +18,13 @@ pub(super) fn user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
         | RoleSpec AlterOptRoleList             => AlterRoleStmt
     */
 
-    or((
-        (All, in_database.optional(), set_reset_clause)
+    alt!(
+        seq!(All, in_database.optional(), set_reset_clause)
             .map(|(_, dbname, set_stmt)|
                 AlterRoleSetStmt::new(OneOrAll::All, dbname, set_stmt).into()
             ),
         user_role_stmt
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn user_role_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
@@ -36,13 +36,13 @@ fn user_role_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
         | RoleSpec SetResetClause               => AlterRoleSetStmt
         | RoleSpec AlterOptRoleList             => AlterRoleStmt
     */
-    
-    let ((role, loc), stmt) = (
+
+    let ((role, loc), stmt) = seq!(
         located(role_spec),
-        or((
+        alt!(
             rename,
             change_role,
-            (
+            seq!(
                 With,
                 alter_role_options.optional()
             )
@@ -50,7 +50,7 @@ fn user_role_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
             alter_role_options
                 .optional()
                 .map(Change::Options)
-        ))
+        )
     ).parse(stream)?;
 
     let stmt = match stmt {
@@ -72,14 +72,14 @@ fn user_role_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
 fn rename(stream: &mut TokenStream) -> scan::Result<Change> {
 
-    let (.., new_name) = (Rename, To, role_id).parse(stream)?;
+    let (.., new_name) = seq!(Rename, To, role_id).parse(stream)?;
     Ok(Change::Name { new_name })
 }
 
 fn change_role(stream: &mut TokenStream) -> scan::Result<Change> {
 
-    or((
-        (in_database, set_reset_clause)
+    alt!(
+        seq!(in_database, set_reset_clause)
             .map(|(db_name, set_stmt)|
                 Change::Role {
                     db_name: Some(db_name),
@@ -93,7 +93,7 @@ fn change_role(stream: &mut TokenStream) -> scan::Result<Change> {
                     set_stmt
                 }
             ),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -182,8 +182,9 @@ mod tests {
 }
 
 use super::in_database::in_database;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_id;
 use crate::combinators::role_spec;

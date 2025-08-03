@@ -15,10 +15,10 @@ pub(super) fn func_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         | json_aggregate_func filter_clause over_clause
     */
 
-    or((
+    alt!(
         func_expr_common_subexpr,
         json_agg_func
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn json_agg_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
@@ -27,7 +27,7 @@ fn json_agg_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         json_aggregate_func filter_clause over_clause
     */
 
-    let (func, filter, over_clause) = (
+    let (func, filter, over_clause) = seq!(
         json_aggregate_func,
         filter_clause.optional(),
         over_clause.optional()
@@ -89,7 +89,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_aggregate_func;
 use crate::combinators::JsonAggFunc;

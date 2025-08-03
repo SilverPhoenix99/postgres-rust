@@ -11,7 +11,7 @@ pg_basics::reexport! {
 
 /// Alias: `c_expr`
 pub(in crate::combinators) fn expr_primary(stream: &mut TokenStream) -> scan::Result<ExprNode> {
-    or((
+    alt!(
         param_expr,
         expr_const,
         case_expr.map(From::from),
@@ -22,7 +22,7 @@ pub(in crate::combinators) fn expr_primary(stream: &mut TokenStream) -> scan::Re
         // ❗ Must be after most other productions,
         // due to conflicts with the 1st keyword.
         prefixed_expr,
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -50,7 +50,7 @@ mod tests {
 }
 
 use crate::combinators::expr::expr_const;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

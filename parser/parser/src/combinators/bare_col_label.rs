@@ -1,9 +1,9 @@
 /// Alias: `BareColLabel`
 pub(super) fn bare_col_label(stream: &mut TokenStream<'_>) -> scan::Result<Str> {
-    or((
+    alt!(
         identifier.map(From::from),
         keyword_if(|kw| kw.details().bare()).map(From::from)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -22,9 +22,9 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::keyword_if;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

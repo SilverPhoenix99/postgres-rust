@@ -5,7 +5,7 @@ pub(super) fn show_stmt(stream: &mut TokenStream) -> scan::Result<VariableTarget
         SHOW variable_target
     */
 
-    let (_, target) = (Show, variable_target)
+    let (_, target) = seq!(Show, variable_target)
         .parse(stream)?;
 
     Ok(target)
@@ -26,6 +26,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::variable_target;
 use crate::scan;

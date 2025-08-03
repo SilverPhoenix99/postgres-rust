@@ -16,16 +16,16 @@ pub(super) fn func_name(stream: &mut TokenStream) -> scan::Result<QualifiedName>
             | IDENT ( attrs )?
     */
 
-    or((
+    alt!(
         TypeFuncName.map(|kw| vec![kw.into()]),
         attrs!(
-            or((
+            alt!(
                 Unreserved.map(Str::from),
                 identifier.map(Str::from)
-            ))
+            )
         ),
         column_name
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn column_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
@@ -72,8 +72,8 @@ mod tests {
 }
 
 use crate::combinators::attrs::attrs;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::identifier;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

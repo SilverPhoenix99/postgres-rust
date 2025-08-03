@@ -5,7 +5,7 @@ pub(super) fn analyze_keyword(stream: &mut TokenStream) -> scan::Result<()> {
         | ANALYSE
     */
 
-    or((Analyze, Analyse))
+    alt!(Analyze, Analyse)
         .parse(stream)?;
 
     Ok(())
@@ -24,7 +24,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

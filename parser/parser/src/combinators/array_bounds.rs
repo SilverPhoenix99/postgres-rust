@@ -6,10 +6,10 @@ pub(super) fn array_bounds(stream: &mut TokenStream) -> scan::Result<Vec<Option<
         | ( '[' ( ICONST )? ']' )[1..]
     */
 
-    or((
+    alt!(
         explicit_array,
         implicit_array
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn explicit_array(stream: &mut TokenStream) -> scan::Result<Vec<Option<i32>>> {
@@ -18,7 +18,7 @@ fn explicit_array(stream: &mut TokenStream) -> scan::Result<Vec<Option<i32>>> {
         ARRAY ( '[' ICONST ']' )?
     */
 
-    let (_, dim) = (
+    let (_, dim) = seq!(
         Array,
         brackets(i32_literal).optional()
     ).parse(stream)?;
@@ -56,9 +56,10 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::brackets;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::i32_literal;
 use crate::scan;

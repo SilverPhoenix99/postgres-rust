@@ -15,10 +15,10 @@ pub(super) fn relation_expr(stream: &mut TokenStream) -> scan::Result<RelationEx
         | inherited_relation_expr
     */
 
-    or((
+    alt!(
         non_inherited_relation_expr,
         inherited_relation_expr
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn non_inherited_relation_expr(stream: &mut TokenStream) -> scan::Result<RelationExpr> {
@@ -28,12 +28,12 @@ fn non_inherited_relation_expr(stream: &mut TokenStream) -> scan::Result<Relatio
         | ONLY '(' qualified_name ')'
     */
 
-    let (_, name) = (
+    let (_, name) = seq!(
         Only,
-        or((
+        alt!(
             paren(qualified_name),
             qualified_name
-        ))
+        )
     ).parse(stream)?;
 
     let expr = RelationExpr::new(name, false);
@@ -46,8 +46,10 @@ fn inherited_relation_expr(stream: &mut TokenStream) -> scan::Result<RelationExp
         qualified_name ( '*' )?
     */
 
-    let (name, _) = (qualified_name, Mul.optional())
-        .parse(stream)?;
+    let (name, _) = seq!(
+        qualified_name,
+        Mul.optional()
+    ).parse(stream)?;
 
     let expr = RelationExpr::new(name, true);
     Ok(expr)
@@ -82,9 +84,10 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::qualified_name;
 use crate::scan;

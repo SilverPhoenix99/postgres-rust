@@ -5,7 +5,7 @@ pub(super) fn reassign_owned_stmt(stream: &mut TokenStream) -> scan::Result<Reas
         REASSIGN OWNED BY role_list TO RoleSpec
     */
 
-    let (.., roles, _, new_owner) = (Reassign, OwnedKw, By, role_list, To, role_spec)
+    let (.., roles, _, new_owner) = seq!(Reassign, OwnedKw, By, role_list, To, role_spec)
         .parse(stream)?;
 
     Ok(ReassignOwnedStmt::new(roles, new_owner))
@@ -30,6 +30,7 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_list;
 use crate::combinators::role_spec;

@@ -5,7 +5,7 @@ pub(super) fn alter_default_privileges_stmt(stream: &mut TokenStream) -> scan::R
         ALTER DEFAULT PRIVILEGES DefACLOptionList DefACLAction
     */
 
-    let (.., options, action) = (
+    let (.., options, action) = seq!(
         DefaultKw,
         Privileges,
         def_acl_option_list.optional(),
@@ -30,16 +30,16 @@ fn def_acl_option(stream: &mut TokenStream) -> scan::Result<AclOption> {
         | FOR (ROLE | USER) role_list
     */
 
-    or((
-        (In, Schema, name_list)
+    alt!(
+        seq!(In, Schema, name_list)
             .map(|(.., schemas)| AclOption::Schemas(schemas)),
-        (
+        seq!(
             For,
-            or((Role, User)),
+            alt!(Role, User),
             role_list
         )
             .map(|(.., roles)| AclOption::Roles(roles))
-    )).parse(stream)
+    ).parse(stream)
 }
 
 /// Alias: `DefACLAction`
@@ -54,10 +54,10 @@ fn def_acl_action(stream: &mut TokenStream) -> scan::Result<GrantStmt> {
         | REVOKE ( GRANT OPTION FOR )? privileges ON defacl_privilege_target FROM grantee_list ( drop_behavior )?
     */
 
-    or((
+    alt!(
         grant_stmt,
         revoke_stmt
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn grant_stmt(stream: &mut TokenStream) -> scan::Result<GrantStmt> {
@@ -66,7 +66,7 @@ fn grant_stmt(stream: &mut TokenStream) -> scan::Result<GrantStmt> {
         GRANT privileges ON defacl_privilege_target TO grantee_list ( with_grant_option )?
     */
 
-    let (_, privileges, _, object_type, _, grantees, grant_option) = (
+    let (_, privileges, _, object_type, _, grantees, grant_option) = seq!(
         Grant,
         privileges,
         On,
@@ -87,7 +87,7 @@ fn revoke_stmt(stream: &mut TokenStream) -> scan::Result<GrantStmt> {
         REVOKE ( GRANT OPTION FOR )? privileges ON defacl_privilege_target FROM grantee_list ( drop_behavior )?
     */
 
-    let (_, grant_option, privileges, _, object_type, _, grantees, drop_behavior) = (
+    let (_, grant_option, privileges, _, object_type, _, grantees, drop_behavior) = seq!(
         Revoke,
         grant_option_for
             .optional()
@@ -111,7 +111,7 @@ fn grant_option_for(stream: &mut TokenStream) -> scan::Result<GrantOption> {
         GRANT OPTION FOR
     */
 
-    let _ = (Grant, OptionKw, For).parse(stream)?;
+    let _ = seq!(Grant, OptionKw, For).parse(stream)?;
 
     Ok(GrantOption::WithGrant)
 }
@@ -119,14 +119,14 @@ fn grant_option_for(stream: &mut TokenStream) -> scan::Result<GrantOption> {
 /// Alias: `defacl_privilege_target`
 fn def_acl_privilege_target(stream: &mut TokenStream) -> scan::Result<PrivilegeDefaultsTarget> {
 
-    or((
+    alt!(
         Kw::Tables.map(|_| Tables),
-        or((Kw::Functions, Routines)).map(|_| Functions),
+        alt!(Kw::Functions, Routines).map(|_| Functions),
         Kw::Sequences.map(|_| Sequences),
         Kw::Types.map(|_| Types),
         Kw::Schemas.map(|_| Schemas),
-        (Kw::Large, Kw::Objects).map(|_| LargeObjects)
-    )).parse(stream)
+        seq!(Kw::Large, Kw::Objects).map(|_| LargeObjects)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -223,8 +223,9 @@ mod tests {
 }
 
 use crate::combinators::drop_behavior;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::grantee_list;
 use crate::combinators::name_list;

@@ -10,18 +10,18 @@ pub(super) fn alter_language_stmt(stream: &mut TokenStream) -> scan::Result<RawS
         ALTER (PROCEDURAL)? LANGUAGE ColId RENAME TO ColId # RenameStmt
     */
 
-    let (_, language, stmt) = (
-        or((
-            (Procedural, Language).skip(),
+    let (_, language, stmt) = seq!(
+        alt!(
+            seq!(Procedural, Language).skip(),
             Language.skip()
-        )),
+        ),
         col_id,
-        or((
-            (Owner, To, role_spec)
+        alt!(
+            seq!(Owner, To, role_spec)
                 .map(|(.., new_owner)| Change::Owner(new_owner)),
-            (Rename, To, col_id)
+            seq!(Rename, To, col_id)
                 .map(|(.., new_name)| Change::Name(new_name))
-        ))
+        )
     ).parse(stream)?;
 
     let stmt = match stmt {
@@ -70,7 +70,8 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::scan;

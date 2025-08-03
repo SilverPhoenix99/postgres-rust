@@ -7,14 +7,14 @@ pub(super) fn boolean_or_string_list(stream: &mut TokenStream) -> scan::Result<V
 /// Alias: `opt_boolean_or_string`
 pub(super) fn boolean_or_string(stream: &mut TokenStream) -> scan::Result<BooleanOrString> {
 
-    or((
+    alt!(
         True.map(|_| true.into()),
         False.map(|_| false.into()),
         On.map(|kw| kw.text().into()),
         string.map(From::from),
         // `Off` is handled by this production:
         non_reserved_word.map(From::from),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -33,8 +33,8 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word;

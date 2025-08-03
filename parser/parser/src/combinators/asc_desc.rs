@@ -6,10 +6,10 @@ pub(super) fn asc_desc(stream: &mut TokenStream) -> scan::Result<SortDirection> 
         | DESC
     */
 
-    or((
+    alt!(
         Asc.map(|_| Ascending),
         Desc.map(|_| Descending),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -25,7 +25,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

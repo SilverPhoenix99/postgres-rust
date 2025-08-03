@@ -5,7 +5,7 @@ fn within_group_clause(stream: &mut TokenStream) -> scan::Result<Vec<SortBy>> {
         WITHIN GROUP_P '(' sort_clause ')'
     */
 
-    let (.., (sorts, _)) = (Within, Group, paren(sort_clause))
+    let (.., (sorts, _)) = seq!(Within, Group, paren(sort_clause))
         .parse(stream)?;
 
     Ok(sorts)
@@ -30,6 +30,7 @@ mod tests {
 }
 
 use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::sort_clause;
 use crate::scan;

@@ -5,7 +5,7 @@ pub(super) fn security_label_stmt(stream: &mut TokenStream) -> scan::Result<Secu
         SECURITY LABEL ( provider )? ON label_target IS security_label
     */
 
-    let (_, _, provider, _, target, label) = (
+    let (_, _, provider, _, target, label) = seq!(
         Security,
         Label,
         provider.optional(),
@@ -26,7 +26,7 @@ fn provider(stream: &mut TokenStream) -> scan::Result<Str> {
         FOR NonReservedWord_or_Sconst
     */
 
-    let (_, provider) = (For, non_reserved_word_or_sconst).parse(stream)?;
+    let (_, provider) = seq!(For, non_reserved_word_or_sconst).parse(stream)?;
 
     Ok(provider)
 }
@@ -69,7 +69,6 @@ fn label_target(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
       | VIEW any_name
     */
 
-    // Broken down into smaller combinators, due to large Rust type names.
     alt!(
         access_method.map(AccessMethod),
         aggregate.map(Aggregate),
@@ -120,7 +119,7 @@ fn security_label(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
         | IS NULL
     */
 
-    let (_, label) = (Is, string_or_null)
+    let (_, label) = seq!(Is, string_or_null)
         .parse(stream)?;
 
     Ok(label)
@@ -224,6 +223,7 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::stmt::access_method;

@@ -2,7 +2,7 @@ pub(super) fn work_or_transaction(stream: &mut TokenStream) -> scan::Result<()> 
 
     // Skips over WORK | TRANSACTION
 
-    or((Work, Transaction))
+    alt!(Work, Transaction)
         .parse(stream)?;
 
     Ok(())
@@ -22,7 +22,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

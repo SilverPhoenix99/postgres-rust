@@ -13,7 +13,7 @@ fn grantee(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
         ( GROUP )? role_spec
     */
 
-    let (_, role) = (Group.optional(), role_spec)
+    let (_, role) = seq!(Group.optional(), role_spec)
         .parse(stream)?;
 
     Ok(role)
@@ -26,7 +26,7 @@ pub(super) fn with_grant_option(stream: &mut TokenStream<'_>) -> scan::Result<Gr
         WITH GRANT OPTION
     */
 
-    let _ = (With, Grant, OptionKw)
+    let _ = seq!(With, Grant, OptionKw)
         .parse(stream)?;
 
     Ok(GrantOption::WithGrant)
@@ -39,10 +39,10 @@ pub(super) fn drop_behavior(stream: &mut TokenStream<'_>) -> scan::Result<DropBe
         CASCADE | RESTRICT
     */
 
-    or((
+    alt!(
         Cascade.map(|_| DropBehavior::Cascade),
         Restrict.map(|_| DropBehavior::Restrict)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 /// Alias: `opt_granted_by`
@@ -52,7 +52,7 @@ pub(super) fn granted_by(stream: &mut TokenStream<'_>) -> scan::Result<RoleSpec>
         GRANTED BY role_spec
     */
 
-    let (.., role) = (Granted, By, role_spec)
+    let (.., role) = seq!(Granted, By, role_spec)
         .parse(stream)?;
 
     Ok(role)
@@ -110,8 +110,9 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use crate::scan;

@@ -7,7 +7,7 @@ pub(crate) fn stmtmulti(stream: &mut TokenStream) -> scan::Result<Vec<RawStmt>> 
     // Original production:
     //     toplevel_stmt? ( ';' toplevel_stmt? )*
 
-    let (_, stmts) = (
+    let (_, stmts) = seq!(
         semicolons.optional(),
         many_sep(semicolons, toplevel_stmt).optional()
     ).parse(stream)?;
@@ -43,19 +43,19 @@ fn semicolons(stream: &mut TokenStream) -> scan::Result<()> {
 
 fn toplevel_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 
-    or((
+    alt!(
         transaction_stmt_legacy.map(RawStmt::from),
         stmt
-    )).parse(stream)
+    ).parse(stream)
 }
 
 /// Alias: `TransactionStmtLegacy`
 fn transaction_stmt_legacy(stream: &mut TokenStream) -> scan::Result<TransactionStmt> {
 
-    or((
+    alt!(
         begin_stmt,
         end_stmt
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -91,9 +91,10 @@ mod tests {
     }
 }
 
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt;
 use crate::combinators::stmt::begin_stmt;

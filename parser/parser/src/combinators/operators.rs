@@ -4,27 +4,27 @@ pub(super) fn subquery_op(stream: &mut TokenStream) -> scan::Result<QualifiedOpe
     // Intentionally excludes NOT LIKE/NOT ILIKE, due to conflicts.
     // Those will have to be checked separately.
 
-    or((
+    alt!(
         qual_all_op,
         like_op.map(From::from)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 /// Alias: `qual_all_Op`
 pub(super) fn qual_all_op(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
-    or((
+    alt!(
         all_op.map(From::from),
         explicit_op
-    )).parse(stream)
+    ).parse(stream)
 }
 
 /// Alias: `qual_Op`
 pub(super) fn qual_op(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
-    or((
+    alt!(
         user_defined_operator
             .map(|op| UserDefined(op).into()),
         explicit_op,
-    )).parse(stream)
+    ).parse(stream)
 }
 
 pub(super) fn explicit_op(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
@@ -33,7 +33,7 @@ pub(super) fn explicit_op(stream: &mut TokenStream) -> scan::Result<QualifiedOpe
         OPERATOR '(' any_operator ')'
     */
 
-    let (_, op) = (OperatorKw, paren(any_operator))
+    let (_, op) = seq!(OperatorKw, paren(any_operator))
         .parse(stream)?;
 
     Ok(op)
@@ -45,9 +45,9 @@ pub(super) fn any_operator(stream: &mut TokenStream) -> scan::Result<QualifiedOp
         ( col_id '.' )* all_op
     */
 
-    let (qn, op) = (
+    let (qn, op) = seq!(
         many(
-            (col_id, Dot)
+            seq!(col_id, Dot)
                 .map(|(qn, _)| qn)
         )
             .optional()
@@ -62,28 +62,28 @@ pub(super) fn any_operator(stream: &mut TokenStream) -> scan::Result<QualifiedOp
 ///
 /// Inlined: `MathOp`
 fn all_op(stream: &mut TokenStream) -> scan::Result<Operator> {
-    or((
+    alt!(
         additive_op,
         multiplicative_op,
         exponentiation_op,
         boolean_op,
         user_defined_operator.map(UserDefined)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn additive_op(stream: &mut TokenStream) -> scan::Result<Operator> {
-    or((
+    alt!(
         Plus.map(|_| Addition),
         Minus.map(|_| Subtraction)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn multiplicative_op(stream: &mut TokenStream) -> scan::Result<Operator> {
-    or((
+    alt!(
         Mul.map(|_| Multiplication),
         Div.map(|_| Division),
         Percent.map(|_| Modulo),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn exponentiation_op(stream: &mut TokenStream) -> scan::Result<Operator> {
@@ -92,21 +92,21 @@ fn exponentiation_op(stream: &mut TokenStream) -> scan::Result<Operator> {
 }
 
 fn boolean_op(stream: &mut TokenStream) -> scan::Result<Operator> {
-    or((
+    alt!(
         Less.map(|_| Operator::Less),
         Equals.map(|_| Operator::Equals),
         Greater.map(|_| Operator::Greater),
         LessEquals.map(|_| Operator::LessEquals),
         GreaterEquals.map(|_| Operator::GreaterEquals),
         NotEquals.map(|_| Operator::NotEquals),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn like_op(stream: &mut TokenStream) -> scan::Result<Operator> {
-    or((
+    alt!(
         Like.map(|_| Operator::Like),
         Ilike.map(|_| ILike)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -206,9 +206,10 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::user_defined_operator;
 use crate::combinators::foundation::Combinator;
 use crate::scan;

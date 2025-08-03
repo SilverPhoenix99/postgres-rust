@@ -10,20 +10,33 @@ pub(super) fn xmltable(stream: &mut TokenStream) -> scan::Result<XmlTable> {
         ')'
     */
 
-    let (_, (namespaces, row_spec, doc, _, columns)) = (Xmltable, paren((
-        (Xmlnamespaces, paren(xml_namespace_list), Comma)
-            .map(|(_, namespaces, _)| namespaces)
-            .optional(),
-        expr_primary,
-        xmlexists_argument,
-        Columns,
-        xmltable_column_list
-    ))).parse(stream)?;
+    let (_, (namespaces, row_spec, doc, _, columns)) = seq!(
+        Xmltable,
+        paren(seq!(
+            xml_namespaces.optional(),
+            expr_primary,
+            xmlexists_argument,
+            Columns,
+            xmltable_column_list
+        ))
+    ).parse(stream)?;
 
     let mut xml_table = XmlTable::new(doc, row_spec, columns);
     xml_table.set_namespaces(namespaces);
 
     Ok(xml_table)
+}
+
+fn xml_namespaces(stream: &mut TokenStream) -> scan::Result<Vec<NamedValue>> {
+
+    /*
+        XMLNAMESPACES '(' xml_namespace_list ')' ','
+    */
+
+    let (_, namespaces, _) = seq!(Xmlnamespaces, paren(xml_namespace_list), Comma)
+        .parse(stream)?;
+
+    Ok(namespaces)
 }
 
 fn xmltable_column_list(stream: &mut TokenStream) -> scan::Result<Vec<XmlTableColumn>> {
@@ -42,12 +55,12 @@ fn xmltable_column_el(stream: &mut TokenStream) -> scan::Result<XmlTableColumn> 
         | col_id Typename ( xmltable_column_option_el )*
     */
 
-    let (column_name, kind) = (
+    let (column_name, kind) = seq!(
         col_id,
-        or((
-            (For, Ordinality).map(|_| None),
-            (typename, many(located(xmltable_column_option_el)).optional()).map(Some)
-        ))
+        alt!(
+            seq!(For, Ordinality).map(|_| None),
+            seq!(typename, many(located(xmltable_column_option_el)).optional()).map(Some)
+        )
     ).parse(stream)?;
 
     let Some((type_name, options)) = kind else {
@@ -110,22 +123,22 @@ fn xmltable_column_option_el(stream: &mut TokenStream) -> scan::Result<XmlTableC
         | IDENT b_expr
     */
 
-    or((
+    alt!(
         Kw::Null
             .map(|_| Null),
-        (Not, Kw::Null)
+        seq!(Not, Kw::Null)
             .map(|_| NotNull),
-        (DefaultKw, b_expr)
+        seq!(DefaultKw, b_expr)
             .map(|(_, value)| DefaultOption(value)),
-        (Kw::Path, b_expr)
+        seq!(Kw::Path, b_expr)
             .map(|(_, value)| Path(value)),
         xmltable_column_ident_option,
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn xmltable_column_ident_option(stream: &mut TokenStream) -> scan::Result<XmlTableColumnOption> {
 
-    let ((option, loc), _) = (located(identifier), b_expr).parse(stream)?;
+    let ((option, loc), _) = seq!(located(identifier), b_expr).parse(stream)?;
 
     let err = if option.as_ref() == "__pg__is_not_null" {
         InvalidXmlTableOptionName(option)
@@ -153,12 +166,12 @@ fn xml_namespace_el(stream: &mut TokenStream) -> scan::Result<NamedValue> {
         | b_expr AS ColLabel
     */
 
-    or((
-        (DefaultKw, b_expr)
+    alt!(
+        seq!(DefaultKw, b_expr)
             .map(|(_, value)| NamedValue::unnamed(value)),
-        (b_expr, As, col_label)
+        seq!(b_expr, As, col_label)
             .map(|(value, _, name)| NamedValue::new(Some(name), value)),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -313,12 +326,13 @@ use crate::combinators::col_id;
 use crate::combinators::col_label;
 use crate::combinators::expr::b_expr;
 use crate::combinators::expr::expr_primary;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::many_sep;
-use crate::combinators::foundation::or;
 use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
 use crate::combinators::xmlexists_argument;

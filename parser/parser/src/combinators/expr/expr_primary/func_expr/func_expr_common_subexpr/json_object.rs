@@ -8,7 +8,7 @@ pub(super) fn json_object(stream: &mut TokenStream) -> scan::Result<JsonObjectEx
         return no_match(stream)
     }
 
-    let expr = skip_prefix(1, paren(
+    let (_, expr) = seq!(skip(1), paren(
         json_object_args.optional()
     )).parse(stream)?;
 
@@ -41,7 +41,7 @@ fn json_object_args(stream: &mut TokenStream) -> scan::Result<JsonObjectExpr> {
     {
         // ExplicitCall
 
-        let args = (Comma, func_arg_list)
+        let args = seq!(Comma, func_arg_list)
             .parse(stream)
             .optional()?;
 
@@ -61,11 +61,11 @@ fn json_object_args(stream: &mut TokenStream) -> scan::Result<JsonObjectExpr> {
         return Ok(ExplicitCall(Some(args)))
     }
 
-    let (_, json_value) = (
-        or((
+    let (_, json_value) = seq!(
+        alt!(
             Value.skip(),
             Colon.skip()
-        )),
+        ),
         json_value_expr
     ).parse(stream)
         .required()?;
@@ -73,8 +73,8 @@ fn json_object_args(stream: &mut TokenStream) -> scan::Result<JsonObjectExpr> {
     let (_, key) = first.into();
     let first = JsonKeyValue::new(key, json_value);
 
-    let (exprs, absent_on_null, unique, output) = (
-        (Comma, json_name_and_value_list).optional(),
+    let (exprs, absent_on_null, unique, output) = seq!(
+        seq!(Comma, json_name_and_value_list).optional(),
         json_constructor_null_clause.optional(),
         json_key_uniqueness_constraint.optional(),
         json_returning_clause.optional(),
@@ -157,9 +157,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::skip_prefix;
+use crate::combinators::foundation::seq;
+use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg_expr;
 use crate::combinators::func_arg_list;

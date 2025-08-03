@@ -8,34 +8,34 @@ pub(super) fn set_rest(stream: &mut TokenStream) -> scan::Result<SetRest> {
         | set_rest_more
     */
 
-    or((
-        (Session, set_rest_session)
+    alt!(
+        seq!(Session, set_rest_session)
             .map(|(_, stmt)| stmt),
-        (Transaction, set_rest_transaction)
+        seq!(Transaction, set_rest_transaction)
             .map(|(_, stmt)| stmt),
         set_rest_more
             .map(SetRest::from)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn set_rest_session(stream: &mut TokenStream) -> scan::Result<SetRest> {
 
-    or((
-        (Characteristics, As, Transaction, transaction_mode_list)
+    alt!(
+        seq!(Characteristics, As, Transaction, transaction_mode_list)
             .map(|(.., modes)| SetRest::SessionTransactionCharacteristics(modes)),
-        (Authorization, session_auth_user)
+        seq!(Authorization, session_auth_user)
             .map(|(_, user)| SetRest::SessionAuthorization { user })
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn set_rest_transaction(stream: &mut TokenStream) -> scan::Result<SetRest> {
 
-    or((
-        (Snapshot, string)
+    alt!(
+        seq!(Snapshot, string)
             .map(|(_, snapshot)| SetRest::TransactionSnapshot(snapshot)),
         transaction_mode_list
             .map(SetRest::LocalTransactionCharacteristics)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 pub(super) fn set_rest_more(stream: &mut TokenStream) -> scan::Result<SetRestMore> {
@@ -55,48 +55,35 @@ pub(super) fn set_rest_more(stream: &mut TokenStream) -> scan::Result<SetRestMor
 
     // All keywords conflict with `var_name`, so it needs to be last
 
-    // Broken down into smaller combinators, due to large Rust type names.
-    or((
-        set_rest_more_1,
-        set_rest_more_2,
-    )).parse(stream)
-}
-
-fn set_rest_more_1(stream: &mut TokenStream) -> scan::Result<SetRestMore> {
-    or((
-        (Session, Authorization, session_auth_user)
+    alt!(
+        seq!(Session, Authorization, session_auth_user)
             .map(|(.., user)| SetRestMore::SessionAuthorization { user }),
-        (Transaction, Snapshot, string)
+        seq!(Transaction, Snapshot, string)
             .map(|(.., snapshot)| SetRestMore::TransactionSnapshot(snapshot)),
-        (Time, Zone, zone_value)
+        seq!(Time, Zone, zone_value)
             .map(|(.., zone)| SetRestMore::TimeZone(zone)),
-        (Kw::Catalog, string)
+        seq!(Kw::Catalog, string)
             .map(|(_, catalog)| SetRestMore::Catalog(catalog)),
-    )).parse(stream)
-}
-
-fn set_rest_more_2(stream: &mut TokenStream) -> scan::Result<SetRestMore> {
-    or((
-        (Kw::Schema, string)
+        seq!(Kw::Schema, string)
             .map(|(_, schema)| SetRestMore::Schema(schema)),
-        (Names, encoding.optional())
+        seq!(Names, encoding.optional())
             .map(|(_, encoding)| SetRestMore::ClientEncoding(encoding.unwrap_or_default())),
-        (Kw::Role, non_reserved_word_or_sconst)
+        seq!(Kw::Role, non_reserved_word_or_sconst)
             .map(|(_, role)| SetRestMore::Role(role)),
-        (Xml, OptionKw, document_or_content)
+        seq!(Xml, OptionKw, document_or_content)
             .map(|(.., option)| SetRestMore::XmlOption(option)),
         set_var_name
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn set_var_name(stream: &mut TokenStream) -> scan::Result<SetRestMore> {
 
     let name = var_name(stream)?;
 
-    let option = or((
-        (FromKw, Current).map(|_| None),
+    let option = alt!(
+        seq!(FromKw, Current).map(|_| None),
         generic_set_tail.map(Some)
-    )).parse(stream)?;
+    ).parse(stream)?;
 
     let option = match option {
         None => SetRestMore::FromCurrent { name },
@@ -113,10 +100,10 @@ fn session_auth_user(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<St
         | NonReservedWord_or_Sconst
     */
 
-    or((
+    alt!(
         DefaultKw.map(|_| ValueOrDefault::Default),
         non_reserved_word_or_sconst.map(ValueOrDefault::Value)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn zone_value(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
@@ -131,16 +118,16 @@ fn zone_value(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
         | INTERVAL '(' ICONST ')' SCONST
     */
 
-    or((
-        or((DefaultKw, Kw::Local))
+    alt!(
+        alt!(DefaultKw, Kw::Local)
             .map(|_: Kw| Local),
         signed_number.map(Numeric),
-        or((string, identifier))
+        alt!(string, identifier)
             .map(|name: Box<str>|
                 ZoneValue::String(name.into())
             ),
         zone_interval
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn zone_interval(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
@@ -150,19 +137,19 @@ fn zone_interval(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
         | INTERVAL '(' ICONST ')' SCONST
     */
 
-    let (_, zone) = (
+    let (_, zone) = seq!(
         Kw::Interval,
-        or((
-            (string, zone_value_interval)
+        alt!(
+            seq!(string, zone_value_interval)
                 .map(|(value, range)| Interval { value, range }),
-            (i32_literal_paren, string)
+            seq!(i32_literal_paren, string)
                 .map(|(precision, value)|
                     Interval {
                         value,
                         range: Full { precision: Some(precision) }
                     }
                 )
-        ))
+        )
     ).parse(stream)?;
 
     Ok(zone)
@@ -190,10 +177,10 @@ fn encoding(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<Box<str>>> 
         | SCONST
     */
 
-    or((
+    alt!(
         DefaultKw.map(|_| ValueOrDefault::Default),
         string.map(ValueOrDefault::Value)
-    )).parse(stream)
+    ).parse(stream)
 }
 
 #[cfg(test)]
@@ -267,9 +254,10 @@ mod tests {
 }
 
 use crate::combinators::document_or_content;
+use crate::combinators::foundation::alt;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_set_tail;

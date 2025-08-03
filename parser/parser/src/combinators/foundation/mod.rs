@@ -1,4 +1,3 @@
-mod and;
 mod combinator;
 mod operator;
 
@@ -16,7 +15,6 @@ pg_basics::reexport! { pub(in crate::combinators)
     map,
     number,
     optional,
-    or,
     param,
     parser,
     seq,

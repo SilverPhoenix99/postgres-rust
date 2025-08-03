@@ -5,7 +5,7 @@ pub(super) fn comment_stmt(stream: &mut TokenStream) -> scan::Result<CommentStmt
           COMMENT ON comment_target IS comment_text
     */
 
-    let (.., target, comment) = (Comment, On, comment_target, comment_text)
+    let (.., target, comment) = seq!(Comment, On, comment_target, comment_text)
         .parse(stream)?;
 
     Ok(CommentStmt::new(target, comment))
@@ -59,41 +59,17 @@ fn comment_target(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
         | VIEW any_name
     */
 
-    // Broken down into smaller combinators, due to large Rust type names.
-    or((
-        comment_target_1,
-        comment_target_2,
-        comment_target_3,
-        comment_target_4,
-        comment_target_5,
-        comment_target_6,
-        comment_target_7,
-        comment_target_8,
-    )).parse(stream)
-}
-
-fn comment_target_1(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
-    or((
+    alt!(
         access_method.map(AccessMethod),
         aggregate.map(Aggregate),
         typecast.map(Typecast),
         collation.map(Collation),
         column.map(Column),
-    )).parse(stream)
-}
-
-fn comment_target_2(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
-    or((
         constraint,
         conversion.map(Conversion),
         database.map(Database),
         domain.map(Domain),
         event_trigger.map(EventTrigger),
-    )).parse(stream)
-}
-
-fn comment_target_3(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
-    or((
         extension.map(Extension),
         foreign.map(|foreign| match foreign {
             Foreign::DataWrapper(name) => ForeignDataWrapper(name),
@@ -102,12 +78,6 @@ fn comment_target_3(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
         function.map(Function),
         index.map(Index),
         large_object.map(LargeObject),
-
-    )).parse(stream)
-}
-
-fn comment_target_4(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
-    or((
         materialized_view.map(MaterializedView),
         operator.map(|op| match op {
             Op::WithArgs(op) => Operator(op),
@@ -117,29 +87,14 @@ fn comment_target_4(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
         language.map(Language),
         policy,
         procedure.map(Procedure),
-    )).parse(stream)
-}
-
-fn comment_target_5(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
-    or((
         publication.map(Publication),
         role.map(Role),
         routine.map(Routine),
         rule,
-    )).parse(stream)
-}
-
-fn comment_target_6(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
-    or((
         schema.map(Schema),
         sequence.map(Sequence),
         server.map(ForeignServer),
         statistics.map(ExtendedStatistics),
-    )).parse(stream)
-}
-
-fn comment_target_7(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
-    or((
         subscription.map(Subscription),
         table.map(Table),
         tablespace.map(Tablespace),
@@ -149,16 +104,11 @@ fn comment_target_7(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
             TextSearch::Parser(name) => TextSearchParser(name),
             TextSearch::Template(name) => TextSearchTemplate(name),
         }),
-    )).parse(stream)
-}
-
-fn comment_target_8(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
-    or((
         transform.map(Transform),
         trigger,
         type_name.map(Type),
         view.map(View),
-    )).parse(stream)
+    ).parse(stream)
 }
 
 fn constraint(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
@@ -168,17 +118,17 @@ fn constraint(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
         Table(QualifiedName)
     }
 
-    let (_, name, _, constraint) = (
+    let (_, name, _, constraint) = seq!(
         Kw::Constraint,
         col_id,
         On,
-        or((
+        alt!(
             // See https://github.com/postgres/postgres/blob/cdc168ad4b22ea4183f966688b245cabb5935d1f/src/backend/parser/gram.y#L7230-L7232
-            (Kw::Domain, simple_typename)
+            seq!(Kw::Domain, simple_typename)
                 .map(|(_, domain)| Constraint::Domain(domain)),
             any_name
                 .map(Constraint::Table)
-        ))
+        )
     ).parse(stream)?;
 
     let target = match constraint {
@@ -201,7 +151,7 @@ fn policy(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
         POLICY name ON any_name
     */
 
-    let (_, name, _, table) = (Kw::Policy, col_id, On, any_name)
+    let (_, name, _, table) = seq!(Kw::Policy, col_id, On, any_name)
         .parse(stream)?;
 
     Ok(Policy { name, table })
@@ -213,7 +163,7 @@ fn rule(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
         RULE name ON any_name
     */
 
-    let (_, name, _, table) = (Kw::Rule, col_id, On, any_name)
+    let (_, name, _, table) = seq!(Kw::Rule, col_id, On, any_name)
         .parse(stream)?;
 
     Ok(Rule { name, table })
@@ -225,7 +175,7 @@ fn trigger(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
         TRIGGER name ON any_name
     */
 
-    let (_, name, _, table) = (Kw::Trigger, col_id, On, any_name)
+    let (_, name, _, table) = seq!(Kw::Trigger, col_id, On, any_name)
         .parse(stream)?;
 
     Ok(Trigger { name, table })
@@ -240,7 +190,7 @@ fn comment_text(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
         | IS NULL
     */
 
-    let (_, text) = (Is, string_or_null)
+    let (_, text) = seq!(Is, string_or_null)
         .parse(stream)?;
 
     Ok(text)
@@ -393,7 +343,8 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::simple_typename;
 use crate::combinators::stmt::access_method;

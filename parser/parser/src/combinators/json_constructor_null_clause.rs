@@ -7,11 +7,11 @@ pub(super) fn json_constructor_null_clause(stream: &mut TokenStream) -> scan::Re
         ( ABSENT | NULL ) ON NULL
     */
 
-    let (absent_on_null, ..) = (
-        or((
+    let (absent_on_null, ..) = seq!(
+        alt!(
             Absent.map(|_| true),
             Null.map(|_| false),
-        )),
+        ),
         On,
         Null
     ).parse(stream)?;
@@ -32,7 +32,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::or;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
