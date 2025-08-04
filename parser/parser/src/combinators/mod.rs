@@ -19,6 +19,7 @@ pg_basics::reexport! {
     boolean_or_string,
     col_id,
     col_label,
+    collate_clause,
     const_numeric,
     document_or_content,
     expr_list,
