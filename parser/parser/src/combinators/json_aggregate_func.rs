@@ -16,7 +16,8 @@ pub(super) fn json_aggregate_func(stream: &mut TokenStream) -> scan::Result<Json
         | json_arrayagg
     */
 
-    // Both 1st keywords are ColumnName, and they conflict with `prefixed_expr`, so this check is needed.
+    // Both 1st keywords are ColumnName, and they conflict with `func_application` and `prefixed_expr`,
+    // so this check is needed.
 
     match stream.peek2()? {
         (K(JsonObjectagg), Op(OpenParenthesis)) => json_objectagg(stream).map(From::from),

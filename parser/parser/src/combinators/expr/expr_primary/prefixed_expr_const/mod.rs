@@ -5,7 +5,7 @@ pg_basics::reexport! {
     type_func_name_prefixed_expr,
 }
 
-pub(super) fn prefixed_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn prefixed_expr_const(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     /*
           func_name                              => columnref
@@ -35,7 +35,7 @@ mod tests {
         => matches Ok(_)
     )]
     fn test_prefixed_expr(source: &str) -> scan::Result<ExprNode> {
-        test_parser!(source, prefixed_expr)
+        test_parser!(source, prefixed_expr_const)
     }
 }
 

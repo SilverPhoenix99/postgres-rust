@@ -53,7 +53,7 @@ fn const_typename(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         | INTERVAL SCONST ( interval )?
     */
 
-    // Lookahead is required to disambiguate with `prefixed_expr`,
+    // Lookahead is required to disambiguate with `prefixed_expr_const`,
     // due to conflicts with the 1st keyword.
 
     match stream.peek2()? {

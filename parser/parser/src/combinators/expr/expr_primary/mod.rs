@@ -6,7 +6,7 @@ pg_basics::reexport! {
     func_expr,
     grouping_func,
     param_expr,
-    prefixed_expr,
+    prefixed_expr_const,
 }
 
 /// Alias: `c_expr`
@@ -21,7 +21,7 @@ pub(in crate::combinators) fn expr_primary(stream: &mut TokenStream) -> scan::Re
 
         // ❗ Must be after most other productions,
         // due to conflicts with the 1st keyword.
-        prefixed_expr,
+        prefixed_expr_const,
     ).parse(stream)
 }
 

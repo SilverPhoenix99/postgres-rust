@@ -80,7 +80,7 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         | XMLSERIALIZE '(' ... ')'
     */
 
-    // Prevents conflicts with `prefixed_expr`:
+    // Prevents conflicts with `func_application` and `prefixed_expr_const`:
     match stream.peek2() {
         Ok((K(Coalesce), Op(OpenParenthesis))) => return coalesce_expr(stream),
         Ok((K(Collation), K(For))) => return collation_for(stream),
