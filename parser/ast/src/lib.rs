@@ -33,6 +33,7 @@ pg_basics::reexport! { pub
     drop_behavior,
     extract_expr,
     frame_extent,
+    func_alias,
     func_args_kind,
     func_call,
     func_call_expr,

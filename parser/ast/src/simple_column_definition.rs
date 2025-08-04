@@ -39,6 +39,16 @@ impl SimpleColumnDefinition {
     pub fn collation(&self) -> Option<&[Str]> {
         self.collation.as_deref()
     }
+
+    pub fn desconstruct(self) -> (Str, Type, Option<QualifiedName>) {
+        self.into()
+    }
+}
+
+impl From<SimpleColumnDefinition> for (Str, Type, Option<QualifiedName>) {
+    fn from(value: SimpleColumnDefinition) -> Self {
+        (value.name, value.type_name, value.collation)
+    }
 }
 
 use crate::Type;
