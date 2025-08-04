@@ -61,6 +61,7 @@ pg_basics::reexport! {
     sort_clause,
     stmt,
     string_or_null,
+    table_func_element_list,
     table_ref,
     transaction_chain,
     transaction_mode_list,

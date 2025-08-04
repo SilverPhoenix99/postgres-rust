@@ -88,6 +88,7 @@ pg_basics::reexport! { pub
     set_rest,
     set_rest_more,
     signed_number,
+    simple_column_definition,
     sort_by,
     substring_func,
     system_type,
