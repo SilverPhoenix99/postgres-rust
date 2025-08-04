@@ -41,6 +41,7 @@ pg_basics::reexport! { pub
     grant_stmt,
     indirection,
     indirection_expr,
+    json,
     json_array_agg,
     json_array_agg_expr,
     json_behavior,
@@ -220,6 +221,7 @@ pub enum ExprNode {
     PositionFunc(Box<PositionFunc>),
     TrimFunc(TrimFunc),
     JsonArrayAgg(Box<JsonArrayAggExpr>),
+    JsonFunc(Box<JsonFunc>),
     JsonObject(JsonObjectExpr),
     JsonObjectAgg(Box<JsonObjectAggExpr>),
     OverlayFunc(Box<OverlayFunc>),
@@ -248,6 +250,7 @@ impl_from!(box FuncCall for ExprNode);
 impl_from!(box IndirectionExpr for ExprNode::Indirection);
 impl_from!(box JsonArrayAggExpr for ExprNode::JsonArrayAgg);
 impl_from!(box JsonExistsExpr for ExprNode::JsonExists);
+impl_from!(box JsonFunc for ExprNode);
 impl_from!(box JsonObjectAggExpr for ExprNode::JsonObjectAgg);
 impl_from!(box JsonQueryExpr for ExprNode::JsonQuery);
 impl_from!(box JsonSerializeExpr for ExprNode::JsonSerialize);

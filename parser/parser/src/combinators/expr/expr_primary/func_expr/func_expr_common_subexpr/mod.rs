@@ -5,6 +5,7 @@ pg_basics::reexport! {
     current_schema,
     extract,
     greatest_expr,
+    json,
     json_exists_expr,
     json_object,
     json_query_expr,
@@ -62,11 +63,12 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         | SESSION_USER
         | SYSTEM_USER
         | USER
+        | JSON '(' ... ')'
         | JSON_EXISTS '(' ... ')'
         | JSON_OBJECT '(' ( json_object_args )? ')'
         | JSON_QUERY '(' ... ')'
         | JSON_SCALAR '(' a_expr ')'
-        | JSON_SERIALIZE '(' json_value_expr ( json_returning_clause )? ')'
+        | JSON_SERIALIZE '(' ... ')'
         | JSON_VALUE '(' ... ')'
         | XMLCONCAT '(' expr_list ')'
         | XMLELEMENT '(' ... ')'
@@ -86,7 +88,6 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         current_schema,
         extract.map(From::from),
         greatest_expr,
-        json_common_subexpr,
         least_expr,
         merge_action,
         normalize.map(From::from),
@@ -98,23 +99,17 @@ pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result
         time,
         treat_expr,
         trim.map(From::from),
-        xml_common_subexpr,
-    ).parse(stream)
-}
 
-fn json_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
-    alt!(
+        // JSON
+        json.map(From::from),
         json_exists_expr.map(From::from),
         json_object.map(From::from),
         json_query_expr.map(From::from),
         json_scalar,
         json_serialize_expr.map(From::from),
         json_value_func.map(From::from),
-    ).parse(stream)
-}
 
-fn xml_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
-    alt!(
+        // XML
         xml_concat,
         xml_element.map(From::from),
         xml_exists.map(From::from),
@@ -141,6 +136,7 @@ mod tests {
     #[test_case("current_schema" => matches Ok(_))]
     #[test_case("extract(month from 1)" => matches Ok(_))]
     #[test_case("greatest(1)" => matches Ok(_))]
+    #[test_case("json('{}')" => matches Ok(_))]
     #[test_case("json_exists('{}', 'foo')" => matches Ok(_))]
     #[test_case("json_object()" => matches Ok(_))]
     #[test_case("json_query('{}', 'foo')" => matches Ok(_))]
