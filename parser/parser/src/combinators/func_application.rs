@@ -1,3 +1,16 @@
+pub(super) fn func_application(stream: &mut TokenStream) -> scan::Result<FuncCall> {
+
+    /*
+        func_name func_application_args
+    */
+
+    let (name, args) = seq!(func_name, func_application_args)
+        .parse(stream)?;
+
+    let func_call = FuncCall::new(name, args);
+    Ok(func_call)
+}
+
 pub(super) fn func_application_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
 
     /*
@@ -180,6 +193,18 @@ mod tests {
     use pg_ast::ExprNode::IntegerConst;
     use test_case::test_case;
 
+    #[test]
+    fn test_func_application() {
+        test_parser!(
+            source = "foo(*)",
+            parser = func_application,
+            expected = FuncCall::new(
+                vec!["foo".into()],
+                Wildcard { order_within_group: None }
+            )
+        )
+    }
+
     #[test_case("(*)" => Ok(Wildcard { order_within_group: None }))]
     #[test_case("(distinct 1, 2)" => Ok(Distinct {
         args: vec![
@@ -336,9 +361,11 @@ use pg_ast::FuncArgsKind::Empty;
 use pg_ast::FuncArgsKind::Variadic;
 use pg_ast::FuncArgsKind::Wildcard;
 use pg_ast::FuncArgsOrder;
+use pg_ast::FuncCall;
 use pg_ast::NamedValue;
 use pg_basics::Located;
 use pg_basics::Location;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::Mul;
+use crate::combinators::func_name::func_name;
