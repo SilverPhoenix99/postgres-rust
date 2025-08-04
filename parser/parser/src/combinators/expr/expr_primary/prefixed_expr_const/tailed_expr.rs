@@ -17,7 +17,7 @@ pub(super) fn tailed_expr(name: Vec<Str>, tail: AttrTail) -> ExprNode {
         },
         AttrTail::FuncTail { args, filter, over } => {
             // func_expr
-            let func_call = FuncCall::new(name, args, filter, over);
+            let func_call = FuncCallExpr::new(name, args, filter, over);
             func_call.into()
         },
     }
@@ -30,7 +30,7 @@ mod tests {
     use pg_ast::{
         ExprNode::IntegerConst,
         FuncArgsKind,
-        FuncCall,
+        FuncCallExpr,
         OverClause::WindowName,
     };
     use test_case::test_case;
@@ -54,7 +54,7 @@ mod tests {
             filter: Some(IntegerConst(123)),
             over: Some(WindowName("bar".into()))
         },
-        FuncCall::new(
+        FuncCallExpr::new(
             vec!["foo".into()],
             FuncArgsKind::Wildcard { order_within_group: None },
             Some(IntegerConst(123)),
@@ -70,7 +70,7 @@ mod tests {
 use super::attr_tail::AttrTail;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::StringConst;
-use pg_ast::FuncCall;
+use pg_ast::FuncCallExpr;
 use pg_ast::TypeName;
 use pg_ast::TypecastExpr;
 use pg_basics::Str;

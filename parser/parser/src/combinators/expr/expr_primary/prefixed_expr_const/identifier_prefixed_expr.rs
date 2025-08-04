@@ -1,4 +1,4 @@
-pub fn identifier_prefixed_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn identifier_prefixed_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     /*
         column_ref (
@@ -66,7 +66,7 @@ mod tests {
     use pg_ast::{
         ExprNode::{IntegerConst, StringConst},
         FuncArgsKind,
-        FuncCall,
+        FuncCallExpr,
         OverClause,
         TypeName,
         TypecastExpr,
@@ -197,7 +197,7 @@ mod tests {
         ).into()
     )]
     #[test_case("foo() '123'",
-        FuncCall::new(
+        FuncCallExpr::new(
             vec!["foo".into()],
             FuncArgsKind::Empty { order_within_group: None },
             None,
@@ -205,7 +205,7 @@ mod tests {
         ).into()
     )]
     #[test_case("double() '123'",
-        FuncCall::new(
+        FuncCallExpr::new(
             vec!["double".into()],
             FuncArgsKind::Empty { order_within_group: None },
             None,
@@ -213,7 +213,7 @@ mod tests {
         ).into()
     )]
     #[test_case("foo.bar() over qux",
-        FuncCall::new(
+        FuncCallExpr::new(
             vec!["foo".into(), "bar".into()],
             FuncArgsKind::Empty { order_within_group: None },
             None,
@@ -221,7 +221,7 @@ mod tests {
         ).into()
     )]
     #[test_case("double.baz() filter (where 1)",
-        FuncCall::new(
+        FuncCallExpr::new(
             vec!["double".into(), "baz".into()],
             FuncArgsKind::Empty { order_within_group: None },
             Some(IntegerConst(1)),
@@ -229,7 +229,7 @@ mod tests {
         ).into()
     )]
     #[test_case("between.qux() filter (where 1)",
-        FuncCall::new(
+        FuncCallExpr::new(
             vec!["between".into(), "qux".into()],
             FuncArgsKind::Empty { order_within_group: None },
             Some(IntegerConst(1)),

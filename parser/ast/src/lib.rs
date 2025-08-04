@@ -33,7 +33,7 @@ pg_basics::reexport! { pub
     extract_expr,
     frame_extent,
     func_args_kind,
-    func_call,
+    func_call_expr,
     function_parameter,
     function_with_args,
     generic_option,
@@ -186,6 +186,7 @@ pub enum ExprNode {
     NotDistinct(BinaryOperands),
     NullIf(BinaryOperands),
     Coalesce(Vec<ExprNode>),
+    FuncCallExpr(Box<FuncCallExpr>),
     Greatest(Vec<ExprNode>),
     Least(Vec<ExprNode>),
     Treat(Box<TypecastExpr>),
@@ -213,7 +214,6 @@ pub enum ExprNode {
     User,
     CurrentCatalog,
     CurrentSchema,
-    FuncCall(Box<FuncCall>),
     CollationForFunc(Box<ExprNode>),
     GroupingFunc(Vec<ExprNode>),
     ExtractFunc(Box<ExtractFunc>),
@@ -246,7 +246,7 @@ impl_from!(XmlElement for ExprNode);
 impl_from!(box BinaryExpr for ExprNode);
 impl_from!(box CaseExpr for ExprNode);
 impl_from!(box ExtractFunc for ExprNode);
-impl_from!(box FuncCall for ExprNode);
+impl_from!(box FuncCallExpr for ExprNode);
 impl_from!(box IndirectionExpr for ExprNode::Indirection);
 impl_from!(box JsonArrayAggExpr for ExprNode::JsonArrayAgg);
 impl_from!(box JsonExistsExpr for ExprNode::JsonExists);

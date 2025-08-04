@@ -1,12 +1,12 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct FuncCall {
+pub struct FuncCallExpr {
     name: QualifiedName,
     args: FuncArgsKind,
     agg_filter: Option<ExprNode>,
     over: Option<OverClause>,
 }
 
-impl FuncCall {
+impl FuncCallExpr {
     pub fn new(
         name: QualifiedName,
         args: FuncArgsKind,

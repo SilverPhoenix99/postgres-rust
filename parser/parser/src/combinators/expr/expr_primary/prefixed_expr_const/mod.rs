@@ -14,6 +14,8 @@ pub(super) fn prefixed_expr_const(stream: &mut TokenStream) -> scan::Result<Expr
         | func_application func_args_tail        => func_expr
     */
 
+    // ❗ This function replaces `func_application`, to workaround conflicts with `expr_const` and `expr_primary`.
+
     alt!(
         identifier_prefixed_expr,
         type_func_name_prefixed_expr

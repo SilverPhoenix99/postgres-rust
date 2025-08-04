@@ -24,7 +24,7 @@ mod tests {
     use pg_ast::{
         ExprNode::{IntegerConst, StringConst},
         FuncArgsKind,
-        FuncCall,
+        FuncCallExpr,
         TypeName,
         TypecastExpr,
     };
@@ -49,7 +49,7 @@ mod tests {
         ).into()
     )]
     #[test_case("collation() filter (where 1)",
-        FuncCall::new(
+        FuncCallExpr::new(
             vec![Str::from("collation")],
             FuncArgsKind::Empty { order_within_group: None },
             Some(IntegerConst(1)),
