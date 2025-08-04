@@ -22,6 +22,7 @@ pg_basics::reexport! {
     const_numeric,
     document_or_content,
     expr_list,
+    func_application,
     func_arg,
     func_arg_expr,
     func_name,

@@ -264,7 +264,6 @@ mod tests {
 }
 
 use crate::combinators::expr::expr_primary::filter_clause;
-use crate::combinators::expr::expr_primary::func_application::func_application_args;
 use crate::combinators::expr::expr_primary::over_clause;
 use crate::combinators::expr::expr_primary::within_group_clause;
 use crate::combinators::foundation::alt;
@@ -272,6 +271,7 @@ use crate::combinators::foundation::located;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
+use crate::combinators::func_application_args;
 use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;

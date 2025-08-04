@@ -1,5 +1,3 @@
-mod func_application;
-
 pg_basics::reexport! {
     case_expr,
     explicit_row,
