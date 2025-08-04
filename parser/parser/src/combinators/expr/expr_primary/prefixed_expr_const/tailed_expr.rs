@@ -17,7 +17,9 @@ pub(super) fn tailed_expr(name: Vec<Str>, tail: AttrTail) -> ExprNode {
         },
         AttrTail::FuncTail { args, filter, over } => {
             // func_expr
-            let func_call = FuncCallExpr::new(name, args, filter, over);
+            let mut func_call = FuncCallExpr::from(FuncCall::new(name, args));
+            func_call.set_agg_filter(filter)
+                .set_over(over);
             func_call.into()
         },
     }
@@ -39,37 +41,43 @@ mod tests {
         AttrTail::Typecast {
             value: "123".into(),
             type_modifiers: Some(vec![IntegerConst(234)]),
-        },
-        TypecastExpr::new(
-            StringConst("123".into()),
-            TypeName::Generic {
+        }
+        => ExprNode::from(
+            TypecastExpr::new(
+                StringConst("123".into()),
+                TypeName::Generic {
                     name: vec!["foo".into()],
                     type_modifiers: Some(vec![IntegerConst(234)]),
                 }
-        ).into()
+            )
+        )
     )]
     #[test_case(
         AttrTail::FuncTail {
             args: FuncArgsKind::Wildcard { order_within_group: None },
             filter: Some(IntegerConst(123)),
             over: Some(WindowName("bar".into()))
-        },
-        FuncCallExpr::new(
-            vec!["foo".into()],
-            FuncArgsKind::Wildcard { order_within_group: None },
-            Some(IntegerConst(123)),
-            Some(WindowName("bar".into()))
-        ).into()
+        }
+        => ExprNode::from(
+            FuncCallExpr::from(
+                FuncCall::new(
+                    vec!["foo".into()],
+                    FuncArgsKind::Wildcard { order_within_group: None }
+                )
+            )
+            .with_agg_filter(IntegerConst(123))
+            .with_over(WindowName("bar".into()))
+        )
     )]
-    fn test_tailed_expr(tail: AttrTail, expected: ExprNode) {
-        let actual = tailed_expr(vec!["foo".into()], tail);
-        assert_eq!(expected, actual)
+    fn test_tailed_expr(tail: AttrTail) -> ExprNode {
+        tailed_expr(vec!["foo".into()], tail)
     }
 }
 
 use super::attr_tail::AttrTail;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::StringConst;
+use pg_ast::FuncCall;
 use pg_ast::FuncCallExpr;
 use pg_ast::TypeName;
 use pg_ast::TypecastExpr;

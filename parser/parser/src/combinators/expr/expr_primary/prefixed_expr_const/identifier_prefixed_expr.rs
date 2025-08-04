@@ -66,6 +66,7 @@ mod tests {
     use pg_ast::{
         ExprNode::{IntegerConst, StringConst},
         FuncArgsKind,
+        FuncCall,
         FuncCallExpr,
         OverClause,
         TypeName,
@@ -73,40 +74,40 @@ mod tests {
     };
     use test_case::test_case;
 
-    #[test_case("foo",
+    #[test_case("foo" => Ok(
         ColumnRef::SingleName("foo".into()).into()
-    )]
-    #[test_case("double",
+    ))]
+    #[test_case("double" => Ok(
         ColumnRef::SingleName("double".into()).into()
-    )]
-    #[test_case("foo.bar", // identifier
+    ))]
+    #[test_case("foo.bar" => Ok( /* identifier */
         ColumnRef::Name(vec!["foo".into(), "bar".into()]).into()
-    )]
-    #[test_case("double.baz", // Unreserved
+    ))]
+    #[test_case("double.baz" => Ok( /* Unreserved */
         ColumnRef::Name(vec!["double".into(), "baz".into()]).into()
-    )]
-    #[test_case("between.qux", // ColumnName
+    ))]
+    #[test_case("between.qux" => Ok( /* ColumnName */
         ColumnRef::Name(vec!["between".into(), "qux".into()]).into()
-    )]
-    #[test_case("foo.* '123'",
+    ))]
+    #[test_case("foo.* '123'" => Ok(
         ColumnRef::WildcardName(vec!["foo".into()]).into()
-    )]
-    #[test_case("double.* '123'",
+    ))]
+    #[test_case("double.* '123'" => Ok(
         ColumnRef::WildcardName(vec!["double".into()]).into()
-    )]
-    #[test_case("between.* '123'",
+    ))]
+    #[test_case("between.* '123'" => Ok(
         ColumnRef::WildcardName(vec!["between".into()]).into()
-    )]
-    #[test_case("foo.*()",
+    ))]
+    #[test_case("foo.*()" => Ok(
         ColumnRef::WildcardName(vec!["foo".into()]).into()
-    )]
-    #[test_case("double.*()",
+    ))]
+    #[test_case("double.*()" => Ok(
         ColumnRef::WildcardName(vec!["double".into()]).into()
-    )]
-    #[test_case("between.*()",
+    ))]
+    #[test_case("between.*()" => Ok(
         ColumnRef::WildcardName(vec!["between".into()]).into()
-    )]
-    #[test_case("foo '123'",
+    ))]
+    #[test_case("foo '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -114,8 +115,8 @@ mod tests {
                 type_modifiers: None,
             }
         ).into()
-    )]
-    #[test_case("double '123'",
+    ))]
+    #[test_case("double '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -123,8 +124,8 @@ mod tests {
                 type_modifiers: None,
             }
         ).into()
-    )]
-    #[test_case("foo.bar '123'",
+    ))]
+    #[test_case("foo.bar '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -132,8 +133,8 @@ mod tests {
                 type_modifiers: None,
             }
         ).into()
-    )]
-    #[test_case("double.baz '123'",
+    ))]
+    #[test_case("double.baz '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -141,8 +142,8 @@ mod tests {
                 type_modifiers: None,
             }
         ).into()
-    )]
-    #[test_case("between.qux '123'",
+    ))]
+    #[test_case("between.qux '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -150,8 +151,8 @@ mod tests {
                 type_modifiers: None,
             }
         ).into()
-    )]
-    #[test_case("foo(1) '123'",
+    ))]
+    #[test_case("foo(1) '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -159,8 +160,8 @@ mod tests {
                 type_modifiers: Some(vec![IntegerConst(1)]),
             }
         ).into()
-    )]
-    #[test_case("double(1) '123'",
+    ))]
+    #[test_case("double(1) '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -168,8 +169,8 @@ mod tests {
                 type_modifiers: Some(vec![IntegerConst(1)]),
             }
         ).into()
-    )]
-    #[test_case("foo.bar(1) '123'",
+    ))]
+    #[test_case("foo.bar(1) '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -177,8 +178,8 @@ mod tests {
                 type_modifiers: Some(vec![IntegerConst(1)]),
             }
         ).into()
-    )]
-    #[test_case("double.baz(1) '123'",
+    ))]
+    #[test_case("double.baz(1) '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -186,8 +187,8 @@ mod tests {
                 type_modifiers: Some(vec![IntegerConst(1)]),
             }
         ).into()
-    )]
-    #[test_case("between.qux(1) '123'",
+    ))]
+    #[test_case("between.qux(1) '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -195,49 +196,55 @@ mod tests {
                 type_modifiers: Some(vec![IntegerConst(1)]),
             }
         ).into()
-    )]
-    #[test_case("foo() '123'",
-        FuncCallExpr::new(
-            vec!["foo".into()],
-            FuncArgsKind::Empty { order_within_group: None },
-            None,
-            None
+    ))]
+    #[test_case("foo() '123'" => Ok(
+        FuncCallExpr::from(
+            FuncCall::new(
+                vec!["foo".into()],
+                FuncArgsKind::Empty { order_within_group: None },
+            )
         ).into()
-    )]
-    #[test_case("double() '123'",
-        FuncCallExpr::new(
-            vec!["double".into()],
-            FuncArgsKind::Empty { order_within_group: None },
-            None,
-            None
+    ))]
+    #[test_case("double() '123'" => Ok(
+        FuncCallExpr::from(
+            FuncCall::new(
+                vec!["double".into()],
+                FuncArgsKind::Empty { order_within_group: None },
+            )
         ).into()
-    )]
-    #[test_case("foo.bar() over qux",
-        FuncCallExpr::new(
-            vec!["foo".into(), "bar".into()],
-            FuncArgsKind::Empty { order_within_group: None },
-            None,
-            Some(OverClause::WindowName("qux".into()))
-        ).into()
-    )]
-    #[test_case("double.baz() filter (where 1)",
-        FuncCallExpr::new(
-            vec!["double".into(), "baz".into()],
-            FuncArgsKind::Empty { order_within_group: None },
-            Some(IntegerConst(1)),
-            None
-        ).into()
-    )]
-    #[test_case("between.qux() filter (where 1)",
-        FuncCallExpr::new(
-            vec!["between".into(), "qux".into()],
-            FuncArgsKind::Empty { order_within_group: None },
-            Some(IntegerConst(1)),
-            None
-        ).into()
-    )]
-    fn test_identifier_prefixed_expr(source: &str, expected: ExprNode) {
-        test_parser!(source, identifier_prefixed_expr, expected)
+    ))]
+    #[test_case("foo.bar() over qux" => Ok(
+        FuncCallExpr::from(
+            FuncCall::new(
+                vec!["foo".into(), "bar".into()],
+                FuncArgsKind::Empty { order_within_group: None },
+            )
+        )
+        .with_over(OverClause::WindowName("qux".into()))
+        .into()
+    ))]
+    #[test_case("double.baz() filter (where 1)" => Ok(
+        FuncCallExpr::from(
+            FuncCall::new(
+                vec!["double".into(), "baz".into()],
+                FuncArgsKind::Empty { order_within_group: None },
+            )
+        )
+        .with_agg_filter(IntegerConst(1))
+        .into()
+    ))]
+    #[test_case("between.qux() filter (where 1)" => Ok(
+        FuncCallExpr::from(
+            FuncCall::new(
+                vec!["between".into(), "qux".into()],
+                FuncArgsKind::Empty { order_within_group: None },
+            )
+        )
+        .with_agg_filter(IntegerConst(1))
+        .into()
+    ))]
+    fn test_identifier_prefixed_expr(source: &str) -> scan::Result<ExprNode> {
+        test_parser!(source, identifier_prefixed_expr)
     }
 }
 

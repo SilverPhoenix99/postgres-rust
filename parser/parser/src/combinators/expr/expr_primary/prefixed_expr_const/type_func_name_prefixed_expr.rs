@@ -24,13 +24,14 @@ mod tests {
     use pg_ast::{
         ExprNode::{IntegerConst, StringConst},
         FuncArgsKind,
+        FuncCall,
         FuncCallExpr,
         TypeName,
         TypecastExpr,
     };
     use test_case::test_case;
 
-    #[test_case("verbose 'foo'",
+    #[test_case("verbose 'foo'" => Ok(
         TypecastExpr::new(
             StringConst("foo".into()),
             TypeName::Generic {
@@ -38,8 +39,8 @@ mod tests {
                 type_modifiers: None,
             }
         ).into()
-    )]
-    #[test_case("current_schema(1) 'foo'",
+    ))]
+    #[test_case("current_schema(1) 'foo'" => Ok(
         TypecastExpr::new(
             StringConst("foo".into()),
             TypeName::Generic {
@@ -47,17 +48,19 @@ mod tests {
                 type_modifiers: Some(vec![IntegerConst(1)]),
             }
         ).into()
-    )]
-    #[test_case("collation() filter (where 1)",
-        FuncCallExpr::new(
-            vec![Str::from("collation")],
-            FuncArgsKind::Empty { order_within_group: None },
-            Some(IntegerConst(1)),
-            None
-        ).into()
-    )]
-    fn test_type_func_name_prefixed_expr(source: &str, expected: ExprNode) {
-        test_parser!(source, type_func_name_prefixed_expr, expected)
+    ))]
+    #[test_case("collation() filter (where 1)" => Ok(
+        FuncCallExpr::from(
+            FuncCall::new(
+                vec![Str::from("collation")],
+                FuncArgsKind::Empty { order_within_group: None }
+            )
+        )
+        .with_agg_filter(IntegerConst(1))
+        .into()
+    ))]
+    fn test_type_func_name_prefixed_expr(source: &str) -> scan::Result<ExprNode> {
+        test_parser!(source, type_func_name_prefixed_expr)
     }
 }
 
