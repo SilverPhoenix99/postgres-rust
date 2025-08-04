@@ -1,14 +1,10 @@
 pub(super) fn trim(stream: &mut TokenStream) -> scan::Result<TrimFunc> {
-    use crate::stream::TokenValue::Keyword as K;
-    use crate::stream::TokenValue::Operator as Op;
 
     /*
         TRIM '(' trim_args ')'
     */
 
-    if ! matches!(stream.peek2(), Ok((K(Trim), Op(OpenParenthesis)))) {
-        return no_match(stream)
-    }
+    // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, expr) = seq!(skip(1), paren!(trim_args))
         .parse(stream)?;
@@ -80,12 +76,9 @@ fn trim_list(stream: &mut TokenStream) -> scan::Result<Vec<ExprNode>> {
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use test_case::test_case;
     #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::StringConst,
-        scan::Error::NoMatch,
-    };
+    use pg_ast::ExprNode::StringConst;
+    use test_case::test_case;
 
     #[test_case("trim('foo' from 'bar')" => Ok(
         TrimFunc::new(
@@ -93,8 +86,6 @@ mod tests {
             vec![StringConst("bar".into()), StringConst("foo".into())]
         )
     ))]
-    #[test_case("trim" => matches Err(NoMatch(_)))]
-    #[test_case("trim 1" => matches Err(NoMatch(_)))]
     fn test_trim(source: &str) -> scan::Result<TrimFunc> {
         test_parser!(source, trim)
     }
@@ -155,7 +146,6 @@ use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
-use crate::no_match;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::ExprNode;
@@ -165,6 +155,4 @@ use pg_ast::TrimSide::Leading;
 use pg_ast::TrimSide::Trailing;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::FromKw;
-use pg_lexer::Keyword::Trim;
 use pg_lexer::OperatorKind::Comma;
-use pg_lexer::OperatorKind::OpenParenthesis;

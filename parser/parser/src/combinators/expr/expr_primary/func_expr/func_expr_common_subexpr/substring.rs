@@ -1,14 +1,10 @@
 pub(super) fn substring(stream: &mut TokenStream) -> scan::Result<SubstringFunc> {
-    use crate::stream::TokenValue::Keyword as K;
-    use crate::stream::TokenValue::Operator as Op;
 
     /*
         SUBSTRING '(' ( substring_args )? ')'
     */
 
-    if ! matches!(stream.peek2(), Ok((K(Substring), Op(OpenParenthesis)))) {
-        return no_match(stream)
-    }
+    // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, args) = seq!(skip(1), paren!(substring_args.optional()))
         .parse(stream)?;
@@ -129,12 +125,9 @@ fn for_from_args(stream: &mut TokenStream) -> scan::Result<(ExprNode, Option<Exp
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use test_case::test_case;
     #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::{IntegerConst, StringConst},
-        scan::Error::NoMatch,
-    };
+    use pg_ast::ExprNode::{IntegerConst, StringConst};
+    use test_case::test_case;
 
     #[test_case("substring()" => Ok(
         SubstringFunc::ExplicitCall(None)
@@ -146,8 +139,6 @@ mod tests {
             ])
         )
     ))]
-    #[test_case("substring" => matches Err(NoMatch(_)))]
-    #[test_case("substring 1" => matches Err(NoMatch(_)))]
     fn test_substring(source: &str) -> scan::Result<SubstringFunc> {
         test_parser!(source, substring)
     }
@@ -215,7 +206,6 @@ use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg_list;
-use crate::no_match;
 use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
@@ -231,5 +221,3 @@ use pg_lexer::Keyword::Escape;
 use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::FromKw;
 use pg_lexer::Keyword::Similar;
-use pg_lexer::Keyword::Substring;
-use pg_lexer::OperatorKind::OpenParenthesis;

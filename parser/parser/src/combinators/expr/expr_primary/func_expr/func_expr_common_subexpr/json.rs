@@ -4,7 +4,9 @@ pub(super) fn json(stream: &mut TokenStream) -> scan::Result<JsonFunc> {
         JSON '(' json_value_expr ( json_key_uniqueness_constraint )? ')'
     */
 
-    let (_, (value, unique)) = seq!(Json,
+    // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
+
+    let (_, (value, unique)) = seq!(skip(1),
         paren!(seq!(
             json_value_expr,
             json_key_uniqueness_constraint.optional()
@@ -53,10 +55,10 @@ mod tests {
 
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
+use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_key_uniqueness_constraint;
 use crate::combinators::json_value_expr;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::JsonFunc;
-use pg_lexer::Keyword::Json;

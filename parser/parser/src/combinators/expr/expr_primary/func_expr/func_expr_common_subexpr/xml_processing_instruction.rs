@@ -4,9 +4,7 @@ pub(super) fn xml_processing_instruction(stream: &mut TokenStream) -> scan::Resu
         XMLPI '(' NAME col_label ( ',' a_expr )? ')'
     */
 
-    if ! matches!(stream.peek2(), Ok((K(Xmlpi), Op(OpenParenthesis)))) {
-        return no_match(stream)
-    }
+    // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, (_, name, value)) = seq!(
         skip(1),
@@ -29,12 +27,9 @@ pub(super) fn xml_processing_instruction(stream: &mut TokenStream) -> scan::Resu
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use test_case::test_case;
     #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::StringConst,
-        scan::Error::NoMatch,
-    };
+    use pg_ast::ExprNode::StringConst;
+    use test_case::test_case;
 
     #[test_case("xmlpi(name foo)" => Ok(
         XmlProcessingInstruction::new("foo")
@@ -43,8 +38,6 @@ mod tests {
         XmlProcessingInstruction::new("bar")
             .with_value(StringConst("baz".into()))
     ))]
-    #[test_case("xmlpi" => matches Err(NoMatch(_)))]
-    #[test_case("xmlpi 1" => matches Err(NoMatch(_)))]
     fn test_xml_processing_instruction(source: &str) -> scan::Result<XmlProcessingInstruction> {
         test_parser!(source, xml_processing_instruction)
     }
@@ -56,13 +49,8 @@ use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
-use crate::no_match;
 use crate::scan;
 use crate::stream::TokenStream;
-use crate::stream::TokenValue::Keyword as K;
-use crate::stream::TokenValue::Operator as Op;
 use pg_ast::XmlProcessingInstruction;
 use pg_lexer::Keyword::Name;
-use pg_lexer::Keyword::Xmlpi;
 use pg_lexer::OperatorKind::Comma;
-use pg_lexer::OperatorKind::OpenParenthesis;

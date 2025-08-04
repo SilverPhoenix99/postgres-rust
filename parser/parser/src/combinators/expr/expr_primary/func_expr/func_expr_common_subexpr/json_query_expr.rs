@@ -4,9 +4,7 @@ pub(super) fn json_query_expr(stream: &mut TokenStream) -> scan::Result<JsonQuer
         JSON_QUERY '(' json_query_args ')'
     */
 
-    if ! matches!(stream.peek2(), Ok((K(JsonQuery), Op(OpenParenthesis)))) {
-        return no_match(stream);
-    }
+    // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, expr) = seq!(skip(1), paren!(json_query_args))
         .parse(stream)?;
@@ -62,7 +60,6 @@ mod tests {
         pg_ast::JsonValueExpr,
         pg_ast::JsonWrapperBehavior,
         pg_ast::TypeName::Int4,
-        scan::Error::NoMatch,
     };
 
     #[test_case("json_query('{}', 'foo')" => Ok(
@@ -87,8 +84,6 @@ mod tests {
                 .with_on_empty(JsonBehavior::Error)
         )
     ))]
-    #[test_case("json_query" => matches Err(NoMatch(_)))]
-    #[test_case("json_query 1" => matches Err(NoMatch(_)))]
     fn test_json_query_expr(source: &str) -> scan::Result<JsonQueryExpr> {
         test_parser!(source, json_query_expr)
     }
@@ -105,12 +100,7 @@ use crate::combinators::json_quotes_clause;
 use crate::combinators::json_returning_clause;
 use crate::combinators::json_value_expr;
 use crate::combinators::json_wrapper_behavior;
-use crate::no_match;
 use crate::scan;
 use crate::stream::TokenStream;
-use crate::stream::TokenValue::Keyword as K;
-use crate::stream::TokenValue::Operator as Op;
 use pg_ast::JsonQueryExpr;
-use pg_lexer::Keyword::JsonQuery;
 use pg_lexer::OperatorKind::Comma;
-use pg_lexer::OperatorKind::OpenParenthesis;

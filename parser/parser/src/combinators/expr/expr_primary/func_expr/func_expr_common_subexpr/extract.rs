@@ -4,9 +4,7 @@ pub(super) fn extract(stream: &mut TokenStream) -> scan::Result<ExtractFunc> {
         EXTRACT '(' extract_list ')'
     */
 
-    if ! matches!(stream.peek2(), Ok((K(Extract), Op(OpenParenthesis)))) {
-        return no_match(stream)
-    }
+    // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, expr) = seq!(skip(1), paren!(extract_args))
         .parse(stream)?;
@@ -57,12 +55,9 @@ fn extract_arg(stream: &mut TokenStream) -> scan::Result<ExtractArg> {
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use test_case::test_case;
     #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::{IntegerConst, StringConst},
-        scan::Error::NoMatch,
-    };
+    use pg_ast::ExprNode::{IntegerConst, StringConst};
+    use test_case::test_case;
 
     #[test_case("extract(year from 'foo')" => Ok(
         ExtractFunc::new(
@@ -70,8 +65,6 @@ mod tests {
             StringConst("foo".into())
         )
     ))]
-    #[test_case("extract" => matches Err(NoMatch(_)))]
-    #[test_case("extract 1" => matches Err(NoMatch(_)))]
     fn test_extract_func(source: &str) -> scan::Result<ExtractFunc> {
         test_parser!(source, extract)
     }
@@ -113,11 +106,8 @@ use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
-use crate::no_match;
 use crate::scan;
 use crate::stream::TokenStream;
-use crate::stream::TokenValue::Keyword as K;
-use crate::stream::TokenValue::Operator as Op;
 use pg_ast::ExtractArg;
 use pg_ast::ExtractArg::Day;
 use pg_ast::ExtractArg::Hour;
@@ -128,6 +118,4 @@ use pg_ast::ExtractArg::Second;
 use pg_ast::ExtractArg::Year;
 use pg_ast::ExtractFunc;
 use pg_lexer::Keyword as Kw;
-use pg_lexer::Keyword::Extract;
 use pg_lexer::Keyword::FromKw;
-use pg_lexer::OperatorKind::OpenParenthesis;

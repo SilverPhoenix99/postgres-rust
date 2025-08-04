@@ -1,6 +1,4 @@
 pub(super) fn treat_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
-    use crate::stream::TokenValue::Keyword as K;
-    use crate::stream::TokenValue::Operator as Op;
 
     /*
         TREAT '(' a_expr AS Typename ')'
@@ -12,9 +10,7 @@ pub(super) fn treat_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         coercions than are handled by implicit casting.
     */
 
-    if ! matches!(stream.peek2(), Ok((K(Kw::Treat), Op(OpenParenthesis)))) {
-        return no_match(stream)
-    }
+    // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, (expr, _, typename)) = seq!(
         skip(1),
@@ -35,7 +31,6 @@ mod tests {
     use {
         pg_ast::ExprNode::IntegerConst,
         pg_ast::TypeName::Int4,
-        scan::Error::NoMatch,
     };
 
     #[test_case("treat(123 as int)" => Ok(
@@ -46,8 +41,6 @@ mod tests {
             )
         ))
     ))]
-    #[test_case("treat" => matches Err(NoMatch(_)))]
-    #[test_case("treat 1" => matches Err(NoMatch(_)))]
     fn test_treat_expr(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, treat_expr)
     }
@@ -59,12 +52,9 @@ use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
-use crate::no_match;
 use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::Treat;
 use pg_ast::TypecastExpr;
-use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::As;
-use pg_lexer::OperatorKind::OpenParenthesis;

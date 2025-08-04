@@ -1,14 +1,10 @@
 pub(super) fn overlay(stream: &mut TokenStream) -> scan::Result<OverlayFunc> {
-    use crate::stream::TokenValue::Keyword as K;
-    use crate::stream::TokenValue::Operator as Op;
 
     /*
         OVERLAY '(' ( overlay_args )? ')'
     */
 
-    if ! matches!(stream.peek2(), Ok((K(Overlay), Op(OpenParenthesis)))) {
-        return no_match(stream)
-    }
+    // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, args) = seq!(skip(1), paren!(overlay_args.optional()))
         .parse(stream)?;
@@ -60,12 +56,9 @@ fn overlay_list(stream: &mut TokenStream) -> scan::Result<(ExprNode, ExprNode, O
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use test_case::test_case;
     #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::{IntegerConst, StringConst},
-        scan::Error::NoMatch,
-    };
+    use pg_ast::ExprNode::{IntegerConst, StringConst};
+    use test_case::test_case;
 
     #[test_case("overlay()" => Ok(OverlayFunc::ExplicitCall(None)))]
     #[test_case("overlay(1)" => Ok(
@@ -75,8 +68,6 @@ mod tests {
             ])
         )
     ))]
-    #[test_case("overlay" => matches Err(NoMatch(_)))]
-    #[test_case("overlay 1" => matches Err(NoMatch(_)))]
     fn test_overlay(source: &str) -> scan::Result<OverlayFunc> {
         test_parser!(source, overlay)
     }
@@ -129,7 +120,6 @@ use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_arg_list;
-use crate::no_match;
 use crate::result::Optional;
 use crate::scan;
 use crate::stream::TokenStream;
@@ -139,6 +129,4 @@ use pg_ast::ExprNode::NullConst;
 use pg_ast::NamedValue;
 use pg_ast::OverlayFunc;
 use pg_ast::OverlaySqlArgs;
-use pg_lexer::Keyword::Overlay;
 use pg_lexer::Keyword::Placing;
-use pg_lexer::OperatorKind::OpenParenthesis;

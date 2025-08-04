@@ -4,9 +4,7 @@ pub(super) fn normalize(stream: &mut TokenStream) -> scan::Result<NormalizeFunc>
         NORMALIZE '(' a_expr ( ',' unicode_normal_form )? ')'
     */
 
-    if ! matches!(stream.peek2(), Ok((K(Normalize), Op(OpenParenthesis)))) {
-        return no_match(stream)
-    }
+    // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, (expr, normal_form)) = seq!(
         skip(1),
@@ -31,8 +29,7 @@ mod tests {
     #[allow(unused_imports)]
     use {
         pg_ast::ExprNode::StringConst,
-        pg_ast::UnicodeNormalForm::CanonicalComposition,
-        scan::Error::NoMatch,
+        pg_ast::UnicodeNormalForm::CanonicalComposition
     };
 
     #[test_case("normalize('foo')" => Ok(
@@ -47,8 +44,6 @@ mod tests {
             Some(CanonicalComposition)
         )
     ))]
-    #[test_case("normalize" => matches Err(NoMatch(_)))]
-    #[test_case("normalize 1" => matches Err(NoMatch(_)))]
     fn test_normalize(source: &str) -> scan::Result<NormalizeFunc> {
         test_parser!(source, normalize)
     }
@@ -60,12 +55,7 @@ use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
-use crate::no_match;
 use crate::scan;
 use crate::stream::TokenStream;
-use crate::stream::TokenValue::Keyword as K;
-use crate::stream::TokenValue::Operator as Op;
 use pg_ast::NormalizeFunc;
-use pg_lexer::Keyword::Normalize;
 use pg_lexer::OperatorKind::Comma;
-use pg_lexer::OperatorKind::OpenParenthesis;

@@ -9,9 +9,7 @@ pub(super) fn xml_root(stream: &mut TokenStream) -> scan::Result<XmlRoot> {
         ')'
     */
 
-    if ! matches!(stream.peek2(), Ok((K(Xmlroot), Op(OpenParenthesis)))) {
-        return no_match(stream)
-    }
+    // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, (content, _, version, standalone)) = seq!(
         skip(1),
@@ -93,12 +91,9 @@ fn xml_root_standalone(stream: &mut TokenStream) -> scan::Result<XmlStandalone> 
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use test_case::test_case;
     #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::{NullConst, StringConst},
-        scan::Error::NoMatch,
-    };
+    use pg_ast::ExprNode::{NullConst, StringConst};
+    use test_case::test_case;
 
     #[test_case("xmlroot('foo', version '1.0', standalone yes)" => Ok(
         XmlRoot::new(
@@ -113,8 +108,6 @@ mod tests {
             NullConst
         )
     ))]
-    #[test_case("xmlroot" => matches Err(NoMatch(_)))]
-    #[test_case("xmlroot 1" => matches Err(NoMatch(_)))]
     fn test_xml_root(source: &str) -> scan::Result<XmlRoot> {
         test_parser!(source, xml_root)
     }
@@ -143,7 +136,6 @@ use crate::no_match;
 use crate::scan;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Keyword as K;
-use crate::stream::TokenValue::Operator as Op;
 use pg_ast::ExprNode;
 use pg_ast::XmlRoot;
 use pg_ast::XmlStandalone;
@@ -154,6 +146,4 @@ use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Standalone;
 use pg_lexer::Keyword::Value;
 use pg_lexer::Keyword::Version;
-use pg_lexer::Keyword::Xmlroot;
 use pg_lexer::OperatorKind::Comma;
-use pg_lexer::OperatorKind::OpenParenthesis;
