@@ -54,6 +54,7 @@ pg_basics::reexport! { pub
     json_query,
     json_quotes,
     json_serialize,
+    json_table,
     json_table_column_definition,
     json_table_path_spec,
     json_value_expr,

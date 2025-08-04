@@ -95,6 +95,9 @@ pub enum Error {
 
     #[error(r#"conflicting or redundant NULL / NOT NULL declarations for column "{0}""#)]
     ConflictingNullability(Str),
+
+    #[error("only string constants are supported in JSON_TABLE path specification")]
+    NonStringJsonTablePathSpec,
 }
 
 impl Error {
@@ -158,7 +161,10 @@ impl_log_message! {
     FloatPrecisionUnderflow => [InvalidParameterValue, None],
     FloatPrecisionOverflow => [InvalidParameterValue, None],
     UnrecognizedRoleOption => [SyntaxError, None],
-    UnencryptedPassword => [FeatureNotSupported, Some("Remove UNENCRYPTED to store the password in encrypted form instead.")],
+    UnencryptedPassword => [
+        FeatureNotSupported,
+        Some("Remove UNENCRYPTED to store the password in encrypted form instead.")
+    ],
     ImproperQualifiedName => [SyntaxError, None],
     InvalidZoneValue => [SyntaxError, None],
     MissingOperatorArgumentType => [SyntaxError, Some("Use NONE to denote the missing argument of a unary operator.")],
@@ -180,6 +186,7 @@ impl_log_message! {
     DefaultValueAlreadyDeclared => [SyntaxError, None],
     PathValueAlreadyDeclared => [SyntaxError, None],
     ConflictingNullability => [SyntaxError, None],
+    NonStringJsonTablePathSpec => [FeatureNotSupported, None],
 }
 
 use crate::sql_state::SqlState;

@@ -1,3 +1,53 @@
+pub(super) fn json_table(stream: &mut TokenStream) -> scan::Result<JsonTable> {
+
+    /*
+        JSON_TABLE '('
+            json_value_expr
+            ','
+            path_spec
+            ( json_passing_clause )?
+            json_table_column_definition_list
+            ( json_on_error_clause )?
+        ')'
+    */
+
+    let (_, (ctx, _, path_spec, passing, columns, on_error)) = seq!(Kw::JsonTable, paren(seq!(
+        json_value_expr,
+        Comma,
+        path_spec,
+        json_passing_clause.optional(),
+        json_table_column_definition_list,
+        json_on_error_clause.optional()
+    ))).parse(stream)?;
+
+    let mut expr = JsonTable::new(ctx, path_spec, columns);
+    expr.set_passing(passing)
+        .set_on_error(on_error);
+
+    Ok(expr)
+}
+
+fn path_spec(stream: &mut TokenStream) -> scan::Result<JsonTablePathSpec> {
+
+    /*
+        a_expr ( alias )?
+    */
+
+    let ((path, path_loc), alias) = seq!(
+        located(a_expr),
+        alias.optional()
+    ).parse(stream)?;
+
+    let StringConst(path) = path else {
+        return Err(NonStringJsonTablePathSpec.at(path_loc).into());
+    };
+
+    let mut path_spec = JsonTablePathSpec::new(path);
+    path_spec.set_name(alias);
+
+    Ok(path_spec)
+}
+
 fn json_table_column_definition_list(stream: &mut TokenStream) -> scan::Result<Vec<JsonTableColumnDefinition>> {
 
     /*
@@ -194,6 +244,76 @@ mod tests {
     #[allow(unused_imports)]
     use pg_ast::TypeName::Int4;
     use test_case::test_case;
+    #[allow(unused_imports)]
+    use {
+        pg_ast::ExprNode::StringConst,
+        pg_ast::JsonValueExpr,
+        pg_basics::Location,
+    };
+
+    #[test_case(
+        "json_table(\
+            'doc', \
+            'path' \
+            columns(\
+               bar for ordinality\
+            )\
+        )"
+        => Ok(
+            JsonTable::new(
+                JsonValueExpr::from(StringConst("doc".into())),
+                JsonTablePathSpec::new("path"),
+                vec![
+                    ForOrdinality { column_name: "bar".into() }
+                ]
+            )
+        )
+    )]
+    #[test_case(
+        "json_table(\
+            'umpus' format json, \
+            'wawas' as foo \
+            passing 'lorem' as ipsum \
+            columns(\
+               qux for ordinality\
+            ) \
+            null on error\
+        )"
+        => Ok(
+            JsonTable::new(
+                JsonValueExpr::new(
+                    StringConst("umpus".into()),
+                    JsonFormat::text()
+                ),
+                JsonTablePathSpec::new("wawas")
+                    .with_name("foo"),
+                vec![
+                    ForOrdinality { column_name: "qux".into() }
+                ]
+            )
+            .with_passing(vec![
+                ("ipsum".into(), JsonValueExpr::from(StringConst("lorem".into())))
+            ])
+            .with_on_error(JsonBehavior::Null)
+        )
+    )]
+    fn test_json_table(source: &str) -> scan::Result<JsonTable> {
+        test_parser!(source, json_table)
+    }
+
+    #[test_case("'foo'" => Ok(JsonTablePathSpec::new("foo")))]
+    #[test_case("'foo' as bar" => Ok(
+        JsonTablePathSpec::new("foo")
+            .with_name("bar")
+    ))]
+    #[test_case("1" => Err(
+        NonStringJsonTablePathSpec
+            .at(Location::new(0..1, 1, 1))
+            .into()
+    ))]
+    fn test_path_spec(source: &str) -> scan::Result<JsonTablePathSpec> {
+        test_parser!(source, path_spec)
+    }
 
     #[test_case("foo for ordinality" => Ok(
         ForOrdinality {
@@ -280,7 +400,9 @@ mod tests {
 
 use crate::combinators::alias;
 use crate::combinators::col_id;
+use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::alt;
+use crate::combinators::foundation::located;
 use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
@@ -289,15 +411,19 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::json_behavior_clause;
 use crate::combinators::json_format_clause;
 use crate::combinators::json_on_error_clause;
+use crate::combinators::json_passing_clause;
 use crate::combinators::json_quotes_clause;
+use crate::combinators::json_value_expr;
 use crate::combinators::json_wrapper_behavior;
 use crate::combinators::typename;
 use crate::scan;
 use crate::stream::TokenStream;
+use pg_ast::ExprNode::StringConst;
 use pg_ast::JsonBehavior;
 use pg_ast::JsonBehaviorClause;
 use pg_ast::JsonFormat;
 use pg_ast::JsonQuotes;
+use pg_ast::JsonTable;
 use pg_ast::JsonTableColumnDefinition;
 use pg_ast::JsonTableColumnDefinition::ForOrdinality;
 use pg_ast::JsonTableExistsColumn;
@@ -307,6 +433,7 @@ use pg_ast::JsonTableRegularColumn;
 use pg_ast::JsonWrapperBehavior;
 use pg_ast::Type;
 use pg_basics::impl_from;
+use pg_elog::parser::Error::NonStringJsonTablePathSpec;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Columns;
 use pg_lexer::Keyword::For;
