@@ -7,6 +7,19 @@ pub(super) enum JsonAggFunc {
 impl_from!(JsonObjectAgg for JsonAggFunc::Object);
 impl_from!(JsonArrayAgg for JsonAggFunc::Array);
 
+impl From<JsonAggFunc> for ExprNode {
+    fn from(value: JsonAggFunc) -> Self {
+        match value {
+            JsonAggFunc::Array(func) => {
+                ExprNode::JsonArrayAgg(func.into())
+            }
+            JsonAggFunc::Object(func) => {
+                ExprNode::JsonObjectAgg(func.into())
+            }
+        }
+    }
+}
+
 pub(super) fn json_aggregate_func(stream: &mut TokenStream) -> scan::Result<JsonAggFunc> {
     use crate::stream::TokenValue::Keyword as K;
     use crate::stream::TokenValue::Operator as Op;
@@ -168,6 +181,7 @@ use crate::combinators::sort_clause;
 use crate::no_match;
 use crate::scan;
 use crate::stream::TokenStream;
+use pg_ast::ExprNode;
 use pg_ast::JsonArrayAgg;
 use pg_ast::JsonObjectAgg;
 use pg_basics::impl_from;

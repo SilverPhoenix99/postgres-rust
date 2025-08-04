@@ -25,6 +25,7 @@ pg_basics::reexport! {
     func_application,
     func_arg,
     func_arg_expr,
+    func_expr_windowless,
     func_name,
     func_type,
     function_with_argtypes,

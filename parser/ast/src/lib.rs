@@ -185,16 +185,18 @@ pub enum ExprNode {
     Distinct(BinaryOperands),
     /// `IS NOT DISTINCT FROM`
     NotDistinct(BinaryOperands),
-    NullIf(BinaryOperands),
     Coalesce(Vec<ExprNode>),
     FuncCallExpr(Box<FuncCallExpr>),
     Greatest(Vec<ExprNode>),
     Least(Vec<ExprNode>),
-    Treat(Box<TypecastExpr>),
     MergeAction,
-    JsonScalar(Box<ExprNode>),
+    NullIf(BinaryOperands),
+    Treat(Box<TypecastExpr>),
+    JsonArrayAggExpr(Box<JsonArrayAggExpr>),
     JsonExists(Box<JsonExistsExpr>),
+    JsonObjectAggExpr(Box<JsonObjectAggExpr>),
     JsonQuery(Box<JsonQueryExpr>),
+    JsonScalar(Box<ExprNode>),
     JsonSerialize(Box<JsonSerializeExpr>),
     JsonValue(Box<JsonValueFunc>),
 
@@ -222,10 +224,10 @@ pub enum ExprNode {
     NormalizeFunc(Box<NormalizeFunc>),
     PositionFunc(Box<PositionFunc>),
     TrimFunc(TrimFunc),
-    JsonArrayAgg(Box<JsonArrayAggExpr>),
+    JsonArrayAgg(Box<JsonArrayAgg>),
     JsonFunc(Box<JsonFunc>),
     JsonObject(JsonObjectExpr),
-    JsonObjectAgg(Box<JsonObjectAggExpr>),
+    JsonObjectAgg(Box<JsonObjectAgg>),
     OverlayFunc(Box<OverlayFunc>),
     SubstringFunc(Box<SubstringFunc>),
 
@@ -248,12 +250,15 @@ impl_from!(XmlElement for ExprNode);
 impl_from!(box BinaryExpr for ExprNode);
 impl_from!(box CaseExpr for ExprNode);
 impl_from!(box ExtractFunc for ExprNode);
+impl_from!(box FuncCall for ExprNode);
 impl_from!(box FuncCallExpr for ExprNode);
 impl_from!(box IndirectionExpr for ExprNode::Indirection);
-impl_from!(box JsonArrayAggExpr for ExprNode::JsonArrayAgg);
+impl_from!(box JsonArrayAgg for ExprNode);
+impl_from!(box JsonArrayAggExpr for ExprNode);
 impl_from!(box JsonExistsExpr for ExprNode::JsonExists);
 impl_from!(box JsonFunc for ExprNode);
-impl_from!(box JsonObjectAggExpr for ExprNode::JsonObjectAgg);
+impl_from!(box JsonObjectAgg for ExprNode);
+impl_from!(box JsonObjectAggExpr for ExprNode);
 impl_from!(box JsonQueryExpr for ExprNode::JsonQuery);
 impl_from!(box JsonSerializeExpr for ExprNode::JsonSerialize);
 impl_from!(box JsonValueFunc for ExprNode::JsonValue);
