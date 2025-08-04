@@ -1,7 +1,8 @@
 mod associativity;
 
 pg_basics::reexport! { pub(super)
-    expr_primary
+    expr_primary,
+    func_expr_common_subexpr,
 }
 
 pg_basics::reexport! {

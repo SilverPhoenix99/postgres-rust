@@ -34,7 +34,7 @@ pg_basics::reexport! {
     xml_serialize,
 }
 
-pub(super) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(in crate::combinators) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     /*
           CAST '(' a_expr AS Typename ')'

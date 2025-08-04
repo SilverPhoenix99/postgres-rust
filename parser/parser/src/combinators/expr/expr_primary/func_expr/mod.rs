@@ -4,10 +4,6 @@ pg_basics::reexport! { pub(super)
     within_group_clause,
 }
 
-pg_basics::reexport! {
-    func_expr_common_subexpr
-}
-
 pub(super) fn func_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     /*
@@ -89,6 +85,7 @@ mod tests {
     }
 }
 
+use crate::combinators::expr::func_expr_common_subexpr;
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
