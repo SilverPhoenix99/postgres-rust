@@ -38,6 +38,7 @@ fn substring_args(stream: &mut TokenStream) -> scan::Result<SubstringFunc> {
     Ok(SubstringFunc::ExplicitCall(Some(args)))
 }
 
+/// Alias: `substr_list`
 fn substring_list(stream: &mut TokenStream) -> scan::Result<(ExprNode, Option<ExprNode>)> {
 
     /*

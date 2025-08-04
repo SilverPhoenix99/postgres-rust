@@ -79,6 +79,7 @@ pg_basics::reexport! { pub
     presence,
     privilege_target,
     qualified_operator,
+    range_function,
     range_var,
     raw_stmt,
     reassign_owned_stmt,
