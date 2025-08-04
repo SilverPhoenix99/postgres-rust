@@ -1,5 +1,6 @@
 pg_basics::reexport! { pub
     aggregate_with_args,
+    alias,
     alter_database_set_stmt,
     alter_database_stmt,
     alter_default_privileges_stmt,
