@@ -10,7 +10,7 @@ pub(super) fn nullif_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     let (_, (left, _, right)) = seq!(
         skip(1),
-        paren(seq!(a_expr, Comma, a_expr))
+        paren!(seq!(a_expr, Comma, a_expr))
     ).parse(stream)?;
 
     let operands = Box::new((left, right));

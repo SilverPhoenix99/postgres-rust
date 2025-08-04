@@ -15,7 +15,7 @@ pub(super) fn xml_root(stream: &mut TokenStream) -> scan::Result<XmlRoot> {
 
     let (_, (content, _, version, standalone)) = seq!(
         skip(1),
-        paren(seq!(
+        paren!(seq!(
             a_expr,
             Comma,
             xml_root_version,

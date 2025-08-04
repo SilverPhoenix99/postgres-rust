@@ -10,7 +10,7 @@ pub(super) fn case_expr(stream: &mut TokenStream) -> scan::Result<CaseExpr> {
     let (_, target, when_clauses, default) = seq!(
         Case,
         a_expr.optional(),
-        many(when_clause),
+        many!(when_clause),
         else_clause.optional()
     ).parse(stream)?;
 

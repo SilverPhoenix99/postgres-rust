@@ -1,6 +1,6 @@
 pub(super) fn var_list(stream: &mut TokenStream) -> scan::Result<Vec<VarValue>> {
 
-    many_sep(Comma, var_value).parse(stream)
+    many!(sep = Comma, var_value).parse(stream)
 }
 
 pub(super) fn var_value(stream: &mut TokenStream) -> scan::Result<VarValue> {
@@ -35,7 +35,7 @@ mod tests {
 
 use crate::combinators::boolean_or_string;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::signed_number;
 use crate::scan;

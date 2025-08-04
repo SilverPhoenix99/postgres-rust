@@ -8,7 +8,7 @@ pub(super) fn xml_exists(stream: &mut TokenStream) -> scan::Result<XmlExists> {
         return no_match(stream);
     }
 
-    let (_, (path_spec, content)) = seq!(skip(1), paren(seq!(
+    let (_, (path_spec, content)) = seq!(skip(1), paren!(seq!(
         expr_primary,
         xmlexists_argument
     ))).parse(stream)?;

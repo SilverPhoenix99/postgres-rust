@@ -7,7 +7,7 @@ pub(super) fn sort_clause(stream: &mut TokenStream) -> scan::Result<Located<Vec<
         ORDER BY sortby_list
     */
 
-    let ((.., sorts), loc) = located(seq!(Order, By, sortby_list))
+    let ((.., sorts), loc) = located!(seq!(Order, By, sortby_list))
         .parse(stream)?;
 
     Ok((sorts, loc))
@@ -19,7 +19,7 @@ fn sortby_list(stream: &mut TokenStream) -> scan::Result<Vec<SortBy>> {
         sortby ( ',' sortby )*
     */
 
-    many_sep(Comma, sortby).parse(stream)
+    many!(sep = Comma, sortby).parse(stream)
 }
 
 fn sortby(stream: &mut TokenStream) -> scan::Result<SortBy> {
@@ -119,7 +119,7 @@ use crate::combinators::asc_desc;
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::nulls_order;

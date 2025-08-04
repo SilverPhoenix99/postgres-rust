@@ -4,7 +4,7 @@ pub(super) fn create_generic_options(stream: &mut TokenStream) -> scan::Result<V
         OPTIONS '(' generic_option_list ')'
     */
 
-    let (_, options) = seq!(Options, paren(generic_options))
+    let (_, options) = seq!(Options, paren!(generic_options))
         .parse(stream)?;
 
     Ok(options)

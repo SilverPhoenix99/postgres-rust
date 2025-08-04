@@ -15,7 +15,7 @@ pub(super) fn xml_element(stream: &mut TokenStream) -> scan::Result<XmlElement> 
 
     let (_, (_, name, extra_args)) = seq!(
         skip(1),
-        paren(seq!(
+        paren!(seq!(
             Name,
             col_label,
             xml_element_extra_args.optional()
@@ -69,7 +69,7 @@ fn xml_attributes(stream: &mut TokenStream) -> scan::Result<Vec<NamedValue>> {
         XMLATTRIBUTES '(' xml_attribute_list ')'
     */
 
-    let (_, attrs) = seq!(Xmlattributes, paren(xml_attribute_list))
+    let (_, attrs) = seq!(Xmlattributes, paren!(xml_attribute_list))
         .parse(stream)?;
 
     Ok(attrs)

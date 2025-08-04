@@ -10,7 +10,7 @@ pub(super) fn xml_processing_instruction(stream: &mut TokenStream) -> scan::Resu
 
     let (_, (_, name, value)) = seq!(
         skip(1),
-        paren(seq!(
+        paren!(seq!(
             Name,
             col_label,
             seq!(Comma, a_expr).optional()

@@ -8,7 +8,7 @@ pub(super) fn json_query_expr(stream: &mut TokenStream) -> scan::Result<JsonQuer
         return no_match(stream);
     }
 
-    let (_, expr) = seq!(skip(1), paren(json_query_args))
+    let (_, expr) = seq!(skip(1), paren!(json_query_args))
         .parse(stream)?;
 
     Ok(expr)

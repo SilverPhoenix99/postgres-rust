@@ -8,7 +8,7 @@ pub(super) fn json_value_func(stream: &mut TokenStream) -> scan::Result<JsonValu
         return no_match(stream);
     }
 
-    let (_, expr) = seq!(skip(1), paren(json_value_args))
+    let (_, expr) = seq!(skip(1), paren!(json_value_args))
         .parse(stream)?;
 
     Ok(expr)

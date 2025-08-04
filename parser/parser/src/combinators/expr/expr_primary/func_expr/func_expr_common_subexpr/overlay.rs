@@ -10,7 +10,7 @@ pub(super) fn overlay(stream: &mut TokenStream) -> scan::Result<OverlayFunc> {
         return no_match(stream)
     }
 
-    let (_, args) = seq!(skip(1), paren(overlay_args.optional()))
+    let (_, args) = seq!(skip(1), paren!(overlay_args.optional()))
         .parse(stream)?;
 
     let args = args.unwrap_or_default();

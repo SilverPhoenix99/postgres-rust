@@ -4,7 +4,7 @@ pub(super) fn func_application_args(stream: &mut TokenStream) -> scan::Result<Fu
         '(' ( func_call_args )? ')'
     */
 
-    let args = paren(func_call_args.optional())
+    let args = paren!(func_call_args.optional())
         .parse(stream)?
         .unwrap_or(Empty { order_within_group: None });
 
@@ -155,7 +155,7 @@ fn variadic_args(stream: &mut TokenStream) -> scan::Result<Vec<(Located<NamedVal
         ( VARIADIC )? func_arg_expr ( ',' ( VARIADIC )? func_arg_expr )*
     */
 
-    many_sep(Comma, variadic_arg).parse(stream)
+    many!(sep = Comma, variadic_arg).parse(stream)
 }
 
 fn variadic_arg(stream: &mut TokenStream) -> scan::Result<(Located<NamedValue>, Option<Location>)> {
@@ -165,7 +165,7 @@ fn variadic_arg(stream: &mut TokenStream) -> scan::Result<(Located<NamedValue>, 
     */
 
     alt!(
-        seq!(located(Kw::Variadic), func_arg_expr)
+        seq!(located!(Kw::Variadic), func_arg_expr)
             .map(|((_, loc), arg)| (arg, Some(loc))),
         func_arg_expr
             .map(|arg| (arg, None)),
@@ -319,7 +319,7 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;

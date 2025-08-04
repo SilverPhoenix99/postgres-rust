@@ -11,7 +11,7 @@ pub(super) fn indirection(stream: &mut TokenStream) -> scan::Result<Vec<Indirect
         ( indirection_el )+
     */
 
-    many(indirection_el).parse(stream)
+    many!(indirection_el).parse(stream)
 }
 
 fn indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
@@ -28,7 +28,7 @@ fn indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
 
     alt!(
         dot_indirection_el,
-        brackets(index_indirection_el)
+        brackets!(index_indirection_el)
     ).parse(stream)
 }
 

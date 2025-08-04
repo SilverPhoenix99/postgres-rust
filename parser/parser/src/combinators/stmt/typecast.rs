@@ -6,7 +6,7 @@ pub(super) fn typecast(stream: &mut TokenStream) -> scan::Result<Typecast> {
 
     let (_, (from_type, _, to_type)) = seq!(
         Cast,
-        paren(seq!(typename, As, typename))
+        paren!(seq!(typename, As, typename))
     ).parse(stream)?;
 
     Ok(Typecast::new(from_type, to_type))

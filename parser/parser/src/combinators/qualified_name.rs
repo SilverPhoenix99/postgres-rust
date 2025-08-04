@@ -4,7 +4,7 @@ pub(super) fn qualified_name_list(stream: &mut TokenStream) -> scan::Result<Vec<
         qualified_name ( ',' qualified_name )*
     */
 
-    many_sep(Comma, qualified_name).parse(stream)
+    many!(sep = Comma, qualified_name).parse(stream)
 }
 
 pub(super) fn qualified_name(stream: &mut TokenStream) -> scan::Result<RelationName> {
@@ -13,7 +13,7 @@ pub(super) fn qualified_name(stream: &mut TokenStream) -> scan::Result<RelationN
         (col_id attrs){1,3}
     */
 
-    let (mut qn, loc) = located(any_name).parse(stream)?;
+    let (mut qn, loc) = located!(any_name).parse(stream)?;
 
     match qn.as_mut_slice() {
         [relation] => {
@@ -92,7 +92,7 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

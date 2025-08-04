@@ -56,7 +56,7 @@ pub(super) fn float(stream: &mut TokenStream) -> scan::Result<TypeName> {
 
     let (_, (precision, loc)) = seq!(
         Float,
-        located(precision.optional())
+        located!(precision.optional())
     ).parse(stream)?;
 
     match precision {

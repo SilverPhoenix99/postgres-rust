@@ -134,7 +134,7 @@ fn func_args_tail(stream: &mut TokenStream) -> scan::Result<FuncArgsTail> {
     */
 
     let (group, filter, over) = seq!(
-        located(within_group_clause).optional(),
+        located!(within_group_clause).optional(),
         filter_clause.optional(),
         over_clause.optional()
     ).parse(stream)?;

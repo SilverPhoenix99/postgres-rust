@@ -11,18 +11,17 @@ macro_rules! seq {
         ),+
         $(,)?
     ) => {
-        $crate::combinators::foundation::parser(move |stream| {
-            #[allow(unused_imports)]
-            use $crate::{
-                combinators::foundation::Combinator,
-                result::Required,
-            };
-
+        $crate::combinators::foundation::parser(|stream| {
             Ok((
-                $head.parse(stream)?,
-                $(
-                    $tail.parse(stream).required()?,
-                )+
+                {
+                    let p = $head;
+                    $crate::combinators::foundation::Combinator::parse(&p, stream)?
+                },
+                $({
+                    let p = $tail;
+                    let result = $crate::combinators::foundation::Combinator::parse(&p, stream);
+                    $crate::result::Required::required(result)?
+                }),+
             ))
         })
     };

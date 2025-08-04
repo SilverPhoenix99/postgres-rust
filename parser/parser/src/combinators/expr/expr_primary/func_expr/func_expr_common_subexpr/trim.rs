@@ -10,7 +10,7 @@ pub(super) fn trim(stream: &mut TokenStream) -> scan::Result<TrimFunc> {
         return no_match(stream)
     }
 
-    let (_, expr) = seq!(skip(1), paren(trim_args))
+    let (_, expr) = seq!(skip(1), paren!(trim_args))
         .parse(stream)?;
 
     Ok(expr)

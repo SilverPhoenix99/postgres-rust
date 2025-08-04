@@ -10,7 +10,7 @@ pub(super) fn substring(stream: &mut TokenStream) -> scan::Result<SubstringFunc>
         return no_match(stream)
     }
 
-    let (_, args) = seq!(skip(1), paren(substring_args.optional()))
+    let (_, args) = seq!(skip(1), paren!(substring_args.optional()))
         .parse(stream)?;
 
     let args = args.unwrap_or_default();

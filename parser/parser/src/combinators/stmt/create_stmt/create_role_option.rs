@@ -1,7 +1,7 @@
 /// Alias: `OptRoleList`
 pub(super) fn create_role_options(stream: &mut TokenStream) -> scan::Result<Vec<CreateRoleOption>> {
 
-    many(create_role_option).parse(stream)
+    many!(create_role_option).parse(stream)
 }
 
 /// Alias: `CreateOptRoleElem`

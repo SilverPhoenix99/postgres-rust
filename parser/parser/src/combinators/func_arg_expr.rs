@@ -4,7 +4,7 @@ pub(super) fn func_arg_list(stream: &mut TokenStream<'_>) -> scan::Result<Vec<Lo
         func_arg_expr ( COMMA func_arg_expr )*
     */
 
-    many_sep(Comma, func_arg_expr).parse(stream)
+    many!(sep = Comma, func_arg_expr).parse(stream)
 }
 
 pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<Located<NamedValue>> {
@@ -18,7 +18,7 @@ pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<Locate
     match stream.peek2() {
         Ok((first, Operator(ColonEquals | EqualsGreater))) if is_type_function_name(first) => {
 
-            let ((name, _, value), loc) = located(seq!(
+            let ((name, _, value), loc) = located!(seq!(
                 type_function_name,
                 alt!(ColonEquals, EqualsGreater),
                 a_expr
@@ -28,7 +28,7 @@ pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<Locate
             Ok((arg, loc))
         },
         _ => {
-            let (value, loc) = located(a_expr).parse(stream)?;
+            let (value, loc) = located!(a_expr).parse(stream)?;
             let arg = NamedValue::unnamed(value);
             Ok((arg, loc))
         },
@@ -66,7 +66,7 @@ mod tests {
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::type_function_name;

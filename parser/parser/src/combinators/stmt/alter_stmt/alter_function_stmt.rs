@@ -158,7 +158,7 @@ fn func_type(stream: &mut TokenStream) -> scan::Result<AlterFunctionKind> {
 
 fn alterfunc_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<AlterFunctionOption>> {
 
-    many(alter_function_option).parse(stream)
+    many!(alter_function_option).parse(stream)
 }
 
 #[cfg(test)]

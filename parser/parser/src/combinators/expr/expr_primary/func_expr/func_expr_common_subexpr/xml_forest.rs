@@ -8,7 +8,7 @@ pub(super) fn xml_forest(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         return no_match(stream)
     }
 
-    let (_, content) = seq!(skip(1), paren(xml_attribute_list))
+    let (_, content) = seq!(skip(1), paren!(xml_attribute_list))
         .parse(stream)?;
 
     Ok(XmlForest(content))

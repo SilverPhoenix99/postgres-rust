@@ -4,7 +4,7 @@ pub(super) fn json_value_expr_list(stream: &mut TokenStream) -> scan::Result<Vec
         json_value_expr ( ',' json_value_expr )*
     */
 
-    many_sep(Comma, json_value_expr).parse(stream)
+    many!(sep = Comma, json_value_expr).parse(stream)
 }
 
 pub(super) fn json_value_expr(stream: &mut TokenStream) -> scan::Result<JsonValueExpr> {
@@ -58,7 +58,7 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_format_clause;

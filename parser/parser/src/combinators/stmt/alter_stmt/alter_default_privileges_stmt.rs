@@ -19,7 +19,7 @@ pub(super) fn alter_default_privileges_stmt(stream: &mut TokenStream) -> scan::R
 /// Alias: `DefACLOptionList`
 fn def_acl_option_list(stream: &mut TokenStream) -> scan::Result<Vec<AclOption>> {
 
-    many(def_acl_option).parse(stream)
+    many!(def_acl_option).parse(stream)
 }
 
 /// Alias: `DefACLOption`

@@ -16,7 +16,7 @@ pub(super) fn xml_serialize(stream: &mut TokenStream) -> scan::Result<XmlSeriali
 
     let (_, (kind, content, _, type_name, indent)) = seq!(
         skip(1),
-        paren(seq!(
+        paren!(seq!(
             document_or_content,
             a_expr,
             As,

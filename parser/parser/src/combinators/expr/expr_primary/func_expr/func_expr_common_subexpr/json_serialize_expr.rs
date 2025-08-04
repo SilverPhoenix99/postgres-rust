@@ -10,7 +10,7 @@ pub(super) fn json_serialize_expr(stream: &mut TokenStream) -> scan::Result<Json
 
     let (_, (value, output)) = seq!(
         skip(1),
-        paren(seq!(
+        paren!(seq!(
             json_value_expr,
             json_returning_clause.optional(),
         ))

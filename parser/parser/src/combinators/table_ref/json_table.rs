@@ -11,7 +11,7 @@ pub(super) fn json_table(stream: &mut TokenStream) -> scan::Result<JsonTable> {
         ')'
     */
 
-    let (_, (ctx, _, path_spec, passing, columns, on_error)) = seq!(Kw::JsonTable, paren(seq!(
+    let (_, (ctx, _, path_spec, passing, columns, on_error)) = seq!(Kw::JsonTable, paren!(seq!(
         json_value_expr,
         Comma,
         path_spec,
@@ -34,7 +34,7 @@ fn path_spec(stream: &mut TokenStream) -> scan::Result<JsonTablePathSpec> {
     */
 
     let ((path, path_loc), alias) = seq!(
-        located(a_expr),
+        located!(a_expr),
         alias.optional()
     ).parse(stream)?;
 
@@ -58,8 +58,8 @@ fn json_table_column_definition_list(stream: &mut TokenStream) -> scan::Result<V
 
     let (_, columns) = seq!(
         Columns,
-        paren(
-            many_sep(Comma, json_table_column_definition)
+        paren!(
+            many!(sep = Comma, json_table_column_definition)
         )
     ).parse(stream)?;
 
@@ -246,7 +246,6 @@ mod tests {
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
-        pg_ast::ExprNode::StringConst,
         pg_ast::JsonValueExpr,
         pg_basics::Location,
     };
@@ -403,7 +402,7 @@ use crate::combinators::col_id;
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;

@@ -5,7 +5,7 @@ pub(super) fn type_modifiers(stream: &mut TokenStream) -> scan::Result<TypeModif
         '(' expr_list ')'
     */
 
-    paren(expr_list).parse(stream)
+    paren!(expr_list).parse(stream)
 }
 
 use crate::combinators::expr_list;

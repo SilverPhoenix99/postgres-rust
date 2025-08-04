@@ -4,7 +4,7 @@ pub(super) fn operator_with_argtypes_list(stream: &mut TokenStream) -> scan::Res
         operator_with_argtypes ( ',' operator_with_argtypes )*
     */
 
-    many_sep(Comma, operator_with_argtypes).parse(stream)
+    many!(sep = Comma, operator_with_argtypes).parse(stream)
 }
 
 pub(super) fn operator_with_argtypes(stream: &mut TokenStream) -> scan::Result<OperatorWithArgs> {
@@ -27,7 +27,7 @@ fn oper_argtypes(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
         | '(' Typename ')' => Err
     */
 
-    paren(oper_argtypes_between).parse(stream)
+    paren!(oper_argtypes_between).parse(stream)
 }
 
 fn oper_argtypes_between(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
@@ -91,7 +91,7 @@ fn right_type(stream: &mut TokenStream) -> scan::Result<Option<Type>> {
 /// The `Result<Option>` needs to match the caller's return type.
 fn close_paren(stream: &mut TokenStream) -> scan::Result<Option<Type>> {
 
-    let (_, loc) = located(CloseParenthesis).parse(stream)?;
+    let (_, loc) = located!(CloseParenthesis).parse(stream)?;
     let err = MissingOperatorArgumentType.at(loc).into();
     Err(ScanErr(err))
 }
@@ -139,7 +139,7 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;

@@ -8,7 +8,7 @@ pub(super) fn explicit_row(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         return no_match(stream)
     };
 
-    let (_, col_values) = seq!(skip(1), paren(expr_list.optional()))
+    let (_, col_values) = seq!(skip(1), paren!(expr_list.optional()))
         .parse(stream)?;
 
     Ok(Row(col_values))

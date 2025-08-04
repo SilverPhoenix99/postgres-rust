@@ -1,16 +1,16 @@
 /// Outputs `P ( '.' col_label )*`.
 macro_rules! attrs {
     ($prefix:expr) => {
-        $crate::combinators::foundation::parser::<_, pg_basics::QualifiedName>(move |stream| {
-            use $crate::combinators::col_label;
-            use $crate::combinators::foundation::Combinator;
-            use $crate::combinators::foundation::many_m;
-            use $crate::combinators::foundation::seq;
-            use pg_lexer::OperatorKind::Dot;
-
-            many_m!(
+        $crate::combinators::foundation::parser::<_, pg_basics::QualifiedName>(|stream| {
+            $crate::combinators::foundation::many!(
                 pre = $prefix,
-                seq!(Dot, col_label).map(|(_, name)| name)
+                $crate::combinators::foundation::Combinator::map(
+                    $crate::combinators::foundation::seq!(
+                        pg_lexer::OperatorKind::Dot,
+                        $crate::combinators::col_label
+                    ),
+                    |(_, name)| name
+                )
             ).parse(stream)
         })
     };

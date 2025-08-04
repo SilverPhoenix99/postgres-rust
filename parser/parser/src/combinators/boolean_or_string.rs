@@ -1,7 +1,7 @@
 /// Alias: `copy_generic_opt_arg_list`
 pub(super) fn boolean_or_string_list(stream: &mut TokenStream) -> scan::Result<Vec<BooleanOrString>> {
 
-    many_sep(Comma, boolean_or_string).parse(stream)
+    many!(sep = Comma, boolean_or_string).parse(stream)
 }
 
 /// Alias: `opt_boolean_or_string`
@@ -34,7 +34,7 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word;

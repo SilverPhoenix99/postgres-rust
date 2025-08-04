@@ -12,26 +12,25 @@ macro_rules! alt {
         ),+
         $(,)?
     ) => {
-        $crate::combinators::foundation::parser(move |stream| {
-            #[allow(unused_imports)]
-            use $crate::{
-                combinators::foundation::Combinator,
-                result::Optional,
-                scan::Error::NoMatch,
-                no_match
-            };
+        $crate::combinators::foundation::parser(|stream| {
 
-            if let Some(ok) = $head.parse(stream).optional()? {
+            let p = $head;
+            let result = $crate::combinators::foundation::Combinator::parse(&p, stream);
+            let result = $crate::result::Optional::optional(result)?;
+            if let Some(ok) = result {
                 return Ok(ok)
             }
 
             $(
-                if let Some(ok) = $tail.parse(stream).optional()? {
+                let p = $tail;
+                let result = $crate::combinators::foundation::Combinator::parse(&p, stream);
+                let result = $crate::result::Optional::optional(result)?;
+                if let Some(ok) = result {
                     return Ok(ok)
                 }
             )+
 
-            no_match(stream)
+            $crate::no_match(stream)
         })
     };
 }

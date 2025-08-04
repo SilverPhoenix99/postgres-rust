@@ -14,7 +14,7 @@ pub(super) fn create_database_stmt(stream: &mut TokenStream) -> scan::Result<Cre
 
 fn createdb_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<CreatedbOption>> {
 
-    many(createdb_opt_item).parse(stream)
+    many!(createdb_opt_item).parse(stream)
 }
 
 fn createdb_opt_item(stream: &mut TokenStream) -> scan::Result<CreatedbOption> {

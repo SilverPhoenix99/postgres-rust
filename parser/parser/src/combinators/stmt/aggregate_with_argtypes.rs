@@ -4,7 +4,7 @@ pub(super) fn aggregate_with_argtypes_list(stream: &mut TokenStream) -> scan::Re
         aggr_func ( ',' aggr_func )*
     */
 
-    many_sep(Comma, aggregate_with_argtypes).parse(stream)
+    many!(sep = Comma, aggregate_with_argtypes).parse(stream)
 }
 
 pub(super) fn aggregate_with_argtypes(stream: &mut TokenStream) -> scan::Result<AggregateWithArgs> {
@@ -28,7 +28,7 @@ pub(super) fn aggr_args(stream: &mut TokenStream) -> scan::Result<(Vec<FunctionP
         | '(' aggr_args_list ( ORDER BY aggr_args_list )? ')'
     */
 
-    paren(any_aggr_arg).parse(stream)
+    paren!(any_aggr_arg).parse(stream)
 }
 
 pub(super) fn any_aggr_arg(stream: &mut TokenStream) -> scan::Result<(Vec<FunctionParameter>, Vec<FunctionParameter>)> {
@@ -61,12 +61,12 @@ fn aggr_args_list(stream: &mut TokenStream) -> scan::Result<Vec<FunctionParamete
         aggr_arg ( ',' aggr_arg )*
     */
 
-    many_sep(Comma, aggr_arg).parse(stream)
+    many!(sep = Comma, aggr_arg).parse(stream)
 }
 
 fn aggr_arg(stream: &mut TokenStream) -> scan::Result<FunctionParameter> {
 
-    let (param, loc) = located(func_arg).parse(stream)?;
+    let (param, loc) = located!(func_arg).parse(stream)?;
 
     if matches!(param.mode(), Mode::Default | Mode::In | Mode::Variadic) {
         return Ok(param)
@@ -201,7 +201,7 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;

@@ -8,7 +8,7 @@ pub(super) fn extract(stream: &mut TokenStream) -> scan::Result<ExtractFunc> {
         return no_match(stream)
     }
 
-    let (_, expr) = seq!(skip(1), paren(extract_args))
+    let (_, expr) = seq!(skip(1), paren!(extract_args))
         .parse(stream)?;
 
     Ok(expr)

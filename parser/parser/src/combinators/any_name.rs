@@ -4,7 +4,7 @@ pub(in crate::combinators) fn any_name_list(stream: &mut TokenStream) -> scan::R
         any_name ( ',' any_name )*
     */
 
-    many_sep(Comma, any_name).parse(stream)
+    many!(sep = Comma, any_name).parse(stream)
 }
 
 /// Alias: `handler_name`
@@ -50,7 +50,7 @@ mod tests {
 
 use crate::combinators::attrs;
 use crate::combinators::col_id;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

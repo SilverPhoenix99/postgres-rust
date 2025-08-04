@@ -6,7 +6,7 @@ pub(super) fn cast_expr(stream: &mut TokenStream) -> scan::Result<TypecastExpr> 
 
     let (_, (arg, _, type_name)) = seq!(
         Cast,
-        paren(seq!(a_expr, As, typename))
+        paren!(seq!(a_expr, As, typename))
     ).parse(stream)?;
 
     let expr = TypecastExpr::new(arg, type_name);

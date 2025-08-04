@@ -16,7 +16,7 @@ pub(super) fn alter_group_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt
 
     let (_, (group, loc), stmt) = seq!(
         Group,
-        located(role_spec),
+        located!(role_spec),
         alt!(rename, change_role)
     ).parse(stream)?;
 

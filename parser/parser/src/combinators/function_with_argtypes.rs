@@ -4,7 +4,7 @@ pub(super) fn function_with_argtypes_list(stream: &mut TokenStream) -> scan::Res
         function_with_argtypes ( ',' function_with_argtypes )*
     */
 
-    many_sep(Comma, function_with_argtypes).parse(stream)
+    many!(sep = Comma, function_with_argtypes).parse(stream)
 }
 
 pub(super) fn function_with_argtypes(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
@@ -91,7 +91,7 @@ fn func_args(stream: &mut TokenStream) -> scan::Result<Option<Option<Vec<Functio
         ( '(' ( func_args_list )? ')' )?
     */
 
-    let args = paren(func_args_list.optional())
+    let args = paren!(func_args_list.optional())
         .parse(stream)
         .optional()?;
 
@@ -104,7 +104,7 @@ fn func_args_list(stream: &mut TokenStream) -> scan::Result<Vec<FunctionParamete
         func_arg ( ',' func_arg )*
     */
 
-    many_sep(Comma, func_arg).parse(stream)
+    many!(sep = Comma, func_arg).parse(stream)
 }
 
 #[cfg(test)]
@@ -155,7 +155,7 @@ mod tests {
 use crate::combinators::attrs::attrs;
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::identifier;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;

@@ -8,7 +8,7 @@ pub(super) fn json_format_clause(stream: &mut TokenStream) -> scan::Result<JsonF
     let (_, _, encoding) = seq!(
         Format,
         Json,
-        seq!(Encoding, located(col_id)).optional()
+        seq!(Encoding, located!(col_id)).optional()
     ).parse(stream)?;
 
     let encoding = encoding.map(|(_, encoding)| encoding);

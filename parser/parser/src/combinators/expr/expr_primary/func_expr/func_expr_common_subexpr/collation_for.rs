@@ -8,7 +8,7 @@ pub(super) fn collation_for(stream: &mut TokenStream) -> scan::Result<ExprNode> 
         return no_match(stream)
     }
 
-    let (_, expr) = seq!(skip(2), paren(a_expr))
+    let (_, expr) = seq!(skip(2), paren!(a_expr))
         .parse(stream)?;
 
     let expr = Box::new(expr);

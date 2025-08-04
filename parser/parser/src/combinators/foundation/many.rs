@@ -1,80 +1,99 @@
-/// Does `( P )+`.
-///
-/// # Return
-/// If `Ok`, then the returned `Vec<_>` is **Never** empty.
-///
-/// Returns `Err(NoMatch)` or `Err(Eof)`, if empty.
-pub(in crate::combinators) fn many<P>(parser: P) -> ManyCombi<P>
-where
-    P: Combinator
-{
-    ManyCombi(parser)
-}
+/**
+# Simple Form
 
-/// Does `P ( S P )*`, i.e., `P` separated by `S`.
-///
-/// `S` is discarded.
-///
-/// To do `P ( S Q )*`, where `P` and `Q` are different parsers returning the same type,
-/// then use [`many_m`](many_m) with `pre = P`, where `S` needs to be discarded in the `follow` parser.
-///
-/// # Return
-/// If `Ok`, then the returned `Vec<_>` is **Never** empty.
-///
-/// Returns `Err(NoMatch)` or `Err(Eof)`, if empty.
-pub(in crate::combinators) fn many_sep<S, P>(separator: S, parser: P) -> ManySepCombi<S, P>
-where
-    S: Combinator,
-    P: Combinator,
-{
-    ManySepCombi { parser, separator }
-}
+Does `( P )+`.
 
-////////////////////////////////////////////////////////////////////////////////////////////////
-#[derive(Debug)]
-pub(in crate::combinators) struct ManyCombi<P>(P);
+## Return
+If `Ok`, then the returned `Vec<_>` is **Never** empty.
 
-impl<P> Combinator for ManyCombi<P>
-where
-    P: Combinator
-{
-    type Output = Vec<P::Output>;
+Returns `Err(NoMatch)` or `Err(Eof)`, if empty.
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
+# Separated Form
 
-        let mut elements = vec![self.0.parse(stream)?];
+Does `P ( S P )*`, i.e., `P` separated by `S`.
 
-        while let Some(element) = self.0.parse(stream).optional()? {
-            elements.push(element);
-        }
+`S` is discarded.
 
-        Ok(elements)
-    }
-}
+To do `P ( S Q )*`, where `P` and `Q` are different parsers returning the same type,
+then use `many(pre = P, S Q)`, where `S` needs to be discarded in the `follow` parser.
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+## Return
+If `Ok`, then the returned `Vec<_>` is **Never** empty.
 
-macro_rules! many_m {
+Returns `Err(NoMatch)` or `Err(Eof)`, if empty.
 
-    // Does `P ( Q )*`, where both `P` and `Q` are the same type, with different parsers.
-    //
-    // If `P` and `Q` are the same parser, then use [`many()`](many) to prevent cloning parsers.
-    //
-    // # Return
-    // If `Ok`, then the returned `Vec<_>` is **Never** empty.
-    //
-    // Returns `Err(NoMatch)` or `Err(Eof)`, if empty.
+
+# Prefixed Form
+
+Does `P ( Q )*`, where both `P` and `Q` are different parsers, with the same output type.
+
+If `P` and `Q` are the same parser, then use `many(P)` to prevent duplicate parsers.
+
+## Return
+If `Ok`, then the returned `Vec<_>` is **Never** empty.
+
+Returns `Err(NoMatch)` or `Err(Eof)`, if empty.
+
+*/
+macro_rules! many {
+
     (pre = $prefix:expr, $follow:expr $(,)?) => {
         $crate::combinators::foundation::parser(|stream| {
-            use $crate::combinators::foundation::Combinator;
-            use $crate::result::Optional;
 
-            let first = $prefix.parse(stream)?;
+            let p = $prefix;
+
+            let first = $crate::combinators::foundation::Combinator::parse(&p, stream)?;
             let mut elements = vec![first];
 
-            let follow = $follow;
+            let p = $follow;
 
-            while let Some(element) = follow.parse(stream).optional()? {
+            while let Some(element) = {
+                let result = $crate::combinators::foundation::Combinator::parse(&p, stream);
+                $crate::result::Optional::optional(result)?
+            } {
+                elements.push(element)
+            }
+
+            Ok(elements)
+        })
+    };
+
+    (sep = $separator:expr, $parser:expr $(,)?) => {
+        $crate::combinators::foundation::parser(|stream| {
+
+            let p = $parser;
+
+            let first = $crate::combinators::foundation::Combinator::parse(&p, stream)?;
+            let mut elements = vec![first];
+
+            let separator = $separator;
+
+            while {
+                let sep = $crate::combinators::foundation::Combinator::parse(&separator, stream);
+                let sep = $crate::result::Optional::optional(sep)?;
+                sep.is_some()
+            } {
+                let element = $crate::combinators::foundation::Combinator::parse(&p, stream);
+                let element = $crate::result::Required::required(element)?;
+                elements.push(element);
+            }
+
+            Ok(elements)
+        })
+    };
+
+    ($parser:expr) => {
+        $crate::combinators::foundation::parser(|stream| {
+
+            let p = $parser;
+
+            let first = $crate::combinators::foundation::Combinator::parse(&p, stream)?;
+            let mut elements = vec![first];
+
+            while let Some(element) = {
+                let result = $crate::combinators::foundation::Combinator::parse(&p, stream);
+                $crate::result::Optional::optional(result)?
+            } {
                 elements.push(element)
             }
 
@@ -83,40 +102,4 @@ macro_rules! many_m {
     };
 }
 
-pub(in crate::combinators) use many_m;
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-#[derive(Debug)]
-pub(in crate::combinators) struct ManySepCombi<S, P> {
-    separator: S,
-    parser: P,
-}
-
-impl<S, P> Combinator for ManySepCombi<S, P>
-where
-    S: Combinator,
-    P: Combinator,
-{
-    type Output = Vec<P::Output>;
-
-    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
-
-        let mut elements = vec![self.parser.parse(stream)?];
-
-        while self.separator.parse(stream).optional()?.is_some() {
-
-            let element = self.parser.parse(stream)
-                .required()?;
-
-            elements.push(element);
-        }
-
-        Ok(elements)
-    }
-}
-
-use crate::combinators::foundation::Combinator;
-use crate::result::Optional;
-use crate::result::Required;
-use crate::scan;
-use crate::stream::TokenStream;
+pub(in crate::combinators) use many;

@@ -8,7 +8,7 @@ pub(super) fn json_scalar(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         return no_match(stream)
     }
 
-    let (_, arg) = seq!(skip(1), paren(a_expr))
+    let (_, arg) = seq!(skip(1), paren!(a_expr))
         .parse(stream)?;
 
     let arg = Box::new(arg);

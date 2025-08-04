@@ -7,7 +7,7 @@ pub(super) fn utility_options(stream: &mut TokenStream) -> scan::Result<Vec<Util
         '(' utility_option_list ')'
     */
 
-    paren(utility_option_list)
+    paren!(utility_option_list)
         .parse(stream)
 }
 
@@ -17,7 +17,7 @@ fn utility_option_list(stream: &mut TokenStream) -> scan::Result<Vec<UtilityOpti
         utility_option ( ',' utility_option )*
     */
 
-    many_sep(Comma, utility_option).parse(stream)
+    many!(sep = Comma, utility_option).parse(stream)
 }
 
 /// Alias: `utility_option_elem`
@@ -101,7 +101,7 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;

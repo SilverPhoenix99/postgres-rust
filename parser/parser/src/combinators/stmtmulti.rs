@@ -9,10 +9,10 @@ pub(crate) fn stmtmulti(stream: &mut TokenStream) -> scan::Result<Vec<RawStmt>> 
 
     let (_, stmts) = seq!(
         semicolons.optional(),
-        many_sep(semicolons, toplevel_stmt).optional()
+        many!(sep = semicolons, toplevel_stmt).optional()
     ).parse(stream)?;
 
-    // Note that `many_sep` returns `NoMatch` if the Vec would be empty.
+    // Note that `many` returns `NoMatch` if the Vec would be empty.
     match stmts {
         Some(stmts) => Ok(stmts),
         None if stream.eof() => {
@@ -36,7 +36,7 @@ fn semicolons(stream: &mut TokenStream) -> scan::Result<()> {
     // skip() might look unnecessary, but it makes the elements have 0 bytes,
     // so the Vec never allocates.
 
-    many(Semicolon.skip()).parse(stream)?;
+    many!(Semicolon.skip()).parse(stream)?;
 
     Ok(())
 }
@@ -93,7 +93,6 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt;

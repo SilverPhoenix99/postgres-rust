@@ -1,6 +1,6 @@
 /// Alias: `AlterOptRoleList`
 pub(super) fn alter_role_options(stream: &mut TokenStream) -> scan::Result<Vec<AlterRoleOption>> {
-    many(alter_role_option).parse(stream)
+    many!(alter_role_option).parse(stream)
 }
 
 /// Alias: `AlterOptRoleElem`
@@ -73,7 +73,7 @@ fn unencrypted_password_option(stream: &mut TokenStream) -> scan::Result<AlterRo
 
 fn ident_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
 
-    let (ident, loc) = located(identifier).parse(stream)?;
+    let (ident, loc) = located!(identifier).parse(stream)?;
 
     let option = match &*ident {
         "superuser" => SuperUser(true),

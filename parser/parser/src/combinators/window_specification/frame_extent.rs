@@ -15,7 +15,7 @@ fn between_frame_bounds(stream: &mut TokenStream<'_>) -> scan::Result<FrameExten
         Between,
         frame_bound,
         And,
-        located(frame_bound)
+        located!(frame_bound)
     ).parse(stream)?;
 
     let frame = match (start, end) {
@@ -114,7 +114,7 @@ fn between_frame_bounds(stream: &mut TokenStream<'_>) -> scan::Result<FrameExten
 
 fn single_frame_bound(stream: &mut TokenStream<'_>) -> scan::Result<FrameExtent> {
 
-    let (bound, loc) = located(frame_bound).parse(stream)?;
+    let (bound, loc) = located!(frame_bound).parse(stream)?;
 
     let frame = match bound {
         UnboundedPreceding => FrameExtent::Unbounded { end: None },

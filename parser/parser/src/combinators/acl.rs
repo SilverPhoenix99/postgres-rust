@@ -4,7 +4,7 @@ pub(super) fn grantee_list(stream: &mut TokenStream) -> scan::Result<Vec<RoleSpe
         grantee ( ',' grantee )*
     */
 
-    many_sep(Comma, grantee).parse(stream)
+    many!(sep = Comma, grantee).parse(stream)
 }
 
 fn grantee(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
@@ -111,7 +111,7 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;

@@ -18,7 +18,7 @@ pub(super) fn window_specification(stream: &mut TokenStream) -> scan::Result<Win
         ')'
     */
 
-    let (name, partition, order, frame) = paren(seq!(
+    let (name, partition, order, frame) = paren!(seq!(
         existing_window_name.optional(),
         partition_clause.optional(),
         sort_clause.optional(),

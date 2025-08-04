@@ -1,14 +1,12 @@
-pub(in crate::combinators) fn located<P>(combinator: P) -> impl Combinator<Output = Located<P::Output>>
-where
-    P: Combinator
-{
-    parser(move |stream| {
-        let loc = stream.current_location();
-        let result = combinator.parse(stream)?;
-        Ok((result, loc))
-    })
+macro_rules! located {
+    ($parser:expr) => {
+        $crate::combinators::foundation::parser::<_, pg_basics::Located<_>>(|stream| {
+            let loc = $crate::stream::TokenStream::current_location(stream);
+            let p = $parser;
+            let result = $crate::combinators::foundation::Combinator::parse(&p, stream)?;
+            Ok((result, loc))
+        })
+    };
 }
 
-use crate::combinators::foundation::parser;
-use crate::combinators::foundation::Combinator;
-use pg_basics::Located;
+pub(in crate::combinators) use located;

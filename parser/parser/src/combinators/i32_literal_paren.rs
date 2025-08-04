@@ -1,7 +1,7 @@
 /// Production: `'(' ICONST ')'`
 pub(super) fn i32_literal_paren(stream: &mut TokenStream) -> scan::Result<i32> {
 
-    paren(integer)
+    paren!(integer)
         .parse(stream)
         .map(i32::from)
 }

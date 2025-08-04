@@ -20,7 +20,7 @@ fn explicit_array(stream: &mut TokenStream) -> scan::Result<Vec<Option<i32>>> {
 
     let (_, dim) = seq!(
         Array,
-        brackets(i32_literal).optional()
+        brackets!(i32_literal).optional()
     ).parse(stream)?;
 
     Ok(vec![dim])
@@ -32,8 +32,8 @@ fn implicit_array(stream: &mut TokenStream) -> scan::Result<Vec<Option<i32>>> {
         ( '[' ( ICONST )? ']' )[1..]
     */
 
-    many(
-        brackets(
+    many!(
+        brackets!(
             i32_literal.optional()
         )
     ).parse(stream)

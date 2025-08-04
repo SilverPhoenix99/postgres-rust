@@ -38,7 +38,7 @@ fn user_role_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
     */
 
     let ((role, loc), stmt) = seq!(
-        located(role_spec),
+        located!(role_spec),
         alt!(
             rename,
             change_role,

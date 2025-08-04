@@ -10,7 +10,7 @@ pub(super) fn normalize(stream: &mut TokenStream) -> scan::Result<NormalizeFunc>
 
     let (_, (expr, normal_form)) = seq!(
         skip(1),
-        paren(seq!(
+        paren!(seq!(
             a_expr,
             seq!(Comma, unicode_normal_form).optional()
         ))

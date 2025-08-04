@@ -157,7 +157,7 @@ fn zone_interval(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
 
 fn zone_value_interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
 
-    let (zone, loc) = located(
+    let (zone, loc) = located!(
         interval.optional()
             .map(Option::unwrap_or_default)
     ).parse(stream)?;

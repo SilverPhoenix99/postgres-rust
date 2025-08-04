@@ -9,7 +9,7 @@ pub(super) fn privileges(stream: &mut TokenStream) -> scan::Result<AccessPrivile
         seq!(
             AllKw,
             Privileges.optional(),
-            paren(name_list).optional()
+            paren!(name_list).optional()
         )
             .map(|(.., columns)| All { columns }),
         privilege_list
@@ -23,7 +23,7 @@ pub(super) fn privilege_list(stream: &mut TokenStream) -> scan::Result<Vec<Speci
         privilege ( ',' privilege )*
     */
 
-    many_sep(Comma, privilege).parse(stream)
+    many!(sep = Comma, privilege).parse(stream)
 }
 
 fn privilege(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
@@ -54,7 +54,7 @@ fn create(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
 
     let (_, columns) = seq!(
         CreateKw,
-        paren(name_list).optional()
+        paren!(name_list).optional()
     ).parse(stream)?;
 
     Ok(Create { columns })
@@ -64,7 +64,7 @@ fn references(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege>
 
     let (_, columns) = seq!(
         ReferencesKw,
-        paren(name_list).optional()
+        paren!(name_list).optional()
     ).parse(stream)?;
 
     Ok(References { columns })
@@ -74,7 +74,7 @@ fn select(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
 
     let (_, columns) = seq!(
         SelectKw,
-        paren(name_list).optional()
+        paren!(name_list).optional()
     ).parse(stream)?;
 
     Ok(Select { columns })
@@ -84,7 +84,7 @@ fn named(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
 
     let (privilege, columns) = seq!(
         col_id,
-        paren(name_list).optional()
+        paren!(name_list).optional()
     ).parse(stream)?;
 
     Ok(Named { privilege, columns })
@@ -139,7 +139,7 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;

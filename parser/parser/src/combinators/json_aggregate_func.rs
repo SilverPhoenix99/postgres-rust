@@ -38,7 +38,7 @@ fn json_objectagg(stream: &mut TokenStream) -> scan::Result<JsonObjectAgg> {
 
     let (_, (arg, absent_on_null, unique, output)) = seq!(
         skip(1),
-        paren(seq!(
+        paren!(seq!(
             json_name_and_value,
             json_constructor_null_clause.optional(),
             json_key_uniqueness_constraint.optional(),
@@ -69,7 +69,7 @@ fn json_arrayagg(stream: &mut TokenStream) -> scan::Result<JsonArrayAgg> {
 
     let (_, (arg, sort, absent_on_null, output)) = seq!(
         skip(1),
-        paren(seq!(
+        paren!(seq!(
             json_value_expr,
             sort_clause.optional(),
             json_constructor_null_clause.optional(),

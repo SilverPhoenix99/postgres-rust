@@ -4,7 +4,7 @@ pub(super) fn relation_expr_list(stream: &mut TokenStream) -> scan::Result<Vec<R
         relation_expr ( ',' relation_expr )*
     */
 
-    many_sep(Comma, relation_expr)
+    many!(sep = Comma, relation_expr)
         .parse(stream)
 }
 
@@ -31,7 +31,7 @@ fn non_inherited_relation_expr(stream: &mut TokenStream) -> scan::Result<Relatio
     let (_, name) = seq!(
         Only,
         alt!(
-            paren(qualified_name),
+            paren!(qualified_name),
             qualified_name
         )
     ).parse(stream)?;
@@ -85,7 +85,7 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;

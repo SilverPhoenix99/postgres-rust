@@ -12,7 +12,7 @@ pub(super) fn xmltable(stream: &mut TokenStream) -> scan::Result<XmlTable> {
 
     let (_, (namespaces, row_spec, doc, _, columns)) = seq!(
         Xmltable,
-        paren(seq!(
+        paren!(seq!(
             xml_namespaces.optional(),
             expr_primary,
             xmlexists_argument,
@@ -33,7 +33,7 @@ fn xml_namespaces(stream: &mut TokenStream) -> scan::Result<Vec<NamedValue>> {
         XMLNAMESPACES '(' xml_namespace_list ')' ','
     */
 
-    let (_, namespaces, _) = seq!(Xmlnamespaces, paren(xml_namespace_list), Comma)
+    let (_, namespaces, _) = seq!(Xmlnamespaces, paren!(xml_namespace_list), Comma)
         .parse(stream)?;
 
     Ok(namespaces)
@@ -45,7 +45,7 @@ fn xmltable_column_list(stream: &mut TokenStream) -> scan::Result<Vec<XmlTableCo
         xmltable_column_el ( ',' xmltable_column_el )*
     */
 
-    many_sep(Comma, xmltable_column_el).parse(stream)
+    many!(sep = Comma, xmltable_column_el).parse(stream)
 }
 
 fn xmltable_column_el(stream: &mut TokenStream) -> scan::Result<XmlTableColumn> {
@@ -59,7 +59,11 @@ fn xmltable_column_el(stream: &mut TokenStream) -> scan::Result<XmlTableColumn> 
         col_id,
         alt!(
             seq!(For, Ordinality).map(|_| None),
-            seq!(typename, many(located(xmltable_column_option_el)).optional()).map(Some)
+            seq!(typename,
+                many!(
+                    located!(xmltable_column_option_el)
+                ).optional()
+            ).map(Some)
         )
     ).parse(stream)?;
 
@@ -138,7 +142,7 @@ fn xmltable_column_option_el(stream: &mut TokenStream) -> scan::Result<XmlTableC
 
 fn xmltable_column_ident_option(stream: &mut TokenStream) -> scan::Result<XmlTableColumnOption> {
 
-    let ((option, loc), _) = seq!(located(identifier), b_expr).parse(stream)?;
+    let ((option, loc), _) = seq!(located!(identifier), b_expr).parse(stream)?;
 
     let err = if option.as_ref() == "__pg__is_not_null" {
         InvalidXmlTableOptionName(option)
@@ -156,7 +160,7 @@ fn xml_namespace_list(stream: &mut TokenStream) -> scan::Result<Vec<NamedValue>>
         xml_namespace_el ( ',' xml_namespace_el )*
     */
 
-    many_sep(Comma, xml_namespace_el).parse(stream)
+    many!(sep = Comma, xml_namespace_el).parse(stream)
 }
 
 fn xml_namespace_el(stream: &mut TokenStream) -> scan::Result<NamedValue> {
@@ -330,7 +334,6 @@ use crate::combinators::foundation::alt;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::many_sep;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;

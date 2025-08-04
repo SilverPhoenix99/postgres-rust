@@ -4,7 +4,7 @@ pub(super) fn role_list(stream: &mut TokenStream) -> scan::Result<Vec<RoleSpec>>
         role_spec ( ',' role_spec )*
     */
 
-    many_sep(Comma, role_spec).parse(stream)
+    many!(sep = Comma, role_spec).parse(stream)
 }
 
 /// Alias: `RoleId`
@@ -12,7 +12,7 @@ pub(super) fn role_id(stream: &mut TokenStream) -> scan::Result<Str> {
 
     // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
-    let (role, loc) = located(role_spec).parse(stream)?;
+    let (role, loc) = located!(role_spec).parse(stream)?;
 
     role.into_role_id()
         .map_err(|err| err.at(loc).into())
@@ -46,7 +46,7 @@ pub(super) fn role_spec(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
 
 fn role_none(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
 
-    let (_, loc) = located(NoneKw).parse(stream)?;
+    let (_, loc) = located!(NoneKw).parse(stream)?;
     let err = ReservedRoleSpec("none").at(loc);
     Err(err.into())
 }
@@ -137,7 +137,7 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word;
 use crate::scan;

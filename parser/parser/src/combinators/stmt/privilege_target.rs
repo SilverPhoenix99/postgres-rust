@@ -85,7 +85,7 @@ fn parameter_name_list(stream: &mut TokenStream) -> scan::Result<Vec<QualifiedNa
         parameter_name ( ',' parameter_name )*
     */
 
-    many_sep(Comma, parameter_name).parse(stream)
+    many!(sep = Comma, parameter_name).parse(stream)
 }
 
 fn parameter_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
@@ -94,7 +94,7 @@ fn parameter_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
         ColId ( '.' ColId )*
     */
 
-    many_sep(Dot, col_id).parse(stream)
+    many!(sep = Dot, col_id).parse(stream)
 }
 
 /// Alias: `NumericOnly_list`
@@ -104,7 +104,7 @@ fn signed_number_list(stream: &mut TokenStream) -> scan::Result<Vec<SignedNumber
         signed_number ( ',' signed_number )*
     */
 
-    many_sep(Comma, signed_number).parse(stream)
+    many!(sep = Comma, signed_number).parse(stream)
 }
 
 #[cfg(test)]
@@ -246,7 +246,7 @@ mod tests {
 use crate::combinators::any_name_list;
 use crate::combinators::col_id;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::function_with_argtypes_list;

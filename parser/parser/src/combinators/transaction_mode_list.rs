@@ -5,7 +5,7 @@ pub(super) fn transaction_mode_list(stream: &mut TokenStream) -> scan::Result<Ve
         transaction_mode ( (',')? transaction_mode )*
     */
 
-    many_m!(
+    many!(
         pre = transaction_mode,
         alt!(
             seq!(Comma, transaction_mode)
@@ -159,7 +159,7 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::many_m;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;

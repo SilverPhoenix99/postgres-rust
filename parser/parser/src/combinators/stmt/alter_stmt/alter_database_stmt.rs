@@ -110,7 +110,7 @@ fn set_option(stream: &mut TokenStream) -> scan::Result<Change> {
 
 fn alterdb_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<AlterdbOption>> {
 
-    many(alterdb_opt_item).parse(stream)
+    many!(alterdb_opt_item).parse(stream)
 }
 
 fn alterdb_opt_item(stream: &mut TokenStream) -> scan::Result<AlterdbOption> {

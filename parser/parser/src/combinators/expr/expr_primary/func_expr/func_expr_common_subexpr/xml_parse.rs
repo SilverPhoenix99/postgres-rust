@@ -10,7 +10,7 @@ pub(super) fn xml_parse(stream: &mut TokenStream) -> scan::Result<XmlParse> {
 
     let (_, (kind, content, whitespace)) = seq!(
         skip(1),
-        paren(seq!(
+        paren!(seq!(
             document_or_content,
             a_expr,
             xml_whitespace_option.optional()

@@ -8,7 +8,7 @@ pub(super) fn grouping_func(stream: &mut TokenStream) -> scan::Result<ExprNode> 
         return no_match(stream);
     };
 
-    let (_, args) = seq!(skip(1), paren(expr_list))
+    let (_, args) = seq!(skip(1), paren!(expr_list))
         .parse(stream)?;
 
     Ok(GroupingFunc(args))

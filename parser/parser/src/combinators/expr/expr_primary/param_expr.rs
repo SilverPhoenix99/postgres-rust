@@ -8,7 +8,7 @@ pub(super) fn param_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     let (index, indirection) = seq!(
         param,
-        located(indirection).optional()
+        located!(indirection).optional()
     ).parse(stream)?;
 
     let param = ParamRef { index };

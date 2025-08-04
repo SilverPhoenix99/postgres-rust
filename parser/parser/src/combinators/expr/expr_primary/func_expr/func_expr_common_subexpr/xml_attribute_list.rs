@@ -4,7 +4,7 @@ pub(super) fn xml_attribute_list(stream: &mut TokenStream) -> scan::Result<Vec<N
         xml_attribute ( ',' xml_attribute )*
     */
 
-    many_sep(Comma, xml_attribute).parse(stream)
+    many!(sep = Comma, xml_attribute).parse(stream)
 }
 
 /// Alias: `xml_attribute_el`
@@ -45,7 +45,7 @@ mod tests {
 
 use crate::combinators::col_label;
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::scan;

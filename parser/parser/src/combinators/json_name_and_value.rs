@@ -4,7 +4,7 @@ pub(crate) fn json_name_and_value_list(stream: &mut TokenStream) -> scan::Result
         json_name_and_value ( ',' json_name_and_value )*
     */
 
-    many_sep(Comma, json_name_and_value).parse(stream)
+    many!(sep = Comma, json_name_and_value).parse(stream)
 }
 
 pub(crate) fn json_name_and_value(stream: &mut TokenStream) -> scan::Result<JsonKeyValue> {
@@ -60,7 +60,7 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_value_expr;

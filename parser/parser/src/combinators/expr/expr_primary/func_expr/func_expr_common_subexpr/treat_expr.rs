@@ -18,7 +18,7 @@ pub(super) fn treat_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     let (_, (expr, _, typename)) = seq!(
         skip(1),
-        paren(seq!(a_expr, As, typename))
+        paren!(seq!(a_expr, As, typename))
     ).parse(stream)?;
 
     let cast = TypecastExpr::new(expr, typename);

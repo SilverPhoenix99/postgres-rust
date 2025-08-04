@@ -1,7 +1,7 @@
 /// Alias: `generic_option_list`
 pub(super) fn generic_options(stream: &mut TokenStream) -> scan::Result<Vec<GenericOption>> {
 
-    many_sep(Comma, generic_option).parse(stream)
+    many!(sep = Comma, generic_option).parse(stream)
 }
 
 /// Alias: `generic_option_elem`
@@ -40,7 +40,7 @@ mod tests {
 }
 
 use crate::combinators::col_label;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;

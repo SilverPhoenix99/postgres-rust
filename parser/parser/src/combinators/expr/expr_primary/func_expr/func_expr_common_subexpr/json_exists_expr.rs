@@ -8,9 +8,9 @@ pub(super) fn json_exists_expr(stream: &mut TokenStream) -> scan::Result<JsonExi
         return no_match(stream)
     }
 
-    let (_, expr) = seq!(skip(1), paren(json_exists_args))
+    let (_, expr) = seq!(skip(1), paren!(json_exists_args))
         .parse(stream)?;
-    
+
     Ok(expr)
 }
 

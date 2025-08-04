@@ -33,7 +33,7 @@ pub(super) fn explicit_op(stream: &mut TokenStream) -> scan::Result<QualifiedOpe
         OPERATOR '(' any_operator ')'
     */
 
-    let (_, op) = seq!(OperatorKw, paren(any_operator))
+    let (_, op) = seq!(OperatorKw, paren!(any_operator))
         .parse(stream)?;
 
     Ok(op)
@@ -46,7 +46,7 @@ pub(super) fn any_operator(stream: &mut TokenStream) -> scan::Result<QualifiedOp
     */
 
     let (qn, op) = seq!(
-        many(
+        many!(
             seq!(col_id, Dot)
                 .map(|(qn, _)| qn)
         )

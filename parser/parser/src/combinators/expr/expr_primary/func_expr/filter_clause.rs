@@ -7,7 +7,7 @@ fn filter_clause(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 
     let (_, (_, expr)) = seq!(
         Filter,
-        paren(seq!(Where, a_expr))
+        paren!(seq!(Where, a_expr))
     ).parse(stream)?;
 
     Ok(expr)

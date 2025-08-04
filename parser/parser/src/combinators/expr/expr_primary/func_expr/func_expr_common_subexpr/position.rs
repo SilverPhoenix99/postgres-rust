@@ -15,7 +15,7 @@ pub(super) fn position(stream: &mut TokenStream) -> scan::Result<PositionFunc> {
 
     let (_, (needle, _, haystack)) = seq!(
         skip(1),
-        paren(seq!(b_expr, In, b_expr))
+        paren!(seq!(b_expr, In, b_expr))
     ).parse(stream)?;
 
     let expr = PositionFunc::new(needle, haystack);

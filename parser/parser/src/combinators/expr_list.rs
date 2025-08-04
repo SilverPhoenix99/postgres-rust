@@ -4,7 +4,7 @@ pub(super) fn expr_list(stream: &mut TokenStream) -> scan::Result<Vec<ExprNode>>
         a_expr ( ',' a_expr )*
     */
 
-    many_sep(Comma, a_expr).parse(stream)
+    many!(sep = Comma, a_expr).parse(stream)
 }
 
 #[cfg(test)]
@@ -27,7 +27,7 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;

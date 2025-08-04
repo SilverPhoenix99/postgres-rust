@@ -87,7 +87,7 @@ fn alter_extension_options(stream: &mut TokenStream) -> scan::Result<Vec<Str>> {
         ( TO NonReservedWord_or_Sconst )*
     */
 
-    let options = many(
+    let options = many!(
         seq!(To, non_reserved_word_or_sconst)
             .map(|(_, opt)| opt)
     ).parse(stream)?;

@@ -8,7 +8,7 @@ pub(super) fn json_object(stream: &mut TokenStream) -> scan::Result<JsonObjectEx
         return no_match(stream)
     }
 
-    let (_, expr) = seq!(skip(1), paren(
+    let (_, expr) = seq!(skip(1), paren!(
         json_object_args.optional()
     )).parse(stream)?;
 

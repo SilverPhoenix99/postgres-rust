@@ -46,11 +46,11 @@ fn column_ref(stream: &mut TokenStream) -> scan::Result<ColumnRef> {
                 identifier.map(Str::from),
                 Unreserved.map(Str::from)
             ),
-            located(indirection).optional()
+            located!(indirection).optional()
         ),
         seq!(
             ColumnName.map(Str::from),
-            located(indirection).map(Some)
+            located!(indirection).map(Some)
         )
     ).parse(stream)?;
 
