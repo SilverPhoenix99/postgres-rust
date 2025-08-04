@@ -1,11 +1,19 @@
 fn json_table_column_definition_list(stream: &mut TokenStream) -> scan::Result<Vec<JsonTableColumnDefinition>> {
 
     /*
-        json_table_column_definition ( ',' json_table_column_definition )*
+        COLUMNS '('
+            json_table_column_definition ( ',' json_table_column_definition )*
+        ')'
     */
 
-    many_sep(Comma, json_table_column_definition)
-        .parse(stream)
+    let (_, columns) = seq!(
+        Columns,
+        paren(
+            many_sep(Comma, json_table_column_definition)
+        )
+    ).parse(stream)?;
+
+    Ok(columns)
 }
 
 enum PartialColumnDefinition {
@@ -13,7 +21,7 @@ enum PartialColumnDefinition {
     Other {
         type_name: Type,
         tail: ColumnDefinitionTail,
-    }
+    },
 }
 
 enum ColumnDefinitionTail {
@@ -23,7 +31,7 @@ enum ColumnDefinitionTail {
 
 struct ExistsColumnTail {
     path_spec: Option<JsonTablePathSpec>,
-    on_error: Option<JsonBehavior>
+    on_error: Option<JsonBehavior>,
 }
 
 struct RegularColumnTail {
@@ -31,25 +39,13 @@ struct RegularColumnTail {
     format: Option<JsonFormat>,
     path_spec: Option<JsonTablePathSpec>,
     quotes: Option<JsonQuotes>,
-    behavior: Option<JsonBehaviorClause>
+    behavior: Option<JsonBehaviorClause>,
 }
 
 impl_from!(ExistsColumnTail for ColumnDefinitionTail::Exists);
 impl_from!(RegularColumnTail for ColumnDefinitionTail::Regular);
 
 fn json_table_column_definition(stream: &mut TokenStream) -> scan::Result<JsonTableColumnDefinition> {
-
-    /*
-          NESTED ( PATH )? SCONST ( AS ColId )? COLUMNS '(' json_table_column_definition_list ')'
-        | ColId FOR ORDINALITY
-        | ColId Typename EXISTS ( json_table_column_path_clause )? ( json_on_error_clause )?
-        | ColId Typename
-            ( json_format_clause )?
-            ( json_table_column_path_clause )?
-            json_wrapper_behavior
-            ( json_quotes_clause )?
-            ( json_behavior_clause )?
-    */
 
     alt!(
         nested_json_column.map(From::from),
@@ -60,16 +56,15 @@ fn json_table_column_definition(stream: &mut TokenStream) -> scan::Result<JsonTa
 fn nested_json_column(stream: &mut TokenStream) -> scan::Result<JsonTableNestedColumn> {
 
     /*
-        NESTED ( PATH )? SCONST ( AS ColId )? COLUMNS '(' json_table_column_definition_list ')'
+        NESTED ( PATH )? SCONST ( AS ColId )? json_table_column_definition_list
     */
 
-    let (_, _, path_spec, alias, _, columns) = seq!(
+    let (_, _, path_spec, alias, columns) = seq!(
         Kw::Nested,
         Path.optional(),
         string,
         alias.optional(),
-        Columns,
-        paren(json_table_column_definition_list)
+        json_table_column_definition_list
     ).parse(stream)?;
 
     let mut path_spec = JsonTablePathSpec::new(path_spec);
@@ -197,14 +192,7 @@ mod tests {
     use super::*;
     use crate::tests::test_parser;
     #[allow(unused_imports)]
-    use pg_ast::{
-        JsonBehavior,
-        JsonBehaviorClause,
-        JsonFormat,
-        JsonQuotes,
-        JsonWrapperBehavior,
-        TypeName::Int4,
-    };
+    use pg_ast::TypeName::Int4;
     use test_case::test_case;
 
     #[test_case("foo for ordinality" => Ok(
@@ -290,26 +278,38 @@ mod tests {
     }
 }
 
-use crate::combinators::col_id::col_id;
-use crate::combinators::foundation::{paren, seq};
+use crate::combinators::alias;
+use crate::combinators::col_id;
+use crate::combinators::foundation::alt;
+use crate::combinators::foundation::many_sep;
+use crate::combinators::foundation::paren;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
-use crate::combinators::foundation::{alt, many_sep};
-use crate::combinators::typename::typename;
+use crate::combinators::json_behavior_clause;
+use crate::combinators::json_format_clause;
+use crate::combinators::json_on_error_clause;
+use crate::combinators::json_quotes_clause;
+use crate::combinators::json_wrapper_behavior;
+use crate::combinators::typename;
 use crate::scan;
 use crate::stream::TokenStream;
+use pg_ast::JsonBehavior;
+use pg_ast::JsonBehaviorClause;
+use pg_ast::JsonFormat;
+use pg_ast::JsonQuotes;
+use pg_ast::JsonTableColumnDefinition;
 use pg_ast::JsonTableColumnDefinition::ForOrdinality;
+use pg_ast::JsonTableExistsColumn;
 use pg_ast::JsonTableNestedColumn;
 use pg_ast::JsonTablePathSpec;
-use pg_ast::{JsonBehavior, JsonBehaviorClause, JsonFormat, JsonQuotes, JsonTableColumnDefinition, JsonWrapperBehavior, Type};
-use pg_ast::{JsonTableExistsColumn, JsonTableRegularColumn};
+use pg_ast::JsonTableRegularColumn;
+use pg_ast::JsonWrapperBehavior;
+use pg_ast::Type;
 use pg_basics::impl_from;
 use pg_lexer::Keyword as Kw;
-use pg_lexer::Keyword::{Columns, Ordinality, Path};
+use pg_lexer::Keyword::Columns;
 use pg_lexer::Keyword::For;
+use pg_lexer::Keyword::Ordinality;
+use pg_lexer::Keyword::Path;
 use pg_lexer::OperatorKind::Comma;
-use crate::combinators::alias::alias;
-use crate::combinators::json_behavior::{json_behavior_clause, json_on_error_clause};
-use crate::combinators::json_format_clause::json_format_clause;
-use crate::combinators::json_quotes_clause::json_quotes_clause;
-use crate::combinators::json_wrapper_behavior::json_wrapper_behavior;
