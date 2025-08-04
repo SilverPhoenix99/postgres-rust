@@ -33,7 +33,11 @@ impl AsRef<str> for Str {
     }
 }
 
-impl_from!(String for Str::Boxed);
+impl From<String> for Str {
+    fn from(value: String) -> Self {
+        Self::Boxed(value.into_boxed_str())
+    }
+}
 
 impl From<Box<str>> for Str {
     fn from(value: Box<str>) -> Self {
@@ -74,7 +78,6 @@ impl Display for Str {
     }
 }
 
-use crate::impl_from;
 use core::cmp::Ordering;
 use core::fmt::Display;
 use core::fmt::Formatter;

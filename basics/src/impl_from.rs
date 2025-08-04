@@ -3,7 +3,7 @@
 macro_rules! impl_from {
 
     ($variant:ident for $for_:ident) => {
-        impl_from!($variant for $for_ :: $variant);
+        $crate::impl_from!($variant for $for_ :: $variant);
     };
 
     ($from:ident for $for_:ident :: $variant:ident) => {
@@ -15,7 +15,7 @@ macro_rules! impl_from {
     };
 
     (box $variant:ident for $for_:ident) => {
-        impl_from!(box $variant for $for_ :: $variant);
+        $crate::impl_from!(box $variant for $for_ :: $variant);
     };
 
     (box $from:ident for $for_:ident :: $variant:ident) => {
