@@ -19,21 +19,6 @@ impl<T> Optional<T> for Result<T> {
     }
 }
 
-impl<T> MaybeMatch<T> for Result<T> {
-    fn maybe_match(self) -> eof::Result<Option<T>> {
-        match self {
-            Ok(ok) => Ok(Some(ok)),
-            Err(NoMatch(_)) => Ok(None),
-            Err(ScanEof(loc)) => Err(Eof(loc)),
-            Err(ScanErr(err)) => Err(NotEof(err)),
-        }
-    }
-}
-
-use crate::eof;
-use crate::eof::Error::Eof;
-use crate::eof::Error::NotEof;
-use crate::result::MaybeMatch;
 use crate::result::Optional;
 use crate::result::Required;
 use crate::scan;

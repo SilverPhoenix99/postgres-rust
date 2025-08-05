@@ -1,19 +1,15 @@
 /// Alias: `NumericOnly`
 pub(super) fn signed_number(stream: &mut TokenStream) -> scan::Result<SignedNumber> {
-    
+
     // ('+' | '-')? (ICONST | FCONST)
 
-    let sign = sign(stream).maybe_match()?;
-    let num = number.map(SignedNumber::from);
+    let (sign, num) = seq!(sign.optional(), number)
+        .parse(stream)?;
 
-    let negative = match sign {
-        None => return num.parse(stream),
-        Some(sign) => sign == Minus,
-    };
+    let mut num = SignedNumber::from(num);
 
-    let mut num = num.parse(stream).required()?;
-    if negative {
-        num = num.neg();
+    if let Some(Minus) = sign {
+        num = -num;
     }
 
     Ok(num)
@@ -29,18 +25,11 @@ pub(super) fn signed_i32_literal(stream: &mut TokenStream) -> scan::Result<i32> 
 
     // ('+' | '-')? ICONST
 
-    let sign = sign(stream).maybe_match()?;
+    let (sign, mut int) = seq!(sign.optional(), i32_literal).parse(stream)?;
 
-    let int = match sign {
-        None => i32_literal(stream)?,
-        Some(sign) => {
-            let mut num = i32_literal(stream).required()?;
-            if sign == Minus {
-                num = -num;
-            }
-            num
-        }
-    };
+    if let Some(Minus) = sign {
+        int = -int;
+    }
 
     Ok(int)
 }
@@ -83,12 +72,10 @@ mod tests {
 
 use crate::combinators::foundation::integer;
 use crate::combinators::foundation::number;
+use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::sign;
-use crate::result::MaybeMatch;
-use crate::result::Required;
 use crate::scan;
 use crate::stream::TokenStream;
-use core::ops::Neg;
 use pg_ast::SignedNumber;
 use pg_lexer::OperatorKind::Minus;

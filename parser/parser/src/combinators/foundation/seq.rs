@@ -12,6 +12,9 @@ macro_rules! seq {
         $(,)?
     ) => {
         $crate::combinators::foundation::parser(|stream| {
+
+            let start_position = stream.current_location().range().start;
+
             Ok((
                 {
                     let p = $head;
@@ -20,7 +23,25 @@ macro_rules! seq {
                 $({
                     let p = $tail;
                     let result = $crate::combinators::foundation::Combinator::parse(&p, stream);
-                    $crate::result::Required::required(result)?
+
+                    match result {
+                        Ok(ok) => ok,
+
+                        Err($crate::scan::Error::ScanErr(err)) => return Err($crate::scan::Error::ScanErr(err)),
+
+                        Err($crate::scan::Error::Eof(loc) | $crate::scan::Error::NoMatch(loc)) => {
+                            let current_position = stream.current_location().range().start;
+                            return if start_position == current_position {
+                                // No consumption yet, so this is considered the first production.
+                                Err($crate::scan::Error::NoMatch(loc))
+                            } else {
+                                // Otherwise, some consumed before, and this is not considered the first production.
+                                // In this case, there was a partial match, and this is now considered a syntax error.
+                                Err($crate::syntax(loc))
+                            }
+                        }
+                    }
+
                 }),+
             ))
         })
