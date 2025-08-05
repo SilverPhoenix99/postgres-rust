@@ -12,7 +12,7 @@ pub(super) fn func_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     */
 
     alt!(
-        func_expr_common_subexpr,
+        func_expr_common_subexpr.map(From::from),
         json_agg_func
     ).parse(stream)
 }

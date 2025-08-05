@@ -1,4 +1,4 @@
-pub(super) fn nullif_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn nullif_expr(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
 
     /*
         NULLIF '(' a_expr ',' a_expr ')'
@@ -11,8 +11,7 @@ pub(super) fn nullif_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         paren!(seq!(a_expr, Comma, a_expr))
     ).parse(stream)?;
 
-    let operands = Box::new((left, right));
-    Ok(NullIf(operands))
+    Ok(NullIf(left, right))
 }
 
 #[cfg(test)]
@@ -21,15 +20,16 @@ mod tests {
     use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::{NullConst, StringConst};
+    use pg_ast::SqlFunction;
     use test_case::test_case;
 
     #[test_case("nullif(null, 'foo')" => Ok(
-        NullIf(Box::new((
+        NullIf(
             NullConst,
             StringConst("foo".into())
-        )))
+        )
     ))]
-    fn test_nullif_expr(source: &str) -> scan::Result<ExprNode> {
+    fn test_nullif_expr(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, nullif_expr)
     }
 }
@@ -41,6 +41,6 @@ use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
-use pg_ast::ExprNode;
-use pg_ast::ExprNode::NullIf;
+use pg_ast::SqlFunction;
+use pg_ast::SqlFunction::NullIf;
 use pg_lexer::OperatorKind::Comma;

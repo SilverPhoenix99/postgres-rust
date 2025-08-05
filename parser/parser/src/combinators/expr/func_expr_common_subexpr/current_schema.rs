@@ -1,4 +1,4 @@
-pub(super) fn current_schema(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn current_schema(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
 
     // `current_schema()` is valid syntax for `prefix_expr`, so exclude that case from here.
     if matches!(stream.peek2(), Ok((K(Kw::CurrentSchema), Op(OpenParenthesis)))) {
@@ -23,7 +23,7 @@ mod tests {
     #[test_case("current_schema 1" => Ok(CurrentSchema))]
     #[test_case("current_schema" => Ok(CurrentSchema))]
     #[test_case("current_schema(" => matches Err(NoMatch(_)))]
-    fn test_current_schema(source: &str) -> scan::Result<ExprNode> {
+    fn test_current_schema(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, current_schema)
     }
 }
@@ -34,7 +34,7 @@ use crate::scan;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Keyword as K;
 use crate::stream::TokenValue::Operator as Op;
-use pg_ast::ExprNode;
-use pg_ast::ExprNode::CurrentSchema;
+use pg_ast::SqlFunction;
+use pg_ast::SqlFunction::CurrentSchema;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::OperatorKind::OpenParenthesis;

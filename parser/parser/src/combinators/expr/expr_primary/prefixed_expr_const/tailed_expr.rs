@@ -8,10 +8,7 @@ pub(super) fn tailed_expr(name: Vec<Str>, tail: AttrTail) -> ExprNode {
                 type_modifiers
             };
 
-            let typecast = TypecastExpr::new(
-                StringConst(value),
-                type_name
-            );
+            let typecast = StringTypecastExpr::new(value, type_name);
 
             typecast.into()
         },
@@ -43,8 +40,8 @@ mod tests {
             type_modifiers: Some(vec![IntegerConst(234)]),
         }
         => ExprNode::from(
-            TypecastExpr::new(
-                StringConst("123".into()),
+            StringTypecastExpr::new(
+                "123",
                 TypeName::Generic {
                     name: vec!["foo".into()],
                     type_modifiers: Some(vec![IntegerConst(234)]),
@@ -76,9 +73,8 @@ mod tests {
 
 use super::attr_tail::AttrTail;
 use pg_ast::ExprNode;
-use pg_ast::ExprNode::StringConst;
 use pg_ast::FuncCall;
 use pg_ast::FuncCallExpr;
+use pg_ast::StringTypecastExpr;
 use pg_ast::TypeName;
-use pg_ast::TypecastExpr;
 use pg_basics::Str;

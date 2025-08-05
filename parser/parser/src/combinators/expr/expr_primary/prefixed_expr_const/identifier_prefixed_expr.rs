@@ -69,8 +69,8 @@ mod tests {
         FuncCall,
         FuncCallExpr,
         OverClause,
+        StringTypecastExpr,
         TypeName,
-        TypecastExpr,
     };
     use test_case::test_case;
 
@@ -108,8 +108,8 @@ mod tests {
         ColumnRef::WildcardName(vec!["between".into()]).into()
     ))]
     #[test_case("foo '123'" => Ok(
-        TypecastExpr::new(
-            StringConst("123".into()),
+        StringTypecastExpr::new(
+            "123",
             TypeName::Generic {
                 name: vec!["foo".into()],
                 type_modifiers: None,
@@ -117,8 +117,8 @@ mod tests {
         ).into()
     ))]
     #[test_case("double '123'" => Ok(
-        TypecastExpr::new(
-            StringConst("123".into()),
+        StringTypecastExpr::new(
+            "123",
             TypeName::Generic {
                 name: vec!["double".into()],
                 type_modifiers: None,
@@ -126,8 +126,8 @@ mod tests {
         ).into()
     ))]
     #[test_case("foo.bar '123'" => Ok(
-        TypecastExpr::new(
-            StringConst("123".into()),
+        StringTypecastExpr::new(
+            "123",
             TypeName::Generic {
                 name: vec!["foo".into(), "bar".into()],
                 type_modifiers: None,
@@ -135,8 +135,8 @@ mod tests {
         ).into()
     ))]
     #[test_case("double.baz '123'" => Ok(
-        TypecastExpr::new(
-            StringConst("123".into()),
+        StringTypecastExpr::new(
+            "123",
             TypeName::Generic {
                 name: vec!["double".into(), "baz".into()],
                 type_modifiers: None,
@@ -144,8 +144,8 @@ mod tests {
         ).into()
     ))]
     #[test_case("between.qux '123'" => Ok(
-        TypecastExpr::new(
-            StringConst("123".into()),
+        StringTypecastExpr::new(
+            "123",
             TypeName::Generic {
                 name: vec!["between".into(), "qux".into()],
                 type_modifiers: None,
@@ -153,8 +153,8 @@ mod tests {
         ).into()
     ))]
     #[test_case("foo(1) '123'" => Ok(
-        TypecastExpr::new(
-            StringConst("123".into()),
+        StringTypecastExpr::new(
+            "123",
             TypeName::Generic {
                 name: vec!["foo".into()],
                 type_modifiers: Some(vec![IntegerConst(1)]),
@@ -162,8 +162,8 @@ mod tests {
         ).into()
     ))]
     #[test_case("double(1) '123'" => Ok(
-        TypecastExpr::new(
-            StringConst("123".into()),
+        StringTypecastExpr::new(
+            "123",
             TypeName::Generic {
                 name: vec!["double".into()],
                 type_modifiers: Some(vec![IntegerConst(1)]),
@@ -171,8 +171,8 @@ mod tests {
         ).into()
     ))]
     #[test_case("foo.bar(1) '123'" => Ok(
-        TypecastExpr::new(
-            StringConst("123".into()),
+        StringTypecastExpr::new(
+            "123",
             TypeName::Generic {
                 name: vec!["foo".into(), "bar".into()],
                 type_modifiers: Some(vec![IntegerConst(1)]),
@@ -180,8 +180,8 @@ mod tests {
         ).into()
     ))]
     #[test_case("double.baz(1) '123'" => Ok(
-        TypecastExpr::new(
-            StringConst("123".into()),
+        StringTypecastExpr::new(
+            "123",
             TypeName::Generic {
                 name: vec!["double".into(), "baz".into()],
                 type_modifiers: Some(vec![IntegerConst(1)]),
@@ -189,8 +189,8 @@ mod tests {
         ).into()
     ))]
     #[test_case("between.qux(1) '123'" => Ok(
-        TypecastExpr::new(
-            StringConst("123".into()),
+        StringTypecastExpr::new(
+            "123",
             TypeName::Generic {
                 name: vec!["between".into(), "qux".into()],
                 type_modifiers: Some(vec![IntegerConst(1)]),

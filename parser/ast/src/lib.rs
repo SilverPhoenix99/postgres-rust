@@ -37,6 +37,7 @@ pg_basics::reexport! { pub
     func_args_kind,
     func_call,
     func_call_expr,
+    func_expr_windowless,
     function_parameter,
     function_with_args,
     generic_option,
@@ -93,6 +94,7 @@ pg_basics::reexport! { pub
     signed_number,
     simple_column_definition,
     sort_by,
+    sql_function,
     substring_func,
     system_type,
     transaction_chain,
@@ -177,106 +179,49 @@ pub enum ExprNode {
     BooleanConst(bool),
 
     DefaultExpr,
-    Typecast(Box<TypecastExpr>),
     CaseExpr(Box<CaseExpr>),
     ParamRef { index: i32 },
     Row(Option<Vec<ExprNode>>),
 
+    /// String constant type cast.
+    ///
+    /// (e.g.: `int '1'`)
+    StringTypecast(Box<StringTypecastExpr>),
+
     BinaryExpr(Box<BinaryExpr>),
     UnaryExpr(Box<UnaryExpr>),
     BoolExpr(BoolExpr),
+    FuncCallExpr(Box<FuncCallExpr>),
+    JsonArrayAggExpr(Box<JsonArrayAggExpr>),
+    JsonObjectAggExpr(Box<JsonObjectAggExpr>),
+
     /// `IS DISTINCT FROM`
     Distinct(BinaryOperands),
     /// `IS NOT DISTINCT FROM`
     NotDistinct(BinaryOperands),
-    Coalesce(Vec<ExprNode>),
-    FuncCallExpr(Box<FuncCallExpr>),
-    Greatest(Vec<ExprNode>),
-    Least(Vec<ExprNode>),
-    MergeAction,
-    NullIf(BinaryOperands),
-    Treat(Box<TypecastExpr>),
-    JsonArrayAggExpr(Box<JsonArrayAggExpr>),
-    JsonExists(Box<JsonExistsExpr>),
-    JsonObjectAggExpr(Box<JsonObjectAggExpr>),
-    JsonQuery(Box<JsonQueryExpr>),
-    JsonScalar(Box<ExprNode>),
-    JsonSerialize(Box<JsonSerializeExpr>),
-    JsonValue(Box<JsonValueFunc>),
 
     // TODO: Are these 2 the same?
     Indirection(Box<IndirectionExpr>),
     ColumnRef(ColumnRef),
 
     /* Function calls */
-    CurrentDate,
-    CurrentTime { precision: Option<i32> },
-    CurrentTimestamp { precision: Option<i32> },
-    LocalTime { precision: Option<i32> },
-    LocalTimestamp { precision: Option<i32> },
-    CurrentRole,
-    CurrentUser,
-    SessionUser,
-    SystemUser,
-    User,
-    CurrentCatalog,
-    CurrentSchema,
-    CollationForFunc(Box<ExprNode>),
     GroupingFunc(Vec<ExprNode>),
-    ExtractFunc(Box<ExtractFunc>),
     FuncCall(Box<FuncCall>),
-    NormalizeFunc(Box<NormalizeFunc>),
-    PositionFunc(Box<PositionFunc>),
-    TrimFunc(TrimFunc),
-    JsonArrayAgg(Box<JsonArrayAgg>),
-    JsonFunc(Box<JsonFunc>),
-    JsonObject(JsonObjectExpr),
-    JsonObjectAgg(Box<JsonObjectAgg>),
-    OverlayFunc(Box<OverlayFunc>),
-    SubstringFunc(Box<SubstringFunc>),
-
-    /* Xml operations */
-    XmlConcat(Vec<ExprNode>),
-    XmlElement(XmlElement),
-    XmlExists(Box<XmlExists>),
-    XmlForest(Vec<NamedValue>),
-    XmlParse(Box<XmlParse>),
-    XmlProcessingInstruction(Box<XmlProcessingInstruction>),
-    XmlRoot(Box<XmlRoot>),
-    XmlSerialize(Box<XmlSerialize>),
+    SqlFunction(Box<SqlFunction>),
 }
 
 impl_from!(BoolExpr for ExprNode);
 impl_from!(ColumnRef for ExprNode);
-impl_from!(JsonObjectExpr for ExprNode::JsonObject);
-impl_from!(TrimFunc for ExprNode);
-impl_from!(XmlElement for ExprNode);
 impl_from!(box BinaryExpr for ExprNode);
 impl_from!(box CaseExpr for ExprNode);
-impl_from!(box ExtractFunc for ExprNode);
 impl_from!(box FuncCall for ExprNode);
 impl_from!(box FuncCallExpr for ExprNode);
 impl_from!(box IndirectionExpr for ExprNode::Indirection);
-impl_from!(box JsonArrayAgg for ExprNode);
 impl_from!(box JsonArrayAggExpr for ExprNode);
-impl_from!(box JsonExistsExpr for ExprNode::JsonExists);
-impl_from!(box JsonFunc for ExprNode);
-impl_from!(box JsonObjectAgg for ExprNode);
 impl_from!(box JsonObjectAggExpr for ExprNode);
-impl_from!(box JsonQueryExpr for ExprNode::JsonQuery);
-impl_from!(box JsonSerializeExpr for ExprNode::JsonSerialize);
-impl_from!(box JsonValueFunc for ExprNode::JsonValue);
-impl_from!(box NormalizeFunc for ExprNode);
-impl_from!(box OverlayFunc for ExprNode);
-impl_from!(box PositionFunc for ExprNode);
-impl_from!(box SubstringFunc for ExprNode);
-impl_from!(box TypecastExpr for ExprNode::Typecast);
+impl_from!(box SqlFunction for ExprNode);
+impl_from!(box StringTypecastExpr for ExprNode::StringTypecast);
 impl_from!(box UnaryExpr for ExprNode);
-impl_from!(box XmlExists for ExprNode);
-impl_from!(box XmlParse for ExprNode);
-impl_from!(box XmlProcessingInstruction for ExprNode);
-impl_from!(box XmlRoot for ExprNode);
-impl_from!(box XmlSerialize for ExprNode);
 
 impl From<UnsignedNumber> for ExprNode {
     fn from(value: UnsignedNumber) -> Self {

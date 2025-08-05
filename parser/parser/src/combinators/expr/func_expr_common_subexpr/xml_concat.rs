@@ -1,4 +1,4 @@
-pub(super) fn xml_concat(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn xml_concat(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
 
     /*
         XMLCONCAT '(' expr_list ')'
@@ -18,6 +18,7 @@ mod tests {
     use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::StringConst;
+    use pg_ast::SqlFunction;
     use test_case::test_case;
 
     #[test_case("xmlconcat('foo', 'bar')" => Ok(
@@ -26,7 +27,7 @@ mod tests {
             StringConst("bar".into()),
         ])
     ))]
-    fn test_xml_concat(source: &str) -> scan::Result<ExprNode> {
+    fn test_xml_concat(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, xml_concat)
     }
 }
@@ -38,5 +39,5 @@ use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
-use pg_ast::ExprNode;
-use pg_ast::ExprNode::XmlConcat;
+use pg_ast::SqlFunction;
+use pg_ast::SqlFunction::XmlConcat;

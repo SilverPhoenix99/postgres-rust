@@ -29,7 +29,7 @@ pub(super) fn expr_const(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 }
 
 /// Alias: `ConstTypename`
-fn const_typename(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+fn const_typename(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
     use Keyword as K;
     use Operator as O;
 
@@ -119,7 +119,7 @@ fn const_typename(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
     }
 }
 
-fn json_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+fn json_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
 
     /*
         JSON SCONST
@@ -128,11 +128,11 @@ fn json_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
     let (_, value) = seq!(skip(1), string)
         .parse(stream)?;
 
-    let expr = TypecastExpr::new(StringConst(value), Json);
+    let expr = StringTypecastExpr::new(value, Json);
     Ok(expr)
 }
 
-fn double_precision_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+fn double_precision_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
 
     /*
         DOUBLE PRECISION SCONST
@@ -141,11 +141,11 @@ fn double_precision_typecast(stream: &mut TokenStream) -> scan::Result<TypecastE
     let (_, value) = seq!(skip(2), string)
         .parse(stream)?;
 
-    let expr = TypecastExpr::new(StringConst(value), Float8);
+    let expr = StringTypecastExpr::new(value, Float8);
     Ok(expr)
 }
 
-fn bool_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+fn bool_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
 
     /*
         BOOLEAN SCONST
@@ -154,11 +154,11 @@ fn bool_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
     let (_, value) = seq!(skip(1), string)
         .parse(stream)?;
 
-    let expr = TypecastExpr::new(StringConst(value), Bool);
+    let expr = StringTypecastExpr::new(value, Bool);
     Ok(expr)
 }
 
-fn smallint_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+fn smallint_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
 
     /*
         SMALLINT SCONST
@@ -167,11 +167,11 @@ fn smallint_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
     let (_, value) = seq!(skip(1), string)
         .parse(stream)?;
 
-    let expr = TypecastExpr::new(StringConst(value), Int2);
+    let expr = StringTypecastExpr::new(value, Int2);
     Ok(expr)
 }
 
-fn int_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+fn int_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
 
     /*
         ( INT | INTEGER ) SCONST
@@ -180,11 +180,11 @@ fn int_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
     let (_, value) = seq!(skip(1), string)
         .parse(stream)?;
 
-    let expr = TypecastExpr::new(StringConst(value), Int4);
+    let expr = StringTypecastExpr::new(value, Int4);
     Ok(expr)
 }
 
-fn bigint_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+fn bigint_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
 
     /*
         BIGINT SCONST
@@ -193,11 +193,11 @@ fn bigint_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
     let (_, value) = seq!(skip(1), string)
         .parse(stream)?;
 
-    let expr = TypecastExpr::new(StringConst(value), Int8);
+    let expr = StringTypecastExpr::new(value, Int8);
     Ok(expr)
 }
 
-fn real_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+fn real_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
 
     /*
         REAL SCONST
@@ -206,11 +206,11 @@ fn real_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
     let (_, value) = seq!(skip(1), string)
         .parse(stream)?;
 
-    let expr = TypecastExpr::new(StringConst(value), Float4);
+    let expr = StringTypecastExpr::new(value, Float4);
     Ok(expr)
 }
 
-fn numeric_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+fn numeric_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
 
     /*
           NUMERIC ( type_modifiers )? SCONST
@@ -222,11 +222,11 @@ fn numeric_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         .parse(stream)
         .required()?;
 
-    let expr = TypecastExpr::new(StringConst(value), type_name);
+    let expr = StringTypecastExpr::new(value, type_name);
     Ok(expr)
 }
 
-fn float_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+fn float_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
 
     /*
         FLOAT ( type_modifiers )? SCONST
@@ -236,11 +236,11 @@ fn float_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         .parse(stream)
         .required()?;
 
-    let expr = TypecastExpr::new(StringConst(value), type_name);
+    let expr = StringTypecastExpr::new(value, type_name);
     Ok(expr)
 }
 
-fn bit_string_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+fn bit_string_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
 
     /*
         BIT ( VARYING )? ( '(' expr_list ')' )? SCONST
@@ -250,11 +250,11 @@ fn bit_string_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         .parse(stream)
         .required()?;
 
-    let expr = TypecastExpr::new(StringConst(value), type_name);
+    let expr = StringTypecastExpr::new(value, type_name);
     Ok(expr)
 }
 
-fn char_string_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+fn char_string_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
 
     /*
           VARCHAR ( precision )? SCONST
@@ -266,11 +266,11 @@ fn char_string_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> 
         .parse(stream)
         .required()?;
 
-    let expr = TypecastExpr::new(StringConst(value), type_name);
+    let expr = StringTypecastExpr::new(value, type_name);
     Ok(expr)
 }
 
-fn timestamp_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+fn timestamp_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
 
     /*
         TIMESTAMP ( precision )? ( with_timezone )? SCONST
@@ -280,11 +280,11 @@ fn timestamp_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         .parse(stream)
         .required()?;
 
-    let expr = TypecastExpr::new(StringConst(value), type_name);
+    let expr = StringTypecastExpr::new(value, type_name);
     Ok(expr)
 }
 
-fn time_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+fn time_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
 
     /*
         TIME ( precision )? ( with_timezone )? SCONST
@@ -294,11 +294,11 @@ fn time_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
         .parse(stream)
         .required()?;
 
-    let expr = TypecastExpr::new(StringConst(value), type_name);
+    let expr = StringTypecastExpr::new(value, type_name);
     Ok(expr)
 }
 
-fn interval_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+fn interval_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
 
     /*
           INTERVAL '(' ICONST ')' SCONST
@@ -323,7 +323,7 @@ fn interval_typecast(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
     ).parse(stream)?;
 
     let type_name = TypeName::Interval(interval);
-    let expr = TypecastExpr::new(StringConst(value), type_name);
+    let expr = StringTypecastExpr::new(value, type_name);
     Ok(expr)
 }
 
@@ -349,12 +349,7 @@ mod tests {
     #[test_case("b'0101'", BinaryStringConst("0101".into()))]
     #[test_case("x'19af'", HexStringConst("19af".into()))]
     #[test_case("'string literal'", StringConst("string literal".into()))]
-    #[test_case("double precision '1.23'",
-        TypecastExpr::new(
-            StringConst("1.23".into()),
-            Float8
-        ).into()
-    )]
+    #[test_case("double precision '1.23'", StringTypecastExpr::new("1.23", Float8).into())]
     fn test_expr_const(source: &str, expected: ExprNode) {
         test_parser!(source, expr_const, expected)
     }
@@ -380,10 +375,7 @@ mod tests {
     #[test_case("interval '1970-01' year to month", TypeName::Interval(YearToMonth), "1970-01")]
     fn test_const_typename(source: &str, expected_type: TypeName, value: &str) {
 
-        let expected = TypecastExpr::new(
-            StringConst(value.into()),
-            expected_type
-        );
+        let expected = StringTypecastExpr::new(value, expected_type);
 
         test_parser!(source, const_typename, expected)
     }
@@ -418,6 +410,7 @@ use pg_ast::ExprNode::HexStringConst;
 use pg_ast::ExprNode::NullConst;
 use pg_ast::ExprNode::StringConst;
 use pg_ast::IntervalRange::Full;
+use pg_ast::StringTypecastExpr;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Bool;
 use pg_ast::TypeName::Float4;
@@ -426,7 +419,6 @@ use pg_ast::TypeName::Int2;
 use pg_ast::TypeName::Int4;
 use pg_ast::TypeName::Int8;
 use pg_ast::TypeName::Json;
-use pg_ast::TypecastExpr;
 use pg_lexer::BitStringKind;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Bigint;

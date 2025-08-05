@@ -1,4 +1,4 @@
-pub(super) fn time(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn time(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
 
     /*
           CURRENT_DATE
@@ -30,7 +30,6 @@ pub(super) fn time(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use pg_ast::ExprNode;
     use test_case::test_case;
 
     #[test_case("current_date" => Ok(CurrentDate))]
@@ -42,7 +41,7 @@ mod tests {
     #[test_case("localtime(6)" => Ok(LocalTime { precision: Some(6) }))]
     #[test_case("localtimestamp" => Ok(LocalTimestamp { precision: None }))]
     #[test_case("localtimestamp(4)" => Ok(LocalTimestamp { precision: Some(4) }))]
-    fn test_time(source: &str) -> scan::Result<ExprNode> {
+    fn test_time(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, time)
     }
 }
@@ -53,10 +52,10 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::precision::precision;
 use crate::scan;
 use crate::stream::TokenStream;
-use pg_ast::ExprNode;
-use pg_ast::ExprNode::CurrentDate;
-use pg_ast::ExprNode::CurrentTime;
-use pg_ast::ExprNode::CurrentTimestamp;
-use pg_ast::ExprNode::LocalTime;
-use pg_ast::ExprNode::LocalTimestamp;
+use pg_ast::SqlFunction;
+use pg_ast::SqlFunction::CurrentDate;
+use pg_ast::SqlFunction::CurrentTime;
+use pg_ast::SqlFunction::CurrentTimestamp;
+use pg_ast::SqlFunction::LocalTime;
+use pg_ast::SqlFunction::LocalTimestamp;
 use pg_lexer::Keyword as Kw;

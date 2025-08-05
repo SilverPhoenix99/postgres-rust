@@ -1,4 +1,4 @@
-pub(super) fn coalesce_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn coalesce_expr(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
 
     /*
         COALESCE '(' expr_list ')'
@@ -16,12 +16,9 @@ pub(super) fn coalesce_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> 
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use test_case::test_case;
     #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::StringConst,
-        scan::Error::NoMatch,
-    };
+    use pg_ast::ExprNode::StringConst;
+    use test_case::test_case;
 
     #[test_case("coalesce('foo', 'bar')" => Ok(
         Coalesce(vec![
@@ -29,7 +26,7 @@ mod tests {
             StringConst("bar".into())
         ])
     ))]
-    fn test_coalesce_expr(source: &str) -> scan::Result<ExprNode> {
+    fn test_coalesce_expr(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, coalesce_expr)
     }
 }
@@ -41,5 +38,5 @@ use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
-use pg_ast::ExprNode;
-use pg_ast::ExprNode::Coalesce;
+use pg_ast::SqlFunction;
+use pg_ast::SqlFunction::Coalesce;

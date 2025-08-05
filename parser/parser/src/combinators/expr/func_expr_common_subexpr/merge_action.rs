@@ -1,4 +1,4 @@
-pub(super) fn merge_action(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn merge_action(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
 
     /*
         MERGE_ACTION '(' ')'
@@ -17,7 +17,7 @@ mod tests {
     use test_case::test_case;
 
     #[test_case("merge_action()" => Ok(MergeAction))]
-    fn test_merge_action(source: &str) -> scan::Result<ExprNode> {
+    fn test_merge_action(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, merge_action)
     }
 }
@@ -27,6 +27,6 @@ use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
-use pg_ast::ExprNode;
-use pg_ast::ExprNode::MergeAction;
+use pg_ast::SqlFunction;
+use pg_ast::SqlFunction::MergeAction;
 use pg_lexer::OperatorKind::CloseParenthesis;

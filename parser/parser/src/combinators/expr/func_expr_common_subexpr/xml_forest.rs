@@ -1,4 +1,4 @@
-pub(super) fn xml_forest(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn xml_forest(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
 
     /*
         XMLFOREST '(' xml_attribute_list ')'
@@ -29,7 +29,7 @@ mod tests {
             NamedValue::new(Some("baz".into()), StringConst("bar".into())),
         ])
     ))]
-    fn test_xml_forest(source: &str) -> scan::Result<ExprNode> {
+    fn test_xml_forest(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, xml_forest)
     }
 }
@@ -41,5 +41,5 @@ use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
-use pg_ast::ExprNode;
-use pg_ast::ExprNode::XmlForest;
+use pg_ast::SqlFunction;
+use pg_ast::SqlFunction::XmlForest;

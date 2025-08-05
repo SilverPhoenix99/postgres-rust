@@ -1,4 +1,4 @@
-pub(super) fn treat_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn treat_expr(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
 
     /*
         TREAT '(' a_expr AS Typename ')'
@@ -18,7 +18,7 @@ pub(super) fn treat_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     ).parse(stream)?;
 
     let cast = TypecastExpr::new(expr, typename);
-    let expr = Treat(Box::new(cast));
+    let expr = Treat(cast);
     Ok(expr)
 }
 
@@ -34,14 +34,14 @@ mod tests {
     };
 
     #[test_case("treat(123 as int)" => Ok(
-        Treat(Box::new(
+        Treat(
             TypecastExpr::new(
                 IntegerConst(123),
                 Int4
             )
-        ))
+        )
     ))]
-    fn test_treat_expr(source: &str) -> scan::Result<ExprNode> {
+    fn test_treat_expr(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, treat_expr)
     }
 }
@@ -54,7 +54,7 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
 use crate::scan;
 use crate::stream::TokenStream;
-use pg_ast::ExprNode;
-use pg_ast::ExprNode::Treat;
+use pg_ast::SqlFunction;
+use pg_ast::SqlFunction::Treat;
 use pg_ast::TypecastExpr;
 use pg_lexer::Keyword::As;

@@ -1,4 +1,4 @@
-pub(super) fn least_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn least_expr(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
 
     /*
         LEAST '(' expr_list ')'
@@ -29,7 +29,7 @@ mod tests {
             IntegerConst(2)
         ])
     ))]
-    fn test_greatest_expr(source: &str) -> scan::Result<ExprNode> {
+    fn test_greatest_expr(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, least_expr)
     }
 }
@@ -41,5 +41,5 @@ use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
-use pg_ast::ExprNode;
-use pg_ast::ExprNode::Least;
+use pg_ast::SqlFunction;
+use pg_ast::SqlFunction::Least;

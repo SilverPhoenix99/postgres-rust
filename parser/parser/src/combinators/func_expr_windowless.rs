@@ -1,4 +1,4 @@
-pub(super) fn func_expr_windowless(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn func_expr_windowless(stream: &mut TokenStream) -> scan::Result<FuncExprWindowless> {
 
     /*
           func_expr_common_subexpr
@@ -7,7 +7,7 @@ pub(super) fn func_expr_windowless(stream: &mut TokenStream) -> scan::Result<Exp
     */
 
     alt!(
-        func_expr_common_subexpr,
+        func_expr_common_subexpr.map(From::from),
         json_aggregate_func.map(From::from),
         func_application.map(From::from),
     ).parse(stream)
@@ -28,7 +28,7 @@ mod tests {
         ]
         => matches Ok(_)
     )]
-    fn test_func_expr_windowless(source: &str) -> scan::Result<ExprNode> {
+    fn test_func_expr_windowless(source: &str) -> scan::Result<FuncExprWindowless> {
         test_parser!(source, func_expr_windowless)
     }
 }
@@ -40,4 +40,4 @@ use crate::combinators::func_application;
 use crate::combinators::json_aggregate_func;
 use crate::scan;
 use crate::stream::TokenStream;
-use pg_ast::ExprNode;
+use pg_ast::FuncExprWindowless;

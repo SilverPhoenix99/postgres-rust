@@ -114,7 +114,7 @@ fn for_from_args(stream: &mut TokenStream) -> scan::Result<(ExprNode, Option<Exp
             */
 
             let from = IntegerConst(1);
-            let r#for = TypecastExpr::new(r#for, TypeName::Int4).into();
+            let r#for = Typecast(TypecastExpr::new(r#for, TypeName::Int4)).into();
             (from, Some(r#for))
         },
     };
@@ -188,10 +188,10 @@ mod tests {
             StringConst("foo".into()),
             IntegerConst(1),
             Some(
-                TypecastExpr::new(
+                Typecast(TypecastExpr::new(
                     IntegerConst(2),
                     TypeName::Int4
-                ).into()
+                )).into()
             )
         )
     ))]
@@ -215,6 +215,7 @@ use pg_ast::ExprNode;
 use pg_ast::ExprNode::IntegerConst;
 use pg_ast::ExprNode::NullConst;
 use pg_ast::NamedValue;
+use pg_ast::SqlFunction::Typecast;
 use pg_ast::SubstringFunc;
 use pg_ast::TypeName;
 use pg_ast::TypecastExpr;

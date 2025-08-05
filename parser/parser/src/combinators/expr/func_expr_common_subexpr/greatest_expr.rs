@@ -1,4 +1,4 @@
-pub(super) fn greatest_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn greatest_expr(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
 
     /*
         GREATEST '(' expr_list ')'
@@ -16,9 +16,9 @@ pub(super) fn greatest_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> 
 mod tests {
     use super::*;
     use crate::tests::test_parser;
-    use test_case::test_case;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
+    use test_case::test_case;
 
     #[test_case("greatest(1, 2)" => Ok(
         Greatest(vec![
@@ -26,7 +26,7 @@ mod tests {
             IntegerConst(2)
         ])
     ))]
-    fn test_greatest_expr(source: &str) -> scan::Result<ExprNode> {
+    fn test_greatest_expr(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, greatest_expr)
     }
 }
@@ -38,5 +38,5 @@ use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
-use pg_ast::ExprNode;
-use pg_ast::ExprNode::Greatest;
+use pg_ast::SqlFunction;
+use pg_ast::SqlFunction::Greatest;

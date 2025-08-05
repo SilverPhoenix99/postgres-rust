@@ -34,35 +34,21 @@ pg_basics::reexport! {
     xml_serialize,
 }
 
-pub(in crate::combinators) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(in crate::combinators) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
 
     /*
-          CAST '(' a_expr AS Typename ')'
+        | CAST '(' a_expr AS Typename ')'
         | COALESCE '(' expr_list ')'
         | COLLATION FOR '(' a_expr ')'
         | CURRENT_CATALOG
-        | CURRENT_SCHEMA
-        | EXTRACT '(' extract_list ')'
-        | GREATEST '(' expr_list ')'
-        | LEAST '(' expr_list ')'
-        | MERGE_ACTION '(' ')'
-        | NORMALIZE '(' a_expr ( ',' unicode_normal_form )? ')'
-        | NULLIF '(' a_expr ',' a_expr ')'
-        | OVERLAY '(' ( overlay_args )? ')'
-        | POSITION '(' b_expr IN b_expr ')'
-        | SUBSTRING '(' ( substring_args )? ')'
-        | TREAT '(' a_expr AS Typename ')'
-        | TRIM '(' trim_args ')'
         | CURRENT_DATE
+        | CURRENT_ROLE
+        | CURRENT_SCHEMA
         | CURRENT_TIME ( '(' ICONST ')' )?
         | CURRENT_TIMESTAMP ( '(' ICONST ')' )?
-        | LOCALTIME ( '(' ICONST ')' )?
-        | LOCALTIMESTAMP ( '(' ICONST ')' )?
-        | CURRENT_ROLE
         | CURRENT_USER
-        | SESSION_USER
-        | SYSTEM_USER
-        | USER
+        | EXTRACT '(' extract_list ')'
+        | GREATEST '(' expr_list ')'
         | JSON '(' ... ')'
         | JSON_EXISTS '(' ... ')'
         | JSON_OBJECT '(' ( json_object_args )? ')'
@@ -70,6 +56,20 @@ pub(in crate::combinators) fn func_expr_common_subexpr(stream: &mut TokenStream)
         | JSON_SCALAR '(' a_expr ')'
         | JSON_SERIALIZE '(' ... ')'
         | JSON_VALUE '(' ... ')'
+        | LEAST '(' expr_list ')'
+        | LOCALTIME ( '(' ICONST ')' )?
+        | LOCALTIMESTAMP ( '(' ICONST ')' )?
+        | MERGE_ACTION '(' ')'
+        | NORMALIZE '(' a_expr ( ',' unicode_normal_form )? ')'
+        | NULLIF '(' a_expr ',' a_expr ')'
+        | OVERLAY '(' ( overlay_args )? ')'
+        | POSITION '(' b_expr IN b_expr ')'
+        | SESSION_USER
+        | SUBSTRING '(' ( substring_args )? ')'
+        | SYSTEM_USER
+        | TREAT '(' a_expr AS Typename ')'
+        | TRIM '(' trim_args ')'
+        | USER
         | XMLCONCAT '(' expr_list ')'
         | XMLELEMENT '(' ... ')'
         | XMLEXISTS '(' c_expr xmlexists_argument ')'
@@ -80,12 +80,19 @@ pub(in crate::combinators) fn func_expr_common_subexpr(stream: &mut TokenStream)
         | XMLSERIALIZE '(' ... ')'
     */
 
-    // Prevents conflicts with `func_application` and `prefixed_expr_const`:
+    // Peeking 2 tokens to prevent conflicts with `func_application` and `prefixed_expr_const`:
     match stream.peek2() {
         Ok((K(Coalesce), Op(OpenParenthesis))) => return coalesce_expr(stream),
         Ok((K(Collation), K(For))) => return collation_for(stream),
         Ok((K(Extract), Op(OpenParenthesis))) => return extract(stream).map(From::from),
         Ok((K(Greatest), Op(OpenParenthesis))) => return greatest_expr(stream),
+        Ok((K(Json), Op(OpenParenthesis))) => return json(stream).map(From::from),
+        Ok((K(JsonExists), Op(OpenParenthesis))) => return json_exists_expr(stream).map(From::from),
+        Ok((K(JsonObject), Op(OpenParenthesis))) => return json_object(stream).map(From::from),
+        Ok((K(JsonQuery), Op(OpenParenthesis))) => return json_query_expr(stream).map(From::from),
+        Ok((K(JsonScalar), Op(OpenParenthesis))) => return json_scalar(stream),
+        Ok((K(JsonSerialize), Op(OpenParenthesis))) => return json_serialize_expr(stream).map(From::from),
+        Ok((K(JsonValue), Op(OpenParenthesis))) => return json_value_func(stream).map(From::from),
         Ok((K(Least), Op(OpenParenthesis))) => return least_expr(stream),
         Ok((K(MergeAction), Op(OpenParenthesis))) => return merge_action(stream),
         Ok((K(Normalize), Op(OpenParenthesis))) => return normalize(stream).map(From::from),
@@ -95,17 +102,6 @@ pub(in crate::combinators) fn func_expr_common_subexpr(stream: &mut TokenStream)
         Ok((K(Substring), Op(OpenParenthesis))) => return substring(stream).map(From::from),
         Ok((K(Treat), Op(OpenParenthesis))) => return treat_expr(stream),
         Ok((K(Trim), Op(OpenParenthesis))) => return trim(stream).map(From::from),
-
-        // JSON
-        Ok((K(Json), Op(OpenParenthesis))) => return json(stream).map(From::from),
-        Ok((K(JsonExists), Op(OpenParenthesis))) => return json_exists_expr(stream).map(From::from),
-        Ok((K(JsonObject), Op(OpenParenthesis))) => return json_object(stream).map(From::from),
-        Ok((K(JsonQuery), Op(OpenParenthesis))) => return json_query_expr(stream).map(From::from),
-        Ok((K(JsonScalar), Op(OpenParenthesis))) => return json_scalar(stream),
-        Ok((K(JsonSerialize), Op(OpenParenthesis))) => return json_serialize_expr(stream).map(From::from),
-        Ok((K(JsonValue), Op(OpenParenthesis))) => return json_value_func(stream).map(From::from),
-
-        // XML
         Ok((K(Xmlconcat), Op(OpenParenthesis))) => return xml_concat(stream),
         Ok((K(Xmlelement), Op(OpenParenthesis))) => return xml_element(stream).map(From::from),
         Ok((K(Xmlexists), Op(OpenParenthesis))) => return xml_exists(stream).map(From::from),
@@ -114,7 +110,6 @@ pub(in crate::combinators) fn func_expr_common_subexpr(stream: &mut TokenStream)
         Ok((K(Xmlpi), Op(OpenParenthesis))) => return xml_processing_instruction(stream).map(From::from),
         Ok((K(Xmlroot), Op(OpenParenthesis))) => return xml_root(stream).map(From::from),
         Ok((K(Xmlserialize), Op(OpenParenthesis))) => return xml_serialize(stream).map(From::from),
-
         _ => {}
     };
 
@@ -137,7 +132,7 @@ mod tests {
     use test_case::test_matrix;
 
     #[test_case("current_catalog" => Ok(CurrentCatalog))]
-    fn test_func_expr_common_subexpr(source: &str) -> scan::Result<ExprNode> {
+    fn test_func_expr_common_subexpr(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, func_expr_common_subexpr)
     }
 
@@ -179,7 +174,7 @@ mod tests {
         ]
         => matches Ok(_)
     )]
-    fn test_func_expr_common_subexpr_ok(source: &str) -> scan::Result<ExprNode> {
+    fn test_func_expr_common_subexpr_ok(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, func_expr_common_subexpr)
     }
 
@@ -245,7 +240,7 @@ mod tests {
         ]
         => matches Err(NoMatch(_))
     )]
-    fn test_func_expr_common_subexpr_no_match(source: &str) -> scan::Result<ExprNode> {
+    fn test_func_expr_common_subexpr_no_match(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, func_expr_common_subexpr)
     }
 }
@@ -256,8 +251,8 @@ use crate::scan;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Keyword as K;
 use crate::stream::TokenValue::Operator as Op;
-use pg_ast::ExprNode;
-use pg_ast::ExprNode::CurrentCatalog;
+use pg_ast::SqlFunction;
+use pg_ast::SqlFunction::CurrentCatalog;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Coalesce;
 use pg_lexer::Keyword::Collation;

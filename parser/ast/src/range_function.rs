@@ -1,18 +1,18 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RangeFunction {
-    func_call: ExprNode,
+    func_call: FuncExprWindowless,
     column_definitions: Option<Vec<SimpleColumnDefinition>>
 }
 
 impl RangeFunction {
-    pub fn new(func_call: ExprNode) -> Self {
+    pub fn new(func_call: FuncExprWindowless) -> Self {
         Self {
             func_call,
             column_definitions: None,
         }
     }
 
-    pub fn func_call(&self) -> &ExprNode {
+    pub fn func_call(&self) -> &FuncExprWindowless {
         &self.func_call
     }
 
@@ -34,5 +34,5 @@ impl RangeFunction {
     }
 }
 
-use crate::ExprNode;
+use crate::FuncExprWindowless;
 use crate::SimpleColumnDefinition;

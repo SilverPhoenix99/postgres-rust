@@ -1,4 +1,4 @@
-pub(super) fn role(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn role(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
 
     /*
           CURRENT_ROLE
@@ -28,7 +28,7 @@ mod tests {
     #[test_case("SESSION_USER" => Ok(SessionUser))]
     #[test_case("system_user" => Ok(SystemUser))]
     #[test_case("uSeR" => Ok(User))]
-    fn test_role(source: &str) -> scan::Result<ExprNode> {
+    fn test_role(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, role)
     }
 }
@@ -37,10 +37,10 @@ use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
-use pg_ast::ExprNode;
-use pg_ast::ExprNode::CurrentRole;
-use pg_ast::ExprNode::CurrentUser;
-use pg_ast::ExprNode::SessionUser;
-use pg_ast::ExprNode::SystemUser;
-use pg_ast::ExprNode::User;
+use pg_ast::SqlFunction;
+use pg_ast::SqlFunction::CurrentRole;
+use pg_ast::SqlFunction::CurrentUser;
+use pg_ast::SqlFunction::SessionUser;
+use pg_ast::SqlFunction::SystemUser;
+use pg_ast::SqlFunction::User;
 use pg_lexer::Keyword as Kw;

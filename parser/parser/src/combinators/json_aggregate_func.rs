@@ -7,15 +7,11 @@ pub(super) enum JsonAggFunc {
 impl_from!(JsonObjectAgg for JsonAggFunc::Object);
 impl_from!(JsonArrayAgg for JsonAggFunc::Array);
 
-impl From<JsonAggFunc> for ExprNode {
+impl From<JsonAggFunc> for FuncExprWindowless {
     fn from(value: JsonAggFunc) -> Self {
         match value {
-            JsonAggFunc::Array(func) => {
-                ExprNode::JsonArrayAgg(func.into())
-            }
-            JsonAggFunc::Object(func) => {
-                ExprNode::JsonObjectAgg(func.into())
-            }
+            JsonAggFunc::Array(func) => FuncExprWindowless::SqlFunction(func.into()),
+            JsonAggFunc::Object(func) => FuncExprWindowless::SqlFunction(func.into()),
         }
     }
 }
@@ -30,7 +26,7 @@ pub(super) fn json_aggregate_func(stream: &mut TokenStream) -> scan::Result<Json
     */
 
     // Both 1st keywords are ColumnName, and they conflict with `func_application` and `prefixed_expr`,
-    // so this check is needed.
+    // so peeking is needed.
 
     match stream.peek2()? {
         (K(JsonObjectagg), Op(OpenParenthesis)) => json_objectagg(stream).map(From::from),
@@ -181,7 +177,7 @@ use crate::combinators::sort_clause;
 use crate::no_match;
 use crate::scan;
 use crate::stream::TokenStream;
-use pg_ast::ExprNode;
+use pg_ast::FuncExprWindowless;
 use pg_ast::JsonArrayAgg;
 use pg_ast::JsonObjectAgg;
 use pg_basics::impl_from;

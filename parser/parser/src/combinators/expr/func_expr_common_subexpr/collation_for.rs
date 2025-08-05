@@ -1,4 +1,4 @@
-pub(super) fn collation_for(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn collation_for(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
 
     /*
         COLLATION FOR '(' a_expr ')'
@@ -9,8 +9,7 @@ pub(super) fn collation_for(stream: &mut TokenStream) -> scan::Result<ExprNode> 
     let (_, expr) = seq!(skip(2), paren!(a_expr))
         .parse(stream)?;
 
-    let expr = Box::new(expr);
-    Ok(CollationForFunc(expr))
+    Ok(CollationFor(expr))
 }
 
 #[cfg(test)]
@@ -22,11 +21,11 @@ mod tests {
     use test_case::test_case;
 
     #[test_case("collation for ('foo')" => Ok(
-        CollationForFunc(
-            Box::new(StringConst("foo".into()))
+        CollationFor(
+            StringConst("foo".into())
         )
     ))]
-    fn test_collation_for(source: &str) -> scan::Result<ExprNode> {
+    fn test_collation_for(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, collation_for)
     }
 }
@@ -38,5 +37,5 @@ use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::scan;
 use crate::stream::TokenStream;
-use pg_ast::ExprNode;
-use pg_ast::ExprNode::CollationForFunc;
+use pg_ast::SqlFunction;
+use pg_ast::SqlFunction::CollationFor;
