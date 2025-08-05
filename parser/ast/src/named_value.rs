@@ -1,4 +1,5 @@
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Into)]
+#[into((Option<Str>, ExprNode))]
 pub struct NamedValue {
     name: Option<Str>,
     value: ExprNode,
@@ -25,11 +26,6 @@ impl NamedValue {
     }
 }
 
-impl From<NamedValue> for (Option<Str>, ExprNode) {
-    fn from(value: NamedValue) -> Self {
-        (value.name, value.value)
-    }
-}
-
 use crate::ExprNode;
+use derive_more::Into;
 use pg_basics::Str;

@@ -1,6 +1,6 @@
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, From)]
 pub enum UnsignedNumber {
-    IntegerConst(NonNegative),
+    #[from] IntegerConst(NonNegative),
     NumericConst { value: Box<str>, radix: NumberRadix },
 }
 
@@ -10,8 +10,6 @@ impl Default for UnsignedNumber {
     }
 }
 
-impl_from!(NonNegative for UnsignedNumber::IntegerConst);
-
-use pg_basics::impl_from;
+use derive_more::From;
 use pg_basics::NonNegative;
 use pg_basics::NumberRadix;

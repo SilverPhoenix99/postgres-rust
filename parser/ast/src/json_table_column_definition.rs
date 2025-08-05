@@ -1,14 +1,11 @@
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, From)]
 pub enum JsonTableColumnDefinition {
+    #[from(ignore)]
     ForOrdinality { column_name: Str },
     Regular(JsonTableRegularColumn),
     Exists(JsonTableExistsColumn),
     Nested(JsonTableNestedColumn),
 }
-
-impl_from!(JsonTableRegularColumn for JsonTableColumnDefinition::Regular);
-impl_from!(JsonTableExistsColumn for JsonTableColumnDefinition::Exists);
-impl_from!(JsonTableNestedColumn for JsonTableColumnDefinition::Nested);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct JsonTableRegularColumn {
@@ -196,5 +193,5 @@ use crate::JsonQuotes;
 use crate::JsonTablePathSpec;
 use crate::JsonWrapperBehavior;
 use crate::Type;
-use pg_basics::impl_from;
+use derive_more::From;
 use pg_basics::Str;

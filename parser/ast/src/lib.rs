@@ -167,7 +167,7 @@ pub enum PrivilegeDefaultsTarget {
     Types,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, From)]
 pub enum ExprNode {
     /* Constants */
     NullConst,
@@ -179,6 +179,7 @@ pub enum ExprNode {
     BooleanConst(bool),
 
     DefaultExpr,
+    #[from(CaseExpr)]
     CaseExpr(Box<CaseExpr>),
     ParamRef { index: i32 },
     Row(Option<Vec<ExprNode>>),
@@ -186,13 +187,20 @@ pub enum ExprNode {
     /// String constant type cast.
     ///
     /// (e.g.: `int '1'`)
+    #[from(StringTypecastExpr)]
     StringTypecast(Box<StringTypecastExpr>),
 
+    #[from(BinaryExpr)]
     BinaryExpr(Box<BinaryExpr>),
+    #[from(UnaryExpr)]
     UnaryExpr(Box<UnaryExpr>),
+    #[from]
     BoolExpr(BoolExpr),
+    #[from(FuncCallExpr)]
     FuncCallExpr(Box<FuncCallExpr>),
+    #[from(JsonArrayAggExpr)]
     JsonArrayAggExpr(Box<JsonArrayAggExpr>),
+    #[from(JsonObjectAggExpr)]
     JsonObjectAggExpr(Box<JsonObjectAggExpr>),
 
     /// `IS DISTINCT FROM`
@@ -201,27 +209,18 @@ pub enum ExprNode {
     NotDistinct(BinaryOperands),
 
     // TODO: Are these 2 the same?
+    #[from(IndirectionExpr)]
     Indirection(Box<IndirectionExpr>),
+    #[from]
     ColumnRef(ColumnRef),
 
     /* Function calls */
     GroupingFunc(Vec<ExprNode>),
+    #[from(FuncCall)]
     FuncCall(Box<FuncCall>),
+    #[from(SqlFunction)]
     SqlFunction(Box<SqlFunction>),
 }
-
-impl_from!(BoolExpr for ExprNode);
-impl_from!(ColumnRef for ExprNode);
-impl_from!(box BinaryExpr for ExprNode);
-impl_from!(box CaseExpr for ExprNode);
-impl_from!(box FuncCall for ExprNode);
-impl_from!(box FuncCallExpr for ExprNode);
-impl_from!(box IndirectionExpr for ExprNode::Indirection);
-impl_from!(box JsonArrayAggExpr for ExprNode);
-impl_from!(box JsonObjectAggExpr for ExprNode);
-impl_from!(box SqlFunction for ExprNode);
-impl_from!(box StringTypecastExpr for ExprNode::StringTypecast);
-impl_from!(box UnaryExpr for ExprNode);
 
 impl From<UnsignedNumber> for ExprNode {
     fn from(value: UnsignedNumber) -> Self {
@@ -233,6 +232,6 @@ impl From<UnsignedNumber> for ExprNode {
     }
 }
 
-use pg_basics::impl_from;
+use derive_more::From;
 use pg_basics::NumberRadix;
 use pg_basics::Str;

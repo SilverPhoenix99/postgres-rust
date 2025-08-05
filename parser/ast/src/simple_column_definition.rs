@@ -1,4 +1,5 @@
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Into)]
+#[into((Str, Type, Option<QualifiedName>))]
 pub struct SimpleColumnDefinition {
     name: Str,
     type_name: Type,
@@ -45,12 +46,7 @@ impl SimpleColumnDefinition {
     }
 }
 
-impl From<SimpleColumnDefinition> for (Str, Type, Option<QualifiedName>) {
-    fn from(value: SimpleColumnDefinition) -> Self {
-        (value.name, value.type_name, value.collation)
-    }
-}
-
 use crate::Type;
+use derive_more::Into;
 use pg_basics::QualifiedName;
 use pg_basics::Str;

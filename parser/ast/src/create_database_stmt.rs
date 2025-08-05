@@ -71,30 +71,15 @@ pub enum CreatedbOptionKind {
     Unknown(Box<str>),
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, From)]
 pub enum CreatedbOptionValue {
     Default,
+    #[from]
     Boolean(bool),
+    #[from(SignedNumber, i32)]
     Number(SignedNumber),
+    #[from(Str, String, &'static str, Box<str>)]
     String(Str),
-}
-
-impl_from!(SignedNumber for CreatedbOptionValue::Number);
-impl_from!(Str for CreatedbOptionValue::String);
-impl_from!(String for CreatedbOptionValue::String);
-impl_from!(bool for CreatedbOptionValue::Boolean);
-impl_from!(i32 for CreatedbOptionValue::Number);
-
-impl From<&'static str> for CreatedbOptionValue {
-    fn from(value: &'static str) -> Self {
-        Self::String(value.into())
-    }
-}
-
-impl From<Box<str>> for CreatedbOptionValue {
-    fn from(value: Box<str>) -> Self {
-        Self::String(value.into())
-    }
 }
 
 impl From<VarValue> for CreatedbOptionValue {
@@ -109,5 +94,5 @@ impl From<VarValue> for CreatedbOptionValue {
 
 use crate::SignedNumber;
 use crate::VarValue;
-use pg_basics::impl_from;
+use derive_more::From;
 use pg_basics::Str;

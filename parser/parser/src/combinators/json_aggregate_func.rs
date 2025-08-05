@@ -1,11 +1,8 @@
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, From)]
 pub(super) enum JsonAggFunc {
     Array(JsonArrayAgg),
     Object(JsonObjectAgg),
 }
-
-impl_from!(JsonObjectAgg for JsonAggFunc::Object);
-impl_from!(JsonArrayAgg for JsonAggFunc::Array);
 
 impl From<JsonAggFunc> for FuncExprWindowless {
     fn from(value: JsonAggFunc) -> Self {
@@ -177,10 +174,10 @@ use crate::combinators::sort_clause;
 use crate::no_match;
 use crate::scan;
 use crate::stream::TokenStream;
+use derive_more::From;
 use pg_ast::FuncExprWindowless;
 use pg_ast::JsonArrayAgg;
 use pg_ast::JsonObjectAgg;
-use pg_basics::impl_from;
 use pg_lexer::Keyword::JsonArrayagg;
 use pg_lexer::Keyword::JsonObjectagg;
 use pg_lexer::OperatorKind::OpenParenthesis;

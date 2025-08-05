@@ -74,6 +74,7 @@ enum PartialColumnDefinition {
     },
 }
 
+#[derive(From)]
 enum ColumnDefinitionTail {
     Exists(ExistsColumnTail),
     Regular(RegularColumnTail),
@@ -91,9 +92,6 @@ struct RegularColumnTail {
     quotes: Option<JsonQuotes>,
     behavior: Option<JsonBehaviorClause>,
 }
-
-impl_from!(ExistsColumnTail for ColumnDefinitionTail::Exists);
-impl_from!(RegularColumnTail for ColumnDefinitionTail::Regular);
 
 fn json_table_column_definition(stream: &mut TokenStream) -> scan::Result<JsonTableColumnDefinition> {
 
@@ -417,6 +415,7 @@ use crate::combinators::json_wrapper_behavior;
 use crate::combinators::typename;
 use crate::scan;
 use crate::stream::TokenStream;
+use derive_more::From;
 use pg_ast::ExprNode::StringConst;
 use pg_ast::JsonBehavior;
 use pg_ast::JsonBehaviorClause;
@@ -431,7 +430,6 @@ use pg_ast::JsonTablePathSpec;
 use pg_ast::JsonTableRegularColumn;
 use pg_ast::JsonWrapperBehavior;
 use pg_ast::Type;
-use pg_basics::impl_from;
 use pg_elog::parser::Error::NonStringJsonTablePathSpec;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Columns;

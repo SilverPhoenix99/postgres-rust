@@ -70,10 +70,10 @@ impl XmlTableColumn {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, From)]
 pub enum XmlTableColumnKind {
     ForOrdinality,
-    ColumnDefinition(XmlTableColumnDefinition),
+    #[from] ColumnDefinition(XmlTableColumnDefinition),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -153,12 +153,8 @@ where
     }
 }
 
-impl From<XmlTableColumnDefinition> for XmlTableColumnKind {
-    fn from(value: XmlTableColumnDefinition) -> Self {
-        Self::ColumnDefinition(value)
-    }
-}
-
-use pg_basics::Str;
-use crate::{ExprNode, NamedValue};
+use crate::ExprNode;
+use crate::NamedValue;
 use crate::Type;
+use derive_more::From;
+use pg_basics::Str;

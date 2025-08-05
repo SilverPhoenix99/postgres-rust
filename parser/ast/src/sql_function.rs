@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, From)]
 pub enum SqlFunction {
 
     Coalesce(Vec<ExprNode>),
@@ -14,14 +14,14 @@ pub enum SqlFunction {
     /// SQL function-like format, or double-colon format
     ///
     /// (e.g.`CAST(1 to text)` or `1::text`)
-    Typecast(TypecastExpr),
+    #[from] Typecast(TypecastExpr),
 
     // String functions
-    Normalize(NormalizeFunc),
-    Overlay(OverlayFunc),
-    Position(PositionFunc),
-    Substring(SubstringFunc),
-    Trim(TrimFunc),
+    #[from] Normalize(NormalizeFunc),
+    #[from] Overlay(OverlayFunc),
+    #[from] Position(PositionFunc),
+    #[from] Substring(SubstringFunc),
+    #[from] Trim(TrimFunc),
 
     // Time functions
     CurrentDate,
@@ -29,7 +29,7 @@ pub enum SqlFunction {
     CurrentTimestamp { precision: Option<i32> },
     LocalTime { precision: Option<i32> },
     LocalTimestamp { precision: Option<i32> },
-    Extract(ExtractFunc),
+    #[from] Extract(ExtractFunc),
 
     // Role functions
     CurrentRole,
@@ -39,54 +39,33 @@ pub enum SqlFunction {
     User,
 
     // JSON functions
-    Json(JsonFunc),
-    JsonArrayAgg(JsonArrayAgg),
-    JsonExists(JsonExistsExpr),
-    JsonObject(JsonObjectExpr),
-    JsonObjectAgg(JsonObjectAgg),
-    JsonQuery(JsonQueryExpr),
-    JsonScalar(ExprNode),
-    JsonSerialize(JsonSerializeExpr),
-    JsonValue(JsonValueFunc),
+    #[from] Json(JsonFunc),
+    #[from] JsonArrayAgg(JsonArrayAgg),
+    #[from] JsonExists(JsonExistsExpr),
+    #[from] JsonObject(JsonObjectExpr),
+    #[from] JsonObjectAgg(JsonObjectAgg),
+    #[from] JsonQuery(JsonQueryExpr),
+    #[from] JsonScalar(ExprNode),
+    #[from] JsonSerialize(JsonSerializeExpr),
+    #[from] JsonValue(JsonValueFunc),
 
     // XML functions
     XmlConcat(Vec<ExprNode>),
-    XmlElement(XmlElement),
-    XmlExists(XmlExists),
+    #[from] XmlElement(XmlElement),
+    #[from] XmlExists(XmlExists),
     XmlForest(Vec<NamedValue>),
-    XmlParse(XmlParse),
-    XmlProcessingInstruction(XmlProcessingInstruction),
-    XmlRoot(XmlRoot),
-    XmlSerialize(XmlSerialize),
+    #[from] XmlParse(XmlParse),
+    #[from] XmlProcessingInstruction(XmlProcessingInstruction),
+    #[from] XmlRoot(XmlRoot),
+    #[from] XmlSerialize(XmlSerialize),
 }
 
-impl_from!(ExtractFunc for SqlFunction::Extract);
-impl_from!(JsonArrayAgg for SqlFunction);
-impl_from!(JsonExistsExpr for SqlFunction::JsonExists);
-impl_from!(JsonFunc for SqlFunction::Json);
-impl_from!(JsonObjectAgg for SqlFunction);
-impl_from!(JsonObjectExpr for SqlFunction::JsonObject);
-impl_from!(JsonQueryExpr for SqlFunction::JsonQuery);
-impl_from!(JsonSerializeExpr for SqlFunction::JsonSerialize);
-impl_from!(JsonValueFunc for SqlFunction::JsonValue);
-impl_from!(NormalizeFunc for SqlFunction::Normalize);
-impl_from!(OverlayFunc for SqlFunction::Overlay);
-impl_from!(PositionFunc for SqlFunction::Position);
-impl_from!(SubstringFunc for SqlFunction::Substring);
-impl_from!(TrimFunc for SqlFunction::Trim);
-impl_from!(TypecastExpr for SqlFunction::Typecast);
-impl_from!(XmlElement for SqlFunction);
-impl_from!(XmlExists for SqlFunction);
-impl_from!(XmlParse for SqlFunction);
-impl_from!(XmlProcessingInstruction for SqlFunction);
-impl_from!(XmlRoot for SqlFunction);
-impl_from!(XmlSerialize for SqlFunction);
-
-use pg_basics::impl_from;
-use crate::{ExprNode, JsonArrayAgg, JsonObjectAgg};
+use crate::ExprNode;
 use crate::ExtractFunc;
+use crate::JsonArrayAgg;
 use crate::JsonExistsExpr;
 use crate::JsonFunc;
+use crate::JsonObjectAgg;
 use crate::JsonObjectExpr;
 use crate::JsonQueryExpr;
 use crate::JsonSerializeExpr;
@@ -104,3 +83,4 @@ use crate::XmlParse;
 use crate::XmlProcessingInstruction;
 use crate::XmlRoot;
 use crate::XmlSerialize;
+use derive_more::From;

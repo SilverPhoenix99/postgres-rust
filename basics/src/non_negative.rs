@@ -1,4 +1,4 @@
-#[derive(Debug, Default, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Default, Copy, Clone, Eq, PartialEq, Into)]
 pub struct NonNegative(i32);
 
 impl NonNegative {
@@ -28,8 +28,4 @@ impl From<NonNegative> for u32 {
     }
 }
 
-impl From<NonNegative> for i32 {
-    fn from(value: NonNegative) -> Self {
-        value.0
-    }
-}
+use derive_more::Into;

@@ -22,12 +22,12 @@ impl FuncCallExpr {
         self.agg_filter = agg_filter;
         self
     }
-    
+
     pub fn with_agg_filter(mut self, agg_filter: ExprNode) -> Self {
         self.agg_filter = Some(agg_filter);
         self
     }
-    
+
     pub fn agg_filter(&self) -> Option<&ExprNode> {
         self.agg_filter.as_ref()
     }
@@ -36,7 +36,7 @@ impl FuncCallExpr {
         self.over = over;
         self
     }
-    
+
     pub fn with_over(mut self, over: OverClause) -> Self {
         self.over = Some(over);
         self

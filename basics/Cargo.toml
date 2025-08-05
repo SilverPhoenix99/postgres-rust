@@ -7,3 +7,4 @@ version.workspace = true
 workspace = true
 
 [dependencies]
+derive_more = { workspace = true, features = ["from", "into"] }

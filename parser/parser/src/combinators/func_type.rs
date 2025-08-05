@@ -30,7 +30,7 @@ pub(super) fn func_type(stream: &mut TokenStream) -> scan::Result<FuncType> {
         return Ok(FuncType::Type(typ))
     }
 
-    let (Generic { name, .. }, _, mult) = typ.into() else {
+    let (Generic { name, .. }, mult, _) = typ.into() else {
         // SAFETY: already checked that it's `Generic` above.
         unsafe { unreachable_unchecked() }
     };

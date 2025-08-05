@@ -1,6 +1,8 @@
-#[derive(Debug, Clone, Eq)]
+#[derive(Debug, Clone, Eq, From)]
 pub enum Str {
+    #[from(Box<str>, String)]
     Boxed(Box<str>),
+    #[from]
     Static(&'static str),
 }
 
@@ -30,24 +32,6 @@ impl AsRef<str> for Str {
             Str::Boxed(boxed) => boxed,
             Str::Static(string) => string,
         }
-    }
-}
-
-impl From<String> for Str {
-    fn from(value: String) -> Self {
-        Self::Boxed(value.into_boxed_str())
-    }
-}
-
-impl From<Box<str>> for Str {
-    fn from(value: Box<str>) -> Self {
-        Self::Boxed(value)
-    }
-}
-
-impl From<&'static str> for Str {
-    fn from(value: &'static str) -> Self {
-        Self::Static(value)
     }
 }
 
@@ -82,3 +66,4 @@ use core::cmp::Ordering;
 use core::fmt::Display;
 use core::fmt::Formatter;
 use core::ops::Deref;
+use derive_more::From;

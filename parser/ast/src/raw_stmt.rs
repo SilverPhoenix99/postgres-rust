@@ -1,78 +1,77 @@
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, From)]
 pub enum RawStmt {
     AlterDatabaseRefreshCollStmt(Str),
+    #[from]
     AlterDatabaseSetStmt(AlterDatabaseSetStmt),
+    #[from]
     AlterDatabaseStmt(AlterDatabaseStmt),
+    #[from(AlterDefaultPrivilegesStmt)]
     AlterDefaultPrivilegesStmt(Box<AlterDefaultPrivilegesStmt>),
+    #[from]
     AlterEventTrigStmt(AlterEventTrigStmt),
+    #[from]
     AlterExtensionContentsStmt(AlterExtensionContentsStmt),
+    #[from]
     AlterExtensionStmt(AlterExtensionStmt),
+    #[from]
     AlterFunctionStmt(AlterFunctionStmt),
+    #[from]
     AlterObjectDependsStmt(AlterObjectDependsStmt),
+    #[from]
     AlterObjectSchemaStmt(AlterObjectSchemaStmt),
+    #[from]
     AlterOwnerStmt(AlterOwnerStmt),
+    #[from]
     AlterRoleSetStmt(AlterRoleSetStmt),
+    #[from]
     AlterRoleStmt(AlterRoleStmt),
+    #[from]
     AlterSystemStmt(AlterSystemStmt),
+    #[from]
     AlterUserMappingStmt(AlterUserMappingStmt),
     CheckPointStmt(Option<Vec<UtilityOption>>),
     ClosePortalStmt(OneOrAll<Str>),
+    #[from]
     CommentStmt(CommentStmt),
+    #[from]
     ConstraintsSetStmt(ConstraintsSetStmt),
+    #[from]
     CreateAccessMethodStmt(CreateAccessMethodStmt),
+    #[from]
     CreateCastStmt(CreateCastStmt),
+    #[from]
     CreateConversionStmt(CreateConversionStmt),
+    #[from]
     CreateDatabaseStmt(CreateDatabaseStmt),
+    #[from]
     CreateRoleStmt(CreateRoleStmt),
+    #[from]
     CreateUserMappingStmt(CreateUserMappingStmt),
     DeallocateStmt(OneOrAll<Str>),
+    #[from]
     DiscardStmt(DiscardStmt),
     ListenStmt(Str),
     LoadStmt(Box<str>),
+    #[from]
     NotifyStmt(NotifyStmt),
+    #[from(PrepareStmt)]
     PrepareStmt(Box<PrepareStmt>),
     PrepareTransactionStmt(Box<str>),
+    #[from]
     ReassignOwnedStmt(ReassignOwnedStmt),
     RefreshCollationVersionStmt(QualifiedName),
+    #[from]
     RenameStmt(RenameStmt),
+    #[from]
     SecurityLabelStmt(SecurityLabelStmt),
+    #[from]
     TransactionStmt(TransactionStmt),
     UnlistenStmt(OneOrAll<Str>),
     VariableResetStmt(VariableTarget),
+    #[from]
     VariableSetStmt(VariableSetStmt),
     VariableShowStmt(VariableTarget),
 }
-
-impl_from!(AlterDatabaseSetStmt for RawStmt);
-impl_from!(AlterDatabaseStmt for RawStmt);
-impl_from!(box AlterDefaultPrivilegesStmt for RawStmt);
-impl_from!(AlterEventTrigStmt for RawStmt);
-impl_from!(AlterExtensionContentsStmt for RawStmt);
-impl_from!(AlterExtensionStmt for RawStmt);
-impl_from!(AlterFunctionStmt for RawStmt);
-impl_from!(AlterObjectDependsStmt for RawStmt);
-impl_from!(AlterObjectSchemaStmt for RawStmt);
-impl_from!(AlterOwnerStmt for RawStmt);
-impl_from!(AlterRoleSetStmt for RawStmt);
-impl_from!(AlterRoleStmt for RawStmt);
-impl_from!(AlterSystemStmt for RawStmt);
-impl_from!(AlterUserMappingStmt for RawStmt);
-impl_from!(CommentStmt for RawStmt);
-impl_from!(ConstraintsSetStmt for RawStmt);
-impl_from!(CreateAccessMethodStmt for RawStmt);
-impl_from!(CreateCastStmt for RawStmt);
-impl_from!(CreateConversionStmt for RawStmt);
-impl_from!(CreateDatabaseStmt for RawStmt);
-impl_from!(CreateRoleStmt for RawStmt);
-impl_from!(CreateUserMappingStmt for RawStmt);
-impl_from!(DiscardStmt for RawStmt);
-impl_from!(NotifyStmt for RawStmt);
-impl_from!(box PrepareStmt for RawStmt);
-impl_from!(ReassignOwnedStmt for RawStmt);
-impl_from!(RenameStmt for RawStmt);
-impl_from!(SecurityLabelStmt for RawStmt);
-impl_from!(TransactionStmt for RawStmt);
-impl_from!(VariableSetStmt for RawStmt);
 
 use crate::AlterDatabaseSetStmt;
 use crate::AlterDatabaseStmt;
@@ -107,6 +106,6 @@ use crate::TransactionStmt;
 use crate::UtilityOption;
 use crate::VariableSetStmt;
 use crate::VariableTarget;
-use pg_basics::impl_from;
+use derive_more::From;
 use pg_basics::QualifiedName;
 use pg_basics::Str;

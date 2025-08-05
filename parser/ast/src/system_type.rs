@@ -1,6 +1,7 @@
 pub type TypeModifiers = Vec<ExprNode>;
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Into)]
+#[into((TypeName, SetOf, Option<Vec<Option<i32>>>))]
 pub struct Type {
     name: TypeName,
     /// If the type is a table (i.e., set) of records, or just a single record.
@@ -34,12 +35,6 @@ impl Type {
     }
 }
 
-impl From<Type> for (TypeName, Option<Vec<Option<i32>>>, SetOf) {
-    fn from(value: Type) -> Self {
-        (value.name, value.array_bounds, value.mult)
-    }
-}
-
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum IntervalRange {
     Full { precision: Option<i32> },
@@ -64,7 +59,7 @@ impl Default for IntervalRange {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, From)]
 pub enum TypeName {
     Json,
     Bool,
@@ -97,7 +92,7 @@ pub enum TypeName {
     TimestampTz {
         precision: Option<i32>
     },
-    Interval(IntervalRange),
+    #[from] Interval(IntervalRange),
     Oid(Oid),
     /// Non-builtin types
     Generic {
@@ -105,8 +100,6 @@ pub enum TypeName {
         type_modifiers: Option<TypeModifiers>
     },
 }
-
-impl_from!(IntervalRange for TypeName::Interval);
 
 impl TypeName {
     pub fn with_array_bounds(self, array_bounds: Option<Vec<Option<i32>>>) -> Type {
@@ -171,6 +164,7 @@ pub enum FuncType {
 }
 
 use crate::ExprNode;
-use pg_basics::impl_from;
+use derive_more::From;
+use derive_more::Into;
 use pg_basics::Oid;
 use pg_basics::QualifiedName;

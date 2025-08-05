@@ -1,6 +1,6 @@
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, From)]
 pub enum SignedNumber {
-    IntegerConst(i32),
+    #[from] IntegerConst(i32),
     NumericConst { value: Box<str>, radix: NumberRadix, negative: bool },
 }
 
@@ -30,8 +30,6 @@ impl From<UnsignedNumber> for SignedNumber {
     }
 }
 
-impl_from!(i32 for SignedNumber::IntegerConst);
-
 use crate::UnsignedNumber;
-use pg_basics::impl_from;
+use derive_more::From;
 use pg_basics::NumberRadix;

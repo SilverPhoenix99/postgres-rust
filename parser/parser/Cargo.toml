@@ -8,6 +8,7 @@ workspace = true
 
 [dependencies]
 bitvec.workspace = true
+derive_more = { workspace = true, features = ["from"] }
 pg-ast.workspace = true
 pg-basics.workspace = true
 pg-elog.workspace = true
