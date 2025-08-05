@@ -5,10 +5,10 @@ pub(super) fn alias_clause(stream: &mut TokenStream) -> scan::Result<Alias> {
         ( AS )? ColId ( '(' name_list ')' )?
     */
 
-    let (name, columns) = alt!(
-        seq!(As, col_id, paren!(name_list).optional())
-            .map(|(_, name, cols)| (name, cols)),
-        seq!(col_id, paren!(name_list).optional()),
+    let (_, name, columns) = seq!(
+        As.optional(),
+        col_id,
+        paren!(name_list).optional()
     ).parse(stream)?;
 
     let mut alias = Alias::new(name);
@@ -39,7 +39,6 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::alt;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
