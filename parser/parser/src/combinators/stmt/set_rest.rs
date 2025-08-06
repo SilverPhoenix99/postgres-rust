@@ -142,7 +142,7 @@ fn zone_interval(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
         alt!(
             seq!(string, zone_value_interval)
                 .map(|(value, range)| Interval { value, range }),
-            seq!(i32_literal_paren, string)
+            seq!(precision, string)
                 .map(|(precision, value)|
                     Interval {
                         value,
@@ -255,9 +255,9 @@ mod tests {
 
 use crate::combinators::document_or_content;
 use crate::combinators::generic_set_tail;
-use crate::combinators::i32_literal_paren;
 use crate::combinators::interval;
 use crate::combinators::non_reserved_word_or_sconst;
+use crate::combinators::precision::precision;
 use crate::combinators::signed_number;
 use crate::combinators::transaction_mode_list;
 use pg_ast::IntervalRange;
