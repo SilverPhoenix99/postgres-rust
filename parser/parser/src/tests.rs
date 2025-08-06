@@ -85,6 +85,6 @@ pub(crate) fn stream(source: &str) -> TokenStream<'_> {
 
 pub(crate) use test_parser;
 
+use crate::stream::TokenStream;
 use crate::ParserConfig;
 use pg_basics::guc::BackslashQuote::SafeEncoding;
-use crate::stream::TokenStream;

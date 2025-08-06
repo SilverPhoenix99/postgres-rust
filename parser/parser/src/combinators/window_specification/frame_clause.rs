@@ -50,7 +50,7 @@ mod tests {
             Ties
         )
     )]
-    #[test_case("groups unbounded preceding", 
+    #[test_case("groups unbounded preceding",
         WindowFrame::new(
             Groups,
             FrameExtent::Unbounded { end: None },
@@ -67,7 +67,6 @@ use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::window_specification::frame_extent;
 use crate::combinators::window_specification::window_exclusion_clause;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::WindowFrame;
 use pg_ast::WindowFrameKind::Groups;
@@ -75,3 +74,4 @@ use pg_ast::WindowFrameKind::Range;
 use pg_ast::WindowFrameKind::Rows;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::RangeKw;
+use pg_parser_core::scan;

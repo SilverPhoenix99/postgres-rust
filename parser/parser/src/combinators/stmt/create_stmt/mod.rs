@@ -55,7 +55,7 @@ mod tests {
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_lexer::Keyword::Create;
+use pg_parser_core::scan;

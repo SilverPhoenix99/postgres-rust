@@ -29,7 +29,7 @@ mod tests {
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::ExprNode;
 use pg_lexer::OperatorKind::Comma;
+use pg_parser_core::scan;

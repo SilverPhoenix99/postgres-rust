@@ -9,7 +9,7 @@ pub(in crate::combinators) struct SkipCombi(usize);
 impl Combinator for SkipCombi {
     type Output = ();
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> crate::scan::Result<Self::Output> {
+    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
         stream.skip(self.0);
         Ok(())
     }
@@ -17,3 +17,4 @@ impl Combinator for SkipCombi {
 
 use crate::combinators::foundation::Combinator;
 use crate::stream::TokenStream;
+use pg_parser_core::scan;

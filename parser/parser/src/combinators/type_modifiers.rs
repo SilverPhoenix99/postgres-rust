@@ -11,6 +11,6 @@ pub(super) fn type_modifiers(stream: &mut TokenStream) -> scan::Result<TypeModif
 use crate::combinators::expr_list;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::Combinator;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::TypeModifiers;
+use pg_parser_core::scan;

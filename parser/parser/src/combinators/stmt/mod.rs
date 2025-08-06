@@ -179,7 +179,6 @@ pg_basics::reexport! {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_ast::RawStmt::ClosePortalStmt;
@@ -189,3 +188,4 @@ use pg_ast::RawStmt::LoadStmt;
 use pg_ast::RawStmt::UnlistenStmt;
 use pg_ast::RawStmt::VariableResetStmt;
 use pg_ast::RawStmt::VariableShowStmt;
+use pg_parser_core::scan;

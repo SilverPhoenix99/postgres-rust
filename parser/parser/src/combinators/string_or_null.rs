@@ -28,6 +28,6 @@ mod tests {
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_lexer::Keyword::Null;
+use pg_parser_core::scan;

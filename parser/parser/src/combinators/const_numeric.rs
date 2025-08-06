@@ -75,7 +75,7 @@ use crate::combinators::foundation::number;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::sign;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::SignedNumber;
 use pg_lexer::OperatorKind::Minus;
+use pg_parser_core::scan;

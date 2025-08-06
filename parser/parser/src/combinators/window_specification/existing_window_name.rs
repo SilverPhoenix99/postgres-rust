@@ -61,7 +61,6 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::no_match;
-use crate::scan;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Keyword as Kw;
 use pg_basics::Str;
@@ -73,3 +72,4 @@ use pg_lexer::Keyword::Partition;
 use pg_lexer::Keyword::RangeKw;
 use pg_lexer::Keyword::Rows;
 use pg_lexer::Keyword::Unbounded;
+use pg_parser_core::scan;

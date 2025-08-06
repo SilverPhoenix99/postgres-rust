@@ -1,0 +1,16 @@
+[package]
+name = "pg-parser-core"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+pg-basics.workspace = true
+pg-elog.workspace = true
+pg-lexer.workspace = true
+
+[dev-dependencies]
+assert_matches.workspace = true
+test-case.workspace = true

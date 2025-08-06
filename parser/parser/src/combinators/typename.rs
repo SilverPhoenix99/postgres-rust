@@ -69,7 +69,7 @@ use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::simple_typename;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::Type;
 use pg_lexer::Keyword::Setof;
+use pg_parser_core::scan;

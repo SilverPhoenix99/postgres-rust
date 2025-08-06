@@ -49,13 +49,13 @@ impl<'src> Parser<'src> {
 }
 
 use crate::combinators::stmtmulti;
-use crate::scan::Error::Eof;
-use crate::scan::Error::NoMatch;
-use crate::scan::Error::ScanErr;
 use crate::stream::TokenStream;
-use crate::syntax;
 use crate::ParserConfig;
 use core::mem;
 use pg_ast::RawStmt;
 use pg_basics::Located;
 use pg_elog::parser;
+use pg_parser_core::scan::Error::Eof;
+use pg_parser_core::scan::Error::NoMatch;
+use pg_parser_core::scan::Error::ScanErr;
+use pg_parser_core::syntax;

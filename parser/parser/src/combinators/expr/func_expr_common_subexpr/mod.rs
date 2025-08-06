@@ -247,7 +247,6 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
-use crate::scan;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Keyword as K;
 use crate::stream::TokenValue::Operator as Op;
@@ -284,3 +283,4 @@ use pg_lexer::Keyword::Xmlpi;
 use pg_lexer::Keyword::Xmlroot;
 use pg_lexer::Keyword::Xmlserialize;
 use pg_lexer::OperatorKind::OpenParenthesis;
+use pg_parser_core::scan;

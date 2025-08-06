@@ -41,6 +41,7 @@ fn json_agg_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 mod tests {
     use super::*;
     use crate::tests::test_parser;
+    use pg_parser_core::scan;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -91,8 +92,8 @@ use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_aggregate_func;
 use crate::combinators::JsonAggFunc;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::ExprNode;
 use pg_ast::JsonArrayAggExpr;
 use pg_ast::JsonObjectAggExpr;
+use pg_parser_core::scan;

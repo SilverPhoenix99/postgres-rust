@@ -22,8 +22,8 @@ pub(in crate::combinators) use attrs;
 mod tests {
     use super::*;
     use crate::combinators::foundation::parser;
-    use crate::scan;
     use crate::tests::test_parser;
+    use pg_parser_core::scan;
 
     #[test]
     fn test_attrs() {

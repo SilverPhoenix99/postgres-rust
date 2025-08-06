@@ -28,8 +28,8 @@ mod tests {
 use crate::combinators::any_name;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::QualifiedName;
 use pg_lexer::Keyword::Materialized;
 use pg_lexer::Keyword::View;
+use pg_parser_core::scan;

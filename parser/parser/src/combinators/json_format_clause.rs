@@ -38,11 +38,11 @@ pub(super) fn json_format_clause(stream: &mut TokenStream) -> scan::Result<JsonF
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::scan::Error::ScanErr;
     use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::JsonFormatKind::Text;
     use pg_elog::Error::Parser;
+    use scan::Error::ScanErr;
     use test_case::test_case;
 
     #[test_case("format json" => Ok(JsonFormat::text()))]
@@ -75,7 +75,6 @@ use crate::combinators::col_id;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::JsonEncoding::UTF16;
 use pg_ast::JsonEncoding::UTF32;
@@ -85,3 +84,4 @@ use pg_elog::parser::Error::UnrecognizedJsonEncoding;
 use pg_lexer::Keyword::Encoding;
 use pg_lexer::Keyword::Format;
 use pg_lexer::Keyword::Json;
+use pg_parser_core::scan;

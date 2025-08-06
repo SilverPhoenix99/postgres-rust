@@ -226,7 +226,6 @@ use crate::combinators::window_specification::frame_bound::FrameBound::OffsetFol
 use crate::combinators::window_specification::frame_bound::FrameBound::OffsetPreceding;
 use crate::combinators::window_specification::frame_bound::FrameBound::UnboundedFollowing;
 use crate::combinators::window_specification::frame_bound::FrameBound::UnboundedPreceding;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::CurrentRowEnd;
 use pg_ast::FollowingEnd;
@@ -239,3 +238,4 @@ use pg_elog::parser::Error::InvalidUnboundedFollowingFrame;
 use pg_elog::parser::Error::InvalidUnboundedPrecedingFrame;
 use pg_lexer::Keyword::And;
 use pg_lexer::Keyword::Between;
+use pg_parser_core::scan;

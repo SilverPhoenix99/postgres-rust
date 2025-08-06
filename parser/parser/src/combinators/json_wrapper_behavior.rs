@@ -52,7 +52,6 @@ mod tests {
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::JsonWrapperBehavior;
 use pg_ast::JsonWrapperBehavior::Conditional;
@@ -62,3 +61,4 @@ use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Array;
 use pg_lexer::Keyword::With;
 use pg_lexer::Keyword::Wrapper;
+use pg_parser_core::scan;

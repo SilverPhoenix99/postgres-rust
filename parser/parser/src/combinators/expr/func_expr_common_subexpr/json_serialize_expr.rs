@@ -51,6 +51,6 @@ use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_returning_clause;
 use crate::combinators::json_value_expr;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::JsonSerializeExpr;
+use pg_parser_core::scan;

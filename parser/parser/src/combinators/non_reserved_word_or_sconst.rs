@@ -24,6 +24,6 @@ use crate::combinators::foundation::alt;
 use crate::combinators::foundation::string;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_basics::Str;
+use pg_parser_core::scan;

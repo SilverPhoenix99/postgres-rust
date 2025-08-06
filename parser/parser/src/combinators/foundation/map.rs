@@ -33,6 +33,6 @@ where
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::scan;
 use crate::stream::TokenStream;
 use core::marker::PhantomData;
+use pg_parser_core::scan;

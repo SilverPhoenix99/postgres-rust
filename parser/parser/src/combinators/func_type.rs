@@ -81,8 +81,6 @@ mod tests {
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::typename;
-use crate::result::Optional;
-use crate::scan;
 use crate::stream::TokenStream;
 use core::hint::unreachable_unchecked;
 use pg_ast::FuncType;
@@ -91,3 +89,5 @@ use pg_ast::TypeName::Generic;
 use pg_ast::TypeReference;
 use pg_lexer::Keyword::Type;
 use pg_lexer::OperatorKind::Percent;
+use pg_parser_core::scan;
+use pg_parser_core::Optional;

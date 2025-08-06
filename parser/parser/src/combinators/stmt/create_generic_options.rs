@@ -32,7 +32,7 @@ use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_options;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::GenericOption;
 use pg_lexer::Keyword::Options;
+use pg_parser_core::scan;

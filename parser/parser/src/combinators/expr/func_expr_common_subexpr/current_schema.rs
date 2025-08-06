@@ -30,7 +30,6 @@ mod tests {
 
 use crate::combinators::foundation::Combinator;
 use crate::no_match;
-use crate::scan;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::Keyword as K;
 use crate::stream::TokenValue::Operator as Op;
@@ -38,3 +37,4 @@ use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::CurrentSchema;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::OperatorKind::OpenParenthesis;
+use pg_parser_core::scan;

@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum Error {
+pub enum Error {
     NotEof(pg_elog::LocatedError),
     Eof(Location),
 }

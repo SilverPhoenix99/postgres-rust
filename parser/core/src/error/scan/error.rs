@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub(crate) enum Error {
+pub enum Error {
     /// When an unrecoverable error occurs.
     ScanErr(pg_elog::LocatedError),
     /// When there are no more tokens.

@@ -62,6 +62,6 @@ use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::i32_literal;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_lexer::Keyword::Array;
+use pg_parser_core::scan;

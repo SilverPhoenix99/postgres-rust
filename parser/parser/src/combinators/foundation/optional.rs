@@ -38,6 +38,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::result::Optional as Opt;
-use crate::scan;
 use crate::stream::TokenStream;
+use pg_parser_core::scan;
+use pg_parser_core::Optional as Opt;

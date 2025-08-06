@@ -6,9 +6,9 @@ pub(in crate::combinators) fn integer(stream: &mut TokenStream) -> scan::Result<
     })
 }
 
-use crate::scan;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue::UnsignedNumber;
 use pg_ast::UnsignedNumber::IntegerConst;
 use pg_basics::NonNegative;
+use pg_parser_core::scan;

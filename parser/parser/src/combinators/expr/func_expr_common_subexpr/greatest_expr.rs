@@ -36,7 +36,7 @@ use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::Greatest;
+use pg_parser_core::scan;

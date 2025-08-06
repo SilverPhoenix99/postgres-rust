@@ -105,7 +105,6 @@ mod tests {
     }
 }
 
-use crate::scan;
 use pg_ast::ColumnRef;
 use pg_ast::ColumnRef::Indirection as IndirectionRef;
 use pg_ast::ColumnRef::Name;
@@ -117,3 +116,4 @@ use pg_ast::Indirection::Wildcard;
 use pg_basics::Located;
 use pg_basics::Str;
 use pg_elog::parser::Error::ImproperUseOfStar;
+use pg_parser_core::scan;

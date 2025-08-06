@@ -130,7 +130,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::scan;
 use crate::stream;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
@@ -138,3 +137,4 @@ use crate::stream::TokenValue;
 use core::marker::PhantomData;
 use pg_lexer::Keyword;
 use pg_lexer::KeywordCategory;
+use pg_parser_core::scan;

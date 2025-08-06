@@ -16,7 +16,7 @@ macro_rules! alt {
 
             let p = $head;
             let result = $crate::combinators::foundation::Combinator::parse(&p, stream);
-            let result = $crate::result::Optional::optional(result)?;
+            let result = pg_parser_core::Optional::optional(result)?;
             if let Some(ok) = result {
                 return Ok(ok)
             }
@@ -24,7 +24,7 @@ macro_rules! alt {
             $(
                 let p = $tail;
                 let result = $crate::combinators::foundation::Combinator::parse(&p, stream);
-                let result = $crate::result::Optional::optional(result)?;
+                let result = pg_parser_core::Optional::optional(result)?;
                 if let Some(ok) = result {
                     return Ok(ok)
                 }

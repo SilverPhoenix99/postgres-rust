@@ -33,7 +33,6 @@ mod tests {
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::SortNulls;
 use pg_ast::SortNulls::NullsFirst;
@@ -41,3 +40,4 @@ use pg_ast::SortNulls::NullsLast;
 use pg_lexer::Keyword::First;
 use pg_lexer::Keyword::Last;
 use pg_lexer::Keyword::Nulls;
+use pg_parser_core::scan;

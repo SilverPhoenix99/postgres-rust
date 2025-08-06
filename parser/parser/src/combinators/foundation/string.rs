@@ -32,8 +32,8 @@ mod tests {
     }
 }
 
-use crate::scan;
 use crate::stream::TokenConsumer;
 use crate::stream::TokenStream;
 use crate::stream::TokenValue;
 use core::mem;
+use pg_parser_core::scan;

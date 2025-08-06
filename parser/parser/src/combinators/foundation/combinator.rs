@@ -37,5 +37,5 @@ where
 
 use crate::combinators::foundation::map;
 use crate::combinators::foundation::optional;
-use crate::scan;
 use crate::stream::TokenStream;
+use pg_parser_core::scan;

@@ -39,7 +39,7 @@ use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::reset_stmt::reset_stmt;
 use crate::combinators::stmt::set_rest;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::SetResetClause;
 use pg_lexer::Keyword::Set;
+use pg_parser_core::scan;

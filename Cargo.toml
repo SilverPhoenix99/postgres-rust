@@ -6,6 +6,7 @@ members = [
     "elog",
     "guc",
     "parser/ast",
+    "parser/core",
     "parser/lexer",
     "parser/parser",
 ]
@@ -39,3 +40,4 @@ pg-elog = { path = "elog" }
 pg-guc = { path = "guc" }
 pg-lexer = { path = "parser/lexer" }
 pg-parser = { path = "parser/parser" }
+pg-parser-core = { path = "parser/core" }

@@ -31,9 +31,9 @@ mod tests {
 
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::UniqueNullTreatment;
 use pg_lexer::Keyword::Distinct;
 use pg_lexer::Keyword::Not;
 use pg_lexer::Keyword::Nulls;
+use pg_parser_core::scan;

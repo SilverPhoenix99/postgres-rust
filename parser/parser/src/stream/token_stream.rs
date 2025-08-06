@@ -224,10 +224,10 @@ impl TokenConsumer<TokenValue, bool> for TokenStream<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::syntax;
     use crate::tests::DEFAULT_CONFIG;
     use pg_elog::parser::Error::Syntax;
     use pg_elog::Error::Parser;
+    use pg_parser_core::syntax;
     use TokenValue::Identifier;
 
     #[test]
@@ -343,12 +343,6 @@ mod tests {
     }
 }
 
-use crate::eof;
-use crate::eof::Error::Eof;
-use crate::eof::Error::NotEof;
-use crate::scan;
-use crate::scan::Error::NoMatch;
-use crate::scan::Error::ScanErr;
 use crate::stream::buffered_lexer::BufferedLexer;
 use crate::stream::TokenValue;
 use crate::ParserConfig;
@@ -364,3 +358,9 @@ use pg_elog::parser::Warning;
 use pg_elog::HasLocation;
 use pg_lexer::Lexer;
 use pg_lexer::RawTokenKind;
+use pg_parser_core::eof;
+use pg_parser_core::eof::Error::Eof;
+use pg_parser_core::eof::Error::NotEof;
+use pg_parser_core::scan;
+use pg_parser_core::scan::Error::NoMatch;
+use pg_parser_core::scan::Error::ScanErr;

@@ -76,7 +76,7 @@ use crate::combinators::foundation::Combinator;
 use crate::combinators::json_on_error_clause;
 use crate::combinators::json_passing_clause;
 use crate::combinators::json_value_expr;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::JsonExistsExpr;
 use pg_lexer::OperatorKind::Comma;
+use pg_parser_core::scan;

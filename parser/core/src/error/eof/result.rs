@@ -1,4 +1,4 @@
-pub(crate) type Result<T> = core::result::Result<T, eof::Error>;
+pub type Result<T> = core::result::Result<T, eof::Error>;
 
 impl<T> Required<T> for Result<T> {
     fn required(self) -> pg_elog::LocatedResult<T> {
@@ -22,6 +22,6 @@ impl<T> Optional<T> for Result<T> {
 use crate::eof;
 use crate::eof::Error::Eof;
 use crate::eof::Error::NotEof;
-use crate::result::Optional;
-use crate::result::Required;
 use crate::syntax;
+use crate::Optional;
+use crate::Required;

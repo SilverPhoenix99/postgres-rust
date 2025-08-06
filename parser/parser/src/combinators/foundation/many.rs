@@ -49,7 +49,7 @@ macro_rules! many {
 
             while let Some(element) = {
                 let result = $crate::combinators::foundation::Combinator::parse(&p, stream);
-                $crate::result::Optional::optional(result)?
+                pg_parser_core::Optional::optional(result)?
             } {
                 elements.push(element)
             }
@@ -70,11 +70,11 @@ macro_rules! many {
 
             while {
                 let sep = $crate::combinators::foundation::Combinator::parse(&separator, stream);
-                let sep = $crate::result::Optional::optional(sep)?;
+                let sep = pg_parser_core::Optional::optional(sep)?;
                 sep.is_some()
             } {
                 let element = $crate::combinators::foundation::Combinator::parse(&p, stream);
-                let element = $crate::result::Required::required(element)?;
+                let element = pg_parser_core::Required::required(element)?;
                 elements.push(element);
             }
 
@@ -92,7 +92,7 @@ macro_rules! many {
 
             while let Some(element) = {
                 let result = $crate::combinators::foundation::Combinator::parse(&p, stream);
-                $crate::result::Optional::optional(result)?
+                pg_parser_core::Optional::optional(result)?
             } {
                 elements.push(element)
             }

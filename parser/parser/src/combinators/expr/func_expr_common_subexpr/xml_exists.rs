@@ -40,6 +40,6 @@ use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::xmlexists_argument;
-use crate::scan;
 use crate::stream::TokenStream;
 use pg_ast::XmlExists;
+use pg_parser_core::scan;

@@ -101,13 +101,13 @@ mod tests {
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
-        crate::scan::Error::{Eof, NoMatch},
         pg_ast::ExprNode::{IntegerConst, StringConst},
         pg_ast::JsonKeyValue,
         pg_ast::JsonOutput,
         pg_ast::JsonValueExpr,
         pg_ast::SortBy,
         pg_ast::TypeName::{Int4, Int8},
+        scan::Error::{Eof, NoMatch},
     };
 
     #[test_case("json_objectagg('foo': 1)" => Ok(JsonAggFunc::Object(
@@ -172,7 +172,6 @@ use crate::combinators::json_returning_clause;
 use crate::combinators::json_value_expr;
 use crate::combinators::sort_clause;
 use crate::no_match;
-use crate::scan;
 use crate::stream::TokenStream;
 use derive_more::From;
 use pg_ast::FuncExprWindowless;
@@ -181,3 +180,4 @@ use pg_ast::JsonObjectAgg;
 use pg_lexer::Keyword::JsonArrayagg;
 use pg_lexer::Keyword::JsonObjectagg;
 use pg_lexer::OperatorKind::OpenParenthesis;
+use pg_parser_core::scan;

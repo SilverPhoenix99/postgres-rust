@@ -230,9 +230,6 @@ impl BufferedLexer<'_> {
     }
 }
 
-use crate::eof;
-use crate::eof::Error::Eof;
-use crate::eof::Error::NotEof;
 use crate::stream::string_decoders::BasicStringDecoder;
 use crate::stream::string_decoders::ExtendedStringDecoder;
 use crate::stream::string_decoders::ExtendedStringResult;
@@ -258,3 +255,6 @@ use pg_lexer::RawTokenKind::StringLiteral;
 use pg_lexer::StringKind;
 use pg_lexer::StringKind::Dollar;
 use pg_lexer::StringKind::Extended;
+use pg_parser_core::eof;
+use pg_parser_core::eof::Error::Eof;
+use pg_parser_core::eof::Error::NotEof;
