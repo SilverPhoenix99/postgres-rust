@@ -1,45 +1,34 @@
 /// Maps the `Ok(_)` value of a parser combinator into another type.
-pub(in crate::combinators) fn map<P, M, O>(parser: P, mapper: M)
-    -> MapResultCombi<
-        P,
-        impl Fn(scan::Result<P::Output>) -> scan::Result<O>,
-        O
-    >
+pub(in crate::combinators) fn map<P, M, O>(parser: P, mapper: M) -> MapCombi<P, M, O>
 where
     P: Combinator,
     M: Fn(P::Output) -> O
 {
-    // Reduces size of type names:
-    fn inner<I, O>(mapper: impl Fn(I) -> O)
-        -> impl Fn(scan::Result<I>) -> scan::Result<O>
-    {
-        move |result| result.map(&mapper)
-    }
-
-    MapResultCombi {
+    MapCombi {
         parser,
-        mapper: inner(mapper),
+        mapper,
         boo: PhantomData,
     }
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub(in crate::combinators) struct MapResultCombi<P, M, O> {
+pub(in crate::combinators) struct MapCombi<P, M, O> {
     parser: P,
     mapper: M,
     boo: PhantomData<O>
 }
 
-impl<P, M, O> Combinator for MapResultCombi<P, M, O>
+impl<P, M, O> Combinator for MapCombi<P, M, O>
 where
     P: Combinator,
-    M: Fn(scan::Result<P::Output>) -> scan::Result<O>
+    M: Fn(P::Output) -> O
 {
     type Output = O;
 
     fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
-        let result = self.parser.parse(stream);
-        (self.mapper)(result)
+        let output = self.parser.parse(stream)?;
+        let output = (self.mapper)(output);
+        Ok(output)
     }
 }
 
