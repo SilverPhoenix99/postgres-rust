@@ -36,10 +36,10 @@ mod tests {
 
 use super::xml_attribute_list;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::XmlForest;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

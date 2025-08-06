@@ -50,12 +50,12 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use crate::combinators::transaction_chain;
 use crate::combinators::work_or_transaction;
 use pg_ast::TransactionStmt;
 use pg_ast::TransactionStmt::CommitPrepared;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Commit;
 use pg_lexer::Keyword::Prepared;

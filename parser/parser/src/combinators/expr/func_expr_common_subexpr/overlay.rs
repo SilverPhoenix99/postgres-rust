@@ -116,7 +116,6 @@ mod tests {
 use super::from_for_args;
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::func_arg_list;
 use core::mem;
@@ -125,6 +124,7 @@ use pg_ast::ExprNode::NullConst;
 use pg_ast::NamedValue;
 use pg_ast::OverlayFunc;
 use pg_ast::OverlaySqlArgs;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Placing;
 use pg_parser_core::scan;

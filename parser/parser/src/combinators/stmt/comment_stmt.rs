@@ -344,7 +344,6 @@ mod tests {
 use crate::combinators::any_name;
 use crate::combinators::col_id;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
 use crate::combinators::simple_typename;
 use crate::combinators::stmt::access_method;
 use crate::combinators::stmt::aggregate;
@@ -429,6 +428,7 @@ use pg_ast::CommentTarget::Typecast;
 use pg_ast::CommentTarget::View;
 use pg_ast::TypeName;
 use pg_basics::QualifiedName;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Comment;

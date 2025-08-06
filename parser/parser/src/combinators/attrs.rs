@@ -5,7 +5,7 @@ macro_rules! attrs {
             let p = $crate::combinators::foundation::many!(
                 pre = $prefix,
                 pg_combinators::Combinator::map(
-                    $crate::combinators::foundation::seq!(
+                    pg_combinators::seq!(
                         pg_lexer::OperatorKind::Dot,
                         $crate::combinators::col_label
                     ),

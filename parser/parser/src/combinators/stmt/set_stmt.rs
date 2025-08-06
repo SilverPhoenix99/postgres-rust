@@ -102,7 +102,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
 use crate::combinators::qualified_name::qualified_name_list;
 use crate::combinators::stmt::set_rest;
 use pg_ast::ConstraintsSetMode;
@@ -113,6 +112,7 @@ use pg_ast::OneOrAll;
 use pg_ast::RawStmt;
 use pg_ast::RelationName;
 use pg_ast::VariableSetStmt;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::All;

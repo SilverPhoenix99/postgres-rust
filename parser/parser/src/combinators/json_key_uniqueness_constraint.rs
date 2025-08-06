@@ -33,7 +33,7 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Keys;
 use pg_lexer::Keyword::Unique;

@@ -37,12 +37,12 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
 use pg_ast::WindowExclusion;
 use pg_ast::WindowExclusion::CurrentRow;
 use pg_ast::WindowExclusion::Group;
 use pg_ast::WindowExclusion::NoOthers;
 use pg_ast::WindowExclusion::Ties;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Current;

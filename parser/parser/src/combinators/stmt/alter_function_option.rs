@@ -109,13 +109,13 @@ mod tests {
 use crate::combinators::any_name;
 use crate::combinators::col_id;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
 use crate::combinators::signed_number;
 use crate::combinators::stmt::reset_stmt;
 use crate::combinators::stmt::set_rest_more;
 use pg_ast::AlterFunctionOption;
 use pg_ast::AlterFunctionOption::*;
 use pg_ast::Volatility::*;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Called;

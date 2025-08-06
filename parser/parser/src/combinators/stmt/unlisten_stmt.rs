@@ -32,9 +32,9 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
 use pg_ast::OneOrAll;
 use pg_basics::Str;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Unlisten;
 use pg_lexer::OperatorKind::Mul;

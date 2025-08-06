@@ -48,9 +48,9 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::string;
 use pg_ast::CreateConversionStmt;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Conversion;
 use pg_lexer::Keyword::DefaultKw;

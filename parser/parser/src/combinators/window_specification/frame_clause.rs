@@ -63,13 +63,13 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
 use crate::combinators::window_specification::frame_extent;
 use crate::combinators::window_specification::window_exclusion_clause;
 use pg_ast::WindowFrame;
 use pg_ast::WindowFrameKind::Groups;
 use pg_ast::WindowFrameKind::Range;
 use pg_ast::WindowFrameKind::Rows;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::RangeKw;

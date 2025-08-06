@@ -80,13 +80,13 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::json_behavior_clause;
 use crate::combinators::json_passing_clause;
 use crate::combinators::json_returning_clause;
 use crate::combinators::json_value_expr;
 use pg_ast::JsonValueFunc;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

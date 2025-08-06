@@ -203,7 +203,6 @@ mod tests {
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::func_arg_list;
 use core::mem;
@@ -215,6 +214,7 @@ use pg_ast::SqlFunction::Typecast;
 use pg_ast::SubstringFunc;
 use pg_ast::TypeName;
 use pg_ast::TypecastExpr;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Escape;
 use pg_lexer::Keyword::For;

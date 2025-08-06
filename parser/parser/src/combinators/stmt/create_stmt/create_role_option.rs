@@ -86,10 +86,10 @@ mod tests {
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::integer;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
 use crate::combinators::role::role_list;
 use crate::combinators::stmt::alter_role_option;
 use pg_ast::CreateRoleOption;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Admin;
 use pg_lexer::Keyword::Group;

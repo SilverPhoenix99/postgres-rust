@@ -384,7 +384,6 @@ mod tests {
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::bit_string;
 use crate::combinators::foundation::number;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::foundation::string;
 use crate::combinators::interval;
@@ -412,6 +411,7 @@ use pg_ast::TypeName::Int2;
 use pg_ast::TypeName::Int4;
 use pg_ast::TypeName::Int8;
 use pg_ast::TypeName::Json;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::BitStringKind;
 use pg_lexer::Keyword as Kw;

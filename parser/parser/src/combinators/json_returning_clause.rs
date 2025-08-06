@@ -48,10 +48,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
 use crate::combinators::json_format_clause;
 use crate::combinators::typename;
 use pg_ast::JsonOutput;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Returning;
 use pg_parser_core::scan;

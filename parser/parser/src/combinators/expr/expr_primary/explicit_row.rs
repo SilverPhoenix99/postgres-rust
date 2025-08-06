@@ -32,11 +32,11 @@ mod tests {
 
 use crate::combinators::expr_list;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::no_match;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::Row;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::OperatorKind::OpenParenthesis;

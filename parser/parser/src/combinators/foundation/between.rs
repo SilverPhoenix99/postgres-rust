@@ -3,7 +3,7 @@ macro_rules! paren {
     ($parser:expr) => {
         pg_combinators::parser(|stream| {
 
-            let p = $crate::combinators::foundation::seq!(
+            let p = pg_combinators::seq!(
                 pg_lexer::OperatorKind::OpenParenthesis,
                 $parser,
                 pg_lexer::OperatorKind::CloseParenthesis
@@ -20,7 +20,7 @@ macro_rules! brackets {
     ($parser:expr) => {
         pg_combinators::parser(|stream| {
 
-            let p = $crate::combinators::foundation::seq!(
+            let p = pg_combinators::seq!(
                 pg_lexer::OperatorKind::OpenBracket,
                 $parser,
                 pg_lexer::OperatorKind::CloseBracket

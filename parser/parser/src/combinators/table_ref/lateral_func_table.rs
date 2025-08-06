@@ -22,7 +22,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Ordinality;
 use pg_lexer::Keyword::With;

@@ -94,9 +94,9 @@ mod tests {
 }
 
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::seq;
 use crate::combinators::sort_clause;
 use pg_ast::WindowDefinition;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

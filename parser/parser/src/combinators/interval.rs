@@ -145,7 +145,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
 use crate::combinators::precision;
 use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Day;
@@ -161,6 +160,7 @@ use pg_ast::IntervalRange::Month;
 use pg_ast::IntervalRange::Second;
 use pg_ast::IntervalRange::Year;
 use pg_ast::IntervalRange::YearToMonth;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Day as DayKw;
 use pg_lexer::Keyword::Hour as HourKw;

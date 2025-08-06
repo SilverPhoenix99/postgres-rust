@@ -24,9 +24,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
 use crate::combinators::stmt::aggregate_with_argtypes;
 use pg_ast::AggregateWithArgs;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Aggregate;
 use pg_parser_core::scan;

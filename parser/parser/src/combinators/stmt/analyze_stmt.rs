@@ -14,10 +14,10 @@ pub(super) fn analyze_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
     Ok(stmt)
 }
 
-use crate::combinators::foundation::seq;
 use crate::combinators::stmt::analyze_keyword;
 use pg_ast::RawStmt;
 use pg_combinators::parser;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

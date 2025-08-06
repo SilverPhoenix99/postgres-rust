@@ -15,9 +15,9 @@ pub(super) fn cluster_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
     Ok(stmt)
 }
 
-use crate::combinators::foundation::seq;
 use pg_ast::RawStmt;
 use pg_combinators::parser;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Cluster;
 use pg_parser_core::scan;

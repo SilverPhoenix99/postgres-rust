@@ -93,13 +93,13 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
 use crate::combinators::stmt;
 use crate::combinators::stmt::begin_stmt;
 use crate::combinators::stmt::end_stmt;
 use crate::no_match;
 use pg_ast::RawStmt;
 use pg_ast::TransactionStmt;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Semicolon;
 use pg_parser_core::scan;

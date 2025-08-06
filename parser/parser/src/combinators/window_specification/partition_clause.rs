@@ -26,8 +26,8 @@ mod tests {
 }
 
 use crate::combinators::expr_list;
-use crate::combinators::foundation::seq;
 use pg_ast::ExprNode;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Partition;

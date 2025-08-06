@@ -41,12 +41,12 @@ mod tests {
 
 use crate::combinators::all_or_var_name;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
 use pg_ast::OneOrAll;
 use pg_ast::VariableTarget;
 use pg_ast::VariableTarget::SessionAuthorization;
 use pg_ast::VariableTarget::TimeZone;
 use pg_ast::VariableTarget::TransactionIsolation;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Authorization;
 use pg_lexer::Keyword::Isolation;

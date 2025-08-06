@@ -25,9 +25,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
 use crate::combinators::function_with_argtypes;
 use pg_ast::FunctionWithArgs;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Procedure;
 use pg_parser_core::scan;

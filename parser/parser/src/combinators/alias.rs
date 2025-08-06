@@ -14,8 +14,8 @@ pub(super) fn alias(stream: &mut TokenStream) -> scan::Result<Str> {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::seq;
 use pg_basics::Str;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::As;
 use pg_parser_core::scan;

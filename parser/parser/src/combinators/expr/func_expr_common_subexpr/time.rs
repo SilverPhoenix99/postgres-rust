@@ -47,7 +47,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
 use crate::combinators::precision::precision;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::CurrentDate;
@@ -55,6 +54,7 @@ use pg_ast::SqlFunction::CurrentTime;
 use pg_ast::SqlFunction::CurrentTimestamp;
 use pg_ast::SqlFunction::LocalTime;
 use pg_ast::SqlFunction::LocalTimestamp;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_parser_core::scan;

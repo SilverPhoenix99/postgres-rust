@@ -3,6 +3,7 @@
 /// * If any parser returns `Err`, then the parser returns that first `Err`.
 ///
 /// Equivalent to `A & B ( & ... )*`.
+#[macro_export]
 macro_rules! seq {
     (
         $head:expr,
@@ -11,18 +12,18 @@ macro_rules! seq {
         ),+
         $(,)?
     ) => {
-        pg_combinators::parser(|stream| {
+        $crate::parser(|stream| {
 
             let start_position = stream.current_location().range().start;
 
             Ok((
                 {
                     let p = $head;
-                    pg_combinators::Combinator::parse(&p, stream)?
+                    $crate::Combinator::parse(&p, stream)?
                 },
                 $({
                     let p = $tail;
-                    let result = pg_combinators::Combinator::parse(&p, stream);
+                    let result = $crate::Combinator::parse(&p, stream);
 
                     match result {
                         Ok(ok) => ok,
@@ -48,5 +49,3 @@ macro_rules! seq {
         })
     };
 }
-
-pub(in crate::combinators) use seq;

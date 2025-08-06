@@ -93,7 +93,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
 use crate::combinators::function_with_argtypes;
 use crate::combinators::stmt::typecast;
 use pg_ast::CastConversion;
@@ -102,6 +101,7 @@ use pg_ast::CastConversion::WithInout;
 use pg_ast::CastConversion::WithoutFunction;
 use pg_ast::CoercionContext;
 use pg_ast::CreateCastStmt;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::As;

@@ -8,7 +8,6 @@ pg_basics::reexport! { pub(in crate::combinators)
     many,
     number,
     param,
-    seq,
     skip,
     string,
     user_defined_operator,

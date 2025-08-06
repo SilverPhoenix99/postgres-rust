@@ -37,8 +37,8 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::seq;
 use pg_ast::TransactionStmt;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Release;
 use pg_lexer::Keyword::Savepoint;

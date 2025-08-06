@@ -87,9 +87,9 @@ mod tests {
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::seq;
 use crate::combinators::qualified_name;
 use pg_ast::RelationExpr;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Only;
 use pg_lexer::OperatorKind::Comma;

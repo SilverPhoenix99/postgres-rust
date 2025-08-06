@@ -66,9 +66,9 @@ mod tests {
 
 use crate::combinators::array_bounds;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
 use crate::combinators::simple_typename;
 use pg_ast::Type;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Setof;
 use pg_parser_core::scan;

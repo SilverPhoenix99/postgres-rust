@@ -41,9 +41,9 @@ mod tests {
 
 use crate::combinators::expr::b_expr;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use pg_ast::PositionFunc;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::In;
 use pg_parser_core::scan;

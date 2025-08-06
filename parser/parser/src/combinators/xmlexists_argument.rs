@@ -58,9 +58,9 @@ mod tests {
 }
 
 use crate::combinators::expr::expr_primary;
-use crate::combinators::foundation::seq;
 use crate::no_match;
 use pg_ast::ExprNode;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Passing;

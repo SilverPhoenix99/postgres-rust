@@ -52,8 +52,8 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
 use pg_basics::QualifiedName;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Configuration;
 use pg_lexer::Keyword::Dictionary;

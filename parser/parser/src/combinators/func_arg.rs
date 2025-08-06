@@ -123,7 +123,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
 use crate::combinators::func_type;
 use crate::combinators::type_function_name;
 use pg_ast::FunctionParameter;
@@ -132,6 +131,7 @@ use pg_ast::FunctionParameterMode::In;
 use pg_ast::FunctionParameterMode::InOut;
 use pg_ast::FunctionParameterMode::Out;
 use pg_ast::FunctionParameterMode::Variadic;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Double;

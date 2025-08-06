@@ -36,10 +36,10 @@ mod tests {
 
 use crate::combinators::expr::expr_primary;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::xmlexists_argument;
 use pg_ast::XmlExists;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

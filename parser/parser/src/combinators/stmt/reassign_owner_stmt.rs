@@ -30,10 +30,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
 use crate::combinators::role_list;
 use crate::combinators::role_spec;
 use pg_ast::ReassignOwnedStmt;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::OwnedKw;

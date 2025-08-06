@@ -35,12 +35,12 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::seq;
 use crate::combinators::role_spec;
 use crate::combinators::signed_number;
 use pg_ast::AlterOwnerStmt;
 use pg_ast::AlterOwnerTarget;
 use pg_ast::RawStmt;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Large;
 use pg_lexer::Keyword::Object;

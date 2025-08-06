@@ -129,7 +129,6 @@ mod tests {
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::paren;
-use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::no_match;
 use pg_ast::ExprNode;
@@ -138,6 +137,7 @@ use pg_ast::XmlStandalone;
 use pg_ast::XmlStandalone::No;
 use pg_ast::XmlStandalone::NoValue;
 use pg_ast::XmlStandalone::Yes;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Standalone;

@@ -37,11 +37,11 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::seq;
 use crate::combinators::window_specification;
 use pg_ast::OverClause;
 use pg_ast::OverClause::WindowDefinition;
 use pg_ast::OverClause::WindowName;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Over;
 use pg_parser_core::scan;

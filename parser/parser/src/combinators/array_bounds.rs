@@ -59,8 +59,8 @@ mod tests {
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::brackets;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::seq;
 use crate::combinators::i32_literal;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Array;
 use pg_parser_core::scan;

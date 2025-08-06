@@ -11,8 +11,8 @@ pub(super) fn import_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::seq;
 use pg_ast::RawStmt;
+use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Foreign;
 use pg_lexer::Keyword::Import;
