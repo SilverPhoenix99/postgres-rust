@@ -38,7 +38,7 @@ Returns `Err(NoMatch)` or `Err(Eof)`, if empty.
 macro_rules! many {
 
     (pre = $prefix:expr, $follow:expr $(,)?) => {
-        $crate::combinators::foundation::parser(|stream| {
+        pg_combinators::parser(|stream| {
 
             let p = $prefix;
 
@@ -59,7 +59,7 @@ macro_rules! many {
     };
 
     (sep = $separator:expr, $parser:expr $(,)?) => {
-        $crate::combinators::foundation::parser(|stream| {
+        pg_combinators::parser(|stream| {
 
             let p = $parser;
 
@@ -83,7 +83,7 @@ macro_rules! many {
     };
 
     ($parser:expr) => {
-        $crate::combinators::foundation::parser(|stream| {
+        pg_combinators::parser(|stream| {
 
             let p = $parser;
 

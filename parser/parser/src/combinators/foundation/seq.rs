@@ -11,7 +11,7 @@ macro_rules! seq {
         ),+
         $(,)?
     ) => {
-        $crate::combinators::foundation::parser(|stream| {
+        pg_combinators::parser(|stream| {
 
             let start_position = stream.current_location().range().start;
 

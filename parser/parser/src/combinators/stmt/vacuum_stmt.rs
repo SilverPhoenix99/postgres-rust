@@ -12,9 +12,9 @@ pub(super) fn vacuum_stmt(stream: &mut TokenStream<'_>) -> scan::Result<RawStmt>
     Ok(stmt)
 }
 
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::seq;
 use pg_ast::RawStmt;
+use pg_combinators::parser;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Vacuum;
 use pg_parser_core::scan;

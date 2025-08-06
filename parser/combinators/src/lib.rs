@@ -4,4 +4,5 @@ pg_basics::reexport! { pub
     map,
     operator,
     optional,
+    parser,
 }

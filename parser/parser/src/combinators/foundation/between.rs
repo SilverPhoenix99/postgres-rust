@@ -1,7 +1,7 @@
 /// Matches `'(' P ')'`, and returns the result of `P`, discarding both Parenthesis tokens.
 macro_rules! paren {
     ($parser:expr) => {
-        $crate::combinators::foundation::parser(|stream| {
+        pg_combinators::parser(|stream| {
 
             let p = $crate::combinators::foundation::seq!(
                 pg_lexer::OperatorKind::OpenParenthesis,
@@ -18,7 +18,7 @@ macro_rules! paren {
 /// Matches `'[' P ']'`, and returns the result of `P`, discarding both Bracket tokens.
 macro_rules! brackets {
     ($parser:expr) => {
-        $crate::combinators::foundation::parser(|stream| {
+        pg_combinators::parser(|stream| {
 
             let p = $crate::combinators::foundation::seq!(
                 pg_lexer::OperatorKind::OpenBracket,

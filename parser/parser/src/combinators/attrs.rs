@@ -1,7 +1,7 @@
 /// Outputs `P ( '.' col_label )*`.
 macro_rules! attrs {
     ($prefix:expr) => {
-        $crate::combinators::foundation::parser::<_, pg_basics::QualifiedName>(|stream| {
+        pg_combinators::parser::<_, pg_basics::QualifiedName>(|stream| {
             let p = $crate::combinators::foundation::many!(
                 pre = $prefix,
                 pg_combinators::Combinator::map(
@@ -23,8 +23,8 @@ pub(in crate::combinators) use attrs;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::combinators::foundation::parser;
     use crate::tests::test_parser;
+    use pg_combinators::parser;
     use pg_parser_core::scan;
 
     #[test]

@@ -1,4 +1,4 @@
-pub(in crate::combinators) fn parser<F, O>(parser: F) -> ClosureCombi<F, O>
+pub fn parser<F, O>(parser: F) -> ClosureCombi<F, O>
 where
     F: Fn(&mut TokenStream) -> scan::Result<O>
 {
@@ -9,7 +9,7 @@ where
 }
 
 #[derive(Debug)]
-pub(in crate::combinators) struct ClosureCombi<F, O> {
+pub struct ClosureCombi<F, O> {
     parser: F,
     boo: PhantomData<O>,
 }
@@ -34,7 +34,7 @@ where
     }
 }
 
+use crate::Combinator;
 use core::marker::PhantomData;
-use pg_combinators::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

@@ -12,7 +12,7 @@ macro_rules! alt {
         ),+
         $(,)?
     ) => {
-        $crate::combinators::foundation::parser(|stream| {
+        pg_combinators::parser(|stream| {
 
             let p = $head;
             let result = pg_combinators::Combinator::parse(&p, stream);

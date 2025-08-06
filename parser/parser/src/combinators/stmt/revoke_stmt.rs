@@ -16,9 +16,9 @@ pub(super) fn revoke_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
     Ok(stmt)
 }
 
-use crate::combinators::foundation::parser;
 use crate::combinators::foundation::seq;
 use pg_ast::RawStmt;
+use pg_combinators::parser;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Revoke;
 use pg_parser_core::scan;
