@@ -4,5 +4,5 @@ pub enum OverClause {
     WindowDefinition(WindowDefinition),
 }
 
-use pg_basics::Str;
 use crate::WindowDefinition;
+use pg_basics::Str;

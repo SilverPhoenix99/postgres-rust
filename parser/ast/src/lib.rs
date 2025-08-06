@@ -106,7 +106,6 @@ pg_basics::reexport! { pub
     unary_expr,
     unicode_normal_form,
     unique_null_treatment,
-    unsigned_number,
     utility_option,
     value_or_default,
     var_value,
@@ -235,3 +234,4 @@ impl From<UnsignedNumber> for ExprNode {
 use derive_more::From;
 use pg_basics::NumberRadix;
 use pg_basics::Str;
+use pg_basics::UnsignedNumber;

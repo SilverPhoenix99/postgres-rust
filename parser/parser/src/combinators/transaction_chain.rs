@@ -35,9 +35,9 @@ mod tests {
 
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_ast::TransactionChain;
 use pg_lexer::Keyword::And;
 use pg_lexer::Keyword::Chain;
 use pg_lexer::Keyword::No;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

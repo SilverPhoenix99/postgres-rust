@@ -14,7 +14,6 @@ pub(super) fn document_or_content(stream: &mut TokenStream) -> scan::Result<XmlN
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
 
     #[test]
     fn test_document_or_content() {
@@ -30,9 +29,9 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_ast::XmlNodeKind;
 use pg_ast::XmlNodeKind::Content;
 use pg_ast::XmlNodeKind::Document;
 use pg_lexer::Keyword as Kw;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

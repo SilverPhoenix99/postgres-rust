@@ -25,7 +25,6 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_ast::UnicodeNormalForm;
 use pg_ast::UnicodeNormalForm::CanonicalComposition;
 use pg_ast::UnicodeNormalForm::CanonicalDecomposition;
@@ -36,3 +35,4 @@ use pg_lexer::Keyword::Nfd;
 use pg_lexer::Keyword::Nfkc;
 use pg_lexer::Keyword::Nfkd;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

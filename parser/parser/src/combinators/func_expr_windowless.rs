@@ -38,6 +38,6 @@ use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::func_application;
 use crate::combinators::json_aggregate_func;
-use crate::stream::TokenStream;
 use pg_ast::FuncExprWindowless;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

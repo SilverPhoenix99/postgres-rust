@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub(crate) enum TokenValue {
+pub enum TokenValue {
     Param { index: i32 },
     Keyword(Keyword),
     Operator(OperatorKind),
@@ -10,7 +10,7 @@ pub(crate) enum TokenValue {
     BitString { value: Box<str>, kind: BitStringKind },
 }
 
-use pg_ast::UnsignedNumber;
+use pg_basics::UnsignedNumber;
 use pg_lexer::BitStringKind;
 use pg_lexer::Keyword;
 use pg_lexer::OperatorKind;

@@ -61,7 +61,6 @@ pub(super) fn granted_by(stream: &mut TokenStream<'_>) -> scan::Result<RoleSpec>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
     use crate::tests::test_parser;
 
     #[test]
@@ -115,7 +114,6 @@ use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
-use crate::stream::TokenStream;
 use pg_ast::DropBehavior;
 use pg_ast::GrantOption;
 use pg_ast::RoleSpec;
@@ -129,3 +127,4 @@ use pg_lexer::Keyword::Restrict;
 use pg_lexer::Keyword::With;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

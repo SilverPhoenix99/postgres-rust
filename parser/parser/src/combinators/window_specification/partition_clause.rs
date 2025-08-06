@@ -28,8 +28,8 @@ mod tests {
 use crate::combinators::expr_list;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_ast::ExprNode;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Partition;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

@@ -21,6 +21,6 @@ pub(super) fn b_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     expr_primary(stream)
 }
 
-use crate::stream::TokenStream;
 use pg_ast::ExprNode;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

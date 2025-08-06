@@ -43,7 +43,6 @@ fn column_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
     use crate::tests::test_parser;
     use test_case::test_case;
 
@@ -74,11 +73,11 @@ use crate::combinators::attrs::attrs;
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
 use pg_lexer::KeywordCategory::ColumnName;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_lexer::KeywordCategory::Unreserved;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;
 use pg_parser_core::syntax;

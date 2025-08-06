@@ -11,8 +11,8 @@ pub(in crate::combinators) fn identifier(stream: &mut TokenStream) -> scan::Resu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use test_case::test_case;
     use crate::tests::test_parser;
+    use test_case::test_case;
 
     #[test_case("sOmE_iDeNtIfIeR" => Ok("some_identifier".into()))]
     #[test_case(r#""quoted""# => Ok("quoted".into()))]
@@ -23,8 +23,8 @@ mod tests {
     }
 }
 
-use crate::stream::TokenConsumer;
-use crate::stream::TokenStream;
-use crate::stream::TokenValue::Identifier;
 use core::mem;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenConsumer;
+use pg_parser_core::stream::TokenStream;
+use pg_parser_core::stream::TokenValue::Identifier;

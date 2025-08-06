@@ -54,15 +54,14 @@ fn role_none(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
     use crate::tests::test_parser;
     use pg_ast::RoleSpec;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
+        pg_basics::Location,
         pg_elog::role_spec::Error::ForbiddenRoleSpec,
         scan::Error::NoMatch,
-        pg_basics::Location,
     };
 
     #[test]
@@ -113,7 +112,6 @@ use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word;
-use crate::stream::TokenStream;
 use pg_ast::RoleSpec;
 use pg_basics::Str;
 use pg_elog::role_spec::Error::ReservedRoleSpec;
@@ -123,3 +121,4 @@ use pg_lexer::Keyword::NoneKw;
 use pg_lexer::Keyword::SessionUser;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

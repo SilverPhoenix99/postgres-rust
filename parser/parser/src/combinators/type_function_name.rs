@@ -9,7 +9,6 @@ pub(super) fn type_function_name(stream: &mut TokenStream) -> scan::Result<Str> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
 
     #[test]
     fn test_type_function_name() {
@@ -25,8 +24,8 @@ mod tests {
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_basics::Str;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_lexer::KeywordCategory::Unreserved;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

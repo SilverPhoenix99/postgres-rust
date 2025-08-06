@@ -28,6 +28,6 @@ use crate::combinators::foundation::alt;
 use crate::combinators::foundation::any_keyword;
 use crate::combinators::foundation::identifier;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_basics::Str;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

@@ -38,7 +38,6 @@ mod tests {
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_ast::DiscardStmt;
 use pg_lexer::Keyword::All;
 use pg_lexer::Keyword::Discard;
@@ -47,3 +46,4 @@ use pg_lexer::Keyword::Sequences;
 use pg_lexer::Keyword::Temp;
 use pg_lexer::Keyword::Temporary;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

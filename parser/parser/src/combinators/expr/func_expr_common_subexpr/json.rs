@@ -59,6 +59,6 @@ use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_key_uniqueness_constraint;
 use crate::combinators::json_value_expr;
-use crate::stream::TokenStream;
 use pg_ast::JsonFunc;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

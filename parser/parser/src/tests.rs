@@ -14,7 +14,7 @@ macro_rules! test_parser {
 
     ($source:expr, $parser:expr) => {{
         let source = $source;
-        let mut stream = $crate::stream::TokenStream::from(source);
+        let mut stream = pg_parser_core::stream::TokenStream::from(source);
         let parser = $parser;
         $crate::combinators::foundation::Combinator::parse(&parser, &mut stream)
     }};

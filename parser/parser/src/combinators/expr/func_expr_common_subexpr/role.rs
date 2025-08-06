@@ -35,7 +35,6 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::CurrentRole;
 use pg_ast::SqlFunction::CurrentUser;
@@ -44,3 +43,4 @@ use pg_ast::SqlFunction::SystemUser;
 use pg_ast::SqlFunction::User;
 use pg_lexer::Keyword as Kw;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

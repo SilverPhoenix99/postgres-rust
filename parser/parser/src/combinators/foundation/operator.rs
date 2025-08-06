@@ -10,8 +10,8 @@ impl Combinator for OperatorKind {
 }
 
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenConsumer;
-use crate::stream::TokenStream;
-use crate::stream::TokenValue::Operator;
 use pg_lexer::OperatorKind;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenConsumer;
+use pg_parser_core::stream::TokenStream;
+use pg_parser_core::stream::TokenValue::Operator;

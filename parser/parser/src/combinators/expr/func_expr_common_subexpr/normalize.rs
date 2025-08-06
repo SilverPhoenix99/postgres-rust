@@ -55,7 +55,7 @@ use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_ast::NormalizeFunc;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

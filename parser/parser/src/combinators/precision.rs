@@ -4,5 +4,5 @@ pub(super) fn precision(stream: &mut TokenStream) -> scan::Result<i32> {
 }
 
 use crate::combinators::i32_literal_paren;
-use crate::stream::TokenStream;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

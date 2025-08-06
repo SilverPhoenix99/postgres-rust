@@ -112,7 +112,6 @@ fn like_op(stream: &mut TokenStream) -> scan::Result<Operator> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
     use crate::tests::test_parser;
 
     #[test]
@@ -211,7 +210,6 @@ use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::user_defined_operator;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_ast::Operator;
 use pg_ast::Operator::Addition;
 use pg_ast::Operator::Division;
@@ -239,3 +237,4 @@ use pg_lexer::OperatorKind::NotEquals;
 use pg_lexer::OperatorKind::Percent;
 use pg_lexer::OperatorKind::Plus;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

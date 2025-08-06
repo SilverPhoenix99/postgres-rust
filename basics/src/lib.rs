@@ -52,6 +52,7 @@ reexport! { pub
     non_negative,
     number_radix,
     str,
+    unsigned_number,
 }
 
 pub type Oid = u32;

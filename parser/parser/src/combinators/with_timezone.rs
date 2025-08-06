@@ -33,9 +33,9 @@ mod tests {
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_lexer::Keyword::Time;
 use pg_lexer::Keyword::With;
 use pg_lexer::Keyword::Without;
 use pg_lexer::Keyword::Zone;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

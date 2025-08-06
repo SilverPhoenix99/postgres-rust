@@ -33,8 +33,8 @@ mod tests {
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::utility_options;
-use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_ast::RawStmt::CheckPointStmt;
 use pg_lexer::Keyword::Checkpoint;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

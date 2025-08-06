@@ -43,6 +43,6 @@ impl XmlSerialize {
     }
 }
 
-use crate::XmlNodeKind;
 use crate::ExprNode;
 use crate::TypeName;
+use crate::XmlNodeKind;

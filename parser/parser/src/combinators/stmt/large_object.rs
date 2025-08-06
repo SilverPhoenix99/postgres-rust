@@ -29,8 +29,8 @@ mod tests {
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::signed_number;
-use crate::stream::TokenStream;
 use pg_ast::SignedNumber;
 use pg_lexer::Keyword::Large;
 use pg_lexer::Keyword::Object;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

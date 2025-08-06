@@ -33,7 +33,7 @@ use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::JsonScalar;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

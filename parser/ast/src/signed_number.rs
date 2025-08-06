@@ -30,6 +30,6 @@ impl From<UnsignedNumber> for SignedNumber {
     }
 }
 
-use crate::UnsignedNumber;
 use derive_more::From;
 use pg_basics::NumberRadix;
+use pg_basics::UnsignedNumber;

@@ -39,7 +39,6 @@ mod tests {
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_ast::WindowExclusion;
 use pg_ast::WindowExclusion::CurrentRow;
 use pg_ast::WindowExclusion::Group;
@@ -52,3 +51,4 @@ use pg_lexer::Keyword::No;
 use pg_lexer::Keyword::Others;
 use pg_lexer::Keyword::Row;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

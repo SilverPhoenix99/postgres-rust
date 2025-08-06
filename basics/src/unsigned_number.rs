@@ -10,6 +10,6 @@ impl Default for UnsignedNumber {
     }
 }
 
+use crate::NonNegative;
+use crate::NumberRadix;
 use derive_more::From;
-use pg_basics::NonNegative;
-use pg_basics::NumberRadix;

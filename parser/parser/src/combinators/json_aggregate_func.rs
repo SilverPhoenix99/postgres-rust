@@ -14,8 +14,8 @@ impl From<JsonAggFunc> for FuncExprWindowless {
 }
 
 pub(super) fn json_aggregate_func(stream: &mut TokenStream) -> scan::Result<JsonAggFunc> {
-    use crate::stream::TokenValue::Keyword as K;
-    use crate::stream::TokenValue::Operator as Op;
+    use pg_parser_core::stream::TokenValue::Keyword as K;
+    use pg_parser_core::stream::TokenValue::Operator as Op;
 
     /*
           json_objectagg
@@ -172,7 +172,6 @@ use crate::combinators::json_returning_clause;
 use crate::combinators::json_value_expr;
 use crate::combinators::sort_clause;
 use crate::no_match;
-use crate::stream::TokenStream;
 use derive_more::From;
 use pg_ast::FuncExprWindowless;
 use pg_ast::JsonArrayAgg;
@@ -181,3 +180,4 @@ use pg_lexer::Keyword::JsonArrayagg;
 use pg_lexer::Keyword::JsonObjectagg;
 use pg_lexer::OperatorKind::OpenParenthesis;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

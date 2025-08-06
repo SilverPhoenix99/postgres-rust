@@ -27,10 +27,10 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_ast::SortDirection;
 use pg_ast::SortDirection::Ascending;
 use pg_ast::SortDirection::Descending;
 use pg_lexer::Keyword::Asc;
 use pg_lexer::Keyword::Desc;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

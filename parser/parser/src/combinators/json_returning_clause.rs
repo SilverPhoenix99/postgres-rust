@@ -52,7 +52,7 @@ use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_format_clause;
 use crate::combinators::typename;
-use crate::stream::TokenStream;
 use pg_ast::JsonOutput;
 use pg_lexer::Keyword::Returning;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

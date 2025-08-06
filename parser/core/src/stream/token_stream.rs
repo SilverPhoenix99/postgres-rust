@@ -1,5 +1,5 @@
 #[derive(Debug)]
-pub(crate) struct TokenStream<'src> {
+pub struct TokenStream<'src> {
     lexer: BufferedLexer<'src>,
     buf: VecDeque<eof::Result<Located<TokenValue>>>
 }
@@ -160,7 +160,7 @@ fn parse_number(value: &str, radix: NumberRadix) -> UnsignedNumber {
     }
 }
 
-pub(crate) trait TokenConsumer<TOut, FRes> {
+pub trait TokenConsumer<TOut, FRes> {
     fn consume<F>(&mut self, f: F) -> scan::Result<TOut>
     where
         F: Fn(&mut TokenValue) -> FRes;
@@ -168,7 +168,7 @@ pub(crate) trait TokenConsumer<TOut, FRes> {
 
 /// Consumers are not allowed to return `Err(Eof)`,
 /// which is an internal error that's only returned by the `TokenBuffer` directly.
-pub(crate) type LocatedResult<T> = pg_elog::LocatedResult<Option<T>>;
+pub type LocatedResult<T> = pg_elog::LocatedResult<Option<T>>;
 
 impl<TOut> TokenConsumer<TOut, LocatedResult<TOut>> for TokenStream<'_> {
     fn consume<F>(&mut self, mapper: F) -> scan::Result<TOut>
@@ -230,9 +230,10 @@ impl TokenConsumer<TokenValue, bool> for TokenStream<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::scan::Error::ScanErr;
+    use crate::syntax;
     use pg_elog::parser::Error::Syntax;
     use pg_elog::Error::Parser;
-    use pg_parser_core::syntax;
     use TokenValue::Identifier;
 
     #[test]
@@ -348,24 +349,24 @@ mod tests {
     }
 }
 
+use crate::eof;
+use crate::eof::Error::Eof;
+use crate::eof::Error::NotEof;
+use crate::scan;
+use crate::scan::Error::NoMatch;
+use crate::scan::Error::ScanErr;
 use crate::stream::buffered_lexer::BufferedLexer;
 use crate::stream::TokenValue;
+use crate::ParserConfig;
 use alloc::collections::VecDeque;
-use pg_ast::UnsignedNumber;
-use pg_ast::UnsignedNumber::IntegerConst;
-use pg_ast::UnsignedNumber::NumericConst;
 use pg_basics::guc::BackslashQuote;
 use pg_basics::Located;
 use pg_basics::Location;
 use pg_basics::NumberRadix;
+use pg_basics::UnsignedNumber;
+use pg_basics::UnsignedNumber::IntegerConst;
+use pg_basics::UnsignedNumber::NumericConst;
 use pg_elog::parser::Warning;
 use pg_elog::HasLocation;
 use pg_lexer::Lexer;
 use pg_lexer::RawTokenKind;
-use pg_parser_core::eof;
-use pg_parser_core::eof::Error::Eof;
-use pg_parser_core::eof::Error::NotEof;
-use pg_parser_core::scan;
-use pg_parser_core::scan::Error::NoMatch;
-use pg_parser_core::scan::Error::ScanErr;
-use pg_parser_core::ParserConfig;

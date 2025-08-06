@@ -100,7 +100,7 @@ use crate::combinators::json_quotes_clause;
 use crate::combinators::json_returning_clause;
 use crate::combinators::json_value_expr;
 use crate::combinators::json_wrapper_behavior;
-use crate::stream::TokenStream;
 use pg_ast::JsonQueryExpr;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

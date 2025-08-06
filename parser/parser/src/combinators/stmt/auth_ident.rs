@@ -22,8 +22,8 @@ mod tests {
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
-use crate::stream::TokenStream;
 use pg_ast::RoleSpec;
 use pg_ast::RoleSpec::CurrentUser;
 use pg_lexer::Keyword::User;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

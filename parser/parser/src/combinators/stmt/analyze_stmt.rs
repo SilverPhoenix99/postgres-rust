@@ -18,6 +18,6 @@ use crate::combinators::foundation::parser;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::analyze_keyword;
-use crate::stream::TokenStream;
 use pg_ast::RawStmt;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

@@ -62,7 +62,7 @@ use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::json_format_clause;
-use crate::stream::TokenStream;
 use pg_ast::JsonValueExpr;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

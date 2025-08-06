@@ -89,8 +89,8 @@ where
 use crate::sql_state::SqlState;
 use crate::HasLocation;
 use crate::LogMessage;
+use core::fmt;
 use core::fmt::Display;
 use core::fmt::Formatter;
-use core::fmt;
 use pg_basics::Located;
 use pg_basics::Location;

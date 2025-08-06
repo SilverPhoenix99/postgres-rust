@@ -97,6 +97,6 @@ use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::sort_clause;
-use crate::stream::TokenStream;
 use pg_ast::WindowDefinition;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

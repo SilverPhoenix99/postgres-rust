@@ -87,7 +87,7 @@ use crate::combinators::json_behavior_clause;
 use crate::combinators::json_passing_clause;
 use crate::combinators::json_returning_clause;
 use crate::combinators::json_value_expr;
-use crate::stream::TokenStream;
 use pg_ast::JsonValueFunc;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

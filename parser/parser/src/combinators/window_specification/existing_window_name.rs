@@ -23,9 +23,9 @@ pub(super) fn existing_window_name(stream: &mut TokenStream<'_>) -> scan::Result
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::combinators::foundation::Combinator;
     use crate::tests::test_parser;
     use test_case::test_case;
-    use crate::combinators::foundation::Combinator;
 
     #[test_case("partition by", None)]
     #[test_case("partition partition", Some("partition".into()))]
@@ -62,8 +62,6 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::no_match;
-use crate::stream::TokenStream;
-use crate::stream::TokenValue::Keyword as Kw;
 use pg_basics::Str;
 use pg_lexer::Keyword::Between;
 use pg_lexer::Keyword::By;
@@ -74,3 +72,5 @@ use pg_lexer::Keyword::RangeKw;
 use pg_lexer::Keyword::Rows;
 use pg_lexer::Keyword::Unbounded;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;
+use pg_parser_core::stream::TokenValue::Keyword as Kw;

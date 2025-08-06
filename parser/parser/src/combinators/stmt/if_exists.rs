@@ -26,8 +26,8 @@ mod tests {
 
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_ast::Presence;
 use pg_lexer::Keyword::Exists;
 use pg_lexer::Keyword::If;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

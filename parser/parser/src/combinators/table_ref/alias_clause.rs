@@ -43,7 +43,7 @@ use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::name_list;
-use crate::stream::TokenStream;
 use pg_ast::Alias;
 use pg_lexer::Keyword::As;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

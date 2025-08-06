@@ -11,7 +11,6 @@ pub(super) fn work_or_transaction(stream: &mut TokenStream) -> scan::Result<()> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
 
     #[test]
     fn test_work_or_transaction() {
@@ -23,7 +22,7 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::Combinator;
-use crate::stream::TokenStream;
 use pg_lexer::Keyword::Transaction;
 use pg_lexer::Keyword::Work;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;

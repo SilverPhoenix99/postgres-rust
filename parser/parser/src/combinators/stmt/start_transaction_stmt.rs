@@ -45,8 +45,8 @@ mod tests {
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::Combinator;
 use crate::combinators::transaction_mode_list;
-use crate::stream::TokenStream;
 use pg_ast::TransactionStmt;
 use pg_lexer::Keyword::Start;
 use pg_lexer::Keyword::Transaction;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;
