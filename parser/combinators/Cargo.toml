@@ -13,3 +13,7 @@ pg-parser-core.workspace = true
 
 [dev-dependencies]
 test-case.workspace = true
+
+[features]
+default = []
+tuple_combinators = []
