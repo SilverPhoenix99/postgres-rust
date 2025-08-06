@@ -4,3 +4,4 @@ Cargo.lock
 /scripts/tmp/
 .run/
 *.mm_profdata
+chrome_profiler.json
