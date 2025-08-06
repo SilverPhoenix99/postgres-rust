@@ -20,15 +20,13 @@ pub(super) fn unlisten_stmt(stream: &mut TokenStream) -> scan::Result<OneOrAll<S
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     use test_case::test_case;
 
-    #[test_case("unlisten *", OneOrAll::All)]
-    #[test_case("unlisten test_name", OneOrAll::One("test_name".into()))]
-    fn test_unlisten(source: &str, expected: OneOrAll<Str>) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        assert_eq!(Ok(expected), unlisten_stmt(&mut stream));
+    #[test_case("unlisten *" => Ok(OneOrAll::All))]
+    #[test_case("unlisten test_name" => Ok(OneOrAll::One("test_name".into())))]
+    fn test_unlisten(source: &str) -> scan::Result<OneOrAll<Str>> {
+        test_parser!(source, unlisten_stmt)
     }
 }
 

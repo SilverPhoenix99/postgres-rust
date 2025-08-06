@@ -43,33 +43,31 @@ pub(super) fn alter_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
-    use test_case::test_case;
+    use crate::tests::test_parser;
+    use test_case::test_matrix;
 
-    #[test_case("alter aggregate aggregate_name(*) owner to current_user")]
-    #[test_case("alter collation some_name refresh version")]
-    #[test_case("alter conversion some_conversion rename to new_conversion")]
-    #[test_case("alter database the_db refresh collation version")]
-    #[test_case("alter default privileges in schema some_schema grant all on tables to public")]
-    #[test_case("alter event trigger some_trigger owner to current_user")]
-    #[test_case("alter extension foo set schema some_schema")]
-    #[test_case("alter function some_function() owner to current_user")]
-    #[test_case("alter group some_group rename to new_group_name")]
-    #[test_case("alter language lang owner to session_user")]
-    #[test_case("alter large object -127 owner to public")]
-    #[test_case("alter system reset all")]
-    #[test_case("alter user public")]
-    fn test_alter(source: &str) {
-
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = alter_stmt(&mut stream);
-
-        // This only quickly tests that statement types aren't missing.
-        // More in-depth testing is within each statement's module.
-        assert_matches!(actual, Ok(_),
-            "expected Ok(_) for {source:?} but actually got {actual:?}"
-        );
+    // This only quickly tests that statement types aren't missing.
+    // More in-depth testing is within each statement's module.
+    #[test_matrix(
+        [
+            "alter aggregate aggregate_name(*) owner to current_user",
+            "alter collation some_name refresh version",
+            "alter conversion some_conversion rename to new_conversion",
+            "alter database the_db refresh collation version",
+            "alter default privileges in schema some_schema grant all on tables to public",
+            "alter event trigger some_trigger owner to current_user",
+            "alter extension foo set schema some_schema",
+            "alter function some_function() owner to current_user",
+            "alter group some_group rename to new_group_name",
+            "alter language lang owner to session_user",
+            "alter large object -127 owner to public",
+            "alter system reset all",
+            "alter user public",
+        ]
+        => matches Ok(_)
+    )]
+    fn test_alter_stmt(source: &str) -> scan::Result<RawStmt> {
+        test_parser!(source, alter_stmt)
     }
 }
 

@@ -47,19 +47,21 @@ fn sortby(stream: &mut TokenStream) -> scan::Result<SortBy> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::stream;
     use crate::tests::test_parser;
     use pg_ast::ExprNode::IntegerConst;
     use pg_ast::Operator::Less;
-    use pg_ast::SortDirection;
     use pg_ast::SortDirection::Ascending;
-    use pg_ast::SortNulls::NullsFirst;
     use pg_ast::SortNulls::NullsLast;
+    #[allow(unused_imports)]
+    use pg_ast::{
+        SortDirection,
+        SortNulls::NullsFirst,
+    };
     use test_case::test_case;
 
     #[test]
     fn test_sort_clause() {
-        let mut stream = stream("order by 1, 2");
+        let mut stream = TokenStream::from("order by 1, 2");
 
         let (actual, _) = sort_clause(&mut stream).unwrap();
 
@@ -85,33 +87,33 @@ mod tests {
         )
     }
 
-    #[test_case("1 using < nulls first", SortBy::new(
+    #[test_case("1 using < nulls first" => Ok(SortBy::new(
         IntegerConst(1),
         Some(Using(Less.into())),
         Some(NullsFirst)
-    ))]
-    #[test_case("2 asc nulls last", SortBy::new(
+    )))]
+    #[test_case("2 asc nulls last" => Ok(SortBy::new(
         IntegerConst(2),
         Some(Ascending),
         Some(NullsLast)
-    ))]
-    #[test_case("3 desc", SortBy::new(
+    )))]
+    #[test_case("3 desc" => Ok(SortBy::new(
         IntegerConst(3),
         Some(SortDirection::Descending),
         None
-    ))]
-    #[test_case("4", SortBy::new(
+    )))]
+    #[test_case("4" => Ok(SortBy::new(
         IntegerConst(4),
         None,
         None
-    ))]
-    #[test_case("5 nulls first", SortBy::new(
+    )))]
+    #[test_case("5 nulls first" => Ok(SortBy::new(
         IntegerConst(5),
         None,
         Some(NullsFirst)
-    ))]
-    fn test_sortby(source: &str, expected: SortBy) {
-        test_parser!(source, sortby, expected)
+    )))]
+    fn test_sortby(source: &str) -> scan::Result<SortBy> {
+        test_parser!(source, sortby)
     }
 }
 

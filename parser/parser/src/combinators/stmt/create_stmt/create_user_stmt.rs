@@ -48,9 +48,7 @@ fn create_user_role(stream: &mut TokenStream) -> scan::Result<CreateRoleStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
     use crate::tests::test_parser;
-    use crate::tests::DEFAULT_CONFIG;
     use pg_ast::CreateRoleOption;
     #[allow(unused_imports)]
     use pg_ast::{
@@ -58,19 +56,19 @@ mod tests {
         Presence,
         RoleSpec
     };
-    use test_case::test_case;
+    use test_case::{test_case, test_matrix};
 
-    #[test_case("user new_user with password 'password'")]
-    #[test_case("user mapping for foo server bar")]
-    fn test_create_user_stmt(source: &str) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = create_user_stmt(&mut stream);
-
-        // This only quickly tests that statement types aren't missing.
-        // More in-depth testing is within each statement's module.
-        assert_matches!(actual, Ok(_),
-            r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
-        )
+    // This only quickly tests that statement types aren't missing.
+    // More in-depth testing is within each statement's module.
+    #[test_matrix(
+        [
+            "user new_user with password 'password'",
+            "user mapping for foo server bar",
+        ]
+        => matches Ok(_)
+    )]
+    fn test_create_user_stmt(source: &str) -> scan::Result<RawStmt> {
+        test_parser!(source, create_user_stmt)
     }
 
     #[test_case("mapping if not exists for test_user server test_server options (foo '42')",

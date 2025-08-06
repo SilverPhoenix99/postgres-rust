@@ -12,12 +12,11 @@ pub(in crate::combinators) fn col_label(stream: &mut TokenStream) -> scan::Resul
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::stream;
 
     #[test]
     fn test_col_label() {
         let source = "sequence xxyyzz character";
-        let mut stream = stream(source);
+        let mut stream = TokenStream::from(source);
 
         assert_eq!(Ok("sequence".into()), col_label(&mut stream));
         assert_eq!(Ok("xxyyzz".into()), col_label(&mut stream));

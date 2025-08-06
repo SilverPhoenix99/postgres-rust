@@ -75,86 +75,41 @@ fn isolation_level(stream: &mut TokenStream) -> scan::Result<IsolationLevel> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
+    #[allow(unused_imports)]
     use scan::Error::NoMatch;
+    use test_case::test_case;
 
-    #[test]
-    fn test_transaction_mode_list() {
-
-        let mut stream = TokenStream::new("no_match", DEFAULT_CONFIG);
-        assert_matches!(transaction_mode_list(&mut stream), Err(NoMatch(_)));
-
-        let mut stream = TokenStream::new(
-            "read only , read write isolation level read committed",
-            DEFAULT_CONFIG
-        );
-
-        let expected = vec![
+    #[test_case("read only , read write isolation level read committed" => Ok(
+        vec![
             ReadOnly,
             ReadWrite,
             TransactionMode::IsolationLevel(ReadCommitted),
-        ];
-
-        assert_eq!(Ok(expected), transaction_mode_list(&mut stream));
+        ]
+    ))]
+    #[test_case("no_match" => matches Err(NoMatch(_)))]
+    fn test_transaction_mode_list(source: &str) -> scan::Result<Vec<TransactionMode>> {
+        test_parser!(source, transaction_mode_list)
     }
 
-    #[test]
-    fn test_transaction_mode() {
-
-        let mut stream = TokenStream::new(
-            "\
-                read only \
-                read write \
-                deferrable \
-                not deferrable \
-                isolation level read committed \
-                isolation level read uncommitted \
-                isolation level repeatable read \
-                isolation level serializable\
-            ",
-            DEFAULT_CONFIG
-        );
-
-        let expected = [
-            ReadOnly,
-            ReadWrite,
-            Deferrable,
-            NotDeferrable,
-            TransactionMode::IsolationLevel(ReadCommitted),
-            TransactionMode::IsolationLevel(ReadUncommitted),
-            TransactionMode::IsolationLevel(RepeatableRead),
-            TransactionMode::IsolationLevel(Serializable),
-        ];
-
-        for expected_mode in expected {
-            assert_eq!(Ok(expected_mode), transaction_mode(&mut stream));
-        }
+    #[test_case("read only" => Ok(ReadOnly))]
+    #[test_case("read write" => Ok(ReadWrite))]
+    #[test_case("deferrable" => Ok(Deferrable))]
+    #[test_case("not deferrable" => Ok(NotDeferrable))]
+    #[test_case("isolation level read committed" => Ok(TransactionMode::IsolationLevel(ReadCommitted)))]
+    #[test_case("isolation level read uncommitted" => Ok(TransactionMode::IsolationLevel(ReadUncommitted)))]
+    #[test_case("isolation level repeatable read" => Ok(TransactionMode::IsolationLevel(RepeatableRead)))]
+    #[test_case("isolation level serializable" => Ok(TransactionMode::IsolationLevel(Serializable)))]
+    fn test_transaction_mode(source: &str) -> scan::Result<TransactionMode> {
+        test_parser!(source, transaction_mode)
     }
 
-    #[test]
-    fn test_isolation_level() {
-
-        let mut stream = TokenStream::new(
-            "\
-                read committed \
-                read uncommitted \
-                repeatable read \
-                serializable\
-            ",
-            DEFAULT_CONFIG
-        );
-
-        let expected = [
-            ReadCommitted,
-            ReadUncommitted,
-            RepeatableRead,
-            Serializable,
-        ];
-
-        for expected_mode in expected {
-            assert_eq!(Ok(expected_mode), isolation_level(&mut stream));
-        }
+    #[test_case("read committed" => Ok(ReadCommitted))]
+    #[test_case("read uncommitted" => Ok(ReadUncommitted))]
+    #[test_case("repeatable read" => Ok(RepeatableRead))]
+    #[test_case("serializable" => Ok(Serializable))]
+    fn test_isolation_level(source: &str) -> scan::Result<IsolationLevel> {
+        test_parser!(source, isolation_level)
     }
 }
 

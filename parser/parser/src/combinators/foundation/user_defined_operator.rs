@@ -8,12 +8,15 @@ pub(in crate::combinators) fn user_defined_operator(stream: &mut TokenStream<'_>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
 
     #[test]
     fn test_user_defined_op() {
-        let mut stream = TokenStream::new("~@", DEFAULT_CONFIG);
-        assert_eq!("~@", user_defined_operator(&mut stream).unwrap().as_ref());
+        test_parser!(
+            source = "~@",
+            parser = user_defined_operator,
+            expected = "~@"
+        );
     }
 }
 

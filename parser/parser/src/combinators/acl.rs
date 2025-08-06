@@ -62,7 +62,7 @@ pub(super) fn granted_by(stream: &mut TokenStream<'_>) -> scan::Result<RoleSpec>
 mod tests {
     use super::*;
     use crate::stream::TokenStream;
-    use crate::tests::{test_parser, DEFAULT_CONFIG};
+    use crate::tests::test_parser;
 
     #[test]
     fn test_grantee_list() {
@@ -79,7 +79,7 @@ mod tests {
     #[test]
     fn test_grantee() {
         let source = "current_user group public";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::from(source);
         assert_eq!(Ok(RoleSpec::CurrentUser), grantee(&mut stream));
         assert_eq!(Ok(RoleSpec::Public), grantee(&mut stream));
     }
@@ -95,7 +95,7 @@ mod tests {
 
     #[test]
     fn test_drop_behavior() {
-        let mut stream = TokenStream::new("restrict cascade", DEFAULT_CONFIG);
+        let mut stream = TokenStream::from("restrict cascade");
         assert_eq!(Ok(DropBehavior::Restrict), drop_behavior(&mut stream));
         assert_eq!(Ok(DropBehavior::Cascade), drop_behavior(&mut stream));
     }

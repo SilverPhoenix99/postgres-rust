@@ -2,7 +2,7 @@
 macro_rules! attrs {
     ($prefix:expr) => {
         $crate::combinators::foundation::parser::<_, pg_basics::QualifiedName>(|stream| {
-            $crate::combinators::foundation::many!(
+            let p = $crate::combinators::foundation::many!(
                 pre = $prefix,
                 $crate::combinators::foundation::Combinator::map(
                     $crate::combinators::foundation::seq!(
@@ -11,7 +11,9 @@ macro_rules! attrs {
                     ),
                     |(_, name)| name
                 )
-            ).parse(stream)
+            );
+
+            $crate::combinators::foundation::Combinator::parse(&p, stream)
         })
     };
 }

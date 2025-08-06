@@ -45,7 +45,6 @@ mod tests {
     use super::*;
     use crate::stream::TokenStream;
     use crate::tests::test_parser;
-    use crate::tests::DEFAULT_CONFIG;
     use test_case::test_case;
 
     #[test_case("authorization", vec!["authorization".into()])]
@@ -57,7 +56,7 @@ mod tests {
     #[test]
     fn test_unreserved_keyword() {
         let source = "attribute inline.some_thing";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::from(source);
         assert_eq!(Ok(vec!["attribute".into()]), func_name(&mut stream));
         assert_eq!(Ok(vec!["inline".into(), "some_thing".into()]), func_name(&mut stream));
     }
@@ -65,7 +64,7 @@ mod tests {
     #[test]
     fn test_identifier() {
         let source = "some_ident another_ident.something";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::from(source);
         assert_eq!(Ok(vec!["some_ident".into()]), func_name(&mut stream));
         assert_eq!(Ok(vec!["another_ident".into(), "something".into()]), func_name(&mut stream));
     }

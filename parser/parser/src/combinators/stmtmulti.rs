@@ -61,27 +61,27 @@ fn transaction_stmt_legacy(stream: &mut TokenStream) -> scan::Result<Transaction
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::{test_parser, DEFAULT_CONFIG};
+    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         TransactionChain::NoChain,
         TransactionMode::ReadOnly
     };
     use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("begin transaction")]
-    #[test_case("start transaction")]
-    #[test_case("end transaction")]
-    fn test_toplevel_stmt(source: &str) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = toplevel_stmt(&mut stream);
-
-        // This only quickly tests that statement types aren't missing.
-        // More in-depth testing is within each statement's module.
-        assert_matches!(actual, Ok(_),
-            r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
-        )
+    // This only quickly tests that statement types aren't missing.
+    // More in-depth testing is within each statement's module.
+    #[test_matrix(
+        [
+            "begin transaction",
+            "start transaction",
+            "end transaction",
+        ]
+        => matches Ok(_)
+    )]
+    fn test_toplevel_stmt(source: &str) -> scan::Result<RawStmt> {
+        test_parser!(source, toplevel_stmt)
     }
 
     #[test_case("begin transaction read only", TransactionStmt::Begin(vec![ReadOnly]))]

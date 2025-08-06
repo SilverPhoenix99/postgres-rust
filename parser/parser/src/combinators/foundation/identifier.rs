@@ -11,17 +11,15 @@ pub(in crate::combinators) fn identifier(stream: &mut TokenStream) -> scan::Resu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::DEFAULT_CONFIG;
     use test_case::test_case;
+    use crate::tests::test_parser;
 
-    #[test_case("sOmE_iDeNtIfIeR", "some_identifier")]
-    #[test_case(r#""quoted""#, "quoted")]
-    #[test_case(r#"u&"d\0061ta""#, "data")]
-    #[test_case(r#"u&"d!0061ta" UESCAPE '!'"#, "data")]
-    fn test_identifier(source: &str, expected: &str) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = identifier(&mut stream);
-        assert_eq!(expected, actual.unwrap().as_ref())
+    #[test_case("sOmE_iDeNtIfIeR" => Ok("some_identifier".into()))]
+    #[test_case(r#""quoted""# => Ok("quoted".into()))]
+    #[test_case(r#"u&"d\0061ta""# => Ok("data".into()))]
+    #[test_case(r#"u&"d!0061ta" UESCAPE '!'"# => Ok("data".into()))]
+    fn test_identifier(source: &str) -> scan::Result<Box<str>> {
+        test_parser!(source, identifier)
     }
 }
 

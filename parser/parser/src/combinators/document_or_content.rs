@@ -15,11 +15,10 @@ pub(super) fn document_or_content(stream: &mut TokenStream) -> scan::Result<XmlN
 mod tests {
     use super::*;
     use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
 
     #[test]
     fn test_document_or_content() {
-        let mut stream = TokenStream::new("document content", DEFAULT_CONFIG);
+        let mut stream = TokenStream::from("document content");
 
         let actual = document_or_content(&mut stream);
         assert_eq!(Ok(Document), actual);

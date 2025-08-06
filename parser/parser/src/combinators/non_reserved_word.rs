@@ -12,12 +12,11 @@ pub(super) fn non_reserved_word(stream: &mut TokenStream) -> scan::Result<Str> {
 mod tests {
     use super::*;
     use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
 
     #[test]
     fn test_non_reserved_word() {
         let source = "breadth xxyyzz boolean authorization";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::from(source);
 
         assert_eq!(Ok("breadth".into()), non_reserved_word(&mut stream));
         assert_eq!(Ok("xxyyzz".into()), non_reserved_word(&mut stream));

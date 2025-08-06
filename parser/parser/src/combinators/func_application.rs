@@ -188,7 +188,6 @@ fn variadic_arg(stream: &mut TokenStream) -> scan::Result<(Located<NamedValue>, 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::stream;
     use crate::tests::test_parser;
     use pg_ast::ExprNode::IntegerConst;
     use test_case::test_case;
@@ -224,7 +223,7 @@ mod tests {
 
     #[test]
     fn test_func_application_args_all() {
-        let mut stream = stream("(all 1, 2)");
+        let mut stream = TokenStream::from("(all 1, 2)");
         let actual = func_application_args(&mut stream).unwrap();
 
         let All { args, order: None } = actual else {
@@ -246,7 +245,7 @@ mod tests {
 
     #[test]
     fn test_func_application_args_simple() {
-        let mut stream = stream("(1, 2, 3)");
+        let mut stream = TokenStream::from("(1, 2, 3)");
         let actual = func_application_args(&mut stream).unwrap();
 
         let All { args, order: None } = actual else {

@@ -19,4 +19,10 @@ impl ParserConfig {
     }
 }
 
+impl Default for ParserConfig {
+    fn default() -> Self {
+        Self::new(true, Default::default())
+    }
+}
+
 use pg_basics::guc::BackslashQuote;

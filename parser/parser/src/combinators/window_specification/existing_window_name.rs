@@ -25,6 +25,7 @@ mod tests {
     use super::*;
     use crate::tests::test_parser;
     use test_case::test_case;
+    use crate::combinators::foundation::Combinator;
 
     #[test_case("partition by", None)]
     #[test_case("partition partition", Some("partition".into()))]

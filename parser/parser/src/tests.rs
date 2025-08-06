@@ -1,7 +1,5 @@
 #![cfg(test)]
 
-pub(crate) static DEFAULT_CONFIG: ParserConfig = ParserConfig::new(true, SafeEncoding);
-
 macro_rules! test_parser {
 
     (internal =>
@@ -15,12 +13,10 @@ macro_rules! test_parser {
     }};
 
     ($source:expr, $parser:expr) => {{
-        #[allow(unused_imports)]
-        use $crate::combinators::foundation::Combinator;
-        use $crate::tests::stream;
-
-        let mut stream = stream($source);
-        $parser.parse(&mut stream)
+        let source = $source;
+        let mut stream = $crate::stream::TokenStream::from(source);
+        let parser = $parser;
+        $crate::combinators::foundation::Combinator::parse(&parser, &mut stream)
     }};
 
     (
@@ -79,12 +75,4 @@ macro_rules! test_parser {
     };
 }
 
-pub(crate) fn stream(source: &str) -> TokenStream<'_> {
-    TokenStream::new(source, DEFAULT_CONFIG)
-}
-
 pub(crate) use test_parser;
-
-use crate::stream::TokenStream;
-use pg_basics::guc::BackslashQuote::SafeEncoding;
-use pg_parser_core::ParserConfig;

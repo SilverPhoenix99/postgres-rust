@@ -12,11 +12,10 @@ pub(super) fn work_or_transaction(stream: &mut TokenStream) -> scan::Result<()> 
 mod tests {
     use super::*;
     use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
 
     #[test]
     fn test_work_or_transaction() {
-        let mut stream = TokenStream::new("transaction work", DEFAULT_CONFIG);
+        let mut stream = TokenStream::from("transaction work");
         assert_eq!(Ok(()), work_or_transaction(&mut stream));
         assert_eq!(Ok(()), work_or_transaction(&mut stream));
     }

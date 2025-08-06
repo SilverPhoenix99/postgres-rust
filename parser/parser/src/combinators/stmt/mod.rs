@@ -53,43 +53,41 @@ pub(super) fn stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
-    use test_case::test_case;
+    use crate::tests::test_parser;
+    use test_case::test_matrix;
 
-    #[test_case("abort transaction")]
-    #[test_case("alter group some_group add user public")]
-    #[test_case("checkpoint")]
-    #[test_case("close all")]
-    #[test_case("comment on type int is 'comment'")]
-    #[test_case("commit and no chain")]
-    #[test_case("create database the_db with allow connections false")]
-    #[test_case("deallocate all")]
-    #[test_case("discard all")]
-    #[test_case("listen ident")]
-    #[test_case("load 'test string'")]
-    #[test_case("notify test_ident, 'test-payload'")]
-    #[test_case("prepare transaction 'tx id'")]
-    #[test_case("reassign owned by public, test_role to target_role")]
-    #[test_case("release savepoint test_ident")]
-    #[test_case("reset time zone")]
-    #[test_case("rollback to test_ident")]
-    #[test_case("savepoint test_ident")]
-    #[test_case("security label for 'foo' on type int is 'bar'")]
-    #[test_case("set schema 'abc123'")]
-    #[test_case("show all")]
-    #[test_case("start transaction read only, read write deferrable")]
-    #[test_case("unlisten *")]
-    fn test_stmt(source: &str) {
-
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = stmt(&mut stream);
-
-        // This only quickly tests that statement types aren't missing.
-        // More in-depth testing is within each statement's module.
-        assert_matches!(actual, Ok(_),
-            r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
-        )
+    // This only quickly tests that statement types aren't missing.
+    // More in-depth testing is within each statement's module.
+    #[test_matrix(
+        [
+            "abort transaction",
+            "alter group some_group add user public",
+            "checkpoint",
+            "close all",
+            "comment on type int is 'comment'",
+            "commit and no chain",
+            "create database the_db with allow connections false",
+            "deallocate all",
+            "discard all",
+            "listen ident",
+            "load 'test string'",
+            "notify test_ident, 'test-payload'",
+            "prepare transaction 'tx id'",
+            "reassign owned by public, test_role to target_role",
+            "release savepoint test_ident",
+            "reset time zone",
+            "rollback to test_ident",
+            "savepoint test_ident",
+            "security label for 'foo' on type int is 'bar'",
+            "set schema 'abc123'",
+            "show all",
+            "start transaction read only, read write deferrable",
+            "unlisten *",
+        ]
+        => matches Ok(_)
+    )]
+    fn test_stmt(source: &str) -> scan::Result<RawStmt> {
+        test_parser!(source, stmt)
     }
 }
 

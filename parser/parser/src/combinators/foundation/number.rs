@@ -13,17 +13,15 @@ pub(in crate::combinators) fn number(stream: &mut TokenStream<'_>) -> scan::Resu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_basics::NumberRadix::Decimal;
     use test_case::test_case;
 
-    #[test_case("1.1", UnsignedNumber::NumericConst { value: "1.1".into(), radix: Decimal })]
-    #[test_case("11",  UnsignedNumber::IntegerConst(11.into()))]
-    fn test_unsigned_number(source: &str, expected: UnsignedNumber) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = number(&mut stream);
-        assert_eq!(Ok(expected), actual);
+    #[test_case("1.1" => Ok(UnsignedNumber::NumericConst { value: "1.1".into(), radix: Decimal }))]
+    #[test_case("11" => Ok(UnsignedNumber::IntegerConst(11.into())))]
+    fn test_unsigned_number(source: &str) -> scan::Result<UnsignedNumber> {
+        test_parser!(source, number)
     }
 }
 

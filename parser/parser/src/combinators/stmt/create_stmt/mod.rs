@@ -30,25 +30,22 @@ pub(super) fn create_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
-    use test_case::test_case;
+    use crate::tests::test_parser;
+    use test_case::test_matrix;
 
-    #[test_case("create access method foo type table handler bar")]
-    #[test_case("create cast (int as text) with inout")]
-    #[test_case("create conversion conv_name for 'for-encoding' to 'to-encoding' from func_name")]
-    #[test_case("create database new_db oid = 1")]
-    #[test_case("create role new_role with superuser")]
-    #[test_case("create user new_user with password 'password'")]
-    fn test_create_stmt(source: &str) {
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-        let actual = create_stmt(&mut stream);
-
-        // This only quickly tests that statement types aren't missing.
-        // More in-depth testing is within each statement's module.
-        assert_matches!(actual, Ok(_),
-            r"expected Ok(Some(_)) for {source:?} but actually got {actual:?}"
-        )
+    #[test_matrix(
+        [
+            "create access method foo type table handler bar",
+            "create cast (int as text) with inout",
+            "create conversion conv_name for 'for-encoding' to 'to-encoding' from func_name",
+            "create database new_db oid = 1",
+            "create role new_role with superuser",
+            "create user new_user with password 'password'",
+        ]
+        => matches Ok(_)
+    )]
+    fn test_create_stmt(source: &str) -> scan::Result<RawStmt> {
+        test_parser!(source, create_stmt)
     }
 }
 

@@ -113,13 +113,13 @@ fn like_op(stream: &mut TokenStream) -> scan::Result<Operator> {
 mod tests {
     use super::*;
     use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
 
     #[test]
     fn test_user_defined_op() {
 
         let source = "operator(|/) <@>";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::from(source);
 
         let expected = QualifiedOperator(vec![], UserDefined("|/".into()));
         assert_eq!(Ok(expected), qual_op(&mut stream));
@@ -130,21 +130,20 @@ mod tests {
 
     #[test]
     fn test_qualified_op() {
-        let source = "operator(some_qn.*)";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        let actual = qual_op(&mut stream);
-        let expected = QualifiedOperator(
-            vec!["some_qn".into()],
-            Multiplication
-        );
-        assert_eq!(Ok(expected), actual);
+        test_parser!(
+            source = "operator(some_qn.*)",
+            parser = qual_op,
+            expected = QualifiedOperator(
+                vec!["some_qn".into()],
+                Multiplication
+            )
+        )
     }
 
     #[test]
     fn test_any_operator() {
         let source = "@@ != q_name.+";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::from(source);
 
         let expected = QualifiedOperator(
             vec![],
@@ -168,7 +167,7 @@ mod tests {
     #[test]
     fn test_all_op() {
         let source = "~@ <>";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::from(source);
 
         assert_eq!(Ok(UserDefined("~@".into())), all_op(&mut stream));
         assert_eq!(Ok(Operator::NotEquals), all_op(&mut stream));
@@ -178,7 +177,7 @@ mod tests {
     fn test_math_op() {
 
         let source = "+ - * / % ^ < > = <= >= != <>";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::from(source);
 
         assert_eq!(Ok(Addition), all_op(&mut stream));
         assert_eq!(Ok(Subtraction), all_op(&mut stream));
@@ -198,7 +197,7 @@ mod tests {
     #[test]
     fn test_subquery_op() {
         let source = "like ilike";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::from(source);
 
         assert_eq!(Ok(Operator::Like.into()), subquery_op(&mut stream));
         assert_eq!(Ok(ILike.into()), subquery_op(&mut stream));

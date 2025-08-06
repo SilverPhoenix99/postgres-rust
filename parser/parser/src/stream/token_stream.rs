@@ -138,6 +138,12 @@ impl<'src> TokenStream<'src> {
     }
 }
 
+impl<'src> From<&'src str> for TokenStream<'src> {
+    fn from(value: &'src str) -> Self {
+        TokenStream::new(value, ParserConfig::default())
+    }
+}
+
 fn parse_number(value: &str, radix: NumberRadix) -> UnsignedNumber {
 
     let value = value.replace("_", "");
@@ -224,7 +230,6 @@ impl TokenConsumer<TokenValue, bool> for TokenStream<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::DEFAULT_CONFIG;
     use pg_elog::parser::Error::Syntax;
     use pg_elog::Error::Parser;
     use pg_parser_core::syntax;
@@ -232,14 +237,14 @@ mod tests {
 
     #[test]
     fn test_eof() {
-        let mut buffer =  TokenStream::new("", DEFAULT_CONFIG);
+        let mut buffer =  TokenStream::from("");
 
         assert!(buffer.eof())
     }
 
     #[test]
     fn test_next_and_peek_and_current_location() {
-        let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
+        let mut buffer =  TokenStream::from("two identifiers");
 
         assert_matches!(buffer.peek(), Ok(_));
         assert_eq!(Location::new(0..3, 1, 1), buffer.current_location());
@@ -257,7 +262,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_err() {
-        let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
+        let mut buffer =  TokenStream::from("two identifiers");
 
         let actual: scan::Result<()> = buffer.consume(|_| {
             let err = syntax(Location::new(0..0, 0, 0));
@@ -275,7 +280,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_ok() {
-        let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
+        let mut buffer =  TokenStream::from("two identifiers");
 
         let result = buffer.consume(|tok| Ok(Some(tok.clone())));
         assert_matches!(result, Ok(Identifier(_)));
@@ -284,7 +289,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_none() {
-        let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
+        let mut buffer =  TokenStream::from("two identifiers");
 
         let result: scan::Result<()> = buffer.consume(|_| None);
         assert_matches!(result, Err(NoMatch(_)));
@@ -293,7 +298,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_some() {
-        let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
+        let mut buffer =  TokenStream::from("two identifiers");
 
         let result = buffer.consume(|tok| Some(tok.clone()));
         assert_matches!(result, Ok(Identifier(_)));
@@ -302,7 +307,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_false() {
-        let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
+        let mut buffer =  TokenStream::from("two identifiers");
 
         let result: scan::Result<TokenValue> = buffer.consume(|_| false);
         assert_matches!(result, Err(NoMatch(_)));
@@ -311,7 +316,7 @@ mod tests {
 
     #[test]
     fn test_consume_returning_true() {
-        let mut buffer =  TokenStream::new("two identifiers", DEFAULT_CONFIG);
+        let mut buffer =  TokenStream::from("two identifiers");
 
         let result = buffer.consume(|_| true);
         assert_matches!(result, Ok(Identifier(_)));
@@ -320,7 +325,7 @@ mod tests {
 
     #[test]
     fn test_peek2() {
-        let mut buffer =  TokenStream::new("three identifiers innit", DEFAULT_CONFIG);
+        let mut buffer =  TokenStream::from("three identifiers innit");
 
         let result = buffer.peek2();
         assert_matches!(result, Ok((Identifier(_), Identifier(_))));

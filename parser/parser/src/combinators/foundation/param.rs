@@ -8,12 +8,15 @@ pub(in crate::combinators) fn param(stream: &mut TokenStream) -> scan::Result<i3
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::DEFAULT_CONFIG;
+    use crate::tests::test_parser;
 
     #[test]
     fn test_param() {
-        let mut stream = TokenStream::new("$3", DEFAULT_CONFIG);
-        assert_eq!(Ok(3), param(&mut stream))
+        test_parser!(
+            source = "$3",
+            parser = param,
+            expected = 3
+        )
     }
 }
 

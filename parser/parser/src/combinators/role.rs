@@ -55,18 +55,20 @@ fn role_none(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
 mod tests {
     use super::*;
     use crate::stream::TokenStream;
-    use crate::tests::DEFAULT_CONFIG;
-    use core::fmt::Debug;
+    use crate::tests::test_parser;
     use pg_ast::RoleSpec;
-    use pg_elog::role_spec;
-    use pg_elog::role_spec::Error::ForbiddenRoleSpec;
-    use pg_elog::Error::Role;
-    use scan::Error::{NoMatch, ScanErr};
+    use test_case::test_case;
+    #[allow(unused_imports)]
+    use {
+        pg_elog::role_spec::Error::ForbiddenRoleSpec,
+        scan::Error::NoMatch,
+        pg_basics::Location,
+    };
 
     #[test]
     fn test_role_list() {
         let source = "puBlic , CuRrEnT_rOlE,CURRENT_USER, session_user ,coalesce,xxYYzz none";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
+        let mut stream = TokenStream::from(source);
 
         let actual = role_list(&mut stream).unwrap();
 
@@ -82,56 +84,27 @@ mod tests {
         assert_eq!(expected, actual.as_slice());
     }
 
-    #[test]
-    fn test_role_id() {
-
-        let mut stream = TokenStream::new("coalesce xxyyzz", DEFAULT_CONFIG);
-        assert_eq!(Ok("coalesce".into()), role_id(&mut stream));
-        assert_eq!(Ok("xxyyzz".into()), role_id(&mut stream));
-
-        let mut stream = TokenStream::new("none", DEFAULT_CONFIG);
-        assert_err(ReservedRoleSpec("none"), role_id(&mut stream));
-
-        let mut stream = TokenStream::new("public", DEFAULT_CONFIG);
-        assert_err(ReservedRoleSpec("public"), role_id(&mut stream));
-
-        let mut stream = TokenStream::new("current_role", DEFAULT_CONFIG);
-        assert_err(ForbiddenRoleSpec("CURRENT_ROLE"), role_id(&mut stream));
-
-        let mut stream = TokenStream::new("current_user", DEFAULT_CONFIG);
-        assert_err(ForbiddenRoleSpec("CURRENT_USER"), role_id(&mut stream));
-
-        let mut stream = TokenStream::new("session_user", DEFAULT_CONFIG);
-        assert_err(ForbiddenRoleSpec("SESSION_USER"), role_id(&mut stream));
+    #[test_case("coalesce" => Ok("coalesce".into()))]
+    #[test_case("xxyyzz" => Ok("xxyyzz".into()))]
+    #[test_case("none" => Err(ReservedRoleSpec("none").at(Location::new(0..4, 1, 1)).into()))]
+    #[test_case("public" => Err(ReservedRoleSpec("public").at(Location::new(0..6, 1, 1)).into()))]
+    #[test_case("current_role" => Err(ForbiddenRoleSpec("CURRENT_ROLE").at(Location::new(0..12, 1, 1)).into()))]
+    #[test_case("current_user" => Err(ForbiddenRoleSpec("CURRENT_USER").at(Location::new(0..12, 1, 1)).into()))]
+    #[test_case("session_user" => Err(ForbiddenRoleSpec("SESSION_USER").at(Location::new(0..12, 1, 1)).into()))]
+    fn test_role_id(source: &str) -> scan::Result<Str> {
+        test_parser!(source, role_id)
     }
 
-    #[test]
-    fn test_role_spec() {
-        let source = "public CuRrEnT_rOlE CURRENT_USER session_user coalesce xxyyzz";
-        let mut stream = TokenStream::new(source, DEFAULT_CONFIG);
-
-        assert_eq!(Ok(RoleSpec::Public), role_spec(&mut stream));
-        assert_eq!(Ok(RoleSpec::CurrentRole), role_spec(&mut stream));
-        assert_eq!(Ok(RoleSpec::CurrentUser), role_spec(&mut stream));
-        assert_eq!(Ok(RoleSpec::SessionUser), role_spec(&mut stream));
-        assert_eq!(Ok(RoleSpec::Name("coalesce".into())), role_spec(&mut stream));
-        assert_eq!(Ok(RoleSpec::Name("xxyyzz".into())), role_spec(&mut stream));
-
-        let mut stream = TokenStream::new("collate", DEFAULT_CONFIG);
-        assert_matches!(role_spec(&mut stream), Err(NoMatch(_)));
-
-        let mut stream = TokenStream::new("none", DEFAULT_CONFIG);
-        assert_err(ReservedRoleSpec("none"), role_spec(&mut stream));
-    }
-
-    fn assert_err<T: Debug>(expected: role_spec::Error, actual: scan::Result<T>) {
-        assert_matches!(actual, Err(ScanErr(_)));
-        let ScanErr(actual) = actual.unwrap_err() else {
-            unreachable!("already checked for Err(ScanErr(_))");
-        };
-
-        let expected = Role(expected);
-        assert_eq!(&expected, actual.source());
+    #[test_case("public" => Ok(RoleSpec::Public))]
+    #[test_case("CuRrEnT_rOlE" => Ok(RoleSpec::CurrentRole))]
+    #[test_case("CURRENT_USER" => Ok(RoleSpec::CurrentUser))]
+    #[test_case("session_user" => Ok(RoleSpec::SessionUser))]
+    #[test_case("coalesce" => Ok(RoleSpec::Name("coalesce".into())))]
+    #[test_case("xxyyzz" => Ok(RoleSpec::Name("xxyyzz".into())))]
+    #[test_case("collate" => matches Err(NoMatch(_)))]
+    #[test_case("none" => Err(ReservedRoleSpec("none").at(Location::new(0..4, 1, 1)).into()))]
+    fn test_role_spec(source: &str) -> scan::Result<RoleSpec> {
+        test_parser!(source, role_spec)
     }
 }
 
