@@ -204,7 +204,6 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::alt;
 use pg_ast::Operator;
 use pg_ast::Operator::Addition;
 use pg_ast::Operator::Division;
@@ -215,6 +214,7 @@ use pg_ast::Operator::Multiplication;
 use pg_ast::Operator::Subtraction;
 use pg_ast::Operator::UserDefined;
 use pg_ast::QualifiedOperator;
+use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::paren;
 use pg_combinators::seq;

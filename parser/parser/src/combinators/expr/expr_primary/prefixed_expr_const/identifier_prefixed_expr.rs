@@ -251,13 +251,13 @@ mod tests {
 use super::attr_tail;
 use super::tailed_expr;
 use crate::combinators::expr::indirection;
-use crate::combinators::foundation::alt;
 use crate::combinators::make_column_ref;
 use core::mem;
 use pg_ast::ColumnRef;
 use pg_ast::ExprNode;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
+use pg_combinators::alt;
 use pg_combinators::identifier;
 use pg_combinators::located;
 use pg_combinators::seq;

@@ -5,7 +5,7 @@ pub(super) fn sign(stream: &mut TokenStream) -> scan::Result<OperatorKind> {
         .parse(stream)
 }
 
-use crate::combinators::foundation::alt;
+use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind;
 use pg_lexer::OperatorKind::Minus;

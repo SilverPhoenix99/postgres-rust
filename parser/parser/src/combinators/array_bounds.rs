@@ -56,8 +56,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use crate::combinators::i32_literal;
+use pg_combinators::alt;
 use pg_combinators::brackets;
 use pg_combinators::many;
 use pg_combinators::seq;

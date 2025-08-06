@@ -64,11 +64,11 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::alt;
 use crate::combinators::stmt::operator_with_argtypes;
 use pg_ast::OperatorWithArgs;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
+use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;

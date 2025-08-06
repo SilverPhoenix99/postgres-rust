@@ -201,7 +201,6 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::alt;
 use crate::combinators::func_arg_list;
 use core::mem;
 use pg_ast::ExprNode;
@@ -212,6 +211,7 @@ use pg_ast::SqlFunction::Typecast;
 use pg_ast::SubstringFunc;
 use pg_ast::TypeName;
 use pg_ast::TypecastExpr;
+use pg_combinators::alt;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::skip;

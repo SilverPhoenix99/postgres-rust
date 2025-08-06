@@ -94,7 +94,6 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::alt;
 use crate::combinators::role_spec;
 use pg_ast::AlterObjectSchemaStmt;
 use pg_ast::AlterObjectSchemaTarget;
@@ -105,6 +104,7 @@ use pg_ast::RenameStmt;
 use pg_ast::RenameTarget;
 use pg_ast::RoleSpec;
 use pg_basics::Str;
+use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Conversion;

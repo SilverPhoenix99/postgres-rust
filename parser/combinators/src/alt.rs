@@ -4,6 +4,7 @@
 /// * If a parser returns a `ScanErr`, that error is returned immediately.
 ///
 /// Equivalent to `A | B ( | ... )*`.
+#[macro_export]
 macro_rules! alt {
     (
         $head:expr,
@@ -30,9 +31,7 @@ macro_rules! alt {
                 }
             )+
 
-            $crate::no_match(stream)
+            Err(pg_parser_core::scan::Error::NoMatch(stream.current_location()))
         })
     };
 }
-
-pub(in crate::combinators) use alt;

@@ -141,12 +141,12 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::expr_list;
-use crate::combinators::foundation::alt;
 use pg_ast::ExprNode;
 use pg_ast::TrimFunc;
 use pg_ast::TrimSide::Both;
 use pg_ast::TrimSide::Leading;
 use pg_ast::TrimSide::Trailing;
+use pg_combinators::alt;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::skip;

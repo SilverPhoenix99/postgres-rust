@@ -137,12 +137,12 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use crate::combinators::operators::any_operator;
 use crate::combinators::typename;
 use pg_ast::OneOrBoth;
 use pg_ast::OperatorWithArgs;
 use pg_ast::Type;
+use pg_combinators::alt;
 use pg_combinators::located;
 use pg_combinators::many;
 use pg_combinators::paren;

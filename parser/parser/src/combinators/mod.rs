@@ -1,5 +1,3 @@
-pub(crate) mod foundation;
-
 mod expr;
 
 // Entrypoint:

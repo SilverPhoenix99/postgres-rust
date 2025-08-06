@@ -266,7 +266,6 @@ mod tests {
 use crate::combinators::expr::expr_primary::filter_clause;
 use crate::combinators::expr::expr_primary::over_clause;
 use crate::combinators::expr::expr_primary::within_group_clause;
-use crate::combinators::foundation::alt;
 use crate::combinators::func_application_args;
 use pg_ast::ExprNode;
 use pg_ast::FuncArgsKind;
@@ -274,6 +273,7 @@ use pg_ast::FuncArgsOrder;
 use pg_ast::OverClause;
 use pg_ast::SortBy;
 use pg_basics::Located;
+use pg_combinators::alt;
 use pg_combinators::located;
 use pg_combinators::seq;
 use pg_combinators::string;

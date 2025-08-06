@@ -25,7 +25,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
+use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Analyse;
 use pg_lexer::Keyword::Analyze;

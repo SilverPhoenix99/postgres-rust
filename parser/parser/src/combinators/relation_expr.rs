@@ -84,9 +84,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use crate::combinators::qualified_name;
 use pg_ast::RelationExpr;
+use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::paren;
 use pg_combinators::seq;

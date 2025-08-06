@@ -71,8 +71,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use pg_ast::RawStmt;
+use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Alter;

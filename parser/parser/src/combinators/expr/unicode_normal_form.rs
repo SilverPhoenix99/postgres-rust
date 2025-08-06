@@ -23,12 +23,12 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use pg_ast::UnicodeNormalForm;
 use pg_ast::UnicodeNormalForm::CanonicalComposition;
 use pg_ast::UnicodeNormalForm::CanonicalDecomposition;
 use pg_ast::UnicodeNormalForm::CompatibilityComposition;
 use pg_ast::UnicodeNormalForm::CompatibilityDecomposition;
+use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Nfc;
 use pg_lexer::Keyword::Nfd;

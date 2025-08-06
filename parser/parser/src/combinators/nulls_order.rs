@@ -30,10 +30,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use pg_ast::SortNulls;
 use pg_ast::SortNulls::NullsFirst;
 use pg_ast::SortNulls::NullsLast;
+use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::First;

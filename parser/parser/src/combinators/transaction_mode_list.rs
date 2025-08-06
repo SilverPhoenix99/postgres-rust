@@ -113,7 +113,6 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use pg_ast::IsolationLevel;
 use pg_ast::IsolationLevel::ReadCommitted;
 use pg_ast::IsolationLevel::ReadUncommitted;
@@ -124,6 +123,7 @@ use pg_ast::TransactionMode::Deferrable;
 use pg_ast::TransactionMode::NotDeferrable;
 use pg_ast::TransactionMode::ReadOnly;
 use pg_ast::TransactionMode::ReadWrite;
+use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;

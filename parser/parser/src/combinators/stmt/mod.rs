@@ -175,7 +175,6 @@ pg_basics::reexport! {
     view,
 }
 
-use crate::combinators::foundation::alt;
 use pg_ast::RawStmt;
 use pg_ast::RawStmt::ClosePortalStmt;
 use pg_ast::RawStmt::DeallocateStmt;
@@ -184,6 +183,7 @@ use pg_ast::RawStmt::LoadStmt;
 use pg_ast::RawStmt::UnlistenStmt;
 use pg_ast::RawStmt::VariableResetStmt;
 use pg_ast::RawStmt::VariableShowStmt;
+use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

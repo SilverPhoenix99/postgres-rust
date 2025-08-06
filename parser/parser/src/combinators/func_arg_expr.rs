@@ -64,10 +64,10 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::alt;
 use crate::combinators::type_function_name;
 use pg_ast::NamedValue;
 use pg_basics::Located;
+use pg_combinators::alt;
 use pg_combinators::located;
 use pg_combinators::many;
 use pg_combinators::seq;

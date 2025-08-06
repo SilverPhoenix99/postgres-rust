@@ -20,9 +20,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use crate::combinators::non_reserved_word;
 use pg_basics::Str;
+use pg_combinators::alt;
 use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;

@@ -138,7 +138,6 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::alt;
 use crate::combinators::name_list;
 use pg_ast::AccessPrivilege;
 use pg_ast::AccessPrivilege::All;
@@ -149,6 +148,7 @@ use pg_ast::SpecificAccessPrivilege::Create;
 use pg_ast::SpecificAccessPrivilege::Named;
 use pg_ast::SpecificAccessPrivilege::References;
 use pg_ast::SpecificAccessPrivilege::Select;
+use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::paren;
 use pg_combinators::seq;

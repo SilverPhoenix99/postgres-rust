@@ -1,4 +1,5 @@
 pg_basics::reexport! { pub
+    alt,
     between,
     bit_string,
     combinator,

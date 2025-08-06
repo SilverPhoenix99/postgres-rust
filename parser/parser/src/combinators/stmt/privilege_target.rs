@@ -245,7 +245,6 @@ mod tests {
 
 use crate::combinators::any_name_list;
 use crate::combinators::col_id;
-use crate::combinators::foundation::alt;
 use crate::combinators::function_with_argtypes_list;
 use crate::combinators::name_list;
 use crate::combinators::qualified_name_list;
@@ -273,6 +272,7 @@ use pg_ast::PrivilegeTarget::Tablespace;
 use pg_ast::PrivilegeTarget::Type;
 use pg_ast::SignedNumber;
 use pg_basics::QualifiedName;
+use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;

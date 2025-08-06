@@ -34,10 +34,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use crate::combinators::stmt::reset_stmt::reset_stmt;
 use crate::combinators::stmt::set_rest;
 use pg_ast::SetResetClause;
+use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Set;

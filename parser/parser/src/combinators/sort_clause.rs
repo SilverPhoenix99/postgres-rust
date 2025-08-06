@@ -119,12 +119,12 @@ mod tests {
 
 use crate::combinators::asc_desc;
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::alt;
 use crate::combinators::nulls_order;
 use crate::combinators::qual_all_op;
 use pg_ast::SortBy;
 use pg_ast::SortDirection::Using;
 use pg_basics::Located;
+use pg_combinators::alt;
 use pg_combinators::located;
 use pg_combinators::many;
 use pg_combinators::seq;

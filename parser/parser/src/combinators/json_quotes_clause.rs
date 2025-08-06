@@ -32,10 +32,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use pg_ast::JsonQuotes;
 use pg_ast::JsonQuotes::Keep;
 use pg_ast::JsonQuotes::Omit;
+use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;

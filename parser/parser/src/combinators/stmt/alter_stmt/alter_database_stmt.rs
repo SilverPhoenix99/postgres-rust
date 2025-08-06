@@ -240,7 +240,6 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::alt;
 use crate::combinators::role_spec;
 use crate::combinators::stmt::createdb_opt_value;
 use crate::combinators::stmt::reset_stmt::reset_stmt;
@@ -265,6 +264,7 @@ use pg_ast::SetResetClause;
 use pg_ast::SetRest;
 use pg_ast::VariableTarget;
 use pg_basics::Str;
+use pg_combinators::alt;
 use pg_combinators::identifier;
 use pg_combinators::many;
 use pg_combinators::seq;

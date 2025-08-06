@@ -245,9 +245,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::CurrentCatalog;
+use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Coalesce;

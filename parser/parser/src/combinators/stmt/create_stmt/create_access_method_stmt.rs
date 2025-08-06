@@ -44,11 +44,11 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::col_id;
-use crate::combinators::foundation::alt;
 use pg_ast::AccessMethodKind;
 use pg_ast::AccessMethodKind::Index;
 use pg_ast::AccessMethodKind::Table;
 use pg_ast::CreateAccessMethodStmt;
+use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;

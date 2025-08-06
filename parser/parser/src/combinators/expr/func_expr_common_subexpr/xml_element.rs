@@ -115,10 +115,10 @@ mod tests {
 use super::xml_attribute_list;
 use crate::combinators::col_label;
 use crate::combinators::expr_list;
-use crate::combinators::foundation::alt;
 use pg_ast::ExprNode;
 use pg_ast::NamedValue;
 use pg_ast::XmlElement;
+use pg_combinators::alt;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::skip;

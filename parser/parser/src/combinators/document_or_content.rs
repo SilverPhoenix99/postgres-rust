@@ -27,10 +27,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use pg_ast::XmlNodeKind;
 use pg_ast::XmlNodeKind::Content;
 use pg_ast::XmlNodeKind::Document;
+use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_parser_core::scan;

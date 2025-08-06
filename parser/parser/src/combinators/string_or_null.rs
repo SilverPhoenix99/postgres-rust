@@ -25,7 +25,7 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
+use pg_combinators::alt;
 use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Null;

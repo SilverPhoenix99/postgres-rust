@@ -49,11 +49,11 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use pg_ast::JsonWrapperBehavior;
 use pg_ast::JsonWrapperBehavior::Conditional;
 use pg_ast::JsonWrapperBehavior::Unconditional;
 use pg_ast::JsonWrapperBehavior::Without;
+use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;

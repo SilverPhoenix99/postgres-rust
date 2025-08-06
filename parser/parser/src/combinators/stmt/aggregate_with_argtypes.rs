@@ -199,12 +199,12 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use crate::combinators::func_arg;
 use crate::combinators::func_name;
 use pg_ast::AggregateWithArgs;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionParameterMode as Mode;
+use pg_combinators::alt;
 use pg_combinators::located;
 use pg_combinators::many;
 use pg_combinators::paren;

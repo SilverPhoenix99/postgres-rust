@@ -20,8 +20,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use pg_basics::Str;
+use pg_combinators::alt;
 use pg_combinators::identifier;
 use pg_combinators::keyword_if;
 use pg_combinators::Combinator;

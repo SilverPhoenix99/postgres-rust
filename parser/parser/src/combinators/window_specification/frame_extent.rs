@@ -217,7 +217,6 @@ mod tests {
 }
 
 use super::frame_bound::frame_bound;
-use crate::combinators::foundation::alt;
 use crate::combinators::window_specification::frame_bound::FrameBound::CurrentRow;
 use crate::combinators::window_specification::frame_bound::FrameBound::OffsetFollowing;
 use crate::combinators::window_specification::frame_bound::FrameBound::OffsetPreceding;
@@ -227,6 +226,7 @@ use pg_ast::CurrentRowEnd;
 use pg_ast::FollowingEnd;
 use pg_ast::FrameExtent;
 use pg_ast::PrecedingEnd;
+use pg_combinators::alt;
 use pg_combinators::located;
 use pg_combinators::seq;
 use pg_combinators::Combinator;

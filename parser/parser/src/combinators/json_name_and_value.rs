@@ -59,9 +59,9 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::alt;
 use crate::combinators::json_value_expr;
 use pg_ast::JsonKeyValue;
+use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;

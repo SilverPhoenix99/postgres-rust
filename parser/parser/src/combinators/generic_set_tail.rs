@@ -34,10 +34,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use crate::combinators::var_list;
 use pg_ast::ValueOrDefault;
 use pg_ast::VarValue;
+use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::DefaultKw;

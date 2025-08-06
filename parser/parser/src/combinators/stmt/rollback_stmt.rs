@@ -55,12 +55,12 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::alt;
 use crate::combinators::transaction_chain;
 use crate::combinators::work_or_transaction;
 use pg_ast::TransactionStmt;
 use pg_ast::TransactionStmt::RollbackPrepared;
 use pg_ast::TransactionStmt::RollbackTo;
+use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::string;
 use pg_combinators::Combinator;

@@ -182,7 +182,6 @@ mod tests {
 }
 
 use super::in_database::in_database;
-use crate::combinators::foundation::alt;
 use crate::combinators::role_id;
 use crate::combinators::role_spec;
 use crate::combinators::stmt::alter_role_options;
@@ -197,6 +196,7 @@ use pg_ast::RenameStmt;
 use pg_ast::RenameTarget::Role;
 use pg_ast::SetResetClause;
 use pg_basics::Str;
+use pg_combinators::alt;
 use pg_combinators::located;
 use pg_combinators::seq;
 use pg_combinators::Combinator;

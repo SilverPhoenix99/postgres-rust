@@ -398,7 +398,6 @@ mod tests {
 use crate::combinators::alias;
 use crate::combinators::col_id;
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::alt;
 use crate::combinators::json_behavior_clause;
 use crate::combinators::json_format_clause;
 use crate::combinators::json_on_error_clause;
@@ -422,6 +421,7 @@ use pg_ast::JsonTablePathSpec;
 use pg_ast::JsonTableRegularColumn;
 use pg_ast::JsonWrapperBehavior;
 use pg_ast::Type;
+use pg_combinators::alt;
 use pg_combinators::located;
 use pg_combinators::many;
 use pg_combinators::paren;

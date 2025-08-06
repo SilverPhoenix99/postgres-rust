@@ -109,11 +109,11 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use crate::combinators::role_spec;
 use pg_ast::DropBehavior;
 use pg_ast::GrantOption;
 use pg_ast::RoleSpec;
+use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;

@@ -152,7 +152,6 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use crate::combinators::role_list;
 use crate::combinators::signed_i32_literal;
 use pg_ast::AlterRoleOption;
@@ -167,6 +166,7 @@ use pg_ast::AlterRoleOption::Password;
 use pg_ast::AlterRoleOption::RoleMembers;
 use pg_ast::AlterRoleOption::SuperUser;
 use pg_ast::AlterRoleOption::ValidUntil;
+use pg_combinators::alt;
 use pg_combinators::identifier;
 use pg_combinators::located;
 use pg_combinators::many;

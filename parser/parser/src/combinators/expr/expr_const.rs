@@ -381,7 +381,6 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::alt;
 use crate::combinators::interval;
 use crate::combinators::precision;
 use crate::combinators::simple_typename::bit;
@@ -407,6 +406,7 @@ use pg_ast::TypeName::Int2;
 use pg_ast::TypeName::Int4;
 use pg_ast::TypeName::Int8;
 use pg_ast::TypeName::Json;
+use pg_combinators::alt;
 use pg_combinators::bit_string;
 use pg_combinators::number;
 use pg_combinators::seq;
