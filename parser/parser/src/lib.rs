@@ -9,7 +9,6 @@ mod stream;
 mod tests;
 
 pg_basics::reexport! { pub
-    config,
     parser,
 }
 

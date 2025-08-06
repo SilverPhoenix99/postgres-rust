@@ -345,7 +345,6 @@ mod tests {
 
 use crate::stream::buffered_lexer::BufferedLexer;
 use crate::stream::TokenValue;
-use crate::ParserConfig;
 use alloc::collections::VecDeque;
 use pg_ast::UnsignedNumber;
 use pg_ast::UnsignedNumber::IntegerConst;
@@ -364,3 +363,4 @@ use pg_parser_core::eof::Error::NotEof;
 use pg_parser_core::scan;
 use pg_parser_core::scan::Error::NoMatch;
 use pg_parser_core::scan::Error::ScanErr;
+use pg_parser_core::ParserConfig;

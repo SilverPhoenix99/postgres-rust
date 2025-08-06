@@ -2,6 +2,7 @@ extern crate alloc;
 extern crate core;
 
 pg_basics::reexport! { pub
+    config,
     result,
 }
 
