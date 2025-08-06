@@ -26,8 +26,8 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::identifier;
-use crate::combinators::foundation::Combinator;
 use pg_basics::Str;
+use pg_combinators::Combinator;
 use pg_lexer::KeywordCategory::ColumnName;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_lexer::KeywordCategory::Unreserved;

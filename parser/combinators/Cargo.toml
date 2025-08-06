@@ -1,0 +1,12 @@
+[package]
+name = "pg-combinators"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+pg-basics.workspace = true
+pg-lexer.workspace = true
+pg-parser-core.workspace = true

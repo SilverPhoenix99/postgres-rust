@@ -35,10 +35,10 @@ mod tests {
 }
 
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::transaction_chain;
 use crate::combinators::work_or_transaction;
 use pg_ast::TransactionStmt;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::Abort;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

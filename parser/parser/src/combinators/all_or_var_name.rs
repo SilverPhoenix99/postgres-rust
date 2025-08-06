@@ -26,10 +26,10 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::var_name;
 use pg_ast::OneOrAll;
 use pg_basics::QualifiedName;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

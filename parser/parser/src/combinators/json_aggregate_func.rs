@@ -164,7 +164,6 @@ mod tests {
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::json_constructor_null_clause;
 use crate::combinators::json_key_uniqueness_constraint;
 use crate::combinators::json_name_and_value;
@@ -176,6 +175,7 @@ use derive_more::From;
 use pg_ast::FuncExprWindowless;
 use pg_ast::JsonArrayAgg;
 use pg_ast::JsonObjectAgg;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::JsonArrayagg;
 use pg_lexer::Keyword::JsonObjectagg;
 use pg_lexer::OperatorKind::OpenParenthesis;

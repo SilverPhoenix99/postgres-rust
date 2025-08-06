@@ -67,9 +67,9 @@ mod tests {
 use super::attr_tail;
 use super::tailed_expr;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use pg_ast::ExprNode;
 use pg_basics::Str;
+use pg_combinators::Combinator;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

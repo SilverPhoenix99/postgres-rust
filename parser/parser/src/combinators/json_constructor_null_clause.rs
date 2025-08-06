@@ -34,7 +34,7 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::Absent;
 use pg_lexer::Keyword::Null;
 use pg_lexer::Keyword::On;

@@ -6,7 +6,7 @@
 /// See also
 /// * [`keyword_result()`]
 /// * [`keyword_when()`]
-pub(in crate::combinators) fn keyword_if<P>(pred: P)
+pub fn keyword_if<P>(pred: P)
     -> KeywordCondCombi<
         impl Fn(Keyword) -> stream::LocatedResult<Keyword>,
         Keyword
@@ -17,7 +17,7 @@ where
     keyword_result(move |kw| Ok(pred(kw).then_some(kw)))
 }
 
-pub(in crate::combinators) fn any_keyword(stream: &mut TokenStream) -> scan::Result<Keyword> {
+pub fn any_keyword(stream: &mut TokenStream) -> scan::Result<Keyword> {
     stream.consume(|tok| match tok {
         TokenValue::Keyword(kw) => Some(*kw),
         _ => None
@@ -34,7 +34,7 @@ pub(in crate::combinators) fn any_keyword(stream: &mut TokenStream) -> scan::Res
 /// See also
 /// * [`keyword_when()`]
 /// * [`keyword_if()`]
-pub(in crate::combinators) fn keyword_result<O>(
+pub fn keyword_result<O>(
     mapper: impl Fn(Keyword) -> stream::LocatedResult<O>
 ) -> KeywordCondCombi<
         impl Fn(Keyword) -> stream::LocatedResult<O>,
@@ -73,7 +73,7 @@ impl Combinator for KeywordCategory {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub(in crate::combinators) struct KeywordCondCombi<F, O> {
+pub struct KeywordCondCombi<F, O> {
     mapper: F,
     boo: PhantomData<O>
 }
@@ -97,39 +97,32 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_lexer::Keyword::Abort;
     use pg_lexer::KeywordCategory::Unreserved;
 
     #[test]
     fn test_keyword() {
-        test_parser!(
-            source = "abort",
-            parser = Abort,
-            expected = Abort
-        )
+        let mut stream = TokenStream::from("abort");
+        let actual = Abort.parse(&mut stream);
+        assert_eq!(Ok(Abort), actual)
     }
 
     #[test]
     fn test_keyword_category() {
-        test_parser!(
-            source = "abort",
-            parser = Unreserved,
-            expected = Abort
-        )
+        let mut stream = TokenStream::from("abort");
+        let actual = Unreserved.parse(&mut stream);
+        assert_eq!(Ok(Abort), actual)
     }
 
     #[test]
     fn test_keyword_if() {
-        test_parser!(
-            source = "abort",
-            parser = keyword_if(|kw| kw.category() == Unreserved),
-            expected = Abort
-        )
+        let mut stream = TokenStream::from("abort");
+        let actual = keyword_if(|kw| kw.category() == Unreserved).parse(&mut stream);
+        assert_eq!(Ok(Abort), actual)
     }
 }
 
-use crate::combinators::foundation::Combinator;
+use crate::Combinator;
 use core::marker::PhantomData;
 use pg_lexer::Keyword;
 use pg_lexer::KeywordCategory;

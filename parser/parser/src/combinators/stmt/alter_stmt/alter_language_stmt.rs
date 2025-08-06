@@ -72,7 +72,6 @@ mod tests {
 use crate::combinators::col_id;
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::role_spec;
 use pg_ast::AlterOwnerStmt;
 use pg_ast::AlterOwnerTarget;
@@ -81,6 +80,7 @@ use pg_ast::RenameStmt;
 use pg_ast::RenameTarget;
 use pg_ast::RoleSpec;
 use pg_basics::Str;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::Language;
 use pg_lexer::Keyword::Owner;
 use pg_lexer::Keyword::Procedural;

@@ -34,8 +34,8 @@ mod tests {
 }
 
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use pg_ast::TransactionChain;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::And;
 use pg_lexer::Keyword::Chain;
 use pg_lexer::Keyword::No;

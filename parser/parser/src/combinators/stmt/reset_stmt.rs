@@ -27,9 +27,9 @@ mod tests {
 }
 
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::stmt::variable_target;
 use pg_ast::VariableTarget;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::Reset;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

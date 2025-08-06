@@ -89,11 +89,11 @@ mod tests {
 use crate::combinators::expr::func_expr_common_subexpr;
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::json_aggregate_func;
 use crate::combinators::JsonAggFunc;
 use pg_ast::ExprNode;
 use pg_ast::JsonArrayAggExpr;
 use pg_ast::JsonObjectAggExpr;
+use pg_combinators::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

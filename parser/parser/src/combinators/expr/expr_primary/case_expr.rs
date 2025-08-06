@@ -88,10 +88,10 @@ mod tests {
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use pg_ast::CaseExpr;
 use pg_ast::CaseWhen;
 use pg_ast::ExprNode;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::Case;
 use pg_lexer::Keyword::Else;
 use pg_lexer::Keyword::Then;

@@ -9,7 +9,7 @@ impl Combinator for OperatorKind {
     }
 }
 
-use crate::combinators::foundation::Combinator;
+use crate::Combinator;
 use pg_lexer::OperatorKind;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenConsumer;

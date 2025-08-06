@@ -28,10 +28,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::Combinator;
 use crate::no_match;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::CurrentSchema;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::OperatorKind::OpenParenthesis;
 use pg_parser_core::scan;

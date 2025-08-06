@@ -18,11 +18,11 @@ macro_rules! seq {
             Ok((
                 {
                     let p = $head;
-                    $crate::combinators::foundation::Combinator::parse(&p, stream)?
+                    pg_combinators::Combinator::parse(&p, stream)?
                 },
                 $({
                     let p = $tail;
-                    let result = $crate::combinators::foundation::Combinator::parse(&p, stream);
+                    let result = pg_combinators::Combinator::parse(&p, stream);
 
                     match result {
                         Ok(ok) => ok,

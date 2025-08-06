@@ -25,8 +25,8 @@ mod tests {
 
 use crate::combinators::any_name;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use pg_basics::QualifiedName;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::Collate;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

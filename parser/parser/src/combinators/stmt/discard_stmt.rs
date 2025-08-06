@@ -37,8 +37,8 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use pg_ast::DiscardStmt;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::All;
 use pg_lexer::Keyword::Discard;
 use pg_lexer::Keyword::Plans;

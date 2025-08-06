@@ -26,8 +26,8 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use pg_basics::Str;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::Extension;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

@@ -36,9 +36,9 @@ mod tests {
 use crate::combinators::boolean_or_string;
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::signed_number;
 use pg_ast::VarValue;
+use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

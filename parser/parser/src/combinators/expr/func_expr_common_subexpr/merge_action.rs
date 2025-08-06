@@ -24,9 +24,9 @@ mod tests {
 
 use crate::combinators::foundation::seq;
 use crate::combinators::foundation::skip;
-use crate::combinators::foundation::Combinator;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::MergeAction;
+use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::CloseParenthesis;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

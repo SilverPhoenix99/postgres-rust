@@ -36,9 +36,9 @@ mod tests {
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::string;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word;
 use pg_ast::BooleanOrString;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::False;
 use pg_lexer::Keyword::On;
 use pg_lexer::Keyword::True;

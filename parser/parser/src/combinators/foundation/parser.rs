@@ -34,7 +34,7 @@ where
     }
 }
 
-use crate::combinators::foundation::Combinator;
 use core::marker::PhantomData;
+use pg_combinators::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

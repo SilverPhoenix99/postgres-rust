@@ -224,7 +224,6 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::stmt::access_method;
 use crate::combinators::stmt::aggregate;
@@ -294,6 +293,7 @@ use pg_ast::SecurityLabelTarget::TextSearchTemplate;
 use pg_ast::SecurityLabelTarget::Type;
 use pg_ast::SecurityLabelTarget::View;
 use pg_basics::Str;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::Is;
 use pg_lexer::Keyword::Label;

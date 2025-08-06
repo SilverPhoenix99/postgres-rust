@@ -60,11 +60,11 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::role_id;
 use crate::combinators::stmt::create_stmt::create_role_options;
 use pg_ast::CreateRoleStmt;
 use pg_ast::RoleKind;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::Group;
 use pg_lexer::Keyword::Role;
 use pg_lexer::Keyword::With;

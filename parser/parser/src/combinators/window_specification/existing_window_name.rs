@@ -23,8 +23,8 @@ pub(super) fn existing_window_name(stream: &mut TokenStream<'_>) -> scan::Result
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::combinators::foundation::Combinator;
     use crate::tests::test_parser;
+    use pg_combinators::Combinator;
     use test_case::test_case;
 
     #[test_case("partition by", None)]

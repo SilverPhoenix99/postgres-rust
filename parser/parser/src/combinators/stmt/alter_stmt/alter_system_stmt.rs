@@ -43,12 +43,12 @@ mod tests {
 use crate::combinators::all_or_var_name;
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::generic_set_tail;
 use crate::combinators::var_name;
 use pg_ast::AlterSystemStmt;
 use pg_ast::OneOrAll;
 use pg_ast::ValueOrDefault;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::Reset;
 use pg_lexer::Keyword::Set;
 use pg_lexer::Keyword::SystemKw;

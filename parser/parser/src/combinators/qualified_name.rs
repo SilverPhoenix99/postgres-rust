@@ -93,10 +93,10 @@ mod tests {
 use crate::combinators::any_name;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::Combinator;
 use core::mem;
 use pg_ast::RelationName;
 use pg_ast::SchemaName;
+use pg_combinators::Combinator;
 use pg_elog::parser::Error::ImproperQualifiedName;
 use pg_elog::parser::NameList;
 use pg_lexer::OperatorKind::Comma;

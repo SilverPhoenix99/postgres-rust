@@ -74,11 +74,11 @@ mod tests {
 use crate::combinators::col_id;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use pg_ast::JsonEncoding::UTF16;
 use pg_ast::JsonEncoding::UTF32;
 use pg_ast::JsonEncoding::UTF8;
 use pg_ast::JsonFormat;
+use pg_combinators::Combinator;
 use pg_elog::parser::Error::UnrecognizedJsonEncoding;
 use pg_lexer::Keyword::Encoding;
 use pg_lexer::Keyword::Format;

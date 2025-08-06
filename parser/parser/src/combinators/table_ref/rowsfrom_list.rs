@@ -91,11 +91,11 @@ mod tests {
 use crate::combinators::foundation::many;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::func_expr_windowless;
 use crate::combinators::table_func_element_list;
 use pg_ast::RangeFunction;
 use pg_ast::SimpleColumnDefinition;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::As;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

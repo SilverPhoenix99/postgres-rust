@@ -1,0 +1,28 @@
+/// `Eof` and `NoMatch` become `Ok(None)`.
+pub fn optional<P>(parser: P) -> OptionalCombi<P>
+where
+    P: Combinator
+{
+    OptionalCombi(parser)
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct OptionalCombi<P>(P);
+
+impl<P> Combinator for OptionalCombi<P>
+where
+    P: Combinator
+{
+    type Output = Option<P::Output>;
+
+    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
+        self.0.parse(stream)
+            .optional()
+            .map_err(scan::Error::from)
+    }
+}
+
+use crate::Combinator;
+use pg_parser_core::scan;
+use pg_parser_core::stream::TokenStream;
+use pg_parser_core::Optional as Opt;

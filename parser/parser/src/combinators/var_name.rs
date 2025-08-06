@@ -9,8 +9,8 @@ pub(in crate::combinators) fn var_name(stream: &mut TokenStream) -> scan::Result
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::many;
-use crate::combinators::foundation::Combinator;
 use pg_basics::QualifiedName;
+use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Dot;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

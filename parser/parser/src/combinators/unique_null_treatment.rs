@@ -30,8 +30,8 @@ mod tests {
 }
 
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use pg_ast::UniqueNullTreatment;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::Distinct;
 use pg_lexer::Keyword::Not;
 use pg_lexer::Keyword::Nulls;

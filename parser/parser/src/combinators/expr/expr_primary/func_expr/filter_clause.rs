@@ -31,8 +31,8 @@ mod tests {
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use pg_ast::ExprNode;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::Filter;
 use pg_lexer::Keyword::Where;
 use pg_parser_core::scan;

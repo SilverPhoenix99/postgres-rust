@@ -9,7 +9,7 @@ macro_rules! paren {
                 pg_lexer::OperatorKind::CloseParenthesis
             );
 
-            let (_, value, _) = $crate::combinators::foundation::Combinator::parse(&p, stream)?;
+            let (_, value, _) = pg_combinators::Combinator::parse(&p, stream)?;
             Ok(value)
         })
     };
@@ -26,7 +26,7 @@ macro_rules! brackets {
                 pg_lexer::OperatorKind::CloseBracket
             );
 
-            let (_, value, _) = $crate::combinators::foundation::Combinator::parse(&p, stream)?;
+            let (_, value, _) = pg_combinators::Combinator::parse(&p, stream)?;
             Ok(value)
         })
     };

@@ -149,7 +149,6 @@ mod tests {
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use pg_ast::JsonBehavior;
 use pg_ast::JsonBehavior::EmptyArray;
 use pg_ast::JsonBehavior::EmptyObject;
@@ -159,6 +158,7 @@ use pg_ast::JsonBehavior::Null;
 use pg_ast::JsonBehavior::True;
 use pg_ast::JsonBehavior::Unknown;
 use pg_ast::JsonBehaviorClause;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Array;
 use pg_lexer::Keyword::DefaultKw;

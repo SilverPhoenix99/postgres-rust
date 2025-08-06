@@ -36,10 +36,10 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::var_list;
 use pg_ast::ValueOrDefault;
 use pg_ast::VarValue;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::DefaultKw;
 use pg_lexer::Keyword::To;
 use pg_lexer::OperatorKind::Equals;

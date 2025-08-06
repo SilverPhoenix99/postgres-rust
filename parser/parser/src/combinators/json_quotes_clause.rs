@@ -34,10 +34,10 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use pg_ast::JsonQuotes;
 use pg_ast::JsonQuotes::Keep;
 use pg_ast::JsonQuotes::Omit;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::On;
 use pg_lexer::Keyword::Quotes;

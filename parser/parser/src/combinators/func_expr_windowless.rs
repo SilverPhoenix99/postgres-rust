@@ -35,9 +35,9 @@ mod tests {
 
 use crate::combinators::expr::func_expr_common_subexpr;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::func_application;
 use crate::combinators::json_aggregate_func;
 use pg_ast::FuncExprWindowless;
+use pg_combinators::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

@@ -42,13 +42,13 @@ macro_rules! many {
 
             let p = $prefix;
 
-            let first = $crate::combinators::foundation::Combinator::parse(&p, stream)?;
+            let first = pg_combinators::Combinator::parse(&p, stream)?;
             let mut elements = vec![first];
 
             let p = $follow;
 
             while let Some(element) = {
-                let result = $crate::combinators::foundation::Combinator::parse(&p, stream);
+                let result = pg_combinators::Combinator::parse(&p, stream);
                 pg_parser_core::Optional::optional(result)?
             } {
                 elements.push(element)
@@ -63,17 +63,17 @@ macro_rules! many {
 
             let p = $parser;
 
-            let first = $crate::combinators::foundation::Combinator::parse(&p, stream)?;
+            let first = pg_combinators::Combinator::parse(&p, stream)?;
             let mut elements = vec![first];
 
             let separator = $separator;
 
             while {
-                let sep = $crate::combinators::foundation::Combinator::parse(&separator, stream);
+                let sep = pg_combinators::Combinator::parse(&separator, stream);
                 let sep = pg_parser_core::Optional::optional(sep)?;
                 sep.is_some()
             } {
-                let element = $crate::combinators::foundation::Combinator::parse(&p, stream);
+                let element = pg_combinators::Combinator::parse(&p, stream);
                 let element = pg_parser_core::Required::required(element)?;
                 elements.push(element);
             }
@@ -87,11 +87,11 @@ macro_rules! many {
 
             let p = $parser;
 
-            let first = $crate::combinators::foundation::Combinator::parse(&p, stream)?;
+            let first = pg_combinators::Combinator::parse(&p, stream)?;
             let mut elements = vec![first];
 
             while let Some(element) = {
-                let result = $crate::combinators::foundation::Combinator::parse(&p, stream);
+                let result = pg_combinators::Combinator::parse(&p, stream);
                 pg_parser_core::Optional::optional(result)?
             } {
                 elements.push(element)

@@ -31,9 +31,9 @@ mod tests {
 
 use crate::combinators::foundation::paren;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::sort_clause;
 use pg_ast::SortBy;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::Group;
 use pg_lexer::Keyword::Within;
 use pg_parser_core::scan;

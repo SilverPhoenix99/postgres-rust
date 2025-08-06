@@ -22,8 +22,8 @@ mod tests {
 
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::string;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::non_reserved_word;
 use pg_basics::Str;
+use pg_combinators::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

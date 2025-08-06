@@ -71,9 +71,9 @@ mod tests {
 use crate::combinators::foundation::integer;
 use crate::combinators::foundation::number;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::sign;
 use pg_ast::SignedNumber;
+use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Minus;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

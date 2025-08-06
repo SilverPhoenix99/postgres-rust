@@ -98,7 +98,6 @@ mod tests {
 use crate::combinators::foundation::alt;
 use crate::combinators::foundation::located;
 use crate::combinators::foundation::seq;
-use crate::combinators::foundation::Combinator;
 use crate::combinators::role_id;
 use crate::combinators::role_list;
 use crate::combinators::role_spec;
@@ -110,6 +109,7 @@ use pg_ast::RenameStmt;
 use pg_ast::RenameTarget::Role;
 use pg_ast::RoleSpec;
 use pg_basics::Str;
+use pg_combinators::Combinator;
 use pg_lexer::Keyword::Add;
 use pg_lexer::Keyword::DropKw;
 use pg_lexer::Keyword::Group;

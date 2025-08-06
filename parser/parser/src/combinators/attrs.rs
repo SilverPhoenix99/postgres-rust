@@ -4,7 +4,7 @@ macro_rules! attrs {
         $crate::combinators::foundation::parser::<_, pg_basics::QualifiedName>(|stream| {
             let p = $crate::combinators::foundation::many!(
                 pre = $prefix,
-                $crate::combinators::foundation::Combinator::map(
+                pg_combinators::Combinator::map(
                     $crate::combinators::foundation::seq!(
                         pg_lexer::OperatorKind::Dot,
                         $crate::combinators::col_label
@@ -13,7 +13,7 @@ macro_rules! attrs {
                 )
             );
 
-            $crate::combinators::foundation::Combinator::parse(&p, stream)
+            pg_combinators::Combinator::parse(&p, stream)
         })
     };
 }
