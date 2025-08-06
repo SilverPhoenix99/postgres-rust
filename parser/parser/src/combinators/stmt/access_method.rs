@@ -12,7 +12,7 @@ pub(super) fn access_method(stream: &mut TokenStream) -> scan::Result<Str> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_access_method() {

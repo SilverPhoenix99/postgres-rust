@@ -61,7 +61,7 @@ pub(super) fn granted_by(stream: &mut TokenStream<'_>) -> scan::Result<RoleSpec>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_grantee_list() {

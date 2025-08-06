@@ -5,7 +5,6 @@ extern crate assert_matches;
 extern crate core;
 
 mod combinators;
-mod tests;
 
 pg_basics::reexport! { pub
     parser,

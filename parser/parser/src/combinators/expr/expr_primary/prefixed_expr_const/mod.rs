@@ -25,7 +25,7 @@ pub(super) fn prefixed_expr_const(stream: &mut TokenStream) -> scan::Result<Expr
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     use test_case::test_matrix;
 
     // These only quickly check that statements aren't missing:

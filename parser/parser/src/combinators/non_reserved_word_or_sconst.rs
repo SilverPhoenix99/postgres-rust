@@ -10,7 +10,7 @@ pub(super) fn non_reserved_word_or_sconst(stream: &mut TokenStream) -> scan::Res
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("action", Str::Static("action"))]

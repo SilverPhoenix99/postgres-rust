@@ -14,9 +14,9 @@ pub(super) fn partition_clause(stream: &mut TokenStream) -> scan::Result<Vec<Exp
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("partition by 1, 2", vec![IntegerConst(1), IntegerConst(2)])]

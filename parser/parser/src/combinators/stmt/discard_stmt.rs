@@ -22,7 +22,7 @@ pub(super) fn discard_stmt(stream: &mut TokenStream) -> scan::Result<DiscardStmt
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("discard all", DiscardStmt::All)]

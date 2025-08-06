@@ -79,11 +79,11 @@ fn aggr_arg(stream: &mut TokenStream) -> scan::Result<FunctionParameter> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::FuncType;
     use pg_ast::TypeName::Int4;
     use pg_ast::TypeName::Int8;
     use pg_ast::TypeName::Json;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]

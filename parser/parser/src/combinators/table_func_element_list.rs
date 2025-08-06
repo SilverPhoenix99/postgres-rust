@@ -32,10 +32,10 @@ fn table_func_element(stream: &mut TokenStream) -> scan::Result<SimpleColumnDefi
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::SimpleColumnDefinition;
     #[allow(unused_imports)]
     use pg_ast::TypeName;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("json json" => Ok(

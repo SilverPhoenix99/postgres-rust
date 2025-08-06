@@ -38,7 +38,7 @@ pub(super) fn text_search(stream: &mut TokenStream) -> scan::Result<TextSearch> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("text search configuration foo", TextSearch::Configuration(vec!["foo".into()]))]

@@ -185,7 +185,6 @@ fn alter_extension_target(stream: &mut TokenStream) -> scan::Result<AlterExtensi
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::RawStmt;
     #[allow(unused_imports)]
     use pg_ast::{
@@ -195,6 +194,7 @@ mod tests {
         TypeName::{Int4, Varchar},
         Typecast as Cast,
     };
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("extension some_extension set schema some_schema",

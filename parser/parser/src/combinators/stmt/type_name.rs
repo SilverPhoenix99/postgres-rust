@@ -8,8 +8,8 @@ pub(super) fn type_name(stream: &mut TokenStream) -> scan::Result<Type> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::TypeName::Int4;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_type() {

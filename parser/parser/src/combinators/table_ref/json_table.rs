@@ -238,9 +238,9 @@ fn json_table_column_path_clause(stream: &mut TokenStream) -> scan::Result<JsonT
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::TypeName::Int4;
+    use pg_combinators::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {

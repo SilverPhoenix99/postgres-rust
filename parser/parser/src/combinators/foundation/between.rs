@@ -38,8 +38,8 @@ pub(in crate::combinators) use {brackets, paren};
 mod tests {
     use super::*;
     use crate::combinators::foundation::integer;
-    use crate::tests::test_parser;
     use pg_basics::NonNegative;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_between_paren() {

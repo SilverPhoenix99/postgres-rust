@@ -20,7 +20,7 @@ pub(super) fn nulls_order(stream: &mut TokenStream) -> scan::Result<SortNulls> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("nulls first", NullsFirst)]

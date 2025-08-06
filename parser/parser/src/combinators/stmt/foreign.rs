@@ -25,7 +25,7 @@ pub(super) fn foreign(stream: &mut TokenStream) -> scan::Result<Foreign> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_foreign_data_wrapper() {

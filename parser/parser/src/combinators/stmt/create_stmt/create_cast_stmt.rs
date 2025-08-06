@@ -57,12 +57,12 @@ fn cast_context(stream: &mut TokenStream) -> scan::Result<CoercionContext> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::FunctionWithArgs;
     use pg_ast::TypeName::Int4;
     use pg_ast::TypeName::Int8;
     use pg_ast::Typecast;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]

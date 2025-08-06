@@ -110,11 +110,11 @@ fn signed_number_list(stream: &mut TokenStream) -> scan::Result<Vec<SignedNumber
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::FunctionWithArgs;
     #[allow(unused_imports)]
     use pg_ast::RelationName;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("all functions in schema a, b",

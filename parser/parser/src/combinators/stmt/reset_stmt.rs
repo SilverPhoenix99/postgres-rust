@@ -14,7 +14,7 @@ pub(super) fn reset_stmt(stream: &mut TokenStream) -> scan::Result<VariableTarge
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_variable_reset_stmt() {

@@ -5,4 +5,5 @@ pg_basics::reexport! { pub
     operator,
     optional,
     parser,
+    tests,
 }

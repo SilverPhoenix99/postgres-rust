@@ -15,7 +15,7 @@ pub(super) fn generic_option(stream: &mut TokenStream) -> scan::Result<GenericOp
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_generic_options() {

@@ -19,7 +19,7 @@ pub(super) fn unique_null_treatment(stream: &mut TokenStream) -> scan::Result<Un
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("nulls distinct", UniqueNullTreatment::NullsDistinct)]

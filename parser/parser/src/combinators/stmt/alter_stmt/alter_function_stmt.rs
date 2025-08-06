@@ -164,7 +164,6 @@ fn alterfunc_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<AlterFunctio
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         FunctionWithArgs,
@@ -172,6 +171,7 @@ mod tests {
         SetRestMore::ConfigurationParameter,
         ValueOrDefault,
     };
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case(

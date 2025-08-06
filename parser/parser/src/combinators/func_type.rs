@@ -42,8 +42,8 @@ pub(super) fn func_type(stream: &mut TokenStream) -> scan::Result<FuncType> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::SetOf;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_ref_func_type() {

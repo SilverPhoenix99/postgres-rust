@@ -26,8 +26,8 @@ pub(super) fn param_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::Indirection::Slice;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_param_expr() {

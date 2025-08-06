@@ -29,7 +29,6 @@ pub(super) fn operator(stream: &mut TokenStream) -> scan::Result<Operator> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         OneOrBoth,
@@ -37,6 +36,7 @@ mod tests {
         QualifiedOperator,
         TypeName::Int4,
     };
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("operator +(int, int)", Operator::WithArgs(

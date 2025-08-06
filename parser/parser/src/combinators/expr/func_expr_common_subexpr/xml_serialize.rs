@@ -46,7 +46,7 @@ fn xml_indent_option(stream: &mut TokenStream) -> scan::Result<bool> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {

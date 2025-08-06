@@ -199,7 +199,6 @@ fn comment_text(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         AggregateWithArgs,
@@ -213,6 +212,7 @@ mod tests {
         TypeName::{Int4, Varchar},
         Typecast as Cast,
     };
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]

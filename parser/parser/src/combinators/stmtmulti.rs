@@ -61,12 +61,12 @@ fn transaction_stmt_legacy(stream: &mut TokenStream) -> scan::Result<Transaction
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         TransactionChain::NoChain,
         TransactionMode::ReadOnly
     };
+    use pg_combinators::test_parser;
     use test_case::test_case;
     use test_case::test_matrix;
 

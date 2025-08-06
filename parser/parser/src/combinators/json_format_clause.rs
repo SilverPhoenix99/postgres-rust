@@ -38,9 +38,9 @@ pub(super) fn json_format_clause(stream: &mut TokenStream) -> scan::Result<JsonF
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::JsonFormatKind::Text;
+    use pg_combinators::test_parser;
     use pg_elog::Error::Parser;
     use scan::Error::ScanErr;
     use test_case::test_case;

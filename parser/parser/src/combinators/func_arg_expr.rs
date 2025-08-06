@@ -47,9 +47,9 @@ fn is_type_function_name(tok: &TokenValue) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("1" => Ok(NamedValue::unnamed(IntegerConst(1))))]

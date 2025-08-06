@@ -104,10 +104,10 @@ fn default_behavior(stream: &mut TokenStream) -> scan::Result<JsonBehavior> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::{IntegerConst, StringConst};
     use pg_ast::JsonBehavior;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("error on error" => Ok(

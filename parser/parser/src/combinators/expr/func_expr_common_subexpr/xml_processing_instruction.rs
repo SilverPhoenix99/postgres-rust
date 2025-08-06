@@ -26,9 +26,9 @@ pub(super) fn xml_processing_instruction(stream: &mut TokenStream) -> scan::Resu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::StringConst;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("xmlpi(name foo)" => Ok(

@@ -37,7 +37,7 @@ fn else_clause(stream: &mut TokenStream) -> scan::Result<ExprNode> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_case_value_when_else() {

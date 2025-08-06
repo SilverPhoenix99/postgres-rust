@@ -34,7 +34,6 @@ pub(super) fn window_specification(stream: &mut TokenStream) -> scan::Result<Win
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::ExprNode;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
@@ -44,6 +43,7 @@ mod tests {
     use pg_ast::WindowFrame;
     use pg_ast::WindowFrameKind;
     use pg_basics::Str;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("(foo partition by 1 order by 2 range current row)", Some("foo".into()), some_partition(), some_order(), some_frame())]

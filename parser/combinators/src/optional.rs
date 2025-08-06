@@ -22,6 +22,21 @@ where
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_parser;
+    use pg_lexer::Keyword;
+    use test_case::test_case;
+
+    #[test_case("precision", Some(Keyword::Precision))]
+    #[test_case("abort", None)]
+    #[test_case("", None)]
+    fn test_optional(source: &str, expected: Option<Keyword>) {
+        test_parser!(source, optional(Keyword::Precision), expected)
+    }
+}
+
 use crate::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

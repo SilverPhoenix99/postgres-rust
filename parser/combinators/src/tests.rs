@@ -1,5 +1,4 @@
-#![cfg(test)]
-
+#[macro_export]
 macro_rules! test_parser {
 
     (
@@ -21,7 +20,7 @@ macro_rules! test_parser {
         let source = $source;
         let mut stream = pg_parser_core::stream::TokenStream::from(source);
         let parser = $parser;
-        pg_combinators::Combinator::parse(&parser, &mut stream)
+        $crate::Combinator::parse(&parser, &mut stream)
     }};
 
     (
@@ -34,5 +33,3 @@ macro_rules! test_parser {
         assert_eq!(Ok(expected.into()), actual);
     }};
 }
-
-pub(crate) use test_parser;

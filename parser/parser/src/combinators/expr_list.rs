@@ -10,7 +10,7 @@ pub(super) fn expr_list(stream: &mut TokenStream) -> scan::Result<Vec<ExprNode>>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_expr_list() {

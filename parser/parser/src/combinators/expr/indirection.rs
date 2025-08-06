@@ -104,13 +104,13 @@ pub(super) fn check_indirection(indirection: Located<Vec<Indirection>>) -> scan:
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
     use pg_ast::Indirection;
     use pg_ast::Indirection::Property;
     use pg_ast::Indirection::Slice;
     use pg_basics::Location;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case(".*", Wildcard)]

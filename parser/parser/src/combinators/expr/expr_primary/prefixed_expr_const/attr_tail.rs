@@ -145,8 +145,8 @@ fn func_args_tail(stream: &mut TokenStream) -> scan::Result<FuncArgsTail> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_basics::Str;
+    use pg_combinators::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {

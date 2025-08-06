@@ -147,10 +147,10 @@ fn alterdb_opt_name(stream: &mut TokenStream) -> scan::Result<AlterdbOptionKind>
 mod tests {
     #[allow(unused_imports)]
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::CreatedbOptionValue;
     use pg_ast::RoleSpec;
     use pg_ast::VariableTarget;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]

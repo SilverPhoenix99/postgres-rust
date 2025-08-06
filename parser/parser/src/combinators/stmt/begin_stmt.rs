@@ -18,9 +18,9 @@ pub(in crate::combinators) fn begin_stmt(stream: &mut TokenStream) -> scan::Resu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::IsolationLevel::*;
     use pg_ast::TransactionMode::{self, *};
+    use pg_combinators::test_parser;
     use test_case::test_case;
     use TransactionStmt::Begin;
 

@@ -33,9 +33,9 @@ pub(super) fn rollback_stmt(stream: &mut TokenStream) -> scan::Result<Transactio
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::TransactionChain::{NoChain, WithChain};
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("rollback", TransactionStmt::Rollback(NoChain))]

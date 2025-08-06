@@ -249,7 +249,7 @@ fn generic_type(stream: &mut TokenStream) -> scan::Result<TypeName> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("json",                           Json)]

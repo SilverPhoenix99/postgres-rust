@@ -37,9 +37,9 @@ pub(super) fn signed_i32_literal(stream: &mut TokenStream) -> scan::Result<i32> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_basics::NumberRadix::Decimal;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case( "1.01" => Ok(SignedNumber::NumericConst { value: "1.01".into(), radix: Decimal, negative: false }))]

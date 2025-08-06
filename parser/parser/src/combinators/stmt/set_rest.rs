@@ -186,7 +186,6 @@ fn encoding(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<Box<str>>> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         SignedNumber::IntegerConst,
@@ -194,6 +193,7 @@ mod tests {
         XmlNodeKind::Document,
     };
     use pg_basics::Str;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("session characteristics as transaction read only", SetRest::SessionTransactionCharacteristics(vec![ReadOnly]))]

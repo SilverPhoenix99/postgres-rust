@@ -90,9 +90,9 @@ fn xml_root_standalone(stream: &mut TokenStream) -> scan::Result<XmlStandalone> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::{NullConst, StringConst};
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("xmlroot('foo', version '1.0', standalone yes)" => Ok(

@@ -17,8 +17,8 @@ pub(super) fn grouping_func(stream: &mut TokenStream) -> scan::Result<ExprNode> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::ColumnRef::SingleName;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_grouping_func() {

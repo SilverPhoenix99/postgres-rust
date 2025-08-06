@@ -81,12 +81,12 @@ fn is_arg_name(first: &TokenValue, second: &TokenValue) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::FuncType;
     use pg_ast::SetOf;
     use pg_ast::Type;
     use pg_ast::TypeName;
     use pg_basics::Str;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("json", None, FunctionParameterMode::Default, TypeName::Json, SetOf::Record)]

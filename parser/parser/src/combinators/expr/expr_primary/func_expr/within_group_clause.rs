@@ -14,8 +14,8 @@ fn within_group_clause(stream: &mut TokenStream) -> scan::Result<Vec<SortBy>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::ExprNode::IntegerConst;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_within_group_clause() {

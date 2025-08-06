@@ -51,9 +51,9 @@ pub(super) fn frame_bound(stream: &mut TokenStream<'_>) -> scan::Result<FrameBou
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("unbounded preceding", UnboundedPreceding)]

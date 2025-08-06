@@ -55,9 +55,9 @@ fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::AggregateWithArgs;
     use pg_ast::RoleSpec;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_alter_owner() {

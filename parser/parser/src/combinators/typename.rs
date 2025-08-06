@@ -33,9 +33,9 @@ fn record_typename(stream: &mut TokenStream) -> scan::Result<Type> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::SetOf;
     use pg_ast::TypeName;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("int", Type::new(TypeName::Int4, None, SetOf::Record))]

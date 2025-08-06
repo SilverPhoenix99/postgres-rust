@@ -11,9 +11,9 @@ pub(super) fn set_reset_clause(stream: &mut TokenStream) -> scan::Result<SetRese
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::SetRest;
     use pg_ast::VariableTarget;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_set() {

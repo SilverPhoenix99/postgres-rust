@@ -13,8 +13,8 @@ pub(super) fn large_object(stream: &mut TokenStream) -> scan::Result<SignedNumbe
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::SignedNumber::IntegerConst;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_large_object() {

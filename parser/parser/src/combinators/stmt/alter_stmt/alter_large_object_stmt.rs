@@ -18,9 +18,9 @@ pub(super) fn alter_large_object_stmt(stream: &mut TokenStream) -> scan::Result<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::RoleSpec;
     use pg_ast::SignedNumber;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_alter_large_object() {

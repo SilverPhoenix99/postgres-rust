@@ -15,9 +15,9 @@ pub(super) fn json_scalar(stream: &mut TokenStream) -> scan::Result<SqlFunction>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("json_scalar(1)" => Ok(

@@ -128,7 +128,6 @@ fn security_label(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         AggregateWithArgs,
@@ -136,6 +135,7 @@ mod tests {
         SignedNumber::IntegerConst,
         TypeName::Int4,
     };
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case(

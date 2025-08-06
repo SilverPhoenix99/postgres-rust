@@ -54,9 +54,9 @@ fn extract_arg(stream: &mut TokenStream) -> scan::Result<ExtractArg> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::{IntegerConst, StringConst};
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("extract(year from 'foo')" => Ok(

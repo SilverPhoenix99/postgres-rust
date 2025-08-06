@@ -13,9 +13,9 @@ pub(in crate::combinators) fn number(stream: &mut TokenStream<'_>) -> scan::Resu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_basics::NumberRadix::Decimal;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("1.1" => Ok(UnsignedNumber::NumericConst { value: "1.1".into(), radix: Decimal }))]

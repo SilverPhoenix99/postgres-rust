@@ -23,7 +23,7 @@ fn am_type(stream: &mut TokenStream) -> scan::Result<AccessMethodKind> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]

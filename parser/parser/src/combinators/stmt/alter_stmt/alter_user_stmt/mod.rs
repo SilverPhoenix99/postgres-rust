@@ -32,13 +32,13 @@ pub(super) fn alter_user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::AddDrop::Add;
     use pg_ast::AlterRoleStmt;
     use pg_ast::GenericOption;
     use pg_ast::GenericOptionKind::Unspecified;
     use pg_ast::RoleSpec::CurrentUser;
     use pg_ast::RoleSpec::Public;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_user_mapping() {

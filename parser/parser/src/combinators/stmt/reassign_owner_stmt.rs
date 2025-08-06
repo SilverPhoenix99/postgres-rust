@@ -14,8 +14,8 @@ pub(super) fn reassign_owned_stmt(stream: &mut TokenStream) -> scan::Result<Reas
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::RoleSpec;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_reassign_owner_stmt() {

@@ -20,7 +20,7 @@ pub(super) fn role(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("CURRENT_role" => Ok(CurrentRole))]

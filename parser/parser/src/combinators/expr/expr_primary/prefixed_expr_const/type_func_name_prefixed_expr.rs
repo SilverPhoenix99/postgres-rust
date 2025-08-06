@@ -19,7 +19,6 @@ pub(super) fn type_func_name_prefixed_expr(stream: &mut TokenStream) -> scan::Re
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         ExprNode::{IntegerConst, StringConst},
@@ -29,6 +28,7 @@ mod tests {
         StringTypecastExpr,
         TypeName,
     };
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("verbose 'foo'" => Ok(

@@ -125,7 +125,7 @@ pub(in crate::combinators) fn func_expr_common_subexpr(stream: &mut TokenStream)
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     #[allow(unused_imports)]
     use scan::Error::NoMatch;
     use test_case::test_case;

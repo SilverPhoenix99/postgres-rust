@@ -110,13 +110,13 @@ fn func_args_list(stream: &mut TokenStream) -> scan::Result<Vec<FunctionParamete
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         FuncType,
         TypeName,
     };
     use pg_ast::{FunctionParameter, FunctionWithArgs};
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     // type_func_name_keyword ( func_args )?

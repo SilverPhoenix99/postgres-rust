@@ -61,7 +61,6 @@ fn column_ref(stream: &mut TokenStream) -> scan::Result<ColumnRef> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         ExprNode::{IntegerConst, StringConst},
@@ -72,6 +71,7 @@ mod tests {
         StringTypecastExpr,
         TypeName,
     };
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("foo" => Ok(

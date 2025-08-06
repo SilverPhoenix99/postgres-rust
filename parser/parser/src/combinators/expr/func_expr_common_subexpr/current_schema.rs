@@ -15,7 +15,7 @@ pub(super) fn current_schema(stream: &mut TokenStream) -> scan::Result<SqlFuncti
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     #[allow(unused_imports)]
     use scan::Error::NoMatch;
     use test_case::test_case;

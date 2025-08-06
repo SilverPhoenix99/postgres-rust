@@ -16,7 +16,7 @@ pub(in crate::combinators) fn bit_string(stream: &mut TokenStream) -> scan::Resu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("b'0110'", BitStringKind::Binary, "0110".into())]

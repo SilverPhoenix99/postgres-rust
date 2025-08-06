@@ -20,7 +20,7 @@ pub(super) fn json_quotes_clause(stream: &mut TokenStream) -> scan::Result<JsonQ
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("keep quotes" => Ok(JsonQuotes::Keep))]

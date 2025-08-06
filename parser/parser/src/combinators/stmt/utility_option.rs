@@ -53,7 +53,7 @@ fn utility_option_name(stream: &mut TokenStream) -> scan::Result<UtilityOptionNa
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]

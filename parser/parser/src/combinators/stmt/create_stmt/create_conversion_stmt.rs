@@ -32,7 +32,7 @@ pub(super) fn create_conversion_stmt(stream: &mut TokenStream) -> scan::Result<C
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("conversion foo for 'bar' to 'baz' from qux",

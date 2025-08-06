@@ -9,7 +9,7 @@ pub(super) fn i32_literal_paren(stream: &mut TokenStream) -> scan::Result<i32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_i32_literal_paren() {

@@ -22,7 +22,6 @@ pub(super) fn json(stream: &mut TokenStream) -> scan::Result<JsonFunc> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         ExprNode::StringConst,
@@ -30,6 +29,7 @@ mod tests {
         JsonFormat,
         JsonValueExpr,
     };
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("json('foo')" => Ok(

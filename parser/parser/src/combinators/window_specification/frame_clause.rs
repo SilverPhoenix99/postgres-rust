@@ -26,7 +26,6 @@ pub(super) fn frame_clause(stream: &mut TokenStream<'_>) -> scan::Result<WindowF
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         CurrentRowEnd,
@@ -34,6 +33,7 @@ mod tests {
         FrameExtent,
         WindowExclusion::{NoOthers, Ties},
     };
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("range between current row and unbounded following",

@@ -59,8 +59,8 @@ fn constraints_set_mode(stream: &mut TokenStream) -> scan::Result<ConstraintsSet
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::SetRest;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]

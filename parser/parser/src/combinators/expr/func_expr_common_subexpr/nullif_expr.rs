@@ -17,10 +17,10 @@ pub(super) fn nullif_expr(stream: &mut TokenStream) -> scan::Result<SqlFunction>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::{NullConst, StringConst};
     use pg_ast::SqlFunction;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("nullif(null, 'foo')" => Ok(

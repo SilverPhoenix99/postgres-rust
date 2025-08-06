@@ -20,8 +20,8 @@ fn over_clause(stream: &mut TokenStream) -> scan::Result<OverClause> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::WindowDefinition;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("over foo", WindowName("foo".into()))]

@@ -16,7 +16,7 @@ pub(super) fn func_expr_windowless(stream: &mut TokenStream) -> scan::Result<Fun
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
     use test_case::test_matrix;
 
     // These only quickly check that statements aren't missing

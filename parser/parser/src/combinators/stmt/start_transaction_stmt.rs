@@ -18,10 +18,10 @@ pub(super) fn start_transaction_stmt(stream: &mut TokenStream) -> scan::Result<T
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::TransactionMode::Deferrable;
     use pg_ast::TransactionMode::ReadOnly;
     use pg_ast::TransactionMode::ReadWrite;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_start_transaction() {

@@ -20,13 +20,13 @@ pub(super) fn json_returning_clause(stream: &mut TokenStream) -> scan::Result<Js
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         JsonEncoding::UTF8,
         JsonFormat,
         TypeName::Json,
     };
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("returning json" => Ok(

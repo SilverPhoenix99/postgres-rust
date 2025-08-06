@@ -15,9 +15,9 @@ pub(super) fn typecast(stream: &mut TokenStream) -> scan::Result<Typecast> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::TypeName::Int4;
     use pg_ast::TypeName::Int8;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_typecast() {

@@ -9,8 +9,8 @@ pub(super) fn transform(stream: &mut TokenStream) -> scan::Result<Transform> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::TypeName::Int4;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_transform() {

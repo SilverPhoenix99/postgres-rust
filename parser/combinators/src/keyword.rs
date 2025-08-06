@@ -97,28 +97,35 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_lexer::Keyword::Abort;
     use pg_lexer::KeywordCategory::Unreserved;
 
     #[test]
     fn test_keyword() {
-        let mut stream = TokenStream::from("abort");
-        let actual = Abort.parse(&mut stream);
-        assert_eq!(Ok(Abort), actual)
+        test_parser!(
+            source = "abort",
+            parser = Abort,
+            expected = Abort
+        );
     }
 
     #[test]
     fn test_keyword_category() {
-        let mut stream = TokenStream::from("abort");
-        let actual = Unreserved.parse(&mut stream);
-        assert_eq!(Ok(Abort), actual)
+        test_parser!(
+            source = "abort",
+            parser = Unreserved,
+            expected = Abort
+        )
     }
 
     #[test]
     fn test_keyword_if() {
-        let mut stream = TokenStream::from("abort");
-        let actual = keyword_if(|kw| kw.category() == Unreserved).parse(&mut stream);
-        assert_eq!(Ok(Abort), actual)
+        test_parser!(
+            source = "abort",
+            parser = keyword_if(|kw| kw.category() == Unreserved),
+            expected = Abort
+        )
     }
 }
 

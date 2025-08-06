@@ -8,7 +8,7 @@ pub(in crate::combinators) fn user_defined_operator(stream: &mut TokenStream<'_>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_user_defined_op() {

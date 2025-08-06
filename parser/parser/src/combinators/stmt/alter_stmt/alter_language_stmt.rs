@@ -45,9 +45,9 @@ pub(super) fn alter_language_stmt(stream: &mut TokenStream) -> scan::Result<RawS
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     #[allow(unused_imports)]
     use pg_ast::RoleSpec::Public;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case(

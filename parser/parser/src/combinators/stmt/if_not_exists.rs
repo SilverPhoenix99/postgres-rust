@@ -8,7 +8,7 @@ pub(super) fn if_not_exists(stream: &mut TokenStream) -> scan::Result<Presence> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_if_not_exists() {

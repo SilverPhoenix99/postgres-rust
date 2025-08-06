@@ -16,9 +16,9 @@ pub(super) fn cast_expr(stream: &mut TokenStream) -> scan::Result<TypecastExpr> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::test_parser;
     use pg_ast::ExprNode;
     use pg_ast::TypeName::Varchar;
+    use pg_combinators::test_parser;
 
     #[test]
     fn test_cast_expr() {
