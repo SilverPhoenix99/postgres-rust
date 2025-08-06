@@ -2,7 +2,7 @@
 macro_rules! attrs {
     ($prefix:expr) => {
         pg_combinators::parser::<_, pg_basics::QualifiedName>(|stream| {
-            let p = $crate::combinators::foundation::many!(
+            let p = pg_combinators::many!(
                 pre = $prefix,
                 pg_combinators::Combinator::map(
                     pg_combinators::seq!(

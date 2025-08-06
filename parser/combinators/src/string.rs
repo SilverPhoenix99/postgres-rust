@@ -2,7 +2,7 @@
 /// * `SCONST`
 /// * `USCONST`
 /// * `file_name`
-pub(in crate::combinators) fn string(stream: &mut TokenStream<'_>) -> scan::Result<Box<str>> {
+pub fn string(stream: &mut TokenStream<'_>) -> scan::Result<Box<str>> {
     stream.consume(|tok| {
         let TokenValue::String(value) = tok else { return None };
         Some(mem::take(value))
@@ -12,7 +12,7 @@ pub(in crate::combinators) fn string(stream: &mut TokenStream<'_>) -> scan::Resu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("$dollar$a $ string$dollar$" => Ok("a $ string".into()))]

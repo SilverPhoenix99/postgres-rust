@@ -88,12 +88,12 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::many;
-use crate::combinators::foundation::paren;
 use crate::combinators::func_expr_windowless;
 use crate::combinators::table_func_element_list;
 use pg_ast::RangeFunction;
 use pg_ast::SimpleColumnDefinition;
+use pg_combinators::many;
+use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::As;

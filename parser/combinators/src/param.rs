@@ -1,4 +1,4 @@
-pub(in crate::combinators) fn param(stream: &mut TokenStream) -> scan::Result<i32> {
+pub fn param(stream: &mut TokenStream) -> scan::Result<i32> {
     stream.consume(|tok| match tok {
         Param { index } => Some(*index),
         _ => None
@@ -8,7 +8,7 @@ pub(in crate::combinators) fn param(stream: &mut TokenStream) -> scan::Result<i3
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_param() {

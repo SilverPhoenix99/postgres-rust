@@ -154,14 +154,14 @@ mod tests {
 
 use crate::combinators::attrs::attrs;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::identifier;
-use crate::combinators::foundation::many;
-use crate::combinators::foundation::paren;
 use crate::combinators::func_arg;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionWithArgs;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
+use pg_combinators::identifier;
+use pg_combinators::many;
+use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::KeywordCategory::ColumnName;

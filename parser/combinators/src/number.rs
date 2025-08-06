@@ -1,7 +1,7 @@
 /// Returns `ICONST | FCONST`.
 ///
 /// Alias: `I_or_F_const`
-pub(in crate::combinators) fn number(stream: &mut TokenStream<'_>) -> scan::Result<UnsignedNumber> {
+pub fn number(stream: &mut TokenStream<'_>) -> scan::Result<UnsignedNumber> {
     stream.consume(|tok| {
         let TokenValue::UnsignedNumber(value) = tok else {
             return None
@@ -13,9 +13,9 @@ pub(in crate::combinators) fn number(stream: &mut TokenStream<'_>) -> scan::Resu
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_basics::NumberRadix::Decimal;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("1.1" => Ok(UnsignedNumber::NumericConst { value: "1.1".into(), radix: Decimal }))]

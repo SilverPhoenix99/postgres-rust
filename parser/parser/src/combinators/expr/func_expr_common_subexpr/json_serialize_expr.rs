@@ -45,12 +45,12 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::paren;
-use crate::combinators::foundation::skip;
 use crate::combinators::json_returning_clause;
 use crate::combinators::json_value_expr;
 use pg_ast::JsonSerializeExpr;
+use pg_combinators::paren;
 use pg_combinators::seq;
+use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

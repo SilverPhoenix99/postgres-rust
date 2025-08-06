@@ -68,10 +68,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::integer;
-use crate::combinators::foundation::number;
 use crate::combinators::sign;
 use pg_ast::SignedNumber;
+use pg_combinators::integer;
+use pg_combinators::number;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Minus;

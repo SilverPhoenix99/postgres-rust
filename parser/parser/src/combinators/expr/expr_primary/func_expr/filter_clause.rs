@@ -29,8 +29,8 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::paren;
 use pg_ast::ExprNode;
+use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Filter;

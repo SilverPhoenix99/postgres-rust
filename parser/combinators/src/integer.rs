@@ -1,5 +1,5 @@
 /// Alias: `ICONST`
-pub(in crate::combinators) fn integer(stream: &mut TokenStream) -> scan::Result<NonNegative> {
+pub fn integer(stream: &mut TokenStream) -> scan::Result<NonNegative> {
     stream.consume(|tok| {
         let UnsignedNumber(IntegerConst(value)) = tok else { return None };
         Some(*value)

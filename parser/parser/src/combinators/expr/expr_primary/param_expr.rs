@@ -44,11 +44,11 @@ mod tests {
 
 use crate::combinators::expr::check_indirection;
 use crate::combinators::expr::indirection;
-use crate::combinators::foundation::located;
-use crate::combinators::foundation::param;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::ParamRef;
 use pg_ast::IndirectionExpr;
+use pg_combinators::located;
+use pg_combinators::param;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;

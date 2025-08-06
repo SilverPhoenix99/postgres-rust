@@ -65,11 +65,11 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::located;
-use crate::combinators::foundation::many;
 use crate::combinators::type_function_name;
 use pg_ast::NamedValue;
 use pg_basics::Located;
+use pg_combinators::located;
+use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::KeywordCategory::TypeFuncName;

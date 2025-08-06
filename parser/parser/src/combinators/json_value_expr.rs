@@ -58,9 +58,9 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::many;
 use crate::combinators::json_format_clause;
 use pg_ast::JsonValueExpr;
+use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Comma;

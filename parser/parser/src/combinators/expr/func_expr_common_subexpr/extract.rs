@@ -100,10 +100,6 @@ mod tests {
 
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::identifier;
-use crate::combinators::foundation::paren;
-use crate::combinators::foundation::skip;
-use crate::combinators::foundation::string;
 use pg_ast::ExtractArg;
 use pg_ast::ExtractArg::Day;
 use pg_ast::ExtractArg::Hour;
@@ -113,7 +109,11 @@ use pg_ast::ExtractArg::Named;
 use pg_ast::ExtractArg::Second;
 use pg_ast::ExtractArg::Year;
 use pg_ast::ExtractFunc;
+use pg_combinators::identifier;
+use pg_combinators::paren;
 use pg_combinators::seq;
+use pg_combinators::skip;
+use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::FromKw;

@@ -22,10 +22,10 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::skip;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::MergeAction;
 use pg_combinators::seq;
+use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::CloseParenthesis;
 use pg_parser_core::scan;

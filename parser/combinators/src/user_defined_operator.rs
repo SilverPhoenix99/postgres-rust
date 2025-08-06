@@ -1,4 +1,4 @@
-pub(in crate::combinators) fn user_defined_operator(stream: &mut TokenStream<'_>) -> scan::Result<Box<str>> {
+pub fn user_defined_operator(stream: &mut TokenStream<'_>) -> scan::Result<Box<str>> {
     stream.consume(|tok| {
         let UserDefinedOperator(value) = tok else { return None };
         Some(mem::take(value))
@@ -8,7 +8,7 @@ pub(in crate::combinators) fn user_defined_operator(stream: &mut TokenStream<'_>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_user_defined_op() {

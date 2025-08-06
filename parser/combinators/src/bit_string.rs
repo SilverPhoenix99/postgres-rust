@@ -5,7 +5,7 @@
 /// Note that it doesn't validate the content.
 /// That needs to be done in a separate stage,
 /// when we know the actual type from the catalog.
-pub(in crate::combinators) fn bit_string(stream: &mut TokenStream) -> scan::Result<(BitStringKind, Box<str>)> {
+pub fn bit_string(stream: &mut TokenStream) -> scan::Result<(BitStringKind, Box<str>)> {
     stream.consume(|tok| {
         let BitString { kind, value } = tok else { return None };
         let value = mem::take(value);
@@ -16,7 +16,7 @@ pub(in crate::combinators) fn bit_string(stream: &mut TokenStream) -> scan::Resu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("b'0110'", BitStringKind::Binary, "0110".into())]

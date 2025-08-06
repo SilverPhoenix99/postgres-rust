@@ -87,14 +87,14 @@ mod tests {
 
 use crate::combinators::col_label;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::many;
-use crate::combinators::foundation::paren;
 use crate::combinators::generic_option;
 use pg_ast::GenericOptionKind;
 use pg_ast::GenericOptionKind::Add;
 use pg_ast::GenericOptionKind::Drop;
 use pg_ast::GenericOptionKind::Set;
 use pg_ast::GenericOptionKind::Unspecified;
+use pg_combinators::many;
+use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;

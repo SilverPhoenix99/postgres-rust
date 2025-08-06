@@ -200,14 +200,14 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::located;
-use crate::combinators::foundation::many;
-use crate::combinators::foundation::paren;
 use crate::combinators::func_arg;
 use crate::combinators::func_name;
 use pg_ast::AggregateWithArgs;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionParameterMode as Mode;
+use pg_combinators::located;
+use pg_combinators::many;
+use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_elog::parser::Error::AggregateWithOutputParameters;

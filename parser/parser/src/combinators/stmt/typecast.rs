@@ -29,9 +29,9 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::paren;
 use crate::combinators::typename;
 use pg_ast::Typecast;
+use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::As;

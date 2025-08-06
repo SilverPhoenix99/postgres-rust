@@ -218,12 +218,12 @@ mod tests {
 use crate::combinators::col_id;
 use crate::combinators::collate_clause;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::paren;
 use crate::combinators::name_list;
 use crate::combinators::table_func_element_list;
 use crate::combinators::typename;
 use pg_ast::FuncAlias;
 use pg_ast::FuncAliasColumn;
+use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::As;

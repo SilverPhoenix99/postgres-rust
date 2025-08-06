@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `IDENT`
 /// * `UIDENT`
-pub(in crate::combinators) fn identifier(stream: &mut TokenStream) -> scan::Result<Box<str>> {
+pub fn identifier(stream: &mut TokenStream) -> scan::Result<Box<str>> {
     stream.consume(|tok| {
         let Identifier(ident) = tok else { return None };
         Some(mem::take(ident))
@@ -11,7 +11,7 @@ pub(in crate::combinators) fn identifier(stream: &mut TokenStream) -> scan::Resu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("sOmE_iDeNtIfIeR" => Ok("some_identifier".into()))]

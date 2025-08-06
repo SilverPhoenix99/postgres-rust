@@ -153,10 +153,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::identifier;
-use crate::combinators::foundation::located;
-use crate::combinators::foundation::many;
-use crate::combinators::foundation::string;
 use crate::combinators::role_list;
 use crate::combinators::signed_i32_literal;
 use pg_ast::AlterRoleOption;
@@ -171,7 +167,11 @@ use pg_ast::AlterRoleOption::Password;
 use pg_ast::AlterRoleOption::RoleMembers;
 use pg_ast::AlterRoleOption::SuperUser;
 use pg_ast::AlterRoleOption::ValidUntil;
+use pg_combinators::identifier;
+use pg_combinators::located;
+use pg_combinators::many;
 use pg_combinators::seq;
+use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_elog::parser::Error::UnencryptedPassword;
 use pg_elog::parser::Error::UnrecognizedRoleOption;

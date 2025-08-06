@@ -45,8 +45,8 @@ mod tests {
 
 use crate::combinators::col_label;
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::many;
 use pg_ast::NamedValue;
+use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::As;

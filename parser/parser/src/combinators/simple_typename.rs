@@ -322,7 +322,6 @@ mod tests {
 
 use crate::combinators::attrs;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::located;
 use crate::combinators::interval;
 use crate::combinators::precision;
 use crate::combinators::type_function_name;
@@ -349,6 +348,7 @@ use pg_ast::TypeName::Timestamp;
 use pg_ast::TypeName::TimestampTz;
 use pg_ast::TypeName::Varbit;
 use pg_ast::TypeName::Varchar;
+use pg_combinators::located;
 use pg_combinators::parser;
 use pg_combinators::seq;
 use pg_combinators::Combinator;

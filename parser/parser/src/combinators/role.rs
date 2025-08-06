@@ -108,11 +108,11 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::located;
-use crate::combinators::foundation::many;
 use crate::combinators::non_reserved_word;
 use pg_ast::RoleSpec;
 use pg_basics::Str;
+use pg_combinators::located;
+use pg_combinators::many;
 use pg_combinators::Combinator;
 use pg_elog::role_spec::Error::ReservedRoleSpec;
 use pg_lexer::Keyword::CurrentRole;

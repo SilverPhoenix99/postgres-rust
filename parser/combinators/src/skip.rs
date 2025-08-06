@@ -1,10 +1,10 @@
-pub(in crate::combinators) fn skip(n: usize) -> SkipCombi {
+pub fn skip(n: usize) -> SkipCombi {
     debug_assert_ne!(n, 0, "n must be greater than 0");
     SkipCombi(n)
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub(in crate::combinators) struct SkipCombi(usize);
+pub struct SkipCombi(usize);
 
 impl Combinator for SkipCombi {
     type Output = ();
@@ -15,6 +15,6 @@ impl Combinator for SkipCombi {
     }
 }
 
-use pg_combinators::Combinator;
+use crate::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

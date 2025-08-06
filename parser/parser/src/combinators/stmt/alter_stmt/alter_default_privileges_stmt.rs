@@ -224,7 +224,6 @@ mod tests {
 
 use crate::combinators::drop_behavior;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::many;
 use crate::combinators::grantee_list;
 use crate::combinators::name_list;
 use crate::combinators::privileges;
@@ -241,6 +240,7 @@ use pg_ast::PrivilegeDefaultsTarget::Schemas;
 use pg_ast::PrivilegeDefaultsTarget::Sequences;
 use pg_ast::PrivilegeDefaultsTarget::Tables;
 use pg_ast::PrivilegeDefaultsTarget::Types;
+use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;

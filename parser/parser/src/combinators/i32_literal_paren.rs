@@ -21,8 +21,8 @@ mod tests {
     }
 }
 
-use crate::combinators::foundation::integer;
-use crate::combinators::foundation::paren;
+use pg_combinators::integer;
+use pg_combinators::paren;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

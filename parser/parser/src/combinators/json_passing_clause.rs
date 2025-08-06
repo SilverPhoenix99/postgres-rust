@@ -61,9 +61,9 @@ mod tests {
 }
 
 use crate::combinators::col_label;
-use crate::combinators::foundation::many;
 use crate::combinators::json_value_expr;
 use pg_ast::JsonArgument;
+use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::As;

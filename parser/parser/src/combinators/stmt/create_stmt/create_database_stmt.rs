@@ -150,8 +150,6 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::identifier;
-use crate::combinators::foundation::many;
 use crate::combinators::var_value;
 use pg_ast::CreateDatabaseStmt;
 use pg_ast::CreatedbOption;
@@ -176,6 +174,8 @@ use pg_ast::CreatedbOptionKind::Tablespace;
 use pg_ast::CreatedbOptionKind::Template;
 use pg_ast::CreatedbOptionKind::Unknown;
 use pg_ast::CreatedbOptionValue;
+use pg_combinators::identifier;
+use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;

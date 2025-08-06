@@ -35,10 +35,10 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::string;
 use pg_ast::RawStmt;
 use pg_ast::RawStmt::PrepareTransactionStmt;
 use pg_combinators::seq;
+use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Prepare;
 use pg_lexer::Keyword::Transaction;

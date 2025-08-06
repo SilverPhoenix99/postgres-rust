@@ -255,9 +255,6 @@ mod tests {
 
 use crate::combinators::document_or_content;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::identifier;
-use crate::combinators::foundation::located;
-use crate::combinators::foundation::string;
 use crate::combinators::generic_set_tail;
 use crate::combinators::i32_literal_paren;
 use crate::combinators::interval;
@@ -277,7 +274,10 @@ use pg_ast::ZoneValue::Interval;
 use pg_ast::ZoneValue::Local;
 use pg_ast::ZoneValue::Numeric;
 use pg_basics::Str;
+use pg_combinators::identifier;
+use pg_combinators::located;
 use pg_combinators::seq;
+use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_elog::parser::Error::InvalidZoneValue;
 use pg_lexer::Keyword as Kw;

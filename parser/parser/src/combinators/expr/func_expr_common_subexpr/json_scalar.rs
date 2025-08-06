@@ -29,11 +29,11 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::foundation::paren;
-use crate::combinators::foundation::skip;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::JsonScalar;
+use pg_combinators::paren;
 use pg_combinators::seq;
+use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

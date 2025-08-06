@@ -1,45 +1,44 @@
 /// Matches `'(' P ')'`, and returns the result of `P`, discarding both Parenthesis tokens.
+#[macro_export]
 macro_rules! paren {
     ($parser:expr) => {
-        pg_combinators::parser(|stream| {
+        $crate::parser(|stream| {
 
-            let p = pg_combinators::seq!(
+            let p = $crate::seq!(
                 pg_lexer::OperatorKind::OpenParenthesis,
                 $parser,
                 pg_lexer::OperatorKind::CloseParenthesis
             );
 
-            let (_, value, _) = pg_combinators::Combinator::parse(&p, stream)?;
+            let (_, value, _) = $crate::Combinator::parse(&p, stream)?;
             Ok(value)
         })
     };
 }
 
 /// Matches `'[' P ']'`, and returns the result of `P`, discarding both Bracket tokens.
+#[macro_export]
 macro_rules! brackets {
     ($parser:expr) => {
-        pg_combinators::parser(|stream| {
+        $crate::parser(|stream| {
 
-            let p = pg_combinators::seq!(
+            let p = $crate::seq!(
                 pg_lexer::OperatorKind::OpenBracket,
                 $parser,
                 pg_lexer::OperatorKind::CloseBracket
             );
 
-            let (_, value, _) = pg_combinators::Combinator::parse(&p, stream)?;
+            let (_, value, _) = $crate::Combinator::parse(&p, stream)?;
             Ok(value)
         })
     };
 }
 
-pub(in crate::combinators) use {brackets, paren};
-
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::combinators::foundation::integer;
+    use crate::integer;
+    use crate::test_parser;
     use pg_basics::NonNegative;
-    use pg_combinators::test_parser;
 
     #[test]
     fn test_between_paren() {

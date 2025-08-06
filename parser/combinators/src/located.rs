@@ -1,12 +1,11 @@
+#[macro_export]
 macro_rules! located {
     ($parser:expr) => {
-        pg_combinators::parser(|stream| {
+        $crate::parser(|stream| {
             let loc = pg_parser_core::stream::TokenStream::current_location(stream);
             let p = $parser;
-            let result = pg_combinators::Combinator::parse(&p, stream)?;
+            let result = $crate::Combinator::parse(&p, stream)?;
             Ok((result, loc))
         })
     };
 }
-
-pub(in crate::combinators) use located;

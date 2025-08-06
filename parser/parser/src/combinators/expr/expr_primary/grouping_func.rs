@@ -31,12 +31,12 @@ mod tests {
 }
 
 use crate::combinators::expr_list::expr_list;
-use crate::combinators::foundation::paren;
-use crate::combinators::foundation::skip;
 use crate::no_match;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::GroupingFunc;
+use pg_combinators::paren;
 use pg_combinators::seq;
+use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Grouping;
 use pg_lexer::OperatorKind::OpenParenthesis;

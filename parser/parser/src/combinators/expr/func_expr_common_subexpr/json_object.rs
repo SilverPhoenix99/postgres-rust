@@ -153,8 +153,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::paren;
-use crate::combinators::foundation::skip;
 use crate::combinators::func_arg_expr;
 use crate::combinators::func_arg_list;
 use crate::combinators::json_constructor_null_clause;
@@ -168,7 +166,9 @@ use pg_ast::JsonObjectArgs;
 use pg_ast::JsonObjectExpr;
 use pg_ast::JsonObjectExpr::ExplicitCall;
 use pg_ast::JsonObjectExpr::SqlSyntax;
+use pg_combinators::paren;
 use pg_combinators::seq;
+use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Returning;
 use pg_lexer::Keyword::Value;

@@ -39,9 +39,9 @@ mod tests {
 }
 
 use crate::combinators::col_id;
-use crate::combinators::foundation::paren;
 use crate::combinators::name_list;
 use pg_ast::Alias;
+use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::As;

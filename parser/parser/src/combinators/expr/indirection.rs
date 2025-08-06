@@ -168,14 +168,14 @@ mod tests {
 use crate::combinators::col_label;
 use crate::combinators::expr::a_expr;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::brackets;
-use crate::combinators::foundation::many;
 use pg_ast::Indirection;
 use pg_ast::Indirection::Index;
 use pg_ast::Indirection::Property;
 use pg_ast::Indirection::Slice;
 use pg_ast::Indirection::Wildcard;
 use pg_basics::Located;
+use pg_combinators::brackets;
+use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_elog::parser::Error::ImproperUseOfStar;

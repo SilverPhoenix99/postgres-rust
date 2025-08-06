@@ -306,7 +306,6 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::many;
 use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::stmt::access_method;
 use crate::combinators::stmt::aggregate;
@@ -385,6 +384,7 @@ use pg_ast::AlterObjectSchemaStmt;
 use pg_ast::AlterObjectSchemaTarget;
 use pg_ast::RawStmt;
 use pg_basics::Str;
+use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;

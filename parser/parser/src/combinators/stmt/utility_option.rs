@@ -101,8 +101,6 @@ mod tests {
 }
 
 use crate::combinators::foundation::alt;
-use crate::combinators::foundation::many;
-use crate::combinators::foundation::paren;
 use crate::combinators::non_reserved_word;
 use crate::combinators::stmt::analyze_keyword;
 use crate::combinators::var_value;
@@ -111,6 +109,8 @@ use pg_ast::UtilityOptionName;
 use pg_ast::UtilityOptionName::Analyze;
 use pg_ast::UtilityOptionName::Format;
 use pg_ast::UtilityOptionName::Generic;
+use pg_combinators::many;
+use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;

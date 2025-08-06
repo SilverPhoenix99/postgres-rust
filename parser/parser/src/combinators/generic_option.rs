@@ -40,10 +40,10 @@ mod tests {
 }
 
 use crate::combinators::col_label;
-use crate::combinators::foundation::many;
-use crate::combinators::foundation::string;
 use pg_ast::GenericOption;
+use pg_combinators::many;
 use pg_combinators::seq;
+use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
