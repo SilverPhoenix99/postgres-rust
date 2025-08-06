@@ -22,11 +22,11 @@ mod tests {
     }
 }
 
-use crate::combinators::col_id;
 use crate::combinators::typename;
 use pg_ast::Transform;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::col_id;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::Language;

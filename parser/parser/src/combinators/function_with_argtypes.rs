@@ -152,7 +152,6 @@ mod tests {
     }
 }
 
-use crate::combinators::attrs::attrs;
 use crate::combinators::func_arg;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionWithArgs;
@@ -164,6 +163,7 @@ use pg_combinators::many;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::attrs;
 use pg_lexer::KeywordCategory::ColumnName;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_lexer::KeywordCategory::Unreserved;

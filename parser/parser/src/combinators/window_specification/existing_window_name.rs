@@ -60,9 +60,9 @@ mod tests {
     }
 }
 
-use crate::combinators::col_id;
 use crate::no_match;
 use pg_basics::Str;
+use pg_identifier_combinators::col_id;
 use pg_lexer::Keyword::Between;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Current;

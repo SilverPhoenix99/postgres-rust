@@ -42,8 +42,6 @@ mod tests {
     }
 }
 
-use crate::combinators::any_name;
-use crate::combinators::col_id;
 use pg_ast::AccessMethodKind;
 use pg_ast::AccessMethodKind::Index;
 use pg_ast::AccessMethodKind::Table;
@@ -51,6 +49,8 @@ use pg_ast::CreateAccessMethodStmt;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::any_name;
+use pg_identifier_combinators::col_id;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Access;
 use pg_lexer::Keyword::Handler;

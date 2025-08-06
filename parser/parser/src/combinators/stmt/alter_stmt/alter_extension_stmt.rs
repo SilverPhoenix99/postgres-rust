@@ -306,7 +306,6 @@ mod tests {
     }
 }
 
-use crate::combinators::col_id;
 use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::stmt::access_method;
 use crate::combinators::stmt::aggregate;
@@ -389,6 +388,7 @@ use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::col_id;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Add;
 use pg_lexer::Keyword::DropKw;

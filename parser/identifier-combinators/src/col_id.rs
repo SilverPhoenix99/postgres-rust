@@ -1,7 +1,8 @@
 /// Aliases:
 /// * `ColId`
 /// * `name`
-pub(in crate::combinators) fn col_id(stream: &mut TokenStream) -> scan::Result<Str> {
+/// * `opt_single_name`
+pub fn col_id(stream: &mut TokenStream) -> scan::Result<Str> {
 
     alt!(
         identifier.map(From::from),

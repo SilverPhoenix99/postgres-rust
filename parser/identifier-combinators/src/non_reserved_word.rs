@@ -1,5 +1,5 @@
 /// Alias: `NonReservedWord`
-pub(super) fn non_reserved_word(stream: &mut TokenStream) -> scan::Result<Str> {
+pub fn non_reserved_word(stream: &mut TokenStream) -> scan::Result<Str> {
     alt!(
         identifier.map(Str::from),
         Unreserved.map(Str::from),

@@ -13,10 +13,10 @@ pub(super) fn alias(stream: &mut TokenStream) -> scan::Result<Str> {
     Ok(alias)
 }
 
-use crate::combinators::col_id;
 use pg_basics::Str;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::col_id;
 use pg_lexer::Keyword::As;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

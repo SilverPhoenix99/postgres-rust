@@ -106,8 +106,6 @@ mod tests {
     }
 }
 
-use crate::combinators::any_name;
-use crate::combinators::col_id;
 use crate::combinators::signed_number;
 use crate::combinators::stmt::reset_stmt;
 use crate::combinators::stmt::set_rest_more;
@@ -117,6 +115,8 @@ use pg_ast::Volatility::*;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::any_name;
+use pg_identifier_combinators::col_id;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Called;
 use pg_lexer::Keyword::Definer;

@@ -50,11 +50,11 @@ mod tests {
     }
 }
 
-use crate::combinators::any_name;
 use pg_basics::QualifiedName;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::any_name;
 use pg_lexer::Keyword::Configuration;
 use pg_lexer::Keyword::Dictionary;
 use pg_lexer::Keyword::ParserKw;

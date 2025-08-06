@@ -25,10 +25,10 @@ mod tests {
     }
 }
 
-use crate::combinators::any_name;
 use pg_basics::QualifiedName;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::any_name;
 use pg_lexer::Keyword::Statistics;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

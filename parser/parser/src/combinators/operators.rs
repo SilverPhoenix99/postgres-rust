@@ -203,7 +203,6 @@ mod tests {
     }
 }
 
-use crate::combinators::col_id;
 use pg_ast::Operator;
 use pg_ast::Operator::Addition;
 use pg_ast::Operator::Division;
@@ -220,6 +219,7 @@ use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::user_defined_operator;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::col_id;
 use pg_lexer::Keyword::Ilike;
 use pg_lexer::Keyword::Like;
 use pg_lexer::Keyword::Operator as OperatorKw;

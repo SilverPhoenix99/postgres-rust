@@ -54,7 +54,6 @@ mod tests {
     }
 }
 
-use crate::combinators::col_id;
 use crate::combinators::transaction_chain;
 use crate::combinators::work_or_transaction;
 use pg_ast::TransactionStmt;
@@ -64,6 +63,7 @@ use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::string;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::col_id;
 use pg_lexer::Keyword::Prepared;
 use pg_lexer::Keyword::Rollback;
 use pg_lexer::Keyword::Savepoint;

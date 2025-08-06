@@ -33,13 +33,13 @@ mod tests {
     }
 }
 
-use crate::combinators::col_id;
 use pg_ast::RawStmt;
 use pg_ast::RawStmt::PrepareTransactionStmt;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::string;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::col_id;
 use pg_lexer::Keyword::Prepare;
 use pg_lexer::Keyword::Transaction;
 use pg_parser_core::scan;

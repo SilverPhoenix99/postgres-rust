@@ -1,5 +1,5 @@
 /// Alias: `BareColLabel`
-pub(super) fn bare_col_label(stream: &mut TokenStream<'_>) -> scan::Result<Str> {
+pub fn bare_col_label(stream: &mut TokenStream<'_>) -> scan::Result<Str> {
     alt!(
         identifier.map(From::from),
         keyword_if(|kw| kw.details().bare()).map(From::from)

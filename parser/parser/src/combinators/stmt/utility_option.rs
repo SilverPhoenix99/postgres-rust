@@ -100,7 +100,6 @@ mod tests {
     }
 }
 
-use crate::combinators::non_reserved_word;
 use crate::combinators::stmt::analyze_keyword;
 use crate::combinators::var_value;
 use pg_ast::UtilityOption;
@@ -113,6 +112,7 @@ use pg_combinators::many;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::non_reserved_word;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

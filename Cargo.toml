@@ -8,6 +8,7 @@ members = [
     "parser/ast",
     "parser/combinators",
     "parser/core",
+    "parser/identifier-combinators",
     "parser/lexer",
     "parser/parser",
 ]
@@ -39,6 +40,7 @@ thiserror = "2"
 pg-ast = { path = "parser/ast" }
 pg-basics = { path = "basics" }
 pg-combinators = { path = "parser/combinators", features = [] }
+pg-identifier-combinators = { path = "parser/identifier-combinators" }
 pg-elog = { path = "elog" }
 pg-guc = { path = "guc" }
 pg-lexer = { path = "parser/lexer" }

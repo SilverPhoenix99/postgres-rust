@@ -24,10 +24,10 @@ mod tests {
     }
 }
 
-use crate::combinators::col_id;
 use pg_basics::Str;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::col_id;
 use pg_lexer::Keyword::Listen;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

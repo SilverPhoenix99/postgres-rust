@@ -1,3 +1,4 @@
+/// Alias: `opt_transaction`
 pub(super) fn work_or_transaction(stream: &mut TokenStream) -> scan::Result<()> {
 
     // Skips over WORK | TRANSACTION

@@ -69,12 +69,12 @@ mod tests {
     }
 }
 
-use crate::combinators::attrs::attrs;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::identifier;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::attrs;
 use pg_lexer::KeywordCategory::ColumnName;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_lexer::KeywordCategory::Unreserved;

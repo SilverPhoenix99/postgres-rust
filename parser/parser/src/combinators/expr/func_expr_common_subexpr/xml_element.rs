@@ -113,7 +113,6 @@ mod tests {
 }
 
 use super::xml_attribute_list;
-use crate::combinators::col_label;
 use crate::combinators::expr_list;
 use pg_ast::ExprNode;
 use pg_ast::NamedValue;
@@ -123,6 +122,7 @@ use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::skip;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::col_label;
 use pg_lexer::Keyword::Name;
 use pg_lexer::Keyword::Xmlattributes;
 use pg_lexer::OperatorKind::Comma;

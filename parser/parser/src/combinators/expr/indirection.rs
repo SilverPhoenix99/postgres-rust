@@ -165,7 +165,6 @@ mod tests {
     }
 }
 
-use crate::combinators::col_label;
 use crate::combinators::expr::a_expr;
 use pg_ast::Indirection;
 use pg_ast::Indirection::Index;
@@ -179,6 +178,7 @@ use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_elog::parser::Error::ImproperUseOfStar;
+use pg_identifier_combinators::col_label;
 use pg_lexer::OperatorKind::Colon;
 use pg_lexer::OperatorKind::Dot;
 use pg_lexer::OperatorKind::Mul;

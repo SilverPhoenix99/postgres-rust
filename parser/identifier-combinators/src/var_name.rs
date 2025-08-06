@@ -1,4 +1,4 @@
-pub(in crate::combinators) fn var_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
+pub fn var_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
 
     /*
         col_id ( '.' col_id )*
@@ -7,7 +7,7 @@ pub(in crate::combinators) fn var_name(stream: &mut TokenStream) -> scan::Result
     many!(sep = Dot, col_id).parse(stream)
 }
 
-use crate::combinators::col_id;
+use crate::col_id;
 use pg_basics::QualifiedName;
 use pg_combinators::many;
 use pg_combinators::Combinator;

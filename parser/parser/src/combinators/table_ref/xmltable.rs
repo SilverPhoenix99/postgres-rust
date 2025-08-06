@@ -326,8 +326,6 @@ mod tests {
     }
 }
 
-use crate::combinators::col_id;
-use crate::combinators::col_label;
 use crate::combinators::expr::b_expr;
 use crate::combinators::expr::expr_primary;
 use crate::combinators::typename;
@@ -350,6 +348,8 @@ use pg_elog::parser::Error::DefaultValueAlreadyDeclared;
 use pg_elog::parser::Error::InvalidXmlTableOptionName;
 use pg_elog::parser::Error::PathValueAlreadyDeclared;
 use pg_elog::parser::Error::UnrecognizedColumnOption;
+use pg_identifier_combinators::col_id;
+use pg_identifier_combinators::col_label;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Columns;

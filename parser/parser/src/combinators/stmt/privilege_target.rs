@@ -243,11 +243,8 @@ mod tests {
     }
 }
 
-use crate::combinators::any_name_list;
-use crate::combinators::col_id;
 use crate::combinators::function_with_argtypes_list;
 use crate::combinators::name_list;
-use crate::combinators::qualified_name_list;
 use crate::combinators::signed_number;
 use pg_ast::PrivilegeTarget;
 use pg_ast::PrivilegeTarget::AllFunctionsInSchema;
@@ -276,6 +273,9 @@ use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::any_name_list;
+use pg_identifier_combinators::col_id;
+use pg_identifier_combinators::qualified_name_list;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::All;
 use pg_lexer::Keyword::Data;

@@ -137,7 +137,6 @@ mod tests {
     }
 }
 
-use crate::combinators::col_id;
 use crate::combinators::name_list;
 use pg_ast::AccessPrivilege;
 use pg_ast::AccessPrivilege::All;
@@ -153,6 +152,7 @@ use pg_combinators::many;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::col_id;
 use pg_lexer::Keyword::All as AllKw;
 use pg_lexer::Keyword::Alter;
 use pg_lexer::Keyword::Create as CreateKw;

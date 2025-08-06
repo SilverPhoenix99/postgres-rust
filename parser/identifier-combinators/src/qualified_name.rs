@@ -1,4 +1,4 @@
-pub(super) fn qualified_name_list(stream: &mut TokenStream) -> scan::Result<Vec<RelationName>> {
+pub fn qualified_name_list(stream: &mut TokenStream) -> scan::Result<Vec<RelationName>> {
 
     /*
         qualified_name ( ',' qualified_name )*
@@ -7,7 +7,7 @@ pub(super) fn qualified_name_list(stream: &mut TokenStream) -> scan::Result<Vec<
     many!(sep = Comma, qualified_name).parse(stream)
 }
 
-pub(super) fn qualified_name(stream: &mut TokenStream) -> scan::Result<RelationName> {
+pub fn qualified_name(stream: &mut TokenStream) -> scan::Result<RelationName> {
 
     /*
         (col_id attrs){1,3}
@@ -90,7 +90,7 @@ mod tests {
     }
 }
 
-use crate::combinators::any_name;
+use crate::any_name;
 use core::mem;
 use pg_ast::RelationName;
 use pg_ast::SchemaName;

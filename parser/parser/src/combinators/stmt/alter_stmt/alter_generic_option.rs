@@ -85,7 +85,6 @@ mod tests {
     }
 }
 
-use crate::combinators::col_label;
 use crate::combinators::generic_option;
 use pg_ast::GenericOptionKind;
 use pg_ast::GenericOptionKind::Add;
@@ -97,6 +96,7 @@ use pg_combinators::many;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::col_label;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::DropKw;
 use pg_lexer::Keyword::Options;

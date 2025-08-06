@@ -50,13 +50,13 @@ mod tests {
     }
 }
 
-use crate::combinators::col_id;
 use crate::combinators::collate_clause;
 use crate::combinators::simple_typename;
 use pg_ast::SimpleColumnDefinition;
 use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::col_id;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

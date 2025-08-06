@@ -84,13 +84,13 @@ mod tests {
     }
 }
 
-use crate::combinators::qualified_name;
 use pg_ast::RelationExpr;
 use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::qualified_name;
 use pg_lexer::Keyword::Only;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::Mul;

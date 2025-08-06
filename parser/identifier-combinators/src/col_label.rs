@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `ColLabel`
 /// * `attr_name`
-pub(in crate::combinators) fn col_label(stream: &mut TokenStream) -> scan::Result<Str> {
+pub fn col_label(stream: &mut TokenStream) -> scan::Result<Str> {
 
     alt!(
         identifier.map(From::from),

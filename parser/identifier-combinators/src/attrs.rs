@@ -1,4 +1,5 @@
 /// Outputs `P ( '.' col_label )*`.
+#[macro_export]
 macro_rules! attrs {
     ($prefix:expr) => {
         pg_combinators::parser::<_, pg_basics::QualifiedName>(|stream| {
@@ -7,7 +8,7 @@ macro_rules! attrs {
                 pg_combinators::Combinator::map(
                     pg_combinators::seq!(
                         pg_lexer::OperatorKind::Dot,
-                        $crate::combinators::col_label
+                        $crate::col_label
                     ),
                     |(_, name)| name
                 )
@@ -18,18 +19,14 @@ macro_rules! attrs {
     };
 }
 
-pub(in crate::combinators) use attrs;
-
 #[cfg(test)]
 mod tests {
-    use super::*;
     use pg_combinators::parser;
     use pg_combinators::test_parser;
     use pg_parser_core::scan;
 
     #[test]
     fn test_attrs() {
-
         test_parser!(
             source = ".qualified_.name_",
             parser = attrs!(parser(|_|

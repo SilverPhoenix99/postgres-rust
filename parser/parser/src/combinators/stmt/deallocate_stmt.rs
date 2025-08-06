@@ -33,12 +33,12 @@ mod tests {
     }
 }
 
-use crate::combinators::col_id;
 use pg_ast::OneOrAll;
 use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::col_id;
 use pg_lexer::Keyword::All;
 use pg_lexer::Keyword::Deallocate;
 use pg_lexer::Keyword::Prepare;

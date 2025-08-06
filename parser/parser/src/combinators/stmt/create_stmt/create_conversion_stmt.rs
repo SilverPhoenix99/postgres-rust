@@ -46,12 +46,12 @@ mod tests {
     }
 }
 
-use crate::combinators::any_name;
 use pg_ast::CreateConversionStmt;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::string;
 use pg_combinators::Combinator;
+use pg_identifier_combinators::any_name;
 use pg_lexer::Keyword::Conversion;
 use pg_lexer::Keyword::DefaultKw;
 use pg_lexer::Keyword::For;

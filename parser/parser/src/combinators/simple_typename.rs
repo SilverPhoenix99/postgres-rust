@@ -320,7 +320,6 @@ mod tests {
     }
 }
 
-use crate::combinators::attrs;
 use crate::combinators::interval;
 use crate::combinators::precision;
 use crate::combinators::type_function_name;
@@ -354,6 +353,7 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_elog::parser::Error::FloatPrecisionOverflow;
 use pg_elog::parser::Error::FloatPrecisionUnderflow;
+use pg_identifier_combinators::attrs;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Bigint;
 use pg_lexer::Keyword::Boolean;

@@ -396,7 +396,6 @@ mod tests {
 }
 
 use crate::combinators::alias;
-use crate::combinators::col_id;
 use crate::combinators::expr::a_expr;
 use crate::combinators::json_behavior_clause;
 use crate::combinators::json_format_clause;
@@ -429,6 +428,7 @@ use pg_combinators::seq;
 use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_elog::parser::Error::NonStringJsonTablePathSpec;
+use pg_identifier_combinators::col_id;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Columns;
 use pg_lexer::Keyword::For;
