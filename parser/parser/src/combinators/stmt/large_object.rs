@@ -26,7 +26,6 @@ mod tests {
     }
 }
 
-use crate::combinators::signed_number;
 use pg_ast::SignedNumber;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
@@ -34,3 +33,4 @@ use pg_lexer::Keyword::Large;
 use pg_lexer::Keyword::Object;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::signed_number;

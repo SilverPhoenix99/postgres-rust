@@ -1,5 +1,5 @@
 /// Alias: `NumericOnly`
-pub(super) fn signed_number(stream: &mut TokenStream) -> scan::Result<SignedNumber> {
+pub fn signed_number(stream: &mut TokenStream) -> scan::Result<SignedNumber> {
 
     // ('+' | '-')? (ICONST | FCONST)
 
@@ -16,12 +16,12 @@ pub(super) fn signed_number(stream: &mut TokenStream) -> scan::Result<SignedNumb
 }
 
 /// Alias: `ICONST`
-pub(super) fn i32_literal(stream: &mut TokenStream) -> scan::Result<i32> {
+pub fn i32_literal(stream: &mut TokenStream) -> scan::Result<i32> {
     integer(stream).map(i32::from)
 }
 
 /// Alias: `SignedIconst`
-pub(super) fn signed_i32_literal(stream: &mut TokenStream) -> scan::Result<i32> {
+pub fn signed_i32_literal(stream: &mut TokenStream) -> scan::Result<i32> {
 
     // ('+' | '-')? ICONST
 
@@ -32,6 +32,13 @@ pub(super) fn signed_i32_literal(stream: &mut TokenStream) -> scan::Result<i32> 
     }
 
     Ok(int)
+}
+
+/// '+' | '-'
+fn sign(stream: &mut TokenStream) -> scan::Result<OperatorKind> {
+
+    alt!(Minus, Plus)
+        .parse(stream)
 }
 
 #[cfg(test)]
@@ -68,12 +75,14 @@ mod tests {
     }
 }
 
-use crate::combinators::sign;
 use pg_ast::SignedNumber;
+use pg_combinators::alt;
 use pg_combinators::integer;
 use pg_combinators::number;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_lexer::OperatorKind;
 use pg_lexer::OperatorKind::Minus;
+use pg_lexer::OperatorKind::Plus;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

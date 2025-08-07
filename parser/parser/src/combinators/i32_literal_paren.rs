@@ -19,8 +19,8 @@ mod tests {
     }
 }
 
-use crate::combinators::const_numeric::i32_literal;
 use pg_combinators::paren;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::i32_literal;

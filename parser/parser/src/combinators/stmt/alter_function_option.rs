@@ -106,7 +106,6 @@ mod tests {
     }
 }
 
-use crate::combinators::signed_number;
 use crate::combinators::stmt::reset_stmt;
 use crate::combinators::stmt::set_rest_more;
 use pg_ast::AlterFunctionOption;
@@ -129,3 +128,4 @@ use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
 use pg_sink_combinators::any_name;
 use pg_sink_combinators::col_id;
+use pg_sink_combinators::signed_number;

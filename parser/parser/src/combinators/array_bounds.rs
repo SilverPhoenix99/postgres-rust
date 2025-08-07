@@ -56,7 +56,6 @@ mod tests {
     }
 }
 
-use crate::combinators::i32_literal;
 use pg_combinators::alt;
 use pg_combinators::brackets;
 use pg_combinators::many;
@@ -65,3 +64,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Array;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::i32_literal;

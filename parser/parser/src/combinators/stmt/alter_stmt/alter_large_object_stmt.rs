@@ -35,7 +35,6 @@ mod tests {
     }
 }
 
-use crate::combinators::signed_number;
 use pg_ast::AlterOwnerStmt;
 use pg_ast::AlterOwnerTarget;
 use pg_ast::RawStmt;
@@ -48,3 +47,4 @@ use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
 use pg_sink_combinators::role_spec;
+use pg_sink_combinators::signed_number;

@@ -152,7 +152,6 @@ mod tests {
     }
 }
 
-use crate::combinators::signed_i32_literal;
 use pg_ast::AlterRoleOption;
 use pg_ast::AlterRoleOption::BypassRls;
 use pg_ast::AlterRoleOption::CanLogin;
@@ -187,3 +186,4 @@ use pg_parser_core::scan;
 use pg_parser_core::scan::Error::ScanErr;
 use pg_parser_core::stream::TokenStream;
 use pg_sink_combinators::role_list;
+use pg_sink_combinators::signed_i32_literal;
