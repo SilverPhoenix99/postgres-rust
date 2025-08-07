@@ -8,6 +8,7 @@ pg_basics::reexport! { pub
     drop_behavior,
     non_reserved_word,
     non_reserved_word_or_sconst,
+    operators,
     qualified_name,
     relation_expr,
     role,

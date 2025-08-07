@@ -1,5 +1,5 @@
 /// Alias: `subquery_Op`
-pub(super) fn subquery_op(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
+pub fn subquery_op(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
 
     // Intentionally excludes NOT LIKE/NOT ILIKE, due to conflicts.
     // Those will have to be checked separately.
@@ -11,7 +11,7 @@ pub(super) fn subquery_op(stream: &mut TokenStream) -> scan::Result<QualifiedOpe
 }
 
 /// Alias: `qual_all_Op`
-pub(super) fn qual_all_op(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
+pub fn qual_all_op(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
     alt!(
         all_op.map(From::from),
         explicit_op
@@ -19,7 +19,7 @@ pub(super) fn qual_all_op(stream: &mut TokenStream) -> scan::Result<QualifiedOpe
 }
 
 /// Alias: `qual_Op`
-pub(super) fn qual_op(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
+pub fn qual_op(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
     alt!(
         user_defined_operator
             .map(|op| UserDefined(op).into()),
@@ -27,7 +27,7 @@ pub(super) fn qual_op(stream: &mut TokenStream) -> scan::Result<QualifiedOperato
     ).parse(stream)
 }
 
-pub(super) fn explicit_op(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
+pub fn explicit_op(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
 
     /*
         OPERATOR '(' any_operator ')'
@@ -39,7 +39,7 @@ pub(super) fn explicit_op(stream: &mut TokenStream) -> scan::Result<QualifiedOpe
     Ok(op)
 }
 
-pub(super) fn any_operator(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
+pub fn any_operator(stream: &mut TokenStream) -> scan::Result<QualifiedOperator> {
 
     /*
         ( col_id '.' )* all_op
@@ -203,6 +203,7 @@ mod tests {
     }
 }
 
+use crate::col_id;
 use pg_ast::Operator;
 use pg_ast::Operator::Addition;
 use pg_ast::Operator::Division;
@@ -237,4 +238,3 @@ use pg_lexer::OperatorKind::Percent;
 use pg_lexer::OperatorKind::Plus;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
-use pg_sink_combinators::col_id;

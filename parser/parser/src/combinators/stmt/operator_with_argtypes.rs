@@ -137,7 +137,6 @@ mod tests {
     }
 }
 
-use crate::combinators::operators::any_operator;
 use crate::combinators::typename;
 use pg_ast::OneOrBoth;
 use pg_ast::OperatorWithArgs;
@@ -155,3 +154,4 @@ use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
 use pg_parser_core::scan::Error::ScanErr;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::any_operator;
