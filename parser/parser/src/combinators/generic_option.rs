@@ -44,7 +44,7 @@ use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::string;
 use pg_combinators::Combinator;
-use pg_identifier_combinators::col_label;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::col_label;

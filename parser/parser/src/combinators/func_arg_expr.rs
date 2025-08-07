@@ -64,7 +64,6 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::type_function_name;
 use pg_ast::NamedValue;
 use pg_basics::Located;
 use pg_combinators::alt;
@@ -83,3 +82,4 @@ use pg_parser_core::stream::TokenValue;
 use pg_parser_core::stream::TokenValue::Identifier;
 use pg_parser_core::stream::TokenValue::Keyword;
 use pg_parser_core::stream::TokenValue::Operator;
+use pg_sink_combinators::type_function_name;

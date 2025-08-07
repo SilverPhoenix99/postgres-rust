@@ -105,7 +105,6 @@ mod tests {
     }
 }
 
-use crate::combinators::role_id;
 use crate::combinators::stmt::auth_ident;
 use crate::combinators::stmt::create_generic_options;
 use crate::combinators::stmt::create_stmt::create_role_options;
@@ -117,7 +116,6 @@ use pg_ast::RoleKind;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
-use pg_identifier_combinators::col_id;
 use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::Mapping;
 use pg_lexer::Keyword::Server;
@@ -125,3 +123,5 @@ use pg_lexer::Keyword::User;
 use pg_lexer::Keyword::With;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::col_id;
+use pg_sink_combinators::role_id;

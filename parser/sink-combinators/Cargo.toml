@@ -1,5 +1,5 @@
 [package]
-name = "pg-identifier-combinators"
+name = "pg-sink-combinators"
 edition.workspace = true
 version.workspace = true
 
@@ -13,3 +13,6 @@ pg-combinators.workspace = true
 pg-elog.workspace = true
 pg-lexer.workspace = true
 pg-parser-core.workspace = true
+
+[dev-dependencies]
+test-case.workspace = true

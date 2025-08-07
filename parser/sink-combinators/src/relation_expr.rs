@@ -1,4 +1,4 @@
-pub(super) fn relation_expr_list(stream: &mut TokenStream) -> scan::Result<Vec<RelationExpr>> {
+pub fn relation_expr_list(stream: &mut TokenStream) -> scan::Result<Vec<RelationExpr>> {
 
     /*
         relation_expr ( ',' relation_expr )*
@@ -8,7 +8,7 @@ pub(super) fn relation_expr_list(stream: &mut TokenStream) -> scan::Result<Vec<R
         .parse(stream)
 }
 
-pub(super) fn relation_expr(stream: &mut TokenStream) -> scan::Result<RelationExpr> {
+pub fn relation_expr(stream: &mut TokenStream) -> scan::Result<RelationExpr> {
 
     /*
           non_inherited_relation_expr
@@ -24,8 +24,8 @@ pub(super) fn relation_expr(stream: &mut TokenStream) -> scan::Result<RelationEx
 fn non_inherited_relation_expr(stream: &mut TokenStream) -> scan::Result<RelationExpr> {
 
     /*
-          ONLY qualified_name
-        | ONLY '(' qualified_name ')'
+          ONLY '(' qualified_name ')'
+        | ONLY qualified_name
     */
 
     let (_, name) = seq!(
@@ -84,13 +84,13 @@ mod tests {
     }
 }
 
+use crate::qualified_name;
 use pg_ast::RelationExpr;
 use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
-use pg_identifier_combinators::qualified_name;
 use pg_lexer::Keyword::Only;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::Mul;

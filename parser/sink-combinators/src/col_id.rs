@@ -1,3 +1,22 @@
+/// Alias: `columnList`
+pub fn name_list(stream: &mut TokenStream) -> scan::Result<Vec<Str>> {
+
+    /*
+        col_id ( ',' col_id )*
+    */
+
+    many!(sep = Comma, col_id).parse(stream)
+}
+
+pub fn var_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
+
+    /*
+        col_id ( '.' col_id )*
+    */
+
+    many!(sep = Dot, col_id).parse(stream)
+}
+
 /// Aliases:
 /// * `ColId`
 /// * `name`
@@ -26,11 +45,15 @@ mod tests {
     }
 }
 
+use pg_basics::QualifiedName;
 use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::identifier;
+use pg_combinators::many;
 use pg_combinators::Combinator;
 use pg_lexer::KeywordCategory::ColumnName;
 use pg_lexer::KeywordCategory::Unreserved;
+use pg_lexer::OperatorKind::Comma;
+use pg_lexer::OperatorKind::Dot;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;

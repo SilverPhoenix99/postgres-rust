@@ -137,7 +137,6 @@ mod tests {
     }
 }
 
-use crate::combinators::name_list;
 use pg_ast::AccessPrivilege;
 use pg_ast::AccessPrivilege::All;
 use pg_ast::AccessPrivilege::Specific;
@@ -152,7 +151,6 @@ use pg_combinators::many;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
-use pg_identifier_combinators::col_id;
 use pg_lexer::Keyword::All as AllKw;
 use pg_lexer::Keyword::Alter;
 use pg_lexer::Keyword::Create as CreateKw;
@@ -163,3 +161,5 @@ use pg_lexer::Keyword::SystemKw;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::col_id;
+use pg_sink_combinators::name_list;

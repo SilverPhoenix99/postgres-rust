@@ -1,4 +1,4 @@
-pub(super) fn role_list(stream: &mut TokenStream) -> scan::Result<Vec<RoleSpec>> {
+pub fn role_list(stream: &mut TokenStream) -> scan::Result<Vec<RoleSpec>> {
 
     /*
         role_spec ( ',' role_spec )*
@@ -8,7 +8,7 @@ pub(super) fn role_list(stream: &mut TokenStream) -> scan::Result<Vec<RoleSpec>>
 }
 
 /// Alias: `RoleId`
-pub(super) fn role_id(stream: &mut TokenStream) -> scan::Result<Str> {
+pub fn role_id(stream: &mut TokenStream) -> scan::Result<Str> {
 
     // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
@@ -19,7 +19,7 @@ pub(super) fn role_id(stream: &mut TokenStream) -> scan::Result<Str> {
 }
 
 /// Alias: `RoleSpec`
-pub(super) fn role_spec(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
+pub fn role_spec(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
 
     /*
         role_spec :
@@ -107,6 +107,7 @@ mod tests {
     }
 }
 
+use crate::non_reserved_word;
 use pg_ast::RoleSpec;
 use pg_basics::Str;
 use pg_combinators::alt;
@@ -114,7 +115,6 @@ use pg_combinators::located;
 use pg_combinators::many;
 use pg_combinators::Combinator;
 use pg_elog::role_spec::Error::ReservedRoleSpec;
-use pg_identifier_combinators::non_reserved_word;
 use pg_lexer::Keyword::CurrentRole;
 use pg_lexer::Keyword::CurrentUser;
 use pg_lexer::Keyword::NoneKw;

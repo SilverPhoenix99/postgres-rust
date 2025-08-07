@@ -123,7 +123,6 @@ mod tests {
 }
 
 use crate::combinators::func_type;
-use crate::combinators::type_function_name;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionParameterMode;
 use pg_ast::FunctionParameterMode::In;
@@ -145,3 +144,4 @@ use pg_parser_core::stream::TokenValue::Identifier;
 use pg_parser_core::stream::TokenValue::Keyword;
 use pg_parser_core::Optional;
 use pg_parser_core::Required;
+use pg_sink_combinators::type_function_name;

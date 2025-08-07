@@ -83,7 +83,6 @@ mod tests {
     }
 }
 
-use crate::combinators::role::role_list;
 use crate::combinators::stmt::alter_role_option;
 use pg_ast::CreateRoleOption;
 use pg_combinators::alt;
@@ -98,3 +97,4 @@ use pg_lexer::Keyword::Role;
 use pg_lexer::Keyword::Sysid;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::role_list;

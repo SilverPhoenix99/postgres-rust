@@ -6,5 +6,7 @@ pg_basics::reexport! { pub
     col_label,
     non_reserved_word,
     qualified_name,
-    var_name,
+    relation_expr,
+    role,
+    type_function_name,
 }

@@ -30,8 +30,6 @@ mod tests {
     }
 }
 
-use crate::combinators::role_list;
-use crate::combinators::role_spec;
 use pg_ast::ReassignOwnedStmt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
@@ -41,3 +39,5 @@ use pg_lexer::Keyword::Reassign;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::role_list;
+use pg_sink_combinators::role_spec;

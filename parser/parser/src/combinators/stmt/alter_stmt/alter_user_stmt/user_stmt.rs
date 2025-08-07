@@ -182,8 +182,6 @@ mod tests {
 }
 
 use super::in_database::in_database;
-use crate::combinators::role_id;
-use crate::combinators::role_spec;
 use crate::combinators::stmt::alter_role_options;
 use crate::combinators::stmt::alter_stmt::set_reset_clause;
 use pg_ast::AddDrop::Add;
@@ -206,3 +204,5 @@ use pg_lexer::Keyword::To;
 use pg_lexer::Keyword::With;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::role_id;
+use pg_sink_combinators::role_spec;

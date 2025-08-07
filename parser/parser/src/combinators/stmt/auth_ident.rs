@@ -19,7 +19,6 @@ mod tests {
     }
 }
 
-use crate::combinators::role_spec;
 use pg_ast::RoleSpec;
 use pg_ast::RoleSpec::CurrentUser;
 use pg_combinators::alt;
@@ -27,3 +26,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::User;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::role_spec;

@@ -24,6 +24,6 @@ use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::string;
 use pg_combinators::Combinator;
-use pg_identifier_combinators::non_reserved_word;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::non_reserved_word;

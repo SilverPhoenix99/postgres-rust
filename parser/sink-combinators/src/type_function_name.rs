@@ -1,4 +1,4 @@
-pub(super) fn type_function_name(stream: &mut TokenStream) -> scan::Result<Str> {
+pub fn type_function_name(stream: &mut TokenStream) -> scan::Result<Str> {
     alt!(
         identifier.map(Str::from),
         Unreserved.map(Str::from),

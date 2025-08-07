@@ -239,7 +239,6 @@ mod tests {
     }
 }
 
-use crate::combinators::role_spec;
 use crate::combinators::stmt::createdb_opt_value;
 use crate::combinators::stmt::reset_stmt::reset_stmt;
 use crate::combinators::stmt::set_rest;
@@ -268,7 +267,6 @@ use pg_combinators::identifier;
 use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
-use pg_identifier_combinators::col_id;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Collation;
 use pg_lexer::Keyword::Connection;
@@ -284,3 +282,5 @@ use pg_lexer::Keyword::With;
 use pg_lexer::OperatorKind::Equals;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::col_id;
+use pg_sink_combinators::role_spec;

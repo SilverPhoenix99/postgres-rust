@@ -28,7 +28,7 @@ mod tests {
 use pg_basics::QualifiedName;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
-use pg_identifier_combinators::any_name;
 use pg_lexer::Keyword::Sequence;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::any_name;
