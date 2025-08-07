@@ -101,7 +101,6 @@ pg_basics::reexport! {
     alter_function_option,
     alter_role_option,
     alter_stmt,
-    analyze_keyword,
     analyze_stmt,
     auth_ident,
     call_stmt,

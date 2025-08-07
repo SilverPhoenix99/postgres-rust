@@ -1,5 +1,5 @@
 /// Alias: `opt_analyze`
-pub(super) fn analyze_keyword(stream: &mut TokenStream) -> scan::Result<()> {
+pub fn analyze_keyword(stream: &mut TokenStream) -> scan::Result<()> {
 
     /*
           ANALYZE
