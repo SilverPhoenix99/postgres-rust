@@ -1,5 +1,5 @@
 /// Alias: `NonReservedWord_or_Sconst`
-pub(super) fn non_reserved_word_or_sconst(stream: &mut TokenStream) -> scan::Result<Str> {
+pub fn non_reserved_word_or_sconst(stream: &mut TokenStream) -> scan::Result<Str> {
 
     alt!(
         non_reserved_word,
@@ -20,10 +20,10 @@ mod tests {
     }
 }
 
+use crate::non_reserved_word;
 use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
-use pg_sink_combinators::non_reserved_word;

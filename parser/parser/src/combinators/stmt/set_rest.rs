@@ -256,7 +256,6 @@ mod tests {
 use crate::combinators::document_or_content;
 use crate::combinators::generic_set_tail;
 use crate::combinators::interval;
-use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::precision::precision;
 use crate::combinators::transaction_mode_list;
 use pg_ast::IntervalRange;
@@ -295,5 +294,6 @@ use pg_lexer::Keyword::Xml;
 use pg_lexer::Keyword::Zone;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::non_reserved_word_or_sconst;
 use pg_sink_combinators::signed_number;
 use pg_sink_combinators::var_name;

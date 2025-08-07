@@ -224,7 +224,6 @@ mod tests {
     }
 }
 
-use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::stmt::access_method;
 use crate::combinators::stmt::aggregate;
 use crate::combinators::stmt::collation;
@@ -303,3 +302,4 @@ use pg_lexer::Keyword::On;
 use pg_lexer::Keyword::Security;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::non_reserved_word_or_sconst;

@@ -32,19 +32,6 @@ pub(super) fn with_grant_option(stream: &mut TokenStream<'_>) -> scan::Result<Gr
     Ok(GrantOption::WithGrant)
 }
 
-/// Alias: `opt_drop_behavior`
-pub(super) fn drop_behavior(stream: &mut TokenStream<'_>) -> scan::Result<DropBehavior> {
-
-    /*
-        CASCADE | RESTRICT
-    */
-
-    alt!(
-        Cascade.map(|_| DropBehavior::Cascade),
-        Restrict.map(|_| DropBehavior::Restrict)
-    ).parse(stream)
-}
-
 /// Alias: `opt_granted_by`
 pub(super) fn granted_by(stream: &mut TokenStream<'_>) -> scan::Result<RoleSpec> {
 
@@ -93,13 +80,6 @@ mod tests {
     }
 
     #[test]
-    fn test_drop_behavior() {
-        let mut stream = TokenStream::from("restrict cascade");
-        assert_eq!(Ok(DropBehavior::Restrict), drop_behavior(&mut stream));
-        assert_eq!(Ok(DropBehavior::Cascade), drop_behavior(&mut stream));
-    }
-
-    #[test]
     fn test_granted_by() {
         test_parser!(
             source = "granted by public",
@@ -109,20 +89,16 @@ mod tests {
     }
 }
 
-use pg_ast::DropBehavior;
 use pg_ast::GrantOption;
 use pg_ast::RoleSpec;
-use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::By;
-use pg_lexer::Keyword::Cascade;
 use pg_lexer::Keyword::Grant;
 use pg_lexer::Keyword::Granted;
 use pg_lexer::Keyword::Group;
 use pg_lexer::Keyword::OptionKw;
-use pg_lexer::Keyword::Restrict;
 use pg_lexer::Keyword::With;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
