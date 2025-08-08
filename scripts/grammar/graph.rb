@@ -38,7 +38,7 @@ module Graph
       cs.delete(p)
     end
 
-    exclude ||= Set.new
+    exclude = exclude&.to_set || Set.new
 
     # remove top level and PLSql sources
     exclude += %i[
@@ -46,13 +46,12 @@ module Graph
       stmtmulti
       stmtmulti_1
       toplevel_stmt
-      stmt
       PLpgSQL_Expr
       PLAssignStmt
       opt_distinct_clause
       plassign_target
       plassign_equals
-    ].to_set;
+    ];
 
     # exclude single terminal productions - these are inlined
     exclude += %i[
@@ -149,6 +148,9 @@ module Graph
 
     graph.reject! { |p, _| exclude.include?(p) };
     graph.transform_values! { it - exclude };
+
+    # delete the production, but it'll still show as a sink
+    graph.delete(:stmt)
 
     # remove empty productions: they're pseudo-terminals now
     graph.reject! { |_, cs| cs.empty? };

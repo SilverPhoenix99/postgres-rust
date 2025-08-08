@@ -3,6 +3,7 @@ pub(super) fn var_list(stream: &mut TokenStream) -> scan::Result<Vec<VarValue>> 
     many!(sep = Comma, var_value).parse(stream)
 }
 
+/// Alias: `utility_option_arg`
 pub(super) fn var_value(stream: &mut TokenStream) -> scan::Result<VarValue> {
 
     /*

@@ -881,6 +881,7 @@ subgraph cluster_CreateFunctionStmt {
   opt_routine_body -> ReturnStmt
   opt_routine_body -> routine_body_stmt_list
   routine_body_stmt_list -> routine_body_stmt
+  routine_body_stmt -> {stmt [color=red penwidth=3]}
   routine_body_stmt -> ReturnStmt
   table_func_column_list -> table_func_column
 }
