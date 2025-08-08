@@ -3,6 +3,10 @@
 /// * `CreateRoleStmt`
 pub(super) fn create_role_stmt(stream: &mut TokenStream) -> scan::Result<CreateRoleStmt> {
 
+    /*
+        CREATE (ROLE | GROUP) RoleId opt_with OptRoleList
+    */
+
     let (kind, name, _, options) = seq!(
         role_kind,
         role_id,

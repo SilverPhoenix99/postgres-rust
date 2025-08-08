@@ -15,3 +15,30 @@ pg_basics::reexport! { pub
     role,
     type_function_name,
 }
+
+mod object_type_name;
+
+pub use object_type_name::{
+    collation::*,
+    column::*,
+    conversion::*,
+    database::*,
+    event_trigger::*,
+    extension::*,
+    foreign::*,
+    index::*,
+    language::*,
+    large_object::*,
+    materialized_view::*,
+    publication::*,
+    role::*,
+    schema::*,
+    sequence::*,
+    server::*,
+    statistics::*,
+    subscription::*,
+    table::*,
+    tablespace::*,
+    text_search::*,
+    view::*,
+};
