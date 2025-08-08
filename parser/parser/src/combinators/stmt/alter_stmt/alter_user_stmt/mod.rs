@@ -36,9 +36,9 @@ mod tests {
     use pg_ast::AlterRoleStmt;
     use pg_ast::GenericOption;
     use pg_ast::GenericOptionKind::Unspecified;
-    use pg_ast::RoleSpec::CurrentUser;
-    use pg_ast::RoleSpec::Public;
     use pg_combinators::test_parser;
+    use pg_sink_ast::RoleSpec::CurrentUser;
+    use pg_sink_ast::RoleSpec::Public;
 
     #[test]
     fn test_user_mapping() {

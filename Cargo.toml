@@ -8,9 +8,10 @@ members = [
     "parser/ast",
     "parser/combinators",
     "parser/core",
-    "parser/sink-combinators",
     "parser/lexer",
     "parser/parser",
+    "parser/sink-ast",
+    "parser/sink-combinators",
 ]
 
 [workspace.package]
@@ -40,6 +41,7 @@ thiserror = "2"
 pg-ast = { path = "parser/ast" }
 pg-basics = { path = "basics" }
 pg-combinators = { path = "parser/combinators", features = [] }
+pg-sink-ast = { path = "parser/sink-ast" }
 pg-sink-combinators = { path = "parser/sink-combinators" }
 pg-elog = { path = "elog" }
 pg-guc = { path = "guc" }

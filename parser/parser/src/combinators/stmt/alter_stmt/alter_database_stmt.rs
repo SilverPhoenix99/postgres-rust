@@ -148,7 +148,6 @@ mod tests {
     #[allow(unused_imports)]
     use super::*;
     use pg_ast::CreatedbOptionValue;
-    use pg_ast::RoleSpec;
     use pg_ast::VariableTarget;
     use pg_combinators::test_parser;
     use test_case::test_case;
@@ -257,7 +256,6 @@ use pg_ast::RawStmt;
 use pg_ast::RawStmt::AlterDatabaseRefreshCollStmt;
 use pg_ast::RenameStmt;
 use pg_ast::RenameTarget;
-use pg_ast::RoleSpec;
 use pg_ast::SetResetClause;
 use pg_ast::SetRest;
 use pg_ast::VariableTarget;
@@ -282,5 +280,6 @@ use pg_lexer::Keyword::With;
 use pg_lexer::OperatorKind::Equals;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::role_spec;

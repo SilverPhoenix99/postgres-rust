@@ -5,20 +5,16 @@ pub struct UnaryExpr {
 }
 
 impl UnaryExpr {
-    pub fn new(operator: QualifiedOperator, operand: ExprNode) -> Self {
-        Self { operator, operand }
-    }
-
-    pub fn unary_plus(operand: ExprNode) -> Self {
-        Self::new(Operator::Addition.into(), operand)
-    }
-
-    /// Aka `unary_minus`
-    pub fn negation(operand: ExprNode) -> Self {
-        Self::new(Operator::Subtraction.into(), operand)
+    pub fn new<T>(operator: T, operand: ExprNode) -> Self
+    where
+        T: Into<QualifiedOperator>,
+    {
+        Self {
+            operator: operator.into(),
+            operand
+        }
     }
 }
 
 use crate::ExprNode;
-use crate::Operator;
-use crate::QualifiedOperator;
+use pg_sink_ast::QualifiedOperator;

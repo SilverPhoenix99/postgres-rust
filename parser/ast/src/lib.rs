@@ -17,7 +17,6 @@ pg_basics::reexport! { pub
     alter_user_mapping_stmt,
     binary_expr,
     bool_expr,
-    boolean_or_string,
     case_expr,
     column_ref,
     comment_stmt,
@@ -30,7 +29,6 @@ pg_basics::reexport! { pub
     create_role_stmt,
     create_user_mapping_stmt,
     discard_stmt,
-    drop_behavior,
     extract_expr,
     frame_extent,
     func_alias,
@@ -71,7 +69,6 @@ pg_basics::reexport! { pub
     numeric_spec,
     one_or_all,
     one_or_both,
-    operator,
     operator_with_args,
     over_clause,
     overlay_func,
@@ -79,19 +76,15 @@ pg_basics::reexport! { pub
     prepare_stmt,
     presence,
     privilege_target,
-    qualified_operator,
     range_function,
     range_var,
     raw_stmt,
     reassign_owned_stmt,
-    relation_expr,
     rename_stmt,
-    role_spec,
     security_label_stmt,
     set_reset_clause,
     set_rest,
     set_rest_more,
-    signed_number,
     simple_column_definition,
     sort_by,
     sql_function,
@@ -235,3 +228,4 @@ use derive_more::From;
 use pg_basics::NumberRadix;
 use pg_basics::Str;
 use pg_basics::UnsignedNumber;
+use pg_sink_ast::RoleSpec;

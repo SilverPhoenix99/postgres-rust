@@ -29,13 +29,13 @@ fn role_kind(stream: &mut TokenStream) -> scan::Result<RoleKind> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        CreateRoleOption,
-        RoleSpec::Public
-    };
     use pg_combinators::test_parser;
     use test_case::test_case;
+    #[allow(unused_imports)]
+    use {
+        pg_ast::CreateRoleOption,
+        pg_sink_ast::RoleSpec::Public,
+    };
 
     #[test_case("role test_role with sysid 42",
         CreateRoleStmt::new(

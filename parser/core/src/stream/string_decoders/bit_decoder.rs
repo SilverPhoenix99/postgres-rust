@@ -84,4 +84,5 @@ mod tests {
 
 use bitvec::boxed::BitBox;
 use bitvec::vec::BitVec;
-use BitStringError::{BitStringTooLong, InvalidBinaryDigit};
+use BitStringError::BitStringTooLong;
+use BitStringError::InvalidBinaryDigit;

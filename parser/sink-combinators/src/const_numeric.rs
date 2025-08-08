@@ -75,7 +75,6 @@ mod tests {
     }
 }
 
-use pg_ast::SignedNumber;
 use pg_combinators::alt;
 use pg_combinators::integer;
 use pg_combinators::number;
@@ -86,3 +85,4 @@ use pg_lexer::OperatorKind::Minus;
 use pg_lexer::OperatorKind::Plus;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_ast::SignedNumber;

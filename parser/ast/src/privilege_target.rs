@@ -24,7 +24,7 @@ pub enum PrivilegeTarget {
 }
 
 use crate::FunctionWithArgs;
-use crate::RelationName;
-use crate::SignedNumber;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
+use pg_sink_ast::RelationName;
+use pg_sink_ast::SignedNumber;

@@ -68,7 +68,7 @@ impl GrantStmt {
 }
 
 use crate::AccessPrivilege;
-use crate::DropBehavior;
 use crate::GrantOption;
 use crate::PrivilegeDefaultsTarget;
-use crate::RoleSpec;
+use pg_sink_ast::DropBehavior;
+use pg_sink_ast::RoleSpec;

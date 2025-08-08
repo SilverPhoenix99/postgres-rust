@@ -19,5 +19,5 @@ impl OperatorWithArgs {
 }
 
 use crate::OneOrBoth;
-use crate::QualifiedOperator;
 use crate::Type;
+use pg_sink_ast::QualifiedOperator;

@@ -103,9 +103,9 @@ fn ident_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use pg_ast::RoleSpec::Public;
     use pg_combinators::test_parser;
+    #[allow(unused_imports)]
+    use pg_sink_ast::RoleSpec::Public;
     use test_case::test_case;
 
     #[test]

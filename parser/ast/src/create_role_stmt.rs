@@ -72,6 +72,6 @@ impl From<AlterRoleOption> for CreateRoleOption {
 }
 
 use crate::AlterRoleOption;
-use crate::RoleSpec;
 use pg_basics::NonNegative;
 use pg_basics::Str;
+use pg_sink_ast::RoleSpec;

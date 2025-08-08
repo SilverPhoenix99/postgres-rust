@@ -54,8 +54,8 @@ fn inherit(stream: &mut TokenStream) -> scan::Result<CreateRoleOption> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_ast::RoleSpec::Public;
     use pg_combinators::test_parser;
+    use pg_sink_ast::RoleSpec::Public;
     use test_case::test_case;
 
     #[test]

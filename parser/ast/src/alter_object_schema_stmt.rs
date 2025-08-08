@@ -51,6 +51,6 @@ pub enum AlterObjectSchemaTarget {
 use crate::AggregateWithArgs;
 use crate::FunctionWithArgs;
 use crate::OperatorWithArgs;
-use crate::RelationExpr;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
+use pg_sink_ast::RelationExpr;

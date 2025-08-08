@@ -48,7 +48,6 @@ fn sortby(stream: &mut TokenStream) -> scan::Result<SortBy> {
 mod tests {
     use super::*;
     use pg_ast::ExprNode::IntegerConst;
-    use pg_ast::Operator::Less;
     use pg_ast::SortDirection::Ascending;
     use pg_ast::SortNulls::NullsLast;
     #[allow(unused_imports)]
@@ -57,6 +56,7 @@ mod tests {
         SortNulls::NullsFirst,
     };
     use pg_combinators::test_parser;
+    use pg_sink_ast::Operator::Less;
     use test_case::test_case;
 
     #[test]

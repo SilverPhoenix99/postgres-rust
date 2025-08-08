@@ -73,15 +73,15 @@ fn security(stream: &mut TokenStream) -> scan::Result<AlterFunctionOption> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        SetRestMore::TimeZone,
-        SignedNumber::IntegerConst,
-        VariableTarget::All,
-        ZoneValue::Local
-    };
     use pg_combinators::test_parser;
     use test_case::test_case;
+    #[allow(unused_imports)]
+    use {
+        pg_ast::SetRestMore::TimeZone,
+        pg_ast::VariableTarget::All,
+        pg_ast::ZoneValue::Local,
+        pg_sink_ast::SignedNumber::IntegerConst,
+    };
 
     #[test_case("called on null input", Strict(false))]
     #[test_case("returns null on null input", Strict(true))]

@@ -41,4 +41,4 @@ pub enum SortNulls {
 }
 
 use crate::ExprNode;
-use crate::QualifiedOperator;
+use pg_sink_ast::QualifiedOperator;

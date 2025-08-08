@@ -17,7 +17,7 @@ impl From<BooleanOrString> for VarValue {
     }
 }
 
-use crate::BooleanOrString;
-use crate::SignedNumber;
 use derive_more::From;
 use pg_basics::Str;
+use pg_sink_ast::BooleanOrString;
+use pg_sink_ast::SignedNumber;

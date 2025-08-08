@@ -58,9 +58,9 @@ fn inherited_relation_expr(stream: &mut TokenStream) -> scan::Result<RelationExp
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use pg_ast::RelationName;
     use pg_combinators::test_parser;
+    #[allow(unused_imports)]
+    use pg_sink_ast::RelationName;
     use test_case::test_case;
 
     #[test_case("foo"
@@ -85,7 +85,6 @@ mod tests {
 }
 
 use crate::qualified_name;
-use pg_ast::RelationExpr;
 use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::paren;
@@ -96,3 +95,4 @@ use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::Mul;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_ast::RelationExpr;

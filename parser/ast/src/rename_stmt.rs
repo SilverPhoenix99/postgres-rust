@@ -72,6 +72,6 @@ pub enum RenameTarget {
 
 use crate::AggregateWithArgs;
 use crate::FunctionWithArgs;
-use crate::RelationExpr;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
+use pg_sink_ast::RelationExpr;

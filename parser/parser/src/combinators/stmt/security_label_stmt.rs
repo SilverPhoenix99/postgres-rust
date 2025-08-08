@@ -130,15 +130,15 @@ fn security_label(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        AggregateWithArgs,
-        FunctionWithArgs,
-        SignedNumber::IntegerConst,
-        TypeName::Int4,
-    };
     use pg_combinators::test_parser;
     use test_case::test_case;
+    #[allow(unused_imports)]
+    use {
+        pg_ast::AggregateWithArgs,
+        pg_ast::FunctionWithArgs,
+        pg_ast::TypeName::Int4,
+        pg_sink_ast::SignedNumber::IntegerConst,
+    };
 
     #[test_case(
         "SECURITY LABEL ON access method some_method IS 'foo'",

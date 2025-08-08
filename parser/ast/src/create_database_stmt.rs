@@ -92,7 +92,7 @@ impl From<VarValue> for CreatedbOptionValue {
     }
 }
 
-use crate::SignedNumber;
 use crate::VarValue;
 use derive_more::From;
 use pg_basics::Str;
+use pg_sink_ast::SignedNumber;

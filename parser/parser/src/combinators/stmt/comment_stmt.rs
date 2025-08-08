@@ -201,21 +201,22 @@ fn comment_text(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        AggregateWithArgs,
-        FunctionWithArgs,
-        OneOrBoth,
-        Operator::Addition,
-        OperatorWithArgs,
-        QualifiedOperator,
-        SignedNumber::IntegerConst,
-        Transform as TransformAst,
-        TypeName::{Int4, Varchar},
-        Typecast as Cast,
-    };
     use pg_combinators::test_parser;
     use test_case::test_case;
+    #[allow(unused_imports)]
+    use {
+        pg_ast::AggregateWithArgs,
+        pg_ast::FunctionWithArgs,
+        pg_ast::OneOrBoth,
+        pg_ast::OperatorWithArgs,
+        pg_ast::Transform as TransformAst,
+        pg_ast::TypeName::Int4,
+        pg_ast::TypeName::Varchar,
+        pg_ast::Typecast as Cast,
+        pg_sink_ast::Operator::Addition,
+        pg_sink_ast::QualifiedOperator,
+        pg_sink_ast::SignedNumber::IntegerConst,
+    };
 
     #[test]
     fn test_comment_stmt() {

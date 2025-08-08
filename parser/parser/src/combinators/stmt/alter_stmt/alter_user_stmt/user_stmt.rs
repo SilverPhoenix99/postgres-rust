@@ -99,19 +99,19 @@ fn change_role(stream: &mut TokenStream) -> scan::Result<Change> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        RoleSpec,
-        SetResetClause::Reset,
-        SetResetClause::Set,
-        SetRest::LocalTransactionCharacteristics,
-        SetRest::TransactionSnapshot,
-        TransactionMode::Deferrable,
-        VariableTarget::SessionAuthorization,
-        VariableTarget::TimeZone,
-    };
     use pg_combinators::test_parser;
     use test_case::test_case;
+    #[allow(unused_imports)]
+    use {
+        pg_ast::SetResetClause::Reset,
+        pg_ast::SetResetClause::Set,
+        pg_ast::SetRest::LocalTransactionCharacteristics,
+        pg_ast::SetRest::TransactionSnapshot,
+        pg_ast::TransactionMode::Deferrable,
+        pg_ast::VariableTarget::SessionAuthorization,
+        pg_ast::VariableTarget::TimeZone,
+        pg_sink_ast::RoleSpec,
+    };
 
     #[test_case(
         "all in database foo set transaction snapshot 'bar'",
@@ -206,3 +206,4 @@ use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
 use pg_sink_combinators::role_id;
 use pg_sink_combinators::role_spec;
+use pg_sink_combinators::IntoRoleId;

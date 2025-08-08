@@ -49,14 +49,14 @@ fn create_user_role(stream: &mut TokenStream) -> scan::Result<CreateRoleStmt> {
 mod tests {
     use super::*;
     use pg_ast::CreateRoleOption;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        GenericOption,
-        Presence,
-        RoleSpec
-    };
     use pg_combinators::test_parser;
     use test_case::{test_case, test_matrix};
+    #[allow(unused_imports)]
+    use {
+        pg_ast::GenericOption,
+        pg_ast::Presence,
+        pg_sink_ast::RoleSpec,
+    };
 
     // This only quickly tests that statement types aren't missing.
     // More in-depth testing is within each statement's module.

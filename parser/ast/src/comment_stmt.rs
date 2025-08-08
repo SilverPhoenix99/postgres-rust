@@ -68,10 +68,10 @@ pub enum CommentTarget {
 use crate::AggregateWithArgs;
 use crate::FunctionWithArgs;
 use crate::OperatorWithArgs;
-use crate::SignedNumber;
 use crate::Transform;
 use crate::Type;
 use crate::TypeName;
 use crate::Typecast;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
+use pg_sink_ast::SignedNumber;

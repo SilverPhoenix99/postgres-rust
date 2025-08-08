@@ -28,5 +28,5 @@ impl AlterUserMappingStmt {
 }
 
 use crate::GenericOptionKind;
-use crate::RoleSpec;
 use pg_basics::Str;
+use pg_sink_ast::RoleSpec;

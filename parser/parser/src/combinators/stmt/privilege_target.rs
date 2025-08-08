@@ -112,9 +112,9 @@ mod tests {
     use super::*;
     #[allow(unused_imports)]
     use pg_ast::FunctionWithArgs;
-    #[allow(unused_imports)]
-    use pg_ast::RelationName;
     use pg_combinators::test_parser;
+    #[allow(unused_imports)]
+    use pg_sink_ast::RelationName;
     use test_case::test_case;
 
     #[test_case("all functions in schema a, b",
@@ -265,7 +265,6 @@ use pg_ast::PrivilegeTarget::Sequence;
 use pg_ast::PrivilegeTarget::Table;
 use pg_ast::PrivilegeTarget::Tablespace;
 use pg_ast::PrivilegeTarget::Type;
-use pg_ast::SignedNumber;
 use pg_basics::QualifiedName;
 use pg_combinators::alt;
 use pg_combinators::many;
@@ -290,6 +289,7 @@ use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::Dot;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_ast::SignedNumber;
 use pg_sink_combinators::any_name_list;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::name_list;

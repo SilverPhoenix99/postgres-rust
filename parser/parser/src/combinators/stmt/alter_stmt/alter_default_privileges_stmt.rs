@@ -133,10 +133,10 @@ fn def_acl_privilege_target(stream: &mut TokenStream) -> scan::Result<PrivilegeD
 mod tests {
     use super::*;
     use pg_ast::AccessPrivilege;
-    #[allow(unused_imports)]
-    use pg_ast::DropBehavior;
-    use pg_ast::RoleSpec::*;
     use pg_combinators::test_parser;
+    #[allow(unused_imports)]
+    use pg_sink_ast::DropBehavior;
+    use pg_sink_ast::RoleSpec::*;
     use test_case::test_case;
 
     #[test]

@@ -34,15 +34,15 @@ pub(in crate::combinators::stmt) fn operator(stream: &mut TokenStream) -> scan::
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        OneOrBoth,
-        Operator::Addition,
-        QualifiedOperator,
-        TypeName::Int4,
-    };
     use pg_combinators::test_parser;
     use test_case::test_case;
+    #[allow(unused_imports)]
+    use {
+        pg_ast::OneOrBoth,
+        pg_ast::TypeName::Int4,
+        pg_sink_ast::Operator::Addition,
+        pg_sink_ast::QualifiedOperator,
+    };
 
     #[test_case("operator +(int, int)", Operator::WithArgs(
         OperatorWithArgs::new(

@@ -3,8 +3,8 @@ pub struct LocatedMessage<T>
 where
     T: LogMessage
 {
-    source: T,
-    location: Location,
+    pub source: T,
+    pub location: Location,
 }
 
 impl<T> LocatedMessage<T>

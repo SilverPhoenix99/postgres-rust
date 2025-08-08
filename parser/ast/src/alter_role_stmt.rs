@@ -49,4 +49,4 @@ impl AlterRoleStmt {
 }
 
 use crate::AddDrop;
-use crate::RoleSpec;
+use pg_sink_ast::RoleSpec;

@@ -99,11 +99,11 @@ impl From<unicode_string::LocatedError> for LocatedError {
     }
 }
 
-use self::Error::ExtendedString;
-use self::Error::Lexer;
-use self::Error::Parser;
-use self::Error::Role;
-use self::Error::UnicodeString;
+use crate::Error::ExtendedString;
+use crate::Error::Lexer;
+use crate::Error::Parser;
+use crate::Error::Role;
+use crate::Error::UnicodeString;
 use crate::LocatedMessage;
 use crate::LogMessage;
 use crate::SqlState;

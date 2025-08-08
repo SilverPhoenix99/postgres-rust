@@ -50,7 +50,7 @@ pub enum AlterOwnerTarget {
 use crate::AggregateWithArgs;
 use crate::FunctionWithArgs;
 use crate::OperatorWithArgs;
-use crate::RoleSpec;
-use crate::SignedNumber;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
+use pg_sink_ast::RoleSpec;
+use pg_sink_ast::SignedNumber;

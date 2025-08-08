@@ -186,15 +186,15 @@ fn encoding(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<Box<str>>> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        SignedNumber::IntegerConst,
-        TransactionMode::ReadOnly,
-        XmlNodeKind::Document,
-    };
     use pg_basics::Str;
     use pg_combinators::test_parser;
     use test_case::test_case;
+    #[allow(unused_imports)]
+    use {
+        pg_ast::TransactionMode::ReadOnly,
+        pg_ast::XmlNodeKind::Document,
+        pg_sink_ast::SignedNumber::IntegerConst,
+    };
 
     #[test_case("session characteristics as transaction read only", SetRest::SessionTransactionCharacteristics(vec![ReadOnly]))]
     #[test_case("session authorization default", SetRest::SessionAuthorization { user: ValueOrDefault::Default })]

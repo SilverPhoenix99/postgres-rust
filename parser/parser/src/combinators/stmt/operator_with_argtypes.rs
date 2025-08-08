@@ -99,10 +99,10 @@ fn close_paren(stream: &mut TokenStream) -> scan::Result<Option<Type>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_ast::Operator::Equals;
-    use pg_ast::QualifiedOperator;
     use pg_ast::TypeName::Int4;
     use pg_combinators::test_parser;
+    use pg_sink_ast::Operator::Equals;
+    use pg_sink_ast::QualifiedOperator;
     use test_case::test_case;
 
     #[test]

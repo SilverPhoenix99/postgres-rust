@@ -30,4 +30,4 @@ use crate::ConstraintsSetMode;
 use crate::ConstraintsSetMode::Deferred;
 use crate::ConstraintsSetMode::Immediate;
 use crate::OneOrAll;
-use crate::RelationName;
+use pg_sink_ast::RelationName;

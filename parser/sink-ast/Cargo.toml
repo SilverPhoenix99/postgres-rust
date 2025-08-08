@@ -1,5 +1,5 @@
 [package]
-name = "pg-elog"
+name = "pg-sink-ast"
 edition.workspace = true
 version.workspace = true
 
@@ -7,6 +7,5 @@ version.workspace = true
 workspace = true
 
 [dependencies]
-derive_more = { workspace = true, features = ["display", "error", "from"] }
-thiserror.workspace = true
+derive_more = { workspace = true, features = ["from"] }
 pg-basics.workspace = true

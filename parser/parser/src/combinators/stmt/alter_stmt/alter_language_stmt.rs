@@ -45,9 +45,9 @@ pub(super) fn alter_language_stmt(stream: &mut TokenStream) -> scan::Result<RawS
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use pg_ast::RoleSpec::Public;
     use pg_combinators::test_parser;
+    #[allow(unused_imports)]
+    use pg_sink_ast::RoleSpec::Public;
     use test_case::test_case;
 
     #[test_case(
@@ -74,7 +74,6 @@ use pg_ast::AlterOwnerTarget;
 use pg_ast::RawStmt;
 use pg_ast::RenameStmt;
 use pg_ast::RenameTarget;
-use pg_ast::RoleSpec;
 use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::seq;
@@ -86,5 +85,6 @@ use pg_lexer::Keyword::Rename;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::role_spec;

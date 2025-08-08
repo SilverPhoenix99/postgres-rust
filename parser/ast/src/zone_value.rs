@@ -11,5 +11,5 @@ pub enum ZoneValue {
 }
 
 use crate::IntervalRange;
-use crate::SignedNumber;
 use pg_basics::Str;
+use pg_sink_ast::SignedNumber;

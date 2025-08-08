@@ -1,10 +1,10 @@
 // See [numerictypmodin](https://github.com/postgres/postgres/blob/a7e5237f268ea378c514635d65a55aa47621958a/src/backend/utils/adt/numeric.c#L1326)
-#[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Display, Error)]
 pub enum NewNumericSpecError {
-    #[error("NUMERIC precision {} must be between {} and {}", .0, NumericSpec::VALID_SPECIFIED_PRECISION.start(), NumericSpec::VALID_SPECIFIED_PRECISION.end())]
-    PrecisionOutOfRange(u16),
-    #[error("NUMERIC scale {} must be between {} and {}", .0, NumericSpec::VALID_SPECIFIED_SCALE.start(), NumericSpec::VALID_SPECIFIED_SCALE.end())]
-    ScaleOutOfRange(i16),
+    #[display("NUMERIC precision {} must be between {} and {}", _0, NumericSpec::VALID_SPECIFIED_PRECISION.start(), NumericSpec::VALID_SPECIFIED_PRECISION.end())]
+    PrecisionOutOfRange(#[error(not(source))] u16),
+    #[display("NUMERIC scale {} must be between {} and {}", _0, NumericSpec::VALID_SPECIFIED_SCALE.start(), NumericSpec::VALID_SPECIFIED_SCALE.end())]
+    ScaleOutOfRange(#[error(not(source))] i16),
 }
 
 impl NewNumericSpecError {
@@ -135,6 +135,8 @@ mod tests {
 
 use core::num::NonZero;
 use core::ops::RangeInclusive;
+use derive_more::Display;
+use derive_more::Error;
 use pg_elog::SqlState;
 use pg_elog::SqlState::InvalidParameterValue;
 use NewNumericSpecError::PrecisionOutOfRange;
