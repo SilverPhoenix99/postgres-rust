@@ -3,6 +3,7 @@ pg_basics::reexport! { pub
     any_name,
     attrs,
     bare_col_label,
+    boolean_or_string,
     col_id,
     col_label,
     const_numeric,

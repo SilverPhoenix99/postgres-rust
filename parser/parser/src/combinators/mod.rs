@@ -11,7 +11,6 @@ pg_basics::reexport! {
     all_or_var_name,
     array_bounds,
     asc_desc,
-    boolean_or_string,
     collate_clause,
     document_or_content,
     expr_list,

@@ -1,11 +1,11 @@
 /// Alias: `copy_generic_opt_arg_list`
-pub(super) fn boolean_or_string_list(stream: &mut TokenStream) -> scan::Result<Vec<BooleanOrString>> {
+pub fn boolean_or_string_list(stream: &mut TokenStream) -> scan::Result<Vec<BooleanOrString>> {
 
     many!(sep = Comma, boolean_or_string).parse(stream)
 }
 
 /// Alias: `opt_boolean_or_string`
-pub(super) fn boolean_or_string(stream: &mut TokenStream) -> scan::Result<BooleanOrString> {
+pub fn boolean_or_string(stream: &mut TokenStream) -> scan::Result<BooleanOrString> {
 
     alt!(
         True.map(|_| true.into()),
@@ -33,6 +33,7 @@ mod tests {
     }
 }
 
+use crate::non_reserved_word;
 use pg_ast::BooleanOrString;
 use pg_combinators::alt;
 use pg_combinators::many;
@@ -44,4 +45,3 @@ use pg_lexer::Keyword::True;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
-use pg_sink_combinators::non_reserved_word;
