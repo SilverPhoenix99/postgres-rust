@@ -62,10 +62,7 @@ fn transaction_stmt_legacy(stream: &mut TokenStream) -> scan::Result<Transaction
 mod tests {
     use super::*;
     #[allow(unused_imports)]
-    use pg_ast::{
-        TransactionChain::NoChain,
-        TransactionMode::ReadOnly
-    };
+    use pg_ast::TransactionMode::ReadOnly;
     use pg_combinators::test_parser;
     use test_case::test_case;
     use test_case::test_matrix;
@@ -84,10 +81,10 @@ mod tests {
         test_parser!(source, toplevel_stmt)
     }
 
-    #[test_case("begin transaction read only", TransactionStmt::Begin(vec![ReadOnly]))]
-    #[test_case("end transaction", TransactionStmt::Commit(NoChain))]
-    fn test_transaction(source: &str, expected: TransactionStmt) {
-        test_parser!(source, transaction_stmt_legacy, expected)
+    #[test_case("begin transaction read only" => Ok(TransactionStmt::Begin(vec![ReadOnly])))]
+    #[test_case("end transaction" => Ok(TransactionStmt::Commit { chain: false }))]
+    fn test_transaction(source: &str) -> scan::Result<TransactionStmt> {
+        test_parser!(source, transaction_stmt_legacy)
     }
 }
 

@@ -14,6 +14,7 @@ pg_basics::reexport! { pub
     qualified_name,
     relation_expr,
     role,
+    transaction_chain,
     type_function_name,
     work_or_transaction,
 }

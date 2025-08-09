@@ -8,7 +8,7 @@ pub(super) fn rollback_stmt(stream: &mut TokenStream) -> scan::Result<Transactio
     */
 
     let (_, stmt) = seq!(
-        Rollback,
+        Kw::Rollback,
         alt!(
             seq!(Prepared, string)
                 .map(|(_, name)| RollbackPrepared(name)),
@@ -19,8 +19,7 @@ pub(super) fn rollback_stmt(stream: &mut TokenStream) -> scan::Result<Transactio
                         .map(|(.., name)| RollbackTo(name)),
                     transaction_chain
                         .optional()
-                        .map(Option::unwrap_or_default)
-                        .map(TransactionStmt::Rollback)
+                        .map(|chain| Rollback { chain: chain.unwrap_or_default() })
                 )
             )
                 .map(|(_, stmt)| stmt)
@@ -34,39 +33,39 @@ pub(super) fn rollback_stmt(stream: &mut TokenStream) -> scan::Result<Transactio
 mod tests {
     use super::*;
     #[allow(unused_imports)]
-    use pg_ast::TransactionChain::{NoChain, WithChain};
     use pg_combinators::test_parser;
     use test_case::test_case;
 
-    #[test_case("rollback", TransactionStmt::Rollback(NoChain))]
-    #[test_case("rollback and chain", TransactionStmt::Rollback(WithChain))]
-    #[test_case("rollback and no chain", TransactionStmt::Rollback(NoChain))]
-    #[test_case("rollback to test_ident", TransactionStmt::RollbackTo("test_ident".into()))]
-    #[test_case("rollback to savepoint test_ident", TransactionStmt::RollbackTo("test_ident".into()))]
-    #[test_case("rollback transaction", TransactionStmt::Rollback(NoChain))]
-    #[test_case("rollback transaction and chain", TransactionStmt::Rollback(WithChain))]
-    #[test_case("rollback transaction and no chain", TransactionStmt::Rollback(NoChain))]
-    #[test_case("rollback transaction to test_ident", TransactionStmt::RollbackTo("test_ident".into()))]
-    #[test_case("rollback transaction to savepoint test_ident", TransactionStmt::RollbackTo("test_ident".into()))]
-    #[test_case("rollback prepared 'test-string'", TransactionStmt::RollbackPrepared("test-string".into()))]
-    fn test_rollback(source: &str, expected: TransactionStmt) {
-        test_parser!(source, rollback_stmt, expected)
+    #[test_case("rollback" => Ok(Rollback { chain: false }))]
+    #[test_case("rollback and chain" => Ok(Rollback { chain: true }))]
+    #[test_case("rollback and no chain" => Ok(Rollback { chain: false }))]
+    #[test_case("rollback to test_ident" => Ok(RollbackTo("test_ident".into())))]
+    #[test_case("rollback to savepoint test_ident" => Ok(RollbackTo("test_ident".into())))]
+    #[test_case("rollback transaction" => Ok(Rollback { chain: false }))]
+    #[test_case("rollback transaction and chain" => Ok(Rollback { chain: true }))]
+    #[test_case("rollback transaction and no chain" => Ok(Rollback { chain: false }))]
+    #[test_case("rollback transaction to test_ident" => Ok(RollbackTo("test_ident".into())))]
+    #[test_case("rollback transaction to savepoint test_ident" => Ok(RollbackTo("test_ident".into())))]
+    #[test_case("rollback prepared 'test-string'" => Ok(RollbackPrepared("test-string".into())))]
+    fn test_rollback(source: &str) -> scan::Result<TransactionStmt> {
+        test_parser!(source, rollback_stmt)
     }
 }
 
-use crate::combinators::transaction_chain;
 use pg_ast::TransactionStmt;
+use pg_ast::TransactionStmt::Rollback;
 use pg_ast::TransactionStmt::RollbackPrepared;
 use pg_ast::TransactionStmt::RollbackTo;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::string;
 use pg_combinators::Combinator;
+use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Prepared;
-use pg_lexer::Keyword::Rollback;
 use pg_lexer::Keyword::Savepoint;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
 use pg_sink_combinators::col_id;
+use pg_sink_combinators::transaction_chain;
 use pg_sink_combinators::work_or_transaction;
