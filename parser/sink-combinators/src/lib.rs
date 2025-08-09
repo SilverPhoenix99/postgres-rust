@@ -15,6 +15,7 @@ pg_basics::reexport! { pub
     relation_expr,
     role,
     type_function_name,
+    work_or_transaction,
 }
 
 mod object_type_name;

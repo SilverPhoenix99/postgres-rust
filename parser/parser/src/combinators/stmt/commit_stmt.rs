@@ -50,7 +50,6 @@ mod tests {
 }
 
 use crate::combinators::transaction_chain;
-use crate::combinators::work_or_transaction;
 use pg_ast::TransactionStmt;
 use pg_ast::TransactionStmt::CommitPrepared;
 use pg_combinators::alt;
@@ -61,3 +60,4 @@ use pg_lexer::Keyword::Commit;
 use pg_lexer::Keyword::Prepared;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_combinators::work_or_transaction;

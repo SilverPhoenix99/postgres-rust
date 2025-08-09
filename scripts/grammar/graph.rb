@@ -11,6 +11,7 @@ module Graph
 
   EXCLUDE = %i[
     generic_reset generic_set var_list var_value
+    opt_transaction
   ].to_set.freeze
 
   def self.run!(output: nil, exclude: EXCLUDE)

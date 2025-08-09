@@ -51,6 +51,5 @@ pg_basics::reexport! {
     unique_null_treatment,
     window_specification,
     with_timezone,
-    work_or_transaction,
     xmlexists_argument,
 }

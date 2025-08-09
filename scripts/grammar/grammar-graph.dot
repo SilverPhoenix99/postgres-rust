@@ -298,10 +298,8 @@ RuleActionStmt -> SelectStmt
 RuleActionStmt -> InsertStmt
 RuleActionStmt -> UpdateStmt
 RuleActionStmt -> DeleteStmt
-TransactionStmt -> opt_transaction
 TransactionStmt -> opt_transaction_chain
 TransactionStmt -> transaction_mode_list_or_empty
-TransactionStmtLegacy -> opt_transaction
 TransactionStmtLegacy -> transaction_mode_list_or_empty
 TransactionStmtLegacy -> opt_transaction_chain
 transaction_mode_list_or_empty -> transaction_mode_list
@@ -1335,7 +1333,6 @@ opt_granted_by [color=blue penwidth=3]
 opt_asc_desc [color=blue penwidth=3]
 opt_nulls_order [color=blue penwidth=3]
 opt_if_exists [color=blue penwidth=3]
-opt_transaction [color=blue penwidth=3]
 opt_transaction_chain [color=blue penwidth=3]
 override_kind [color=blue penwidth=3]
 relation_expr_opt_alias [color=blue penwidth=3]
