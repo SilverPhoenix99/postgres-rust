@@ -22,556 +22,556 @@ edge [
   fontcolor = "#e6e6e6"
 ]
 
-opt_utility_option_list -> utility_option_list
-CallStmt -> func_application
-CreateRoleStmt -> OptRoleList
-AlterOptRoleList -> AlterOptRoleElem
-CreateOptRoleElem -> AlterOptRoleElem
-CreateUserStmt -> OptRoleList
-AlterRoleSetStmt -> SetResetClause
-CreateGroupStmt -> OptRoleList
-AlterGroupStmt -> add_drop
-VariableSetStmt -> set_rest
-set_rest -> transaction_mode_list
-set_rest -> set_rest_more
-set_rest_more -> document_or_content
-zone_value -> opt_interval
-SetResetClause -> set_rest
-SetResetClause -> VariableResetStmt
-FunctionSetResetClause -> set_rest_more
-FunctionSetResetClause -> VariableResetStmt
-CheckPointStmt -> opt_utility_option_list
-partition_cmd -> PartitionBoundSpec
-alter_table_cmd -> columnDef
-alter_table_cmd -> alter_column_default
-alter_table_cmd -> a_expr
-alter_table_cmd -> set_statistics_value
-alter_table_cmd -> reloptions
-alter_table_cmd -> column_storage
-alter_table_cmd -> column_compression
-alter_table_cmd -> generated_when
-alter_table_cmd -> OptParenthesizedSeqOptList
-alter_table_cmd -> opt_set_data
-alter_table_cmd -> Typename
-alter_table_cmd -> opt_collate_clause
-alter_table_cmd -> alter_generic_options
-alter_table_cmd -> TableConstraint
-alter_table_cmd -> ConstraintAttributeSpec
-alter_column_default -> a_expr
-alter_using -> a_expr
-opt_reloptions -> reloptions
-reloption_elem -> def_arg
-alter_identity_column_option -> SeqOptElem
-alter_identity_column_option -> generated_when
-PartitionBoundSpec -> expr_list
-alter_type_cmd -> TableFuncElement
-alter_type_cmd -> opt_set_data
-alter_type_cmd -> Typename
-alter_type_cmd -> opt_collate_clause
-CopyStmt -> where_clause
-CopyStmt -> PreparableStmt
-CreateStmt -> OptTemp
-CreateStmt -> OptTableElementList
-CreateStmt -> OptInherit
-CreateStmt -> table_access_method_clause
-CreateStmt -> OptWith
-CreateStmt -> OnCommitOption
-CreateStmt -> OptTableSpace
-CreateStmt -> OptTypedTableElementList
-CreateStmt -> PartitionBoundSpec
-TableElement -> columnDef
-TableElement -> TableConstraint
-TypedTableElement -> TableConstraint
-columnDef -> Typename
-columnDef -> create_generic_options
-columnDef -> ColQualList
-columnOptions -> ColQualList
-opt_column_compression -> column_compression
-opt_column_storage -> column_storage
-ColConstraintElem -> opt_unique_null_treatment
-ColConstraintElem -> opt_definition
-ColConstraintElem -> OptConsTableSpace
-ColConstraintElem -> a_expr
-ColConstraintElem -> b_expr
-ColConstraintElem -> generated_when
-ColConstraintElem -> OptParenthesizedSeqOptList
-ColConstraintElem -> key_match
-ColConstraintElem -> key_actions
-ConstraintElem -> a_expr
-ConstraintElem -> ConstraintAttributeSpec
-ConstraintElem -> opt_unique_null_treatment
-ConstraintElem -> opt_definition
-ConstraintElem -> OptConsTableSpace
-ConstraintElem -> access_method_clause
-ConstraintElem -> OptWhereClause
-ConstraintElem -> key_match
-ConstraintElem -> key_actions
-DomainConstraintElem -> a_expr
-DomainConstraintElem -> ConstraintAttributeSpec
-ExclusionConstraintElem -> index_elem
-OptWhereClause -> a_expr
-part_elem -> opt_collate
-part_elem -> func_expr_windowless
-part_elem -> a_expr
-OptWith -> reloptions
-CreateStatsStmt -> from_list
-stats_param -> func_expr_windowless
-stats_param -> a_expr
-AlterStatsStmt -> set_statistics_value
-CreateAsStmt -> OptTemp
-CreateAsStmt -> SelectStmt
-create_as_target -> table_access_method_clause
-create_as_target -> OptWith
-create_as_target -> OnCommitOption
-create_as_target -> OptTableSpace
-CreateMatViewStmt -> SelectStmt
-create_mv_target -> table_access_method_clause
-create_mv_target -> opt_reloptions
-create_mv_target -> OptTableSpace
-CreateSeqStmt -> OptTemp
-AlterSeqStmt -> SeqOptList
-OptSeqOptList -> SeqOptList
-OptParenthesizedSeqOptList -> SeqOptList
-SeqOptList -> SeqOptElem
-SeqOptElem -> SimpleTypename
-CreatePLangStmt -> opt_or_replace
-CreateTableSpaceStmt -> opt_reloptions
+AexprConst -> func_arg_list
+AexprConst -> func_name
+AexprConst -> opt_interval
+AexprConst -> opt_sort_clause
+AlterDatabaseSetStmt -> SetResetClause
+AlterDatabaseStmt -> createdb_opt_list
+AlterDomainStmt -> alter_column_default
+AlterExtensionContentsStmt -> Typename
 AlterExtensionContentsStmt -> add_drop
 AlterExtensionContentsStmt -> aggregate_with_argtypes
-AlterExtensionContentsStmt -> Typename
 AlterExtensionContentsStmt -> function_with_argtypes
 AlterExtensionContentsStmt -> operator_with_argtypes
-CreateFdwStmt -> opt_fdw_options
-CreateFdwStmt -> create_generic_options
-opt_fdw_options -> fdw_options
-AlterFdwStmt -> opt_fdw_options
 AlterFdwStmt -> alter_generic_options
 AlterFdwStmt -> fdw_options
-generic_option_list -> generic_option_elem
-alter_generic_option_elem -> generic_option_elem
-CreateForeignServerStmt -> create_generic_options
-opt_foreign_server_version -> foreign_server_version
-AlterForeignServerStmt -> foreign_server_version
+AlterFdwStmt -> opt_fdw_options
 AlterForeignServerStmt -> alter_generic_options
-CreateForeignTableStmt -> OptTableElementList
-CreateForeignTableStmt -> OptInherit
-CreateForeignTableStmt -> create_generic_options
-CreateForeignTableStmt -> OptTypedTableElementList
-CreateForeignTableStmt -> PartitionBoundSpec
-ImportForeignSchemaStmt -> create_generic_options
-CreateUserMappingStmt -> auth_ident
-CreateUserMappingStmt -> create_generic_options
-DropUserMappingStmt -> auth_ident
-AlterUserMappingStmt -> auth_ident
-AlterUserMappingStmt -> alter_generic_options
-CreatePolicyStmt -> RowSecurityOptionalExpr
-CreatePolicyStmt -> RowSecurityOptionalWithCheck
-AlterPolicyStmt -> RowSecurityOptionalExpr
-AlterPolicyStmt -> RowSecurityOptionalWithCheck
-RowSecurityOptionalExpr -> a_expr
-RowSecurityOptionalWithCheck -> a_expr
-CreateTrigStmt -> opt_or_replace
-CreateTrigStmt -> FUNCTION_or_PROCEDURE
-CreateTrigStmt -> func_name
-CreateTrigStmt -> ConstraintAttributeSpec
-TriggerWhen -> a_expr
-CreateEventTrigStmt -> FUNCTION_or_PROCEDURE
-CreateEventTrigStmt -> func_name
-CreateAssertionStmt -> a_expr
-CreateAssertionStmt -> ConstraintAttributeSpec
-DefineStmt -> opt_or_replace
-DefineStmt -> func_name
-DefineStmt -> aggr_args
-DefineStmt -> definition
-def_elem -> def_arg
-def_arg -> func_type
-old_aggr_elem -> def_arg
-CreateOpClassStmt -> Typename
-CreateOpClassStmt -> opclass_item_list
-opclass_item -> operator_with_argtypes
-opclass_item -> function_with_argtypes
-opclass_item -> type_list
-opclass_item -> Typename
-AlterOpFamilyStmt -> opclass_item_list
-opclass_drop -> type_list
-type_name_list -> Typename
-CommentStmt -> Typename
-CommentStmt -> aggregate_with_argtypes
-CommentStmt -> function_with_argtypes
-CommentStmt -> operator_with_argtypes
-SecLabelStmt -> Typename
-SecLabelStmt -> aggregate_with_argtypes
-SecLabelStmt -> function_with_argtypes
-GrantStmt -> privileges
-GrantStmt -> privilege_target
-GrantStmt -> grantee_list
-GrantStmt -> opt_grant_grant_option
-GrantStmt -> opt_granted_by
-RevokeStmt -> privileges
-RevokeStmt -> privilege_target
-RevokeStmt -> grantee_list
-RevokeStmt -> opt_granted_by
-privileges -> privilege_list
-privilege_target -> function_with_argtypes_list
-GrantRoleStmt -> privilege_list
-GrantRoleStmt -> opt_granted_by
-RevokeRoleStmt -> privilege_list
-RevokeRoleStmt -> opt_granted_by
-DefACLAction -> privileges
-DefACLAction -> grantee_list
-DefACLAction -> opt_grant_grant_option
-IndexStmt -> access_method_clause
-IndexStmt -> index_params
-IndexStmt -> opt_unique_null_treatment
-IndexStmt -> opt_reloptions
-IndexStmt -> OptTableSpace
-IndexStmt -> where_clause
-index_params -> index_elem
-index_elem_options -> opt_collate
-index_elem_options -> opt_asc_desc
-index_elem_options -> opt_nulls_order
-index_elem_options -> reloptions
-index_elem -> func_expr_windowless
-index_elem -> a_expr
-index_including_params -> index_elem
-CreateFunctionStmt -> opt_or_replace
-CreateFunctionStmt -> func_name
-CreateFunctionStmt -> func_type
-func_args_list -> func_arg
-function_with_argtypes_list -> function_with_argtypes
-function_with_argtypes -> func_name
-function_with_argtypes -> indirection
-func_arg -> func_type
-func_type -> Typename
-func_arg_with_default -> func_arg
-func_arg_with_default -> a_expr
-aggr_arg -> func_arg
-aggregate_with_argtypes -> func_name
-aggregate_with_argtypes -> aggr_args
-aggregate_with_argtypes_list -> aggregate_with_argtypes
-createfunc_opt_item -> common_func_opt_item
-ReturnStmt -> a_expr
-transform_type_list -> Typename
-opt_definition -> definition
-table_func_column -> func_type
+AlterForeignServerStmt -> foreign_server_version
 AlterFunctionStmt -> function_with_argtypes
-alterfunc_opt_list -> common_func_opt_item
-RemoveFuncStmt -> function_with_argtypes_list
-oper_argtypes -> Typename
-operator_with_argtypes_list -> operator_with_argtypes
-CreateCastStmt -> Typename
-CreateCastStmt -> function_with_argtypes
-DropCastStmt -> opt_if_exists
-DropCastStmt -> Typename
-CreateTransformStmt -> opt_or_replace
-CreateTransformStmt -> Typename
-transform_element_list -> function_with_argtypes
-DropTransformStmt -> opt_if_exists
-DropTransformStmt -> Typename
-ReindexStmt -> opt_utility_option_list
-AlterTblSpcStmt -> reloptions
-RenameStmt -> aggregate_with_argtypes
-RenameStmt -> function_with_argtypes
+AlterGroupStmt -> add_drop
 AlterObjectDependsStmt -> function_with_argtypes
 AlterObjectSchemaStmt -> aggregate_with_argtypes
 AlterObjectSchemaStmt -> function_with_argtypes
 AlterObjectSchemaStmt -> operator_with_argtypes
-AlterOperatorStmt -> operator_with_argtypes
+AlterOpFamilyStmt -> opclass_item_list
 AlterOperatorStmt -> operator_def_list
-operator_def_arg -> func_type
-AlterTypeStmt -> operator_def_list
+AlterOperatorStmt -> operator_with_argtypes
+AlterOptRoleList -> AlterOptRoleElem
 AlterOwnerStmt -> aggregate_with_argtypes
 AlterOwnerStmt -> function_with_argtypes
 AlterOwnerStmt -> operator_with_argtypes
-CreatePublicationStmt -> opt_definition
-CreatePublicationStmt -> pub_obj_list
-PublicationObjSpec -> OptWhereClause
-PublicationObjSpec -> indirection
+AlterPolicyStmt -> RowSecurityOptionalExpr
+AlterPolicyStmt -> RowSecurityOptionalWithCheck
 AlterPublicationStmt -> definition
 AlterPublicationStmt -> pub_obj_list
-CreateSubscriptionStmt -> opt_definition
+AlterRoleSetStmt -> SetResetClause
+AlterSeqStmt -> SeqOptList
+AlterStatsStmt -> set_statistics_value
 AlterSubscriptionStmt -> definition
 AlterSubscriptionStmt -> opt_definition
-RuleStmt -> opt_or_replace
-RuleStmt -> where_clause
-RuleActionStmt -> SelectStmt
-RuleActionStmt -> InsertStmt
-RuleActionStmt -> UpdateStmt
-RuleActionStmt -> DeleteStmt
-TransactionStmt -> transaction_mode_list_or_empty
-TransactionStmtLegacy -> transaction_mode_list_or_empty
-transaction_mode_list_or_empty -> transaction_mode_list
-ViewStmt -> OptTemp
-ViewStmt -> opt_reloptions
-ViewStmt -> SelectStmt
-CreatedbStmt -> createdb_opt_list
-AlterDatabaseStmt -> createdb_opt_list
-AlterDatabaseSetStmt -> SetResetClause
-CreateDomainStmt -> Typename
-CreateDomainStmt -> ColQualList
-AlterDomainStmt -> alter_column_default
 AlterTSDictionaryStmt -> definition
-ClusterStmt -> utility_option_list
-ClusterStmt -> opt_utility_option_list
-VacuumStmt -> opt_vacuum_relation_list
-VacuumStmt -> utility_option_list
+AlterTblSpcStmt -> reloptions
+AlterTypeStmt -> operator_def_list
+AlterUserMappingStmt -> alter_generic_options
+AlterUserMappingStmt -> auth_ident
 AnalyzeStmt -> opt_utility_option_list
 AnalyzeStmt -> opt_vacuum_relation_list
-ExplainStmt -> utility_option_list
-ExplainableStmt -> SelectStmt
-ExplainableStmt -> InsertStmt
-ExplainableStmt -> UpdateStmt
-ExplainableStmt -> DeleteStmt
-ExplainableStmt -> MergeStmt
-PrepareStmt -> PreparableStmt
-prep_type_clause -> type_list
-PreparableStmt -> SelectStmt
-PreparableStmt -> InsertStmt
-PreparableStmt -> UpdateStmt
-PreparableStmt -> DeleteStmt
-PreparableStmt -> MergeStmt
-ExecuteStmt -> OptTemp
-execute_param_clause -> expr_list
-InsertStmt -> opt_with_clause
-InsertStmt -> returning_clause
-insert_rest -> SelectStmt
-insert_rest -> override_kind
-insert_rest -> insert_column_list
-insert_column_item -> opt_indirection
-opt_on_conflict -> set_clause_list
-opt_on_conflict -> where_clause
-opt_conf_expr -> index_params
-opt_conf_expr -> where_clause
-returning_clause -> target_list
+Bit -> BitWithLength
+Bit -> BitWithoutLength
+BitWithLength -> expr_list
+CallStmt -> func_application
+Character -> CharacterWithLength
+Character -> CharacterWithoutLength
+CharacterWithLength -> character
+CharacterWithoutLength -> character
+CheckPointStmt -> opt_utility_option_list
+ClusterStmt -> opt_utility_option_list
+ClusterStmt -> utility_option_list
+ColConstraintElem -> OptConsTableSpace
+ColConstraintElem -> OptParenthesizedSeqOptList
+ColConstraintElem -> a_expr
+ColConstraintElem -> b_expr
+ColConstraintElem -> generated_when
+ColConstraintElem -> key_actions
+ColConstraintElem -> key_match
+ColConstraintElem -> opt_definition
+ColConstraintElem -> opt_unique_null_treatment
+CommentStmt -> Typename
+CommentStmt -> aggregate_with_argtypes
+CommentStmt -> function_with_argtypes
+CommentStmt -> operator_with_argtypes
+ConstBit -> BitWithLength
+ConstBit -> BitWithoutLength
+ConstCharacter -> CharacterWithLength
+ConstCharacter -> CharacterWithoutLength
+ConstTypename -> ConstDatetime
+ConstTypename -> Numeric
+ConstraintElem -> ConstraintAttributeSpec
+ConstraintElem -> OptConsTableSpace
+ConstraintElem -> OptWhereClause
+ConstraintElem -> a_expr
+ConstraintElem -> access_method_clause
+ConstraintElem -> key_actions
+ConstraintElem -> key_match
+ConstraintElem -> opt_definition
+ConstraintElem -> opt_unique_null_treatment
+CopyStmt -> PreparableStmt
+CopyStmt -> where_clause
+CreateAsStmt -> OptTemp
+CreateAsStmt -> SelectStmt
+CreateAssertionStmt -> ConstraintAttributeSpec
+CreateAssertionStmt -> a_expr
+CreateCastStmt -> Typename
+CreateCastStmt -> function_with_argtypes
+CreateDomainStmt -> ColQualList
+CreateDomainStmt -> Typename
+CreateEventTrigStmt -> FUNCTION_or_PROCEDURE
+CreateEventTrigStmt -> func_name
+CreateFdwStmt -> create_generic_options
+CreateFdwStmt -> opt_fdw_options
+CreateForeignServerStmt -> create_generic_options
+CreateForeignTableStmt -> OptInherit
+CreateForeignTableStmt -> OptTableElementList
+CreateForeignTableStmt -> OptTypedTableElementList
+CreateForeignTableStmt -> PartitionBoundSpec
+CreateForeignTableStmt -> create_generic_options
+CreateFunctionStmt -> func_name
+CreateFunctionStmt -> func_type
+CreateFunctionStmt -> opt_or_replace
+CreateGroupStmt -> OptRoleList
+CreateMatViewStmt -> SelectStmt
+CreateOpClassStmt -> Typename
+CreateOpClassStmt -> opclass_item_list
+CreateOptRoleElem -> AlterOptRoleElem
+CreatePLangStmt -> opt_or_replace
+CreatePolicyStmt -> RowSecurityOptionalExpr
+CreatePolicyStmt -> RowSecurityOptionalWithCheck
+CreatePublicationStmt -> opt_definition
+CreatePublicationStmt -> pub_obj_list
+CreateRoleStmt -> OptRoleList
+CreateSeqStmt -> OptTemp
+CreateStatsStmt -> from_list
+CreateStmt -> OnCommitOption
+CreateStmt -> OptInherit
+CreateStmt -> OptTableElementList
+CreateStmt -> OptTableSpace
+CreateStmt -> OptTemp
+CreateStmt -> OptTypedTableElementList
+CreateStmt -> OptWith
+CreateStmt -> PartitionBoundSpec
+CreateStmt -> table_access_method_clause
+CreateSubscriptionStmt -> opt_definition
+CreateTableSpaceStmt -> opt_reloptions
+CreateTransformStmt -> Typename
+CreateTransformStmt -> opt_or_replace
+CreateTrigStmt -> ConstraintAttributeSpec
+CreateTrigStmt -> FUNCTION_or_PROCEDURE
+CreateTrigStmt -> func_name
+CreateTrigStmt -> opt_or_replace
+CreateUserMappingStmt -> auth_ident
+CreateUserMappingStmt -> create_generic_options
+CreateUserStmt -> OptRoleList
+CreatedbStmt -> createdb_opt_list
+DeclareCursorStmt -> SelectStmt
+DefACLAction -> grantee_list
+DefACLAction -> opt_grant_grant_option
+DefACLAction -> privileges
+DefineStmt -> aggr_args
+DefineStmt -> definition
+DefineStmt -> func_name
+DefineStmt -> opt_or_replace
 DeleteStmt -> opt_with_clause
 DeleteStmt -> relation_expr_opt_alias
-DeleteStmt -> where_or_current_clause
 DeleteStmt -> returning_clause
-using_clause -> from_list
-UpdateStmt -> opt_with_clause
-UpdateStmt -> relation_expr_opt_alias
-UpdateStmt -> set_clause_list
-UpdateStmt -> from_clause
-UpdateStmt -> where_or_current_clause
-UpdateStmt -> returning_clause
-set_clause -> a_expr
-set_target -> opt_indirection
+DeleteStmt -> where_or_current_clause
+DomainConstraintElem -> ConstraintAttributeSpec
+DomainConstraintElem -> a_expr
+DropCastStmt -> Typename
+DropCastStmt -> opt_if_exists
+DropTransformStmt -> Typename
+DropTransformStmt -> opt_if_exists
+DropUserMappingStmt -> auth_ident
+ExclusionConstraintElem -> index_elem
+ExecuteStmt -> OptTemp
+ExplainStmt -> utility_option_list
+ExplainableStmt -> DeleteStmt
+ExplainableStmt -> InsertStmt
+ExplainableStmt -> MergeStmt
+ExplainableStmt -> SelectStmt
+ExplainableStmt -> UpdateStmt
+FunctionSetResetClause -> VariableResetStmt
+FunctionSetResetClause -> set_rest_more
+GenericType -> opt_type_modifiers
+GrantRoleStmt -> opt_granted_by
+GrantRoleStmt -> privilege_list
+GrantStmt -> grantee_list
+GrantStmt -> opt_grant_grant_option
+GrantStmt -> opt_granted_by
+GrantStmt -> privilege_target
+GrantStmt -> privileges
+ImportForeignSchemaStmt -> create_generic_options
+IndexStmt -> OptTableSpace
+IndexStmt -> access_method_clause
+IndexStmt -> index_params
+IndexStmt -> opt_reloptions
+IndexStmt -> opt_unique_null_treatment
+IndexStmt -> where_clause
+InsertStmt -> opt_with_clause
+InsertStmt -> returning_clause
+MergeStmt -> a_expr
 MergeStmt -> opt_with_clause
 MergeStmt -> relation_expr_opt_alias
-MergeStmt -> table_ref
-MergeStmt -> a_expr
 MergeStmt -> returning_clause
-opt_merge_when_condition -> a_expr
-merge_update -> set_clause_list
-merge_insert -> override_kind
-merge_insert -> insert_column_list
-merge_values_clause -> expr_list
-DeclareCursorStmt -> SelectStmt
+MergeStmt -> table_ref
+Numeric -> opt_type_modifiers
+OptParenthesizedSeqOptList -> SeqOptList
+OptSeqOptList -> SeqOptList
+OptTableFuncElementList -> TableFuncElementList
+OptWhereClause -> a_expr
+OptWith -> reloptions
+PartitionBoundSpec -> expr_list
+PreparableStmt -> DeleteStmt
+PreparableStmt -> InsertStmt
+PreparableStmt -> MergeStmt
+PreparableStmt -> SelectStmt
+PreparableStmt -> UpdateStmt
+PrepareStmt -> PreparableStmt
+PublicationObjSpec -> OptWhereClause
+PublicationObjSpec -> indirection
+ReindexStmt -> opt_utility_option_list
+RemoveFuncStmt -> function_with_argtypes_list
+RenameStmt -> aggregate_with_argtypes
+RenameStmt -> function_with_argtypes
+ReturnStmt -> a_expr
+RevokeRoleStmt -> opt_granted_by
+RevokeRoleStmt -> privilege_list
+RevokeStmt -> grantee_list
+RevokeStmt -> opt_granted_by
+RevokeStmt -> privilege_target
+RevokeStmt -> privileges
+RowSecurityOptionalExpr -> a_expr
+RowSecurityOptionalWithCheck -> a_expr
+RuleActionStmt -> DeleteStmt
+RuleActionStmt -> InsertStmt
+RuleActionStmt -> SelectStmt
+RuleActionStmt -> UpdateStmt
+RuleStmt -> opt_or_replace
+RuleStmt -> where_clause
+SecLabelStmt -> Typename
+SecLabelStmt -> aggregate_with_argtypes
+SecLabelStmt -> function_with_argtypes
 SelectStmt -> select_no_parens
 SelectStmt -> select_with_parens
-select_with_parens -> select_no_parens
-select_no_parens -> simple_select
-select_no_parens -> select_clause
-select_no_parens -> sort_clause
-select_no_parens -> opt_sort_clause
-select_no_parens -> with_clause
-select_clause -> simple_select
-select_clause -> select_with_parens
-simple_select -> from_clause
-simple_select -> where_clause
-simple_select -> target_list
-simple_select -> select_clause
-common_table_expr -> PreparableStmt
-opt_cycle_clause -> AexprConst
-opt_with_clause -> with_clause
-distinct_clause -> expr_list
-opt_sort_clause -> sort_clause
-sort_clause -> sortby_list
-sortby -> a_expr
-sortby -> opt_nulls_order
-sortby -> opt_asc_desc
-limit_clause -> a_expr
-offset_clause -> a_expr
-select_limit_value -> a_expr
-select_fetch_first_value -> c_expr
-group_clause -> group_by_list
-group_by_item -> a_expr
-rollup_clause -> expr_list
-cube_clause -> expr_list
-having_clause -> a_expr
-values_clause -> expr_list
-from_clause -> from_list
-from_list -> table_ref
-table_ref -> select_with_parens
-func_alias_clause -> TableFuncElementList
-join_qual -> a_expr
-tablesample_clause -> func_name
-tablesample_clause -> expr_list
-opt_repeatable_clause -> a_expr
-func_table -> func_expr_windowless
-rowsfrom_item -> func_expr_windowless
-opt_col_def_list -> TableFuncElementList
-where_clause -> a_expr
-where_or_current_clause -> a_expr
-OptTableFuncElementList -> TableFuncElementList
-TableFuncElementList -> TableFuncElement
+SeqOptElem -> SimpleTypename
+SeqOptList -> SeqOptElem
+SetResetClause -> VariableResetStmt
+SetResetClause -> set_rest
+SimpleTypename -> ConstDatetime
+SimpleTypename -> Numeric
+SimpleTypename -> opt_interval
+TableElement -> TableConstraint
+TableElement -> columnDef
 TableFuncElement -> Typename
 TableFuncElement -> opt_collate_clause
+TableFuncElementList -> TableFuncElement
+TransactionStmt -> transaction_mode_list_or_empty
+TransactionStmtLegacy -> transaction_mode_list_or_empty
+TriggerWhen -> a_expr
+TypedTableElement -> TableConstraint
+Typename -> SimpleTypename
+UpdateStmt -> from_clause
+UpdateStmt -> opt_with_clause
+UpdateStmt -> relation_expr_opt_alias
+UpdateStmt -> returning_clause
+UpdateStmt -> set_clause_list
+UpdateStmt -> where_or_current_clause
+VacuumStmt -> opt_vacuum_relation_list
+VacuumStmt -> utility_option_list
+VariableSetStmt -> set_rest
+ViewStmt -> OptTemp
+ViewStmt -> SelectStmt
+ViewStmt -> opt_reloptions
+a_expr_1 -> Typename
+a_expr_1 -> b_expr
+a_expr_1 -> expr_list
+a_expr_1 -> json_key_uniqueness_constraint_opt
+a_expr_1 -> select_with_parens
+a_expr_1 -> unicode_normal_form
+a_expr_2 -> c_expr
+a_expr_2 -> opt_unique_null_treatment
+a_expr_2 -> select_with_parens
+aggr_arg -> func_arg
+aggregate_with_argtypes -> aggr_args
+aggregate_with_argtypes -> func_name
+aggregate_with_argtypes_list -> aggregate_with_argtypes
+alter_column_default -> a_expr
+alter_generic_option_elem -> generic_option_elem
+alter_identity_column_option -> SeqOptElem
+alter_identity_column_option -> generated_when
+alter_table_cmd -> ConstraintAttributeSpec
+alter_table_cmd -> OptParenthesizedSeqOptList
+alter_table_cmd -> TableConstraint
+alter_table_cmd -> Typename
+alter_table_cmd -> a_expr
+alter_table_cmd -> alter_column_default
+alter_table_cmd -> alter_generic_options
+alter_table_cmd -> columnDef
+alter_table_cmd -> column_compression
+alter_table_cmd -> column_storage
+alter_table_cmd -> generated_when
+alter_table_cmd -> opt_collate_clause
+alter_table_cmd -> opt_set_data
+alter_table_cmd -> reloptions
+alter_table_cmd -> set_statistics_value
+alter_type_cmd -> TableFuncElement
+alter_type_cmd -> Typename
+alter_type_cmd -> opt_collate_clause
+alter_type_cmd -> opt_set_data
+alter_using -> a_expr
+alterfunc_opt_list -> common_func_opt_item
+array_expr -> expr_list
+b_expr_1 -> Typename
+b_expr_2 -> c_expr
+c_expr -> AexprConst
+c_expr -> a_expr
+c_expr -> array_expr
+c_expr -> expr_list
+c_expr -> indirection
+c_expr -> opt_indirection
+c_expr -> select_with_parens
+case_arg -> a_expr
+case_default -> a_expr
+columnDef -> ColQualList
+columnDef -> Typename
+columnDef -> create_generic_options
+columnOptions -> ColQualList
+columnref -> indirection
+common_table_expr -> PreparableStmt
+create_as_target -> OnCommitOption
+create_as_target -> OptTableSpace
+create_as_target -> OptWith
+create_as_target -> table_access_method_clause
+create_mv_target -> OptTableSpace
+create_mv_target -> opt_reloptions
+create_mv_target -> table_access_method_clause
+createfunc_opt_item -> common_func_opt_item
+cube_clause -> expr_list
+def_arg -> func_type
+def_elem -> def_arg
+distinct_clause -> expr_list
+execute_param_clause -> expr_list
+explicit_row -> expr_list
+expr_list -> a_expr
+extract_list -> a_expr
+filter_clause -> a_expr
+frame_bound -> a_expr
+from_clause -> from_list
+from_list -> table_ref
+func_alias_clause -> TableFuncElementList
+func_application -> func_arg_expr
+func_application -> func_arg_list
+func_application -> func_name
+func_application -> opt_sort_clause
+func_arg -> func_type
+func_arg_expr -> a_expr
+func_arg_list -> func_arg_expr
+func_arg_list_opt -> func_arg_list
+func_arg_with_default -> a_expr
+func_arg_with_default -> func_arg
+func_args_list -> func_arg
+func_expr -> func_application
+func_expr -> func_expr_common_subexpr
+func_expr -> json_aggregate_func
+func_expr_common_subexpr -> SimpleTypename
+func_expr_common_subexpr -> Typename
+func_expr_common_subexpr -> a_expr
+func_expr_common_subexpr -> c_expr
+func_expr_common_subexpr -> document_or_content
+func_expr_common_subexpr -> expr_list
+func_expr_common_subexpr -> func_arg_list
+func_expr_common_subexpr -> json_array_constructor_null_clause_opt
+func_expr_common_subexpr -> json_behavior_clause_opt
+func_expr_common_subexpr -> json_format_clause_opt
+func_expr_common_subexpr -> json_key_uniqueness_constraint_opt
+func_expr_common_subexpr -> json_object_constructor_null_clause_opt
+func_expr_common_subexpr -> json_on_error_clause_opt
+func_expr_common_subexpr -> json_passing_clause_opt
+func_expr_common_subexpr -> json_quotes_clause_opt
+func_expr_common_subexpr -> json_returning_clause_opt
+func_expr_common_subexpr -> json_value_expr
+func_expr_common_subexpr -> json_wrapper_behavior
+func_expr_common_subexpr -> select_no_parens
+func_expr_common_subexpr -> unicode_normal_form
+func_expr_common_subexpr -> xmlexists_argument
+func_expr_windowless -> func_application
+func_expr_windowless -> func_expr_common_subexpr
+func_expr_windowless -> json_aggregate_func
+func_name -> indirection
+func_table -> func_expr_windowless
+func_type -> Typename
+function_with_argtypes -> func_name
+function_with_argtypes -> indirection
+function_with_argtypes_list -> function_with_argtypes
+generic_option_list -> generic_option_elem
+group_by_item -> a_expr
+group_clause -> group_by_list
+having_clause -> a_expr
+implicit_row -> a_expr
+implicit_row -> expr_list
+index_elem -> a_expr
+index_elem -> func_expr_windowless
+index_elem_options -> opt_asc_desc
+index_elem_options -> opt_collate
+index_elem_options -> opt_nulls_order
+index_elem_options -> reloptions
+index_including_params -> index_elem
+index_params -> index_elem
+indirection -> indirection_el
+indirection_el -> a_expr
+insert_column_item -> opt_indirection
+insert_rest -> SelectStmt
+insert_rest -> insert_column_list
+insert_rest -> override_kind
+join_qual -> a_expr
+json_aggregate_func -> json_array_constructor_null_clause_opt
+json_aggregate_func -> json_key_uniqueness_constraint_opt
+json_aggregate_func -> json_name_and_value
+json_aggregate_func -> json_object_constructor_null_clause_opt
+json_aggregate_func -> json_returning_clause_opt
+json_aggregate_func -> json_value_expr
+json_argument -> json_value_expr
+json_array_aggregate_order_by_clause_opt -> sortby_list
+json_behavior -> a_expr
+json_behavior_clause_opt -> json_behavior
+json_format_clause_opt -> json_format_clause
+json_name_and_value -> a_expr
+json_name_and_value -> c_expr
+json_name_and_value -> json_value_expr
+json_name_and_value_list -> json_name_and_value
+json_on_error_clause_opt -> json_behavior
+json_returning_clause_opt -> Typename
+json_returning_clause_opt -> json_format_clause_opt
+json_table -> a_expr
+json_table -> json_on_error_clause_opt
+json_table -> json_passing_clause_opt
+json_table -> json_table_column_definition_list
+json_table -> json_value_expr
+json_table_column_definition -> Typename
+json_table_column_definition -> json_behavior_clause_opt
+json_table_column_definition -> json_format_clause
+json_table_column_definition -> json_on_error_clause_opt
+json_table_column_definition -> json_quotes_clause_opt
+json_table_column_definition -> json_wrapper_behavior
+json_value_expr -> a_expr
+json_value_expr -> json_format_clause_opt
+json_value_expr_list -> json_value_expr
+limit_clause -> a_expr
+merge_insert -> insert_column_list
+merge_insert -> override_kind
+merge_update -> set_clause_list
+merge_values_clause -> expr_list
+offset_clause -> a_expr
+old_aggr_elem -> def_arg
+opclass_drop -> type_list
+opclass_item -> Typename
+opclass_item -> function_with_argtypes
+opclass_item -> operator_with_argtypes
+opclass_item -> type_list
+oper_argtypes -> Typename
+operator_def_arg -> func_type
+operator_with_argtypes_list -> operator_with_argtypes
+opt_col_def_list -> TableFuncElementList
+opt_column_compression -> column_compression
+opt_column_storage -> column_storage
+opt_conf_expr -> index_params
+opt_conf_expr -> where_clause
+opt_cycle_clause -> AexprConst
+opt_definition -> definition
+opt_fdw_options -> fdw_options
+opt_foreign_server_version -> foreign_server_version
+opt_indirection -> indirection_el
+opt_merge_when_condition -> a_expr
+opt_on_conflict -> set_clause_list
+opt_on_conflict -> where_clause
+opt_partition_clause -> expr_list
+opt_reloptions -> reloptions
+opt_repeatable_clause -> a_expr
+opt_slice_bound -> a_expr
+opt_sort_clause -> sort_clause
+opt_target_list -> target_list
+opt_type_modifiers -> expr_list
+opt_utility_option_list -> utility_option_list
+opt_with_clause -> with_clause
+over_clause -> window_specification
+overlay_list -> a_expr
+part_elem -> a_expr
+part_elem -> func_expr_windowless
+part_elem -> opt_collate
+partition_cmd -> PartitionBoundSpec
+position_list -> b_expr
+prep_type_clause -> type_list
+privilege_target -> function_with_argtypes_list
+privileges -> privilege_list
+reloption_elem -> def_arg
+returning_clause -> target_list
+rollup_clause -> expr_list
+row -> expr_list
+rowsfrom_item -> func_expr_windowless
+select_clause -> select_with_parens
+select_clause -> simple_select
+select_fetch_first_value -> c_expr
+select_limit_value -> a_expr
+select_no_parens -> opt_sort_clause
+select_no_parens -> select_clause
+select_no_parens -> simple_select
+select_no_parens -> sort_clause
+select_no_parens -> with_clause
+select_with_parens -> select_no_parens
+set_clause -> a_expr
+set_rest -> set_rest_more
+set_rest -> transaction_mode_list
+set_rest_more -> document_or_content
+set_target -> opt_indirection
+simple_select -> from_clause
+simple_select -> select_clause
+simple_select -> target_list
+simple_select -> where_clause
+sort_clause -> sortby_list
+sortby -> a_expr
+sortby -> opt_asc_desc
+sortby -> opt_nulls_order
+stats_param -> a_expr
+stats_param -> func_expr_windowless
+substr_list -> a_expr
+table_func_column -> func_type
+table_ref -> select_with_parens
+tablesample_clause -> expr_list
+tablesample_clause -> func_name
+target_el -> a_expr
+transaction_mode_list_or_empty -> transaction_mode_list
+transform_element_list -> function_with_argtypes
+transform_type_list -> Typename
+trim_list -> a_expr
+trim_list -> expr_list
+type_list -> Typename
+type_name_list -> Typename
+using_clause -> from_list
+values_clause -> expr_list
+when_clause -> a_expr
+where_clause -> a_expr
+where_or_current_clause -> a_expr
+window_definition -> window_specification
+window_specification -> opt_sort_clause
+within_group_clause -> sort_clause
+xml_attribute_el -> a_expr
+xml_namespace_el -> b_expr
+xml_root_version -> a_expr
+xmlexists_argument -> c_expr
 xmltable -> c_expr
 xmltable -> xmlexists_argument
 xmltable_column_el -> Typename
 xmltable_column_option_el -> b_expr
-xml_namespace_el -> b_expr
-json_table -> json_value_expr
-json_table -> a_expr
-json_table -> json_passing_clause_opt
-json_table -> json_table_column_definition_list
-json_table -> json_on_error_clause_opt
-json_table_column_definition -> Typename
-json_table_column_definition -> json_wrapper_behavior
-json_table_column_definition -> json_quotes_clause_opt
-json_table_column_definition -> json_behavior_clause_opt
-json_table_column_definition -> json_format_clause
-json_table_column_definition -> json_on_error_clause_opt
-Typename -> SimpleTypename
-SimpleTypename -> Numeric
-SimpleTypename -> ConstDatetime
-SimpleTypename -> opt_interval
-ConstTypename -> Numeric
-ConstTypename -> ConstDatetime
-GenericType -> opt_type_modifiers
-opt_type_modifiers -> expr_list
-Numeric -> opt_type_modifiers
-Bit -> BitWithLength
-Bit -> BitWithoutLength
-ConstBit -> BitWithLength
-ConstBit -> BitWithoutLength
-BitWithLength -> expr_list
-Character -> CharacterWithLength
-Character -> CharacterWithoutLength
-ConstCharacter -> CharacterWithLength
-ConstCharacter -> CharacterWithoutLength
-CharacterWithLength -> character
-CharacterWithoutLength -> character
-a_expr_1 -> Typename
-a_expr_1 -> b_expr
-a_expr_1 -> select_with_parens
-a_expr_1 -> expr_list
-a_expr_1 -> unicode_normal_form
-a_expr_1 -> json_key_uniqueness_constraint_opt
-a_expr_2 -> c_expr
-a_expr_2 -> opt_unique_null_treatment
-a_expr_2 -> select_with_parens
-b_expr_1 -> Typename
-b_expr_2 -> c_expr
-c_expr -> AexprConst
-c_expr -> opt_indirection
-c_expr -> a_expr
-c_expr -> select_with_parens
-c_expr -> indirection
-c_expr -> array_expr
-c_expr -> expr_list
-func_application -> func_name
-func_application -> func_arg_list
-func_application -> opt_sort_clause
-func_application -> func_arg_expr
-func_expr -> func_application
-func_expr -> json_aggregate_func
-func_expr -> func_expr_common_subexpr
-func_expr_windowless -> func_application
-func_expr_windowless -> func_expr_common_subexpr
-func_expr_windowless -> json_aggregate_func
-func_expr_common_subexpr -> a_expr
-func_expr_common_subexpr -> Typename
-func_expr_common_subexpr -> unicode_normal_form
-func_expr_common_subexpr -> expr_list
-func_expr_common_subexpr -> c_expr
-func_expr_common_subexpr -> xmlexists_argument
-func_expr_common_subexpr -> document_or_content
-func_expr_common_subexpr -> SimpleTypename
-func_expr_common_subexpr -> func_arg_list
-func_expr_common_subexpr -> json_object_constructor_null_clause_opt
-func_expr_common_subexpr -> json_key_uniqueness_constraint_opt
-func_expr_common_subexpr -> json_returning_clause_opt
-func_expr_common_subexpr -> json_array_constructor_null_clause_opt
-func_expr_common_subexpr -> select_no_parens
-func_expr_common_subexpr -> json_format_clause_opt
-func_expr_common_subexpr -> json_value_expr
-func_expr_common_subexpr -> json_passing_clause_opt
-func_expr_common_subexpr -> json_wrapper_behavior
-func_expr_common_subexpr -> json_quotes_clause_opt
-func_expr_common_subexpr -> json_behavior_clause_opt
-func_expr_common_subexpr -> json_on_error_clause_opt
-xml_root_version -> a_expr
-xml_attribute_el -> a_expr
-xmlexists_argument -> c_expr
-within_group_clause -> sort_clause
-filter_clause -> a_expr
-window_definition -> window_specification
-over_clause -> window_specification
-window_specification -> opt_sort_clause
-opt_partition_clause -> expr_list
-frame_bound -> a_expr
-row -> expr_list
-explicit_row -> expr_list
-implicit_row -> expr_list
-implicit_row -> a_expr
-expr_list -> a_expr
-func_arg_list -> func_arg_expr
-func_arg_expr -> a_expr
-func_arg_list_opt -> func_arg_list
-type_list -> Typename
-array_expr -> expr_list
-extract_list -> a_expr
-overlay_list -> a_expr
-position_list -> b_expr
-substr_list -> a_expr
-trim_list -> a_expr
-trim_list -> expr_list
-when_clause -> a_expr
-case_default -> a_expr
-case_arg -> a_expr
-columnref -> indirection
-indirection_el -> a_expr
-opt_slice_bound -> a_expr
-indirection -> indirection_el
-opt_indirection -> indirection_el
-json_argument -> json_value_expr
-json_behavior -> a_expr
-json_behavior_clause_opt -> json_behavior
-json_on_error_clause_opt -> json_behavior
-json_value_expr -> a_expr
-json_value_expr -> json_format_clause_opt
-json_format_clause_opt -> json_format_clause
-json_returning_clause_opt -> Typename
-json_returning_clause_opt -> json_format_clause_opt
-json_name_and_value_list -> json_name_and_value
-json_name_and_value -> c_expr
-json_name_and_value -> json_value_expr
-json_name_and_value -> a_expr
-json_value_expr_list -> json_value_expr
-json_aggregate_func -> json_name_and_value
-json_aggregate_func -> json_object_constructor_null_clause_opt
-json_aggregate_func -> json_key_uniqueness_constraint_opt
-json_aggregate_func -> json_returning_clause_opt
-json_aggregate_func -> json_value_expr
-json_aggregate_func -> json_array_constructor_null_clause_opt
-json_array_aggregate_order_by_clause_opt -> sortby_list
-opt_target_list -> target_list
-target_el -> a_expr
-func_name -> indirection
-AexprConst -> func_name
-AexprConst -> func_arg_list
-AexprConst -> opt_sort_clause
-AexprConst -> opt_interval
+zone_value -> opt_interval
 
 // subgraphs
 edge [style=dotted]
 
 subgraph cluster_utility_option_list {
-  utility_option_list -> utility_option_elem
   utility_option_elem -> utility_option_name
   utility_option_elem -> utility_option_arg
+  utility_option_list -> utility_option_elem
 }
 
 subgraph cluster_AlterRoleStmt {
@@ -582,20 +582,14 @@ subgraph cluster_OptRoleList {
   OptRoleList -> CreateOptRoleElem
 }
 
+subgraph cluster_AlterRoleSetStmt {
+  AlterRoleSetStmt -> opt_in_database
+}
+
 subgraph cluster_CreateSchemaStmt {
   CreateSchemaStmt -> OptSchemaEltList
-  OptSchemaEltList -> schema_stmt
-  schema_stmt -> CreateStmt
-  schema_stmt -> IndexStmt
-  schema_stmt -> CreateSeqStmt
-  schema_stmt -> CreateTrigStmt
-  schema_stmt -> GrantStmt
-  schema_stmt -> ViewStmt
-  CreateStmt -> OptPartitionSpec
-  OptPartitionSpec -> PartitionSpec
-  PartitionSpec -> part_params
-  part_params -> part_elem
   CreateSeqStmt -> OptSeqOptList
+  CreateStmt -> OptPartitionSpec
   CreateTrigStmt -> TriggerActionTime
   CreateTrigStmt -> TriggerEvents
   CreateTrigStmt -> TriggerReferencing
@@ -603,20 +597,38 @@ subgraph cluster_CreateSchemaStmt {
   CreateTrigStmt -> TriggerWhen
   CreateTrigStmt -> TriggerFuncArgs
   CreateTrigStmt -> OptConstrFromTable
+  IndexStmt -> opt_include
+  OptPartitionSpec -> PartitionSpec
+  OptSchemaEltList -> schema_stmt
+  PartitionSpec -> part_params
   TriggerEvents -> TriggerOneEvent
-  TriggerReferencing -> TriggerTransitions
-  TriggerTransitions -> TriggerTransition
-  TriggerTransition -> TransitionOldOrNew
-  TriggerTransition -> TransitionRowOrTable
   TriggerForSpec -> TriggerForOptEach
   TriggerForSpec -> TriggerForType
   TriggerFuncArgs -> TriggerFuncArgs_1
   TriggerFuncArgs -> TriggerFuncArgs_2
   TriggerFuncArgs_1 -> TriggerFuncArg
   TriggerFuncArgs_2 -> TriggerFuncArg
-  IndexStmt -> opt_include
-  opt_include -> index_including_params
+  TriggerReferencing -> TriggerTransitions
+  TriggerTransition -> TransitionOldOrNew
+  TriggerTransition -> TransitionRowOrTable
+  TriggerTransitions -> TriggerTransition
   ViewStmt -> opt_check_option
+  opt_include -> index_including_params
+  part_params -> part_elem
+  schema_stmt -> CreateStmt
+  schema_stmt -> IndexStmt
+  schema_stmt -> CreateSeqStmt
+  schema_stmt -> CreateTrigStmt
+  schema_stmt -> GrantStmt
+  schema_stmt -> ViewStmt
+}
+
+subgraph cluster_transaction_mode_list {
+  transaction_mode_item -> iso_level
+  transaction_mode_list -> transaction_mode_item
+  transaction_mode_list -> transaction_mode_list_2
+  transaction_mode_list_1 -> transaction_mode_item
+  transaction_mode_list_2 -> transaction_mode_list_1
 }
 
 subgraph cluster_set_rest_more {
@@ -624,25 +636,34 @@ subgraph cluster_set_rest_more {
   set_rest_more -> opt_encoding
 }
 
+subgraph cluster_VariableResetStmt {
+  VariableResetStmt -> reset_rest
+}
+
 subgraph cluster_common_func_opt_item {
   common_func_opt_item -> FunctionSetResetClause
+}
+
+subgraph cluster_ConstraintsSetStmt {
+  ConstraintsSetStmt -> constraints_set_list
+  ConstraintsSetStmt -> constraints_set_mode
 }
 
 subgraph cluster_AlterTableStmt {
   AlterTableStmt -> alter_table_cmds
   AlterTableStmt -> partition_cmd
   AlterTableStmt -> index_partition_cmd
-  alter_table_cmds -> alter_table_cmd
+  alter_identity_column_option_list -> alter_identity_column_option
   alter_table_cmd -> alter_using
+  alter_table_cmd -> replica_identity
   alter_table_cmd -> alter_identity_column_option_list
   alter_table_cmd -> set_access_method_name
-  alter_table_cmd -> replica_identity
-  alter_identity_column_option_list -> alter_identity_column_option
+  alter_table_cmds -> alter_table_cmd
 }
 
 subgraph cluster_reloptions {
-  reloptions -> reloption_list
   reloption_list -> reloption_elem
+  reloptions -> reloption_list
 }
 
 subgraph cluster_PartitionBoundSpec {
@@ -661,17 +682,17 @@ subgraph cluster_CopyStmt {
   CopyStmt -> copy_file_name
   CopyStmt -> copy_delimiter
   CopyStmt -> copy_options
+  copy_generic_opt_elem -> copy_generic_opt_arg
+  copy_generic_opt_list -> copy_generic_opt_elem
+  copy_opt_list -> copy_opt_item
   copy_options -> copy_opt_list
   copy_options -> copy_generic_opt_list
-  copy_opt_list -> copy_opt_item
-  copy_generic_opt_list -> copy_generic_opt_elem
-  copy_generic_opt_elem -> copy_generic_opt_arg
 }
 
 subgraph cluster_OptTableElementList {
   OptTableElementList -> TableElementList
-  TableElementList -> TableElement
   TableElement -> TableLikeClause
+  TableElementList -> TableElement
   TableLikeClause -> TableLikeOptionList
   TableLikeOptionList -> TableLikeOptionList_1
   TableLikeOptionList_1 -> TableLikeOption
@@ -679,8 +700,8 @@ subgraph cluster_OptTableElementList {
 
 subgraph cluster_OptTypedTableElementList {
   OptTypedTableElementList -> TypedTableElementList
-  TypedTableElementList -> TypedTableElement
   TypedTableElement -> columnOptions
+  TypedTableElementList -> TypedTableElement
 }
 
 subgraph cluster_columnDef {
@@ -689,35 +710,35 @@ subgraph cluster_columnDef {
 }
 
 subgraph cluster_ColQualList {
-  ColQualList -> ColConstraint
   ColConstraint -> ColConstraintElem
   ColConstraint -> ConstraintAttr
-  ColConstraintElem -> opt_no_inherit
   ColConstraintElem -> opt_virtual_or_stored
+  ColConstraintElem -> opt_no_inherit
+  ColQualList -> ColConstraint
 }
 
 subgraph cluster_TableConstraint {
-  TableConstraint -> ConstraintElem
-  ConstraintElem -> opt_column_and_period_list
-  ConstraintElem -> ExclusionConstraintList
   ConstraintElem -> opt_without_overlaps
-  ConstraintElem -> opt_c_include
-  ConstraintElem -> ExistingIndex
   ConstraintElem -> optionalPeriodName
-  opt_column_and_period_list -> optionalPeriodName
+  ConstraintElem -> opt_column_and_period_list
+  ConstraintElem -> opt_c_include
+  ConstraintElem -> ExclusionConstraintList
+  ConstraintElem -> ExistingIndex
   ExclusionConstraintList -> ExclusionConstraintElem
+  TableConstraint -> ConstraintElem
+  opt_column_and_period_list -> optionalPeriodName
 }
 
 subgraph cluster_AlterDomainStmt {
-  DomainConstraint -> DomainConstraintElem
   AlterDomainStmt -> DomainConstraint
+  DomainConstraint -> DomainConstraintElem
 }
 
 subgraph cluster_key_actions {
   key_actions -> key_update
   key_actions -> key_delete
-  key_update -> key_action
   key_delete -> key_action
+  key_update -> key_action
 }
 
 subgraph cluster_CreateStatsStmt {
@@ -731,25 +752,35 @@ subgraph cluster_ExplainStmt {
   CreateMatViewStmt -> OptNoLog
   CreateMatViewStmt -> create_mv_target
   CreateMatViewStmt -> opt_with_data
-  RefreshMatViewStmt -> opt_with_data
+  DeclareCursorStmt -> cursor_options
+  DeclareCursorStmt -> opt_hold
+  ExecuteStmt -> execute_param_clause
+  ExecuteStmt -> create_as_target
+  ExecuteStmt -> opt_with_data
   ExplainStmt -> ExplainableStmt
   ExplainableStmt -> DeclareCursorStmt
   ExplainableStmt -> CreateAsStmt
   ExplainableStmt -> CreateMatViewStmt
   ExplainableStmt -> RefreshMatViewStmt
   ExplainableStmt -> ExecuteStmt
-  ExecuteStmt -> execute_param_clause
-  ExecuteStmt -> create_as_target
-  ExecuteStmt -> opt_with_data
-  DeclareCursorStmt -> cursor_options
-  DeclareCursorStmt -> opt_hold
+  RefreshMatViewStmt -> opt_with_data
   cursor_options -> cursor_options_1
+}
+
+subgraph cluster_privilege_target {
+  parameter_name_list -> parameter_name
+  privilege_target -> NumericOnly_list
+  privilege_target -> parameter_name_list
 }
 
 subgraph cluster_CreatePLangStmt {
   CreatePLangStmt -> opt_inline_handler
   CreatePLangStmt -> opt_validator
   opt_validator -> validator_clause
+}
+
+subgraph cluster_CreateTableSpaceStmt {
+  CreateTableSpaceStmt -> OptTableSpaceOwner
 }
 
 subgraph cluster_CreateExtensionStmt {
@@ -762,18 +793,22 @@ subgraph cluster_AlterExtensionStmt {
   alter_extension_opt_list -> alter_extension_opt_item
 }
 
+subgraph cluster_fdw_options {
+  fdw_options -> fdw_option
+}
+
 subgraph cluster_create_generic_options {
   create_generic_options -> generic_option_list
 }
 
 subgraph cluster_alter_generic_options {
-  alter_generic_options -> alter_generic_option_list
   alter_generic_option_list -> alter_generic_option_elem
+  alter_generic_options -> alter_generic_option_list
 }
 
 subgraph cluster_CreateForeignServerStmt {
-  CreateForeignServerStmt -> opt_foreign_server_version
   CreateForeignServerStmt -> opt_type
+  CreateForeignServerStmt -> opt_foreign_server_version
 }
 
 subgraph cluster_ImportForeignSchemaStmt {
@@ -782,21 +817,37 @@ subgraph cluster_ImportForeignSchemaStmt {
 }
 
 subgraph cluster_CreatePolicyStmt {
-  CreatePolicyStmt -> RowSecurityDefaultForCmd
-  CreatePolicyStmt -> RowSecurityDefaultPermissive
   CreatePolicyStmt -> RowSecurityDefaultToRole
+  CreatePolicyStmt -> RowSecurityDefaultPermissive
+  CreatePolicyStmt -> RowSecurityDefaultForCmd
   RowSecurityDefaultForCmd -> row_security_cmd
+}
+
+subgraph cluster_AlterPolicyStmt {
+  AlterPolicyStmt -> RowSecurityOptionalToRole
+}
+
+subgraph cluster_CreateAmStmt {
+  CreateAmStmt -> am_type
+}
+
+subgraph cluster_ConstraintAttributeSpec {
+  ConstraintAttributeSpec -> ConstraintAttributeElem
 }
 
 subgraph cluster_CreateEventTrigStmt {
   CreateEventTrigStmt -> event_trigger_when_list
-  event_trigger_when_list -> event_trigger_when_item
   event_trigger_when_item -> event_trigger_value_list
+  event_trigger_when_list -> event_trigger_when_item
+}
+
+subgraph cluster_AlterEventTrigStmt {
+  AlterEventTrigStmt -> enable_trigger
 }
 
 subgraph cluster_definition {
-  definition -> def_list
   def_list -> def_elem
+  definition -> def_list
 }
 
 subgraph cluster_DefineStmt {
@@ -808,9 +859,17 @@ subgraph cluster_DefineStmt {
   opt_enum_val_list -> enum_val_list
 }
 
+subgraph cluster_AlterEnumStmt {
+  AlterEnumStmt -> opt_if_not_exists
+}
+
 subgraph cluster_opclass_item_list {
-  opclass_item_list -> opclass_item
   opclass_item -> opclass_purpose
+  opclass_item_list -> opclass_item
+}
+
+subgraph cluster_CreateOpClassStmt {
+  CreateOpClassStmt -> opt_opfamily
 }
 
 subgraph cluster_AlterOpFamilyStmt {
@@ -822,23 +881,42 @@ subgraph cluster_DropStmt {
   DropStmt -> type_name_list
 }
 
-subgraph cluster_privilege_target {
-  parameter_name_list -> parameter_name
-  privilege_target -> NumericOnly_list
-  privilege_target -> parameter_name_list
+subgraph cluster_TruncateStmt {
+  TruncateStmt -> opt_restart_seqs
+}
+
+subgraph cluster_CommentStmt {
+  CommentStmt -> comment_text
+}
+
+subgraph cluster_SecLabelStmt {
+  SecLabelStmt -> opt_provider
+  SecLabelStmt -> security_label
+}
+
+subgraph cluster_FetchStmt {
+  FetchStmt -> fetch_args
+}
+
+subgraph cluster_privilege_list {
+  privilege_list -> privilege
+}
+
+subgraph cluster_grantee_list {
+  grantee_list -> grantee
 }
 
 subgraph cluster_GrantRoleStmt {
   GrantRoleStmt -> grant_role_opt_list
-  grant_role_opt_list -> grant_role_opt
   grant_role_opt -> grant_role_opt_value
+  grant_role_opt_list -> grant_role_opt
 }
 
 subgraph cluster_AlterDefaultPrivilegesStmt {
   AlterDefaultPrivilegesStmt -> DefACLOptionList
   AlterDefaultPrivilegesStmt -> DefACLAction
-  DefACLOptionList -> DefACLOption
   DefACLAction -> defacl_privilege_target
+  DefACLOptionList -> DefACLOption
 }
 
 subgraph cluster_index_elem {
@@ -855,18 +933,22 @@ subgraph cluster_CreateFunctionStmt {
   CreateFunctionStmt -> opt_createfunc_opt_list
   CreateFunctionStmt -> opt_routine_body
   CreateFunctionStmt -> table_func_column_list
+  createfunc_opt_item -> func_as
+  createfunc_opt_item -> transform_type_list
+  createfunc_opt_list -> createfunc_opt_item
   func_args_with_defaults -> func_args_with_defaults_list
   func_args_with_defaults_list -> func_arg_with_default
   opt_createfunc_opt_list -> createfunc_opt_list
-  createfunc_opt_list -> createfunc_opt_item
-  createfunc_opt_item -> func_as
-  createfunc_opt_item -> transform_type_list
   opt_routine_body -> ReturnStmt
   opt_routine_body -> routine_body_stmt_list
-  routine_body_stmt_list -> routine_body_stmt
   routine_body_stmt -> {stmt [color=red penwidth=3]}
   routine_body_stmt -> ReturnStmt
+  routine_body_stmt_list -> routine_body_stmt
   table_func_column_list -> table_func_column
+}
+
+subgraph cluster_func_arg {
+  func_arg -> arg_class
 }
 
 subgraph cluster_aggr_args {
@@ -896,13 +978,22 @@ subgraph cluster_DoStmt {
   dostmt_opt_list -> dostmt_opt_item
 }
 
+subgraph cluster_CreateCastStmt {
+  CreateCastStmt -> cast_context
+}
+
 subgraph cluster_CreateTransformStmt {
   CreateTransformStmt -> transform_element_list
 }
 
+subgraph cluster_ReindexStmt {
+  ReindexStmt -> reindex_target_relation
+  ReindexStmt -> reindex_target_all
+}
+
 subgraph cluster_operator_def_list {
-  operator_def_list -> operator_def_elem
   operator_def_elem -> operator_def_arg
+  operator_def_list -> operator_def_elem
 }
 
 subgraph cluster_pub_obj_list {
@@ -911,34 +1002,38 @@ subgraph cluster_pub_obj_list {
 }
 
 subgraph cluster_RuleStmt {
-  RuleStmt -> event
-  RuleStmt -> opt_instead
-  RuleStmt -> RuleActionList
+  NotifyStmt -> notify_payload
   RuleActionList -> RuleActionStmt
   RuleActionList -> RuleActionMulti
   RuleActionMulti -> RuleActionStmtOrEmpty
   RuleActionStmt -> NotifyStmt
   RuleActionStmtOrEmpty -> RuleActionStmt
-  NotifyStmt -> notify_payload
-}
-
-subgraph cluster_transaction_mode_list {
-  transaction_mode_item -> iso_level
-  transaction_mode_list -> transaction_mode_item
-  transaction_mode_list -> transaction_mode_list_2
-  transaction_mode_list_1 -> transaction_mode_item
-  transaction_mode_list_2 -> transaction_mode_list_1
+  RuleStmt -> event
+  RuleStmt -> opt_instead
+  RuleStmt -> RuleActionList
 }
 
 subgraph cluster_createdb_opt_list {
-  createdb_opt_list -> createdb_opt_items
-  createdb_opt_items -> createdb_opt_item
   createdb_opt_item -> createdb_opt_name
+  createdb_opt_items -> createdb_opt_item
+  createdb_opt_list -> createdb_opt_items
+}
+
+subgraph cluster_DropdbStmt {
+  DropdbStmt -> drop_option_list
+}
+
+subgraph cluster_AlterTSConfigurationStmt {
+  AlterTSConfigurationStmt -> any_with
+}
+
+subgraph cluster_ClusterStmt {
+  ClusterStmt -> cluster_index_specification
 }
 
 subgraph cluster_opt_vacuum_relation_list {
-  vacuum_relation_list -> vacuum_relation
   opt_vacuum_relation_list -> vacuum_relation_list
+  vacuum_relation_list -> vacuum_relation
 }
 
 subgraph cluster_PrepareStmt {
@@ -946,9 +1041,9 @@ subgraph cluster_PrepareStmt {
 }
 
 subgraph cluster_InsertStmt {
+  InsertStmt -> insert_target
   InsertStmt -> insert_rest
   InsertStmt -> opt_on_conflict
-  InsertStmt -> insert_target
   opt_on_conflict -> opt_conf_expr
 }
 
@@ -958,9 +1053,9 @@ subgraph cluster_insert_column_list {
 
 subgraph cluster_returning_clause {
   returning_clause -> returning_with_clause
-  returning_with_clause -> returning_options
-  returning_options -> returning_option
   returning_option -> returning_option_kind
+  returning_options -> returning_option
+  returning_with_clause -> returning_options
 }
 
 subgraph cluster_DeleteStmt {
@@ -972,43 +1067,65 @@ subgraph cluster_LockStmt {
   opt_lock -> lock_type
 }
 
+subgraph cluster_select_no_parens {
+  for_locking_clause -> for_locking_items
+  for_locking_item -> for_locking_strength
+  for_locking_item -> locked_rels_list
+  for_locking_item -> opt_nowait_or_skip
+  for_locking_items -> for_locking_item
+  limit_clause -> select_limit_value
+  limit_clause -> first_or_next
+  limit_clause -> select_fetch_first_value
+  limit_clause -> row_or_rows
+  offset_clause -> select_fetch_first_value
+  offset_clause -> row_or_rows
+  opt_for_locking_clause -> for_locking_clause
+  opt_select_limit -> select_limit
+  select_limit -> limit_clause
+  select_limit -> offset_clause
+  select_no_parens -> for_locking_clause
+  select_no_parens -> opt_select_limit
+  select_no_parens -> select_limit
+  select_no_parens -> opt_for_locking_clause
+}
+
 subgraph cluster_set_clause_list {
-  set_clause_list -> set_clause
   set_clause -> set_target
   set_clause -> set_target_list
+  set_clause_list -> set_clause
   set_target_list -> set_target
 }
 
 subgraph cluster_MergeStmt {
   MergeStmt -> merge_when_list
-  merge_when_list -> merge_when_clause
+  merge_insert -> merge_values_clause
   merge_when_clause -> merge_when_tgt_matched
   merge_when_clause -> opt_merge_when_condition
   merge_when_clause -> merge_update
   merge_when_clause -> merge_when_tgt_not_matched
   merge_when_clause -> merge_insert
-  merge_insert -> merge_values_clause
+  merge_when_list -> merge_when_clause
 }
 
 subgraph cluster_with_clause {
-  with_clause -> cte_list
-  cte_list -> common_table_expr
   common_table_expr -> opt_materialized
   common_table_expr -> opt_search_clause
   common_table_expr -> opt_cycle_clause
+  cte_list -> common_table_expr
+  with_clause -> cte_list
 }
 
 subgraph cluster_simple_select {
+  group_clause -> set_quantifier
+  into_clause -> OptTempTableName
   simple_select -> into_clause
+  simple_select -> set_quantifier
   simple_select -> distinct_clause
   simple_select -> group_clause
   simple_select -> having_clause
   simple_select -> values_clause
   simple_select -> window_clause
   simple_select -> opt_target_list
-  simple_select -> set_quantifier
-  into_clause -> OptTempTableName
-  group_clause -> set_quantifier
   window_clause -> window_definition_list
   window_definition_list -> window_definition
 }
@@ -1017,38 +1134,28 @@ subgraph cluster_sortby_list {
   sortby_list -> sortby
 }
 
-subgraph cluster_select_no_parens {
-  select_no_parens -> for_locking_clause
-  select_no_parens -> opt_select_limit
-  select_no_parens -> select_limit
-  select_no_parens -> opt_for_locking_clause
-  select_limit -> limit_clause
-  select_limit -> offset_clause
-  opt_select_limit -> select_limit
-  limit_clause -> select_limit_value
-  limit_clause -> first_or_next
-  limit_clause -> select_fetch_first_value
-  limit_clause -> row_or_rows
-  offset_clause -> select_fetch_first_value
-  offset_clause -> row_or_rows
-  for_locking_clause -> for_locking_items
-  opt_for_locking_clause -> for_locking_clause
-  for_locking_items -> for_locking_item
-  for_locking_item -> for_locking_strength
-  for_locking_item -> locked_rels_list
-  for_locking_item -> opt_nowait_or_skip
-}
-
 subgraph cluster_group_by_list {
-  group_by_list -> group_by_item
   group_by_item -> empty_grouping_set
   group_by_item -> cube_clause
   group_by_item -> rollup_clause
   group_by_item -> grouping_sets_clause
+  group_by_list -> group_by_item
   grouping_sets_clause -> group_by_list
 }
 
 subgraph cluster_table_ref {
+  func_alias_clause -> alias_clause
+  func_table -> opt_ordinality
+  func_table -> rowsfrom_list
+  join_qual -> opt_alias_clause_for_join_using
+  join_type -> opt_outer
+  joined_table -> table_ref
+  joined_table -> join_type
+  joined_table -> join_qual
+  json_table -> json_table_path_name_opt
+  opt_alias_clause -> alias_clause
+  rowsfrom_item -> opt_col_def_list
+  rowsfrom_list -> rowsfrom_item
   table_ref -> opt_alias_clause
   table_ref -> tablesample_clause
   table_ref -> func_table
@@ -1057,31 +1164,19 @@ subgraph cluster_table_ref {
   table_ref -> joined_table
   table_ref -> alias_clause
   table_ref -> json_table
-  joined_table -> table_ref
-  joined_table -> join_type
-  joined_table -> join_qual
-  opt_alias_clause -> alias_clause
-  func_alias_clause -> alias_clause
-  join_type -> opt_outer
-  join_qual -> opt_alias_clause_for_join_using
   tablesample_clause -> opt_repeatable_clause
-  func_table -> opt_ordinality
-  func_table -> rowsfrom_list
-  rowsfrom_item -> opt_col_def_list
-  rowsfrom_list -> rowsfrom_item
+  xml_namespace_list -> xml_namespace_el
   xmltable -> xmltable_column_list
   xmltable -> xml_namespace_list
-  xmltable_column_list -> xmltable_column_el
   xmltable_column_el -> xmltable_column_option_list
+  xmltable_column_list -> xmltable_column_el
   xmltable_column_option_list -> xmltable_column_option_el
-  xml_namespace_list -> xml_namespace_el
-  json_table -> json_table_path_name_opt
 }
 
 subgraph cluster_json_table_column_definition_list {
-  json_table_column_definition_list -> json_table_column_definition
   json_table_column_definition -> json_table_column_path_clause_opt
   json_table_column_definition -> json_table_column_definition_list
+  json_table_column_definition_list -> json_table_column_definition
 }
 
 subgraph cluster_Typename {
@@ -1090,15 +1185,27 @@ subgraph cluster_Typename {
 }
 
 subgraph cluster_AexprConst {
+  AexprConst -> ConstTypename
   ConstTypename -> ConstBit
   ConstTypename -> ConstCharacter
-  AexprConst -> ConstTypename
 }
 
 subgraph cluster_SimpleTypename {
   SimpleTypename -> GenericType
   SimpleTypename -> Bit
   SimpleTypename -> Character
+}
+
+subgraph cluster_Numeric {
+  Numeric -> opt_float
+}
+
+subgraph cluster_ConstDatetime {
+  ConstDatetime -> opt_timezone
+}
+
+subgraph cluster_opt_interval {
+  opt_interval -> interval_second
 }
 
 subgraph cluster_a_expr {
@@ -1109,6 +1216,7 @@ subgraph cluster_a_expr {
   a_expr_1 -> a_expr
   a_expr_2 -> a_expr
   a_expr_2 -> row
+  a_expr_3 -> a_expr_1
   row -> a_expr
 }
 
@@ -1126,19 +1234,23 @@ subgraph cluster_c_expr {
   c_expr -> func_expr
   c_expr -> explicit_row
   c_expr -> implicit_row
-  func_expr -> within_group_clause
-  func_expr -> filter_clause
-  func_expr -> over_clause
   case_expr -> case_arg
   case_expr -> when_clause_list
   case_expr -> case_default
+  func_expr -> within_group_clause
+  func_expr -> filter_clause
+  func_expr -> over_clause
   when_clause_list -> when_clause
 }
 
 subgraph cluster_func_expr_common_subexpr {
+  extract_list -> extract_arg
   func_expr_common_subexpr -> xml_root_version
+  func_expr_common_subexpr -> opt_xml_root_standalone
   func_expr_common_subexpr -> xml_attributes
   func_expr_common_subexpr -> xml_attribute_list
+  func_expr_common_subexpr -> xml_indent_option
+  func_expr_common_subexpr -> xml_whitespace_option
   func_expr_common_subexpr -> func_arg_list_opt
   func_expr_common_subexpr -> extract_list
   func_expr_common_subexpr -> overlay_list
@@ -1147,21 +1259,21 @@ subgraph cluster_func_expr_common_subexpr {
   func_expr_common_subexpr -> trim_list
   func_expr_common_subexpr -> json_name_and_value_list
   func_expr_common_subexpr -> json_value_expr_list
-  func_expr_common_subexpr -> xml_whitespace_option
-  func_expr_common_subexpr -> opt_xml_root_standalone
-  func_expr_common_subexpr -> xml_indent_option
-  xml_attributes -> xml_attribute_list
   xml_attribute_list -> xml_attribute_el
-  extract_list -> extract_arg
+  xml_attributes -> xml_attribute_list
+}
+
+subgraph cluster_xmlexists_argument {
+  xmlexists_argument -> xml_passing_mech
 }
 
 subgraph cluster_window_specification {
+  frame_extent -> frame_bound
+  opt_frame_clause -> frame_extent
+  opt_frame_clause -> opt_window_exclusion_clause
   window_specification -> opt_existing_window_name
   window_specification -> opt_partition_clause
   window_specification -> opt_frame_clause
-  opt_frame_clause -> frame_extent
-  opt_frame_clause -> opt_window_exclusion_clause
-  frame_extent -> frame_bound
 }
 
 subgraph cluster_array_expr {
@@ -1174,8 +1286,12 @@ subgraph cluster_indirection_el {
 }
 
 subgraph cluster_json_passing_clause_opt {
-  json_passing_clause_opt -> json_arguments
   json_arguments -> json_argument
+  json_passing_clause_opt -> json_arguments
+}
+
+subgraph cluster_json_behavior {
+  json_behavior -> json_behavior_type
 }
 
 subgraph cluster_json_aggregate_func {
@@ -1186,161 +1302,6 @@ subgraph cluster_target_list {
   target_list -> target_el
 }
 
-subgraph cluster_AlterRoleSetStmt {
-  AlterRoleSetStmt -> opt_in_database
-}
 
-subgraph cluster_VariableResetStmt {
-  VariableResetStmt -> reset_rest
-}
-
-subgraph cluster_ConstraintsSetStmt {
-  ConstraintsSetStmt -> constraints_set_list
-  ConstraintsSetStmt -> constraints_set_mode
-}
-
-subgraph cluster_CreateTableSpaceStmt {
-  CreateTableSpaceStmt -> OptTableSpaceOwner
-}
-
-subgraph cluster_fdw_options {
-  fdw_options -> fdw_option
-}
-
-subgraph cluster_AlterPolicyStmt {
-  AlterPolicyStmt -> RowSecurityOptionalToRole
-}
-
-subgraph cluster_CreateAmStmt {
-  CreateAmStmt -> am_type
-}
-
-subgraph cluster_ConstraintAttributeSpec {
-  ConstraintAttributeSpec -> ConstraintAttributeElem
-}
-
-subgraph cluster_AlterEventTrigStmt {
-  AlterEventTrigStmt -> enable_trigger
-}
-
-subgraph cluster_AlterEnumStmt {
-  AlterEnumStmt -> opt_if_not_exists
-}
-
-subgraph cluster_CreateOpClassStmt {
-  CreateOpClassStmt -> opt_opfamily
-}
-
-subgraph cluster_TruncateStmt {
-  TruncateStmt -> opt_restart_seqs
-}
-
-subgraph cluster_CommentStmt {
-  CommentStmt -> comment_text
-}
-
-subgraph cluster_SecLabelStmt {
-  SecLabelStmt -> opt_provider
-  SecLabelStmt -> security_label
-}
-
-subgraph cluster_FetchStmt {
-  FetchStmt -> fetch_args
-}
-
-subgraph cluster_privilege_list {
-  privilege_list -> privilege
-}
-
-subgraph cluster_grantee_list {
-  grantee_list -> grantee
-}
-
-subgraph cluster_func_arg {
-  func_arg -> arg_class
-}
-
-subgraph cluster_CreateCastStmt {
-  CreateCastStmt -> cast_context
-}
-
-subgraph cluster_ReindexStmt {
-  ReindexStmt -> reindex_target_relation
-  ReindexStmt -> reindex_target_all
-}
-
-subgraph cluster_DropdbStmt {
-  DropdbStmt -> drop_option_list
-}
-
-subgraph cluster_AlterTSConfigurationStmt {
-  AlterTSConfigurationStmt -> any_with
-}
-
-subgraph cluster_ClusterStmt {
-  ClusterStmt -> cluster_index_specification
-}
-
-subgraph cluster_Numeric {
-  Numeric -> opt_float
-}
-
-subgraph cluster_ConstDatetime {
-  ConstDatetime -> opt_timezone
-}
-
-subgraph cluster_opt_interval {
-  opt_interval -> interval_second
-}
-
-subgraph cluster_xmlexists_argument {
-  xmlexists_argument -> xml_passing_mech
-}
-
-subgraph cluster_json_behavior {
-  json_behavior -> json_behavior_type
-}
-
-
-AlterOptRoleElem [color=blue penwidth=3]
-add_drop [color=blue penwidth=3]
-document_or_content [color=blue penwidth=3]
-set_statistics_value [color=blue penwidth=3]
-column_storage [color=blue penwidth=3]
-column_compression [color=blue penwidth=3]
-generated_when [color=blue penwidth=3]
-opt_set_data [color=blue penwidth=3]
-opt_collate_clause [color=blue penwidth=3]
-OptTemp [color=blue penwidth=3]
-OptInherit [color=blue penwidth=3]
-table_access_method_clause [color=blue penwidth=3]
-OnCommitOption [color=blue penwidth=3]
-OptTableSpace [color=blue penwidth=3]
-opt_unique_null_treatment [color=blue penwidth=3]
-OptConsTableSpace [color=blue penwidth=3]
-key_match [color=blue penwidth=3]
-access_method_clause [color=blue penwidth=3]
-opt_collate [color=blue penwidth=3]
-opt_or_replace [color=blue penwidth=3]
-generic_option_elem [color=blue penwidth=3]
-foreign_server_version [color=blue penwidth=3]
-auth_ident [color=blue penwidth=3]
-FUNCTION_or_PROCEDURE [color=blue penwidth=3]
-opt_grant_grant_option [color=blue penwidth=3]
-opt_granted_by [color=blue penwidth=3]
-opt_asc_desc [color=blue penwidth=3]
-opt_nulls_order [color=blue penwidth=3]
-opt_if_exists [color=blue penwidth=3]
-override_kind [color=blue penwidth=3]
-relation_expr_opt_alias [color=blue penwidth=3]
-json_wrapper_behavior [color=blue penwidth=3]
-json_quotes_clause_opt [color=blue penwidth=3]
-json_format_clause [color=blue penwidth=3]
-BitWithoutLength [color=blue penwidth=3]
-character [color=blue penwidth=3]
-unicode_normal_form [color=blue penwidth=3]
-json_key_uniqueness_constraint_opt [color=blue penwidth=3]
-json_object_constructor_null_clause_opt [color=blue penwidth=3]
-json_array_constructor_null_clause_opt [color=blue penwidth=3]
 
 }

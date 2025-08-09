@@ -1,5 +1,5 @@
 /// Alias: `transaction_mode_list_or_empty`
-pub(super) fn transaction_mode_list(stream: &mut TokenStream) -> scan::Result<Vec<TransactionMode>> {
+pub fn transaction_mode_list(stream: &mut TokenStream) -> scan::Result<Vec<TransactionMode>> {
 
     /*
         transaction_mode ( (',')? transaction_mode )*
@@ -76,6 +76,7 @@ fn isolation_level(stream: &mut TokenStream) -> scan::Result<IsolationLevel> {
 mod tests {
     use super::*;
     use pg_combinators::test_parser;
+    use pg_transaction_mode_ast::{IsolationLevel, TransactionMode};
     #[allow(unused_imports)]
     use scan::Error::NoMatch;
     use test_case::test_case;
@@ -113,16 +114,6 @@ mod tests {
     }
 }
 
-use pg_ast::IsolationLevel;
-use pg_ast::IsolationLevel::ReadCommitted;
-use pg_ast::IsolationLevel::ReadUncommitted;
-use pg_ast::IsolationLevel::RepeatableRead;
-use pg_ast::IsolationLevel::Serializable;
-use pg_ast::TransactionMode;
-use pg_ast::TransactionMode::Deferrable;
-use pg_ast::TransactionMode::NotDeferrable;
-use pg_ast::TransactionMode::ReadOnly;
-use pg_ast::TransactionMode::ReadWrite;
 use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::seq;
@@ -140,3 +131,13 @@ use pg_lexer::Keyword::Write;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_transaction_mode_ast::IsolationLevel;
+use pg_transaction_mode_ast::IsolationLevel::ReadCommitted;
+use pg_transaction_mode_ast::IsolationLevel::ReadUncommitted;
+use pg_transaction_mode_ast::IsolationLevel::RepeatableRead;
+use pg_transaction_mode_ast::IsolationLevel::Serializable;
+use pg_transaction_mode_ast::TransactionMode;
+use pg_transaction_mode_ast::TransactionMode::Deferrable;
+use pg_transaction_mode_ast::TransactionMode::NotDeferrable;
+use pg_transaction_mode_ast::TransactionMode::ReadOnly;
+use pg_transaction_mode_ast::TransactionMode::ReadWrite;

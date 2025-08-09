@@ -70,7 +70,7 @@ module Graph
       opt_distinct_clause
       plassign_target
       plassign_equals
-    ];
+    ]
 
     # exclude single terminal productions - these are inlined
     exclude += %i[
@@ -100,7 +100,7 @@ module Graph
       opt_verbose
       opt_with
       path_opt
-    ];
+    ]
 
     # remove common (base package) sinks
     exclude += %i[
@@ -172,7 +172,7 @@ module Graph
     graph.delete(:stmt)
 
     # remove empty productions: they're pseudo-terminals now
-    graph.reject! { |_, cs| cs.empty? };
+    # graph.reject! { |_, cs| cs.empty? };
 
     graph
   end
@@ -195,6 +195,7 @@ module Graph
         cr = subgraphs.key?(child) ? child : source_roots[child]
         pr && pr == cr
       end
+      .sort
       .map do |parent, child|
         if child == :stmt
           child = '{stmt [color=red penwidth=3]}'
@@ -207,9 +208,9 @@ module Graph
       sub_edges = self.select { |parent, _| ms.include?(parent) }
         .transform_values { it & ms }
         .reject { |_, cs| cs.empty? }
+        .sort_by { |parent, _| parent }
         .flat_map do |parent, children|
           children
-            .reject { |child| parent == :a_expr_3 && child == :a_expr_1 }
             .map do |child|
               if child == :stmt
                 child = '{stmt [color=red penwidth=3]}'
@@ -217,6 +218,7 @@ module Graph
               "#{parent} -> #{child}"
             end
         end
+
       [
         "subgraph cluster_#{root} {",
         *sub_edges.map { |it| "  #{it}" },
@@ -225,7 +227,10 @@ module Graph
       ]
     end
 
-    sinks = self.sinks.reject { |s| source_roots.key?(s) }.to_set
+    sinks = self.sinks
+      .reject { |s| source_roots.key?(s) }
+      .to_set
+      .sort
 
     lines = [
       'digraph Grammar {',
