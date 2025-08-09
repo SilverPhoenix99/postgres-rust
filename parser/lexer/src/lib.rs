@@ -38,6 +38,7 @@ impl FusedIterator for Lexer<'_> {}
 
 impl<'src> Lexer<'src> {
 
+    // The limit for source strings is 1gb
     pub fn new(source: &'src str, standard_conforming_strings: bool) -> Self {
         Self {
             standard_conforming_strings,
@@ -84,9 +85,9 @@ impl<'src> Lexer<'src> {
         let location = self.buffer.location_starting_at(start_index);
 
         match token {
-            Ok(kind) => Some(Ok((kind, location))),
+            Ok(kind) => Some(Ok(Located(kind, location))),
             Err(err_code) => {
-                let report = err_code.at(location);
+                let report = err_code.at_location(location);
                 Some(Err(report))
             }
         }
@@ -697,7 +698,7 @@ impl<'src> Lexer<'src> {
 
             if self.buffer.eof() {
                 let loc = self.buffer.location_starting_at(start_index);
-                let report = UnterminatedBlockComment.at(loc);
+                let report = UnterminatedBlockComment.at_location(loc);
                 return Err(report)
             }
 
@@ -712,7 +713,6 @@ mod tests {
     use crate::token_kind::RawTokenKind;
     use crate::Keyword::{FromKw, Not, Select, StringKw};
     use core::ops::Range;
-    use pg_elog::HasLocation;
 
     #[test]
     fn test_empty_string() {
@@ -1020,7 +1020,7 @@ mod tests {
         actual: Option<LocatedResult>
     ) {
         let expected_loc = Location::new(range, line, col);
-        let expected = (expected_kind, expected_loc);
+        let expected = Located(expected_kind, expected_loc);
 
         assert_matches!(
             actual,
@@ -1043,7 +1043,7 @@ mod tests {
 
     fn assert_kw(expected: Keyword, actual: Option<LocatedResult>) {
 
-        let (actual, _) = actual
+        let Located(actual, _) = actual
             .expect("should have been Some(Ok(_))")
             .expect("should have been Ok((Keyword(_), _))");
 
@@ -1102,6 +1102,7 @@ use pg_basics::ascii::is_op;
 use pg_basics::ascii::is_pg_op;
 use pg_basics::ascii::is_whitespace;
 use pg_basics::CharBuffer;
+use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_basics::Location;
 use pg_basics::NumberRadix;

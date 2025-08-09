@@ -24,7 +24,7 @@ impl BufferedLexer<'_> {
         self.peek.get_or_insert_with(|| {
             match self.lexer.next() {
                 Some(Ok(tok)) => Ok(tok),
-                Some(Err(lex_err)) => Err(NotEof(lex_err.into())),
+                Some(Err(lex_err)) => Err(lex_err.into()),
                 None => {
                     let loc = self.lexer.current_location();
                     Err(Eof(loc))
@@ -81,7 +81,7 @@ impl BufferedLexer<'_> {
         let ident = ident.into_boxed_str();
         let ident = TokenValue::Identifier(ident);
 
-        Ok((ident, loc))
+        Ok(Located(ident, loc))
     }
 
     pub fn parse_bit_string(&mut self, slice: &str, loc: Location, kind: BitStringKind) -> eof::Result<Located<TokenValue>> {
@@ -97,7 +97,7 @@ impl BufferedLexer<'_> {
         let mut buffer = slice.to_owned();
 
         let mut end_position = loc.range().end;
-        while let Some((suffix, suffix_loc)) = self.next_concatenable_string() {
+        while let Some(Located(suffix, suffix_loc)) = self.next_concatenable_string() {
             buffer.push_str(suffix);
             end_position = suffix_loc.range().end;
         }
@@ -107,7 +107,7 @@ impl BufferedLexer<'_> {
 
         let value = buffer.into_boxed_str();
         let value = TokenValue::BitString { value, kind };
-        Ok((value, loc))
+        Ok(Located(value, loc))
     }
 
     pub fn parse_string(&mut self, slice: &str, loc: Location, kind: StringKind) -> eof::Result<Located<TokenValue>> {
@@ -127,11 +127,11 @@ impl BufferedLexer<'_> {
             // Not concatenable, and no escapes to deal with.
             let value = buffer.into_boxed_str();
             let value = TokenValue::String(value);
-            return Ok((value, loc));
+            return Ok(Located(value, loc));
         }
 
         let mut end_position = loc.range().end;
-        while let Some((suffix, suffix_loc)) = self.next_concatenable_string() {
+        while let Some(Located(suffix, suffix_loc)) = self.next_concatenable_string() {
             buffer.push_str(suffix);
             end_position = suffix_loc.range().end;
         }
@@ -149,10 +149,12 @@ impl BufferedLexer<'_> {
                 let ExtendedStringResult { result, warning } = decoder.decode();
 
                 if let Some(warning) = warning {
-                    self.warnings.push((warning.into(), loc.clone()));
+                    self.warnings.push(Located(warning.into(), loc.clone()));
                 }
 
-                result.map_err(|err| err.at(loc.clone()))?
+                result.map_err(|err|
+                    Located(err, loc.clone())
+                )?
             }
             Unicode => {
 
@@ -160,13 +162,15 @@ impl BufferedLexer<'_> {
 
                 UnicodeStringDecoder::new(&buffer, false, escape)
                     .decode()
-                    .map_err(|err| err.at(loc.clone()))?
+                    .map_err(|err|
+                        Located(err, loc.clone())
+                    )?
             }
             Dollar => unreachable!("`$` strings don't have any escapes"),
         };
 
         let value = TokenValue::String(string);
-        Ok((value, loc))
+        Ok(Located(value, loc))
     }
 
     fn uescape(&mut self) -> pg_elog::LocatedResult<char> {
@@ -176,18 +180,17 @@ impl BufferedLexer<'_> {
             ( UESCAPE ( SCONST )+ )?
         */
 
-        let Ok((Keyword(Uescape), _)) = self.peek() else { return Ok('\\') };
+        let Ok(Located(Keyword(Uescape), _)) = self.peek() else { return Ok('\\') };
         let _ = self.next();
 
         let (kind, loc) = match self.peek() {
 
-            Ok((StringLiteral(kind @ (Basic { .. } | Extended { .. })), loc)) => (*kind, loc.clone()),
+            Ok(Located(StringLiteral(kind @ (Basic { .. } | Extended { .. })), loc)) => (*kind, loc.clone()),
 
             // No match or Eof
-            Ok((_, loc))
+            Ok(Located(_, loc))
             | Err(Eof(loc)) => {
-                let err = UescapeDelimiterMissing.at(loc.clone()).into();
-                return Err(err)
+                return Err(UescapeDelimiterMissing.into_located(loc.clone()))
             },
 
             Err(NotEof(err)) => return Err(err.clone()),
@@ -200,7 +203,7 @@ impl BufferedLexer<'_> {
         let mut buffer = slice.to_owned();
 
         let mut end_position = loc.range().end;
-        while let Some((suffix, suffix_loc)) = self.next_concatenable_string() {
+        while let Some(Located(suffix, suffix_loc)) = self.next_concatenable_string() {
             buffer.push_str(suffix);
             end_position = suffix_loc.range().end;
         }
@@ -209,14 +212,14 @@ impl BufferedLexer<'_> {
         let loc = Location::new(range, loc.line(), loc.col());
 
         uescape_escape(&buffer).ok_or_else(||
-            InvalidUescapeDelimiter.at(loc).into()
+            InvalidUescapeDelimiter.into_located(loc)
         )
     }
 
     fn next_concatenable_string(&mut self) -> Option<Located<&str>> {
 
         let (kind, loc) = {
-            let Ok((StringLiteral(kind), loc)) = self.peek() else { return None };
+            let Ok(Located(StringLiteral(kind), loc)) = self.peek() else { return None };
             if !kind.is_concatenable() {
                 return None
             }
@@ -226,7 +229,7 @@ impl BufferedLexer<'_> {
 
         let slice = loc.slice(self.lexer.source());
         let slice = strip_delimiters(kind, slice);
-        Some((slice, loc))
+        Some(Located(slice, loc))
     }
 }
 
@@ -241,6 +244,7 @@ use crate::stream::strip_delimiters::strip_delimiters;
 use crate::stream::token_value::TokenValue;
 use crate::stream::uescape_escape::uescape_escape;
 use pg_basics::guc::BackslashQuote;
+use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_basics::Location;
 use pg_basics::NAMEDATALEN;

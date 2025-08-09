@@ -37,7 +37,7 @@ fn user_role_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
         | RoleSpec AlterOptRoleList             => AlterRoleStmt
     */
 
-    let ((role, loc), stmt) = seq!(
+    let (Located(role, loc), stmt) = seq!(
         located!(role_spec),
         alt!(
             rename,
@@ -56,7 +56,7 @@ fn user_role_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
     let stmt = match stmt {
         Change::Name { new_name } => {
             let role_id = role.into_role_id()
-                .map_err(|err| err.at(loc))?;
+                .map_err(|err| err.at_location(loc))?;
             RenameStmt::new(Role(role_id), new_name).into()
         },
         Change::Options(options) => {
@@ -193,6 +193,8 @@ use pg_ast::RawStmt;
 use pg_ast::RenameStmt;
 use pg_ast::RenameTarget::Role;
 use pg_ast::SetResetClause;
+use pg_basics::IntoLocated;
+use pg_basics::Located;
 use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::located;

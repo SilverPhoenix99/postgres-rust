@@ -5,7 +5,7 @@ macro_rules! located {
             let loc = pg_parser_core::stream::TokenStream::current_location(stream);
             let p = $parser;
             let result = $crate::Combinator::parse(&p, stream)?;
-            Ok((result, loc))
+            Ok(pg_basics::Located(result, loc))
         })
     };
 }

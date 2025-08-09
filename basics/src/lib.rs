@@ -47,6 +47,7 @@ reexport! { pub
     char_buffer,
     concealable,
     fn_info,
+    located,
     location,
     named,
     non_negative,

@@ -39,20 +39,23 @@ pub(super) fn attr_tail(stream: &mut TokenStream) -> scan::Result<AttrTail> {
         // so it's accepted here.
 
         let type_modifiers = args.drain(..)
-            .map(|(arg, loc)| {
+            .map(|Located(arg, loc)| {
                 if arg.name().is_none() {
                     let (_, arg) = arg.into();
                     Ok(arg)
                 }
                 else {
-                    Err(InvalidNamedTypeModifier.at(loc))
+                    Err(InvalidNamedTypeModifier.at_location(loc))
                 }
             })
             .collect::<parser::LocatedResult<Vec<_>>>()?;
 
-        if let Some((_, loc)) = order {
-            let err = InvalidOrderedTypeModifiers.at(loc.clone());
-            return Err(err.into())
+        if let Some(Located(_, loc)) = order {
+            return Err(
+                InvalidOrderedTypeModifiers
+                    .at_location(loc.clone())
+                    .into()
+            )
         }
 
         // AexprConst
@@ -61,33 +64,30 @@ pub(super) fn attr_tail(stream: &mut TokenStream) -> scan::Result<AttrTail> {
 
     let tail = func_args_tail(stream)?;
 
-    if let Some((group, loc)) = tail.group {
+    if let Some(Located(group, loc)) = tail.group {
         args = match args {
             FuncArgsKind::Empty { .. } => FuncArgsKind::Empty { order_within_group: Some(group) },
             FuncArgsKind::Wildcard { .. } => FuncArgsKind::Wildcard { order_within_group: Some(group) },
             FuncArgsKind::All { args, order } => {
 
                 if order.is_some() {
-                    let err = MultipleOrderBy.at(loc);
-                    return Err(err.into())
+                    return Err(MultipleOrderBy.at_location(loc).into())
                 }
 
                 let order = FuncArgsOrder::WithinGroup(group);
-                let order = Some((order, loc));
+                let order = Some(Located(order, loc));
 
                 FuncArgsKind::All { args, order }
             },
             FuncArgsKind::Distinct { order, .. } => {
 
                 let err = if order.is_some() { MultipleOrderBy } else { DistinctWithinGroup };
-                let err = err.at(loc);
-                return Err(err.into())
+                return Err(err.at_location(loc).into())
             },
             FuncArgsKind::Variadic { order, .. } => {
 
                 let err = if order.is_some() { MultipleOrderBy } else { VariadicWithinGroup };
-                let err = err.at(loc);
-                return Err(err.into())
+                return Err(err.at_location(loc).into())
             },
         }
     }
@@ -153,6 +153,8 @@ mod tests {
         pg_ast::ExprNode::IntegerConst,
         pg_ast::NamedValue,
         pg_basics::Location,
+        pg_elog::Error::Parser,
+        scan::Error::ScanErr,
     };
 
     #[test_case("'foo'" => Ok(
@@ -177,7 +179,7 @@ mod tests {
     #[test_case("(1) over bar" => Ok(
         AttrTail::FuncTail {
             args: FuncArgsKind::All {
-                args: vec![(
+                args: vec![Located(
                     NamedValue::unnamed(IntegerConst(1)),
                     Location::new(1..2, 1, 2)
                 )],
@@ -187,41 +189,27 @@ mod tests {
             over: Some(OverClause::WindowName("bar".into()))
         }
     ))]
-    #[test_case("(a := 1) 'foo'" => Err(
-        InvalidNamedTypeModifier
-            .at(Location::new(1..2, 1, 2))
-            .into()
-    ))]
-    #[test_case("(1 order by 2) 'foo'" => Err(
-        InvalidOrderedTypeModifiers
-            .at(Location::new(3..8, 1, 4))
-            .into()
-    ))]
-    #[test_case("(1 order by 2) within group (order by 3)" => Err(
-        MultipleOrderBy
-            .at(Location::new(15..21, 1, 16))
-            .into()
-    ))]
-    #[test_case("(distinct 1) within group (order by 3)" => Err(
-        DistinctWithinGroup
-            .at(Location::new(13..19, 1, 14))
-            .into()
-    ))]
-    #[test_case("(distinct 1 order by 2) within group (order by 3)" => Err(
-        MultipleOrderBy
-            .at(Location::new(24..30, 1, 25))
-            .into()
-    ))]
-    #[test_case("(variadic 1) within group (order by 3)" => Err(
-        VariadicWithinGroup
-            .at(Location::new(13..19, 1, 14))
-            .into()
-    ))]
-    #[test_case("(variadic 1 order by 2) within group (order by 3)" => Err(
-        MultipleOrderBy
-            .at(Location::new(24..30, 1, 25))
-            .into()
-    ))]
+    #[test_case("(a := 1) 'foo'" => matches Err(ScanErr(
+        Located(Parser(InvalidNamedTypeModifier), _)
+    )))]
+    #[test_case("(1 order by 2) 'foo'" => matches Err(ScanErr(
+        Located(Parser(InvalidOrderedTypeModifiers), _)
+    )))]
+    #[test_case("(1 order by 2) within group (order by 3)" => matches Err(ScanErr(
+        Located(Parser(MultipleOrderBy), _)
+    )))]
+    #[test_case("(distinct 1) within group (order by 3)" => matches Err(ScanErr(
+        Located(Parser(DistinctWithinGroup), _)
+    )))]
+    #[test_case("(distinct 1 order by 2) within group (order by 3)" => matches Err(ScanErr(
+        Located(Parser(MultipleOrderBy), _)
+    )))]
+    #[test_case("(variadic 1) within group (order by 3)" => matches Err(ScanErr(
+        Located(Parser(VariadicWithinGroup), _)
+    )))]
+    #[test_case("(variadic 1 order by 2) within group (order by 3)" => matches Err(ScanErr(
+        Located(Parser(MultipleOrderBy), _)
+    )))]
     fn test_attr_tail(source: &str) -> scan::Result<AttrTail> {
         test_parser!(source, attr_tail)
     }
@@ -236,7 +224,7 @@ mod tests {
 
     #[test_case("", None, None, None)]
     #[test_case("within group (order by 1) filter (where 2) over foo",
-        Some((
+        Some(Located(
             SortBy::new(
                 IntegerConst(1),
                 None,
@@ -254,7 +242,7 @@ mod tests {
         over: Option<Str>
     ) {
         let expected = FuncArgsTail {
-            group: group.map(|(sort, loc)| (vec![sort], loc)),
+            group: group.map(|Located(sort, loc)| Located(vec![sort], loc)),
             filter,
             over: over.map(OverClause::WindowName),
         };
@@ -272,6 +260,7 @@ use pg_ast::FuncArgsKind;
 use pg_ast::FuncArgsOrder;
 use pg_ast::OverClause;
 use pg_ast::SortBy;
+use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_combinators::alt;
 use pg_combinators::located;

@@ -12,10 +12,12 @@ pub fn role_id(stream: &mut TokenStream) -> scan::Result<Str> {
 
     // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
-    let (role, loc) = located!(role_spec).parse(stream)?;
+    let Located(role, loc) = located!(role_spec).parse(stream)?;
 
-    role.into_role_id()
-        .map_err(|err| err.at(loc).into())
+    let role_id = role.into_role_id()
+        .map_err(|err| err.at_location(loc))?;
+    
+    Ok(role_id)
 }
 
 /// Alias: `RoleSpec`
@@ -46,9 +48,8 @@ pub fn role_spec(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
 
 fn role_none(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
 
-    let (_, loc) = located!(NoneKw).parse(stream)?;
-    let err = ReservedRoleSpec { role: "none" }.at(loc);
-    Err(err.into())
+    let Located(_, loc) = located!(NoneKw).parse(stream)?;
+    Err(ReservedRoleSpec { role: "none" }.at_location(loc).into())
 }
 
 pub trait IntoRoleId {
@@ -77,8 +78,8 @@ mod tests {
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
-        pg_basics::Location,
-        scan::Error::NoMatch,
+        pg_elog::Error::Role,
+        scan::Error::{NoMatch, ScanErr},
     };
 
     #[test]
@@ -102,11 +103,21 @@ mod tests {
 
     #[test_case("coalesce" => Ok("coalesce".into()))]
     #[test_case("xxyyzz" => Ok("xxyyzz".into()))]
-    #[test_case("none" => Err(ReservedRoleSpec { role: "none" }.at(Location::new(0..4, 1, 1)).into()))]
-    #[test_case("public" => Err(ReservedRoleSpec { role: "public" }.at(Location::new(0..6, 1, 1)).into()))]
-    #[test_case("current_role" => Err(ForbiddenRoleSpec { role: "CURRENT_ROLE" }.at(Location::new(0..12, 1, 1)).into()))]
-    #[test_case("current_user" => Err(ForbiddenRoleSpec { role: "CURRENT_USER" }.at(Location::new(0..12, 1, 1)).into()))]
-    #[test_case("session_user" => Err(ForbiddenRoleSpec { role: "SESSION_USER" }.at(Location::new(0..12, 1, 1)).into()))]
+    #[test_case("none" => matches Err(ScanErr(
+        Located(Role(ReservedRoleSpec { role: "none" }), _)
+    )))]
+    #[test_case("public" => matches Err(ScanErr(
+        Located(Role(ReservedRoleSpec { role: "public" }), _)
+    )))]
+    #[test_case("current_role" => matches Err(ScanErr(
+        Located(Role(ForbiddenRoleSpec { role: "CURRENT_ROLE" }), _)
+    )))]
+    #[test_case("current_user" => matches Err(ScanErr(
+        Located(Role(ForbiddenRoleSpec { role: "CURRENT_USER" }), _)
+    )))]
+    #[test_case("session_user" => matches Err(ScanErr(
+        Located(Role(ForbiddenRoleSpec { role: "SESSION_USER" }), _)
+    )))]
     fn test_role_id(source: &str) -> scan::Result<Str> {
         test_parser!(source, role_id)
     }
@@ -118,13 +129,17 @@ mod tests {
     #[test_case("coalesce" => Ok(RoleSpec::Name("coalesce".into())))]
     #[test_case("xxyyzz" => Ok(RoleSpec::Name("xxyyzz".into())))]
     #[test_case("collate" => matches Err(NoMatch(_)))]
-    #[test_case("none" => Err(ReservedRoleSpec { role: "none" }.at(Location::new(0..4, 1, 1)).into()))]
+    #[test_case("none" => matches Err(ScanErr(
+        Located(Role(ReservedRoleSpec { role: "none" }), _)
+    )))]
     fn test_role_spec(source: &str) -> scan::Result<RoleSpec> {
         test_parser!(source, role_spec)
     }
 }
 
 use crate::non_reserved_word;
+use pg_basics::IntoLocated;
+use pg_basics::Located;
 use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::located;

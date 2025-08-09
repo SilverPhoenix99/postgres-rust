@@ -86,7 +86,7 @@ pub(super) fn check_indirection(indirection: Located<Vec<Indirection>>) -> scan:
 
     // If present, '.*' must be the last element
 
-    let (indirection, location) = indirection;
+    let Located(indirection, location) = indirection;
 
     let valid = indirection.iter()
         .position(|ind| matches!(ind, Wildcard))
@@ -96,8 +96,7 @@ pub(super) fn check_indirection(indirection: Located<Vec<Indirection>>) -> scan:
         Ok(indirection)
     }
     else {
-        let err = ImproperUseOfStar.at(location);
-        Err(err.into())
+        Err(ImproperUseOfStar.at_location(location).into())
     }
 }
 
@@ -140,7 +139,7 @@ mod tests {
     #[test]
     fn test_check_indirection() {
         assert_matches!(
-            check_indirection((
+            check_indirection(Located(
                 vec![Property("some_property".into()), Wildcard],
                 Location::new(0..0, 0, 0)
             )),
@@ -148,7 +147,7 @@ mod tests {
         );
 
         assert_matches!(
-            check_indirection((
+            check_indirection(Located(
                 vec![Property("some_property".into())],
                 Location::new(0..0, 0, 0)
             )),
@@ -156,7 +155,7 @@ mod tests {
         );
 
         assert_matches!(
-            check_indirection((
+            check_indirection(Located(
                 vec![Wildcard, Property("some_property".into())],
                 Location::new(0..0, 0, 0)
             )),
@@ -171,6 +170,7 @@ use pg_ast::Indirection::Index;
 use pg_ast::Indirection::Property;
 use pg_ast::Indirection::Slice;
 use pg_ast::Indirection::Wildcard;
+use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_combinators::alt;
 use pg_combinators::brackets;

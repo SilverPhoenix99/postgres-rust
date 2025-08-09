@@ -16,7 +16,7 @@ pub(in crate::combinators) fn make_column_ref(
             - `x.y[0].*.foo.bar.*` -> `(["x", "y"], [Index(0), Wildcard, "foo", "bar", Wildcard])`
     */
 
-    let Some((indirection, loc)) = indirection else {
+    let Some(Located(indirection, loc)) = indirection else {
         return Ok(SingleName(name))
     };
 
@@ -51,7 +51,7 @@ pub(in crate::combinators) fn make_column_ref(
 
     match indirection.as_slice() {
         // `Wildcard` is not the last element
-        [Wildcard, _, ..] => Err(ImproperUseOfStar.at(loc).into()),
+        [Wildcard, _, ..] => Err(ImproperUseOfStar.at_location(loc).into()),
         [Wildcard] => Ok(WildcardName(qname)),
         [] => Ok(Name(qname)),
         // `Wildcard` and `Property` won't be the 1st element,
@@ -70,7 +70,7 @@ mod tests {
 
     #[test_case("name", None, SingleName("name".into()))]
     #[test_case("name",
-        Some((
+        Some(Located(
             vec![Wildcard],
             Location::new(0..0, 0, 0)
         )),
@@ -78,7 +78,7 @@ mod tests {
     )]
     #[test_case(
         "name",
-        Some((
+        Some(Located(
             vec![Property("foo".into())],
             Location::new(0..0, 0, 0)
         )),
@@ -86,7 +86,7 @@ mod tests {
     )]
     #[test_case(
         "name",
-        Some((
+        Some(Located(
             vec![Property("foo".into()), Wildcard],
             Location::new(0..0, 0, 0)
         )),
@@ -113,6 +113,7 @@ use pg_ast::ColumnRef::WildcardName;
 use pg_ast::Indirection;
 use pg_ast::Indirection::Property;
 use pg_ast::Indirection::Wildcard;
+use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_basics::Str;
 use pg_elog::parser::Error::ImproperUseOfStar;

@@ -7,10 +7,10 @@ pub(super) fn sort_clause(stream: &mut TokenStream) -> scan::Result<Located<Vec<
         ORDER BY sortby_list
     */
 
-    let ((.., sorts), loc) = located!(seq!(Order, By, sortby_list))
+    let Located((.., sorts), loc) = located!(seq!(Order, By, sortby_list))
         .parse(stream)?;
 
-    Ok((sorts, loc))
+    Ok(Located(sorts, loc))
 }
 
 fn sortby_list(stream: &mut TokenStream) -> scan::Result<Vec<SortBy>> {
@@ -63,7 +63,7 @@ mod tests {
     fn test_sort_clause() {
         let mut stream = TokenStream::from("order by 1, 2");
 
-        let (actual, _) = sort_clause(&mut stream).unwrap();
+        let Located(actual, _) = sort_clause(&mut stream).unwrap();
 
         let expected = vec![
             SortBy::new(IntegerConst(1), None, None),

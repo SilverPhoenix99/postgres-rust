@@ -1,27 +1,23 @@
-pub type LocatedError = LocatedMessage<Error>;
+pub type LocatedError = Located<Error>;
 pub type Result<T = Box<str>> = core::result::Result<T, Error>;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Display)]
 pub enum Error {
 
     /// When the result of parsing the `\XXXX`|`\+XXXXXX` escape gives back invalid UTF-16/UTF-32.
-    #[error("invalid Unicode escape value")]
+    #[display("invalid Unicode escape value")]
     InvalidUnicodeValue(u32),
 
     /// When
-    #[error("invalid Unicode surrogate pair")]
+    #[display("invalid Unicode surrogate pair")]
     InvalidUnicodeSurrogatePair(u32),
 
     /// When the format of the escape doesn't match \XXXX or \+XXXXXX.
-    #[error("invalid Unicode escape")]
+    #[display("invalid Unicode escape")]
     InvalidUnicodeEscape(u32),
 }
 
-impl Error {
-    pub fn at(self, location: Location) -> LocatedError {
-        LocatedError::new(self, location)
-    }
-}
+impl core::error::Error for Error {}
 
 impl LogMessage for Error {
 
@@ -39,6 +35,6 @@ impl LogMessage for Error {
 
 use crate::sql_state::SqlState;
 use crate::sql_state::SqlState::SyntaxError;
-use crate::LocatedMessage;
 use crate::LogMessage;
-use pg_basics::Location;
+use derive_more::Display;
+use pg_basics::Located;

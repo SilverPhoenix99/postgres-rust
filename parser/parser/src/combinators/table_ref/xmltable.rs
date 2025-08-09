@@ -75,31 +75,31 @@ fn xmltable_column_el(stream: &mut TokenStream) -> scan::Result<XmlTableColumn> 
     let mut column_def = XmlTableColumnDefinition::from(type_name);
 
     let options = options.into_iter().flatten();
-    for (option, loc) in options {
+    for Located(option, loc) in options {
         match option {
             Null => {
                 if nullability_seen {
-                    return Err(ConflictingNullability(column_name).at(loc).into())
+                    return Err(ConflictingNullability(column_name).at_location(loc).into())
                 }
                 column_def.set_not_null(false);
                 nullability_seen = true;
             }
             NotNull => {
                 if nullability_seen {
-                    return Err(ConflictingNullability(column_name).at(loc).into())
+                    return Err(ConflictingNullability(column_name).at_location(loc).into())
                 }
                 column_def.set_not_null(true);
                 nullability_seen = true;
             }
             DefaultOption(value) => {
                 if column_def.default_value().is_some() {
-                    return Err(DefaultValueAlreadyDeclared.at(loc).into())
+                    return Err(DefaultValueAlreadyDeclared.at_location(loc).into())
                 }
                 column_def.set_default_value(Some(value));
             }
             Path(value) => {
                 if column_def.path_spec().is_some() {
-                    return Err(PathValueAlreadyDeclared.at(loc).into())
+                    return Err(PathValueAlreadyDeclared.at_location(loc).into())
                 }
                 column_def.set_path_spec(Some(value));
             }
@@ -142,7 +142,7 @@ fn xmltable_column_option_el(stream: &mut TokenStream) -> scan::Result<XmlTableC
 
 fn xmltable_column_ident_option(stream: &mut TokenStream) -> scan::Result<XmlTableColumnOption> {
 
-    let ((option, loc), _) = seq!(located!(identifier), b_expr).parse(stream)?;
+    let (Located(option, loc), _) = seq!(located!(identifier), b_expr).parse(stream)?;
 
     let err = if option.as_ref() == "__pg__is_not_null" {
         InvalidXmlTableOptionName(option)
@@ -151,7 +151,7 @@ fn xmltable_column_ident_option(stream: &mut TokenStream) -> scan::Result<XmlTab
         UnrecognizedColumnOption(option)
     };
 
-    Err(err.at(loc).into())
+    Err(err.at_location(loc).into())
 }
 
 fn xml_namespace_list(stream: &mut TokenStream) -> scan::Result<Vec<NamedValue>> {
@@ -187,7 +187,8 @@ mod tests {
     use {
         pg_ast::ExprNode::{IntegerConst, StringConst},
         pg_ast::TypeName::Int4,
-        pg_basics::Location,
+        pg_elog::Error::Parser,
+        scan::Error::ScanErr,
     };
 
     #[test_case(
@@ -258,36 +259,24 @@ mod tests {
                 .with_default_value(IntegerConst(1))
         )
     ))]
-    #[test_case("qux int default 1 default 2" => Err(
-        DefaultValueAlreadyDeclared
-            .at(Location::new(18..25, 1, 19))
-            .into()
-    ))]
-    #[test_case("lorem int path 'x' path 'y'" => Err(
-        PathValueAlreadyDeclared
-            .at(Location::new(19..23, 1, 20))
-            .into()
-    ))]
-    #[test_case("yumyum int not null null" => Err(
-        ConflictingNullability("yumyum".into())
-            .at(Location::new(20..24, 1, 21))
-            .into()
-    ))]
-    #[test_case("narslog int null not null" => Err(
-        ConflictingNullability("narslog".into())
-            .at(Location::new(17..20, 1, 18))
-            .into()
-    ))]
-    #[test_case("umpus int null null" => Err(
-        ConflictingNullability("umpus".into())
-            .at(Location::new(15..19, 1, 16))
-            .into()
-    ))]
-    #[test_case("wawas int not null not null" => Err(
-        ConflictingNullability("wawas".into())
-            .at(Location::new(19..22, 1, 20))
-            .into()
-    ))]
+    #[test_case("qux int default 1 default 2" => matches Err(ScanErr(
+        Located(Parser(DefaultValueAlreadyDeclared), _)
+    )))]
+    #[test_case("lorem int path 'x' path 'y'" => matches Err(ScanErr(
+        Located(Parser(PathValueAlreadyDeclared), _)
+    )))]
+    #[test_case("yumyum int not null null" => matches Err(ScanErr(
+        Located(Parser(ConflictingNullability(_)), _)
+    )))]
+    #[test_case("narslog int null not null" => matches Err(ScanErr(
+        Located(Parser(ConflictingNullability(_)), _)
+    )))]
+    #[test_case("umpus int null null" => matches Err(ScanErr(
+        Located(Parser(ConflictingNullability(_)), _)
+    )))]
+    #[test_case("wawas int not null not null" => matches Err(ScanErr(
+        Located(Parser(ConflictingNullability(_)), _)
+    )))]
     fn test_xmltable_column_el(source: &str) -> scan::Result<XmlTableColumn> {
         test_parser!(source, xmltable_column_el)
     }
@@ -296,16 +285,12 @@ mod tests {
     #[test_case("not null" => Ok(NotNull))]
     #[test_case("default 'foo'" => Ok(DefaultOption(StringConst("foo".into()))))]
     #[test_case("path 'foo'" => Ok(Path(StringConst("foo".into()))))]
-    #[test_case("foo 'bar'" => Err(
-        UnrecognizedColumnOption("foo".into())
-            .at(Location::new(0..3, 1, 1))
-            .into()
-    ))]
-    #[test_case("__pg__is_not_null 'foo'" => Err(
-        InvalidXmlTableOptionName("__pg__is_not_null".into())
-            .at(Location::new(0..17, 1, 1))
-            .into()
-    ))]
+    #[test_case("foo 'bar'" => matches Err(ScanErr(
+        Located(Parser(UnrecognizedColumnOption(_)), _)
+    )))]
+    #[test_case("__pg__is_not_null 'foo'" => matches Err(ScanErr(
+        Located(Parser(InvalidXmlTableOptionName(_)), _)
+    )))]
     fn test_xmltable_column_option_el(source: &str) -> scan::Result<XmlTableColumnOption> {
         test_parser!(source, xmltable_column_option_el)
     }
@@ -336,6 +321,8 @@ use pg_ast::XmlTable;
 use pg_ast::XmlTableColumn;
 use pg_ast::XmlTableColumnDefinition;
 use pg_ast::XmlTableColumnKind::ForOrdinality;
+use pg_basics::IntoLocated;
+use pg_basics::Located;
 use pg_combinators::alt;
 use pg_combinators::identifier;
 use pg_combinators::located;

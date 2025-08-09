@@ -157,7 +157,7 @@ fn zone_interval(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
 
 fn zone_value_interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
 
-    let (zone, loc) = located!(
+    let Located(zone, loc) = located!(
         interval.optional()
             .map(Option::unwrap_or_default)
     ).parse(stream)?;
@@ -166,8 +166,7 @@ fn zone_value_interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> 
         return Ok(zone)
     }
 
-    let err = InvalidZoneValue.at(loc);
-    Err(err.into())
+    Err(InvalidZoneValue.at_location(loc).into())
 }
 
 fn encoding(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<Box<str>>> {
@@ -269,6 +268,8 @@ use pg_ast::ZoneValue;
 use pg_ast::ZoneValue::Interval;
 use pg_ast::ZoneValue::Local;
 use pg_ast::ZoneValue::Numeric;
+use pg_basics::IntoLocated;
+use pg_basics::Located;
 use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::identifier;

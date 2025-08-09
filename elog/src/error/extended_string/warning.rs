@@ -1,15 +1,17 @@
-#[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Display)]
 pub enum Warning {
 
-    #[error("nonstandard use of escape in a string literal")]
+    #[display("nonstandard use of escape in a string literal")]
     NonstandardEscape,
 
-    #[error(r"nonstandard use of \' in a string literal")]
+    #[display(r"nonstandard use of \' in a string literal")]
     NonstandardQuoteEscape,
 
-    #[error(r"nonstandard use of \\ in a string literal")]
+    #[display(r"nonstandard use of \\ in a string literal")]
     NonstandardBackslashEscape,
 }
+
+impl core::error::Error for Warning {}
 
 impl LogMessage for Warning {
 
@@ -32,3 +34,4 @@ impl LogMessage for Warning {
 
 use crate::sql_state::SqlState;
 use crate::LogMessage;
+use derive_more::Display;

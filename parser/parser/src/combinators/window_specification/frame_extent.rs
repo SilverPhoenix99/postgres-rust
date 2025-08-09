@@ -11,7 +11,7 @@ pub(super) fn frame_extent(stream: &mut TokenStream<'_>) -> scan::Result<FrameEx
 
 fn between_frame_bounds(stream: &mut TokenStream<'_>) -> scan::Result<FrameExtent> {
 
-    let (_, start, _, (end, loc)) = seq!(
+    let (_, start, _, Located(end, loc)) = seq!(
         Between,
         frame_bound,
         And,
@@ -92,20 +92,16 @@ fn between_frame_bounds(stream: &mut TokenStream<'_>) -> scan::Result<FrameExten
         },
         // Illegal combinations:
         (UnboundedFollowing, _) => {
-            let err = InvalidUnboundedFollowingFrame.at(loc);
-            return Err(err.into())
+            return Err(InvalidUnboundedFollowingFrame.at_location(loc).into())
         },
         (_, UnboundedPreceding) => {
-            let err = InvalidUnboundedPrecedingFrame.at(loc);
-            return Err(err.into())
+            return Err(InvalidUnboundedPrecedingFrame.at_location(loc).into())
         },
         (CurrentRow, OffsetPreceding(_)) => {
-            let err = InvalidCurrentRowFrame.at(loc);
-            return Err(err.into())
+            return Err(InvalidCurrentRowFrame.at_location(loc).into())
         },
         (OffsetFollowing(_), CurrentRow | OffsetPreceding(_)) => {
-            let err = InvalidStartFollowingEndPrecedingFrame.at(loc);
-            return Err(err.into())
+            return Err(InvalidStartFollowingEndPrecedingFrame.at_location(loc).into())
         },
     };
 
@@ -114,7 +110,7 @@ fn between_frame_bounds(stream: &mut TokenStream<'_>) -> scan::Result<FrameExten
 
 fn single_frame_bound(stream: &mut TokenStream<'_>) -> scan::Result<FrameExtent> {
 
-    let (bound, loc) = located!(frame_bound).parse(stream)?;
+    let Located(bound, loc) = located!(frame_bound).parse(stream)?;
 
     let frame = match bound {
         UnboundedPreceding => FrameExtent::Unbounded { end: None },
@@ -122,12 +118,10 @@ fn single_frame_bound(stream: &mut TokenStream<'_>) -> scan::Result<FrameExtent>
         OffsetPreceding(start) => FrameExtent::Preceding { start, end: None },
         // Illegal options:
         UnboundedFollowing => {
-            let err = InvalidUnboundedFollowingFrame.at(loc);
-            return Err(err.into())
+            return Err(InvalidUnboundedFollowingFrame.at_location(loc).into())
         },
         OffsetFollowing(_) => {
-            let err = InvalidOffsetFollowingFrame.at(loc);
-            return Err(err.into())
+            return Err(InvalidOffsetFollowingFrame.at_location(loc).into())
         },
     };
 
@@ -226,6 +220,8 @@ use pg_ast::CurrentRowEnd;
 use pg_ast::FollowingEnd;
 use pg_ast::FrameExtent;
 use pg_ast::PrecedingEnd;
+use pg_basics::IntoLocated;
+use pg_basics::Located;
 use pg_combinators::alt;
 use pg_combinators::located;
 use pg_combinators::seq;

@@ -8,5 +8,4 @@ workspace = true
 
 [dependencies]
 derive_more = { workspace = true, features = ["display", "error", "from"] }
-thiserror.workspace = true
 pg-basics.workspace = true

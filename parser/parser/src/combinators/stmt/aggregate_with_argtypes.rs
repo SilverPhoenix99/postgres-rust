@@ -66,14 +66,13 @@ fn aggr_args_list(stream: &mut TokenStream) -> scan::Result<Vec<FunctionParamete
 
 fn aggr_arg(stream: &mut TokenStream) -> scan::Result<FunctionParameter> {
 
-    let (param, loc) = located!(func_arg).parse(stream)?;
+    let Located(param, loc) = located!(func_arg).parse(stream)?;
 
     if matches!(param.mode(), Mode::Default | Mode::In | Mode::Variadic) {
         return Ok(param)
     }
 
-    let err = AggregateWithOutputParameters.at(loc).into();
-    Err(ScanErr(err))
+    Err(AggregateWithOutputParameters.at_location(loc).into())
 }
 
 #[cfg(test)]
@@ -204,6 +203,8 @@ use crate::combinators::func_name;
 use pg_ast::AggregateWithArgs;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionParameterMode as Mode;
+use pg_basics::IntoLocated;
+use pg_basics::Located;
 use pg_combinators::alt;
 use pg_combinators::located;
 use pg_combinators::many;
@@ -216,5 +217,4 @@ use pg_lexer::Keyword::Order;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::Mul;
 use pg_parser_core::scan;
-use pg_parser_core::scan::Error::ScanErr;
 use pg_parser_core::stream::TokenStream;

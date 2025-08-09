@@ -57,8 +57,8 @@ fn all_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
 
     let args = All {
         args,
-        order: order.map(|(order, loc)|
-            (FuncArgsOrder::OrderBy(order), loc)
+        order: order.map(|Located(order, loc)|
+            Located(FuncArgsOrder::OrderBy(order), loc)
         )
     };
 
@@ -74,10 +74,10 @@ fn distinct_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
     ).parse(stream)?;
 
     let args = args.into_iter()
-        .map(|(arg, _)| arg)
+        .map(|Located(arg, _)| arg)
         .collect();
 
-    let order = order.map(|(order, _)| order);
+    let order = order.map(|Located(order, _)| order);
 
     Ok(Distinct { args, order })
 }
@@ -92,16 +92,16 @@ fn simple_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
     if variadic {
 
         let args = args.into_iter()
-            .map(|(arg, _)| arg)
+            .map(|Located(arg, _)| arg)
             .collect();
 
-        let order = order.map(|(order, _)| order);
+        let order = order.map(|Located(order, _)| order);
 
         return Ok(Variadic { args, order })
     }
 
-    let order = order.map(|(order, loc)|
-        (FuncArgsOrder::OrderBy(order), loc)
+    let order = order.map(|Located(order, loc)|
+        Located(FuncArgsOrder::OrderBy(order), loc)
     );
 
     Ok(All { args, order })
@@ -150,12 +150,10 @@ fn sanitize_variadic_args(
 
     let (index, loc) = variadics.first().expect("Vec is not empty");
 
-    if variadics.len() > 1 {
-        return Err(syntax(loc.clone()))
-    }
-
-    if *index != args.len() - 1 {
-        // Variadic argument can only be the last one
+    if {
+        variadics.len() > 1 // There can only be 1 variadic argument, if any.
+        || *index != args.len() - 1 // Variadic argument can only be the last one
+    } {
         return Err(syntax(loc.clone()))
     }
 
@@ -179,7 +177,7 @@ fn variadic_arg(stream: &mut TokenStream) -> scan::Result<(Located<NamedValue>, 
 
     alt!(
         seq!(located!(Kw::Variadic), func_arg_expr)
-            .map(|((_, loc), arg)| (arg, Some(loc))),
+            .map(|(Located(_, loc), arg)| (arg, Some(loc))),
         func_arg_expr
             .map(|arg| (arg, None)),
     ).parse(stream)
@@ -231,7 +229,7 @@ mod tests {
         };
 
         let args = args.into_iter()
-            .map(|(arg, _)| arg)
+            .map(|Located(arg, _)| arg)
             .collect::<Vec<_>>();
 
         assert_eq!(
@@ -253,7 +251,7 @@ mod tests {
         };
 
         let args = args.into_iter()
-            .map(|(arg, _)| arg)
+            .map(|Located(arg, _)| arg)
             .collect::<Vec<_>>();
 
         assert_eq!(
@@ -288,7 +286,7 @@ mod tests {
             variadic_func_args
                 .map(|(args, is_variadic)| {
                     let args = args.into_iter()
-                        .map(|(arg, _)| arg)
+                        .map(|Located(arg, _)| arg)
                         .collect::<Vec<_>>();
 
                     (args, is_variadic)
@@ -304,7 +302,7 @@ mod tests {
             parser = variadic_args
                 .map(|args|
                     args.into_iter()
-                        .map(|((arg, _), _)| arg)
+                        .map(|(Located(arg, _), _)| arg)
                         .collect::<Vec<_>>()
                 ),
             expected = vec![
@@ -335,7 +333,7 @@ mod tests {
     )))]
     fn test_variadic_arg(source: &str) -> scan::Result<(NamedValue, bool)> {
         test_parser!(source, variadic_arg)
-            .map(|((variadic_arg, _), loc)|
+            .map(|(Located(variadic_arg, _), loc)|
                 (variadic_arg, loc.is_some())
             )
     }

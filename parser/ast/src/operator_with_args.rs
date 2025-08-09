@@ -5,8 +5,14 @@ pub struct OperatorWithArgs {
 }
 
 impl OperatorWithArgs {
-    pub fn new(name: QualifiedOperator, args: OneOrBoth<Type>) -> Self {
-        Self { name, args }
+    pub fn new<T>(name: T, args: OneOrBoth<Type>) -> Self
+    where
+        T: Into<QualifiedOperator>,
+    {
+        Self {
+            name: name.into(),
+            args
+        }
     }
 
     pub fn name(&self) -> &QualifiedOperator {

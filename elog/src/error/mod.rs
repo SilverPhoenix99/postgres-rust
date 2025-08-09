@@ -1,20 +1,20 @@
 pub(super) mod extended_string;
 pub(super) mod lexer;
-pub(super) mod located_message;
 pub(super) mod parser;
 pub(super) mod role_spec;
 pub(super) mod unicode_string;
 
-pub type LocatedError = LocatedMessage<Error>;
-pub type LocatedResult<T> = Result<T, LocatedError>;
+pub type Result<T> = core::result::Result<T, Error>;
+pub type LocatedError = Located<Error>;
+pub type LocatedResult<T> = core::result::Result<T, LocatedError>;
 
-#[derive(Debug, Clone, Eq, PartialEq, thiserror::Error)]
+#[derive(Debug, Clone, Eq, PartialEq, From, Display, Error)]
 pub enum Error {
-    #[error("{0}")] Lexer(#[from] lexer::Error),
-    #[error("{0}")] Parser(#[from] parser::error::Error),
-    #[error("{0}")] ExtendedString(#[from] extended_string::error::Error),
-    #[error("{0}")] UnicodeString(#[from] unicode_string::Error),
-    #[error("{0}")] Role(#[from] role_spec::Error),
+    #[display("{_0}")] Lexer(lexer::Error),
+    #[display("{_0}")] Parser(parser::error::Error),
+    #[display("{_0}")] ExtendedString(extended_string::error::Error),
+    #[display("{_0}")] UnicodeString(unicode_string::Error),
+    #[display("{_0}")] Role(role_spec::Error),
 }
 
 impl LogMessage for Error {
@@ -59,51 +59,14 @@ impl LogMessage for Error {
     }
 }
 
-impl From<lexer::LocatedError> for LocatedError {
-    fn from(value: lexer::LocatedError) -> Self {
-        let (source, location) = value.into();
-        let source = Lexer(source);
-        Self::new(source, location)
-    }
-}
-
-impl From<parser::error::LocatedError> for LocatedError {
-    fn from(value: parser::error::LocatedError) -> Self {
-        let (source, location) = value.into();
-        let source = Parser(source);
-        Self::new(source, location)
-    }
-}
-
-impl From<role_spec::LocatedError> for LocatedError {
-    fn from(value: role_spec::LocatedError) -> Self {
-        let (source, location) = value.into();
-        let source = Role(source);
-        Self::new(source, location)
-    }
-}
-
-impl From<extended_string::error::LocatedError> for LocatedError {
-    fn from(value: extended_string::error::LocatedError) -> Self {
-        let (source, location) = value.into();
-        let source = ExtendedString(source);
-        Self::new(source, location)
-    }
-}
-
-impl From<unicode_string::LocatedError> for LocatedError {
-    fn from(value: unicode_string::LocatedError) -> Self {
-        let (source, location) = value.into();
-        let source = UnicodeString(source);
-        Self::new(source, location)
-    }
-}
-
 use crate::Error::ExtendedString;
 use crate::Error::Lexer;
 use crate::Error::Parser;
 use crate::Error::Role;
 use crate::Error::UnicodeString;
-use crate::LocatedMessage;
 use crate::LogMessage;
 use crate::SqlState;
+use derive_more::Display;
+use derive_more::Error;
+use derive_more::From;
+use pg_basics::Located;

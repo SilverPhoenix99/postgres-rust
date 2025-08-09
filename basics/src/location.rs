@@ -1,7 +1,3 @@
-/// A simple helper tuple type, to hold information related to some location.
-pub type Located<T> = (T, Location);
-
-// The limit for stmt strings is 1gb
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Location {
     range: Range<u32>, // in bytes

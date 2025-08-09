@@ -15,7 +15,7 @@ pub(super) fn json_format_clause(stream: &mut TokenStream) -> scan::Result<JsonF
 
     let format = JsonFormat::text();
 
-    let Some((encoding, loc)) = encoding else {
+    let Some(Located(encoding, loc)) = encoding else {
         return Ok(format)
     };
 
@@ -31,8 +31,7 @@ pub(super) fn json_format_clause(stream: &mut TokenStream) -> scan::Result<JsonF
         }
     }
 
-    let err = UnrecognizedJsonEncoding(encoding).at(loc);
-    Err(err.into())
+    Err(UnrecognizedJsonEncoding(encoding).at_location(loc).into())
 }
 
 #[cfg(test)]
@@ -75,6 +74,8 @@ use pg_ast::JsonEncoding::UTF16;
 use pg_ast::JsonEncoding::UTF32;
 use pg_ast::JsonEncoding::UTF8;
 use pg_ast::JsonFormat;
+use pg_basics::IntoLocated;
+use pg_basics::Located;
 use pg_combinators::located;
 use pg_combinators::seq;
 use pg_combinators::Combinator;

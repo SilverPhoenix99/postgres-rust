@@ -25,7 +25,7 @@ pub(super) fn window_specification(stream: &mut TokenStream) -> scan::Result<Win
         frame_clause.optional()
     )).parse(stream)?;
 
-    let order = order.map(|(order, _)| order);
+    let order = order.map(|Located(order, _)| order);
 
     let expr = WindowDefinition::new(name, partition, order, frame);
     Ok(expr)
@@ -95,6 +95,7 @@ mod tests {
 
 use crate::combinators::sort_clause;
 use pg_ast::WindowDefinition;
+use pg_basics::Located;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;

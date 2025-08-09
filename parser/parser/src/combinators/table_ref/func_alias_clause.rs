@@ -124,8 +124,10 @@ mod tests {
     #[allow(unused_imports)]
     use {
         pg_ast::TypeName::{Generic, Int4},
-        pg_basics::Location,
+        pg_basics::Located,
         pg_elog::parser::Error::Syntax,
+        pg_elog::Error::Parser,
+        scan::Error::ScanErr,
     };
 
     #[test_case("as (x int)" => Ok(
@@ -164,16 +166,12 @@ mod tests {
 
     #[test_case("(foo, bar)" => matches Ok(_))]
     #[test_case("(baz int, qux int)" => matches Ok(_))]
-    #[test_case("(umpus int, narslog)" => Err(
-        Syntax
-            .at(Location::new(19..20, 1, 20)) // ')'
-            .into()
-    ))]
-    #[test_case("(wawas, narslog int)" => Err(
-        Syntax
-            .at(Location::new(16..19, 1, 17)) // "int"
-            .into()
-    ))]
+    #[test_case("(umpus int, narslog)" => matches Err(ScanErr(
+        Located(Parser(Syntax), _) // ')'
+    )))]
+    #[test_case("(wawas, narslog int)" => matches Err(ScanErr(
+        Located(Parser(Syntax), _) // "int"
+    )))]
     fn test_func_alias_columns(source: &str) -> scan::Result<Vec<FuncAliasColumn>> {
         test_parser!(source, func_alias_columns)
     }

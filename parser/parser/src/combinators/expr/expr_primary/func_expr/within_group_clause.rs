@@ -5,7 +5,7 @@ fn within_group_clause(stream: &mut TokenStream) -> scan::Result<Vec<SortBy>> {
         WITHIN GROUP_P '(' sort_clause ')'
     */
 
-    let (.., (sorts, _)) = seq!(Within, Group, paren!(sort_clause))
+    let (.., Located(sorts, _)) = seq!(Within, Group, paren!(sort_clause))
         .parse(stream)?;
 
     Ok(sorts)
@@ -31,6 +31,7 @@ mod tests {
 
 use crate::combinators::sort_clause;
 use pg_ast::SortBy;
+use pg_basics::Located;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;

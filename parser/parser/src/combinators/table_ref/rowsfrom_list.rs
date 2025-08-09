@@ -48,7 +48,7 @@ mod tests {
         pg_ast::FuncCall,
         pg_ast::NamedValue,
         pg_ast::TypeName::Int4,
-        pg_basics::Location,
+        pg_basics::{Located, Location},
     };
 
     #[test_case("foo(*)" => Ok(
@@ -65,7 +65,7 @@ mod tests {
                 vec!["bar".into()],
                 FuncArgsKind::All {
                     args: vec![
-                        (
+                        Located(
                             NamedValue::unnamed(IntegerConst(1)),
                             Location::new(4..5, 1, 5)
                         )

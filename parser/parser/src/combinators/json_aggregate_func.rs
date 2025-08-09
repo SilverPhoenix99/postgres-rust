@@ -88,7 +88,7 @@ fn json_arrayagg(stream: &mut TokenStream) -> scan::Result<JsonArrayAgg> {
         arg,
         output,
         absent_on_null.unwrap_or(true),
-        sort.map(|(sort, _)| sort)
+        sort.map(|Located(sort, _)| sort)
     );
 
     Ok(func)
@@ -172,6 +172,7 @@ use derive_more::From;
 use pg_ast::FuncExprWindowless;
 use pg_ast::JsonArrayAgg;
 use pg_ast::JsonObjectAgg;
+use pg_basics::Located;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::skip;

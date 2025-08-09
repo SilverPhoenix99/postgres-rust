@@ -18,19 +18,19 @@ pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<Locate
     match stream.peek2() {
         Ok((first, Operator(ColonEquals | EqualsGreater))) if is_type_function_name(first) => {
 
-            let ((name, _, value), loc) = located!(seq!(
+            let Located((name, _, value), loc) = located!(seq!(
                 type_function_name,
                 alt!(ColonEquals, EqualsGreater),
                 a_expr
             )).parse(stream)?;
 
             let arg = NamedValue::new(Some(name), value);
-            Ok((arg, loc))
+            Ok(Located(arg, loc))
         },
         _ => {
-            let (value, loc) = located!(a_expr).parse(stream)?;
+            let Located(value, loc) = located!(a_expr).parse(stream)?;
             let arg = NamedValue::unnamed(value);
-            Ok((arg, loc))
+            Ok(Located(arg, loc))
         },
     }
 }
@@ -58,7 +58,7 @@ mod tests {
     fn test_func_arg_expr(source: &str) -> scan::Result<NamedValue> {
         test_parser!(
             source,
-            func_arg_expr.map(|(arg, _)| arg)
+            func_arg_expr.map(|Located(arg, _)| arg)
         )
     }
 }

@@ -4,13 +4,15 @@ pub enum Error {
     Eof(Location),
 }
 
-impl<T> From<T> for Error
+impl<T> From<Located<T>> for Error
 where
-    T: Into<pg_elog::LocatedError>
+    T: Into<pg_elog::Error>
 {
-    fn from(value: T) -> Self {
-        Self::NotEof(value.into())
+    fn from(Located(source, loc): Located<T>) -> Self {
+        NotEof(Located::new(source, loc))
     }
 }
 
+use crate::eof::Error::NotEof;
+use pg_basics::Located;
 use pg_basics::Location;

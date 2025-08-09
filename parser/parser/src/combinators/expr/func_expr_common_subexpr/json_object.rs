@@ -32,7 +32,7 @@ fn json_object_args(stream: &mut TokenStream) -> scan::Result<JsonObjectExpr> {
         return Ok(SqlSyntax(expr));
     }
 
-    let (first, _) = func_arg_expr(stream)?;
+    let Located(first, _) = func_arg_expr(stream)?;
     if
         first.name().is_some()
         || ! matches!(stream.peek(), Ok(K(Value) | Op(Colon)))
@@ -48,7 +48,7 @@ fn json_object_args(stream: &mut TokenStream) -> scan::Result<JsonObjectExpr> {
             Some((_, args)) => {
 
                 let args = args.into_iter()
-                    .map(|(arg, _)| arg);
+                    .map(|Located(arg, _)| arg);
 
                 iter::once(first)
                     .chain(args)
@@ -165,6 +165,7 @@ use pg_ast::JsonObjectArgs;
 use pg_ast::JsonObjectExpr;
 use pg_ast::JsonObjectExpr::ExplicitCall;
 use pg_ast::JsonObjectExpr::SqlSyntax;
+use pg_basics::Located;
 use pg_combinators::alt;
 use pg_combinators::paren;
 use pg_combinators::seq;

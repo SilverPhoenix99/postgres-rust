@@ -13,7 +13,7 @@ pub fn qualified_name(stream: &mut TokenStream) -> scan::Result<RelationName> {
         (col_id attrs){1,3}
     */
 
-    let (mut qn, loc) = located!(any_name).parse(stream)?;
+    let Located(mut qn, loc) = located!(any_name).parse(stream)?;
 
     match qn.as_mut_slice() {
         [relation] => {
@@ -41,8 +41,7 @@ pub fn qualified_name(stream: &mut TokenStream) -> scan::Result<RelationName> {
             ))
         },
         _ => {
-            let err = ImproperQualifiedName(NameList(qn)).at(loc);
-            Err(err.into())
+            Err(ImproperQualifiedName(NameList(qn)).at_location(loc).into())
         }
     }
 }
@@ -92,6 +91,8 @@ mod tests {
 
 use crate::any_name;
 use core::mem;
+use pg_basics::IntoLocated;
+use pg_basics::Located;
 use pg_combinators::located;
 use pg_combinators::many;
 use pg_combinators::Combinator;

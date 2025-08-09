@@ -8,12 +8,12 @@ pub enum Error {
     NoMatch(Location),
 }
 
-impl<T> From<T> for Error
+impl<T> From<Located<T>> for Error
 where
-    T: Into<pg_elog::LocatedError>
+    T: Into<pg_elog::Error>
 {
-    fn from(value: T) -> Self {
-        ScanErr(value.into())
+    fn from(Located(source, location): Located<T>) -> Self {
+        ScanErr(Located::new(source, location))
     }
 }
 
@@ -28,4 +28,5 @@ impl From<eof::Error> for Error {
 
 use crate::eof;
 use crate::scan::Error::ScanErr;
+use pg_basics::Located;
 use pg_basics::Location;

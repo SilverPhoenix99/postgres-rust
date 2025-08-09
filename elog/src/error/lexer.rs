@@ -1,27 +1,27 @@
+pub type LocatedError = Located<Error>;
 pub type Result<T> = core::result::Result<T, Error>;
-pub type LocatedError = LocatedMessage<Error>;
 pub type LocatedResult<T> = core::result::Result<T, LocatedError>;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, thiserror::Error)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Display)]
 pub enum Error {
 
-    #[error("Unexpected character {0:?}", *(.unknown))]
+    #[display("Unexpected character {unknown:?}")]
     UnexpectedChar { unknown: char },
 
-    #[error("unterminated /* comment")]
+    #[display("unterminated /* comment")]
     UnterminatedBlockComment,
 
-    #[error("operator too long")]
+    #[display("operator too long")]
     OperatorTooLong,
 
-    #[error("parameter number too large")]
+    #[display("parameter number too large")]
     ParameterNumberTooLarge,
 
-    #[error("trailing junk after parameter")]
+    #[display("trailing junk after parameter")]
     TrailingJunkAfterParameter,
 
-    #[error("invalid {} integer",
-        match .0 {
+    #[display("invalid {} integer",
+        match _0 {
             NumberRadix::Binary => "binary",
             NumberRadix::Octal => "octal",
             _ => "hexadecimal",
@@ -29,36 +29,32 @@ pub enum Error {
     )]
     InvalidInteger(NumberRadix),
 
-    #[error("trailing junk after numeric literal")]
+    #[display("trailing junk after numeric literal")]
     TrailingJunkAfterNumericLiteral,
 
-    #[error("unterminated bit string literal")]
+    #[display("unterminated bit string literal")]
     UnterminatedBitString,
 
-    #[error("unterminated hexadecimal string literal")]
+    #[display("unterminated hexadecimal string literal")]
     UnterminatedHexString,
 
-    #[error("unterminated quoted string")]
+    #[display("unterminated quoted string")]
     UnterminatedQuotedString,
 
-    #[error("unterminated dollar-quoted string")]
+    #[display("unterminated dollar-quoted string")]
     UnterminatedDollarQuotedString,
 
-    #[error("zero-length delimited identifier")]
+    #[display("zero-length delimited identifier")]
     EmptyDelimitedIdentifier,
 
-    #[error("unterminated quoted identifier")]
+    #[display("unterminated quoted identifier")]
     UnterminatedQuotedIdentifier,
 
-    #[error("unsafe use of string constant with Unicode escapes")]
+    #[display("unsafe use of string constant with Unicode escapes")]
     UnsafeUnicodeString,
 }
 
-impl Error {
-    pub fn at(self, location: Location) -> LocatedError {
-        LocatedError::new(self, location)
-    }
-}
+impl core::error::Error for Error {}
 
 impl LogMessage for Error {
 
@@ -78,10 +74,10 @@ impl LogMessage for Error {
     }
 }
 
-use self::Error::UnsafeUnicodeString;
-use crate::LocatedMessage;
 use crate::LogMessage;
 use crate::SqlState;
 use crate::SqlState::SyntaxError;
-use pg_basics::Location;
+use derive_more::Display;
+use pg_basics::Located;
 use pg_basics::NumberRadix;
+use Error::UnsafeUnicodeString;

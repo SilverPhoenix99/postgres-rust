@@ -25,7 +25,7 @@ mod eof {
 
 pub fn syntax<T>(location: pg_basics::Location) -> T
 where
-    pg_elog::LocatedError: Into<T>
+    T: From<pg_elog::LocatedError>
 {
-    pg_elog::LocatedError::new(pg_elog::parser::Error::Syntax, location).into()
+    pg_basics::Located::new(pg_elog::parser::Error::Syntax, location).into()
 }

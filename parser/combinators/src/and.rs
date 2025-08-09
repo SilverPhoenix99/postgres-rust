@@ -43,7 +43,7 @@ macro_rules! tuple_and_combinator {
                                     } else {
                                         // Otherwise, some consumed before, and this is not considered the first production.
                                         // In this case, there was a partial match, and this is now considered a syntax error.
-                                        Err(syntax(loc))
+                                        Err(syntax(loc).into())
                                     }
                                 }
                             }

@@ -54,7 +54,7 @@ pub(super) fn float(stream: &mut TokenStream) -> scan::Result<TypeName> {
         FLOAT ( '(' ICONST ')' )?
     */
 
-    let (_, (precision, loc)) = seq!(
+    let (_, Located(precision, loc)) = seq!(
         Float,
         located!(precision.optional())
     ).parse(stream)?;
@@ -62,14 +62,8 @@ pub(super) fn float(stream: &mut TokenStream) -> scan::Result<TypeName> {
     match precision {
         None | Some(25..=53) => Ok(Float8),
         Some(1..=24) => Ok(Float4),
-        Some(num @ ..=0) => {
-            let err = FloatPrecisionUnderflow(num).at(loc);
-            Err(err.into())
-        },
-        Some(num @ 54..) => {
-            let err = FloatPrecisionOverflow(num).at(loc);
-            Err(err.into())
-        },
+        Some(num @ ..=0) => Err(FloatPrecisionUnderflow(num).at_location(loc).into()),
+        Some(num @ 54..) => Err(FloatPrecisionOverflow(num).at_location(loc).into()),
     }
 }
 
@@ -345,6 +339,8 @@ use pg_ast::TypeName::Timestamp;
 use pg_ast::TypeName::TimestampTz;
 use pg_ast::TypeName::Varbit;
 use pg_ast::TypeName::Varchar;
+use pg_basics::IntoLocated;
+use pg_basics::Located;
 use pg_combinators::alt;
 use pg_combinators::located;
 use pg_combinators::parser;

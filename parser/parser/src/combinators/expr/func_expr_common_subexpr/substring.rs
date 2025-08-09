@@ -22,7 +22,7 @@ fn substring_args(stream: &mut TokenStream) -> scan::Result<SubstringFunc> {
 
     let mut args: Vec<_> = func_arg_list(stream)?
         .into_iter()
-        .map(|(arg, _)| arg)
+        .map(|Located(arg, _)| arg)
         .collect();
 
     if
@@ -211,6 +211,7 @@ use pg_ast::SqlFunction::Typecast;
 use pg_ast::SubstringFunc;
 use pg_ast::TypeName;
 use pg_ast::TypecastExpr;
+use pg_basics::Located;
 use pg_combinators::alt;
 use pg_combinators::paren;
 use pg_combinators::seq;

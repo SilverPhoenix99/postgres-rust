@@ -14,7 +14,7 @@ pub(super) fn alter_group_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt
         ALTER GROUP role_spec (ADD | DROP) USER role_list
     */
 
-    let (_, (group, loc), stmt) = seq!(
+    let (_, Located(group, loc), stmt) = seq!(
         Group,
         located!(role_spec),
         alt!(rename, change_role)
@@ -23,7 +23,7 @@ pub(super) fn alter_group_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt
     let stmt = match stmt {
         Change::Rename(new_name) => {
             let group = group.into_role_id()
-                .map_err(|err| err.at(loc))?;
+                .map_err(|err| err.at_location(loc))?;
             RenameStmt::new(Role(group), new_name).into()
         },
         Change::Role { action, roles } => {
@@ -101,6 +101,8 @@ use pg_ast::AlterRoleStmt;
 use pg_ast::RawStmt;
 use pg_ast::RenameStmt;
 use pg_ast::RenameTarget::Role;
+use pg_basics::IntoLocated;
+use pg_basics::Located;
 use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::located;

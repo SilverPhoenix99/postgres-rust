@@ -91,9 +91,8 @@ fn right_type(stream: &mut TokenStream) -> scan::Result<Option<Type>> {
 /// The `Result<Option>` needs to match the caller's return type.
 fn close_paren(stream: &mut TokenStream) -> scan::Result<Option<Type>> {
 
-    let (_, loc) = located!(CloseParenthesis).parse(stream)?;
-    let err = MissingOperatorArgumentType.at(loc).into();
-    Err(ScanErr(err))
+    let Located(_, loc) = located!(CloseParenthesis).parse(stream)?;
+    Err(MissingOperatorArgumentType.at_location(loc).into())
 }
 
 #[cfg(test)]
@@ -102,7 +101,6 @@ mod tests {
     use pg_ast::TypeName::Int4;
     use pg_combinators::test_parser;
     use pg_sink_ast::Operator::Equals;
-    use pg_sink_ast::QualifiedOperator;
     use test_case::test_case;
 
     #[test]
@@ -111,9 +109,9 @@ mod tests {
             source = "=(int, int), =(none, int), =(int, none)",
             parser = operator_with_argtypes_list,
             expected = vec![
-                OperatorWithArgs::new(QualifiedOperator(vec![], Equals), OneOrBoth::Both(Int4.into(), Int4.into())),
-                OperatorWithArgs::new(QualifiedOperator(vec![], Equals), OneOrBoth::Right(Int4.into())),
-                OperatorWithArgs::new(QualifiedOperator(vec![], Equals), OneOrBoth::Left(Int4.into()))
+                OperatorWithArgs::new(Equals, OneOrBoth::Both(Int4.into(), Int4.into())),
+                OperatorWithArgs::new(Equals, OneOrBoth::Right(Int4.into())),
+                OperatorWithArgs::new(Equals, OneOrBoth::Left(Int4.into()))
             ]
         )
     }
@@ -125,7 +123,7 @@ mod tests {
         test_parser!(
             source = source,
             parser = operator_with_argtypes,
-            expected = OperatorWithArgs::new(QualifiedOperator(vec![], Equals), expected)
+            expected = OperatorWithArgs::new(Equals, expected)
         )
     }
 
@@ -141,6 +139,8 @@ use crate::combinators::typename;
 use pg_ast::OneOrBoth;
 use pg_ast::OperatorWithArgs;
 use pg_ast::Type;
+use pg_basics::IntoLocated;
+use pg_basics::Located;
 use pg_combinators::alt;
 use pg_combinators::located;
 use pg_combinators::many;
@@ -152,6 +152,5 @@ use pg_lexer::Keyword::NoneKw;
 use pg_lexer::OperatorKind::CloseParenthesis;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::scan::Error::ScanErr;
 use pg_parser_core::stream::TokenStream;
 use pg_sink_combinators::any_operator;

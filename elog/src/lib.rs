@@ -20,8 +20,6 @@ pub mod unicode_string {
     pub use crate::error::unicode_string::*;
 }
 
-pub use error::located_message::*;
-
 pg_basics::reexport! { pub
     error,
     has_location,

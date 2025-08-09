@@ -1,110 +1,106 @@
-pub type LocatedError = LocatedMessage<Error>;
+pub type LocatedError = Located<Error>;
 pub type Result<T> = core::result::Result<T, Error>;
 pub type LocatedResult<T> = core::result::Result<T, LocatedError>;
 
-#[derive(Debug, Default, Clone, Eq, PartialEq, thiserror::Error)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Display)]
 pub enum Error {
     /// When a production fails.
     #[default]
-    #[error("syntax error")]
+    #[display("syntax error")]
     Syntax,
 
     /// When UESCAPE isn't followed by a simple 1 char string.
-    #[error("UESCAPE must be followed by a simple string literal")]
+    #[display("UESCAPE must be followed by a simple string literal")]
     UescapeDelimiterMissing,
 
     /// When UESCAPE's delimiter string is invalid (len > 1, or invalid char).
-    #[error("invalid Unicode escape character")]
+    #[display("invalid Unicode escape character")]
     InvalidUescapeDelimiter,
 
     /// When the float precision is < 1
-    #[error("precision for type float must be at least 1 bit")]
+    #[display("precision for type float must be at least 1 bit")]
     FloatPrecisionUnderflow(i32),
 
     /// When the float precision is > 53
-    #[error("precision for type float must be less than 54 bits")]
+    #[display("precision for type float must be less than 54 bits")]
     FloatPrecisionOverflow(i32),
 
     /// When an identifier is used as an unrecognized role option
-    #[error(r#"unrecognized role option "{0}""#)]
+    #[display(r#"unrecognized role option "{_0}""#)]
     UnrecognizedRoleOption(Box<str>),
 
     /// When "UNENCRYPTED PASSWORD" is used as a role option
-    #[error("UNENCRYPTED PASSWORD is no longer supported")]
+    #[display("UNENCRYPTED PASSWORD is no longer supported")]
     UnencryptedPassword,
 
-    #[error("improper qualified name (too many dotted names): {0}")]
+    #[display("improper qualified name (too many dotted names): {_0}")]
     ImproperQualifiedName(NameList),
 
-    #[error("time zone interval must be HOUR or HOUR TO MINUTE")]
+    #[display("time zone interval must be HOUR or HOUR TO MINUTE")]
     InvalidZoneValue,
 
-    #[error("missing argument")]
+    #[display("missing argument")]
     MissingOperatorArgumentType,
 
-    #[error("aggregates cannot have output arguments")]
+    #[display("aggregates cannot have output arguments")]
     AggregateWithOutputParameters,
 
-    #[error(r#"improper use of "*""#)]
+    #[display(r#"improper use of "*""#)]
     ImproperUseOfStar,
 
-    #[error("frame start cannot be UNBOUNDED FOLLOWING")]
+    #[display("frame start cannot be UNBOUNDED FOLLOWING")]
     InvalidUnboundedFollowingFrame,
 
-    #[error("frame starting from following row cannot end with current row")]
+    #[display("frame starting from following row cannot end with current row")]
     InvalidOffsetFollowingFrame,
 
-    #[error("frame end cannot be UNBOUNDED PRECEDING")]
+    #[display("frame end cannot be UNBOUNDED PRECEDING")]
     InvalidUnboundedPrecedingFrame,
 
-    #[error("frame starting from current row cannot have preceding rows")]
+    #[display("frame starting from current row cannot have preceding rows")]
     InvalidCurrentRowFrame,
 
-    #[error("frame starting from following row cannot have preceding rows")]
+    #[display("frame starting from following row cannot have preceding rows")]
     InvalidStartFollowingEndPrecedingFrame,
 
-    #[error("type modifier cannot have parameter name")]
+    #[display("type modifier cannot have parameter name")]
     InvalidNamedTypeModifier,
 
-    #[error("type modifier cannot have ORDER BY")]
+    #[display("type modifier cannot have ORDER BY")]
     InvalidOrderedTypeModifiers,
 
-    #[error("cannot use multiple ORDER BY clauses with WITHIN GROUP")]
+    #[display("cannot use multiple ORDER BY clauses with WITHIN GROUP")]
     MultipleOrderBy,
 
-    #[error("cannot use DISTINCT with WITHIN GROUP")]
+    #[display("cannot use DISTINCT with WITHIN GROUP")]
     DistinctWithinGroup,
 
-    #[error("cannot use VARIADIC with WITHIN GROUP")]
+    #[display("cannot use VARIADIC with WITHIN GROUP")]
     VariadicWithinGroup,
 
-    #[error("unrecognized JSON encoding: {0}")]
+    #[display("unrecognized JSON encoding: {_0}")]
     UnrecognizedJsonEncoding(Str),
 
-    #[error(r#"option name "{0}" cannot be used in XMLTABLE"#)]
+    #[display(r#"option name "{_0}" cannot be used in XMLTABLE"#)]
     InvalidXmlTableOptionName(Box<str>),
 
-    #[error(r#"unrecognized column option "{0}""#)]
+    #[display(r#"unrecognized column option "{_0}""#)]
     UnrecognizedColumnOption(Box<str>),
 
-    #[error("only one DEFAULT value is allowed")]
+    #[display("only one DEFAULT value is allowed")]
     DefaultValueAlreadyDeclared,
 
-    #[error("only one PATH value per column is allowed")]
+    #[display("only one PATH value per column is allowed")]
     PathValueAlreadyDeclared,
 
-    #[error(r#"conflicting or redundant NULL / NOT NULL declarations for column "{0}""#)]
+    #[display(r#"conflicting or redundant NULL / NOT NULL declarations for column "{_0}""#)]
     ConflictingNullability(Str),
 
-    #[error("only string constants are supported in JSON_TABLE path specification")]
+    #[display("only string constants are supported in JSON_TABLE path specification")]
     NonStringJsonTablePathSpec,
 }
 
-impl Error {
-    pub fn at(self, location: Location) -> LocatedError {
-        LocatedError::new(self, location)
-    }
-}
+impl core::error::Error for Error {}
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct NameList(pub QualifiedName);
@@ -194,11 +190,11 @@ use crate::sql_state::SqlState::FeatureNotSupported;
 use crate::sql_state::SqlState::InvalidParameterValue;
 use crate::sql_state::SqlState::SyntaxError;
 use crate::sql_state::SqlState::WindowingError;
-use crate::LocatedMessage;
 use crate::LogMessage;
 use core::fmt;
 use core::fmt::Display;
 use core::fmt::Formatter;
-use pg_basics::Location;
+use derive_more::Display;
+use pg_basics::Located;
 use pg_basics::QualifiedName;
 use pg_basics::Str;

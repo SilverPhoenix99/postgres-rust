@@ -44,7 +44,7 @@ impl<'src> TokenStream<'src> {
     /// or an empty-length location if in the Eof state.
     pub fn current_location(&mut self) -> Location {
         match self.peek_mut() {
-            Ok((_, loc)) | Err(Eof(loc)) => loc.clone(),
+            Ok(Located(_, loc)) | Err(Eof(loc)) => loc.clone(),
             Err(NotEof(err)) => err.location().clone(),
         }
     }
@@ -67,7 +67,7 @@ impl<'src> TokenStream<'src> {
 
     pub fn peek(&mut self) -> eof::Result<&TokenValue> {
         match self.peek_mut() {
-            Ok((tok, _)) => Ok(tok),
+            Ok(Located(tok, _)) => Ok(tok),
             Err(err) => Err(err.clone()),
         }
     }
@@ -94,12 +94,12 @@ impl<'src> TokenStream<'src> {
             .expect("second element missing: `fill_buf()` should have filled 2 elements into `self.buf`");
 
         let first = match first {
-            Ok((tok, _)) => tok,
+            Ok(Located(tok, _)) => tok,
             Err(err) => return Err(err.clone()),
         };
 
         let second = match second {
-            Ok((tok, _)) => tok,
+            Ok(Located(tok, _)) => tok,
             Err(err) => return  Err(err.clone()),
         };
 
@@ -115,21 +115,21 @@ impl<'src> TokenStream<'src> {
 
     fn lex_next(&mut self) -> eof::Result<Located<TokenValue>> {
 
-        let (tok, loc) = self.lexer.next()?;
+        let Located(tok, loc) = self.lexer.next()?;
         let slice = loc.slice(self.source());
 
         match tok {
-            RawTokenKind::Operator(op) => Ok((TokenValue::Operator(op), loc)),
-            RawTokenKind::Keyword(kw) => Ok((TokenValue::Keyword(kw), loc)),
-            RawTokenKind::Param { index } => Ok((TokenValue::Param { index }, loc)),
+            RawTokenKind::Operator(op) => Ok(Located(TokenValue::Operator(op), loc)),
+            RawTokenKind::Keyword(kw) => Ok(Located(TokenValue::Keyword(kw), loc)),
+            RawTokenKind::Param { index } => Ok(Located(TokenValue::Param { index }, loc)),
             RawTokenKind::UserDefinedOperator => {
                 let value = TokenValue::UserDefinedOperator(slice.into());
-                Ok((value, loc))
+                Ok(Located(value, loc))
             },
             RawTokenKind::NumberLiteral(radix) => {
                 let value = parse_number(slice, radix);
                 let value = TokenValue::UnsignedNumber(value);
-                Ok((value, loc))
+                Ok(Located(value, loc))
             },
             RawTokenKind::BitStringLiteral(kind) => self.lexer.parse_bit_string(slice, loc, kind),
             RawTokenKind::Identifier(kind) => self.lexer.parse_identifier(slice, loc, kind),
@@ -175,7 +175,7 @@ impl<TOut> TokenConsumer<TOut, LocatedResult<TOut>> for TokenStream<'_> {
     where
         F: Fn(&mut TokenValue) -> LocatedResult<TOut>
     {
-        let (tok, loc) = match self.peek_mut() {
+        let Located(tok, loc) = match self.peek_mut() {
             Ok(ok) => ok,
             Err(err) => return Err(err.clone().into()),
         };
@@ -212,7 +212,7 @@ impl TokenConsumer<TokenValue, bool> for TokenStream<'_> {
     where
         P: Fn(&mut TokenValue) -> bool
     {
-        let (tok, loc) = match self.peek_mut() {
+        let Located(tok, loc) = match self.peek_mut() {
             Ok(ok) => ok,
             Err(err) => return Err(err.clone().into()),
         };
@@ -222,7 +222,7 @@ impl TokenConsumer<TokenValue, bool> for TokenStream<'_> {
         }
 
         // SAFETY: `tok` already matched
-        let (tok, _) = self.buf.pop_front().unwrap()?;
+        let Located(tok, _) = self.buf.pop_front().unwrap()?;
         Ok(tok)
     }
 }
@@ -367,6 +367,5 @@ use pg_basics::UnsignedNumber;
 use pg_basics::UnsignedNumber::IntegerConst;
 use pg_basics::UnsignedNumber::NumericConst;
 use pg_elog::parser::Warning;
-use pg_elog::HasLocation;
 use pg_lexer::Lexer;
 use pg_lexer::RawTokenKind;

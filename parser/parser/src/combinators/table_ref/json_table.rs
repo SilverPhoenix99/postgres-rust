@@ -33,13 +33,13 @@ fn path_spec(stream: &mut TokenStream) -> scan::Result<JsonTablePathSpec> {
         a_expr ( alias )?
     */
 
-    let ((path, path_loc), alias) = seq!(
+    let (Located(path, path_loc), alias) = seq!(
         located!(a_expr),
         alias.optional()
     ).parse(stream)?;
 
     let StringConst(path) = path else {
-        return Err(NonStringJsonTablePathSpec.at(path_loc).into());
+        return Err(NonStringJsonTablePathSpec.at_location(path_loc).into());
     };
 
     let mut path_spec = JsonTablePathSpec::new(path);
@@ -245,7 +245,8 @@ mod tests {
     #[allow(unused_imports)]
     use {
         pg_ast::JsonValueExpr,
-        pg_basics::Location,
+        pg_elog::Error::Parser,
+        scan::Error::ScanErr,
     };
 
     #[test_case(
@@ -303,11 +304,9 @@ mod tests {
         JsonTablePathSpec::new("foo")
             .with_name("bar")
     ))]
-    #[test_case("1" => Err(
-        NonStringJsonTablePathSpec
-            .at(Location::new(0..1, 1, 1))
-            .into()
-    ))]
+    #[test_case("1" => matches Err(ScanErr(
+        Located(Parser(NonStringJsonTablePathSpec), _)
+    )))]
     fn test_path_spec(source: &str) -> scan::Result<JsonTablePathSpec> {
         test_parser!(source, path_spec)
     }
@@ -420,6 +419,8 @@ use pg_ast::JsonTablePathSpec;
 use pg_ast::JsonTableRegularColumn;
 use pg_ast::JsonWrapperBehavior;
 use pg_ast::Type;
+use pg_basics::IntoLocated;
+use pg_basics::Located;
 use pg_combinators::alt;
 use pg_combinators::located;
 use pg_combinators::many;

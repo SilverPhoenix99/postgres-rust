@@ -22,7 +22,7 @@ fn overlay_args(stream: &mut TokenStream) -> scan::Result<OverlayFunc> {
 
     let mut args: Vec<_> = func_arg_list(stream)?
         .into_iter()
-        .map(|(arg, _)| arg)
+        .map(|Located(arg, _)| arg)
         .collect();
 
     if
@@ -122,6 +122,7 @@ use pg_ast::ExprNode::NullConst;
 use pg_ast::NamedValue;
 use pg_ast::OverlayFunc;
 use pg_ast::OverlaySqlArgs;
+use pg_basics::Located;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::skip;
