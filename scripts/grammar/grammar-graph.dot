@@ -34,10 +34,8 @@ AlterGroupStmt -> add_drop
 VariableSetStmt -> set_rest
 set_rest -> transaction_mode_list
 set_rest -> set_rest_more
-set_rest_more -> generic_set
 set_rest_more -> document_or_content
 zone_value -> opt_interval
-reset_rest -> generic_reset
 SetResetClause -> set_rest
 SetResetClause -> VariableResetStmt
 FunctionSetResetClause -> set_rest_more
@@ -313,8 +311,6 @@ ViewStmt -> SelectStmt
 CreatedbStmt -> createdb_opt_list
 AlterDatabaseStmt -> createdb_opt_list
 AlterDatabaseSetStmt -> SetResetClause
-AlterSystemStmt -> generic_set
-AlterSystemStmt -> generic_reset
 CreateDomainStmt -> Typename
 CreateDomainStmt -> ColQualList
 AlterDomainStmt -> alter_column_default
@@ -627,18 +623,9 @@ subgraph cluster_CreateSchemaStmt {
   ViewStmt -> opt_check_option
 }
 
-subgraph cluster_generic_set {
-  generic_set -> var_list
-  var_list -> var_value
-}
-
 subgraph cluster_set_rest_more {
   set_rest_more -> zone_value
   set_rest_more -> opt_encoding
-}
-
-subgraph cluster_VariableResetStmt {
-  VariableResetStmt -> reset_rest
 }
 
 subgraph cluster_common_func_opt_item {
@@ -1207,6 +1194,10 @@ subgraph cluster_AlterRoleSetStmt {
   AlterRoleSetStmt -> opt_in_database
 }
 
+subgraph cluster_VariableResetStmt {
+  VariableResetStmt -> reset_rest
+}
+
 subgraph cluster_ConstraintsSetStmt {
   ConstraintsSetStmt -> constraints_set_list
   ConstraintsSetStmt -> constraints_set_mode
@@ -1318,7 +1309,6 @@ subgraph cluster_json_behavior {
 AlterOptRoleElem [color=blue penwidth=3]
 add_drop [color=blue penwidth=3]
 document_or_content [color=blue penwidth=3]
-generic_reset [color=blue penwidth=3]
 set_statistics_value [color=blue penwidth=3]
 column_storage [color=blue penwidth=3]
 column_compression [color=blue penwidth=3]

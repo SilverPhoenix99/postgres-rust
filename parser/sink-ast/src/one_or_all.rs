@@ -6,9 +6,9 @@ pub enum OneOrAll<T> {
 
 impl<T> OneOrAll<T> {
     pub fn as_ref(&self) -> OneOrAll<&T> {
-        match *self {
+        match self {
             OneOrAll::All => OneOrAll::All,
-            OneOrAll::One(ref value) => OneOrAll::One(value),
+            OneOrAll::One(value) => OneOrAll::One(value),
         }
     }
 }
@@ -18,9 +18,9 @@ where
     T: Deref
 {
     pub fn as_deref(&self) -> OneOrAll<&T::Target> {
-        match *self {
+        match self {
             OneOrAll::All => OneOrAll::All,
-            OneOrAll::One(ref value) => OneOrAll::One(value.deref())
+            OneOrAll::One(value) => OneOrAll::One(value.deref())
         }
     }
 }

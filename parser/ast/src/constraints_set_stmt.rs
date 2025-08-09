@@ -29,5 +29,5 @@ impl ConstraintsSetStmt {
 use crate::ConstraintsSetMode;
 use crate::ConstraintsSetMode::Deferred;
 use crate::ConstraintsSetMode::Immediate;
-use crate::OneOrAll;
+use pg_sink_ast::OneOrAll;
 use pg_sink_ast::RelationName;

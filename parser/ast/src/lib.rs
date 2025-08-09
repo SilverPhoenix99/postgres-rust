@@ -67,7 +67,6 @@ pg_basics::reexport! { pub
     normalize_func,
     notify_stmt,
     numeric_spec,
-    one_or_all,
     one_or_both,
     operator_with_args,
     over_clause,

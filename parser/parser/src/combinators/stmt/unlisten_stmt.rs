@@ -21,6 +21,7 @@ pub(super) fn unlisten_stmt(stream: &mut TokenStream) -> scan::Result<OneOrAll<S
 mod tests {
     use super::*;
     use pg_combinators::test_parser;
+    use pg_sink_ast::OneOrAll;
     use test_case::test_case;
 
     #[test_case("unlisten *" => Ok(OneOrAll::All))]
@@ -30,7 +31,6 @@ mod tests {
     }
 }
 
-use pg_ast::OneOrAll;
 use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::seq;
@@ -39,4 +39,5 @@ use pg_lexer::Keyword::Unlisten;
 use pg_lexer::OperatorKind::Mul;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_ast::OneOrAll;
 use pg_sink_combinators::col_id;

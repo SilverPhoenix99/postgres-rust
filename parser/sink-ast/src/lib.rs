@@ -1,6 +1,7 @@
 pg_basics::reexport! { pub
     boolean_or_string,
     drop_behavior,
+    one_or_all,
     operator,
     qualified_operator,
     relation_expr,

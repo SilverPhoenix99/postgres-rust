@@ -2,14 +2,31 @@
 require_relative '../grammar-transform'
 
 class GrammarTransform::Grammar
-  def to_graph(exclude: Set.new)
+  def to_graph(exclude: Graph::EXCLUDE)
     Graph.from_grammar(self, exclude:)
   end
 end
 
 module Graph
 
-  def self.from_grammar(grammar, exclude: Set.new)
+  EXCLUDE = %i[
+    generic_reset generic_set var_list var_value
+  ].to_set.freeze
+
+  def self.run!(output: nil, exclude: EXCLUDE)
+    grammar_input = Pathname(__dir__) / 'grammar.bison'
+    grammar = GrammarTransform::Grammar.load_bison(grammar_input)
+    graph = grammar.to_graph
+    graphviz = graph.to_dot(subgraphs: true)
+
+    if output
+      File.write output, graphviz
+    end
+
+    graph
+  end
+
+  def self.from_grammar(grammar, exclude: Graph::EXCLUDE)
 
     graph = grammar.productions.each_with_object({}) do |(p, rules), g|
       g[p] = rules.flatten.to_set.delete(:__empty)
@@ -276,7 +293,6 @@ module Graph
 
       subgraphs = {}
       for i in 1..100 do
-        puts "Iteration #{i}..."
         new_subgraphs = nodes.to_h { |n| [n, sources[n]] }
           .reject { |_, ps| ps.nil? || ps.empty? }
           .transform_values do |ps|
@@ -286,10 +302,7 @@ module Graph
           .select { |_, ps| ps.size == 1 }
           .transpose
 
-        if subgraphs == new_subgraphs
-          puts "Stopping at iteration #{i}."
-          break
-        end
+        break if subgraphs == new_subgraphs
         subgraphs = new_subgraphs
         source_roots = subgraphs.transpose
       end
@@ -322,20 +335,18 @@ end
 
 Hash.include Graph
 
-__END__
+if __FILE__ == $PROGRAM_NAME
+  output = $ARGV[0]
+  graph = Graph.run!(output:)
+  pp graph unless output
+end
 
+__END__
 
 # irb -rclipboard
 
-# exclude implemented productions
-exclude = %i[
-  AlterEventTrigStmt enable_trigger
-  AlterExtensionStmt alter_extension_opt_list alter_extension_opt_item
-  CreateAmStmt am_type
-].to_set;
-
 load './graph.rb'
-grammar = GrammarTransform::Grammar.load_bison('./grammar.bison', exclude:)
+grammar = GrammarTransform::Grammar.load_bison('./grammar.bison')
 graph = grammar.to_graph
 
 File.write 'grammar-graph.dot', graph.to_dot(subgraphs: true)

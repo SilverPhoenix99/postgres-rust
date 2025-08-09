@@ -61,6 +61,7 @@ mod tests {
     use super::*;
     use pg_ast::SetRest;
     use pg_combinators::test_parser;
+    use pg_sink_ast::OneOrAll;
     use test_case::test_case;
 
     #[test]
@@ -106,7 +107,6 @@ use pg_ast::ConstraintsSetMode;
 use pg_ast::ConstraintsSetMode::Deferred;
 use pg_ast::ConstraintsSetMode::Immediate;
 use pg_ast::ConstraintsSetStmt;
-use pg_ast::OneOrAll;
 use pg_ast::RawStmt;
 use pg_ast::VariableSetStmt;
 use pg_combinators::alt;
@@ -120,5 +120,6 @@ use pg_lexer::Keyword::Session;
 use pg_lexer::Keyword::Set;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_ast::OneOrAll;
 use pg_sink_ast::RelationName;
 use pg_sink_combinators::qualified_name_list;

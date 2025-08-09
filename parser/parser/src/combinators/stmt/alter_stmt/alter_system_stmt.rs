@@ -40,17 +40,17 @@ mod tests {
     }
 }
 
-use crate::combinators::all_or_var_name;
 use pg_ast::AlterSystemStmt;
-use pg_ast::OneOrAll;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_generic_set_combinators::all_or_var_name;
 use pg_generic_set_combinators::generic_set_tail;
 use pg_lexer::Keyword::Reset;
 use pg_lexer::Keyword::Set;
 use pg_lexer::Keyword::SystemKw;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_ast::OneOrAll;
 use pg_sink_ast::ValueOrDefault;
 use pg_sink_combinators::var_name;
