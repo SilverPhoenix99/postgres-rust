@@ -8,6 +8,8 @@ members = [
     "parser/ast",
     "parser/combinators",
     "parser/core",
+    "parser/generic-set-ast",
+    "parser/generic-set-combinators",
     "parser/lexer",
     "parser/parser",
     "parser/sink-ast",
@@ -41,6 +43,8 @@ pg-ast = { path = "parser/ast" }
 pg-basics = { path = "basics" }
 pg-combinators = { path = "parser/combinators", features = [] }
 pg-elog = { path = "elog" }
+pg-generic-set-ast = { path = "parser/generic-set-ast" }
+pg-generic-set-combinators = { path = "parser/generic-set-combinators" }
 pg-guc = { path = "guc" }
 pg-lexer = { path = "parser/lexer" }
 pg-parser = { path = "parser/parser" }

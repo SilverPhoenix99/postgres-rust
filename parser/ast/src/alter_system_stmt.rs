@@ -13,5 +13,5 @@ pub enum AlterSystemStmt {
     }
 }
 
-use crate::VarValue;
 use pg_basics::QualifiedName;
+use pg_generic_set_ast::VarValue;

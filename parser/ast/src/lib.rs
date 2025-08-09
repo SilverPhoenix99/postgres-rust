@@ -100,8 +100,6 @@ pg_basics::reexport! { pub
     unicode_normal_form,
     unique_null_treatment,
     utility_option,
-    value_or_default,
-    var_value,
     variable_set_stmt,
     variable_target,
     window_definition,

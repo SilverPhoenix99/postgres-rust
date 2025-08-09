@@ -170,8 +170,8 @@ mod tests {
     use {
         pg_ast::FunctionWithArgs,
         pg_ast::SetRestMore::ConfigurationParameter,
-        pg_ast::ValueOrDefault,
         pg_sink_ast::RoleSpec::CurrentUser,
+        pg_sink_ast::ValueOrDefault,
     };
 
     #[test_case(

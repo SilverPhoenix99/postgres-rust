@@ -1,4 +1,5 @@
-pub(super) fn generic_set_tail(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<Vec<VarValue>>> {
+/// Alias: `generic_set`
+pub fn generic_set_tail(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<Vec<VarValue>>> {
 
     /*
           (TO | '=') DEFAULT
@@ -34,14 +35,14 @@ mod tests {
     }
 }
 
-use crate::combinators::var_list;
-use pg_ast::ValueOrDefault;
-use pg_ast::VarValue;
+use crate::var_list;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_generic_set_ast::VarValue;
 use pg_lexer::Keyword::DefaultKw;
 use pg_lexer::Keyword::To;
 use pg_lexer::OperatorKind::Equals;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenStream;
+use pg_sink_ast::ValueOrDefault;

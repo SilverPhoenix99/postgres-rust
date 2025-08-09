@@ -7,4 +7,5 @@ pg_basics::reexport! { pub
     relation_name,
     role_spec,
     signed_number,
+    value_or_default,
 }
