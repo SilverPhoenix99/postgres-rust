@@ -578,10 +578,6 @@ subgraph cluster_OptRoleList {
   OptRoleList -> CreateOptRoleElem
 }
 
-subgraph cluster_AlterRoleSetStmt {
-  AlterRoleSetStmt -> opt_in_database
-}
-
 subgraph cluster_CreateSchemaStmt {
   CreateSchemaStmt -> OptSchemaEltList
   CreateSeqStmt -> OptSeqOptList
@@ -624,17 +620,8 @@ subgraph cluster_set_rest_more {
   set_rest_more -> opt_encoding
 }
 
-subgraph cluster_VariableResetStmt {
-  VariableResetStmt -> reset_rest
-}
-
 subgraph cluster_common_func_opt_item {
   common_func_opt_item -> FunctionSetResetClause
-}
-
-subgraph cluster_ConstraintsSetStmt {
-  ConstraintsSetStmt -> constraints_set_list
-  ConstraintsSetStmt -> constraints_set_mode
 }
 
 subgraph cluster_AlterTableStmt {
@@ -643,9 +630,9 @@ subgraph cluster_AlterTableStmt {
   AlterTableStmt -> index_partition_cmd
   alter_identity_column_option_list -> alter_identity_column_option
   alter_table_cmd -> alter_using
-  alter_table_cmd -> replica_identity
   alter_table_cmd -> alter_identity_column_option_list
   alter_table_cmd -> set_access_method_name
+  alter_table_cmd -> replica_identity
   alter_table_cmds -> alter_table_cmd
 }
 
@@ -700,18 +687,18 @@ subgraph cluster_columnDef {
 subgraph cluster_ColQualList {
   ColConstraint -> ColConstraintElem
   ColConstraint -> ConstraintAttr
-  ColConstraintElem -> opt_virtual_or_stored
   ColConstraintElem -> opt_no_inherit
+  ColConstraintElem -> opt_virtual_or_stored
   ColQualList -> ColConstraint
 }
 
 subgraph cluster_TableConstraint {
-  ConstraintElem -> opt_without_overlaps
-  ConstraintElem -> optionalPeriodName
   ConstraintElem -> opt_column_and_period_list
-  ConstraintElem -> opt_c_include
   ConstraintElem -> ExclusionConstraintList
+  ConstraintElem -> opt_without_overlaps
+  ConstraintElem -> opt_c_include
   ConstraintElem -> ExistingIndex
+  ConstraintElem -> optionalPeriodName
   ExclusionConstraintList -> ExclusionConstraintElem
   TableConstraint -> ConstraintElem
   opt_column_and_period_list -> optionalPeriodName
@@ -755,20 +742,10 @@ subgraph cluster_ExplainStmt {
   cursor_options -> cursor_options_1
 }
 
-subgraph cluster_privilege_target {
-  parameter_name_list -> parameter_name
-  privilege_target -> NumericOnly_list
-  privilege_target -> parameter_name_list
-}
-
 subgraph cluster_CreatePLangStmt {
   CreatePLangStmt -> opt_inline_handler
   CreatePLangStmt -> opt_validator
   opt_validator -> validator_clause
-}
-
-subgraph cluster_CreateTableSpaceStmt {
-  CreateTableSpaceStmt -> OptTableSpaceOwner
 }
 
 subgraph cluster_CreateExtensionStmt {
@@ -781,10 +758,6 @@ subgraph cluster_AlterExtensionStmt {
   alter_extension_opt_list -> alter_extension_opt_item
 }
 
-subgraph cluster_fdw_options {
-  fdw_options -> fdw_option
-}
-
 subgraph cluster_create_generic_options {
   create_generic_options -> generic_option_list
 }
@@ -795,8 +768,8 @@ subgraph cluster_alter_generic_options {
 }
 
 subgraph cluster_CreateForeignServerStmt {
-  CreateForeignServerStmt -> opt_type
   CreateForeignServerStmt -> opt_foreign_server_version
+  CreateForeignServerStmt -> opt_type
 }
 
 subgraph cluster_ImportForeignSchemaStmt {
@@ -805,32 +778,16 @@ subgraph cluster_ImportForeignSchemaStmt {
 }
 
 subgraph cluster_CreatePolicyStmt {
-  CreatePolicyStmt -> RowSecurityDefaultToRole
-  CreatePolicyStmt -> RowSecurityDefaultPermissive
   CreatePolicyStmt -> RowSecurityDefaultForCmd
+  CreatePolicyStmt -> RowSecurityDefaultPermissive
+  CreatePolicyStmt -> RowSecurityDefaultToRole
   RowSecurityDefaultForCmd -> row_security_cmd
-}
-
-subgraph cluster_AlterPolicyStmt {
-  AlterPolicyStmt -> RowSecurityOptionalToRole
-}
-
-subgraph cluster_CreateAmStmt {
-  CreateAmStmt -> am_type
-}
-
-subgraph cluster_ConstraintAttributeSpec {
-  ConstraintAttributeSpec -> ConstraintAttributeElem
 }
 
 subgraph cluster_CreateEventTrigStmt {
   CreateEventTrigStmt -> event_trigger_when_list
   event_trigger_when_item -> event_trigger_value_list
   event_trigger_when_list -> event_trigger_when_item
-}
-
-subgraph cluster_AlterEventTrigStmt {
-  AlterEventTrigStmt -> enable_trigger
 }
 
 subgraph cluster_definition {
@@ -847,17 +804,9 @@ subgraph cluster_DefineStmt {
   opt_enum_val_list -> enum_val_list
 }
 
-subgraph cluster_AlterEnumStmt {
-  AlterEnumStmt -> opt_if_not_exists
-}
-
 subgraph cluster_opclass_item_list {
   opclass_item -> opclass_purpose
   opclass_item_list -> opclass_item
-}
-
-subgraph cluster_CreateOpClassStmt {
-  CreateOpClassStmt -> opt_opfamily
 }
 
 subgraph cluster_AlterOpFamilyStmt {
@@ -869,29 +818,10 @@ subgraph cluster_DropStmt {
   DropStmt -> type_name_list
 }
 
-subgraph cluster_TruncateStmt {
-  TruncateStmt -> opt_restart_seqs
-}
-
-subgraph cluster_CommentStmt {
-  CommentStmt -> comment_text
-}
-
-subgraph cluster_SecLabelStmt {
-  SecLabelStmt -> opt_provider
-  SecLabelStmt -> security_label
-}
-
-subgraph cluster_FetchStmt {
-  FetchStmt -> fetch_args
-}
-
-subgraph cluster_privilege_list {
-  privilege_list -> privilege
-}
-
-subgraph cluster_grantee_list {
-  grantee_list -> grantee
+subgraph cluster_privilege_target {
+  parameter_name_list -> parameter_name
+  privilege_target -> NumericOnly_list
+  privilege_target -> parameter_name_list
 }
 
 subgraph cluster_GrantRoleStmt {
@@ -935,10 +865,6 @@ subgraph cluster_CreateFunctionStmt {
   table_func_column_list -> table_func_column
 }
 
-subgraph cluster_func_arg {
-  func_arg -> arg_class
-}
-
 subgraph cluster_aggr_args {
   aggr_args -> aggr_args_list
   aggr_args_list -> aggr_arg
@@ -966,17 +892,8 @@ subgraph cluster_DoStmt {
   dostmt_opt_list -> dostmt_opt_item
 }
 
-subgraph cluster_CreateCastStmt {
-  CreateCastStmt -> cast_context
-}
-
 subgraph cluster_CreateTransformStmt {
   CreateTransformStmt -> transform_element_list
-}
-
-subgraph cluster_ReindexStmt {
-  ReindexStmt -> reindex_target_relation
-  ReindexStmt -> reindex_target_all
 }
 
 subgraph cluster_operator_def_list {
@@ -1007,18 +924,6 @@ subgraph cluster_createdb_opt_list {
   createdb_opt_list -> createdb_opt_items
 }
 
-subgraph cluster_DropdbStmt {
-  DropdbStmt -> drop_option_list
-}
-
-subgraph cluster_AlterTSConfigurationStmt {
-  AlterTSConfigurationStmt -> any_with
-}
-
-subgraph cluster_ClusterStmt {
-  ClusterStmt -> cluster_index_specification
-}
-
 subgraph cluster_opt_vacuum_relation_list {
   opt_vacuum_relation_list -> vacuum_relation_list
   vacuum_relation_list -> vacuum_relation
@@ -1029,9 +934,9 @@ subgraph cluster_PrepareStmt {
 }
 
 subgraph cluster_InsertStmt {
-  InsertStmt -> insert_target
   InsertStmt -> insert_rest
   InsertStmt -> opt_on_conflict
+  InsertStmt -> insert_target
   opt_on_conflict -> opt_conf_expr
 }
 
@@ -1053,28 +958,6 @@ subgraph cluster_DeleteStmt {
 subgraph cluster_LockStmt {
   LockStmt -> opt_lock
   opt_lock -> lock_type
-}
-
-subgraph cluster_select_no_parens {
-  for_locking_clause -> for_locking_items
-  for_locking_item -> for_locking_strength
-  for_locking_item -> locked_rels_list
-  for_locking_item -> opt_nowait_or_skip
-  for_locking_items -> for_locking_item
-  limit_clause -> select_limit_value
-  limit_clause -> first_or_next
-  limit_clause -> select_fetch_first_value
-  limit_clause -> row_or_rows
-  offset_clause -> select_fetch_first_value
-  offset_clause -> row_or_rows
-  opt_for_locking_clause -> for_locking_clause
-  opt_select_limit -> select_limit
-  select_limit -> limit_clause
-  select_limit -> offset_clause
-  select_no_parens -> for_locking_clause
-  select_no_parens -> opt_select_limit
-  select_no_parens -> select_limit
-  select_no_parens -> opt_for_locking_clause
 }
 
 subgraph cluster_set_clause_list {
@@ -1107,19 +990,41 @@ subgraph cluster_simple_select {
   group_clause -> set_quantifier
   into_clause -> OptTempTableName
   simple_select -> into_clause
-  simple_select -> set_quantifier
   simple_select -> distinct_clause
   simple_select -> group_clause
   simple_select -> having_clause
   simple_select -> values_clause
   simple_select -> window_clause
   simple_select -> opt_target_list
+  simple_select -> set_quantifier
   window_clause -> window_definition_list
   window_definition_list -> window_definition
 }
 
 subgraph cluster_sortby_list {
   sortby_list -> sortby
+}
+
+subgraph cluster_select_no_parens {
+  for_locking_clause -> for_locking_items
+  for_locking_item -> for_locking_strength
+  for_locking_item -> locked_rels_list
+  for_locking_item -> opt_nowait_or_skip
+  for_locking_items -> for_locking_item
+  limit_clause -> select_limit_value
+  limit_clause -> first_or_next
+  limit_clause -> select_fetch_first_value
+  limit_clause -> row_or_rows
+  offset_clause -> select_fetch_first_value
+  offset_clause -> row_or_rows
+  opt_for_locking_clause -> for_locking_clause
+  opt_select_limit -> select_limit
+  select_limit -> limit_clause
+  select_limit -> offset_clause
+  select_no_parens -> for_locking_clause
+  select_no_parens -> opt_select_limit
+  select_no_parens -> select_limit
+  select_no_parens -> opt_for_locking_clause
 }
 
 subgraph cluster_group_by_list {
@@ -1184,18 +1089,6 @@ subgraph cluster_SimpleTypename {
   SimpleTypename -> Character
 }
 
-subgraph cluster_Numeric {
-  Numeric -> opt_float
-}
-
-subgraph cluster_ConstDatetime {
-  ConstDatetime -> opt_timezone
-}
-
-subgraph cluster_opt_interval {
-  opt_interval -> interval_second
-}
-
 subgraph cluster_a_expr {
   a_expr -> a_expr_2
   a_expr -> a_expr_3
@@ -1234,11 +1127,8 @@ subgraph cluster_c_expr {
 subgraph cluster_func_expr_common_subexpr {
   extract_list -> extract_arg
   func_expr_common_subexpr -> xml_root_version
-  func_expr_common_subexpr -> opt_xml_root_standalone
   func_expr_common_subexpr -> xml_attributes
   func_expr_common_subexpr -> xml_attribute_list
-  func_expr_common_subexpr -> xml_indent_option
-  func_expr_common_subexpr -> xml_whitespace_option
   func_expr_common_subexpr -> func_arg_list_opt
   func_expr_common_subexpr -> extract_list
   func_expr_common_subexpr -> overlay_list
@@ -1247,12 +1137,11 @@ subgraph cluster_func_expr_common_subexpr {
   func_expr_common_subexpr -> trim_list
   func_expr_common_subexpr -> json_name_and_value_list
   func_expr_common_subexpr -> json_value_expr_list
+  func_expr_common_subexpr -> xml_whitespace_option
+  func_expr_common_subexpr -> opt_xml_root_standalone
+  func_expr_common_subexpr -> xml_indent_option
   xml_attribute_list -> xml_attribute_el
   xml_attributes -> xml_attribute_list
-}
-
-subgraph cluster_xmlexists_argument {
-  xmlexists_argument -> xml_passing_mech
 }
 
 subgraph cluster_window_specification {
@@ -1278,10 +1167,6 @@ subgraph cluster_json_passing_clause_opt {
   json_passing_clause_opt -> json_arguments
 }
 
-subgraph cluster_json_behavior {
-  json_behavior -> json_behavior_type
-}
-
 subgraph cluster_json_aggregate_func {
   json_aggregate_func -> json_array_aggregate_order_by_clause_opt
 }
@@ -1290,6 +1175,161 @@ subgraph cluster_target_list {
   target_list -> target_el
 }
 
+subgraph cluster_AlterRoleSetStmt {
+  AlterRoleSetStmt -> opt_in_database
+}
 
+subgraph cluster_VariableResetStmt {
+  VariableResetStmt -> reset_rest
+}
+
+subgraph cluster_ConstraintsSetStmt {
+  ConstraintsSetStmt -> constraints_set_list
+  ConstraintsSetStmt -> constraints_set_mode
+}
+
+subgraph cluster_CreateTableSpaceStmt {
+  CreateTableSpaceStmt -> OptTableSpaceOwner
+}
+
+subgraph cluster_fdw_options {
+  fdw_options -> fdw_option
+}
+
+subgraph cluster_AlterPolicyStmt {
+  AlterPolicyStmt -> RowSecurityOptionalToRole
+}
+
+subgraph cluster_CreateAmStmt {
+  CreateAmStmt -> am_type
+}
+
+subgraph cluster_ConstraintAttributeSpec {
+  ConstraintAttributeSpec -> ConstraintAttributeElem
+}
+
+subgraph cluster_AlterEventTrigStmt {
+  AlterEventTrigStmt -> enable_trigger
+}
+
+subgraph cluster_AlterEnumStmt {
+  AlterEnumStmt -> opt_if_not_exists
+}
+
+subgraph cluster_CreateOpClassStmt {
+  CreateOpClassStmt -> opt_opfamily
+}
+
+subgraph cluster_TruncateStmt {
+  TruncateStmt -> opt_restart_seqs
+}
+
+subgraph cluster_CommentStmt {
+  CommentStmt -> comment_text
+}
+
+subgraph cluster_SecLabelStmt {
+  SecLabelStmt -> opt_provider
+  SecLabelStmt -> security_label
+}
+
+subgraph cluster_FetchStmt {
+  FetchStmt -> fetch_args
+}
+
+subgraph cluster_privilege_list {
+  privilege_list -> privilege
+}
+
+subgraph cluster_grantee_list {
+  grantee_list -> grantee
+}
+
+subgraph cluster_func_arg {
+  func_arg -> arg_class
+}
+
+subgraph cluster_CreateCastStmt {
+  CreateCastStmt -> cast_context
+}
+
+subgraph cluster_ReindexStmt {
+  ReindexStmt -> reindex_target_relation
+  ReindexStmt -> reindex_target_all
+}
+
+subgraph cluster_DropdbStmt {
+  DropdbStmt -> drop_option_list
+}
+
+subgraph cluster_AlterTSConfigurationStmt {
+  AlterTSConfigurationStmt -> any_with
+}
+
+subgraph cluster_ClusterStmt {
+  ClusterStmt -> cluster_index_specification
+}
+
+subgraph cluster_Numeric {
+  Numeric -> opt_float
+}
+
+subgraph cluster_ConstDatetime {
+  ConstDatetime -> opt_timezone
+}
+
+subgraph cluster_opt_interval {
+  opt_interval -> interval_second
+}
+
+subgraph cluster_xmlexists_argument {
+  xmlexists_argument -> xml_passing_mech
+}
+
+subgraph cluster_json_behavior {
+  json_behavior -> json_behavior_type
+}
+
+
+AlterOptRoleElem [color=blue penwidth=3]
+BitWithoutLength [color=blue penwidth=3]
+FUNCTION_or_PROCEDURE [color=blue penwidth=3]
+OnCommitOption [color=blue penwidth=3]
+OptConsTableSpace [color=blue penwidth=3]
+OptInherit [color=blue penwidth=3]
+OptTableSpace [color=blue penwidth=3]
+OptTemp [color=blue penwidth=3]
+access_method_clause [color=blue penwidth=3]
+add_drop [color=blue penwidth=3]
+auth_ident [color=blue penwidth=3]
+character [color=blue penwidth=3]
+column_compression [color=blue penwidth=3]
+column_storage [color=blue penwidth=3]
+document_or_content [color=blue penwidth=3]
+foreign_server_version [color=blue penwidth=3]
+generated_when [color=blue penwidth=3]
+generic_option_elem [color=blue penwidth=3]
+json_array_constructor_null_clause_opt [color=blue penwidth=3]
+json_format_clause [color=blue penwidth=3]
+json_key_uniqueness_constraint_opt [color=blue penwidth=3]
+json_object_constructor_null_clause_opt [color=blue penwidth=3]
+json_quotes_clause_opt [color=blue penwidth=3]
+json_wrapper_behavior [color=blue penwidth=3]
+key_match [color=blue penwidth=3]
+opt_asc_desc [color=blue penwidth=3]
+opt_collate [color=blue penwidth=3]
+opt_collate_clause [color=blue penwidth=3]
+opt_grant_grant_option [color=blue penwidth=3]
+opt_granted_by [color=blue penwidth=3]
+opt_if_exists [color=blue penwidth=3]
+opt_nulls_order [color=blue penwidth=3]
+opt_or_replace [color=blue penwidth=3]
+opt_set_data [color=blue penwidth=3]
+opt_unique_null_treatment [color=blue penwidth=3]
+override_kind [color=blue penwidth=3]
+relation_expr_opt_alias [color=blue penwidth=3]
+set_statistics_value [color=blue penwidth=3]
+table_access_method_clause [color=blue penwidth=3]
+unicode_normal_form [color=blue penwidth=3]
 
 }

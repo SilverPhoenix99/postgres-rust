@@ -173,7 +173,7 @@ module Graph
     graph.delete(:stmt)
 
     # remove empty productions: they're pseudo-terminals now
-    # graph.reject! { |_, cs| cs.empty? };
+    graph.reject! { |_, cs| cs.empty? };
 
     graph
   end
