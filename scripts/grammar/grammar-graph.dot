@@ -24,7 +24,6 @@ edge [
 
 AexprConst -> func_arg_list
 AexprConst -> func_name
-AexprConst -> opt_interval
 AexprConst -> opt_sort_clause
 AlterDatabaseSetStmt -> SetResetClause
 AlterDatabaseStmt -> createdb_opt_list
@@ -261,7 +260,6 @@ SetResetClause -> VariableResetStmt
 SetResetClause -> set_rest
 SimpleTypename -> ConstDatetime
 SimpleTypename -> Numeric
-SimpleTypename -> opt_interval
 TableElement -> TableConstraint
 TableElement -> columnDef
 TableFuncElement -> Typename
@@ -562,7 +560,6 @@ xmltable -> c_expr
 xmltable -> xmlexists_argument
 xmltable_column_el -> Typename
 xmltable_column_option_el -> b_expr
-zone_value -> opt_interval
 
 // subgraphs
 edge [style=dotted]
@@ -1141,10 +1138,6 @@ subgraph cluster_operator_def_list {
 
 subgraph cluster_operator_with_argtypes {
   operator_with_argtypes -> oper_argtypes
-}
-
-subgraph cluster_opt_interval {
-  opt_interval -> interval_second
 }
 
 subgraph cluster_opt_vacuum_relation_list {

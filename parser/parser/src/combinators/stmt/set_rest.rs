@@ -187,6 +187,7 @@ mod tests {
     use super::*;
     use pg_basics::Str;
     use pg_combinators::test_parser;
+    use pg_interval_ast::IntervalRange;
     use pg_sink_ast::ValueOrDefault;
     use test_case::test_case;
     #[allow(unused_imports)]
@@ -254,12 +255,6 @@ mod tests {
 }
 
 use crate::combinators::document_or_content;
-use crate::combinators::interval;
-use crate::combinators::precision::precision;
-use pg_ast::IntervalRange;
-use pg_ast::IntervalRange::Full;
-use pg_ast::IntervalRange::Hour;
-use pg_ast::IntervalRange::HourToMinute;
 use pg_ast::SetRest;
 use pg_ast::SetRestMore;
 use pg_ast::ZoneValue;
@@ -277,6 +272,11 @@ use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_elog::parser::Error::InvalidZoneValue;
 use pg_generic_set_combinators::generic_set_tail;
+use pg_interval_ast::IntervalRange;
+use pg_interval_ast::IntervalRange::Full;
+use pg_interval_ast::IntervalRange::Hour;
+use pg_interval_ast::IntervalRange::HourToMinute;
+use pg_interval_combinators::interval;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Authorization;
@@ -296,6 +296,7 @@ use pg_parser_core::scan;
 use pg_parser_core::ParserContext;
 use pg_sink_ast::ValueOrDefault;
 use pg_sink_combinators::non_reserved_word_or_sconst;
+use pg_sink_combinators::precision;
 use pg_sink_combinators::signed_number;
 use pg_sink_combinators::var_name;
 use pg_transaction_mode_combinators::transaction_mode_list;

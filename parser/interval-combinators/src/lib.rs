@@ -1,5 +1,5 @@
 /// Alias: `opt_interval`
-pub(super) fn interval(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
+pub fn interval(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
 
     /*
           YEAR
@@ -19,12 +19,12 @@ pub(super) fn interval(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
 
     alt!(
         year,
-        MonthKw.map(|_| Month),
+        Kw::Month.map(|_| Month),
         day,
         hour,
         minute,
-        seq!(SecondKw, precision.optional())
-            .map(|(_, precision)| Second { precision }),
+        interval_second
+            .map(|precision| Second { precision }),
     ).parse(ctx)
 }
 
@@ -36,8 +36,8 @@ fn year(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
     */
 
     let (_, interval) = seq!(
-        YearKw,
-        seq!(To, MonthKw).optional()
+        Kw::Year,
+        seq!(To, Kw::Month).optional()
     ).parse(ctx)?;
 
     let interval = if interval.is_some() { YearToMonth } else { Year };
@@ -54,14 +54,14 @@ fn day(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
     */
 
     let (_, interval) = seq!(
-        DayKw,
+        Kw::Day,
         seq!(
             To,
             alt!(
-                HourKw.map(|_| DayToHour),
-                MinuteKw.map(|_| DayToMinute),
-                seq!(SecondKw, precision.optional())
-                    .map(|(_, precision)| DayToSecond { precision })
+                Kw::Hour.map(|_| DayToHour),
+                Kw::Minute.map(|_| DayToMinute),
+                interval_second
+                    .map(|precision| DayToSecond { precision })
             )
         )
             .map(|(_, interval)| interval)
@@ -81,13 +81,13 @@ fn hour(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
     */
 
     let (_, interval) = seq!(
-        HourKw,
+        Kw::Hour,
         seq!(
             To,
             alt!(
-                MinuteKw.map(|_| HourToMinute),
-                seq!(SecondKw, precision.optional())
-                    .map(|(_, precision)| HourToSecond { precision })
+                Kw::Minute.map(|_| HourToMinute),
+                interval_second
+                    .map(|precision| HourToSecond { precision })
             )
         )
             .map(|(_, interval)| interval)
@@ -106,9 +106,9 @@ fn minute(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
     */
 
     let (_, precision) = seq!(
-        MinuteKw,
-        seq!(To, SecondKw, precision.optional())
-            .map(|(.., precision)| precision)
+        Kw::Minute,
+        seq!(To, interval_second)
+            .map(|(_, precision)| precision)
             .optional()
     ).parse(ctx)?;
 
@@ -120,10 +120,26 @@ fn minute(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
     Ok(precision)
 }
 
+/// The `Option` result does not come from not matching the production rule.
+///
+/// It returns `None` when there's no precision after the `SECOND` keyword.
+fn interval_second(ctx: &mut ParserContext) -> scan::Result<Option<i32>> {
+
+    /*
+        SECOND ( '(' ICONST ')' )?
+    */
+
+    let (_, precision) = seq!(Kw::Second, precision.optional())
+        .parse(ctx)?;
+
+    Ok(precision)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use pg_combinators::test_parser;
+    use pg_interval_ast::IntervalRange;
     use test_case::test_case;
 
     #[test_case("year",              IntervalRange::Year)]
@@ -144,30 +160,25 @@ mod tests {
     }
 }
 
-use crate::combinators::precision;
-use pg_ast::IntervalRange;
-use pg_ast::IntervalRange::Day;
-use pg_ast::IntervalRange::DayToHour;
-use pg_ast::IntervalRange::DayToMinute;
-use pg_ast::IntervalRange::DayToSecond;
-use pg_ast::IntervalRange::Hour;
-use pg_ast::IntervalRange::HourToMinute;
-use pg_ast::IntervalRange::HourToSecond;
-use pg_ast::IntervalRange::Minute;
-use pg_ast::IntervalRange::MinuteToSecond;
-use pg_ast::IntervalRange::Month;
-use pg_ast::IntervalRange::Second;
-use pg_ast::IntervalRange::Year;
-use pg_ast::IntervalRange::YearToMonth;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
-use pg_lexer::Keyword::Day as DayKw;
-use pg_lexer::Keyword::Hour as HourKw;
-use pg_lexer::Keyword::Minute as MinuteKw;
-use pg_lexer::Keyword::Month as MonthKw;
-use pg_lexer::Keyword::Second as SecondKw;
+use pg_interval_ast::IntervalRange;
+use pg_interval_ast::IntervalRange::Day;
+use pg_interval_ast::IntervalRange::DayToHour;
+use pg_interval_ast::IntervalRange::DayToMinute;
+use pg_interval_ast::IntervalRange::DayToSecond;
+use pg_interval_ast::IntervalRange::Hour;
+use pg_interval_ast::IntervalRange::HourToMinute;
+use pg_interval_ast::IntervalRange::HourToSecond;
+use pg_interval_ast::IntervalRange::Minute;
+use pg_interval_ast::IntervalRange::MinuteToSecond;
+use pg_interval_ast::IntervalRange::Month;
+use pg_interval_ast::IntervalRange::Second;
+use pg_interval_ast::IntervalRange::Year;
+use pg_interval_ast::IntervalRange::YearToMonth;
+use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::To;
-use pg_lexer::Keyword::Year as YearKw;
 use pg_parser_core::scan;
 use pg_parser_core::ParserContext;
+use pg_sink_combinators::precision;

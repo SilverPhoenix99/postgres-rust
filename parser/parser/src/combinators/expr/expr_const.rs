@@ -336,9 +336,9 @@ mod tests {
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
-        pg_ast::IntervalRange::YearToMonth,
         pg_ast::TypeName::*,
         pg_basics::NumberRadix::Decimal,
+        pg_interval_ast::IntervalRange::YearToMonth,
     };
 
     #[test_case("123", IntegerConst(123))]
@@ -381,8 +381,6 @@ mod tests {
     }
 }
 
-use crate::combinators::interval;
-use crate::combinators::precision;
 use crate::combinators::simple_typename::bit;
 use crate::combinators::simple_typename::character;
 use crate::combinators::simple_typename::float;
@@ -396,7 +394,6 @@ use pg_ast::ExprNode::BooleanConst;
 use pg_ast::ExprNode::HexStringConst;
 use pg_ast::ExprNode::NullConst;
 use pg_ast::ExprNode::StringConst;
-use pg_ast::IntervalRange::Full;
 use pg_ast::StringTypecastExpr;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Bool;
@@ -413,6 +410,8 @@ use pg_combinators::seq;
 use pg_combinators::skip;
 use pg_combinators::string;
 use pg_combinators::Combinator;
+use pg_interval_ast::IntervalRange::Full;
+use pg_interval_combinators::interval;
 use pg_lexer::BitStringKind;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Bigint;
@@ -446,3 +445,4 @@ use pg_parser_core::stream::TokenValue::Operator;
 use pg_parser_core::stream::TokenValue::String;
 use pg_parser_core::ParserContext;
 use pg_parser_core::Required;
+use pg_sink_combinators::precision;

@@ -130,6 +130,9 @@ module Graph
       transaction_mode_item
       iso_level
       transaction_mode_list_or_empty
+
+    opt_interval
+      interval_second
   ].to_set.freeze
 
   def self.run!(output: nil, exclude: EXCLUDE)

@@ -1,5 +1,5 @@
 /// Production: `'(' ICONST ')'`
-pub(super) fn i32_literal_paren(ctx: &mut ParserContext) -> scan::Result<i32> {
+pub fn i32_literal_paren(ctx: &mut ParserContext) -> scan::Result<i32> {
 
     paren!(i32_literal).parse(ctx)
 }
@@ -19,8 +19,8 @@ mod tests {
     }
 }
 
+use crate::i32_literal;
 use pg_combinators::paren;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
 use pg_parser_core::ParserContext;
-use pg_sink_combinators::i32_literal;

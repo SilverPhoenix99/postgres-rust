@@ -314,13 +314,9 @@ mod tests {
     }
 }
 
-use crate::combinators::interval;
-use crate::combinators::precision;
 use crate::combinators::type_modifiers;
 use crate::combinators::with_timezone;
 use pg_ast::ExprNode::IntegerConst;
-use pg_ast::IntervalRange;
-use pg_ast::IntervalRange::Full;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Bit;
 use pg_ast::TypeName::Bool;
@@ -348,6 +344,9 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_elog::parser::Error::FloatPrecisionOverflow;
 use pg_elog::parser::Error::FloatPrecisionUnderflow;
+use pg_interval_ast::IntervalRange;
+use pg_interval_ast::IntervalRange::Full;
+use pg_interval_combinators::interval;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Bigint;
 use pg_lexer::Keyword::Boolean;
@@ -369,4 +368,5 @@ use pg_parser_core::scan;
 use pg_parser_core::stream::TokenValue;
 use pg_parser_core::ParserContext;
 use pg_sink_combinators::attrs;
+use pg_sink_combinators::precision;
 use pg_sink_combinators::type_function_name;

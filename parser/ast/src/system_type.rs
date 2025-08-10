@@ -35,30 +35,6 @@ impl Type {
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum IntervalRange {
-    Full { precision: Option<i32> },
-    Year,
-    YearToMonth,
-    Month,
-    Day,
-    DayToHour,
-    DayToMinute,
-    DayToSecond { precision: Option<i32> },
-    Hour,
-    HourToMinute,
-    HourToSecond { precision: Option<i32> },
-    Minute,
-    MinuteToSecond { precision: Option<i32> },
-    Second { precision: Option<i32> },
-}
-
-impl Default for IntervalRange {
-    fn default() -> Self {
-        Self::Full { precision: None }
-    }
-}
-
 #[derive(Debug, Clone, Eq, PartialEq, From)]
 pub enum TypeName {
     Json,
@@ -168,3 +144,4 @@ use derive_more::From;
 use derive_more::Into;
 use pg_basics::Oid;
 use pg_basics::QualifiedName;
+use pg_interval_ast::IntervalRange;

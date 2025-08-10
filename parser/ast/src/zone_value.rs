@@ -10,6 +10,6 @@ pub enum ZoneValue {
     },
 }
 
-use crate::IntervalRange;
 use pg_basics::Str;
+use pg_interval_ast::IntervalRange;
 use pg_sink_ast::SignedNumber;
