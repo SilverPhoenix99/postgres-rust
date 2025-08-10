@@ -316,7 +316,6 @@ mod tests {
 }
 
 use crate::combinators::type_modifiers;
-use crate::combinators::with_timezone::with_timezone;
 use pg_ast::ExprNode::IntegerConst;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Bit;
@@ -371,3 +370,4 @@ use pg_parser_core::stream::TokenValue;
 use pg_sink_combinators::attrs;
 use pg_sink_combinators::precision;
 use pg_sink_combinators::type_function_name;
+use pg_type_combinators::with_timezone;
