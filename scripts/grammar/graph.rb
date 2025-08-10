@@ -13,6 +13,7 @@ module Graph
     generic_reset generic_set var_list var_value
     opt_transaction
     opt_transaction_chain
+    transaction_mode_list transaction_mode_list_1 transaction_mode_list_2 transaction_mode_item iso_level transaction_mode_list_or_empty
   ].to_set.freeze
 
   def self.run!(output: nil, exclude: EXCLUDE)

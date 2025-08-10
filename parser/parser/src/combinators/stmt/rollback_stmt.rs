@@ -52,10 +52,6 @@ mod tests {
     }
 }
 
-use pg_ast::TransactionStmt;
-use pg_ast::TransactionStmt::Rollback;
-use pg_ast::TransactionStmt::RollbackPrepared;
-use pg_ast::TransactionStmt::RollbackTo;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::string;
@@ -69,3 +65,7 @@ use pg_parser_core::stream::TokenStream;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::transaction_chain;
 use pg_sink_combinators::work_or_transaction;
+use pg_transaction_mode_ast::TransactionStmt;
+use pg_transaction_mode_ast::TransactionStmt::Rollback;
+use pg_transaction_mode_ast::TransactionStmt::RollbackPrepared;
+use pg_transaction_mode_ast::TransactionStmt::RollbackTo;

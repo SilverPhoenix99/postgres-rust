@@ -17,6 +17,8 @@ pg-lexer.workspace = true
 pg-parser-core.workspace = true
 pg-sink-ast.workspace = true
 pg-sink-combinators.workspace = true
+pg-transaction-mode-ast.workspace = true
+pg-transaction-mode-combinators.workspace = true
 
 [dev-dependencies]
 assert_matches.workspace = true

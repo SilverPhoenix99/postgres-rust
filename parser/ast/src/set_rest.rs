@@ -42,10 +42,10 @@ impl From<SetRestMore> for SetRest {
 }
 
 use crate::SetRestMore;
-use crate::TransactionMode;
 use crate::XmlNodeKind;
 use crate::ZoneValue;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
 use pg_generic_set_ast::VarValue;
 use pg_sink_ast::ValueOrDefault;
+use pg_transaction_mode_ast::TransactionMode;

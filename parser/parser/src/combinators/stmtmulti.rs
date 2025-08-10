@@ -61,9 +61,9 @@ fn transaction_stmt_legacy(stream: &mut TokenStream) -> scan::Result<Transaction
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use pg_ast::TransactionMode::ReadOnly;
     use pg_combinators::test_parser;
+    #[allow(unused_imports)]
+    use pg_transaction_mode_ast::TransactionMode::ReadOnly;
     use test_case::test_case;
     use test_case::test_matrix;
 
@@ -93,7 +93,6 @@ use crate::combinators::stmt::begin_stmt;
 use crate::combinators::stmt::end_stmt;
 use crate::no_match;
 use pg_ast::RawStmt;
-use pg_ast::TransactionStmt;
 use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::seq;
@@ -102,3 +101,4 @@ use pg_lexer::OperatorKind::Semicolon;
 use pg_parser_core::scan;
 use pg_parser_core::scan::Error::Eof;
 use pg_parser_core::stream::TokenStream;
+use pg_transaction_mode_ast::TransactionStmt;

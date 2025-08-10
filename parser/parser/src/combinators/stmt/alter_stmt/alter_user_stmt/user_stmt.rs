@@ -107,10 +107,10 @@ mod tests {
         pg_ast::SetResetClause::Set,
         pg_ast::SetRest::LocalTransactionCharacteristics,
         pg_ast::SetRest::TransactionSnapshot,
-        pg_ast::TransactionMode::Deferrable,
         pg_ast::VariableTarget::SessionAuthorization,
         pg_ast::VariableTarget::TimeZone,
         pg_sink_ast::RoleSpec,
+        pg_transaction_mode_ast::TransactionMode::Deferrable,
     };
 
     #[test_case(

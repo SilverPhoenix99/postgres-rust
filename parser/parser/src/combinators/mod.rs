@@ -44,7 +44,6 @@ pg_basics::reexport! {
     string_or_null,
     table_func_element_list,
     table_ref,
-    transaction_mode_list,
     type_modifiers,
     typename,
     unique_null_treatment,

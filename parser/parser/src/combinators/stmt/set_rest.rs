@@ -191,9 +191,9 @@ mod tests {
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
-        pg_ast::TransactionMode::ReadOnly,
         pg_ast::XmlNodeKind::Document,
         pg_sink_ast::SignedNumber::IntegerConst,
+        pg_transaction_mode_ast::TransactionMode::ReadOnly,
     };
 
     #[test_case("session characteristics as transaction read only", SetRest::SessionTransactionCharacteristics(vec![ReadOnly]))]
@@ -256,7 +256,6 @@ mod tests {
 use crate::combinators::document_or_content;
 use crate::combinators::interval;
 use crate::combinators::precision::precision;
-use crate::combinators::transaction_mode_list;
 use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Full;
 use pg_ast::IntervalRange::Hour;
@@ -299,3 +298,4 @@ use pg_sink_ast::ValueOrDefault;
 use pg_sink_combinators::non_reserved_word_or_sconst;
 use pg_sink_combinators::signed_number;
 use pg_sink_combinators::var_name;
+use pg_transaction_mode_combinators::transaction_mode_list;

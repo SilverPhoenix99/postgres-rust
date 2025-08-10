@@ -89,7 +89,6 @@ pg_basics::reexport! { pub
     sql_function,
     substring_func,
     system_type,
-    transaction_stmt,
     transform,
     trim_func,
     typecast,

@@ -266,8 +266,6 @@ TableElement -> columnDef
 TableFuncElement -> Typename
 TableFuncElement -> opt_collate_clause
 TableFuncElementList -> TableFuncElement
-TransactionStmt -> transaction_mode_list_or_empty
-TransactionStmtLegacy -> transaction_mode_list_or_empty
 TriggerWhen -> a_expr
 TypedTableElement -> TableConstraint
 Typename -> SimpleTypename
@@ -521,7 +519,6 @@ select_no_parens -> with_clause
 select_with_parens -> select_no_parens
 set_clause -> a_expr
 set_rest -> set_rest_more
-set_rest -> transaction_mode_list
 set_rest_more -> document_or_content
 set_target -> opt_indirection
 simple_select -> from_clause
@@ -540,7 +537,6 @@ table_ref -> select_with_parens
 tablesample_clause -> expr_list
 tablesample_clause -> func_name
 target_el -> a_expr
-transaction_mode_list_or_empty -> transaction_mode_list
 transform_element_list -> function_with_argtypes
 transform_type_list -> Typename
 trim_list -> a_expr
@@ -621,14 +617,6 @@ subgraph cluster_CreateSchemaStmt {
   schema_stmt -> CreateTrigStmt
   schema_stmt -> GrantStmt
   schema_stmt -> ViewStmt
-}
-
-subgraph cluster_transaction_mode_list {
-  transaction_mode_item -> iso_level
-  transaction_mode_list -> transaction_mode_item
-  transaction_mode_list -> transaction_mode_list_2
-  transaction_mode_list_1 -> transaction_mode_item
-  transaction_mode_list_2 -> transaction_mode_list_1
 }
 
 subgraph cluster_set_rest_more {

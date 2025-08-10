@@ -14,6 +14,8 @@ members = [
     "parser/parser",
     "parser/sink-ast",
     "parser/sink-combinators",
+    "parser/transaction-mode-ast",
+    "parser/transaction-mode-combinators",
 ]
 
 [workspace.package]
@@ -51,3 +53,5 @@ pg-parser = { path = "parser/parser" }
 pg-parser-core = { path = "parser/core" }
 pg-sink-ast = { path = "parser/sink-ast" }
 pg-sink-combinators = { path = "parser/sink-combinators" }
+pg-transaction-mode-ast = { path = "parser/transaction-mode-ast" }
+pg-transaction-mode-combinators = { path = "parser/transaction-mode-combinators" }
