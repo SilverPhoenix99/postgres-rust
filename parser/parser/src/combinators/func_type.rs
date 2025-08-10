@@ -7,7 +7,7 @@ pub(super) fn func_type(ctx: &mut ParserContext) -> scan::Result<FuncType> {
 
     let typ = typename(ctx)?;
 
-    // In `Typename`, only generic types goes to `type_function_name`.
+    // In `Typename`, only generic types go to `type_function_name`.
     let Generic { name, type_modifiers } = typ.name() else {
         return Ok(FuncType::Type(typ))
     };

@@ -134,10 +134,10 @@ module Graph
     opt_interval
       interval_second
 
-    Typename-don't_delete_yet
+    Typename
       opt_array_bounds
         opt_array_bounds_1
-      SimpleTypename-don't_delete_yet
+      SimpleTypename
         opt_type_modifiers
         GenericType
         Character
@@ -151,6 +151,9 @@ module Graph
           opt_float
         ConstDatetime
           opt_timezone
+
+    comment_text
+    security_label
   ].to_set.freeze
 
   def self.run!(output: nil, exclude: EXCLUDE)

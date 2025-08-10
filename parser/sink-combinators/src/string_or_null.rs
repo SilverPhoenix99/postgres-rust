@@ -4,7 +4,7 @@
 ///
 /// The `Option` result does not come from an absence of value.
 /// It returns `None` when the token is the keyword `NULL`.
-pub(super) fn string_or_null(ctx: &mut ParserContext) -> scan::Result<Option<Box<str>>> {
+pub fn string_or_null(ctx: &mut ParserContext) -> scan::Result<Option<Box<str>>> {
 
     alt!(
         string.map(Some),

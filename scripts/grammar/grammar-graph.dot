@@ -29,7 +29,6 @@ AexprConst -> opt_sort_clause
 AlterDatabaseSetStmt -> SetResetClause
 AlterDatabaseStmt -> createdb_opt_list
 AlterDomainStmt -> alter_column_default
-AlterExtensionContentsStmt -> Typename
 AlterExtensionContentsStmt -> add_drop
 AlterExtensionContentsStmt -> aggregate_with_argtypes
 AlterExtensionContentsStmt -> function_with_argtypes
@@ -82,7 +81,6 @@ ColConstraintElem -> key_actions
 ColConstraintElem -> key_match
 ColConstraintElem -> opt_definition
 ColConstraintElem -> opt_unique_null_treatment
-CommentStmt -> Typename
 CommentStmt -> aggregate_with_argtypes
 CommentStmt -> function_with_argtypes
 CommentStmt -> operator_with_argtypes
@@ -101,10 +99,8 @@ CreateAsStmt -> OptTemp
 CreateAsStmt -> SelectStmt
 CreateAssertionStmt -> ConstraintAttributeSpec
 CreateAssertionStmt -> a_expr
-CreateCastStmt -> Typename
 CreateCastStmt -> function_with_argtypes
 CreateDomainStmt -> ColQualList
-CreateDomainStmt -> Typename
 CreateEventTrigStmt -> FUNCTION_or_PROCEDURE
 CreateEventTrigStmt -> func_name
 CreateFdwStmt -> create_generic_options
@@ -120,7 +116,6 @@ CreateFunctionStmt -> func_type
 CreateFunctionStmt -> opt_or_replace
 CreateGroupStmt -> OptRoleList
 CreateMatViewStmt -> SelectStmt
-CreateOpClassStmt -> Typename
 CreateOpClassStmt -> opclass_item_list
 CreateOptRoleElem -> AlterOptRoleElem
 CreatePLangStmt -> opt_or_replace
@@ -142,7 +137,6 @@ CreateStmt -> PartitionBoundSpec
 CreateStmt -> table_access_method_clause
 CreateSubscriptionStmt -> opt_definition
 CreateTableSpaceStmt -> opt_reloptions
-CreateTransformStmt -> Typename
 CreateTransformStmt -> opt_or_replace
 CreateTrigStmt -> ConstraintAttributeSpec
 CreateTrigStmt -> FUNCTION_or_PROCEDURE
@@ -166,9 +160,7 @@ DeleteStmt -> returning_clause
 DeleteStmt -> where_or_current_clause
 DomainConstraintElem -> ConstraintAttributeSpec
 DomainConstraintElem -> a_expr
-DropCastStmt -> Typename
 DropCastStmt -> opt_if_exists
-DropTransformStmt -> Typename
 DropTransformStmt -> opt_if_exists
 DropUserMappingStmt -> auth_ident
 ExclusionConstraintElem -> index_elem
@@ -236,23 +228,19 @@ RuleActionStmt -> SelectStmt
 RuleActionStmt -> UpdateStmt
 RuleStmt -> opt_or_replace
 RuleStmt -> where_clause
-SecLabelStmt -> Typename
 SecLabelStmt -> aggregate_with_argtypes
 SecLabelStmt -> function_with_argtypes
 SelectStmt -> select_no_parens
 SelectStmt -> select_with_parens
-SeqOptElem -> SimpleTypename
 SeqOptList -> SeqOptElem
 SetResetClause -> VariableResetStmt
 SetResetClause -> set_rest
 TableElement -> TableConstraint
 TableElement -> columnDef
-TableFuncElement -> Typename
 TableFuncElement -> opt_collate_clause
 TableFuncElementList -> TableFuncElement
 TriggerWhen -> a_expr
 TypedTableElement -> TableConstraint
-Typename -> SimpleTypename
 UpdateStmt -> from_clause
 UpdateStmt -> opt_with_clause
 UpdateStmt -> relation_expr_opt_alias
@@ -265,7 +253,6 @@ VariableSetStmt -> set_rest
 ViewStmt -> OptTemp
 ViewStmt -> SelectStmt
 ViewStmt -> opt_reloptions
-a_expr_1 -> Typename
 a_expr_1 -> b_expr
 a_expr_1 -> expr_list
 a_expr_1 -> json_key_uniqueness_constraint_opt
@@ -285,7 +272,6 @@ alter_identity_column_option -> generated_when
 alter_table_cmd -> ConstraintAttributeSpec
 alter_table_cmd -> OptParenthesizedSeqOptList
 alter_table_cmd -> TableConstraint
-alter_table_cmd -> Typename
 alter_table_cmd -> a_expr
 alter_table_cmd -> alter_column_default
 alter_table_cmd -> alter_generic_options
@@ -298,13 +284,11 @@ alter_table_cmd -> opt_set_data
 alter_table_cmd -> reloptions
 alter_table_cmd -> set_statistics_value
 alter_type_cmd -> TableFuncElement
-alter_type_cmd -> Typename
 alter_type_cmd -> opt_collate_clause
 alter_type_cmd -> opt_set_data
 alter_using -> a_expr
 alterfunc_opt_list -> common_func_opt_item
 array_expr -> expr_list
-b_expr_1 -> Typename
 b_expr_2 -> c_expr
 c_expr -> AexprConst
 c_expr -> a_expr
@@ -316,7 +300,6 @@ c_expr -> select_with_parens
 case_arg -> a_expr
 case_default -> a_expr
 columnDef -> ColQualList
-columnDef -> Typename
 columnDef -> create_generic_options
 columnOptions -> ColQualList
 columnref -> indirection
@@ -356,8 +339,6 @@ func_args_list -> func_arg
 func_expr -> func_application
 func_expr -> func_expr_common_subexpr
 func_expr -> json_aggregate_func
-func_expr_common_subexpr -> SimpleTypename
-func_expr_common_subexpr -> Typename
 func_expr_common_subexpr -> a_expr
 func_expr_common_subexpr -> c_expr
 func_expr_common_subexpr -> document_or_content
@@ -382,7 +363,6 @@ func_expr_windowless -> func_expr_common_subexpr
 func_expr_windowless -> json_aggregate_func
 func_name -> indirection
 func_table -> func_expr_windowless
-func_type -> Typename
 function_with_argtypes -> func_name
 function_with_argtypes -> indirection
 function_with_argtypes_list -> function_with_argtypes
@@ -423,14 +403,12 @@ json_name_and_value -> c_expr
 json_name_and_value -> json_value_expr
 json_name_and_value_list -> json_name_and_value
 json_on_error_clause_opt -> json_behavior
-json_returning_clause_opt -> Typename
 json_returning_clause_opt -> json_format_clause_opt
 json_table -> a_expr
 json_table -> json_on_error_clause_opt
 json_table -> json_passing_clause_opt
 json_table -> json_table_column_definition_list
 json_table -> json_value_expr
-json_table_column_definition -> Typename
 json_table_column_definition -> json_behavior_clause_opt
 json_table_column_definition -> json_format_clause
 json_table_column_definition -> json_on_error_clause_opt
@@ -447,11 +425,9 @@ merge_values_clause -> expr_list
 offset_clause -> a_expr
 old_aggr_elem -> def_arg
 opclass_drop -> type_list
-opclass_item -> Typename
 opclass_item -> function_with_argtypes
 opclass_item -> operator_with_argtypes
 opclass_item -> type_list
-oper_argtypes -> Typename
 operator_def_arg -> func_type
 operator_with_argtypes_list -> operator_with_argtypes
 opt_col_def_list -> TableFuncElementList
@@ -524,11 +500,8 @@ tablesample_clause -> expr_list
 tablesample_clause -> func_name
 target_el -> a_expr
 transform_element_list -> function_with_argtypes
-transform_type_list -> Typename
 trim_list -> a_expr
 trim_list -> expr_list
-type_list -> Typename
-type_name_list -> Typename
 using_clause -> from_list
 values_clause -> expr_list
 when_clause -> a_expr
@@ -543,7 +516,6 @@ xml_root_version -> a_expr
 xmlexists_argument -> c_expr
 xmltable -> c_expr
 xmltable -> xmlexists_argument
-xmltable_column_el -> Typename
 xmltable_column_option_el -> b_expr
 
 // subgraphs
@@ -633,10 +605,6 @@ subgraph cluster_ColQualList {
   ColConstraintElem -> opt_no_inherit
   ColConstraintElem -> opt_virtual_or_stored
   ColQualList -> ColConstraint
-}
-
-subgraph cluster_CommentStmt {
-  CommentStmt -> comment_text
 }
 
 subgraph cluster_ConstraintAttributeSpec {
@@ -911,7 +879,6 @@ subgraph cluster_RuleStmt {
 
 subgraph cluster_SecLabelStmt {
   SecLabelStmt -> opt_provider
-  SecLabelStmt -> security_label
 }
 
 subgraph cluster_TableConstraint {
@@ -1259,7 +1226,7 @@ OptConsTableSpace [color=blue penwidth=3]
 OptInherit [color=blue penwidth=3]
 OptTableSpace [color=blue penwidth=3]
 OptTemp [color=blue penwidth=3]
-SimpleTypename [color=blue penwidth=3]
+SeqOptElem [color=blue penwidth=3]
 access_method_clause [color=blue penwidth=3]
 add_drop [color=blue penwidth=3]
 auth_ident [color=blue penwidth=3]
@@ -1268,6 +1235,7 @@ column_storage [color=blue penwidth=3]
 document_or_content [color=blue penwidth=3]
 extended_relation_expr [color=blue penwidth=3]
 foreign_server_version [color=blue penwidth=3]
+func_type [color=blue penwidth=3]
 generated_when [color=blue penwidth=3]
 generic_option_elem [color=blue penwidth=3]
 json_array_constructor_null_clause_opt [color=blue penwidth=3]
@@ -1291,6 +1259,7 @@ override_kind [color=blue penwidth=3]
 relation_expr_opt_alias [color=blue penwidth=3]
 set_statistics_value [color=blue penwidth=3]
 table_access_method_clause [color=blue penwidth=3]
+type_list [color=blue penwidth=3]
 unicode_normal_form [color=blue penwidth=3]
 
 }

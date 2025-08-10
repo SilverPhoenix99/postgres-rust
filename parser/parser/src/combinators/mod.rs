@@ -36,7 +36,6 @@ pg_basics::reexport! {
     privilege,
     sort_clause,
     stmt,
-    string_or_null,
     table_func_element_list,
     table_ref,
     unique_null_treatment,
