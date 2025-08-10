@@ -9,41 +9,157 @@ end
 
 module Graph
 
+  # remove top level and PLSql sources
+  EXCLUDE_TOP_LEVEL = %i[
+    parse_toplevel
+    stmtmulti
+    stmtmulti_1
+    toplevel_stmt
+    PLpgSQL_Expr
+    PLAssignStmt
+    opt_distinct_clause
+    plassign_target
+    plassign_equals
+  ].to_set.freeze
+
+  # remove common (base package) sinks
+  EXCLUDE_SINKS = %i[
+    bare_label_keyword
+    col_name_keyword
+    reserved_keyword
+    type_func_name_keyword
+    unreserved_keyword
+
+    attrs
+    BareColLabel
+    type_function_name
+    NonReservedWord
+    opt_drop_behavior
+    NonReservedWord_or_Sconst
+    I_or_F_const
+
+    ColId
+    name
+    opt_single_name
+    columnList
+    name_list
+    var_name
+
+    ColLabel
+    attr_name
+
+    any_name
+    handler_name
+    opt_qualified_name
+    any_name_list
+
+    qualified_name
+    qualified_name_list
+
+    relation_expr
+    relation_expr_list
+
+    role_list
+    RoleSpec
+    RoleId
+
+    SignedIconst
+    NumericOnly
+
+    all_Op
+    any_operator
+    MathOp
+    qual_all_Op
+    qual_Op
+    subquery_Op
+
+    opt_analyze
+    analyze_keyword
+
+    opt_boolean_or_string
+    copy_generic_opt_arg_list
+
+    object_type_any_name
+    object_type_name
+    drop_type_name
+    object_type_name_on_any_name
+  ].to_set.freeze
+
+  # exclude single terminal productions - these are inlined
+  EXCLUDE_SINGLE_TERMINALS = %i[
+    from_in
+    opt_all_clause
+    opt_as
+    opt_asymmetric
+    opt_by
+    opt_column
+    opt_column_list
+    opt_concurrently
+    opt_default
+    opt_equal
+    opt_freeze
+    opt_from_in
+    opt_full
+    opt_name_list
+    opt_no
+    opt_nowait
+    opt_procedural
+    opt_program
+    opt_table
+    opt_trusted
+    opt_unique
+    opt_using
+    opt_varying
+    opt_verbose
+    opt_with
+    path_opt
+  ].to_set.freeze
+
   EXCLUDE = %i[
-    generic_reset generic_set var_list var_value
+    generic_reset
+      generic_set
+      var_list
+      var_value
+
     opt_transaction
     opt_transaction_chain
-    transaction_mode_list transaction_mode_list_1 transaction_mode_list_2 transaction_mode_item iso_level transaction_mode_list_or_empty
+
+    transaction_mode_list
+      transaction_mode_list_1
+      transaction_mode_list_2
+      transaction_mode_item
+      iso_level
+      transaction_mode_list_or_empty
   ].to_set.freeze
 
   def self.run!(output: nil, exclude: EXCLUDE)
     grammar_input = Pathname(__dir__) / 'grammar.bison'
     grammar = GrammarTransform::Grammar.load_bison(grammar_input)
     graph = grammar.to_graph
-    graphviz = graph.to_dot(subgraphs: true)
 
     if output
+      graphviz = graph.to_dot(subgraphs: true)
       File.write output, graphviz
     end
 
     graph
   end
 
-  def self.from_grammar(grammar, exclude: Graph::EXCLUDE)
+  def self.from_grammar(grammar, exclude: EXCLUDE)
 
     graph = grammar.productions.each_with_object({}) do |(p, rules), g|
       g[p] = rules.flatten.to_set.delete(:__empty)
-    end;
+    end
 
-    non_terms = graph.keys.to_set;
-    sources = graph[:stmt];
+    non_terms = graph.keys.to_set
+    sources = graph[:stmt]
 
-    graph.transform_values! { it & non_terms };
+    graph.transform_values! { it & non_terms }
 
     # remove direct recursion
-    recursive, graph = graph.partition { |p, cs| p.end_with?('_1') && cs.include?(p) }.map(&:to_h);
+    recursive, graph = graph.partition { |p, cs| p.end_with?('_1') && cs.include?(p) }.map(&:to_h)
 
-    recursive.each { |p, cs| cs.delete(p) }.transform_values!(&:to_a);
+    recursive.each { |p, cs| cs.delete(p) }.transform_values!(&:to_a)
 
     graph.each do |p, cs|
       rs, non_rs = cs.partition { recursive.key?(it) }
@@ -58,122 +174,22 @@ module Graph
       cs.delete(p)
     end
 
-    exclude = exclude&.to_set || Set.new
-
-    # remove top level and PLSql sources
-    exclude += %i[
-      parse_toplevel
-      stmtmulti
-      stmtmulti_1
-      toplevel_stmt
-      PLpgSQL_Expr
-      PLAssignStmt
-      opt_distinct_clause
-      plassign_target
-      plassign_equals
-    ]
-
-    # exclude single terminal productions - these are inlined
-    exclude += %i[
-      from_in
-      opt_all_clause
-      opt_as
-      opt_asymmetric
-      opt_by
-      opt_column
-      opt_column_list
-      opt_concurrently
-      opt_default
-      opt_equal
-      opt_freeze
-      opt_from_in
-      opt_full
-      opt_name_list
-      opt_no
-      opt_nowait
-      opt_procedural
-      opt_program
-      opt_table
-      opt_trusted
-      opt_unique
-      opt_using
-      opt_varying
-      opt_verbose
-      opt_with
-      path_opt
-    ]
-
-    # remove common (base package) sinks
-    exclude += %i[
-      bare_label_keyword
-      col_name_keyword
-      reserved_keyword
-      type_func_name_keyword
-      unreserved_keyword
-
-      attrs
-      BareColLabel
-      type_function_name
-      NonReservedWord
-      opt_drop_behavior
-      NonReservedWord_or_Sconst
-      I_or_F_const
-
-      ColId
-      name
-      opt_single_name
-      columnList
-      name_list
-      var_name
-
-      ColLabel
-      attr_name
-
-      any_name
-      handler_name
-      opt_qualified_name
-      any_name_list
-
-      qualified_name
-      qualified_name_list
-
-      relation_expr
-      relation_expr_list
-
-      role_list
-      RoleSpec
-      RoleId
-
-      SignedIconst
-      NumericOnly
-
-      all_Op
-      any_operator
-      MathOp
-      qual_all_Op
-      qual_Op
-      subquery_Op
-
-      opt_analyze
-      analyze_keyword
-
-      opt_boolean_or_string
-      copy_generic_opt_arg_list
-
-      object_type_any_name
-      object_type_name
-      drop_type_name
-      object_type_name_on_any_name
-    ]
-
-    graph.reject! { |p, _| exclude.include?(p) };
-    graph.transform_values! { it - exclude };
+    # remove top level and PLSql sources from the left size
+    graph.reject! { |p, _| EXCLUDE_TOP_LEVEL.include?(p) }
 
     # delete the production, but it'll still show as a sink
     graph.delete(:stmt)
 
+    exclude = exclude || Set.new
+    exclude += EXCLUDE_TOP_LEVEL
+    exclude += EXCLUDE_SINKS
+    exclude += EXCLUDE_SINGLE_TERMINALS
+
+    # exclude production from the right hand side
+    graph.transform_values! { it - exclude }
+
     # remove empty productions: they're pseudo-terminals now
-    graph.reject! { |_, cs| cs.empty? };
+    graph.reject! { |_, cs| cs.empty? }
 
     graph
   end
@@ -185,11 +201,7 @@ module Graph
 
     source_roots = subgraphs.transpose.transform_values(&:first)
 
-    edges = self
-      .map do |parent, children|
-        children.map { [parent, it] }
-      end
-      .flatten(1)
+    edges = self.edges
       .reject do |parent, child|
         next true if parent == :a_expr_3 && child == :a_expr_1
         pr = subgraphs.key?(parent) ? parent : source_roots[parent]
@@ -204,29 +216,31 @@ module Graph
         "#{parent} -> #{child}"
       end
 
-    subs = subgraphs.flat_map do |root, members|
-      ms = members + [root]
-      sub_edges = self.select { |parent, _| ms.include?(parent) }
-        .transform_values { it & ms }
-        .reject { |_, cs| cs.empty? }
-        .sort_by { |parent, _| parent }
-        .flat_map do |parent, children|
-          children
-            .map do |child|
-              if child == :stmt
-                child = '{stmt [color=red penwidth=3]}'
+    subs = subgraphs
+      .sort_by { |root, _| root }
+      .flat_map do |root, members|
+        ms = members + [root]
+        sub_edges = self.select { |parent, _| ms.include?(parent) }
+          .transform_values { (it & ms).sort }
+          .reject { |_, cs| cs.empty? }
+          .sort_by { |parent, _| parent }
+          .flat_map do |parent, children|
+            children
+              .map do |child|
+                if child == :stmt
+                  child = '{stmt [color=red penwidth=3]}'
+                end
+                "#{parent} -> #{child}"
               end
-              "#{parent} -> #{child}"
-            end
-        end
+          end
 
-      [
-        "subgraph cluster_#{root} {",
-        *sub_edges.map { |it| "  #{it}" },
-        '}',
-        '',
-      ]
-    end
+        [
+          "subgraph cluster_#{root} {",
+          *sub_edges.map { |it| "  #{it}" },
+          '}',
+          '',
+        ]
+      end
 
     sinks = self.sinks
       .reject { |s| source_roots.key?(s) }
@@ -354,8 +368,7 @@ __END__
 # irb -rclipboard
 
 load './graph.rb'
-grammar = GrammarTransform::Grammar.load_bison('./grammar.bison')
-graph = grammar.to_graph
+graph = Graph.run!
 
 File.write 'grammar-graph.dot', graph.to_dot(subgraphs: true)
 
