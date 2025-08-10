@@ -1,10 +1,10 @@
-pub fn extension(stream: &mut TokenStream) -> scan::Result<Str> {
+pub fn extension(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     /*
         EXTENSION ColId
     */
 
-    let (_, name) = seq!(Extension, col_id).parse(stream)?;
+    let (_, name) = seq!(Extension, col_id).parse(ctx)?;
 
     Ok(name)
 }
@@ -30,4 +30,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Extension;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

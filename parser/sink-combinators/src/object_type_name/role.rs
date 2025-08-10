@@ -1,11 +1,11 @@
-pub fn role(stream: &mut TokenStream) -> scan::Result<Str> {
+pub fn role(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     /*
         ROLE name
     */
 
     let (_, name) = seq!(Role, col_id)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(name)
 }
@@ -31,4 +31,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Role;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

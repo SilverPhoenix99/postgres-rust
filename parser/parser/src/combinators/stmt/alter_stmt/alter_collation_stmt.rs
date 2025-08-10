@@ -6,7 +6,7 @@ enum Change {
 }
 
 /// Alias: `AlterCollationStmt`
-pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn alter_collation_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER COLLATION any_name REFRESH VERSION_P
@@ -15,7 +15,7 @@ pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> scan::Result<Raw
         ALTER COLLATION any_name SET SCHEMA ColId
     */
 
-    let (_, name, change) = seq!(Collation, any_name, changes).parse(stream)?;
+    let (_, name, change) = seq!(Collation, any_name, changes).parse(ctx)?;
 
     let stmt = match change {
         Change::RefreshVersion => {
@@ -44,7 +44,7 @@ pub(super) fn alter_collation_stmt(stream: &mut TokenStream) -> scan::Result<Raw
     Ok(stmt)
 }
 
-fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
+fn changes(ctx: &mut ParserContext) -> scan::Result<Change> {
     alt!(
         seq!(Refresh, Version)
             .map(|_| Change::RefreshVersion),
@@ -54,7 +54,7 @@ fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
             .map(|(.., name)| Change::Name(name)),
         seq!(Set, Schema, col_id)
             .map(|(.., schema)| Change::Schema(schema))
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -130,7 +130,7 @@ use pg_lexer::Keyword::Set;
 use pg_lexer::Keyword::To;
 use pg_lexer::Keyword::Version;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::any_name;
 use pg_sink_combinators::col_id;

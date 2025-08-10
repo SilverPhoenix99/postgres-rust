@@ -1,30 +1,30 @@
-pub(super) fn func_application(stream: &mut TokenStream) -> scan::Result<FuncCall> {
+pub(super) fn func_application(ctx: &mut ParserContext) -> scan::Result<FuncCall> {
 
     /*
         func_name func_application_args
     */
 
     let (name, args) = seq!(func_name, func_application_args)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let func_call = FuncCall::new(name, args);
     Ok(func_call)
 }
 
-pub(super) fn func_application_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
+pub(super) fn func_application_args(ctx: &mut ParserContext) -> scan::Result<FuncArgsKind> {
 
     /*
         '(' ( func_call_args )? ')'
     */
 
     let args = paren!(func_call_args.optional())
-        .parse(stream)?
+        .parse(ctx)?
         .unwrap_or(Empty { order_within_group: None });
 
     Ok(args)
 }
 
-fn func_call_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
+fn func_call_args(ctx: &mut ParserContext) -> scan::Result<FuncArgsKind> {
 
     /*
           '*'
@@ -38,22 +38,22 @@ fn func_call_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
         all_args,
         distinct_args,
         simple_args,
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn wildcard_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
+fn wildcard_args(ctx: &mut ParserContext) -> scan::Result<FuncArgsKind> {
 
-    let _ = Mul.parse(stream)?;
+    let _ = Mul.parse(ctx)?;
     Ok(Wildcard { order_within_group: None })
 }
 
-fn all_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
+fn all_args(ctx: &mut ParserContext) -> scan::Result<FuncArgsKind> {
 
     let (_, args, order) = seq!(
         Kw::All,
         func_arg_list,
         sort_clause.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let args = All {
         args,
@@ -65,13 +65,13 @@ fn all_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
     Ok(args)
 }
 
-fn distinct_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
+fn distinct_args(ctx: &mut ParserContext) -> scan::Result<FuncArgsKind> {
 
     let (_, args, order) = seq!(
         Kw::Distinct,
         func_arg_list,
         sort_clause.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let args = args.into_iter()
         .map(|Located(arg, _)| arg)
@@ -82,12 +82,12 @@ fn distinct_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
     Ok(Distinct { args, order })
 }
 
-fn simple_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
+fn simple_args(ctx: &mut ParserContext) -> scan::Result<FuncArgsKind> {
 
     let ((args, variadic), order) = seq!(
         variadic_func_args,
         sort_clause.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     if variadic {
 
@@ -107,7 +107,7 @@ fn simple_args(stream: &mut TokenStream) -> scan::Result<FuncArgsKind> {
     Ok(All { args, order })
 }
 
-fn variadic_func_args(stream: &mut TokenStream) -> scan::Result<(Vec<Located<NamedValue>>, bool)> {
+fn variadic_func_args(ctx: &mut ParserContext) -> scan::Result<(Vec<Located<NamedValue>>, bool)> {
 
     /*
           func_arg_list
@@ -118,7 +118,7 @@ fn variadic_func_args(stream: &mut TokenStream) -> scan::Result<(Vec<Located<Nam
         and then check if none or only the last argument is VARIADIC.
     */
 
-    let args = variadic_args(stream)?;
+    let args = variadic_args(ctx)?;
     sanitize_variadic_args(args)
 }
 
@@ -160,16 +160,16 @@ fn sanitize_variadic_args(
     Ok((args, true))
 }
 
-fn variadic_args(stream: &mut TokenStream) -> scan::Result<Vec<(Located<NamedValue>, Option<Location>)>> {
+fn variadic_args(ctx: &mut ParserContext) -> scan::Result<Vec<(Located<NamedValue>, Option<Location>)>> {
 
     /*
         ( VARIADIC )? func_arg_expr ( ',' ( VARIADIC )? func_arg_expr )*
     */
 
-    many!(sep = Comma, variadic_arg).parse(stream)
+    many!(sep = Comma, variadic_arg).parse(ctx)
 }
 
-fn variadic_arg(stream: &mut TokenStream) -> scan::Result<(Located<NamedValue>, Option<Location>)> {
+fn variadic_arg(ctx: &mut ParserContext) -> scan::Result<(Located<NamedValue>, Option<Location>)> {
 
     /*
         ( VARIADIC )? func_arg_expr
@@ -180,7 +180,7 @@ fn variadic_arg(stream: &mut TokenStream) -> scan::Result<(Located<NamedValue>, 
             .map(|(Located(_, loc), arg)| (arg, Some(loc))),
         func_arg_expr
             .map(|arg| (arg, None)),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -221,8 +221,8 @@ mod tests {
 
     #[test]
     fn test_func_application_args_all() {
-        let mut stream = TokenStream::from("(all 1, 2)");
-        let actual = func_application_args(&mut stream).unwrap();
+        let mut ctx = ParserContext::from("(all 1, 2)");
+        let actual = func_application_args(&mut ctx).unwrap();
 
         let All { args, order: None } = actual else {
             panic!("Expected All variant, but got {actual:?}");
@@ -243,8 +243,8 @@ mod tests {
 
     #[test]
     fn test_func_application_args_simple() {
-        let mut stream = TokenStream::from("(1, 2, 3)");
-        let actual = func_application_args(&mut stream).unwrap();
+        let mut ctx = ParserContext::from("(1, 2, 3)");
+        let actual = func_application_args(&mut ctx).unwrap();
 
         let All { args, order: None } = actual else {
             panic!("Expected All variant, but got {actual:?}");
@@ -364,5 +364,5 @@ use pg_lexer::Keyword as Kw;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::Mul;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::syntax;
+use pg_parser_core::ParserContext;

@@ -1,5 +1,5 @@
 /// Alias: `opt_window_exclusion_clause`
-pub(super) fn window_exclusion_clause(stream: &mut TokenStream<'_>) -> scan::Result<WindowExclusion> {
+pub(super) fn window_exclusion_clause(ctx: &mut ParserContext) -> scan::Result<WindowExclusion> {
 
     /*
           EXCLUDE CURRENT ROW
@@ -16,7 +16,7 @@ pub(super) fn window_exclusion_clause(stream: &mut TokenStream<'_>) -> scan::Res
             Kw::Ties.map(|_| Ties),
             seq!(No, Others).map(|_| NoOthers)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(exclusion)
 }
@@ -51,4 +51,4 @@ use pg_lexer::Keyword::No;
 use pg_lexer::Keyword::Others;
 use pg_lexer::Keyword::Row;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

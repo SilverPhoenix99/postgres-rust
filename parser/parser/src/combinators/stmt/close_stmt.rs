@@ -1,5 +1,5 @@
 /// Alias: `ClosePortalStmt`
-pub(super) fn close_stmt(stream: &mut TokenStream) -> scan::Result<OneOrAll<Str>> {
+pub(super) fn close_stmt(ctx: &mut ParserContext) -> scan::Result<OneOrAll<Str>> {
 
     /*
           CLOSE ALL
@@ -12,7 +12,7 @@ pub(super) fn close_stmt(stream: &mut TokenStream) -> scan::Result<OneOrAll<Str>
             All.map(|_| OneOrAll::All),
             col_id.map(OneOrAll::One)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(stmt)
 }
@@ -39,6 +39,6 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::All;
 use pg_lexer::Keyword::Close;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::OneOrAll;
 use pg_sink_combinators::col_id;

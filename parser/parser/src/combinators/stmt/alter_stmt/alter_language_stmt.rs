@@ -3,7 +3,7 @@ enum Change {
     Name(Str),
 }
 
-pub(super) fn alter_language_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn alter_language_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER (PROCEDURAL)? LANGUAGE ColId OWNER TO RoleSpec # AlterOwnerStmt
@@ -22,7 +22,7 @@ pub(super) fn alter_language_stmt(stream: &mut TokenStream) -> scan::Result<RawS
             seq!(Rename, To, col_id)
                 .map(|(.., new_name)| Change::Name(new_name))
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let stmt = match stmt {
         Change::Owner(new_owner) => {
@@ -84,7 +84,7 @@ use pg_lexer::Keyword::Procedural;
 use pg_lexer::Keyword::Rename;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::role_spec;

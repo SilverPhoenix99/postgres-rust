@@ -34,7 +34,7 @@ pg_basics::reexport! {
     xml_serialize,
 }
 
-pub(in crate::combinators) fn func_expr_common_subexpr(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
+pub(in crate::combinators) fn func_expr_common_subexpr(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 
     /*
         | CAST '(' a_expr AS Typename ')'
@@ -81,35 +81,35 @@ pub(in crate::combinators) fn func_expr_common_subexpr(stream: &mut TokenStream)
     */
 
     // Peeking 2 tokens to prevent conflicts with `func_application` and `prefixed_expr_const`:
-    match stream.peek2() {
-        Ok((K(Coalesce), Op(OpenParenthesis))) => return coalesce_expr(stream),
-        Ok((K(Collation), K(For))) => return collation_for(stream),
-        Ok((K(Extract), Op(OpenParenthesis))) => return extract(stream).map(From::from),
-        Ok((K(Greatest), Op(OpenParenthesis))) => return greatest_expr(stream),
-        Ok((K(Json), Op(OpenParenthesis))) => return json(stream).map(From::from),
-        Ok((K(JsonExists), Op(OpenParenthesis))) => return json_exists_expr(stream).map(From::from),
-        Ok((K(JsonObject), Op(OpenParenthesis))) => return json_object(stream).map(From::from),
-        Ok((K(JsonQuery), Op(OpenParenthesis))) => return json_query_expr(stream).map(From::from),
-        Ok((K(JsonScalar), Op(OpenParenthesis))) => return json_scalar(stream),
-        Ok((K(JsonSerialize), Op(OpenParenthesis))) => return json_serialize_expr(stream).map(From::from),
-        Ok((K(JsonValue), Op(OpenParenthesis))) => return json_value_func(stream).map(From::from),
-        Ok((K(Least), Op(OpenParenthesis))) => return least_expr(stream),
-        Ok((K(MergeAction), Op(OpenParenthesis))) => return merge_action(stream),
-        Ok((K(Normalize), Op(OpenParenthesis))) => return normalize(stream).map(From::from),
-        Ok((K(Nullif), Op(OpenParenthesis))) => return nullif_expr(stream),
-        Ok((K(Overlay), Op(OpenParenthesis))) => return overlay(stream).map(From::from),
-        Ok((K(Position), Op(OpenParenthesis))) => return position(stream).map(From::from),
-        Ok((K(Substring), Op(OpenParenthesis))) => return substring(stream).map(From::from),
-        Ok((K(Treat), Op(OpenParenthesis))) => return treat_expr(stream),
-        Ok((K(Trim), Op(OpenParenthesis))) => return trim(stream).map(From::from),
-        Ok((K(Xmlconcat), Op(OpenParenthesis))) => return xml_concat(stream),
-        Ok((K(Xmlelement), Op(OpenParenthesis))) => return xml_element(stream).map(From::from),
-        Ok((K(Xmlexists), Op(OpenParenthesis))) => return xml_exists(stream).map(From::from),
-        Ok((K(Xmlforest), Op(OpenParenthesis))) => return xml_forest(stream),
-        Ok((K(Xmlparse), Op(OpenParenthesis))) => return xml_parse(stream).map(From::from),
-        Ok((K(Xmlpi), Op(OpenParenthesis))) => return xml_processing_instruction(stream).map(From::from),
-        Ok((K(Xmlroot), Op(OpenParenthesis))) => return xml_root(stream).map(From::from),
-        Ok((K(Xmlserialize), Op(OpenParenthesis))) => return xml_serialize(stream).map(From::from),
+    match ctx.stream_mut().peek2() {
+        Ok((K(Coalesce), Op(OpenParenthesis))) => return coalesce_expr(ctx),
+        Ok((K(Collation), K(For))) => return collation_for(ctx),
+        Ok((K(Extract), Op(OpenParenthesis))) => return extract(ctx).map(From::from),
+        Ok((K(Greatest), Op(OpenParenthesis))) => return greatest_expr(ctx),
+        Ok((K(Json), Op(OpenParenthesis))) => return json(ctx).map(From::from),
+        Ok((K(JsonExists), Op(OpenParenthesis))) => return json_exists_expr(ctx).map(From::from),
+        Ok((K(JsonObject), Op(OpenParenthesis))) => return json_object(ctx).map(From::from),
+        Ok((K(JsonQuery), Op(OpenParenthesis))) => return json_query_expr(ctx).map(From::from),
+        Ok((K(JsonScalar), Op(OpenParenthesis))) => return json_scalar(ctx),
+        Ok((K(JsonSerialize), Op(OpenParenthesis))) => return json_serialize_expr(ctx).map(From::from),
+        Ok((K(JsonValue), Op(OpenParenthesis))) => return json_value_func(ctx).map(From::from),
+        Ok((K(Least), Op(OpenParenthesis))) => return least_expr(ctx),
+        Ok((K(MergeAction), Op(OpenParenthesis))) => return merge_action(ctx),
+        Ok((K(Normalize), Op(OpenParenthesis))) => return normalize(ctx).map(From::from),
+        Ok((K(Nullif), Op(OpenParenthesis))) => return nullif_expr(ctx),
+        Ok((K(Overlay), Op(OpenParenthesis))) => return overlay(ctx).map(From::from),
+        Ok((K(Position), Op(OpenParenthesis))) => return position(ctx).map(From::from),
+        Ok((K(Substring), Op(OpenParenthesis))) => return substring(ctx).map(From::from),
+        Ok((K(Treat), Op(OpenParenthesis))) => return treat_expr(ctx),
+        Ok((K(Trim), Op(OpenParenthesis))) => return trim(ctx).map(From::from),
+        Ok((K(Xmlconcat), Op(OpenParenthesis))) => return xml_concat(ctx),
+        Ok((K(Xmlelement), Op(OpenParenthesis))) => return xml_element(ctx).map(From::from),
+        Ok((K(Xmlexists), Op(OpenParenthesis))) => return xml_exists(ctx).map(From::from),
+        Ok((K(Xmlforest), Op(OpenParenthesis))) => return xml_forest(ctx),
+        Ok((K(Xmlparse), Op(OpenParenthesis))) => return xml_parse(ctx).map(From::from),
+        Ok((K(Xmlpi), Op(OpenParenthesis))) => return xml_processing_instruction(ctx).map(From::from),
+        Ok((K(Xmlroot), Op(OpenParenthesis))) => return xml_root(ctx).map(From::from),
+        Ok((K(Xmlserialize), Op(OpenParenthesis))) => return xml_serialize(ctx).map(From::from),
         _ => {}
     };
 
@@ -119,7 +119,7 @@ pub(in crate::combinators) fn func_expr_common_subexpr(stream: &mut TokenStream)
         current_schema,
         role,
         time,
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -281,6 +281,6 @@ use pg_lexer::Keyword::Xmlroot;
 use pg_lexer::Keyword::Xmlserialize;
 use pg_lexer::OperatorKind::OpenParenthesis;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue::Keyword as K;
 use pg_parser_core::stream::TokenValue::Operator as Op;
+use pg_parser_core::ParserContext;

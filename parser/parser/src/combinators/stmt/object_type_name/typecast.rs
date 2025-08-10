@@ -1,4 +1,4 @@
-pub(in crate::combinators::stmt) fn typecast(stream: &mut TokenStream) -> scan::Result<Typecast> {
+pub(in crate::combinators::stmt) fn typecast(ctx: &mut ParserContext) -> scan::Result<Typecast> {
 
     /*
         CAST '(' Typename AS Typename ')'
@@ -7,7 +7,7 @@ pub(in crate::combinators::stmt) fn typecast(stream: &mut TokenStream) -> scan::
     let (_, (from_type, _, to_type)) = seq!(
         Cast,
         paren!(seq!(typename, As, typename))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(Typecast::new(from_type, to_type))
 }
@@ -37,4 +37,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Cast;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

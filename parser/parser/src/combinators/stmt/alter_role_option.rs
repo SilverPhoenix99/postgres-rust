@@ -1,10 +1,10 @@
 /// Alias: `AlterOptRoleList`
-pub(super) fn alter_role_options(stream: &mut TokenStream) -> scan::Result<Vec<AlterRoleOption>> {
-    many!(alter_role_option).parse(stream)
+pub(super) fn alter_role_options(ctx: &mut ParserContext) -> scan::Result<Vec<AlterRoleOption>> {
+    many!(alter_role_option).parse(ctx)
 }
 
 /// Alias: `AlterOptRoleElem`
-pub(super) fn alter_role_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
+pub(super) fn alter_role_option(ctx: &mut ParserContext) -> scan::Result<AlterRoleOption> {
 
     /*
           PASSWORD SCONST
@@ -29,10 +29,10 @@ pub(super) fn alter_role_option(stream: &mut TokenStream) -> scan::Result<AlterR
             .map(|(_, roles)| RoleMembers(roles)),
         Kw::Inherit.map(|_| Inherit(true)),
         ident_option
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn password_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
+fn password_option(ctx: &mut ParserContext) -> scan::Result<AlterRoleOption> {
 
     /*
           PASSWORD SCONST
@@ -58,21 +58,20 @@ fn password_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
         seq!(Encrypted, Kw::Password, string)
             .map(|(.., pw)| Password(Some(pw))),
         unencrypted_password_option
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn unencrypted_password_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
+fn unencrypted_password_option(ctx: &mut ParserContext) -> scan::Result<AlterRoleOption> {
 
-    let loc = stream.current_location();
-
-    let _ = seq!(Unencrypted, Kw::Password, string).parse(stream)?;
+    let (Located(_, loc), ..) = seq!(located!(Unencrypted), Kw::Password, string)
+        .parse(ctx)?;
 
     Err(UnencryptedPassword.at_location(loc).into())
 }
 
-fn ident_option(stream: &mut TokenStream) -> scan::Result<AlterRoleOption> {
+fn ident_option(ctx: &mut ParserContext) -> scan::Result<AlterRoleOption> {
 
-    let Located(ident, loc) = located!(identifier).parse(stream)?;
+    let Located(ident, loc) = located!(identifier).parse(ctx)?;
 
     let option = match &*ident {
         "superuser" => SuperUser(true),
@@ -181,6 +180,6 @@ use pg_lexer::Keyword::Until;
 use pg_lexer::Keyword::User;
 use pg_lexer::Keyword::Valid;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::role_list;
 use pg_sink_combinators::signed_i32_literal;

@@ -1,4 +1,4 @@
-pub(super) fn json(stream: &mut TokenStream) -> scan::Result<JsonFunc> {
+pub(super) fn json(ctx: &mut ParserContext) -> scan::Result<JsonFunc> {
 
     /*
         JSON '(' json_value_expr ( json_key_uniqueness_constraint )? ')'
@@ -11,7 +11,7 @@ pub(super) fn json(stream: &mut TokenStream) -> scan::Result<JsonFunc> {
             json_value_expr,
             json_key_uniqueness_constraint.optional()
         ))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let unique = unique.unwrap_or_default();
 
@@ -61,4 +61,4 @@ use pg_combinators::seq;
 use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

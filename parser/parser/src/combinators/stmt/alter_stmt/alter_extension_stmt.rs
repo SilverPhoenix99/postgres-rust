@@ -10,7 +10,7 @@ enum Change {
 /// Aliases:
 /// * `AlterExtensionContentsStmt`
 /// * `AlterExtensionStmt`
-pub(super) fn alter_extension_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn alter_extension_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER EXTENSION ColId (
@@ -28,7 +28,7 @@ pub(super) fn alter_extension_stmt(stream: &mut TokenStream) -> scan::Result<Raw
             update_options,
             change_content
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let stmt = match change {
         Change::Schema(new_schema) => {
@@ -48,25 +48,25 @@ pub(super) fn alter_extension_stmt(stream: &mut TokenStream) -> scan::Result<Raw
     Ok(stmt)
 }
 
-fn change_schema(stream: &mut TokenStream) -> scan::Result<Change> {
+fn change_schema(ctx: &mut ParserContext) -> scan::Result<Change> {
 
     let (.., new_schema) = seq!(Kw::Set, Kw::Schema, col_id)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(Change::Schema(new_schema))
 }
 
-fn update_options(stream: &mut TokenStream) -> scan::Result<Change> {
+fn update_options(ctx: &mut ParserContext) -> scan::Result<Change> {
 
     let (_, options) = seq!(
         Kw::Update,
         alter_extension_options.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(Change::Options(options))
 }
 
-fn change_content(stream: &mut TokenStream) -> scan::Result<Change> {
+fn change_content(ctx: &mut ParserContext) -> scan::Result<Change> {
 
     let (action, target) = seq!(
         alt!(
@@ -74,14 +74,14 @@ fn change_content(stream: &mut TokenStream) -> scan::Result<Change> {
             DropKw.map(|_| AddDrop::Drop),
         ),
         alter_extension_target
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(Change::Contents { action, target })
 }
 
 /// Alias: `alter_extension_opt_list`
 /// Includes: `alter_extension_opt_item`
-fn alter_extension_options(stream: &mut TokenStream) -> scan::Result<Vec<Str>> {
+fn alter_extension_options(ctx: &mut ParserContext) -> scan::Result<Vec<Str>> {
 
     /*
         ( TO NonReservedWord_or_Sconst )*
@@ -90,12 +90,12 @@ fn alter_extension_options(stream: &mut TokenStream) -> scan::Result<Vec<Str>> {
     let options = many!(
         seq!(To, non_reserved_word_or_sconst)
             .map(|(_, opt)| opt)
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(options)
 }
 
-fn alter_extension_target(stream: &mut TokenStream) -> scan::Result<AlterExtensionContentsTarget> {
+fn alter_extension_target(ctx: &mut ParserContext) -> scan::Result<AlterExtensionContentsTarget> {
 
     /*
           ACCESS METHOD ColId
@@ -181,7 +181,7 @@ fn alter_extension_target(stream: &mut TokenStream) -> scan::Result<AlterExtensi
         transform.map(Transform),
         type_name.map(Type),
         view.map(View),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -370,7 +370,7 @@ use pg_lexer::Keyword::Add;
 use pg_lexer::Keyword::DropKw;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::collation;
 use pg_sink_combinators::conversion;

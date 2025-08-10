@@ -1,12 +1,12 @@
 pub(in crate::combinators::expr::expr_primary)
-fn within_group_clause(stream: &mut TokenStream) -> scan::Result<Vec<SortBy>> {
+fn within_group_clause(ctx: &mut ParserContext) -> scan::Result<Vec<SortBy>> {
 
     /*
         WITHIN GROUP_P '(' sort_clause ')'
     */
 
     let (.., Located(sorts, _)) = seq!(Within, Group, paren!(sort_clause))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(sorts)
 }
@@ -38,4 +38,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Group;
 use pg_lexer::Keyword::Within;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

@@ -1,4 +1,4 @@
-pub(super) fn identifier_prefixed_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn identifier_prefixed_expr(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 
     /*
         column_ref (
@@ -9,7 +9,7 @@ pub(super) fn identifier_prefixed_expr(stream: &mut TokenStream) -> scan::Result
         )
     */
 
-    let column_ref = column_ref(stream)?;
+    let column_ref = column_ref(ctx)?;
 
     let name = match QualifiedName::try_from(column_ref) {
         Ok(name) => name,
@@ -19,7 +19,7 @@ pub(super) fn identifier_prefixed_expr(stream: &mut TokenStream) -> scan::Result
         },
     };
 
-    let Some(tail) = attr_tail(stream).optional()? else {
+    let Some(tail) = attr_tail(ctx).optional()? else {
         // columnref
         let mut name = name;
         let expr = match name.as_mut_slice() {
@@ -33,7 +33,7 @@ pub(super) fn identifier_prefixed_expr(stream: &mut TokenStream) -> scan::Result
     Ok(expr)
 }
 
-fn column_ref(stream: &mut TokenStream) -> scan::Result<ColumnRef> {
+fn column_ref(ctx: &mut ParserContext) -> scan::Result<ColumnRef> {
 
     /*
           (IDENT | unreserved_keyword) ( indirection )?
@@ -52,7 +52,7 @@ fn column_ref(stream: &mut TokenStream) -> scan::Result<ColumnRef> {
             ColumnName.map(Str::from),
             located!(indirection).map(Some)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let column_ref = make_column_ref(name, indirection)?;
     Ok(column_ref)
@@ -265,5 +265,5 @@ use pg_combinators::Combinator;
 use pg_lexer::KeywordCategory::ColumnName;
 use pg_lexer::KeywordCategory::Unreserved;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::Optional;
+use pg_parser_core::ParserContext;

@@ -1,5 +1,5 @@
 /// Alias: `reset_rest`
-pub(super) fn variable_target(stream: &mut TokenStream) -> scan::Result<VariableTarget> {
+pub(super) fn variable_target(ctx: &mut ParserContext) -> scan::Result<VariableTarget> {
 
     /*
           TIME ZONE
@@ -20,7 +20,7 @@ pub(super) fn variable_target(stream: &mut TokenStream) -> scan::Result<Variable
                 OneOrAll::All => VariableTarget::All,
                 OneOrAll::One(name) => VariableTarget::Variable { name }
             })
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -55,5 +55,5 @@ use pg_lexer::Keyword::Time;
 use pg_lexer::Keyword::Transaction;
 use pg_lexer::Keyword::Zone;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::OneOrAll;

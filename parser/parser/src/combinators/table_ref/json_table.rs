@@ -1,4 +1,4 @@
-pub(super) fn json_table(stream: &mut TokenStream) -> scan::Result<JsonTable> {
+pub(super) fn json_table(ctx: &mut ParserContext) -> scan::Result<JsonTable> {
 
     /*
         JSON_TABLE '('
@@ -18,7 +18,7 @@ pub(super) fn json_table(stream: &mut TokenStream) -> scan::Result<JsonTable> {
         json_passing_clause.optional(),
         json_table_column_definition_list,
         json_on_error_clause.optional()
-    ))).parse(stream)?;
+    ))).parse(ctx)?;
 
     let mut expr = JsonTable::new(ctx, path_spec, columns);
     expr.set_passing(passing)
@@ -27,7 +27,7 @@ pub(super) fn json_table(stream: &mut TokenStream) -> scan::Result<JsonTable> {
     Ok(expr)
 }
 
-fn path_spec(stream: &mut TokenStream) -> scan::Result<JsonTablePathSpec> {
+fn path_spec(ctx: &mut ParserContext) -> scan::Result<JsonTablePathSpec> {
 
     /*
         a_expr ( alias )?
@@ -36,7 +36,7 @@ fn path_spec(stream: &mut TokenStream) -> scan::Result<JsonTablePathSpec> {
     let (Located(path, path_loc), alias) = seq!(
         located!(a_expr),
         alias.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let StringConst(path) = path else {
         return Err(NonStringJsonTablePathSpec.at_location(path_loc).into());
@@ -48,7 +48,7 @@ fn path_spec(stream: &mut TokenStream) -> scan::Result<JsonTablePathSpec> {
     Ok(path_spec)
 }
 
-fn json_table_column_definition_list(stream: &mut TokenStream) -> scan::Result<Vec<JsonTableColumnDefinition>> {
+fn json_table_column_definition_list(ctx: &mut ParserContext) -> scan::Result<Vec<JsonTableColumnDefinition>> {
 
     /*
         COLUMNS '('
@@ -61,7 +61,7 @@ fn json_table_column_definition_list(stream: &mut TokenStream) -> scan::Result<V
         paren!(
             many!(sep = Comma, json_table_column_definition)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(columns)
 }
@@ -93,15 +93,15 @@ struct RegularColumnTail {
     behavior: Option<JsonBehaviorClause>,
 }
 
-fn json_table_column_definition(stream: &mut TokenStream) -> scan::Result<JsonTableColumnDefinition> {
+fn json_table_column_definition(ctx: &mut ParserContext) -> scan::Result<JsonTableColumnDefinition> {
 
     alt!(
         nested_json_column.map(From::from),
         json_column
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn nested_json_column(stream: &mut TokenStream) -> scan::Result<JsonTableNestedColumn> {
+fn nested_json_column(ctx: &mut ParserContext) -> scan::Result<JsonTableNestedColumn> {
 
     /*
         NESTED ( PATH )? SCONST ( AS ColId )? json_table_column_definition_list
@@ -113,7 +113,7 @@ fn nested_json_column(stream: &mut TokenStream) -> scan::Result<JsonTableNestedC
         string,
         alias.optional(),
         json_table_column_definition_list
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let mut path_spec = JsonTablePathSpec::new(path_spec);
     path_spec.set_name(alias);
@@ -123,7 +123,7 @@ fn nested_json_column(stream: &mut TokenStream) -> scan::Result<JsonTableNestedC
     Ok(nested_column)
 }
 
-fn json_column(stream: &mut TokenStream) -> scan::Result<JsonTableColumnDefinition> {
+fn json_column(ctx: &mut ParserContext) -> scan::Result<JsonTableColumnDefinition> {
 
     let (column_name, partial) = seq!(col_id, alt!(
         seq!(For, Ordinality)
@@ -135,7 +135,7 @@ fn json_column(stream: &mut TokenStream) -> scan::Result<JsonTableColumnDefiniti
             .map(|(type_name, tail)|
                 PartialColumnDefinition::Other { type_name, tail }
             )
-    )).parse(stream)?;
+    )).parse(ctx)?;
 
     let column = match partial {
 
@@ -177,7 +177,7 @@ fn json_column(stream: &mut TokenStream) -> scan::Result<JsonTableColumnDefiniti
     Ok(column)
 }
 
-fn exists_column_tail(stream: &mut TokenStream) -> scan::Result<ExistsColumnTail> {
+fn exists_column_tail(ctx: &mut ParserContext) -> scan::Result<ExistsColumnTail> {
 
     /*
         EXISTS ( json_table_column_path_clause )? ( json_on_error_clause )?
@@ -187,7 +187,7 @@ fn exists_column_tail(stream: &mut TokenStream) -> scan::Result<ExistsColumnTail
         Kw::Exists,
         json_table_column_path_clause.optional(),
         json_on_error_clause.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(ExistsColumnTail {
         path_spec,
@@ -195,7 +195,7 @@ fn exists_column_tail(stream: &mut TokenStream) -> scan::Result<ExistsColumnTail
     })
 }
 
-fn regular_column_tail(stream: &mut TokenStream) -> scan::Result<RegularColumnTail> {
+fn regular_column_tail(ctx: &mut ParserContext) -> scan::Result<RegularColumnTail> {
 
     /*
         ( json_format_clause )?
@@ -211,7 +211,7 @@ fn regular_column_tail(stream: &mut TokenStream) -> scan::Result<RegularColumnTa
         json_wrapper_behavior,
         json_quotes_clause.optional(),
         json_behavior_clause.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(RegularColumnTail {
         wrapper,
@@ -222,14 +222,14 @@ fn regular_column_tail(stream: &mut TokenStream) -> scan::Result<RegularColumnTa
     })
 }
 
-fn json_table_column_path_clause(stream: &mut TokenStream) -> scan::Result<JsonTablePathSpec> {
+fn json_table_column_path_clause(ctx: &mut ParserContext) -> scan::Result<JsonTablePathSpec> {
 
     /*
         PATH SCONST
     */
 
     let (_, path_spec) = seq!(Path, string)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let path_spec = JsonTablePathSpec::new(path_spec);
     Ok(path_spec)
@@ -436,5 +436,5 @@ use pg_lexer::Keyword::Ordinality;
 use pg_lexer::Keyword::Path;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;

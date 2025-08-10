@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `RevokeStmt`
 /// * `RevokeRoleStmt`
-pub(super) fn revoke_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn revoke_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
           REVOKE privileges ON privilege_target FROM grantee_list opt_granted_by opt_drop_behavior
@@ -11,7 +11,7 @@ pub(super) fn revoke_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
     */
 
     let (_, stmt) = seq!(Revoke, parser(|_| todo!()))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(stmt)
 }
@@ -22,4 +22,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Revoke;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

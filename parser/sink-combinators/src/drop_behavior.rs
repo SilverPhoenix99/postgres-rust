@@ -1,5 +1,5 @@
 /// Alias: `opt_drop_behavior`
-pub fn drop_behavior(stream: &mut TokenStream<'_>) -> scan::Result<DropBehavior> {
+pub fn drop_behavior(ctx: &mut ParserContext) -> scan::Result<DropBehavior> {
 
     /*
         CASCADE | RESTRICT
@@ -8,7 +8,7 @@ pub fn drop_behavior(stream: &mut TokenStream<'_>) -> scan::Result<DropBehavior>
     alt!(
         Cascade.map(|_| DropBehavior::Cascade),
         Restrict.map(|_| DropBehavior::Restrict)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -29,5 +29,5 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Cascade;
 use pg_lexer::Keyword::Restrict;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::DropBehavior;

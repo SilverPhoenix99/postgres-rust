@@ -1,5 +1,5 @@
 /// Alias: `ClusterStmt`
-pub(super) fn cluster_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn cluster_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
           CLUSTER utility_options qualified_name cluster_index_specification
@@ -10,7 +10,7 @@ pub(super) fn cluster_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
     */
 
     let (_, stmt) = seq!(Cluster, parser(|_| todo!()))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(stmt)
 }
@@ -21,4 +21,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Cluster;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

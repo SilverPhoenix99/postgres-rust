@@ -1,17 +1,17 @@
 /// Alias: `CommentStmt`
-pub(super) fn comment_stmt(stream: &mut TokenStream) -> scan::Result<CommentStmt> {
+pub(super) fn comment_stmt(ctx: &mut ParserContext) -> scan::Result<CommentStmt> {
 
     /*
           COMMENT ON comment_target IS comment_text
     */
 
     let (.., target, comment) = seq!(Comment, On, comment_target, comment_text)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(CommentStmt::new(target, comment))
 }
 
-fn comment_target(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
+fn comment_target(ctx: &mut ParserContext) -> scan::Result<CommentTarget> {
 
     /*
           ACCESS METHOD name
@@ -110,10 +110,10 @@ fn comment_target(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
         trigger,
         type_name.map(Type),
         view.map(View),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn constraint(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
+fn constraint(ctx: &mut ParserContext) -> scan::Result<CommentTarget> {
 
     enum Constraint {
         Domain(TypeName),
@@ -131,7 +131,7 @@ fn constraint(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
             any_name
                 .map(Constraint::Table)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let target = match constraint {
         Constraint::Domain(domain) => DomainConstraint {
@@ -147,45 +147,45 @@ fn constraint(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
     Ok(target)
 }
 
-fn policy(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
+fn policy(ctx: &mut ParserContext) -> scan::Result<CommentTarget> {
 
     /*
         POLICY name ON any_name
     */
 
     let (_, name, _, table) = seq!(Kw::Policy, col_id, On, any_name)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(Policy { name, table })
 }
 
-fn rule(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
+fn rule(ctx: &mut ParserContext) -> scan::Result<CommentTarget> {
 
     /*
         RULE name ON any_name
     */
 
     let (_, name, _, table) = seq!(Kw::Rule, col_id, On, any_name)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(Rule { name, table })
 }
 
-fn trigger(stream: &mut TokenStream) -> scan::Result<CommentTarget> {
+fn trigger(ctx: &mut ParserContext) -> scan::Result<CommentTarget> {
 
     /*
         TRIGGER name ON any_name
     */
 
     let (_, name, _, table) = seq!(Kw::Trigger, col_id, On, any_name)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(Trigger { name, table })
 }
 
 /// The `Option` result does not come from an absence of value.
 /// It returns `None` when the token is the keyword `NULL`.
-fn comment_text(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
+fn comment_text(ctx: &mut ParserContext) -> scan::Result<Option<Box<str>>> {
 
     /*
           IS SCONST
@@ -193,7 +193,7 @@ fn comment_text(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
     */
 
     let (_, text) = seq!(Is, string_or_null)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(text)
 }
@@ -412,7 +412,7 @@ use pg_lexer::Keyword::Comment;
 use pg_lexer::Keyword::Is;
 use pg_lexer::Keyword::On;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::any_name;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::collation;

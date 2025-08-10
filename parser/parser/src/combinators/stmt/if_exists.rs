@@ -1,10 +1,10 @@
-pub(super) fn if_exists(stream: &mut TokenStream) -> scan::Result<Presence> {
+pub(super) fn if_exists(ctx: &mut ParserContext) -> scan::Result<Presence> {
 
     /*
         IF EXISTS
     */
 
-    let _ = seq!(If, Exists).parse(stream)?;
+    let _ = seq!(If, Exists).parse(ctx)?;
 
     Ok(Presence::Ignore)
 }
@@ -30,4 +30,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Exists;
 use pg_lexer::Keyword::If;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

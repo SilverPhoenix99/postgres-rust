@@ -1,10 +1,10 @@
-pub(super) fn expr_list(stream: &mut TokenStream) -> scan::Result<Vec<ExprNode>> {
+pub(super) fn expr_list(ctx: &mut ParserContext) -> scan::Result<Vec<ExprNode>> {
 
     /*
         a_expr ( ',' a_expr )*
     */
 
-    many!(sep = Comma, a_expr).parse(stream)
+    many!(sep = Comma, a_expr).parse(ctx)
 }
 
 #[cfg(test)]
@@ -32,4 +32,4 @@ use pg_combinators::many;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

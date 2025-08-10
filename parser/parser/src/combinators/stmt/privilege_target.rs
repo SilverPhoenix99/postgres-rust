@@ -1,4 +1,4 @@
-pub(super) fn privilege_target(stream: &mut TokenStream) -> scan::Result<PrivilegeTarget> {
+pub(super) fn privilege_target(ctx: &mut ParserContext) -> scan::Result<PrivilegeTarget> {
 
     /*
         ALL FUNCTIONS IN SCHEMA name_list
@@ -76,35 +76,35 @@ pub(super) fn privilege_target(stream: &mut TokenStream) -> scan::Result<Privile
             .map(|(_, types)| Type(types)),
         seq!(Kw::Table.optional(), qualified_name_list)
             .map(|(_, tables)| Table(tables))
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn parameter_name_list(stream: &mut TokenStream) -> scan::Result<Vec<QualifiedName>> {
+fn parameter_name_list(ctx: &mut ParserContext) -> scan::Result<Vec<QualifiedName>> {
 
     /*
         parameter_name ( ',' parameter_name )*
     */
 
-    many!(sep = Comma, parameter_name).parse(stream)
+    many!(sep = Comma, parameter_name).parse(ctx)
 }
 
-fn parameter_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
+fn parameter_name(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
 
     /*
         ColId ( '.' ColId )*
     */
 
-    many!(sep = Dot, col_id).parse(stream)
+    many!(sep = Dot, col_id).parse(ctx)
 }
 
 /// Alias: `NumericOnly_list`
-fn signed_number_list(stream: &mut TokenStream) -> scan::Result<Vec<SignedNumber>> {
+fn signed_number_list(ctx: &mut ParserContext) -> scan::Result<Vec<SignedNumber>> {
 
     /*
         signed_number ( ',' signed_number )*
     */
 
-    many!(sep = Comma, signed_number).parse(stream)
+    many!(sep = Comma, signed_number).parse(ctx)
 }
 
 #[cfg(test)]
@@ -288,7 +288,7 @@ use pg_lexer::Keyword::Wrapper;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::Dot;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::SignedNumber;
 use pg_sink_combinators::any_name_list;
 use pg_sink_combinators::col_id;

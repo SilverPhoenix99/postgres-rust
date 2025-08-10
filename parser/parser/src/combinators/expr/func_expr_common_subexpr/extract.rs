@@ -1,4 +1,4 @@
-pub(super) fn extract(stream: &mut TokenStream) -> scan::Result<ExtractFunc> {
+pub(super) fn extract(ctx: &mut ParserContext) -> scan::Result<ExtractFunc> {
 
     /*
         EXTRACT '(' extract_list ')'
@@ -7,26 +7,26 @@ pub(super) fn extract(stream: &mut TokenStream) -> scan::Result<ExtractFunc> {
     // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, expr) = seq!(skip(1), paren!(extract_args))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(expr)
 }
 
 /// Aliases: `extract_list`
-fn extract_args(stream: &mut TokenStream) -> scan::Result<ExtractFunc> {
+fn extract_args(ctx: &mut ParserContext) -> scan::Result<ExtractFunc> {
 
     /*
         extract_arg FROM a_expr
     */
 
     let (field, _, target) = seq!(extract_arg, FromKw, a_expr)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let expr = ExtractFunc::new(field, target);
     Ok(expr)
 }
 
-fn extract_arg(stream: &mut TokenStream) -> scan::Result<ExtractArg> {
+fn extract_arg(ctx: &mut ParserContext) -> scan::Result<ExtractArg> {
 
     /*
         YEAR
@@ -48,7 +48,7 @@ fn extract_arg(stream: &mut TokenStream) -> scan::Result<ExtractArg> {
         Kw::Second.map(|_| Second),
         string.map(Named),
         identifier.map(Named),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -118,4 +118,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::FromKw;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

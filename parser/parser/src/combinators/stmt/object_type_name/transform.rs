@@ -1,11 +1,11 @@
-pub(in crate::combinators::stmt) fn transform(stream: &mut TokenStream) -> scan::Result<Transform> {
+pub(in crate::combinators::stmt) fn transform(ctx: &mut ParserContext) -> scan::Result<Transform> {
 
     /*
         TRANSFORM FOR Typename LANGUAGE ColId
     */
 
     let (_, _, for_type, _, language) = seq!(Kw::Transform, For, typename, Language, col_id)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(Transform::new(for_type, language))
 }
@@ -34,5 +34,5 @@ use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::Language;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;

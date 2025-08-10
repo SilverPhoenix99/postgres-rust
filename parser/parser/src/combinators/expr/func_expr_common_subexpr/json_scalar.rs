@@ -1,4 +1,4 @@
-pub(super) fn json_scalar(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
+pub(super) fn json_scalar(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 
     /*
         JSON_SCALAR '(' a_expr ')'
@@ -7,7 +7,7 @@ pub(super) fn json_scalar(stream: &mut TokenStream) -> scan::Result<SqlFunction>
     // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, arg) = seq!(skip(1), paren!(a_expr))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(JsonScalar(arg))
 }
@@ -36,4 +36,4 @@ use pg_combinators::seq;
 use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

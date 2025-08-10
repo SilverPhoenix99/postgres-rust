@@ -1,4 +1,4 @@
-pub(super) fn treat_expr(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
+pub(super) fn treat_expr(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 
     /*
         TREAT '(' a_expr AS Typename ')'
@@ -15,7 +15,7 @@ pub(super) fn treat_expr(stream: &mut TokenStream) -> scan::Result<SqlFunction> 
     let (_, (expr, _, typename)) = seq!(
         skip(1),
         paren!(seq!(a_expr, As, typename))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let cast = TypecastExpr::new(expr, typename);
     let expr = Treat(cast);
@@ -57,4 +57,4 @@ use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::As;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

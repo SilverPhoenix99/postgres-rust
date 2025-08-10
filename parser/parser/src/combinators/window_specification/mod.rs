@@ -7,7 +7,7 @@ pg_basics::reexport! {
     window_exclusion_clause,
 }
 
-pub(super) fn window_specification(stream: &mut TokenStream) -> scan::Result<WindowDefinition> {
+pub(super) fn window_specification(ctx: &mut ParserContext) -> scan::Result<WindowDefinition> {
 
     /*
         '('
@@ -23,7 +23,7 @@ pub(super) fn window_specification(stream: &mut TokenStream) -> scan::Result<Win
         partition_clause.optional(),
         sort_clause.optional(),
         frame_clause.optional()
-    )).parse(stream)?;
+    )).parse(ctx)?;
 
     let order = order.map(|Located(order, _)| order);
 
@@ -100,4 +100,4 @@ use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

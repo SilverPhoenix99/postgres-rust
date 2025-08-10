@@ -1,11 +1,11 @@
-pub fn tablespace(stream: &mut TokenStream) -> scan::Result<Str> {
+pub fn tablespace(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     /*
         TABLESPACE ColId
     */
 
     let (_, name) = seq!(Tablespace, col_id)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(name)
 }
@@ -31,4 +31,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Tablespace;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

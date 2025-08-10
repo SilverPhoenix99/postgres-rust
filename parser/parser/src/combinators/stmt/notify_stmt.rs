@@ -1,5 +1,5 @@
 /// Alias: `NotifyStmt`
-pub(super) fn notify_stmt(stream: &mut TokenStream) -> scan::Result<NotifyStmt> {
+pub(super) fn notify_stmt(ctx: &mut ParserContext) -> scan::Result<NotifyStmt> {
 
     /*
         NOTIFY ColId ( ',' SCONST )?
@@ -9,7 +9,7 @@ pub(super) fn notify_stmt(stream: &mut TokenStream) -> scan::Result<NotifyStmt> 
         Notify,
         col_id,
         seq!(Comma, string).optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let stmt = if let Some((_, payload)) = payload {
         NotifyStmt::with_payload(condition_name, payload)
@@ -52,5 +52,5 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Notify;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;

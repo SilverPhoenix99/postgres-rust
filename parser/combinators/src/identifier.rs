@@ -1,8 +1,8 @@
 /// Aliases:
 /// * `IDENT`
 /// * `UIDENT`
-pub fn identifier(stream: &mut TokenStream) -> scan::Result<Box<str>> {
-    stream.consume(|tok| {
+pub fn identifier(ctx: &mut ParserContext) -> scan::Result<Box<str>> {
+    ctx.stream_mut().consume(|tok| {
         let Identifier(ident) = tok else { return None };
         Some(mem::take(ident))
     })
@@ -26,5 +26,5 @@ mod tests {
 use core::mem;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenConsumer;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue::Identifier;
+use pg_parser_core::ParserContext;

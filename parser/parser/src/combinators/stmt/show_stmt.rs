@@ -1,12 +1,12 @@
 /// Alias: `VariableShowStmt`
-pub(super) fn show_stmt(stream: &mut TokenStream) -> scan::Result<VariableTarget> {
+pub(super) fn show_stmt(ctx: &mut ParserContext) -> scan::Result<VariableTarget> {
 
     /*
         SHOW variable_target
     */
 
     let (_, target) = seq!(Show, variable_target)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(target)
 }
@@ -32,4 +32,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Show;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

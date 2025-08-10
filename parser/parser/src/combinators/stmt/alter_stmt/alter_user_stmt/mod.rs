@@ -5,7 +5,7 @@ mod user_stmt;
 /// * `AlterRoleStmt`
 /// * `AlterRoleSetStmt`
 /// * `AlterUserMappingStmt`
-pub(super) fn alter_user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn alter_user_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
           ALTER USER MAPPING FOR auth_ident SERVER ColId alter_generic_options  => AlterUserMappingStmt
@@ -26,7 +26,7 @@ pub(super) fn alter_user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt>
             .map(|(_, stmt)| stmt),
         seq!(Kw::Role, user_stmt)
             .map(|(_, stmt)| stmt)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -86,5 +86,5 @@ use pg_lexer::Keyword::Mapping;
 use pg_lexer::Keyword::Server;
 use pg_lexer::Keyword::User;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;

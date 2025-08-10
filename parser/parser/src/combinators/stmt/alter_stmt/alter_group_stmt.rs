@@ -7,7 +7,7 @@ enum Change {
 }
 
 /// Alias: `AlterGroupStmt`
-pub(super) fn alter_group_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn alter_group_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER GROUP role_id RENAME TO role_id
@@ -18,7 +18,7 @@ pub(super) fn alter_group_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt
         Group,
         located!(role_spec),
         alt!(rename, change_role)
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let stmt = match stmt {
         Change::Rename(new_name) => {
@@ -35,13 +35,13 @@ pub(super) fn alter_group_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt
     Ok(stmt)
 }
 
-fn rename(stream: &mut TokenStream) -> scan::Result<Change> {
+fn rename(ctx: &mut ParserContext) -> scan::Result<Change> {
 
-    let (.., new_name) = seq!(Rename, To, role_id).parse(stream)?;
+    let (.., new_name) = seq!(Rename, To, role_id).parse(ctx)?;
     Ok(Change::Rename(new_name))
 }
 
-fn change_role(stream: &mut TokenStream) -> scan::Result<Change> {
+fn change_role(ctx: &mut ParserContext) -> scan::Result<Change> {
 
     let (action, _, roles) = seq!(
         alt!(
@@ -50,7 +50,7 @@ fn change_role(stream: &mut TokenStream) -> scan::Result<Change> {
         ),
         User,
         role_list
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(Change::Role { action, roles })
 }
@@ -115,7 +115,7 @@ use pg_lexer::Keyword::Rename;
 use pg_lexer::Keyword::To;
 use pg_lexer::Keyword::User;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::role_id;
 use pg_sink_combinators::role_list;

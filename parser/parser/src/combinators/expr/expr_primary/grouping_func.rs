@@ -1,15 +1,15 @@
-pub(super) fn grouping_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn grouping_func(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 
     /*
         GROUPING '(' expr_list ')'
     */
 
-    let (Keyword(Grouping), Operator(OpenParenthesis)) = stream.peek2()? else {
-        return no_match(stream);
+    let (Keyword(Grouping), Operator(OpenParenthesis)) = ctx.stream_mut().peek2()? else {
+        return no_match(ctx);
     };
 
     let (_, args) = seq!(skip(1), paren!(expr_list))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(GroupingFunc(args))
 }
@@ -41,6 +41,6 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Grouping;
 use pg_lexer::OperatorKind::OpenParenthesis;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue::Keyword;
 use pg_parser_core::stream::TokenValue::Operator;
+use pg_parser_core::ParserContext;

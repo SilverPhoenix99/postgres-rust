@@ -1,11 +1,11 @@
-pub fn event_trigger(stream: &mut TokenStream) -> scan::Result<Str> {
+pub fn event_trigger(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     /*
         EVENT TRIGGER ColId
     */
 
     let (.., name) = seq!(Event, Trigger, col_id)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(name)
 }
@@ -32,4 +32,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Event;
 use pg_lexer::Keyword::Trigger;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

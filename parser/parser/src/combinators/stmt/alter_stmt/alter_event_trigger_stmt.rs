@@ -5,7 +5,7 @@ enum Change {
 }
 
 /// Includes: `AlterEventTrigStmt`
-pub(super) fn alter_event_trigger_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn alter_event_trigger_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER EVENT TRIGGER ColId enable_trigger
@@ -13,7 +13,7 @@ pub(super) fn alter_event_trigger_stmt(stream: &mut TokenStream) -> scan::Result
         ALTER EVENT TRIGGER ColId RENAME TO ColId
     */
 
-    let (.., event_trigger, change) = seq!(Event, Trigger, col_id, changes).parse(stream)?;
+    let (.., event_trigger, change) = seq!(Event, Trigger, col_id, changes).parse(ctx)?;
 
     let stmt = match change {
         Change::EnableTrigger(state) => {
@@ -36,17 +36,17 @@ pub(super) fn alter_event_trigger_stmt(stream: &mut TokenStream) -> scan::Result
     Ok(stmt)
 }
 
-fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
+fn changes(ctx: &mut ParserContext) -> scan::Result<Change> {
     alt!(
         enable_trigger.map(Change::EnableTrigger),
         seq!(Owner, To, role_spec)
             .map(|(.., new_owner)| Change::Owner(new_owner)),
         seq!(Rename, To, col_id)
             .map(|(.., new_name)| Change::Name(new_name))
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn enable_trigger(stream: &mut TokenStream) -> scan::Result<EventTriggerState> {
+fn enable_trigger(ctx: &mut ParserContext) -> scan::Result<EventTriggerState> {
 
     /*
         ENABLE_P
@@ -66,7 +66,7 @@ fn enable_trigger(stream: &mut TokenStream) -> scan::Result<EventTriggerState> {
             .optional()
         )
             .map(|(_, enable)| enable.unwrap_or(FiresOnOrigin))
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -131,7 +131,7 @@ use pg_lexer::Keyword::Replica;
 use pg_lexer::Keyword::To;
 use pg_lexer::Keyword::Trigger;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::role_spec;

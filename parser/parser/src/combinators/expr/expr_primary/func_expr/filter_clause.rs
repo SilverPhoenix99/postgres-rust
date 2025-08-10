@@ -1,5 +1,5 @@
 pub(in crate::combinators::expr::expr_primary)
-fn filter_clause(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+fn filter_clause(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 
     /*
         FILTER '(' WHERE a_expr ')'
@@ -8,7 +8,7 @@ fn filter_clause(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     let (_, (_, expr)) = seq!(
         Filter,
         paren!(seq!(Where, a_expr))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(expr)
 }
@@ -36,4 +36,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Filter;
 use pg_lexer::Keyword::Where;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

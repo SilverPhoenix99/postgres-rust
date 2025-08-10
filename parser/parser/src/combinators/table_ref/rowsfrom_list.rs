@@ -1,20 +1,20 @@
-pub(super) fn rowsfrom_list(stream: &mut TokenStream) -> scan::Result<Vec<RangeFunction>> {
+pub(super) fn rowsfrom_list(ctx: &mut ParserContext) -> scan::Result<Vec<RangeFunction>> {
 
     /*
         rowsfrom_item ( ',' rowsfrom_item )*
     */
 
-    many!(sep = Comma, rowsfrom_item).parse(stream)
+    many!(sep = Comma, rowsfrom_item).parse(ctx)
 }
 
-fn rowsfrom_item(stream: &mut TokenStream) -> scan::Result<RangeFunction> {
+fn rowsfrom_item(ctx: &mut ParserContext) -> scan::Result<RangeFunction> {
 
     /*
         func_expr_windowless ( col_def_list )?
     */
 
     let (func_call, cols) = seq!(func_expr_windowless, col_def_list.optional())
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let mut range_func = RangeFunction::new(func_call);
     range_func.set_column_definitions(cols);
@@ -23,14 +23,14 @@ fn rowsfrom_item(stream: &mut TokenStream) -> scan::Result<RangeFunction> {
 }
 
 /// Alias: `opt_col_def_list`
-fn col_def_list(stream: &mut TokenStream) -> scan::Result<Vec<SimpleColumnDefinition>> {
+fn col_def_list(ctx: &mut ParserContext) -> scan::Result<Vec<SimpleColumnDefinition>> {
 
     /*
         AS '(' table_func_element_list ')'
     */
 
     let (_, cols) = seq!(As, paren!(table_func_element_list))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(cols)
 }
@@ -99,4 +99,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::As;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

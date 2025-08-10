@@ -1,5 +1,5 @@
 /// Alias: `UnlistenStmt`
-pub(super) fn unlisten_stmt(stream: &mut TokenStream) -> scan::Result<OneOrAll<Str>> {
+pub(super) fn unlisten_stmt(ctx: &mut ParserContext) -> scan::Result<OneOrAll<Str>> {
 
     /*
           UNLISTEN '*'
@@ -12,7 +12,7 @@ pub(super) fn unlisten_stmt(stream: &mut TokenStream) -> scan::Result<OneOrAll<S
             Mul.map(|_| OneOrAll::All),
             col_id.map(OneOrAll::One)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(stmt)
 }
@@ -38,6 +38,6 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Unlisten;
 use pg_lexer::OperatorKind::Mul;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::OneOrAll;
 use pg_sink_combinators::col_id;

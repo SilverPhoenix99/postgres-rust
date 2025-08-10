@@ -1,5 +1,5 @@
 /// Alias: `json_quotes_clause_opt`
-pub(super) fn json_quotes_clause(stream: &mut TokenStream) -> scan::Result<JsonQuotes> {
+pub(super) fn json_quotes_clause(ctx: &mut ParserContext) -> scan::Result<JsonQuotes> {
 
     /*
         ( KEEP | OMIT ) QUOTES ( ON SCALAR STRING )?
@@ -12,7 +12,7 @@ pub(super) fn json_quotes_clause(stream: &mut TokenStream) -> scan::Result<JsonQ
         ),
         Quotes,
         seq!(On, Scalar, StringKw).optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(quotes)
 }
@@ -44,4 +44,4 @@ use pg_lexer::Keyword::Quotes;
 use pg_lexer::Keyword::Scalar;
 use pg_lexer::Keyword::StringKw;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

@@ -7,7 +7,7 @@ mod object_type_name;
 pub(in crate::combinators) use self::begin_stmt::begin_stmt;
 pub(in crate::combinators) use self::end_stmt::end_stmt;
 
-pub(super) fn stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     alt!(
         alt!(
@@ -50,7 +50,7 @@ pub(super) fn stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
         truncate_stmt,
         unlisten_stmt.map(UnlistenStmt),
         vacuum_stmt,
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -169,4 +169,4 @@ use pg_ast::RawStmt::VariableShowStmt;
 use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

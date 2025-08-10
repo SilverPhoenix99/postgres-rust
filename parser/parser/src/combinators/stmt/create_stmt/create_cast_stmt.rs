@@ -1,4 +1,4 @@
-pub(super) fn create_cast_stmt(stream: &mut TokenStream) -> scan::Result<CreateCastStmt> {
+pub(super) fn create_cast_stmt(ctx: &mut ParserContext) -> scan::Result<CreateCastStmt> {
 
     /*
         typecast cast_conversion cast_context
@@ -9,13 +9,13 @@ pub(super) fn create_cast_stmt(stream: &mut TokenStream) -> scan::Result<CreateC
         cast_conversion,
         cast_context.optional()
             .map(Option::unwrap_or_default)
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let stmt = CreateCastStmt::new(typecast, conversion, coercion);
     Ok(stmt)
 }
 
-fn cast_conversion(stream: &mut TokenStream) -> scan::Result<CastConversion> {
+fn cast_conversion(ctx: &mut ParserContext) -> scan::Result<CastConversion> {
 
     /*
           WITH FUNCTION function_with_argtypes
@@ -34,10 +34,10 @@ fn cast_conversion(stream: &mut TokenStream) -> scan::Result<CastConversion> {
         )
             .map(|(_, conversion)| conversion),
         seq!(Without, Function).map(|_| WithoutFunction),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn cast_context(stream: &mut TokenStream) -> scan::Result<CoercionContext> {
+fn cast_context(ctx: &mut ParserContext) -> scan::Result<CoercionContext> {
 
     /*
           AS (IMPLICIT | ASSIGNMENT)
@@ -49,7 +49,7 @@ fn cast_context(stream: &mut TokenStream) -> scan::Result<CoercionContext> {
             Kw::Implicit.map(|_| CoercionContext::Implicit),
             Kw::Assignment.map(|_| CoercionContext::Assignment)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(context)
 }
@@ -110,4 +110,4 @@ use pg_lexer::Keyword::Inout;
 use pg_lexer::Keyword::With;
 use pg_lexer::Keyword::Without;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

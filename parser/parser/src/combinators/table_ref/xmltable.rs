@@ -1,4 +1,4 @@
-pub(super) fn xmltable(stream: &mut TokenStream) -> scan::Result<XmlTable> {
+pub(super) fn xmltable(ctx: &mut ParserContext) -> scan::Result<XmlTable> {
 
     /*
         XMLTABLE '('
@@ -19,7 +19,7 @@ pub(super) fn xmltable(stream: &mut TokenStream) -> scan::Result<XmlTable> {
             Columns,
             xmltable_column_list
         ))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let mut xml_table = XmlTable::new(doc, row_spec, columns);
     xml_table.set_namespaces(namespaces);
@@ -27,28 +27,28 @@ pub(super) fn xmltable(stream: &mut TokenStream) -> scan::Result<XmlTable> {
     Ok(xml_table)
 }
 
-fn xml_namespaces(stream: &mut TokenStream) -> scan::Result<Vec<NamedValue>> {
+fn xml_namespaces(ctx: &mut ParserContext) -> scan::Result<Vec<NamedValue>> {
 
     /*
         XMLNAMESPACES '(' xml_namespace_list ')' ','
     */
 
     let (_, namespaces, _) = seq!(Xmlnamespaces, paren!(xml_namespace_list), Comma)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(namespaces)
 }
 
-fn xmltable_column_list(stream: &mut TokenStream) -> scan::Result<Vec<XmlTableColumn>> {
+fn xmltable_column_list(ctx: &mut ParserContext) -> scan::Result<Vec<XmlTableColumn>> {
 
     /*
         xmltable_column_el ( ',' xmltable_column_el )*
     */
 
-    many!(sep = Comma, xmltable_column_el).parse(stream)
+    many!(sep = Comma, xmltable_column_el).parse(ctx)
 }
 
-fn xmltable_column_el(stream: &mut TokenStream) -> scan::Result<XmlTableColumn> {
+fn xmltable_column_el(ctx: &mut ParserContext) -> scan::Result<XmlTableColumn> {
 
     /*
           col_id FOR ORDINALITY
@@ -65,7 +65,7 @@ fn xmltable_column_el(stream: &mut TokenStream) -> scan::Result<XmlTableColumn> 
                 ).optional()
             ).map(Some)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let Some((type_name, options)) = kind else {
         return Ok(XmlTableColumn::new(column_name, ForOrdinality))
@@ -117,7 +117,7 @@ enum XmlTableColumnOption {
     Path(ExprNode),
 }
 
-fn xmltable_column_option_el(stream: &mut TokenStream) -> scan::Result<XmlTableColumnOption> {
+fn xmltable_column_option_el(ctx: &mut ParserContext) -> scan::Result<XmlTableColumnOption> {
 
     /*
           NULL
@@ -137,12 +137,12 @@ fn xmltable_column_option_el(stream: &mut TokenStream) -> scan::Result<XmlTableC
         seq!(Kw::Path, b_expr)
             .map(|(_, value)| Path(value)),
         xmltable_column_ident_option,
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn xmltable_column_ident_option(stream: &mut TokenStream) -> scan::Result<XmlTableColumnOption> {
+fn xmltable_column_ident_option(ctx: &mut ParserContext) -> scan::Result<XmlTableColumnOption> {
 
-    let (Located(option, loc), _) = seq!(located!(identifier), b_expr).parse(stream)?;
+    let (Located(option, loc), _) = seq!(located!(identifier), b_expr).parse(ctx)?;
 
     let err = if option.as_ref() == "__pg__is_not_null" {
         InvalidXmlTableOptionName(option)
@@ -154,16 +154,16 @@ fn xmltable_column_ident_option(stream: &mut TokenStream) -> scan::Result<XmlTab
     Err(err.at_location(loc).into())
 }
 
-fn xml_namespace_list(stream: &mut TokenStream) -> scan::Result<Vec<NamedValue>> {
+fn xml_namespace_list(ctx: &mut ParserContext) -> scan::Result<Vec<NamedValue>> {
 
     /*
         xml_namespace_el ( ',' xml_namespace_el )*
     */
 
-    many!(sep = Comma, xml_namespace_el).parse(stream)
+    many!(sep = Comma, xml_namespace_el).parse(ctx)
 }
 
-fn xml_namespace_el(stream: &mut TokenStream) -> scan::Result<NamedValue> {
+fn xml_namespace_el(ctx: &mut ParserContext) -> scan::Result<NamedValue> {
 
     /*
           DEFAULT b_expr
@@ -175,7 +175,7 @@ fn xml_namespace_el(stream: &mut TokenStream) -> scan::Result<NamedValue> {
             .map(|(_, value)| NamedValue::unnamed(value)),
         seq!(b_expr, As, col_label)
             .map(|(value, _, name)| NamedValue::new(Some(name), value)),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -346,7 +346,7 @@ use pg_lexer::Keyword::Xmlnamespaces;
 use pg_lexer::Keyword::Xmltable;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::col_label;
 use XmlTableColumnOption::Default as DefaultOption;

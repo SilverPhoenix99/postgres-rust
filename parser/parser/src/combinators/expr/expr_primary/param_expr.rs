@@ -1,4 +1,4 @@
-pub(super) fn param_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn param_expr(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 
     /*
         PARAM ( indirection )?
@@ -9,7 +9,7 @@ pub(super) fn param_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     let (index, indirection) = seq!(
         param,
         located!(indirection).optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let param = ParamRef { index };
     let expr = match indirection {
@@ -52,4 +52,4 @@ use pg_combinators::param;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

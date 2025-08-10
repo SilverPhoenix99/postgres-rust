@@ -16,7 +16,7 @@ pg_basics::reexport! {
     set_reset_clause,
 }
 
-pub(super) fn alter_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn alter_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     let (_, stmt) = seq!(
         Alter,
@@ -35,7 +35,7 @@ pub(super) fn alter_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
             alter_system_stmt.map(From::from),
             alter_user_stmt,
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(stmt)
 }
@@ -77,4 +77,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Alter;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

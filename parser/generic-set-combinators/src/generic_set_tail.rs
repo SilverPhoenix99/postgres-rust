@@ -1,5 +1,5 @@
 /// Alias: `generic_set`
-pub fn generic_set_tail(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<Vec<VarValue>>> {
+pub fn generic_set_tail(ctx: &mut ParserContext) -> scan::Result<ValueOrDefault<Vec<VarValue>>> {
 
     /*
           (TO | '=') DEFAULT
@@ -15,7 +15,7 @@ pub fn generic_set_tail(stream: &mut TokenStream) -> scan::Result<ValueOrDefault
             DefaultKw.map(|_| ValueOrDefault::Default),
             var_list.map(ValueOrDefault::Value)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(value)
 }
@@ -44,5 +44,5 @@ use pg_lexer::Keyword::DefaultKw;
 use pg_lexer::Keyword::To;
 use pg_lexer::OperatorKind::Equals;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::ValueOrDefault;

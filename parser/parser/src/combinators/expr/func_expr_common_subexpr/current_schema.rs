@@ -1,14 +1,14 @@
-pub(super) fn current_schema(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
+pub(super) fn current_schema(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 
     // `current_schema()` is valid syntax for `prefix_expr`, so exclude that case from here.
-    if matches!(stream.peek2(), Ok((K(Kw::CurrentSchema), Op(OpenParenthesis)))) {
-        return no_match(stream)
+    if matches!(ctx.stream_mut().peek2(), Ok((K(Kw::CurrentSchema), Op(OpenParenthesis)))) {
+        return no_match(ctx)
     }
 
     // If we reach here, it could be that there are 1 or fewer tokens left in the stream,
     // or there are more tokens, but they didn't match any of the above patterns.
 
-    Kw::CurrentSchema.parse(stream)?;
+    Kw::CurrentSchema.parse(ctx)?;
     Ok(CurrentSchema)
 }
 
@@ -35,6 +35,6 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::OperatorKind::OpenParenthesis;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue::Keyword as K;
 use pg_parser_core::stream::TokenValue::Operator as Op;
+use pg_parser_core::ParserContext;

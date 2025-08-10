@@ -1,7 +1,7 @@
 /// Production: `'(' ICONST ')'`
-pub(super) fn i32_literal_paren(stream: &mut TokenStream) -> scan::Result<i32> {
+pub(super) fn i32_literal_paren(ctx: &mut ParserContext) -> scan::Result<i32> {
 
-    paren!(i32_literal).parse(stream)
+    paren!(i32_literal).parse(ctx)
 }
 
 #[cfg(test)]
@@ -22,5 +22,5 @@ mod tests {
 use pg_combinators::paren;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::i32_literal;

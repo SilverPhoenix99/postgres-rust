@@ -1,5 +1,5 @@
 /// Alias: `opt_array_bounds`
-pub(super) fn array_bounds(stream: &mut TokenStream) -> scan::Result<Vec<Option<i32>>> {
+pub(super) fn array_bounds(ctx: &mut ParserContext) -> scan::Result<Vec<Option<i32>>> {
 
     /*
           ARRAY ( '[' ICONST ']' )?
@@ -9,10 +9,10 @@ pub(super) fn array_bounds(stream: &mut TokenStream) -> scan::Result<Vec<Option<
     alt!(
         explicit_array,
         implicit_array
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn explicit_array(stream: &mut TokenStream) -> scan::Result<Vec<Option<i32>>> {
+fn explicit_array(ctx: &mut ParserContext) -> scan::Result<Vec<Option<i32>>> {
 
     /*
         ARRAY ( '[' ICONST ']' )?
@@ -21,12 +21,12 @@ fn explicit_array(stream: &mut TokenStream) -> scan::Result<Vec<Option<i32>>> {
     let (_, dim) = seq!(
         Array,
         brackets!(i32_literal).optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(vec![dim])
 }
 
-fn implicit_array(stream: &mut TokenStream) -> scan::Result<Vec<Option<i32>>> {
+fn implicit_array(ctx: &mut ParserContext) -> scan::Result<Vec<Option<i32>>> {
 
     /*
         ( '[' ( ICONST )? ']' )[1..]
@@ -36,7 +36,7 @@ fn implicit_array(stream: &mut TokenStream) -> scan::Result<Vec<Option<i32>>> {
         brackets!(
             i32_literal.optional()
         )
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -63,5 +63,5 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Array;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::i32_literal;

@@ -1,5 +1,5 @@
 /// Alias: `opt_transaction_chain`
-pub fn transaction_chain(stream: &mut TokenStream) -> scan::Result<bool> {
+pub fn transaction_chain(ctx: &mut ParserContext) -> scan::Result<bool> {
 
     /*
         AND ( NO )? CHAIN
@@ -9,7 +9,7 @@ pub fn transaction_chain(stream: &mut TokenStream) -> scan::Result<bool> {
         And,
         No.optional(),
         Chain
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(no.is_none())
 }
@@ -33,4 +33,4 @@ use pg_lexer::Keyword::And;
 use pg_lexer::Keyword::Chain;
 use pg_lexer::Keyword::No;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

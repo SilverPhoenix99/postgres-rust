@@ -1,11 +1,11 @@
-pub(super) fn alter_large_object_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn alter_large_object_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER LARGE_P OBJECT_P NumericOnly OWNER TO RoleSpec
     */
 
     let (_, _, oid, _, _, new_owner) = seq!(Large, Object, signed_number, Owner, To, role_spec)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let stmt = AlterOwnerStmt::new(
         AlterOwnerTarget::LargeObject(oid),
@@ -45,6 +45,6 @@ use pg_lexer::Keyword::Object;
 use pg_lexer::Keyword::Owner;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::role_spec;
 use pg_sink_combinators::signed_number;

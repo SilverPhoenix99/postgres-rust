@@ -7,7 +7,7 @@ pub(super) enum FrameBound {
     OffsetFollowing(ExprNode),
 }
 
-pub(super) fn frame_bound(stream: &mut TokenStream<'_>) -> scan::Result<FrameBound> {
+pub(super) fn frame_bound(ctx: &mut ParserContext) -> scan::Result<FrameBound> {
 
     /*
         UNBOUNDED PRECEDING
@@ -18,7 +18,7 @@ pub(super) fn frame_bound(stream: &mut TokenStream<'_>) -> scan::Result<FrameBou
     */
 
     // A single keyword is ambiguous with a_expr, so we need to check 2.
-    if let Ok((first, second)) = stream.peek2() {
+    if let Ok((first, second)) = ctx.stream_mut().peek2() {
 
         let res = match (first, second) {
             (Kw(Unbounded), Kw(Preceding)) => Some(UnboundedPreceding),
@@ -28,7 +28,7 @@ pub(super) fn frame_bound(stream: &mut TokenStream<'_>) -> scan::Result<FrameBou
         };
 
         if let Some(bound) = res {
-            stream.skip(2);
+            ctx.stream_mut().skip(2);
             return Ok(bound);
         }
     }
@@ -36,7 +36,7 @@ pub(super) fn frame_bound(stream: &mut TokenStream<'_>) -> scan::Result<FrameBou
     let (expr, bound) = seq!(
         a_expr,
         alt!( Preceding, Following)
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let bound = if bound == Preceding {
         OffsetPreceding(expr)
@@ -82,5 +82,5 @@ use pg_lexer::Keyword::Preceding;
 use pg_lexer::Keyword::Row;
 use pg_lexer::Keyword::Unbounded;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue::Keyword as Kw;
+use pg_parser_core::ParserContext;

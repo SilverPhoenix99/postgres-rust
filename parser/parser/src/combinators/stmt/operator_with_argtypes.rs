@@ -1,24 +1,24 @@
-pub(super) fn operator_with_argtypes_list(stream: &mut TokenStream) -> scan::Result<Vec<OperatorWithArgs>> {
+pub(super) fn operator_with_argtypes_list(ctx: &mut ParserContext) -> scan::Result<Vec<OperatorWithArgs>> {
 
     /*
         operator_with_argtypes ( ',' operator_with_argtypes )*
     */
 
-    many!(sep = Comma, operator_with_argtypes).parse(stream)
+    many!(sep = Comma, operator_with_argtypes).parse(ctx)
 }
 
-pub(super) fn operator_with_argtypes(stream: &mut TokenStream) -> scan::Result<OperatorWithArgs> {
+pub(super) fn operator_with_argtypes(ctx: &mut ParserContext) -> scan::Result<OperatorWithArgs> {
 
     /*
         any_operator oper_argtypes
     */
 
-    let (name, args) = seq!(any_operator, oper_argtypes).parse(stream)?;
+    let (name, args) = seq!(any_operator, oper_argtypes).parse(ctx)?;
 
     Ok(OperatorWithArgs::new(name, args))
 }
 
-fn oper_argtypes(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
+fn oper_argtypes(ctx: &mut ParserContext) -> scan::Result<OneOrBoth<Type>> {
 
     /*
           '(' NONE ',' Typename ')'
@@ -27,36 +27,36 @@ fn oper_argtypes(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
         | '(' Typename ')' => Err
     */
 
-    paren!(oper_argtypes_between).parse(stream)
+    paren!(oper_argtypes_between).parse(ctx)
 }
 
-fn oper_argtypes_between(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
+fn oper_argtypes_between(ctx: &mut ParserContext) -> scan::Result<OneOrBoth<Type>> {
     alt!(
         none_type,
         both_types
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn none_type(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
+fn none_type(ctx: &mut ParserContext) -> scan::Result<OneOrBoth<Type>> {
 
     /*
         '(' NONE ',' Typename ')'
     */
 
     let (.., typ) = seq!(NoneKw, Comma, typename)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(OneOrBoth::Right(typ))
 }
 
-fn both_types(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
+fn both_types(ctx: &mut ParserContext) -> scan::Result<OneOrBoth<Type>> {
 
     /*
         '(' Typename ',' (Typename | NONE) ')'
     */
 
     let (typ1, typ2) = seq!(typename, right_type)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let pair = match typ2 {
         Some(typ2) => OneOrBoth::Both(typ1, typ2),
@@ -68,7 +68,7 @@ fn both_types(stream: &mut TokenStream) -> scan::Result<OneOrBoth<Type>> {
 
 /// The `Option` result does not come from an absence of value.
 /// It returns `None` when the token is the keyword `NONE`.
-fn right_type(stream: &mut TokenStream) -> scan::Result<Option<Type>> {
+fn right_type(ctx: &mut ParserContext) -> scan::Result<Option<Type>> {
 
     /*
           ',' Typename ')'
@@ -85,13 +85,13 @@ fn right_type(stream: &mut TokenStream) -> scan::Result<Option<Type>> {
                 typename.map(Some)
             )
         ).map(|(_, typ)| typ)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 /// The `Result<Option>` needs to match the caller's return type.
-fn close_paren(stream: &mut TokenStream) -> scan::Result<Option<Type>> {
+fn close_paren(ctx: &mut ParserContext) -> scan::Result<Option<Type>> {
 
-    let Located(_, loc) = located!(CloseParenthesis).parse(stream)?;
+    let Located(_, loc) = located!(CloseParenthesis).parse(ctx)?;
     Err(MissingOperatorArgumentType.at_location(loc).into())
 }
 
@@ -152,5 +152,5 @@ use pg_lexer::Keyword::NoneKw;
 use pg_lexer::OperatorKind::CloseParenthesis;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::any_operator;

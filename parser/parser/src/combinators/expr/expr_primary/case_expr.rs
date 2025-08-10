@@ -1,4 +1,4 @@
-pub(super) fn case_expr(stream: &mut TokenStream) -> scan::Result<CaseExpr> {
+pub(super) fn case_expr(ctx: &mut ParserContext) -> scan::Result<CaseExpr> {
 
     /*
         CASE ( a_expr )?
@@ -12,23 +12,23 @@ pub(super) fn case_expr(stream: &mut TokenStream) -> scan::Result<CaseExpr> {
         a_expr.optional(),
         many!(when_clause),
         else_clause.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let expr = CaseExpr::new(target, when_clauses, default);
     Ok(expr)
 }
 
-fn when_clause(stream: &mut TokenStream) -> scan::Result<CaseWhen> {
+fn when_clause(ctx: &mut ParserContext) -> scan::Result<CaseWhen> {
 
-    let (_, condition, _, body) = seq!(When, a_expr, Then, a_expr).parse(stream)?;
+    let (_, condition, _, body) = seq!(When, a_expr, Then, a_expr).parse(ctx)?;
 
     let expr = CaseWhen::new(condition, body);
     Ok(expr)
 }
 
-fn else_clause(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+fn else_clause(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 
-    let (_, expr) = seq!(Else, a_expr).parse(stream)?;
+    let (_, expr) = seq!(Else, a_expr).parse(ctx)?;
 
     Ok(expr)
 
@@ -97,4 +97,4 @@ use pg_lexer::Keyword::Else;
 use pg_lexer::Keyword::Then;
 use pg_lexer::Keyword::When;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

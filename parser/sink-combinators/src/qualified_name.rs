@@ -1,19 +1,19 @@
-pub fn qualified_name_list(stream: &mut TokenStream) -> scan::Result<Vec<RelationName>> {
+pub fn qualified_name_list(ctx: &mut ParserContext) -> scan::Result<Vec<RelationName>> {
 
     /*
         qualified_name ( ',' qualified_name )*
     */
 
-    many!(sep = Comma, qualified_name).parse(stream)
+    many!(sep = Comma, qualified_name).parse(ctx)
 }
 
-pub fn qualified_name(stream: &mut TokenStream) -> scan::Result<RelationName> {
+pub fn qualified_name(ctx: &mut ParserContext) -> scan::Result<RelationName> {
 
     /*
         (col_id attrs){1,3}
     */
 
-    let Located(mut qn, loc) = located!(any_name).parse(stream)?;
+    let Located(mut qn, loc) = located!(any_name).parse(ctx)?;
 
     match qn.as_mut_slice() {
         [relation] => {
@@ -100,6 +100,6 @@ use pg_elog::parser::Error::ImproperQualifiedName;
 use pg_elog::parser::NameList;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::RelationName;
 use pg_sink_ast::SchemaName;

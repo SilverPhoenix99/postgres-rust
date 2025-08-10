@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `ConstraintsSetStmt`
 /// * `VariableSetStmt`
-pub(super) fn set_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn set_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
           SET CONSTRAINTS constraints_set_list constraints_set_mode
@@ -25,12 +25,12 @@ pub(super) fn set_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
                     VariableSetStmt::session(stmt).into()
                 )
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(stmt)
 }
 
-fn constraints_set_list(stream: &mut TokenStream) -> scan::Result<OneOrAll<Vec<RelationName>>> {
+fn constraints_set_list(ctx: &mut ParserContext) -> scan::Result<OneOrAll<Vec<RelationName>>> {
 
     /*
           ALL
@@ -40,10 +40,10 @@ fn constraints_set_list(stream: &mut TokenStream) -> scan::Result<OneOrAll<Vec<R
     alt!(
         All.map(|_| OneOrAll::All),
         qualified_name_list.map(OneOrAll::One)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn constraints_set_mode(stream: &mut TokenStream) -> scan::Result<ConstraintsSetMode> {
+fn constraints_set_mode(ctx: &mut ParserContext) -> scan::Result<ConstraintsSetMode> {
 
     /*
           DEFERRED
@@ -53,7 +53,7 @@ fn constraints_set_mode(stream: &mut TokenStream) -> scan::Result<ConstraintsSet
     alt!(
         Kw::Immediate.map(|_| Immediate),
         Kw::Deferred.map(|_| Deferred)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -119,7 +119,7 @@ use pg_lexer::Keyword::Local;
 use pg_lexer::Keyword::Session;
 use pg_lexer::Keyword::Set;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::OneOrAll;
 use pg_sink_ast::RelationName;
 use pg_sink_combinators::qualified_name_list;

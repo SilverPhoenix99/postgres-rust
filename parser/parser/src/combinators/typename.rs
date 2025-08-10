@@ -1,5 +1,5 @@
 /// Alias: `Typename`
-pub(super) fn typename(stream: &mut TokenStream) -> scan::Result<Type> {
+pub(super) fn typename(ctx: &mut ParserContext) -> scan::Result<Type> {
 
     /*
         ( SETOF )? SimpleTypename ( array_bounds )?
@@ -11,10 +11,10 @@ pub(super) fn typename(stream: &mut TokenStream) -> scan::Result<Type> {
                 typename.returning_table()
             }),
         record_typename,
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn record_typename(stream: &mut TokenStream) -> scan::Result<Type> {
+fn record_typename(ctx: &mut ParserContext) -> scan::Result<Type> {
 
     /*
         SimpleTypename ( array_bounds )?
@@ -23,7 +23,7 @@ fn record_typename(stream: &mut TokenStream) -> scan::Result<Type> {
     let (typename, array_bounds) = seq!(
         simple_typename,
         array_bounds.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let typename = typename.with_array_bounds(array_bounds);
 
@@ -72,4 +72,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Setof;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

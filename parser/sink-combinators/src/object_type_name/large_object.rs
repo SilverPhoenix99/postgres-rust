@@ -1,11 +1,11 @@
-pub fn large_object(stream: &mut TokenStream) -> scan::Result<SignedNumber> {
+pub fn large_object(ctx: &mut ParserContext) -> scan::Result<SignedNumber> {
 
     /*
         LARGE OBJECT NumericOnly
     */
 
     let (.., id) = seq!(Large, Object, signed_number)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(id)
 }
@@ -32,5 +32,5 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Large;
 use pg_lexer::Keyword::Object;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::SignedNumber;

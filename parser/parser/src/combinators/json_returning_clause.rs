@@ -1,5 +1,5 @@
 /// Alias: `json_returning_clause_opt`
-pub(super) fn json_returning_clause(stream: &mut TokenStream) -> scan::Result<JsonOutput> {
+pub(super) fn json_returning_clause(ctx: &mut ParserContext) -> scan::Result<JsonOutput> {
 
     /*
         RETURNING Typename ( json_format_clause )?
@@ -9,7 +9,7 @@ pub(super) fn json_returning_clause(stream: &mut TokenStream) -> scan::Result<Js
         Returning,
         typename,
         json_format_clause.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let output = JsonOutput::new(type_name)
         .with_format(format.unwrap_or_default());
@@ -55,4 +55,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Returning;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

@@ -1,5 +1,5 @@
 /// Alias: `json_behavior_clause_opt`
-pub(super) fn json_behavior_clause(stream: &mut TokenStream) -> scan::Result<JsonBehaviorClause> {
+pub(super) fn json_behavior_clause(ctx: &mut ParserContext) -> scan::Result<JsonBehaviorClause> {
 
     /*
           json_behavior ON ERROR
@@ -14,7 +14,7 @@ pub(super) fn json_behavior_clause(stream: &mut TokenStream) -> scan::Result<Jso
             seq!(Empty, json_on_error_clause.optional())
                 .map(|(_, behavior)| Some(behavior))
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let clause = match second {
         Some(None) => {
@@ -36,20 +36,20 @@ pub(super) fn json_behavior_clause(stream: &mut TokenStream) -> scan::Result<Jso
 }
 
 /// Alias: `json_on_error_clause_opt`
-pub(super) fn json_on_error_clause(stream: &mut TokenStream) -> scan::Result<JsonBehavior> {
+pub(super) fn json_on_error_clause(ctx: &mut ParserContext) -> scan::Result<JsonBehavior> {
 
     /*
         json_behavior ON ERROR
     */
 
     let (behavior, ..) = seq!(json_behavior, On, ErrorKw)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(behavior)
 }
 
 /// Inlined: `json_behavior_type`
-pub(super) fn json_behavior(stream: &mut TokenStream) -> scan::Result<JsonBehavior> {
+pub(super) fn json_behavior(ctx: &mut ParserContext) -> scan::Result<JsonBehavior> {
 
     /*
           ERROR
@@ -69,10 +69,10 @@ pub(super) fn json_behavior(stream: &mut TokenStream) -> scan::Result<JsonBehavi
         Kw::Unknown.map(|_| Unknown),
         empty_behavior,
         default_behavior
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn empty_behavior(stream: &mut TokenStream) -> scan::Result<JsonBehavior> {
+fn empty_behavior(ctx: &mut ParserContext) -> scan::Result<JsonBehavior> {
 
     /*
         EMPTY (ARRAY | OBJECT)?
@@ -84,20 +84,20 @@ fn empty_behavior(stream: &mut TokenStream) -> scan::Result<JsonBehavior> {
             Array.map(|_| EmptyArray),
             Object.map(|_| EmptyObject)
         ).optional(/* non-standard, for Oracle compatibility only */)
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let behavior = behavior.unwrap_or(EmptyArray);
 
     Ok(behavior)
 }
 
-fn default_behavior(stream: &mut TokenStream) -> scan::Result<JsonBehavior> {
+fn default_behavior(ctx: &mut ParserContext) -> scan::Result<JsonBehavior> {
 
     /*
         DEFAULT a_expr
     */
 
-    let (_, expr) = seq!(DefaultKw, a_expr).parse(stream)?;
+    let (_, expr) = seq!(DefaultKw, a_expr).parse(ctx)?;
     Ok(JsonBehavior::Default(expr))
 }
 
@@ -167,4 +167,4 @@ use pg_lexer::Keyword::ErrorKw;
 use pg_lexer::Keyword::Object;
 use pg_lexer::Keyword::On;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

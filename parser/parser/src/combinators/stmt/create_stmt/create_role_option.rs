@@ -1,11 +1,11 @@
 /// Alias: `OptRoleList`
-pub(super) fn create_role_options(stream: &mut TokenStream) -> scan::Result<Vec<CreateRoleOption>> {
+pub(super) fn create_role_options(ctx: &mut ParserContext) -> scan::Result<Vec<CreateRoleOption>> {
 
-    many!(create_role_option).parse(stream)
+    many!(create_role_option).parse(ctx)
 }
 
 /// Alias: `CreateOptRoleElem`
-fn create_role_option(stream: &mut TokenStream) -> scan::Result<CreateRoleOption> {
+fn create_role_option(ctx: &mut ParserContext) -> scan::Result<CreateRoleOption> {
 
     /*
           SYSID ICONST
@@ -22,31 +22,31 @@ fn create_role_option(stream: &mut TokenStream) -> scan::Result<CreateRoleOption
         role,
         inherit,
         alter_role_option.map(CreateRoleOption::from)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn sysid(stream: &mut TokenStream) -> scan::Result<CreateRoleOption> {
-    let (_, id) = seq!(Sysid, integer).parse(stream)?;
+fn sysid(ctx: &mut ParserContext) -> scan::Result<CreateRoleOption> {
+    let (_, id) = seq!(Sysid, integer).parse(ctx)?;
     Ok(CreateRoleOption::SysId(id))
 }
 
-fn admin(stream: &mut TokenStream) -> scan::Result<CreateRoleOption> {
-    let (_, members) = seq!(Admin, role_list).parse(stream)?;
+fn admin(ctx: &mut ParserContext) -> scan::Result<CreateRoleOption> {
+    let (_, members) = seq!(Admin, role_list).parse(ctx)?;
     Ok(CreateRoleOption::AdminMembers(members))
 }
 
-fn role(stream: &mut TokenStream) -> scan::Result<CreateRoleOption> {
-    let (_, roles) = seq!(Role, role_list).parse(stream)?;
+fn role(ctx: &mut ParserContext) -> scan::Result<CreateRoleOption> {
+    let (_, roles) = seq!(Role, role_list).parse(ctx)?;
     Ok(CreateRoleOption::AddRoleTo(roles))
 }
 
-fn inherit(stream: &mut TokenStream) -> scan::Result<CreateRoleOption> {
+fn inherit(ctx: &mut ParserContext) -> scan::Result<CreateRoleOption> {
 
     let (.., roles) = seq!(
         Inherit,
         alt!(Role, Group),
         role_list
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(CreateRoleOption::AddRoleTo(roles))
 }
@@ -96,5 +96,5 @@ use pg_lexer::Keyword::Inherit;
 use pg_lexer::Keyword::Role;
 use pg_lexer::Keyword::Sysid;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::role_list;

@@ -1,4 +1,4 @@
-pub(super) fn frame_extent(stream: &mut TokenStream<'_>) -> scan::Result<FrameExtent> {
+pub(super) fn frame_extent(ctx: &mut ParserContext) -> scan::Result<FrameExtent> {
 
     /*
           frame_bound
@@ -6,17 +6,17 @@ pub(super) fn frame_extent(stream: &mut TokenStream<'_>) -> scan::Result<FrameEx
     */
 
     alt!(between_frame_bounds, single_frame_bound)
-        .parse(stream)
+        .parse(ctx)
 }
 
-fn between_frame_bounds(stream: &mut TokenStream<'_>) -> scan::Result<FrameExtent> {
+fn between_frame_bounds(ctx: &mut ParserContext) -> scan::Result<FrameExtent> {
 
     let (_, start, _, Located(end, loc)) = seq!(
         Between,
         frame_bound,
         And,
         located!(frame_bound)
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let frame = match (start, end) {
         (UnboundedPreceding, UnboundedFollowing) => {
@@ -108,9 +108,9 @@ fn between_frame_bounds(stream: &mut TokenStream<'_>) -> scan::Result<FrameExten
     Ok(frame)
 }
 
-fn single_frame_bound(stream: &mut TokenStream<'_>) -> scan::Result<FrameExtent> {
+fn single_frame_bound(ctx: &mut ParserContext) -> scan::Result<FrameExtent> {
 
-    let Located(bound, loc) = located!(frame_bound).parse(stream)?;
+    let Located(bound, loc) = located!(frame_bound).parse(ctx)?;
 
     let frame = match bound {
         UnboundedPreceding => FrameExtent::Unbounded { end: None },
@@ -234,4 +234,4 @@ use pg_elog::parser::Error::InvalidUnboundedPrecedingFrame;
 use pg_lexer::Keyword::And;
 use pg_lexer::Keyword::Between;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

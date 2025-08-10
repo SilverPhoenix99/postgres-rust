@@ -1,4 +1,4 @@
-pub(super) fn xml_exists(stream: &mut TokenStream) -> scan::Result<XmlExists> {
+pub(super) fn xml_exists(ctx: &mut ParserContext) -> scan::Result<XmlExists> {
 
     /*
         XMLEXISTS '(' c_expr xmlexists_argument ')'
@@ -9,7 +9,7 @@ pub(super) fn xml_exists(stream: &mut TokenStream) -> scan::Result<XmlExists> {
     let (_, (path_spec, content)) = seq!(skip(1), paren!(seq!(
         expr_primary,
         xmlexists_argument
-    ))).parse(stream)?;
+    ))).parse(ctx)?;
 
     let expr = XmlExists::new(path_spec, content);
     Ok(expr)
@@ -42,4 +42,4 @@ use pg_combinators::seq;
 use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

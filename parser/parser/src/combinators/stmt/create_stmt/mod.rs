@@ -10,7 +10,7 @@ pg_basics::reexport! {
 
 pub(super) use create_database_stmt::createdb_opt_value;
 
-pub(super) fn create_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn create_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     let (_, stmt) = seq!(
         Create,
@@ -22,7 +22,7 @@ pub(super) fn create_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
             create_role_stmt.map(From::from),
             create_user_stmt,
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(stmt)
 }
@@ -55,4 +55,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Create;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

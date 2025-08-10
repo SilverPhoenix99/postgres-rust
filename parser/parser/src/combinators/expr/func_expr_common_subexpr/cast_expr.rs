@@ -1,4 +1,4 @@
-pub(super) fn cast_expr(stream: &mut TokenStream) -> scan::Result<TypecastExpr> {
+pub(super) fn cast_expr(ctx: &mut ParserContext) -> scan::Result<TypecastExpr> {
 
     /*
         CAST '(' a_expr AS Typename ')'
@@ -7,7 +7,7 @@ pub(super) fn cast_expr(stream: &mut TokenStream) -> scan::Result<TypecastExpr> 
     let (_, (arg, _, type_name)) = seq!(
         Cast,
         paren!(seq!(a_expr, As, typename))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let expr = TypecastExpr::new(arg, type_name);
     Ok(expr)
@@ -42,4 +42,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Cast;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

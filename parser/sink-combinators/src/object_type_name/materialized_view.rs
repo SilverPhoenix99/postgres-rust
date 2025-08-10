@@ -1,11 +1,11 @@
-pub fn materialized_view(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
+pub fn materialized_view(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
 
     /*
         MATERIALIZED VIEW any_name
     */
 
     let (.., name) = seq!(Materialized, View, any_name)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(name)
 }
@@ -32,4 +32,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Materialized;
 use pg_lexer::Keyword::View;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

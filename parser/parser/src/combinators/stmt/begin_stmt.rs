@@ -1,4 +1,4 @@
-pub(in crate::combinators) fn begin_stmt(stream: &mut TokenStream) -> scan::Result<TransactionStmt> {
+pub(in crate::combinators) fn begin_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
 
     /*
     TransactionStmtLegacy:
@@ -9,7 +9,7 @@ pub(in crate::combinators) fn begin_stmt(stream: &mut TokenStream) -> scan::Resu
         Begin,
         work_or_transaction.optional(),
         transaction_mode_list.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let tx_modes = tx_modes.unwrap_or_default();
     Ok(TransactionStmt::Begin(tx_modes))
@@ -39,7 +39,7 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Begin;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::work_or_transaction;
 use pg_transaction_mode_ast::TransactionStmt;
 use pg_transaction_mode_combinators::transaction_mode_list;

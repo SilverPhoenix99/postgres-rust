@@ -1,4 +1,4 @@
-pub(super) fn privileges(stream: &mut TokenStream) -> scan::Result<AccessPrivilege> {
+pub(super) fn privileges(ctx: &mut ParserContext) -> scan::Result<AccessPrivilege> {
 
     /*
           ALL ( PRIVILEGES )? ( '(' name_list ')' )?
@@ -14,19 +14,19 @@ pub(super) fn privileges(stream: &mut TokenStream) -> scan::Result<AccessPrivile
             .map(|(.., columns)| All { columns }),
         privilege_list
             .map(Specific)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-pub(super) fn privilege_list(stream: &mut TokenStream) -> scan::Result<Vec<SpecificAccessPrivilege>> {
+pub(super) fn privilege_list(ctx: &mut ParserContext) -> scan::Result<Vec<SpecificAccessPrivilege>> {
 
     /*
         privilege ( ',' privilege )*
     */
 
-    many!(sep = Comma, privilege).parse(stream)
+    many!(sep = Comma, privilege).parse(ctx)
 }
 
-fn privilege(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
+fn privilege(ctx: &mut ParserContext) -> scan::Result<SpecificAccessPrivilege> {
 
     /*
           ALTER SYSTEM
@@ -42,50 +42,50 @@ fn privilege(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> 
         references,
         select,
         named
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn alter_system(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
-    let _ = seq!(Alter, SystemKw).parse(stream)?;
+fn alter_system(ctx: &mut ParserContext) -> scan::Result<SpecificAccessPrivilege> {
+    let _ = seq!(Alter, SystemKw).parse(ctx)?;
     Ok(AlterSystem)
 }
 
-fn create(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
+fn create(ctx: &mut ParserContext) -> scan::Result<SpecificAccessPrivilege> {
 
     let (_, columns) = seq!(
         CreateKw,
         paren!(name_list).optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(Create { columns })
 }
 
-fn references(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
+fn references(ctx: &mut ParserContext) -> scan::Result<SpecificAccessPrivilege> {
 
     let (_, columns) = seq!(
         ReferencesKw,
         paren!(name_list).optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(References { columns })
 }
 
-fn select(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
+fn select(ctx: &mut ParserContext) -> scan::Result<SpecificAccessPrivilege> {
 
     let (_, columns) = seq!(
         SelectKw,
         paren!(name_list).optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(Select { columns })
 }
 
-fn named(stream: &mut TokenStream) -> scan::Result<SpecificAccessPrivilege> {
+fn named(ctx: &mut ParserContext) -> scan::Result<SpecificAccessPrivilege> {
 
     let (privilege, columns) = seq!(
         col_id,
         paren!(name_list).optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(Named { privilege, columns })
 }
@@ -160,6 +160,6 @@ use pg_lexer::Keyword::Select as SelectKw;
 use pg_lexer::Keyword::SystemKw;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::name_list;

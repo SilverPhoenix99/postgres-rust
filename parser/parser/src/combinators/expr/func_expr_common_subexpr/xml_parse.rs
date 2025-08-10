@@ -1,4 +1,4 @@
-pub(super) fn xml_parse(stream: &mut TokenStream) -> scan::Result<XmlParse> {
+pub(super) fn xml_parse(ctx: &mut ParserContext) -> scan::Result<XmlParse> {
 
     /*
         XMLPARSE '(' document_or_content a_expr ( xml_whitespace_option )? ')'
@@ -13,7 +13,7 @@ pub(super) fn xml_parse(stream: &mut TokenStream) -> scan::Result<XmlParse> {
             a_expr,
             xml_whitespace_option.optional()
         ))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let expr = XmlParse::new(
         kind,
@@ -24,7 +24,7 @@ pub(super) fn xml_parse(stream: &mut TokenStream) -> scan::Result<XmlParse> {
     Ok(expr)
 }
 
-fn xml_whitespace_option(stream: &mut TokenStream) -> scan::Result<XmlWhitespaceOption> {
+fn xml_whitespace_option(ctx: &mut ParserContext) -> scan::Result<XmlWhitespaceOption> {
 
     /*
         ( PRESERVE | STRIP ) WHITESPACE
@@ -36,7 +36,7 @@ fn xml_whitespace_option(stream: &mut TokenStream) -> scan::Result<XmlWhitespace
             Kw::Strip.map(|_| Strip),
         ),
         Whitespace
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(option)
 }
@@ -89,6 +89,6 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Whitespace;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use XmlWhitespaceOption::Preserve;
 use XmlWhitespaceOption::Strip;

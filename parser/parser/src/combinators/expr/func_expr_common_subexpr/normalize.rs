@@ -1,4 +1,4 @@
-pub(super) fn normalize(stream: &mut TokenStream) -> scan::Result<NormalizeFunc> {
+pub(super) fn normalize(ctx: &mut ParserContext) -> scan::Result<NormalizeFunc> {
 
     /*
         NORMALIZE '(' a_expr ( ',' unicode_normal_form )? ')'
@@ -12,7 +12,7 @@ pub(super) fn normalize(stream: &mut TokenStream) -> scan::Result<NormalizeFunc>
             a_expr,
             seq!(Comma, unicode_normal_form).optional()
         ))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let normal_form = normal_form
         .map(|(_, normal_form)| normal_form);
@@ -58,4 +58,4 @@ use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

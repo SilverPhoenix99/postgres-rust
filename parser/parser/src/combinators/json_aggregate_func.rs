@@ -13,7 +13,7 @@ impl From<JsonAggFunc> for FuncExprWindowless {
     }
 }
 
-pub(super) fn json_aggregate_func(stream: &mut TokenStream) -> scan::Result<JsonAggFunc> {
+pub(super) fn json_aggregate_func(ctx: &mut ParserContext) -> scan::Result<JsonAggFunc> {
     use pg_parser_core::stream::TokenValue::Keyword as K;
     use pg_parser_core::stream::TokenValue::Operator as Op;
 
@@ -25,14 +25,14 @@ pub(super) fn json_aggregate_func(stream: &mut TokenStream) -> scan::Result<Json
     // Both 1st keywords are ColumnName, and they conflict with `func_application` and `prefixed_expr`,
     // so peeking is needed.
 
-    match stream.peek2()? {
-        (K(JsonObjectagg), Op(OpenParenthesis)) => json_objectagg(stream).map(From::from),
-        (K(JsonArrayagg), Op(OpenParenthesis)) => json_arrayagg(stream).map(From::from),
-        _ => no_match(stream)
+    match ctx.stream_mut().peek2()? {
+        (K(JsonObjectagg), Op(OpenParenthesis)) => json_objectagg(ctx).map(From::from),
+        (K(JsonArrayagg), Op(OpenParenthesis)) => json_arrayagg(ctx).map(From::from),
+        _ => no_match(ctx)
     }
 }
 
-fn json_objectagg(stream: &mut TokenStream) -> scan::Result<JsonObjectAgg> {
+fn json_objectagg(ctx: &mut ParserContext) -> scan::Result<JsonObjectAgg> {
 
     /*
         JSON_OBJECTAGG '('
@@ -51,7 +51,7 @@ fn json_objectagg(stream: &mut TokenStream) -> scan::Result<JsonObjectAgg> {
             json_key_uniqueness_constraint.optional(),
             json_returning_clause.optional()
         ))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let func = JsonObjectAgg::new(
         arg,
@@ -63,7 +63,7 @@ fn json_objectagg(stream: &mut TokenStream) -> scan::Result<JsonObjectAgg> {
     Ok(func)
 }
 
-fn json_arrayagg(stream: &mut TokenStream) -> scan::Result<JsonArrayAgg> {
+fn json_arrayagg(ctx: &mut ParserContext) -> scan::Result<JsonArrayAgg> {
 
     /*
         JSON_ARRAYAGG '('
@@ -82,7 +82,7 @@ fn json_arrayagg(stream: &mut TokenStream) -> scan::Result<JsonArrayAgg> {
             json_constructor_null_clause.optional(),
             json_returning_clause.optional()
         ))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let func = JsonArrayAgg::new(
         arg,
@@ -181,4 +181,4 @@ use pg_lexer::Keyword::JsonArrayagg;
 use pg_lexer::Keyword::JsonObjectagg;
 use pg_lexer::OperatorKind::OpenParenthesis;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

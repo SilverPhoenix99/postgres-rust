@@ -1,5 +1,5 @@
 /// Alias: `opt_analyze`
-pub fn analyze_keyword(stream: &mut TokenStream) -> scan::Result<()> {
+pub fn analyze_keyword(ctx: &mut ParserContext) -> scan::Result<()> {
 
     /*
           ANALYZE
@@ -7,7 +7,7 @@ pub fn analyze_keyword(stream: &mut TokenStream) -> scan::Result<()> {
     */
 
     alt!(Analyze, Analyse)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(())
 }
@@ -30,4 +30,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Analyse;
 use pg_lexer::Keyword::Analyze;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

@@ -38,17 +38,17 @@ Returns `Err(NoMatch)` or `Err(Eof)`, if empty.
 macro_rules! many {
 
     (pre = $prefix:expr, $follow:expr $(,)?) => {
-        $crate::parser(|stream| {
+        $crate::parser(|ctx| {
 
             let p = $prefix;
 
-            let first = $crate::Combinator::parse(&p, stream)?;
+            let first = $crate::Combinator::parse(&p, ctx)?;
             let mut elements = vec![first];
 
             let p = $follow;
 
             while let Some(element) = {
-                let result = $crate::Combinator::parse(&p, stream);
+                let result = $crate::Combinator::parse(&p, ctx);
                 pg_parser_core::Optional::optional(result)?
             } {
                 elements.push(element)
@@ -59,21 +59,21 @@ macro_rules! many {
     };
 
     (sep = $separator:expr, $parser:expr $(,)?) => {
-        $crate::parser(|stream| {
+        $crate::parser(|ctx| {
 
             let p = $parser;
 
-            let first = $crate::Combinator::parse(&p, stream)?;
+            let first = $crate::Combinator::parse(&p, ctx)?;
             let mut elements = vec![first];
 
             let separator = $separator;
 
             while {
-                let sep = $crate::Combinator::parse(&separator, stream);
+                let sep = $crate::Combinator::parse(&separator, ctx);
                 let sep = pg_parser_core::Optional::optional(sep)?;
                 sep.is_some()
             } {
-                let element = $crate::Combinator::parse(&p, stream);
+                let element = $crate::Combinator::parse(&p, ctx);
                 let element = pg_parser_core::Required::required(element)?;
                 elements.push(element);
             }
@@ -83,15 +83,15 @@ macro_rules! many {
     };
 
     ($parser:expr) => {
-        $crate::parser(|stream| {
+        $crate::parser(|ctx| {
 
             let p = $parser;
 
-            let first = $crate::Combinator::parse(&p, stream)?;
+            let first = $crate::Combinator::parse(&p, ctx)?;
             let mut elements = vec![first];
 
             while let Some(element) = {
-                let result = $crate::Combinator::parse(&p, stream);
+                let result = $crate::Combinator::parse(&p, ctx);
                 pg_parser_core::Optional::optional(result)?
             } {
                 elements.push(element)

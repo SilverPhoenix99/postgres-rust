@@ -1,4 +1,4 @@
-pub(super) fn json_query_expr(stream: &mut TokenStream) -> scan::Result<JsonQueryExpr> {
+pub(super) fn json_query_expr(ctx: &mut ParserContext) -> scan::Result<JsonQueryExpr> {
 
     /*
         JSON_QUERY '(' json_query_args ')'
@@ -7,12 +7,12 @@ pub(super) fn json_query_expr(stream: &mut TokenStream) -> scan::Result<JsonQuer
     // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, expr) = seq!(skip(1), paren!(json_query_args))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(expr)
 }
 
-fn json_query_args(stream: &mut TokenStream) -> scan::Result<JsonQueryExpr> {
+fn json_query_args(ctx: &mut ParserContext) -> scan::Result<JsonQueryExpr> {
 
     /*
         json_value_expr
@@ -34,7 +34,7 @@ fn json_query_args(stream: &mut TokenStream) -> scan::Result<JsonQueryExpr> {
         json_wrapper_behavior.optional(),
         json_quotes_clause.optional(),
         json_behavior_clause.optional(),
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let mut expr = JsonQueryExpr::new(ctx, path_spec);
     expr.set_passing(passing)
@@ -103,4 +103,4 @@ use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

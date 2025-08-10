@@ -1,5 +1,5 @@
 /// Alias: `opt_asc_desc`
-pub(super) fn asc_desc(stream: &mut TokenStream) -> scan::Result<SortDirection> {
+pub(super) fn asc_desc(ctx: &mut ParserContext) -> scan::Result<SortDirection> {
 
     /*
           ASC
@@ -9,7 +9,7 @@ pub(super) fn asc_desc(stream: &mut TokenStream) -> scan::Result<SortDirection> 
     alt!(
         Asc.map(|_| Ascending),
         Desc.map(|_| Descending),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -33,4 +33,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Asc;
 use pg_lexer::Keyword::Desc;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

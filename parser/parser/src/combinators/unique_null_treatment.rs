@@ -1,5 +1,5 @@
 /// Alias: `opt_unique_null_treatment`
-pub(super) fn unique_null_treatment(stream: &mut TokenStream) -> scan::Result<UniqueNullTreatment> {
+pub(super) fn unique_null_treatment(ctx: &mut ParserContext) -> scan::Result<UniqueNullTreatment> {
 
     /*
         NULLS ( NOT )? DISTINCT
@@ -9,7 +9,7 @@ pub(super) fn unique_null_treatment(stream: &mut TokenStream) -> scan::Result<Un
         Nulls,
         Not.optional(),
         Distinct
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let nulls = UniqueNullTreatment::from(not.is_none());
 
@@ -36,4 +36,4 @@ use pg_lexer::Keyword::Distinct;
 use pg_lexer::Keyword::Not;
 use pg_lexer::Keyword::Nulls;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

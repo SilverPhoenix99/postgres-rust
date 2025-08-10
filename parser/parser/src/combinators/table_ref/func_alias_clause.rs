@@ -1,4 +1,4 @@
-pub(super) fn func_alias_clause(stream: &mut TokenStream) -> scan::Result<FuncAlias> {
+pub(super) fn func_alias_clause(ctx: &mut ParserContext) -> scan::Result<FuncAlias> {
 
     /*
           AS '(' TableFuncElementList ')'
@@ -18,17 +18,17 @@ pub(super) fn func_alias_clause(stream: &mut TokenStream) -> scan::Result<FuncAl
             named_alias
         )).map(|(_, alias)| alias),
         named_alias
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn named_alias(stream: &mut TokenStream) -> scan::Result<FuncAlias> {
+fn named_alias(ctx: &mut ParserContext) -> scan::Result<FuncAlias> {
 
     /*
         col_id ( func_alias_columns )?
     */
 
     let (alias, cols) = seq!(col_id, func_alias_columns.optional())
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let alias = match cols {
         None => FuncAlias::Left(alias),
@@ -38,17 +38,17 @@ fn named_alias(stream: &mut TokenStream) -> scan::Result<FuncAlias> {
     Ok(alias)
 }
 
-fn func_alias_columns(stream: &mut TokenStream) -> scan::Result<Vec<FuncAliasColumn>> {
+fn func_alias_columns(ctx: &mut ParserContext) -> scan::Result<Vec<FuncAliasColumn>> {
 
     /*
         '(' func_alias_column_list ')'
     */
 
     paren!(func_alias_column_list)
-        .parse(stream)
+        .parse(ctx)
 }
 
-fn func_alias_column_list(stream: &mut TokenStream) -> scan::Result<Vec<FuncAliasColumn>> {
+fn func_alias_column_list(ctx: &mut ParserContext) -> scan::Result<Vec<FuncAliasColumn>> {
 
     /*
         func_alias_column ( ',' ( name_list | TableFuncElementList ) )?
@@ -57,13 +57,13 @@ fn func_alias_column_list(stream: &mut TokenStream) -> scan::Result<Vec<FuncAlia
         It guarantees all columns have a type, or none of them do, as enforced by C-PG.
     */
 
-    let first = func_alias_column(stream)?;
+    let first = func_alias_column(ctx)?;
 
     let mut columns: Vec<_> = match first.type_name() {
         None => {
             // ( ',' name_list )?
             seq!(Comma, name_list)
-                .parse(stream)
+                .parse(ctx)
                 .optional()?
                 .into_iter()
                 .flat_map(|(_, names)| names)
@@ -73,7 +73,7 @@ fn func_alias_column_list(stream: &mut TokenStream) -> scan::Result<Vec<FuncAlia
         Some(_) => {
             // ( ',' TableFuncElementList )?
             seq!(Comma, table_func_element_list)
-                .parse(stream)
+                .parse(ctx)
                 .optional()?
                 .into_iter()
                 .flat_map(|(_, elements)| elements)
@@ -86,7 +86,7 @@ fn func_alias_column_list(stream: &mut TokenStream) -> scan::Result<Vec<FuncAlia
     Ok(columns)
 }
 
-fn func_alias_column(stream: &mut TokenStream) -> scan::Result<FuncAliasColumn> {
+fn func_alias_column(ctx: &mut ParserContext) -> scan::Result<FuncAliasColumn> {
 
     /*
     Technically:
@@ -102,7 +102,7 @@ fn func_alias_column(stream: &mut TokenStream) -> scan::Result<FuncAliasColumn> 
             typename,
             collate_clause.optional()
         ).optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let (type_name, collation) = match tail {
         Some((type_name, collation)) => (Some(type_name), collation),
@@ -225,7 +225,7 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::As;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::Optional;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::name_list;

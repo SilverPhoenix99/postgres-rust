@@ -1,11 +1,11 @@
-pub(super) fn create_generic_options(stream: &mut TokenStream) -> scan::Result<Vec<GenericOption>> {
+pub(super) fn create_generic_options(ctx: &mut ParserContext) -> scan::Result<Vec<GenericOption>> {
 
     /*
         OPTIONS '(' generic_option_list ')'
     */
 
     let (_, options) = seq!(Options, paren!(generic_options))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(options)
 }
@@ -35,4 +35,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Options;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

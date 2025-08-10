@@ -1,12 +1,12 @@
 /// Alias: `VariableResetStmt`
-pub(super) fn reset_stmt(stream: &mut TokenStream) -> scan::Result<VariableTarget> {
+pub(super) fn reset_stmt(ctx: &mut ParserContext) -> scan::Result<VariableTarget> {
 
     /*
         RESET variable_target
     */
 
     let (_, target) = seq!(Reset, variable_target)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(target)
 }
@@ -32,4 +32,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Reset;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

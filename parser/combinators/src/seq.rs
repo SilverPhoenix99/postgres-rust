@@ -15,18 +15,18 @@ macro_rules! seq {
         ),+
         $(,)?
     ) => {
-        $crate::parser(|stream| {
+        $crate::parser(|ctx| {
 
-            let start_position = stream.current_location().range().start;
+            let start_position = ctx.stream_mut().current_location().range().start;
 
             Ok((
                 {
                     let p = $head;
-                    $crate::Combinator::parse(&p, stream)?
+                    $crate::Combinator::parse(&p, ctx)?
                 },
                 $({
                     let p = $tail;
-                    let result = $crate::Combinator::parse(&p, stream);
+                    let result = $crate::Combinator::parse(&p, ctx);
 
                     match result {
                         Ok(ok) => ok,
@@ -35,7 +35,7 @@ macro_rules! seq {
                             => return Err(pg_parser_core::scan::Error::ScanErr(err)),
 
                         Err(pg_parser_core::scan::Error::Eof(loc) | pg_parser_core::scan::Error::NoMatch(loc)) => {
-                            let current_position = stream.current_location().range().start;
+                            let current_position = ctx.stream_mut().current_location().range().start;
                             return if start_position == current_position {
                                 // No consumption yet, so this is considered the first production.
                                 Err(pg_parser_core::scan::Error::NoMatch(loc))

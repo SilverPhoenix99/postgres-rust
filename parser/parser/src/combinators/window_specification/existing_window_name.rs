@@ -1,11 +1,11 @@
 /// Alias: `opt_existing_window_name`
-pub(super) fn existing_window_name(stream: &mut TokenStream<'_>) -> scan::Result<Str> {
+pub(super) fn existing_window_name(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     /*
         col_id
     */
 
-    let tokens = stream.peek2()?;
+    let tokens = ctx.stream_mut().peek2()?;
 
     // These 2 rules need to be checked first, due to conflicts with Unreserved keywords.
     if {
@@ -14,10 +14,10 @@ pub(super) fn existing_window_name(stream: &mut TokenStream<'_>) -> scan::Result
             | (Kw(RangeKw | Rows | Groups), Kw(Unbounded | Current | Between))
         )
     } {
-        return no_match(stream)
+        return no_match(ctx)
     }
 
-    col_id(stream)
+    col_id(ctx)
 }
 
 #[cfg(test)]
@@ -71,6 +71,6 @@ use pg_lexer::Keyword::RangeKw;
 use pg_lexer::Keyword::Rows;
 use pg_lexer::Keyword::Unbounded;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue::Keyword as Kw;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;

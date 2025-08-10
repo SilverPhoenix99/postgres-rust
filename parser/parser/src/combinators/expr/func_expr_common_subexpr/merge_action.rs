@@ -1,4 +1,4 @@
-pub(super) fn merge_action(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
+pub(super) fn merge_action(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 
     /*
         MERGE_ACTION '(' ')'
@@ -6,7 +6,7 @@ pub(super) fn merge_action(stream: &mut TokenStream) -> scan::Result<SqlFunction
 
     // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
-    seq!(skip(2), CloseParenthesis).parse(stream)?;
+    seq!(skip(2), CloseParenthesis).parse(ctx)?;
     Ok(MergeAction)
 }
 
@@ -29,4 +29,4 @@ use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::CloseParenthesis;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

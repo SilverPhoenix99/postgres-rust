@@ -1,11 +1,11 @@
-pub(super) fn func_type(stream: &mut TokenStream) -> scan::Result<FuncType> {
+pub(super) fn func_type(ctx: &mut ParserContext) -> scan::Result<FuncType> {
 
     /*
           Typename
         | ( SETOF )? type_function_name attrs '%' TYPE_P
     */
 
-    let typ = typename(stream)?;
+    let typ = typename(ctx)?;
 
     // In `Typename`, only generic types goes to `type_function_name`.
     let Generic { name, type_modifiers } = typ.name() else {
@@ -25,7 +25,7 @@ pub(super) fn func_type(stream: &mut TokenStream) -> scan::Result<FuncType> {
     }
 
     // `%TYPE`
-    if seq!(Percent, Type).parse(stream).optional()?.is_none() {
+    if seq!(Percent, Type).parse(ctx).optional()?.is_none() {
         // If it isn't a type reference, just return the type
         return Ok(FuncType::Type(typ))
     }
@@ -89,5 +89,5 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Type;
 use pg_lexer::OperatorKind::Percent;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::Optional;
+use pg_parser_core::ParserContext;

@@ -6,7 +6,7 @@ pub enum TextSearch {
     Template(QualifiedName),
 }
 
-pub fn text_search(stream: &mut TokenStream) -> scan::Result<TextSearch> {
+pub fn text_search(ctx: &mut ParserContext) -> scan::Result<TextSearch> {
 
     /*
         TEXT SEARCH (
@@ -30,7 +30,7 @@ pub fn text_search(stream: &mut TokenStream) -> scan::Result<TextSearch> {
             seq!(Template, any_name)
                 .map(|(_, name)| TextSearch::Template(name))
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(search_type)
 }
@@ -62,4 +62,4 @@ use pg_lexer::Keyword::Search;
 use pg_lexer::Keyword::Template;
 use pg_lexer::Keyword::Text;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

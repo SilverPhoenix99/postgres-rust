@@ -1,22 +1,22 @@
-pub fn any_name_list(stream: &mut TokenStream) -> scan::Result<Vec<QualifiedName>> {
+pub fn any_name_list(ctx: &mut ParserContext) -> scan::Result<Vec<QualifiedName>> {
 
     /*
         any_name ( ',' any_name )*
     */
 
-    many!(sep = Comma, any_name).parse(stream)
+    many!(sep = Comma, any_name).parse(ctx)
 }
 
 /// Aliases:
 /// * `handler_name`
 /// * `opt_qualified_name`
-pub fn any_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
+pub fn any_name(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
 
     /*
         col_id attrs
     */
 
-    attrs!(col_id).parse(stream)
+    attrs!(col_id).parse(ctx)
 }
 
 #[cfg(test)]
@@ -57,4 +57,4 @@ use pg_combinators::many;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

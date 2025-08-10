@@ -1,4 +1,4 @@
-pub(super) fn nullif_expr(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
+pub(super) fn nullif_expr(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 
     /*
         NULLIF '(' a_expr ',' a_expr ')'
@@ -9,7 +9,7 @@ pub(super) fn nullif_expr(stream: &mut TokenStream) -> scan::Result<SqlFunction>
     let (_, (left, _, right)) = seq!(
         skip(1),
         paren!(seq!(a_expr, Comma, a_expr))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(NullIf(left, right))
 }
@@ -43,4 +43,4 @@ use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

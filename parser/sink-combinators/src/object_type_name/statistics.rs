@@ -1,11 +1,11 @@
-pub fn statistics(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
+pub fn statistics(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
 
     /*
         STATISTICS any_name
     */
 
     let (_, name) = seq!(Statistics, any_name)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(name)
 }
@@ -31,4 +31,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Statistics;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

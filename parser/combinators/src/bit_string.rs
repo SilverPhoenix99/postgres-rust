@@ -5,8 +5,8 @@
 /// Note that it doesn't validate the content.
 /// That needs to be done in a separate stage,
 /// when we know the actual type from the catalog.
-pub fn bit_string(stream: &mut TokenStream) -> scan::Result<(BitStringKind, Box<str>)> {
-    stream.consume(|tok| {
+pub fn bit_string(ctx: &mut ParserContext) -> scan::Result<(BitStringKind, Box<str>)> {
+    ctx.stream_mut().consume(|tok| {
         let BitString { kind, value } = tok else { return None };
         let value = mem::take(value);
         Some((*kind, value))
@@ -36,5 +36,5 @@ use core::mem;
 use pg_lexer::BitStringKind;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenConsumer;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue::BitString;
+use pg_parser_core::ParserContext;

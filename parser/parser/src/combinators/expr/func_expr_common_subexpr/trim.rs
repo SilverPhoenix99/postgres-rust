@@ -1,4 +1,4 @@
-pub(super) fn trim(stream: &mut TokenStream) -> scan::Result<TrimFunc> {
+pub(super) fn trim(ctx: &mut ParserContext) -> scan::Result<TrimFunc> {
 
     /*
         TRIM '(' trim_args ')'
@@ -7,12 +7,12 @@ pub(super) fn trim(stream: &mut TokenStream) -> scan::Result<TrimFunc> {
     // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, expr) = seq!(skip(1), paren!(trim_args))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(expr)
 }
 
-fn trim_args(stream: &mut TokenStream) -> scan::Result<TrimFunc> {
+fn trim_args(ctx: &mut ParserContext) -> scan::Result<TrimFunc> {
 
     /*
           LEADING   trim_list
@@ -33,13 +33,13 @@ fn trim_args(stream: &mut TokenStream) -> scan::Result<TrimFunc> {
             trim_list
         )
 
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let expr = TrimFunc::new(trim_side, args);
     Ok(expr)
 }
 
-fn trim_list(stream: &mut TokenStream) -> scan::Result<Vec<ExprNode>> {
+fn trim_list(ctx: &mut ParserContext) -> scan::Result<Vec<ExprNode>> {
 
     /*
           FROM expr_list
@@ -69,7 +69,7 @@ fn trim_list(stream: &mut TokenStream) -> scan::Result<Vec<ExprNode>> {
                 }
                 args
             })
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -155,4 +155,4 @@ use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::FromKw;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

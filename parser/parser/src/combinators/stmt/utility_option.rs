@@ -1,27 +1,27 @@
 /// Aliases:
 /// * `utility_option_list`
 /// * `opt_utility_option_list`
-pub(super) fn utility_options(stream: &mut TokenStream) -> scan::Result<Vec<UtilityOption>> {
+pub(super) fn utility_options(ctx: &mut ParserContext) -> scan::Result<Vec<UtilityOption>> {
 
     /*
         '(' utility_option_list ')'
     */
 
     paren!(utility_option_list)
-        .parse(stream)
+        .parse(ctx)
 }
 
-fn utility_option_list(stream: &mut TokenStream) -> scan::Result<Vec<UtilityOption>> {
+fn utility_option_list(ctx: &mut ParserContext) -> scan::Result<Vec<UtilityOption>> {
 
     /*
         utility_option ( ',' utility_option )*
     */
 
-    many!(sep = Comma, utility_option).parse(stream)
+    many!(sep = Comma, utility_option).parse(ctx)
 }
 
 /// Alias: `utility_option_elem`
-fn utility_option(stream: &mut TokenStream) -> scan::Result<UtilityOption> {
+fn utility_option(ctx: &mut ParserContext) -> scan::Result<UtilityOption> {
 
     /*
         utility_option_name ( var_value )?
@@ -30,12 +30,12 @@ fn utility_option(stream: &mut TokenStream) -> scan::Result<UtilityOption> {
     let (name, value) = seq!(
         utility_option_name,
         var_value.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(UtilityOption::new(name, value))
 }
 
-fn utility_option_name(stream: &mut TokenStream) -> scan::Result<UtilityOptionName> {
+fn utility_option_name(ctx: &mut ParserContext) -> scan::Result<UtilityOptionName> {
 
     /*
           NonReservedWord
@@ -47,7 +47,7 @@ fn utility_option_name(stream: &mut TokenStream) -> scan::Result<UtilityOptionNa
         Kw::Format.map(|_| Format),
         analyze_keyword.map(|_| Analyze),
         non_reserved_word.map(Generic)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -114,6 +114,6 @@ use pg_generic_set_combinators::var_value;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::analyze_keyword;
 use pg_sink_combinators::non_reserved_word;

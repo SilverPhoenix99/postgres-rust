@@ -4,14 +4,15 @@ pub struct ParserResult {
 }
 
 pub struct Parser<'src> {
-    pub(crate) stream: TokenStream<'src>,
+    pub(crate) context: ParserContext<'src>,
 }
 
 impl<'src> Parser<'src> {
 
     pub fn new(source: &'src str, config: ParserConfig) -> Self {
+        let stream = TokenStream::new(source, config);
         Self {
-            stream: TokenStream::new(source, config)
+            context: ParserContext::new(stream)
         }
     }
 
@@ -19,7 +20,7 @@ impl<'src> Parser<'src> {
     /// The TokenStream state is changed.
     pub fn parse(&mut self) -> ParserResult {
 
-        let mut result = match stmtmulti(&mut self.stream) {
+        let mut result = match stmtmulti(&mut self.context) {
             Ok(stmts) => Ok(Some(stmts)),
             Err(Eof(_)) => {
                 // Empty input or no statements is valid.
@@ -28,18 +29,18 @@ impl<'src> Parser<'src> {
             Err(NoMatch(_)) => {
                 // If it's not Eof, then something didn't match properly.
                 // Mark the current location as a Syntax error.
-                let loc = self.stream.current_location();
+                let loc = self.context.stream_mut().current_location();
                 Err(syntax(loc))
             },
             Err(ScanErr(err)) => Err(err)
         };
 
-        if !self.stream.eof() {
-            let loc = self.stream.current_location();
+        if !self.context.stream_mut().eof() {
+            let loc = self.context.stream_mut().current_location();
             result = Err(syntax(loc));
         }
 
-        let warnings = match self.stream.warnings() {
+        let warnings = match self.context.stream_mut().warnings() {
             None => None,
             Some(warnings) => Some(mem::take(warnings))
         };
@@ -59,3 +60,4 @@ use pg_parser_core::scan::Error::ScanErr;
 use pg_parser_core::stream::TokenStream;
 use pg_parser_core::syntax;
 use pg_parser_core::ParserConfig;
+use pg_parser_core::ParserContext;

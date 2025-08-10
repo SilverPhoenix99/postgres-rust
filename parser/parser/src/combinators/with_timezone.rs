@@ -1,5 +1,5 @@
 /// Alias: `opt_timezone`
-pub(super) fn with_timezone(stream: &mut TokenStream) -> scan::Result<bool> {
+pub(super) fn with_timezone(ctx: &mut ParserContext) -> scan::Result<bool> {
 
     /*
         (WITH | WITHOUT) TIME ZONE
@@ -12,7 +12,7 @@ pub(super) fn with_timezone(stream: &mut TokenStream) -> scan::Result<bool> {
         ),
         Time,
         Zone
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(with_tz)
 }
@@ -38,4 +38,4 @@ use pg_lexer::Keyword::With;
 use pg_lexer::Keyword::Without;
 use pg_lexer::Keyword::Zone;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

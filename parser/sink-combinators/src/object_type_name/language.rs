@@ -1,4 +1,4 @@
-pub fn language(stream: &mut TokenStream) -> scan::Result<Str> {
+pub fn language(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     /*
         ( PROCEDURAL )? LANGUAGE name
@@ -7,7 +7,7 @@ pub fn language(stream: &mut TokenStream) -> scan::Result<Str> {
     let (_, name) = seq!(
         seq!(Procedural.optional(), Language),
         col_id
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(name)
 }
@@ -43,4 +43,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Language;
 use pg_lexer::Keyword::Procedural;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

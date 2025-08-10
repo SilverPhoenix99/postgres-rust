@@ -1,27 +1,27 @@
-pub fn role_list(stream: &mut TokenStream) -> scan::Result<Vec<RoleSpec>> {
+pub fn role_list(ctx: &mut ParserContext) -> scan::Result<Vec<RoleSpec>> {
 
     /*
         role_spec ( ',' role_spec )*
     */
 
-    many!(sep = Comma, role_spec).parse(stream)
+    many!(sep = Comma, role_spec).parse(ctx)
 }
 
 /// Alias: `RoleId`
-pub fn role_id(stream: &mut TokenStream) -> scan::Result<Str> {
+pub fn role_id(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
-    let Located(role, loc) = located!(role_spec).parse(stream)?;
+    let Located(role, loc) = located!(role_spec).parse(ctx)?;
 
     let role_id = role.into_role_id()
         .map_err(|err| err.at_location(loc))?;
-    
+
     Ok(role_id)
 }
 
 /// Alias: `RoleSpec`
-pub fn role_spec(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
+pub fn role_spec(ctx: &mut ParserContext) -> scan::Result<RoleSpec> {
 
     /*
         role_spec :
@@ -43,12 +43,12 @@ pub fn role_spec(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
             "public" => RoleSpec::Public,
             _ => RoleSpec::Name(ident)
         })
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn role_none(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
+fn role_none(ctx: &mut ParserContext) -> scan::Result<RoleSpec> {
 
-    let Located(_, loc) = located!(NoneKw).parse(stream)?;
+    let Located(_, loc) = located!(NoneKw).parse(ctx)?;
     Err(ReservedRoleSpec { role: "none" }.at_location(loc).into())
 }
 
@@ -85,9 +85,9 @@ mod tests {
     #[test]
     fn test_role_list() {
         let source = "puBlic , CuRrEnT_rOlE,CURRENT_USER, session_user ,coalesce,xxYYzz none";
-        let mut stream = TokenStream::from(source);
+        let mut ctx = ParserContext::from(source);
 
-        let actual = role_list(&mut stream).unwrap();
+        let actual = role_list(&mut ctx).unwrap();
 
         let expected = [
             RoleSpec::Public,
@@ -154,5 +154,5 @@ use pg_lexer::Keyword::NoneKw;
 use pg_lexer::Keyword::SessionUser;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::RoleSpec;

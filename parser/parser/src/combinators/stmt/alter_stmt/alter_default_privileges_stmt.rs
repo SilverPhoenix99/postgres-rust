@@ -1,5 +1,5 @@
 /// Alias: `AlterDefaultPrivilegesStmt`
-pub(super) fn alter_default_privileges_stmt(stream: &mut TokenStream) -> scan::Result<AlterDefaultPrivilegesStmt> {
+pub(super) fn alter_default_privileges_stmt(ctx: &mut ParserContext) -> scan::Result<AlterDefaultPrivilegesStmt> {
 
     /*
         ALTER DEFAULT PRIVILEGES DefACLOptionList DefACLAction
@@ -10,20 +10,20 @@ pub(super) fn alter_default_privileges_stmt(stream: &mut TokenStream) -> scan::R
         Privileges,
         def_acl_option_list.optional(),
         def_acl_action
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let stmt = AlterDefaultPrivilegesStmt::new(options.unwrap_or_default(), action);
     Ok(stmt)
 }
 
 /// Alias: `DefACLOptionList`
-fn def_acl_option_list(stream: &mut TokenStream) -> scan::Result<Vec<AclOption>> {
+fn def_acl_option_list(ctx: &mut ParserContext) -> scan::Result<Vec<AclOption>> {
 
-    many!(def_acl_option).parse(stream)
+    many!(def_acl_option).parse(ctx)
 }
 
 /// Alias: `DefACLOption`
-fn def_acl_option(stream: &mut TokenStream) -> scan::Result<AclOption> {
+fn def_acl_option(ctx: &mut ParserContext) -> scan::Result<AclOption> {
 
     /*
           IN SCHEMA name_list
@@ -39,7 +39,7 @@ fn def_acl_option(stream: &mut TokenStream) -> scan::Result<AclOption> {
             role_list
         )
             .map(|(.., roles)| AclOption::Roles(roles))
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 /// Alias: `DefACLAction`
@@ -47,7 +47,7 @@ fn def_acl_option(stream: &mut TokenStream) -> scan::Result<AclOption> {
 /// This should match GRANT/REVOKE, except that individual target objects
 /// are not mentioned, and we only allow a subset of object types.
 ///
-fn def_acl_action(stream: &mut TokenStream) -> scan::Result<GrantStmt> {
+fn def_acl_action(ctx: &mut ParserContext) -> scan::Result<GrantStmt> {
 
     /*
           GRANT privileges ON defacl_privilege_target TO grantee_list ( grant_option )?
@@ -57,10 +57,10 @@ fn def_acl_action(stream: &mut TokenStream) -> scan::Result<GrantStmt> {
     alt!(
         grant_stmt,
         revoke_stmt
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn grant_stmt(stream: &mut TokenStream) -> scan::Result<GrantStmt> {
+fn grant_stmt(ctx: &mut ParserContext) -> scan::Result<GrantStmt> {
 
     /*
         GRANT privileges ON defacl_privilege_target TO grantee_list ( with_grant_option )?
@@ -75,13 +75,13 @@ fn grant_stmt(stream: &mut TokenStream) -> scan::Result<GrantStmt> {
         grantee_list,
         with_grant_option.optional()
             .map(Option::unwrap_or_default)
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let stmt = GrantStmt::grant(privileges, object_type, grantees, grant_option);
     Ok(stmt)
 }
 
-fn revoke_stmt(stream: &mut TokenStream) -> scan::Result<GrantStmt> {
+fn revoke_stmt(ctx: &mut ParserContext) -> scan::Result<GrantStmt> {
 
     /*
         REVOKE ( GRANT OPTION FOR )? privileges ON defacl_privilege_target FROM grantee_list ( drop_behavior )?
@@ -99,25 +99,25 @@ fn revoke_stmt(stream: &mut TokenStream) -> scan::Result<GrantStmt> {
         grantee_list,
         drop_behavior.optional()
             .map(Option::unwrap_or_default)
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let stmt = GrantStmt::revoke(privileges, object_type, grantees, grant_option, drop_behavior);
     Ok(stmt)
 }
 
-fn grant_option_for(stream: &mut TokenStream) -> scan::Result<GrantOption> {
+fn grant_option_for(ctx: &mut ParserContext) -> scan::Result<GrantOption> {
 
     /*
         GRANT OPTION FOR
     */
 
-    let _ = seq!(Grant, OptionKw, For).parse(stream)?;
+    let _ = seq!(Grant, OptionKw, For).parse(ctx)?;
 
     Ok(GrantOption::WithGrant)
 }
 
 /// Alias: `defacl_privilege_target`
-fn def_acl_privilege_target(stream: &mut TokenStream) -> scan::Result<PrivilegeDefaultsTarget> {
+fn def_acl_privilege_target(ctx: &mut ParserContext) -> scan::Result<PrivilegeDefaultsTarget> {
 
     alt!(
         Kw::Tables.map(|_| Tables),
@@ -126,7 +126,7 @@ fn def_acl_privilege_target(stream: &mut TokenStream) -> scan::Result<PrivilegeD
         Kw::Types.map(|_| Types),
         Kw::Schemas.map(|_| Schemas),
         seq!(Kw::Large, Kw::Objects).map(|_| LargeObjects)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -256,7 +256,7 @@ use pg_lexer::Keyword::Schema;
 use pg_lexer::Keyword::To;
 use pg_lexer::Keyword::User;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::drop_behavior;
 use pg_sink_combinators::name_list;
 use pg_sink_combinators::role_list;

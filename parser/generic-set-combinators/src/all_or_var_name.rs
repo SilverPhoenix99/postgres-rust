@@ -1,5 +1,5 @@
 /// Alias: `generic_reset`
-pub fn all_or_var_name(stream: &mut TokenStream) -> scan::Result<OneOrAll<QualifiedName>> {
+pub fn all_or_var_name(ctx: &mut ParserContext) -> scan::Result<OneOrAll<QualifiedName>> {
 
     /*
           ALL
@@ -9,7 +9,7 @@ pub fn all_or_var_name(stream: &mut TokenStream) -> scan::Result<OneOrAll<Qualif
     alt!(
         Keyword::All.map(|_| OneOrAll::All),
         var_name.map(OneOrAll::One)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -31,6 +31,6 @@ use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::OneOrAll;
 use pg_sink_combinators::var_name;

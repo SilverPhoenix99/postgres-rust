@@ -1,15 +1,15 @@
-pub(super) fn explicit_row(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn explicit_row(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 
     /*
         ROW '(' ( expr_list )? ')'
     */
 
-    let (Keyword(Kw::Row), Operator(OpenParenthesis)) = stream.peek2()? else {
-        return no_match(stream)
+    let (Keyword(Kw::Row), Operator(OpenParenthesis)) = ctx.stream_mut().peek2()? else {
+        return no_match(ctx)
     };
 
     let (_, col_values) = seq!(skip(1), paren!(expr_list.optional()))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(Row(col_values))
 }
@@ -41,6 +41,6 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::OperatorKind::OpenParenthesis;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue::Keyword;
 use pg_parser_core::stream::TokenValue::Operator;
+use pg_parser_core::ParserContext;

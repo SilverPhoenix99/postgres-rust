@@ -1,8 +1,8 @@
 /// Returns `ICONST | FCONST`.
 ///
 /// Alias: `I_or_F_const`
-pub fn number(stream: &mut TokenStream<'_>) -> scan::Result<UnsignedNumber> {
-    stream.consume(|tok| {
+pub fn number(ctx: &mut ParserContext) -> scan::Result<UnsignedNumber> {
+    ctx.stream_mut().consume(|tok| {
         let TokenValue::UnsignedNumber(value) = tok else {
             return None
         };
@@ -29,5 +29,5 @@ use core::mem;
 use pg_basics::UnsignedNumber;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenConsumer;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue;
+use pg_parser_core::ParserContext;

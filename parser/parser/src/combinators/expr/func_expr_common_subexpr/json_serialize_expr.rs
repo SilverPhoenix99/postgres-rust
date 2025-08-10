@@ -1,4 +1,4 @@
-pub(super) fn json_serialize_expr(stream: &mut TokenStream) -> scan::Result<JsonSerializeExpr> {
+pub(super) fn json_serialize_expr(ctx: &mut ParserContext) -> scan::Result<JsonSerializeExpr> {
 
     /*
         JSON_SERIALIZE '(' json_value_expr ( json_returning_clause )? ')'
@@ -12,7 +12,7 @@ pub(super) fn json_serialize_expr(stream: &mut TokenStream) -> scan::Result<Json
             json_value_expr,
             json_returning_clause.optional(),
         ))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let mut expr = JsonSerializeExpr::new(value);
     expr.set_output(output);
@@ -53,4 +53,4 @@ use pg_combinators::seq;
 use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

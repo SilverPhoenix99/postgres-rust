@@ -1,11 +1,11 @@
-pub(in crate::combinators::stmt) fn function(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
+pub(in crate::combinators::stmt) fn function(ctx: &mut ParserContext) -> scan::Result<FunctionWithArgs> {
 
     /*
         FUNCTION function_with_argtypes
     */
 
     let (_, signature) = seq!(Function, function_with_argtypes)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(signature)
 }
@@ -31,4 +31,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Function;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

@@ -4,7 +4,7 @@ where
 {
     type Output;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output>;
+    fn parse(&self, ctx: &mut ParserContext<'_>) -> scan::Result<Self::Output>;
 
     /// See [`optional()`](optional::optional).
     fn optional(self) -> impl Combinator<Output = Option<Self::Output>> {
@@ -26,16 +26,16 @@ where
 
 impl<F, O> Combinator for F
 where
-    F: for<'a> Fn(&'a mut TokenStream<'_>) -> scan::Result<O>,
+    F: for<'a> Fn(&'a mut ParserContext<'_>) -> scan::Result<O>,
 {
     type Output = O;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
-        self(stream)
+    fn parse(&self, ctx: &mut ParserContext<'_>) -> scan::Result<Self::Output> {
+        self(ctx)
     }
 }
 
 use crate::map;
 use crate::optional;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

@@ -1,4 +1,4 @@
-pub(super) fn xml_element(stream: &mut TokenStream) -> scan::Result<XmlElement> {
+pub(super) fn xml_element(ctx: &mut ParserContext) -> scan::Result<XmlElement> {
 
     /*
         XMLELEMENT '('
@@ -18,7 +18,7 @@ pub(super) fn xml_element(stream: &mut TokenStream) -> scan::Result<XmlElement> 
             col_label,
             xml_element_extra_args.optional()
         ))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let (attrs, content) = extra_args.unwrap_or_default();
 
@@ -34,7 +34,7 @@ type ExtraArgs = (
     Option<Vec<ExprNode>>
 );
 
-fn xml_element_extra_args(stream: &mut TokenStream) -> scan::Result<ExtraArgs>
+fn xml_element_extra_args(ctx: &mut ParserContext) -> scan::Result<ExtraArgs>
 {
     /*
         ',' (
@@ -56,19 +56,19 @@ fn xml_element_extra_args(stream: &mut TokenStream) -> scan::Result<ExtraArgs>
                 (None, Some(content))
             })
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok((args, content))
 }
 
-fn xml_attributes(stream: &mut TokenStream) -> scan::Result<Vec<NamedValue>> {
+fn xml_attributes(ctx: &mut ParserContext) -> scan::Result<Vec<NamedValue>> {
 
     /*
         XMLATTRIBUTES '(' xml_attribute_list ')'
     */
 
     let (_, attrs) = seq!(Xmlattributes, paren!(xml_attribute_list))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(attrs)
 }
@@ -126,5 +126,5 @@ use pg_lexer::Keyword::Name;
 use pg_lexer::Keyword::Xmlattributes;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_label;

@@ -1,5 +1,5 @@
 /// Alias: `opt_alias_clause`
-pub(super) fn alias_clause(stream: &mut TokenStream) -> scan::Result<Alias> {
+pub(super) fn alias_clause(ctx: &mut ParserContext) -> scan::Result<Alias> {
 
     /*
         ( AS )? ColId ( '(' name_list ')' )?
@@ -9,7 +9,7 @@ pub(super) fn alias_clause(stream: &mut TokenStream) -> scan::Result<Alias> {
         As.optional(),
         col_id,
         paren!(name_list).optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let mut alias = Alias::new(name);
     alias.set_columns(columns);
@@ -44,6 +44,6 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::As;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::name_list;

@@ -5,7 +5,7 @@ pg_basics::reexport! {
     type_func_name_prefixed_expr,
 }
 
-pub(super) fn prefixed_expr_const(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn prefixed_expr_const(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 
     /*
           func_name                              => columnref
@@ -19,7 +19,7 @@ pub(super) fn prefixed_expr_const(stream: &mut TokenStream) -> scan::Result<Expr
     alt!(
         identifier_prefixed_expr,
         type_func_name_prefixed_expr
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -45,4 +45,4 @@ use pg_ast::ExprNode;
 use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

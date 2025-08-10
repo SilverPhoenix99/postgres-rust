@@ -9,7 +9,7 @@ enum Change {
 }
 
 /// Alias: `AlterDatabaseStmt`
-pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn alter_database_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
     /*
         ALTER DATABASE ColId (
               REFRESH COLLATION VERSION => AlterDatabaseRefreshCollStmt
@@ -23,7 +23,7 @@ pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> scan::Result<RawS
         )
     */
 
-    let (_, name, change) = seq!(Database, col_id, changes).parse(stream)?;
+    let (_, name, change) = seq!(Database, col_id, changes).parse(ctx)?;
 
     let stmt = match change {
         Change::RefreshVersion => {
@@ -61,7 +61,7 @@ pub(super) fn alter_database_stmt(stream: &mut TokenStream) -> scan::Result<RawS
     Ok(stmt)
 }
 
-fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
+fn changes(ctx: &mut ParserContext) -> scan::Result<Change> {
     alt!(
         refresh_collation_version,
         change_owner,
@@ -73,28 +73,28 @@ fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
             .map(|(_, options)| Change::Options(options)),
         alterdb_opt_list
             .map(Change::Options),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn refresh_collation_version(stream: &mut TokenStream) -> scan::Result<Change> {
+fn refresh_collation_version(ctx: &mut ParserContext) -> scan::Result<Change> {
 
-    seq!(Refresh, Collation, Version).parse(stream)?;
+    seq!(Refresh, Collation, Version).parse(ctx)?;
     Ok(Change::RefreshVersion)
 }
 
-fn change_owner(stream: &mut TokenStream) -> scan::Result<Change> {
+fn change_owner(ctx: &mut ParserContext) -> scan::Result<Change> {
 
-    let (.., new_owner) = seq!(Owner, To, role_spec).parse(stream)?;
+    let (.., new_owner) = seq!(Owner, To, role_spec).parse(ctx)?;
     Ok(Change::Owner(new_owner))
 }
 
-fn rename(stream: &mut TokenStream) -> scan::Result<Change> {
+fn rename(ctx: &mut ParserContext) -> scan::Result<Change> {
 
-    let (.., new_name) = seq!(Rename, To, col_id).parse(stream)?;
+    let (.., new_name) = seq!(Rename, To, col_id).parse(ctx)?;
     Ok(Change::Name(new_name))
 }
 
-fn set_option(stream: &mut TokenStream) -> scan::Result<Change> {
+fn set_option(ctx: &mut ParserContext) -> scan::Result<Change> {
 
     let (_, change) = seq!(
         Set,
@@ -104,16 +104,16 @@ fn set_option(stream: &mut TokenStream) -> scan::Result<Change> {
             set_rest
                 .map(Change::SetOption)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
     Ok(change)
 }
 
-fn alterdb_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<AlterdbOption>> {
+fn alterdb_opt_list(ctx: &mut ParserContext) -> scan::Result<Vec<AlterdbOption>> {
 
-    many!(alterdb_opt_item).parse(stream)
+    many!(alterdb_opt_item).parse(ctx)
 }
 
-fn alterdb_opt_item(stream: &mut TokenStream) -> scan::Result<AlterdbOption> {
+fn alterdb_opt_item(ctx: &mut ParserContext) -> scan::Result<AlterdbOption> {
 
     /*
           alterdb_opt_name ( '=' )? DEFAULT
@@ -124,13 +124,13 @@ fn alterdb_opt_item(stream: &mut TokenStream) -> scan::Result<AlterdbOption> {
         alterdb_opt_name,
         Equals.optional(),
         createdb_opt_value
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let option = AlterdbOption::new(kind, value);
     Ok(option)
 }
 
-fn alterdb_opt_name(stream: &mut TokenStream) -> scan::Result<AlterdbOptionKind> {
+fn alterdb_opt_name(ctx: &mut ParserContext) -> scan::Result<AlterdbOptionKind> {
 
     alt!(
         seq!(Connection, Limit).map(|_| ConnectionLimit),
@@ -140,7 +140,7 @@ fn alterdb_opt_name(stream: &mut TokenStream) -> scan::Result<AlterdbOptionKind>
             "is_template" => IsTemplate,
             _ => Unknown(ident)
         })
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -279,7 +279,7 @@ use pg_lexer::Keyword::Version;
 use pg_lexer::Keyword::With;
 use pg_lexer::OperatorKind::Equals;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::role_spec;

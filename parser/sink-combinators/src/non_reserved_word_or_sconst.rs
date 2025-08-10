@@ -1,10 +1,10 @@
 /// Alias: `NonReservedWord_or_Sconst`
-pub fn non_reserved_word_or_sconst(stream: &mut TokenStream) -> scan::Result<Str> {
+pub fn non_reserved_word_or_sconst(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     alt!(
         non_reserved_word,
         string.map(Str::from)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -26,4 +26,4 @@ use pg_combinators::alt;
 use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

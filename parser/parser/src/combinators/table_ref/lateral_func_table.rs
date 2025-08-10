@@ -1,11 +1,11 @@
 /// Alias: `opt_ordinality`
-fn ordinality(stream: &mut TokenStream) -> scan::Result<()> {
+fn ordinality(ctx: &mut ParserContext) -> scan::Result<()> {
 
     /*
         WITH ORDINALITY
     */
 
-    seq!(With, Ordinality).parse(stream)?;
+    seq!(With, Ordinality).parse(ctx)?;
 
     Ok(())
 }
@@ -27,4 +27,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Ordinality;
 use pg_lexer::Keyword::With;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

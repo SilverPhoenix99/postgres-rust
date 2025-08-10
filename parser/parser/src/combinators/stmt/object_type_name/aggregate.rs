@@ -1,10 +1,10 @@
-pub(in crate::combinators::stmt) fn aggregate(stream: &mut TokenStream) -> scan::Result<AggregateWithArgs> {
+pub(in crate::combinators::stmt) fn aggregate(ctx: &mut ParserContext) -> scan::Result<AggregateWithArgs> {
 
     /*
         AGGREGATE aggregate_with_argtypes
     */
 
-    let (_, signature) = seq!(Aggregate, aggregate_with_argtypes).parse(stream)?;
+    let (_, signature) = seq!(Aggregate, aggregate_with_argtypes).parse(ctx)?;
 
     Ok(signature)
 }
@@ -30,4 +30,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Aggregate;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

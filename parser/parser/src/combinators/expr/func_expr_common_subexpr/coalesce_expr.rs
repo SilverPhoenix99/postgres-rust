@@ -1,4 +1,4 @@
-pub(super) fn coalesce_expr(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
+pub(super) fn coalesce_expr(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 
     /*
         COALESCE '(' expr_list ')'
@@ -7,7 +7,7 @@ pub(super) fn coalesce_expr(stream: &mut TokenStream) -> scan::Result<SqlFunctio
     // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, args) = seq!(skip(1), paren!(expr_list))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(Coalesce(args))
 }
@@ -39,4 +39,4 @@ use pg_combinators::seq;
 use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

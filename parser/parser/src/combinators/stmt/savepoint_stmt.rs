@@ -1,4 +1,4 @@
-pub(super) fn savepoint_stmt(stream: &mut TokenStream) -> scan::Result<TransactionStmt> {
+pub(super) fn savepoint_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
 
     /*
     TransactionStmt:
@@ -6,7 +6,7 @@ pub(super) fn savepoint_stmt(stream: &mut TokenStream) -> scan::Result<Transacti
     */
 
     let (_, name) = seq!(Savepoint, col_id)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let stmt = TransactionStmt::Savepoint(name);
 
@@ -32,6 +32,6 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Savepoint;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;
 use pg_transaction_mode_ast::TransactionStmt;

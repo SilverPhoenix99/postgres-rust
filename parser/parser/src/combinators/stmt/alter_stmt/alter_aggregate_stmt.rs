@@ -4,7 +4,7 @@ enum Change {
     Schema(Str),
 }
 
-pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn alter_aggregate_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER AGGREGATE aggregate_with_argtypes (
@@ -15,7 +15,7 @@ pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> scan::Result<Raw
     */
 
     let (_, aggregate, change) = seq!(Aggregate, aggregate_with_argtypes, changes)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let stmt = match change {
         Change::Owner(new_owner) => {
@@ -41,7 +41,7 @@ pub(super) fn alter_aggregate_stmt(stream: &mut TokenStream) -> scan::Result<Raw
     Ok(stmt)
 }
 
-fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
+fn changes(ctx: &mut ParserContext) -> scan::Result<Change> {
     alt!(
         seq!(Owner, To, role_spec)
             .map(|(.., new_owner)| Change::Owner(new_owner)),
@@ -49,7 +49,7 @@ fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
             .map(|(.., new_name)| Change::Name(new_name)),
         seq!(Set, Schema, col_id)
             .map(|(.., new_schema)| Change::Schema(new_schema))
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -120,7 +120,7 @@ use pg_lexer::Keyword::Schema;
 use pg_lexer::Keyword::Set;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::role_spec;

@@ -1,4 +1,4 @@
-pub(super) fn xml_forest(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
+pub(super) fn xml_forest(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 
     /*
         XMLFOREST '(' xml_attribute_list ')'
@@ -7,7 +7,7 @@ pub(super) fn xml_forest(stream: &mut TokenStream) -> scan::Result<SqlFunction> 
     // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, content) = seq!(skip(1), paren!(xml_attribute_list))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(XmlForest(content))
 }
@@ -42,4 +42,4 @@ use pg_combinators::seq;
 use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

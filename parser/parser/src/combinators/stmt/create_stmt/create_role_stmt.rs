@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `CreateGroupStmt`
 /// * `CreateRoleStmt`
-pub(super) fn create_role_stmt(stream: &mut TokenStream) -> scan::Result<CreateRoleStmt> {
+pub(super) fn create_role_stmt(ctx: &mut ParserContext) -> scan::Result<CreateRoleStmt> {
 
     /*
         CREATE (ROLE | GROUP) RoleId opt_with OptRoleList
@@ -12,18 +12,18 @@ pub(super) fn create_role_stmt(stream: &mut TokenStream) -> scan::Result<CreateR
         role_id,
         With.optional(),
         create_role_options
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let stmt = CreateRoleStmt::new(name, kind, options);
     Ok(stmt)
 }
 
-fn role_kind(stream: &mut TokenStream) -> scan::Result<RoleKind> {
+fn role_kind(ctx: &mut ParserContext) -> scan::Result<RoleKind> {
 
     alt!(
         Group.map(|_| RoleKind::Group),
         Role.map(|_| RoleKind::Role)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -72,5 +72,5 @@ use pg_lexer::Keyword::Group;
 use pg_lexer::Keyword::Role;
 use pg_lexer::Keyword::With;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::role_id;

@@ -1,4 +1,4 @@
-pub(super) fn commit_stmt(stream: &mut TokenStream) -> scan::Result<TransactionStmt> {
+pub(super) fn commit_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
 
     /*
         COMMIT PREPARED SCONST
@@ -16,7 +16,7 @@ pub(super) fn commit_stmt(stream: &mut TokenStream) -> scan::Result<TransactionS
                     .optional()
             ).map(|(_, chain)| Commit { chain: chain.unwrap_or_default() })
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(stmt)
 }
@@ -54,7 +54,7 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Prepared;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::transaction_chain;
 use pg_sink_combinators::work_or_transaction;
 use pg_transaction_mode_ast::TransactionStmt;

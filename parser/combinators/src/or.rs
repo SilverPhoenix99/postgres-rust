@@ -10,15 +10,15 @@ impl<T: OrCombinator> Combinator for OrCombi<T>
 {
     type Output = T::Output;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
-        self.0.parse(stream)
+    fn parse(&self, ctx: &mut ParserContext<'_>) -> scan::Result<Self::Output> {
+        self.0.parse(ctx)
     }
 }
 
 pub trait OrCombinator {
     type Output;
 
-    fn parse(&self, stream: &mut TokenStream) -> scan::Result<Self::Output>;
+    fn parse(&self, ctx: &mut ParserContext) -> scan::Result<Self::Output>;
 }
 
 /// Joins multiple parsers into a single parser.
@@ -43,19 +43,19 @@ macro_rules! tuple_or_combinator {
             {
                 type Output = T0::Output;
 
-                fn parse(&self, stream: &mut TokenStream) -> scan::Result<Self::Output> {
+                fn parse(&self, ctx: &mut ParserContext) -> scan::Result<Self::Output> {
 
-                    if let Some(ok) = self.0.parse(stream).optional()? {
+                    if let Some(ok) = self.0.parse(ctx).optional()? {
                         return Ok(ok)
                     }
 
                     $(
-                        if let Some(ok) = self.$f.parse(stream).optional()? {
+                        if let Some(ok) = self.$f.parse(ctx).optional()? {
                             return Ok(ok)
                         }
                     )+
 
-                    let loc = stream.current_location();
+                    let loc = ctx.stream_mut().current_location();
                     Err(scan::Error::NoMatch(loc))
                 }
             }
@@ -87,5 +87,5 @@ tuple_or_combinator!(
 
 use crate::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::Optional;
+use pg_parser_core::ParserContext;

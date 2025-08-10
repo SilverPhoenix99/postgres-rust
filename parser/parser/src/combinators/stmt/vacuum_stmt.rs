@@ -1,5 +1,5 @@
 /// Alias: `VacuumStmt`
-pub(super) fn vacuum_stmt(stream: &mut TokenStream<'_>) -> scan::Result<RawStmt> {
+pub(super) fn vacuum_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
           VACUUM opt_full opt_freeze opt_verbose opt_analyze opt_vacuum_relation_list
@@ -7,7 +7,7 @@ pub(super) fn vacuum_stmt(stream: &mut TokenStream<'_>) -> scan::Result<RawStmt>
     */
 
     let (_, stmt) = seq!(Vacuum, parser(|_| todo!()))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(stmt)
 }
@@ -18,4 +18,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Vacuum;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

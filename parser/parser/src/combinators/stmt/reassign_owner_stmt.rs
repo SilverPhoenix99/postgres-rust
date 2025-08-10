@@ -1,12 +1,12 @@
 /// Alias: `ReassignOwnedStmt`
-pub(super) fn reassign_owned_stmt(stream: &mut TokenStream) -> scan::Result<ReassignOwnedStmt> {
+pub(super) fn reassign_owned_stmt(ctx: &mut ParserContext) -> scan::Result<ReassignOwnedStmt> {
 
     /*
         REASSIGN OWNED BY role_list TO RoleSpec
     */
 
     let (.., roles, _, new_owner) = seq!(Reassign, OwnedKw, By, role_list, To, role_spec)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(ReassignOwnedStmt::new(roles, new_owner))
 }
@@ -38,6 +38,6 @@ use pg_lexer::Keyword::OwnedKw;
 use pg_lexer::Keyword::Reassign;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::role_list;
 use pg_sink_combinators::role_spec;

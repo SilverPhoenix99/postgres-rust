@@ -1,5 +1,5 @@
 /// Alias: `CheckPointStmt`
-pub(super) fn check_point_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn check_point_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         CHECKPOINT ( utility_options )?
@@ -8,7 +8,7 @@ pub(super) fn check_point_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt
     let (_, options) = seq!(
         Checkpoint,
         utility_options.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(CheckPointStmt(options))
 }
@@ -37,4 +37,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Checkpoint;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

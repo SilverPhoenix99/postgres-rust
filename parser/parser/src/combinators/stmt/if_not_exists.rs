@@ -1,6 +1,6 @@
-pub(super) fn if_not_exists(stream: &mut TokenStream) -> scan::Result<Presence> {
+pub(super) fn if_not_exists(ctx: &mut ParserContext) -> scan::Result<Presence> {
 
-    let _ = seq!(If, Not, Exists).parse(stream)?;
+    let _ = seq!(If, Not, Exists).parse(ctx)?;
 
     Ok(Presence::Ignore)
 }
@@ -27,4 +27,4 @@ use pg_lexer::Keyword::Exists;
 use pg_lexer::Keyword::If;
 use pg_lexer::Keyword::Not;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

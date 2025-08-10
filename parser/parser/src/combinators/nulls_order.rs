@@ -1,5 +1,5 @@
 /// Alias: `opt_nulls_order`
-pub(super) fn nulls_order(stream: &mut TokenStream) -> scan::Result<SortNulls> {
+pub(super) fn nulls_order(ctx: &mut ParserContext) -> scan::Result<SortNulls> {
 
     /*
           NULLS FIRST
@@ -12,7 +12,7 @@ pub(super) fn nulls_order(stream: &mut TokenStream) -> scan::Result<SortNulls> {
             First.map(|_| NullsFirst),
             Last.map(|_| NullsLast),
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(order)
 }
@@ -40,4 +40,4 @@ use pg_lexer::Keyword::First;
 use pg_lexer::Keyword::Last;
 use pg_lexer::Keyword::Nulls;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

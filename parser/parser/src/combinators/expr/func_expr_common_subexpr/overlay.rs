@@ -1,4 +1,4 @@
-pub(super) fn overlay(stream: &mut TokenStream) -> scan::Result<OverlayFunc> {
+pub(super) fn overlay(ctx: &mut ParserContext) -> scan::Result<OverlayFunc> {
 
     /*
         OVERLAY '(' ( overlay_args )? ')'
@@ -7,20 +7,20 @@ pub(super) fn overlay(stream: &mut TokenStream) -> scan::Result<OverlayFunc> {
     // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, args) = seq!(skip(1), paren!(overlay_args.optional()))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let args = args.unwrap_or_default();
     Ok(args)
 }
 
-fn overlay_args(stream: &mut TokenStream) -> scan::Result<OverlayFunc> {
+fn overlay_args(ctx: &mut ParserContext) -> scan::Result<OverlayFunc> {
 
     /*
           func_arg_list
         | a_expr overlay_list
     */
 
-    let mut args: Vec<_> = func_arg_list(stream)?
+    let mut args: Vec<_> = func_arg_list(ctx)?
         .into_iter()
         .map(|Located(arg, _)| arg)
         .collect();
@@ -28,7 +28,7 @@ fn overlay_args(stream: &mut TokenStream) -> scan::Result<OverlayFunc> {
     if
         let [arg] = args.as_mut_slice()
         && arg.name().is_none()
-        && let Some((placing, from, r#for)) = overlay_list(stream).optional()?
+        && let Some((placing, from, r#for)) = overlay_list(ctx).optional()?
     {
         let (_, arg) = mem::replace(arg, NamedValue::unnamed(NullConst)).into();
         let args = OverlaySqlArgs::new(arg, placing, from, r#for);
@@ -40,14 +40,14 @@ fn overlay_args(stream: &mut TokenStream) -> scan::Result<OverlayFunc> {
     Ok(args)
 }
 
-fn overlay_list(stream: &mut TokenStream) -> scan::Result<(ExprNode, ExprNode, Option<ExprNode>)> {
+fn overlay_list(ctx: &mut ParserContext) -> scan::Result<(ExprNode, ExprNode, Option<ExprNode>)> {
 
     /*
         PLACING a_expr FROM a_expr ( FOR a_expr )?
     */
 
     let (_, placing, (from, r#for)) = seq!(Placing, a_expr, from_for_args)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok((placing, from, r#for))
 }
@@ -129,5 +129,5 @@ use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Placing;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::Optional;
+use pg_parser_core::ParserContext;

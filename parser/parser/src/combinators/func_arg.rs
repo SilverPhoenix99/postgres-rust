@@ -1,4 +1,4 @@
-pub(super) fn func_arg(stream: &mut TokenStream<'_>) -> scan::Result<FunctionParameter> {
+pub(super) fn func_arg(ctx: &mut ParserContext) -> scan::Result<FunctionParameter> {
 
     /*
           arg_class ( type_function_name )? func_type
@@ -9,9 +9,9 @@ pub(super) fn func_arg(stream: &mut TokenStream<'_>) -> scan::Result<FunctionPar
     // The 1st token of `func_type` might be a `type_function_name`, so this production is LL(2),
     // due to the conflict with the optional argument name which is also `type_function_name`.
 
-    let mut mode = arg_class(stream).optional()?;
+    let mut mode = arg_class(ctx).optional()?;
 
-    let has_name = stream.peek2()
+    let has_name = ctx.stream_mut().peek2()
         .map(|(first, second)| is_arg_name(first, second))
         .unwrap_or_default();
 
@@ -19,7 +19,7 @@ pub(super) fn func_arg(stream: &mut TokenStream<'_>) -> scan::Result<FunctionPar
         // It's the argument name.
         // Regardless of `arg_class` matching or not, `is_arg_name()` returned `true`,
         // so this is guaranteed to be `Some` argument name.
-        Some(type_function_name(stream).required()?)
+        Some(type_function_name(ctx).required()?)
     }
     else {
         None
@@ -27,16 +27,16 @@ pub(super) fn func_arg(stream: &mut TokenStream<'_>) -> scan::Result<FunctionPar
 
     if mode.is_none() && arg_name.is_some() {
         // `arg_class` didn't match before the argument name, so it might still match after.
-        mode = arg_class(stream).optional()?;
+        mode = arg_class(ctx).optional()?;
     }
 
     let func_type = if mode.is_none() && arg_name.is_none() {
         // Nothing matched before, so it's still optional
-        func_type(stream)?
+        func_type(ctx)?
     }
     else {
         // At least 1 matched
-        func_type(stream).required()?
+        func_type(ctx).required()?
     };
 
     // In case `arg_class` didn't match, there's still a default that can be applied.
@@ -46,7 +46,7 @@ pub(super) fn func_arg(stream: &mut TokenStream<'_>) -> scan::Result<FunctionPar
     Ok(func_arg)
 }
 
-fn arg_class(stream: &mut TokenStream<'_>) -> scan::Result<FunctionParameterMode> {
+fn arg_class(ctx: &mut ParserContext) -> scan::Result<FunctionParameterMode> {
 
     alt!(
         seq!(Kw::In, Kw::Out.optional())
@@ -54,7 +54,7 @@ fn arg_class(stream: &mut TokenStream<'_>) -> scan::Result<FunctionParameterMode
         Kw::Out.map(|_| Out),
         Kw::Inout.map(|_| InOut),
         Kw::Variadic.map(|_| Variadic),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 fn is_arg_name(first: &TokenValue, second: &TokenValue) -> bool {
@@ -138,10 +138,10 @@ use pg_lexer::Keyword::Precision;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_lexer::KeywordCategory::Unreserved;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue;
 use pg_parser_core::stream::TokenValue::Identifier;
 use pg_parser_core::stream::TokenValue::Keyword;
 use pg_parser_core::Optional;
+use pg_parser_core::ParserContext;
 use pg_parser_core::Required;
 use pg_sink_combinators::type_function_name;

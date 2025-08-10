@@ -1,13 +1,13 @@
-pub(crate) fn json_name_and_value_list(stream: &mut TokenStream) -> scan::Result<Vec<JsonKeyValue>> {
+pub(crate) fn json_name_and_value_list(ctx: &mut ParserContext) -> scan::Result<Vec<JsonKeyValue>> {
 
     /*
         json_name_and_value ( ',' json_name_and_value )*
     */
 
-    many!(sep = Comma, json_name_and_value).parse(stream)
+    many!(sep = Comma, json_name_and_value).parse(ctx)
 }
 
-pub(crate) fn json_name_and_value(stream: &mut TokenStream) -> scan::Result<JsonKeyValue> {
+pub(crate) fn json_name_and_value(ctx: &mut ParserContext) -> scan::Result<JsonKeyValue> {
 
     /*
         a_expr (VALUE | ':') json_value_expr
@@ -21,7 +21,7 @@ pub(crate) fn json_name_and_value(stream: &mut TokenStream) -> scan::Result<Json
         a_expr,
         alt!(Value.skip(), Colon.skip()),
         json_value_expr
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let json = JsonKeyValue::new(name, value);
     Ok(json)
@@ -69,4 +69,4 @@ use pg_lexer::Keyword::Value;
 use pg_lexer::OperatorKind::Colon;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

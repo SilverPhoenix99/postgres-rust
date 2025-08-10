@@ -1,46 +1,46 @@
-pub(super) fn grantee_list(stream: &mut TokenStream) -> scan::Result<Vec<RoleSpec>> {
+pub(super) fn grantee_list(ctx: &mut ParserContext) -> scan::Result<Vec<RoleSpec>> {
 
     /*
         grantee ( ',' grantee )*
     */
 
-    many!(sep = Comma, grantee).parse(stream)
+    many!(sep = Comma, grantee).parse(ctx)
 }
 
-fn grantee(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
+fn grantee(ctx: &mut ParserContext) -> scan::Result<RoleSpec> {
 
     /*
         ( GROUP )? role_spec
     */
 
     let (_, role) = seq!(Group.optional(), role_spec)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(role)
 }
 
 /// Alias: `opt_grant_grant_option`
-pub(super) fn with_grant_option(stream: &mut TokenStream<'_>) -> scan::Result<GrantOption> {
+pub(super) fn with_grant_option(ctx: &mut ParserContext) -> scan::Result<GrantOption> {
 
     /*
         WITH GRANT OPTION
     */
 
     let _ = seq!(With, Grant, OptionKw)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(GrantOption::WithGrant)
 }
 
 /// Alias: `opt_granted_by`
-pub(super) fn granted_by(stream: &mut TokenStream<'_>) -> scan::Result<RoleSpec> {
+pub(super) fn granted_by(ctx: &mut ParserContext) -> scan::Result<RoleSpec> {
 
     /*
         GRANTED BY role_spec
     */
 
     let (.., role) = seq!(Granted, By, role_spec)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(role)
 }
@@ -65,9 +65,9 @@ mod tests {
     #[test]
     fn test_grantee() {
         let source = "current_user group public";
-        let mut stream = TokenStream::from(source);
-        assert_eq!(Ok(RoleSpec::CurrentUser), grantee(&mut stream));
-        assert_eq!(Ok(RoleSpec::Public), grantee(&mut stream));
+        let mut ctx = ParserContext::from(source);
+        assert_eq!(Ok(RoleSpec::CurrentUser), grantee(&mut ctx));
+        assert_eq!(Ok(RoleSpec::Public), grantee(&mut ctx));
     }
 
     #[test]
@@ -101,6 +101,6 @@ use pg_lexer::Keyword::OptionKw;
 use pg_lexer::Keyword::With;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::role_spec;

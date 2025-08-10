@@ -1,10 +1,10 @@
-pub(in crate::combinators::stmt) fn domain(stream: &mut TokenStream) -> scan::Result<Type> {
+pub(in crate::combinators::stmt) fn domain(ctx: &mut ParserContext) -> scan::Result<Type> {
 
     /*
         DOMAIN Typename
     */
 
-    let (_, typ) = seq!(Domain, typename).parse(stream)?;
+    let (_, typ) = seq!(Domain, typename).parse(ctx)?;
 
     Ok(typ)
 }
@@ -31,4 +31,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Domain;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

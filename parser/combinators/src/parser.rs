@@ -1,6 +1,6 @@
 pub fn parser<F, O>(parser: F) -> ClosureCombi<F, O>
 where
-    F: Fn(&mut TokenStream) -> scan::Result<O>
+    F: Fn(&mut ParserContext) -> scan::Result<O>
 {
     ClosureCombi {
         parser,
@@ -16,18 +16,18 @@ pub struct ClosureCombi<F, O> {
 
 impl<F, O> Combinator for ClosureCombi<F, O>
 where
-    F: Fn(&mut TokenStream) -> scan::Result<O>
+    F: Fn(&mut ParserContext) -> scan::Result<O>
 {
     type Output = O;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
-        (self.parser)(stream)
+    fn parse(&self, ctx: &mut ParserContext<'_>) -> scan::Result<Self::Output> {
+        (self.parser)(ctx)
     }
 }
 
 impl<F, O> From<F> for ClosureCombi<F, O>
 where
-    F: Fn(&mut TokenStream) -> scan::Result<O>
+    F: Fn(&mut ParserContext) -> scan::Result<O>
 {
     fn from(parser: F) -> Self {
         Self { parser, boo: PhantomData }
@@ -37,4 +37,4 @@ where
 use crate::Combinator;
 use core::marker::PhantomData;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

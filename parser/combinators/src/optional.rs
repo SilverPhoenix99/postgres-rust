@@ -15,8 +15,8 @@ where
 {
     type Output = Option<P::Output>;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
-        self.0.parse(stream)
+    fn parse(&self, ctx: &mut ParserContext) -> scan::Result<Self::Output> {
+        self.0.parse(ctx)
             .optional()
             .map_err(scan::Error::from)
     }
@@ -39,5 +39,5 @@ mod tests {
 
 use crate::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::Optional as Opt;
+use pg_parser_core::ParserContext;

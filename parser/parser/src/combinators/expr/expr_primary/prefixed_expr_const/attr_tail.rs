@@ -12,7 +12,7 @@ pub(super) enum AttrTail {
     },
 }
 
-pub(super) fn attr_tail(stream: &mut TokenStream) -> scan::Result<AttrTail> {
+pub(super) fn attr_tail(ctx: &mut ParserContext) -> scan::Result<AttrTail> {
 
     /*
           SCONST
@@ -20,7 +20,7 @@ pub(super) fn attr_tail(stream: &mut TokenStream) -> scan::Result<AttrTail> {
         | '(' ( func_application_args )? ')' func_args_tail
     */
 
-    let mut args = match attr_suffix(stream)? {
+    let mut args = match attr_suffix(ctx)? {
         AttrSuffix::String(value) => {
             return Ok(AttrTail::Typecast {
                 value,
@@ -32,7 +32,7 @@ pub(super) fn attr_tail(stream: &mut TokenStream) -> scan::Result<AttrTail> {
 
     // PG-C matches for a string first, and then checks if function arguments are valid type modifiers.
     if let FuncArgsKind::All { args, order } = &mut args
-        && let Some(value) = string(stream).optional()?
+        && let Some(value) = string(ctx).optional()?
     {
         // C-PG won't allow the `ALL` keyword,
         // but it doesn't change the meaning of the expression,
@@ -62,7 +62,7 @@ pub(super) fn attr_tail(stream: &mut TokenStream) -> scan::Result<AttrTail> {
         return Ok(AttrTail::Typecast { value, type_modifiers: Some(type_modifiers) })
     }
 
-    let tail = func_args_tail(stream)?;
+    let tail = func_args_tail(ctx)?;
 
     if let Some(Located(group, loc)) = tail.group {
         args = match args {
@@ -107,7 +107,7 @@ enum AttrSuffix {
     FuncArgs(FuncArgsKind),
 }
 
-fn attr_suffix(stream: &mut TokenStream) -> scan::Result<AttrSuffix> {
+fn attr_suffix(ctx: &mut ParserContext) -> scan::Result<AttrSuffix> {
 
     /*
           SCONST
@@ -117,7 +117,7 @@ fn attr_suffix(stream: &mut TokenStream) -> scan::Result<AttrSuffix> {
     alt!(
         string.map(AttrSuffix::String),
         func_application_args.map(AttrSuffix::FuncArgs),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -127,7 +127,7 @@ struct FuncArgsTail {
     pub over: Option<OverClause>,
 }
 
-fn func_args_tail(stream: &mut TokenStream) -> scan::Result<FuncArgsTail> {
+fn func_args_tail(ctx: &mut ParserContext) -> scan::Result<FuncArgsTail> {
 
     /*
         ( within_group_clause )? ( filter_clause )? ( over_clause )?
@@ -137,7 +137,7 @@ fn func_args_tail(stream: &mut TokenStream) -> scan::Result<FuncArgsTail> {
         located!(within_group_clause).optional(),
         filter_clause.optional(),
         over_clause.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(FuncArgsTail { group, filter, over })
 }
@@ -274,5 +274,5 @@ use pg_elog::parser::Error::InvalidOrderedTypeModifiers;
 use pg_elog::parser::Error::MultipleOrderBy;
 use pg_elog::parser::Error::VariadicWithinGroup;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::Optional;
+use pg_parser_core::ParserContext;

@@ -1,11 +1,11 @@
 /// Inlines: `drop_type_name`
-pub(in crate::combinators::stmt) fn access_method(stream: &mut TokenStream) -> scan::Result<Str> {
+pub(in crate::combinators::stmt) fn access_method(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     /*
         ACCESS METHOD ColId
     */
 
-    let (.., name) = seq!(Access, Method, col_id).parse(stream)?;
+    let (.., name) = seq!(Access, Method, col_id).parse(ctx)?;
 
     Ok(name)
 }
@@ -31,5 +31,5 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Access;
 use pg_lexer::Keyword::Method;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;

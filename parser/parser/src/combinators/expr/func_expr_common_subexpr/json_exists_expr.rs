@@ -1,4 +1,4 @@
-pub(super) fn json_exists_expr(stream: &mut TokenStream) -> scan::Result<JsonExistsExpr> {
+pub(super) fn json_exists_expr(ctx: &mut ParserContext) -> scan::Result<JsonExistsExpr> {
 
     /*
         JSON_EXISTS '(' json_exists_args ')'
@@ -7,12 +7,12 @@ pub(super) fn json_exists_expr(stream: &mut TokenStream) -> scan::Result<JsonExi
     // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, expr) = seq!(skip(1), paren!(json_exists_args))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(expr)
 }
 
-fn json_exists_args(stream: &mut TokenStream) -> scan::Result<JsonExistsExpr> {
+fn json_exists_args(ctx: &mut ParserContext) -> scan::Result<JsonExistsExpr> {
 
     /*
         json_value_expr
@@ -28,7 +28,7 @@ fn json_exists_args(stream: &mut TokenStream) -> scan::Result<JsonExistsExpr> {
         a_expr,
         json_passing_clause.optional(),
         json_on_error_clause.optional(),
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let mut expr = JsonExistsExpr::new(ctx, path_spec);
     expr.set_passing(passing)
@@ -79,4 +79,4 @@ use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

@@ -10,7 +10,7 @@ enum Change {
 }
 
 /// Alias: `AlterFunctionStmt`
-pub(super) fn alter_function_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn alter_function_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER (FUNCTION|PROCEDURE|ROUTINE) function_with_argtypes
@@ -27,7 +27,7 @@ pub(super) fn alter_function_stmt(stream: &mut TokenStream) -> scan::Result<RawS
     // SET SCHEMA is inlined, because it conflicts with `alter_function_option -> SET set_rest_more`.
 
     let (func_type, signature, stmt) = seq!(func_type, function_with_argtypes, changes)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let stmt = match (func_type, stmt) {
         (AlterFunctionKind::Function, Change::Extension { action, extension }) => {
@@ -89,17 +89,17 @@ pub(super) fn alter_function_stmt(stream: &mut TokenStream) -> scan::Result<RawS
     Ok(stmt)
 }
 
-fn changes(stream: &mut TokenStream) -> scan::Result<Change> {
+fn changes(ctx: &mut ParserContext) -> scan::Result<Change> {
     alt!(
         change_extension,
         change_owner,
         rename,
         set_schema,
         options
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn change_extension(stream: &mut TokenStream) -> scan::Result<Change> {
+fn change_extension(ctx: &mut ParserContext) -> scan::Result<Change> {
 
     let (action, extension) = seq!(
         alt!(
@@ -107,24 +107,24 @@ fn change_extension(stream: &mut TokenStream) -> scan::Result<Change> {
             seq!(Depends, On, Extension).map(|_| AddDrop::Add)
         ),
         col_id
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(Change::Extension { action, extension })
 }
 
-fn change_owner(stream: &mut TokenStream) -> scan::Result<Change> {
+fn change_owner(ctx: &mut ParserContext) -> scan::Result<Change> {
 
-    let (.., new_owner) = seq!(Owner, To, role_spec).parse(stream)?;
+    let (.., new_owner) = seq!(Owner, To, role_spec).parse(ctx)?;
     Ok(Change::Owner(new_owner))
 }
 
-fn rename(stream: &mut TokenStream) -> scan::Result<Change> {
+fn rename(ctx: &mut ParserContext) -> scan::Result<Change> {
 
-    let (.., new_name) = seq!(Rename, To, col_id).parse(stream)?;
+    let (.., new_name) = seq!(Rename, To, col_id).parse(ctx)?;
     Ok(Change::Name(new_name))
 }
 
-fn set_schema(stream: &mut TokenStream) -> scan::Result<Change> {
+fn set_schema(ctx: &mut ParserContext) -> scan::Result<Change> {
 
     let (.., new_schema) = seq!(
         Set,
@@ -134,31 +134,31 @@ fn set_schema(stream: &mut TokenStream) -> scan::Result<Change> {
             seq!(string, Restrict.optional())
                 .map(|(new_schema, _)| new_schema.into())
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(Change::Schema(new_schema))
 }
 
-fn options(stream: &mut TokenStream) -> scan::Result<Change> {
+fn options(ctx: &mut ParserContext) -> scan::Result<Change> {
 
     let (options, _) = seq!(alterfunc_opt_list, Restrict.optional())
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(Change::Options(options))
 }
 
-fn func_type(stream: &mut TokenStream) -> scan::Result<AlterFunctionKind> {
+fn func_type(ctx: &mut ParserContext) -> scan::Result<AlterFunctionKind> {
 
     alt!(
         Kw::Function.map(|_| AlterFunctionKind::Function),
         Kw::Procedure.map(|_| AlterFunctionKind::Procedure),
         Kw::Routine.map(|_| AlterFunctionKind::Routine),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn alterfunc_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<AlterFunctionOption>> {
+fn alterfunc_opt_list(ctx: &mut ParserContext) -> scan::Result<Vec<AlterFunctionOption>> {
 
-    many!(alter_function_option).parse(stream)
+    many!(alter_function_option).parse(ctx)
 }
 
 #[cfg(test)]
@@ -349,7 +349,7 @@ use pg_lexer::Keyword::Schema;
 use pg_lexer::Keyword::Set;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::role_spec;

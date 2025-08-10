@@ -2,7 +2,7 @@
 #[macro_export]
 macro_rules! paren {
     ($parser:expr) => {
-        $crate::parser(|stream| {
+        $crate::parser(|ctx| {
 
             let p = $crate::seq!(
                 pg_lexer::OperatorKind::OpenParenthesis,
@@ -10,7 +10,7 @@ macro_rules! paren {
                 pg_lexer::OperatorKind::CloseParenthesis
             );
 
-            let (_, value, _) = $crate::Combinator::parse(&p, stream)?;
+            let (_, value, _) = $crate::Combinator::parse(&p, ctx)?;
             Ok(value)
         })
     };
@@ -20,7 +20,7 @@ macro_rules! paren {
 #[macro_export]
 macro_rules! brackets {
     ($parser:expr) => {
-        $crate::parser(|stream| {
+        $crate::parser(|ctx| {
 
             let p = $crate::seq!(
                 pg_lexer::OperatorKind::OpenBracket,
@@ -28,7 +28,7 @@ macro_rules! brackets {
                 pg_lexer::OperatorKind::CloseBracket
             );
 
-            let (_, value, _) = $crate::Combinator::parse(&p, stream)?;
+            let (_, value, _) = $crate::Combinator::parse(&p, ctx)?;
             Ok(value)
         })
     };

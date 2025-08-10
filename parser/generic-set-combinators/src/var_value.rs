@@ -1,10 +1,10 @@
-pub fn var_list(stream: &mut TokenStream) -> scan::Result<Vec<VarValue>> {
+pub fn var_list(ctx: &mut ParserContext) -> scan::Result<Vec<VarValue>> {
 
-    many!(sep = Comma, var_value).parse(stream)
+    many!(sep = Comma, var_value).parse(ctx)
 }
 
 /// Alias: `utility_option_arg`
-pub fn var_value(stream: &mut TokenStream) -> scan::Result<VarValue> {
+pub fn var_value(ctx: &mut ParserContext) -> scan::Result<VarValue> {
 
     /*
           boolean_or_string
@@ -14,7 +14,7 @@ pub fn var_value(stream: &mut TokenStream) -> scan::Result<VarValue> {
     alt!(
         boolean_or_string.map(From::from),
         signed_number.map(From::from)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -41,6 +41,6 @@ use pg_combinators::Combinator;
 use pg_generic_set_ast::VarValue;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::boolean_or_string;
 use pg_sink_combinators::signed_number;

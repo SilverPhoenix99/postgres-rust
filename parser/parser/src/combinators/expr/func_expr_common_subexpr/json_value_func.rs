@@ -1,4 +1,4 @@
-pub(super) fn json_value_func(stream: &mut TokenStream) -> scan::Result<JsonValueFunc> {
+pub(super) fn json_value_func(ctx: &mut ParserContext) -> scan::Result<JsonValueFunc> {
 
     /*
         JSON_VALUE '(' json_value_args ')'
@@ -7,12 +7,12 @@ pub(super) fn json_value_func(stream: &mut TokenStream) -> scan::Result<JsonValu
     // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, expr) = seq!(skip(1), paren!(json_value_args))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(expr)
 }
 
-fn json_value_args(stream: &mut TokenStream) -> scan::Result<JsonValueFunc> {
+fn json_value_args(ctx: &mut ParserContext) -> scan::Result<JsonValueFunc> {
 
     /*
         json_value_expr
@@ -30,7 +30,7 @@ fn json_value_args(stream: &mut TokenStream) -> scan::Result<JsonValueFunc> {
         json_passing_clause.optional(),
         json_returning_clause.optional(),
         json_behavior_clause.optional(),
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let mut func = JsonValueFunc::new(value, path_spec);
     func.set_passing(passing)
@@ -90,4 +90,4 @@ use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

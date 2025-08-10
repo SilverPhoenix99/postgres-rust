@@ -1,4 +1,4 @@
-pub(super) fn func_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
+pub(super) fn func_name(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
 
     /*
         Original production:
@@ -25,13 +25,14 @@ pub(super) fn func_name(stream: &mut TokenStream) -> scan::Result<QualifiedName>
             )
         ),
         column_name
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn column_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
+fn column_name(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
 
-    let loc = stream.current_location();
-    let name = attrs!(ColumnName.map(Str::from)).parse(stream)?;
+    let Located(name, loc) = located!(
+        attrs!(ColumnName.map(Str::from))
+    ).parse(ctx)?;
 
     if name.len() == 1 {
         return Err(syntax(loc))
@@ -55,29 +56,31 @@ mod tests {
     #[test]
     fn test_unreserved_keyword() {
         let source = "attribute inline.some_thing";
-        let mut stream = TokenStream::from(source);
-        assert_eq!(Ok(vec!["attribute".into()]), func_name(&mut stream));
-        assert_eq!(Ok(vec!["inline".into(), "some_thing".into()]), func_name(&mut stream));
+        let mut ctx = ParserContext::from(source);
+        assert_eq!(Ok(vec!["attribute".into()]), func_name(&mut ctx));
+        assert_eq!(Ok(vec!["inline".into(), "some_thing".into()]), func_name(&mut ctx));
     }
 
     #[test]
     fn test_identifier() {
         let source = "some_ident another_ident.something";
-        let mut stream = TokenStream::from(source);
-        assert_eq!(Ok(vec!["some_ident".into()]), func_name(&mut stream));
-        assert_eq!(Ok(vec!["another_ident".into(), "something".into()]), func_name(&mut stream));
+        let mut ctx = ParserContext::from(source);
+        assert_eq!(Ok(vec!["some_ident".into()]), func_name(&mut ctx));
+        assert_eq!(Ok(vec!["another_ident".into(), "something".into()]), func_name(&mut ctx));
     }
 }
 
+use pg_basics::Located;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::identifier;
+use pg_combinators::located;
 use pg_combinators::Combinator;
 use pg_lexer::KeywordCategory::ColumnName;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_lexer::KeywordCategory::Unreserved;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::syntax;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::attrs;

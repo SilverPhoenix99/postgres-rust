@@ -4,12 +4,12 @@
 ///
 /// The `Option` result does not come from an absence of value.
 /// It returns `None` when the token is the keyword `NULL`.
-pub(super) fn string_or_null(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
+pub(super) fn string_or_null(ctx: &mut ParserContext) -> scan::Result<Option<Box<str>>> {
 
     alt!(
         string.map(Some),
         Null.map(|_| None)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -30,4 +30,4 @@ use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Null;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

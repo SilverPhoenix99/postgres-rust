@@ -1,12 +1,12 @@
 /// Alias: `DoStmt`
-pub(super) fn do_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn do_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         DO dostmt_opt_list
     */
 
     let (_, stmt) = seq!(Do, parser(|_| todo!()))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(stmt)
 }
@@ -17,4 +17,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Do;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

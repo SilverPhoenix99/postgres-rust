@@ -1,10 +1,10 @@
-pub(in crate::combinators::stmt) fn type_name(stream: &mut TokenStream) -> scan::Result<Type> {
+pub(in crate::combinators::stmt) fn type_name(ctx: &mut ParserContext) -> scan::Result<Type> {
 
     /*
         TYPE Typename
     */
 
-    let (_, typ) = seq!(Kw::Type, typename).parse(stream)?;
+    let (_, typ) = seq!(Kw::Type, typename).parse(ctx)?;
 
     Ok(typ)
 }
@@ -31,4 +31,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

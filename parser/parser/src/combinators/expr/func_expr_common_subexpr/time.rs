@@ -1,4 +1,4 @@
-pub(super) fn time(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
+pub(super) fn time(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 
     /*
           CURRENT_DATE
@@ -23,7 +23,7 @@ pub(super) fn time(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
         seq!(Kw::Localtimestamp, precision.optional())
             .map(|(_, precision)| LocalTimestamp { precision }),
 
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -58,4 +58,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

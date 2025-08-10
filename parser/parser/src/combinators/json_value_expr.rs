@@ -1,20 +1,20 @@
-pub(super) fn json_value_expr_list(stream: &mut TokenStream) -> scan::Result<Vec<JsonValueExpr>> {
+pub(super) fn json_value_expr_list(ctx: &mut ParserContext) -> scan::Result<Vec<JsonValueExpr>> {
 
     /*
         json_value_expr ( ',' json_value_expr )*
     */
 
-    many!(sep = Comma, json_value_expr).parse(stream)
+    many!(sep = Comma, json_value_expr).parse(ctx)
 }
 
-pub(super) fn json_value_expr(stream: &mut TokenStream) -> scan::Result<JsonValueExpr> {
+pub(super) fn json_value_expr(ctx: &mut ParserContext) -> scan::Result<JsonValueExpr> {
 
     /*
         a_expr ( json_format_clause )?
     */
 
     let (expr, format) = seq!(a_expr, json_format_clause.optional())
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let format = format.unwrap_or_default();
     let expr = JsonValueExpr::new(expr, format);
@@ -65,4 +65,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

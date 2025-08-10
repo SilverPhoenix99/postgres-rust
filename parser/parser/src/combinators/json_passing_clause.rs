@@ -1,26 +1,26 @@
 /// Alias: `json_passing_clause_opt`
 ///
 /// Inlined: `json_arguments`
-pub(super) fn json_passing_clause(stream: &mut TokenStream) -> scan::Result<Vec<JsonArgument>> {
+pub(super) fn json_passing_clause(ctx: &mut ParserContext) -> scan::Result<Vec<JsonArgument>> {
 
     /*
         PASSING json_argument ( ',' json_argument )*
     */
 
     let (_, args) = seq!(Passing, many!(sep = Comma, json_argument))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(args)
 }
 
-fn json_argument(stream: &mut TokenStream) -> scan::Result<JsonArgument> {
+fn json_argument(ctx: &mut ParserContext) -> scan::Result<JsonArgument> {
 
     /*
         json_value_expr AS col_label
     */
 
     let (value, _, key) = seq!(json_value_expr, As, col_label)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok((key, value))
 }
@@ -69,5 +69,5 @@ use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Passing;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_label;

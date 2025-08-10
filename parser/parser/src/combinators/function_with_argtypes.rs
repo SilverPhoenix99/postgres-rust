@@ -1,13 +1,13 @@
-pub(super) fn function_with_argtypes_list(stream: &mut TokenStream) -> scan::Result<Vec<FunctionWithArgs>> {
+pub(super) fn function_with_argtypes_list(ctx: &mut ParserContext) -> scan::Result<Vec<FunctionWithArgs>> {
 
     /*
         function_with_argtypes ( ',' function_with_argtypes )*
     */
 
-    many!(sep = Comma, function_with_argtypes).parse(stream)
+    many!(sep = Comma, function_with_argtypes).parse(ctx)
 }
 
-pub(super) fn function_with_argtypes(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
+pub(super) fn function_with_argtypes(ctx: &mut ParserContext) -> scan::Result<FunctionWithArgs> {
 
     /*
         Original production:
@@ -30,22 +30,22 @@ pub(super) fn function_with_argtypes(stream: &mut TokenStream) -> scan::Result<F
     alt!(
         function_with_argtypes_1,
         function_with_argtypes_2,
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn function_with_argtypes_1(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
+fn function_with_argtypes_1(ctx: &mut ParserContext) -> scan::Result<FunctionWithArgs> {
 
     /*
         function_name func_args
     */
 
     let (name, args) = seq!(function_name, func_args)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(FunctionWithArgs::new(name, args))
 }
 
-fn function_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
+fn function_name(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
 
     /*
           type_func_name
@@ -61,20 +61,20 @@ fn function_name(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
                 identifier.map(Str::from)
             )
         )
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn function_with_argtypes_2(stream: &mut TokenStream) -> scan::Result<FunctionWithArgs> {
+fn function_with_argtypes_2(ctx: &mut ParserContext) -> scan::Result<FunctionWithArgs> {
 
     let name = attrs!(ColumnName.map(From::from))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     if name.len() == 1 {
         return Ok(FunctionWithArgs::new(name, None))
     }
 
     // arguments are only allowed when the function name is qualified
-    let args = func_args(stream)?;
+    let args = func_args(ctx)?;
 
     Ok(FunctionWithArgs::new(name, args))
 }
@@ -85,26 +85,26 @@ fn function_with_argtypes_2(stream: &mut TokenStream) -> scan::Result<FunctionWi
 /// * `Some(_)` if there are parenthesis, but the arguments list might still be empty. E.g.s:
 ///     * `"()"`: An empty list returns `Some(None)`;
 ///     * `"(arg1, arg2)"`: If arguments exist, then it returns them `Some(Some([arg1, arg2]))`.
-fn func_args(stream: &mut TokenStream) -> scan::Result<Option<Option<Vec<FunctionParameter>>>> {
+fn func_args(ctx: &mut ParserContext) -> scan::Result<Option<Option<Vec<FunctionParameter>>>> {
 
     /*
         ( '(' ( func_args_list )? ')' )?
     */
 
     let args = paren!(func_args_list.optional())
-        .parse(stream)
+        .parse(ctx)
         .optional()?;
 
     Ok(args)
 }
 
-fn func_args_list(stream: &mut TokenStream) -> scan::Result<Vec<FunctionParameter>> {
+fn func_args_list(ctx: &mut ParserContext) -> scan::Result<Vec<FunctionParameter>> {
 
     /*
         func_arg ( ',' func_arg )*
     */
 
-    many!(sep = Comma, func_arg).parse(stream)
+    many!(sep = Comma, func_arg).parse(ctx)
 }
 
 #[cfg(test)]
@@ -168,6 +168,6 @@ use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_lexer::KeywordCategory::Unreserved;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::Optional;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::attrs;

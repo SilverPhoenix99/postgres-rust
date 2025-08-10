@@ -1,4 +1,4 @@
-pub(super) fn create_user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn create_user_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
           USER MAPPING ( if_not_exists )? FOR auth_ident SERVER ColId create_generic_options => CreateUserMappingStmt
@@ -11,12 +11,12 @@ pub(super) fn create_user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt
             create_user_mapping.map(RawStmt::from),
             create_user_role.map(RawStmt::from)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(stmt)
 }
 
-fn create_user_mapping(stream: &mut TokenStream) -> scan::Result<CreateUserMappingStmt> {
+fn create_user_mapping(ctx: &mut ParserContext) -> scan::Result<CreateUserMappingStmt> {
 
     let (_, existence, _, user, _, server, options) = seq!(
         Mapping,
@@ -27,19 +27,19 @@ fn create_user_mapping(stream: &mut TokenStream) -> scan::Result<CreateUserMappi
         Server,
         col_id,
         create_generic_options.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let stmt = CreateUserMappingStmt::new(user, server, options, existence);
     Ok(stmt)
 }
 
-fn create_user_role(stream: &mut TokenStream) -> scan::Result<CreateRoleStmt> {
+fn create_user_role(ctx: &mut ParserContext) -> scan::Result<CreateRoleStmt> {
 
     let (name, _, options) = seq!(
         role_id,
         With.optional(),
         create_role_options
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let stmt = CreateRoleStmt::new(name, RoleKind::User, options);
     Ok(stmt)
@@ -122,6 +122,6 @@ use pg_lexer::Keyword::Server;
 use pg_lexer::Keyword::User;
 use pg_lexer::Keyword::With;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::role_id;

@@ -10,6 +10,6 @@ pg_basics::reexport! { pub
     parser,
 }
 
-fn no_match<T>(stream: &mut pg_parser_core::stream::TokenStream) -> pg_parser_core::scan::Result<T> {
-    Err(pg_parser_core::scan::Error::NoMatch(stream.current_location()))
+fn no_match<T>(ctx: &mut pg_parser_core::ParserContext) -> pg_parser_core::scan::Result<T> {
+    Err(pg_parser_core::scan::Error::NoMatch(ctx.stream_mut().current_location()))
 }

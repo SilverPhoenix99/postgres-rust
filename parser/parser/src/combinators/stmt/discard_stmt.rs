@@ -1,5 +1,5 @@
 /// Alias: `DiscardStmt`
-pub(super) fn discard_stmt(stream: &mut TokenStream) -> scan::Result<DiscardStmt> {
+pub(super) fn discard_stmt(ctx: &mut ParserContext) -> scan::Result<DiscardStmt> {
 
     /*
         DISCARD (ALL | PLANS | SEQUENCES | TEMP | TEMPORARY)
@@ -14,7 +14,7 @@ pub(super) fn discard_stmt(stream: &mut TokenStream) -> scan::Result<DiscardStmt
             alt!(Temp, Temporary)
                 .map(|_| DiscardStmt::Temporary),
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(stmt)
 }
@@ -46,4 +46,4 @@ use pg_lexer::Keyword::Sequences;
 use pg_lexer::Keyword::Temp;
 use pg_lexer::Keyword::Temporary;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

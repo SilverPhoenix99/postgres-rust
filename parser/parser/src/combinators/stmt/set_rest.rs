@@ -1,4 +1,4 @@
-pub(super) fn set_rest(stream: &mut TokenStream) -> scan::Result<SetRest> {
+pub(super) fn set_rest(ctx: &mut ParserContext) -> scan::Result<SetRest> {
 
     /*
           SESSION CHARACTERISTICS AS TRANSACTION transaction_mode_list
@@ -15,30 +15,30 @@ pub(super) fn set_rest(stream: &mut TokenStream) -> scan::Result<SetRest> {
             .map(|(_, stmt)| stmt),
         set_rest_more
             .map(SetRest::from)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn set_rest_session(stream: &mut TokenStream) -> scan::Result<SetRest> {
+fn set_rest_session(ctx: &mut ParserContext) -> scan::Result<SetRest> {
 
     alt!(
         seq!(Characteristics, As, Transaction, transaction_mode_list)
             .map(|(.., modes)| SetRest::SessionTransactionCharacteristics(modes)),
         seq!(Authorization, session_auth_user)
             .map(|(_, user)| SetRest::SessionAuthorization { user })
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn set_rest_transaction(stream: &mut TokenStream) -> scan::Result<SetRest> {
+fn set_rest_transaction(ctx: &mut ParserContext) -> scan::Result<SetRest> {
 
     alt!(
         seq!(Snapshot, string)
             .map(|(_, snapshot)| SetRest::TransactionSnapshot(snapshot)),
         transaction_mode_list
             .map(SetRest::LocalTransactionCharacteristics)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-pub(super) fn set_rest_more(stream: &mut TokenStream) -> scan::Result<SetRestMore> {
+pub(super) fn set_rest_more(ctx: &mut ParserContext) -> scan::Result<SetRestMore> {
 
     /*
           SESSION AUTHORIZATION session_auth_user
@@ -73,17 +73,17 @@ pub(super) fn set_rest_more(stream: &mut TokenStream) -> scan::Result<SetRestMor
         seq!(Xml, OptionKw, document_or_content)
             .map(|(.., option)| SetRestMore::XmlOption(option)),
         set_var_name
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn set_var_name(stream: &mut TokenStream) -> scan::Result<SetRestMore> {
+fn set_var_name(ctx: &mut ParserContext) -> scan::Result<SetRestMore> {
 
-    let name = var_name(stream)?;
+    let name = var_name(ctx)?;
 
     let option = alt!(
         seq!(FromKw, Current).map(|_| None),
         generic_set_tail.map(Some)
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let option = match option {
         None => SetRestMore::FromCurrent { name },
@@ -93,7 +93,7 @@ fn set_var_name(stream: &mut TokenStream) -> scan::Result<SetRestMore> {
     Ok(option)
 }
 
-fn session_auth_user(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<Str>> {
+fn session_auth_user(ctx: &mut ParserContext) -> scan::Result<ValueOrDefault<Str>> {
 
     /*
           DEFAULT
@@ -103,10 +103,10 @@ fn session_auth_user(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<St
     alt!(
         DefaultKw.map(|_| ValueOrDefault::Default),
         non_reserved_word_or_sconst.map(ValueOrDefault::Value)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn zone_value(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
+fn zone_value(ctx: &mut ParserContext) -> scan::Result<ZoneValue> {
 
     /*
           DEFAULT
@@ -127,10 +127,10 @@ fn zone_value(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
                 ZoneValue::String(name.into())
             ),
         zone_interval
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn zone_interval(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
+fn zone_interval(ctx: &mut ParserContext) -> scan::Result<ZoneValue> {
 
     /*
         | INTERVAL SCONST ( interval )?
@@ -150,17 +150,17 @@ fn zone_interval(stream: &mut TokenStream) -> scan::Result<ZoneValue> {
                     }
                 )
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(zone)
 }
 
-fn zone_value_interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
+fn zone_value_interval(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
 
     let Located(zone, loc) = located!(
         interval.optional()
             .map(Option::unwrap_or_default)
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     if matches!(zone, Full { .. } | Hour | HourToMinute) {
         return Ok(zone)
@@ -169,7 +169,7 @@ fn zone_value_interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> 
     Err(InvalidZoneValue.at_location(loc).into())
 }
 
-fn encoding(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<Box<str>>> {
+fn encoding(ctx: &mut ParserContext) -> scan::Result<ValueOrDefault<Box<str>>> {
 
     /*
           DEFAULT
@@ -179,7 +179,7 @@ fn encoding(stream: &mut TokenStream) -> scan::Result<ValueOrDefault<Box<str>>> 
     alt!(
         DefaultKw.map(|_| ValueOrDefault::Default),
         string.map(ValueOrDefault::Value)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -293,7 +293,7 @@ use pg_lexer::Keyword::Transaction;
 use pg_lexer::Keyword::Xml;
 use pg_lexer::Keyword::Zone;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::ValueOrDefault;
 use pg_sink_combinators::non_reserved_word_or_sconst;
 use pg_sink_combinators::signed_number;

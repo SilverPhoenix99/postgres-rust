@@ -1,12 +1,12 @@
 /// Alias: `opt_partition_clause`
-pub(super) fn partition_clause(stream: &mut TokenStream) -> scan::Result<Vec<ExprNode>> {
+pub(super) fn partition_clause(ctx: &mut ParserContext) -> scan::Result<Vec<ExprNode>> {
 
     /*
         PARTITION BY expr_list
     */
 
     let (.., exprs) = seq!(Partition, By, expr_list)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(exprs)
 }
@@ -32,4 +32,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Partition;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

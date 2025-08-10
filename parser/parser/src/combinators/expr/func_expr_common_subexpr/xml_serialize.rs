@@ -1,4 +1,4 @@
-pub(super) fn xml_serialize(stream: &mut TokenStream) -> scan::Result<XmlSerialize> {
+pub(super) fn xml_serialize(ctx: &mut ParserContext) -> scan::Result<XmlSerialize> {
 
     /*
         XMLSERIALIZE '('
@@ -21,7 +21,7 @@ pub(super) fn xml_serialize(stream: &mut TokenStream) -> scan::Result<XmlSeriali
             simple_typename,
             xml_indent_option.optional()
         ))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let indent = indent.unwrap_or_default();
 
@@ -31,7 +31,7 @@ pub(super) fn xml_serialize(stream: &mut TokenStream) -> scan::Result<XmlSeriali
     Ok(expr)
 }
 
-fn xml_indent_option(stream: &mut TokenStream) -> scan::Result<bool> {
+fn xml_indent_option(ctx: &mut ParserContext) -> scan::Result<bool> {
 
     /*
         ( NO )? INDENT
@@ -40,7 +40,7 @@ fn xml_indent_option(stream: &mut TokenStream) -> scan::Result<bool> {
     alt!(
         Indent.map(|_| true),
         seq!(No, Indent).map(|_| false),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -94,4 +94,4 @@ use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Indent;
 use pg_lexer::Keyword::No;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

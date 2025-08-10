@@ -11,16 +11,16 @@ pg_basics::reexport! {
     unicode_normal_form,
 }
 
-pub(super) fn a_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn a_expr(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
     // TODO
-    expr_primary(stream)
+    expr_primary(ctx)
 }
 
-pub(super) fn b_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn b_expr(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
     // TODO
-    expr_primary(stream)
+    expr_primary(ctx)
 }
 
 use pg_ast::ExprNode;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

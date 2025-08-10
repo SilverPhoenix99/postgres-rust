@@ -1,4 +1,4 @@
-pub(crate) fn stmtmulti(stream: &mut TokenStream) -> scan::Result<Vec<RawStmt>> {
+pub(crate) fn stmtmulti(ctx: &mut ParserContext) -> scan::Result<Vec<RawStmt>> {
 
     // This production is slightly cheating, not because it's more efficient,
     // but helps simplify capturing the combinator.
@@ -10,52 +10,52 @@ pub(crate) fn stmtmulti(stream: &mut TokenStream) -> scan::Result<Vec<RawStmt>> 
     let (_, stmts) = seq!(
         semicolons.optional(),
         many!(sep = semicolons, toplevel_stmt).optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     // Note that `many` returns `NoMatch` if the Vec would be empty.
     match stmts {
         Some(stmts) => Ok(stmts),
-        None if stream.eof() => {
+        None if ctx.stream_mut().eof() => {
             // The content didn't have any statements.
             // The stream is either empty, or whitespaces and/or semicolons.
-            let loc = stream.current_location();
+            let loc = ctx.stream_mut().current_location();
             Err(Eof(loc))
         },
         None => {
             // It's not Eof, so there was a syntax error.
-            no_match(stream)
+            no_match(ctx)
         },
     }
 }
 
 /// Returns `Ok` if it consumed at least 1 `;` (semicolon).
-fn semicolons(stream: &mut TokenStream) -> scan::Result<()> {
+fn semicolons(ctx: &mut ParserContext) -> scan::Result<()> {
 
     // Production: ( ';' )+
 
     // skip() might look unnecessary, but it makes the elements have 0 bytes,
     // so the Vec never allocates.
 
-    many!(Semicolon.skip()).parse(stream)?;
+    many!(Semicolon.skip()).parse(ctx)?;
 
     Ok(())
 }
 
-fn toplevel_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+fn toplevel_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     alt!(
         transaction_stmt_legacy.map(RawStmt::from),
         stmt
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 /// Alias: `TransactionStmtLegacy`
-fn transaction_stmt_legacy(stream: &mut TokenStream) -> scan::Result<TransactionStmt> {
+fn transaction_stmt_legacy(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
 
     alt!(
         begin_stmt,
         end_stmt
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -100,5 +100,5 @@ use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Semicolon;
 use pg_parser_core::scan;
 use pg_parser_core::scan::Error::Eof;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_transaction_mode_ast::TransactionStmt;

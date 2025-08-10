@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `json_array_constructor_null_clause_opt`
 /// * `json_object_constructor_null_clause_opt`
-pub(super) fn json_constructor_null_clause(stream: &mut TokenStream) -> scan::Result<bool> {
+pub(super) fn json_constructor_null_clause(ctx: &mut ParserContext) -> scan::Result<bool> {
 
     /*
         ( ABSENT | NULL ) ON NULL
@@ -14,7 +14,7 @@ pub(super) fn json_constructor_null_clause(stream: &mut TokenStream) -> scan::Re
         ),
         On,
         Null
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(absent_on_null)
 }
@@ -39,4 +39,4 @@ use pg_lexer::Keyword::Absent;
 use pg_lexer::Keyword::Null;
 use pg_lexer::Keyword::On;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

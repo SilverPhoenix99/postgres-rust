@@ -1,5 +1,5 @@
 /// Alias: `opt_frame_clause`
-pub(super) fn frame_clause(stream: &mut TokenStream<'_>) -> scan::Result<WindowFrame> {
+pub(super) fn frame_clause(ctx: &mut ParserContext) -> scan::Result<WindowFrame> {
 
     /*
         RANGE frame_extent  ( window_exclusion_clause )?
@@ -16,7 +16,7 @@ pub(super) fn frame_clause(stream: &mut TokenStream<'_>) -> scan::Result<WindowF
         frame_extent,
         window_exclusion_clause.optional()
             .map(Option::unwrap_or_default),
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let frame = WindowFrame::new(kind, extent, exclusion);
 
@@ -74,4 +74,4 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::RangeKw;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

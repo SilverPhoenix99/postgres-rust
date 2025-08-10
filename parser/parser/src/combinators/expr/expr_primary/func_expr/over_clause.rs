@@ -1,5 +1,5 @@
 pub(in crate::combinators::expr::expr_primary)
-fn over_clause(stream: &mut TokenStream) -> scan::Result<OverClause> {
+fn over_clause(ctx: &mut ParserContext) -> scan::Result<OverClause> {
 
     /*
           OVER ColId
@@ -12,7 +12,7 @@ fn over_clause(stream: &mut TokenStream) -> scan::Result<OverClause> {
             col_id.map(WindowName),
             window_specification.map(WindowDefinition)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(expr)
 }
@@ -44,5 +44,5 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Over;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;

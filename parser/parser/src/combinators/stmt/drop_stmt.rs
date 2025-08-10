@@ -1,5 +1,5 @@
 /// Alias: `DropStmt`
-pub(super) fn drop_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn drop_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
           DROP DOMAIN_P IF_P EXISTS type_name_list ( drop_behavior )?
@@ -17,7 +17,7 @@ pub(super) fn drop_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
     */
 
     let (_, stmt) = seq!(DropKw, parser(|_| todo!()))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(stmt)
 }
@@ -28,4 +28,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::DropKw;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

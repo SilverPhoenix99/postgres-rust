@@ -1,14 +1,14 @@
-pub(super) fn xml_attribute_list(stream: &mut TokenStream) -> scan::Result<Vec<NamedValue>> {
+pub(super) fn xml_attribute_list(ctx: &mut ParserContext) -> scan::Result<Vec<NamedValue>> {
 
     /*
         xml_attribute ( ',' xml_attribute )*
     */
 
-    many!(sep = Comma, xml_attribute).parse(stream)
+    many!(sep = Comma, xml_attribute).parse(ctx)
 }
 
 /// Alias: `xml_attribute_el`
-fn xml_attribute(stream: &mut TokenStream) -> scan::Result<NamedValue> {
+fn xml_attribute(ctx: &mut ParserContext) -> scan::Result<NamedValue> {
 
     /*
         a_expr ( AS col_label )?
@@ -17,7 +17,7 @@ fn xml_attribute(stream: &mut TokenStream) -> scan::Result<NamedValue> {
     let (value, name) = seq!(
         a_expr,
         seq!(As, col_label).optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let name = name.map(|(_, name)| name);
     let value = NamedValue::new(name, value);
@@ -51,5 +51,5 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::As;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_label;

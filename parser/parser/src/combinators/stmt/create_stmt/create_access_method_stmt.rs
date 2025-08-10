@@ -1,23 +1,23 @@
 /// Alias: `CreateAmStmt`
-pub(super) fn create_access_method_stmt(stream: &mut TokenStream) -> scan::Result<CreateAccessMethodStmt> {
+pub(super) fn create_access_method_stmt(ctx: &mut ParserContext) -> scan::Result<CreateAccessMethodStmt> {
 
     /*
         ACCESS METHOD ColId TYPE_P am_type HANDLER any_name
     */
 
     let (_, _, name, _, kind, _, handler) = seq!(Access, Method, col_id, Type, am_type, Handler, any_name)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let stmt = CreateAccessMethodStmt::new(name, kind, handler);
     Ok(stmt)
 }
 
-fn am_type(stream: &mut TokenStream) -> scan::Result<AccessMethodKind> {
+fn am_type(ctx: &mut ParserContext) -> scan::Result<AccessMethodKind> {
 
     alt!(
         Kw::Index.map(|_| Index),
         Kw::Table.map(|_| Table)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -55,6 +55,6 @@ use pg_lexer::Keyword::Handler;
 use pg_lexer::Keyword::Method;
 use pg_lexer::Keyword::Type;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::any_name;
 use pg_sink_combinators::col_id;

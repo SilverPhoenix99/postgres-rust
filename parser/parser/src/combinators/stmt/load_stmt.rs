@@ -1,12 +1,12 @@
 /// Alias: `LoadStmt`
-pub(super) fn load_stmt(stream: &mut TokenStream) -> scan::Result<Box<str>> {
+pub(super) fn load_stmt(ctx: &mut ParserContext) -> scan::Result<Box<str>> {
 
     /*
         LOAD SCONST
     */
 
     let (_, lib_name) = seq!(Load, string)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(lib_name)
 }
@@ -31,4 +31,4 @@ use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Load;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

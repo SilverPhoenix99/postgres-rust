@@ -1,11 +1,11 @@
 /// Alias: `copy_generic_opt_arg_list`
-pub fn boolean_or_string_list(stream: &mut TokenStream) -> scan::Result<Vec<BooleanOrString>> {
+pub fn boolean_or_string_list(ctx: &mut ParserContext) -> scan::Result<Vec<BooleanOrString>> {
 
-    many!(sep = Comma, boolean_or_string).parse(stream)
+    many!(sep = Comma, boolean_or_string).parse(ctx)
 }
 
 /// Alias: `opt_boolean_or_string`
-pub fn boolean_or_string(stream: &mut TokenStream) -> scan::Result<BooleanOrString> {
+pub fn boolean_or_string(ctx: &mut ParserContext) -> scan::Result<BooleanOrString> {
 
     alt!(
         True.map(|_| true.into()),
@@ -14,7 +14,7 @@ pub fn boolean_or_string(stream: &mut TokenStream) -> scan::Result<BooleanOrStri
         string.map(From::from),
         // `Off` is handled by this production:
         non_reserved_word.map(From::from),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -43,5 +43,5 @@ use pg_lexer::Keyword::On;
 use pg_lexer::Keyword::True;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::BooleanOrString;

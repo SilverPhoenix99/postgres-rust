@@ -1,5 +1,5 @@
 /// Alias: `json_key_uniqueness_constraint_opt`
-pub(super) fn json_key_uniqueness_constraint(stream: &mut TokenStream) -> scan::Result<bool> {
+pub(super) fn json_key_uniqueness_constraint(ctx: &mut ParserContext) -> scan::Result<bool> {
 
     /*
         ( WITH | WITHOUT ) UNIQUE ( KEYS )?
@@ -12,7 +12,7 @@ pub(super) fn json_key_uniqueness_constraint(stream: &mut TokenStream) -> scan::
         ),
         Unique,
         Keys.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(unique)
 }
@@ -40,4 +40,4 @@ use pg_lexer::Keyword::Unique;
 use pg_lexer::Keyword::With;
 use pg_lexer::Keyword::Without;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

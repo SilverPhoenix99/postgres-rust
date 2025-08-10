@@ -1,11 +1,11 @@
 /// Alias: `SetResetClause`
-pub(super) fn set_reset_clause(stream: &mut TokenStream) -> scan::Result<SetResetClause> {
+pub(super) fn set_reset_clause(ctx: &mut ParserContext) -> scan::Result<SetResetClause> {
 
     alt!(
         seq!(Set, set_rest)
             .map(|(_, option)| SetResetClause::Set(option)),
         reset_stmt.map(SetResetClause::Reset)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -42,4 +42,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Set;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

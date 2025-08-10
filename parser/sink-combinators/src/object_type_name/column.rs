@@ -1,10 +1,10 @@
-pub fn column(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
+pub fn column(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
     /*
         COLUMN any_name
     */
 
     let (_, name) = seq!(Column, any_name)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(name)
 }
@@ -30,4 +30,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Column;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

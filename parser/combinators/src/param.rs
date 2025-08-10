@@ -1,5 +1,5 @@
-pub fn param(stream: &mut TokenStream) -> scan::Result<i32> {
-    stream.consume(|tok| match tok {
+pub fn param(ctx: &mut ParserContext) -> scan::Result<i32> {
+    ctx.stream_mut().consume(|tok| match tok {
         Param { index } => Some(*index),
         _ => None
     })
@@ -22,5 +22,5 @@ mod tests {
 
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenConsumer;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue::Param;
+use pg_parser_core::ParserContext;

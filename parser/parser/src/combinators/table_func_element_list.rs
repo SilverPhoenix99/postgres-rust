@@ -1,17 +1,17 @@
 /// Aliases:
 /// * `OptTableFuncElementList`
 /// * `TableFuncElementList`
-pub(super) fn table_func_element_list(stream: &mut TokenStream) -> scan::Result<Vec<SimpleColumnDefinition>> {
+pub(super) fn table_func_element_list(ctx: &mut ParserContext) -> scan::Result<Vec<SimpleColumnDefinition>> {
 
     /*
         table_func_element ( ',' table_func_element )*
     */
 
-    many!(sep = Comma, table_func_element).parse(stream)
+    many!(sep = Comma, table_func_element).parse(ctx)
 }
 
 /// Alias: `TableFuncElement ( ',' TableFuncElement )*`
-fn table_func_element(stream: &mut TokenStream) -> scan::Result<SimpleColumnDefinition> {
+fn table_func_element(ctx: &mut ParserContext) -> scan::Result<SimpleColumnDefinition> {
 
     /*
         col_id typename ( collate_clause )?
@@ -21,7 +21,7 @@ fn table_func_element(stream: &mut TokenStream) -> scan::Result<SimpleColumnDefi
         col_id,
         simple_typename,
         collate_clause.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let mut col = SimpleColumnDefinition::new(name, type_name);
     col.set_collation(collation);
@@ -58,5 +58,5 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;

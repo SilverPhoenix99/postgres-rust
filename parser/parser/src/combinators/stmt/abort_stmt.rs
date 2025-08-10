@@ -1,4 +1,4 @@
-pub(super) fn abort_stmt(stream: &mut TokenStream) -> scan::Result<TransactionStmt> {
+pub(super) fn abort_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
 
     /*
     TransactionStmt:
@@ -10,7 +10,7 @@ pub(super) fn abort_stmt(stream: &mut TokenStream) -> scan::Result<TransactionSt
         work_or_transaction.optional(),
         transaction_chain
             .optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(Rollback { chain: chain.unwrap_or_default() })
 }
@@ -36,7 +36,7 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Abort;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::transaction_chain;
 use pg_sink_combinators::work_or_transaction;
 use pg_transaction_mode_ast::TransactionStmt;

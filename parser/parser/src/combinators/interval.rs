@@ -1,5 +1,5 @@
 /// Alias: `opt_interval`
-pub(super) fn interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
+pub(super) fn interval(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
 
     /*
           YEAR
@@ -25,10 +25,10 @@ pub(super) fn interval(stream: &mut TokenStream) -> scan::Result<IntervalRange> 
         minute,
         seq!(SecondKw, precision.optional())
             .map(|(_, precision)| Second { precision }),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn year(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
+fn year(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
 
     /*
           YEAR
@@ -38,13 +38,13 @@ fn year(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
     let (_, interval) = seq!(
         YearKw,
         seq!(To, MonthKw).optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let interval = if interval.is_some() { YearToMonth } else { Year };
     Ok(interval)
 }
 
-fn day(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
+fn day(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
 
     /*
           DAY
@@ -66,13 +66,13 @@ fn day(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
         )
             .map(|(_, interval)| interval)
             .optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let interval = interval.unwrap_or(Day);
     Ok(interval)
 }
 
-fn hour(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
+fn hour(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
 
     /*
           HOUR
@@ -92,13 +92,13 @@ fn hour(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
         )
             .map(|(_, interval)| interval)
             .optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let interval = interval.unwrap_or(Hour);
     Ok(interval)
 }
 
-fn minute(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
+fn minute(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
 
     /*
           MINUTE
@@ -110,7 +110,7 @@ fn minute(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
         seq!(To, SecondKw, precision.optional())
             .map(|(.., precision)| precision)
             .optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let precision = match precision {
         None => Minute,
@@ -170,4 +170,4 @@ use pg_lexer::Keyword::Second as SecondKw;
 use pg_lexer::Keyword::To;
 use pg_lexer::Keyword::Year as YearKw;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

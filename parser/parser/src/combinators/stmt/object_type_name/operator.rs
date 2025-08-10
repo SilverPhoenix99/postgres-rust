@@ -5,7 +5,7 @@ pub(in crate::combinators::stmt) enum Operator {
     Family { name: QualifiedName, index_method: Str },
 }
 
-pub(in crate::combinators::stmt) fn operator(stream: &mut TokenStream) -> scan::Result<Operator> {
+pub(in crate::combinators::stmt) fn operator(ctx: &mut ParserContext) -> scan::Result<Operator> {
 
     /*
           OPERATOR CLASS any_name USING col_id operator_with_argtypes
@@ -26,7 +26,7 @@ pub(in crate::combinators::stmt) fn operator(stream: &mut TokenStream) -> scan::
             operator_with_argtypes
                 .map(Operator::WithArgs)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(op)
 }
@@ -79,6 +79,6 @@ use pg_lexer::Keyword::Class;
 use pg_lexer::Keyword::Family;
 use pg_lexer::Keyword::Using;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::any_name;
 use pg_sink_combinators::col_id;

@@ -1,12 +1,12 @@
 /// Alias: `ListenStmt`
-pub(super) fn listen_stmt(stream: &mut TokenStream) -> scan::Result<Str> {
+pub(super) fn listen_stmt(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     /*
         LISTEN ColId
     */
 
     let (_, channel) = seq!(Listen, col_id)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(channel)
 }
@@ -29,5 +29,5 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Listen;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;

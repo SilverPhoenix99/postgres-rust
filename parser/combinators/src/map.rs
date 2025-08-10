@@ -25,8 +25,8 @@ where
 {
     type Output = O;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
-        let output = self.parser.parse(stream)?;
+    fn parse(&self, ctx: &mut ParserContext) -> scan::Result<Self::Output> {
+        let output = self.parser.parse(ctx)?;
         let output = (self.mapper)(output);
         Ok(output)
     }
@@ -35,4 +35,4 @@ where
 use crate::Combinator;
 use core::marker::PhantomData;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

@@ -1,11 +1,11 @@
-pub(super) fn unicode_normal_form(stream: &mut TokenStream) -> scan::Result<UnicodeNormalForm> {
+pub(super) fn unicode_normal_form(ctx: &mut ParserContext) -> scan::Result<UnicodeNormalForm> {
 
     alt!(
         Nfc.map(|_| CanonicalComposition),
         Nfd.map(|_| CanonicalDecomposition),
         Nfkc.map(|_| CompatibilityComposition),
         Nfkd.map(|_| CompatibilityDecomposition)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -35,4 +35,4 @@ use pg_lexer::Keyword::Nfd;
 use pg_lexer::Keyword::Nfkc;
 use pg_lexer::Keyword::Nfkd;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

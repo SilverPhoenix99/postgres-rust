@@ -1,5 +1,5 @@
 /// Alias: `SimpleTypename`
-pub(super) fn simple_typename(stream: &mut TokenStream) -> scan::Result<TypeName> {
+pub(super) fn simple_typename(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 
     alt!(
         Kw::Json.map(|_| Json),
@@ -16,20 +16,20 @@ pub(super) fn simple_typename(stream: &mut TokenStream) -> scan::Result<TypeName
         time,
         interval_type.map(From::from),
         generic_type
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn int(stream: &mut TokenStream) -> scan::Result<TypeName> {
+fn int(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 
     /*
         INT | INTEGER
     */
 
-    alt!(Int, Integer).parse(stream)?;
+    alt!(Int, Integer).parse(ctx)?;
     Ok(Int4)
 }
 
-pub(super) fn numeric(stream: &mut TokenStream) -> scan::Result<TypeName> {
+pub(super) fn numeric(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 
     /*
           NUMERIC ( '(' ICONST ')' )?
@@ -42,13 +42,13 @@ pub(super) fn numeric(stream: &mut TokenStream) -> scan::Result<TypeName> {
         type_modifiers
             .optional()
             .map(Numeric),
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(typ)
 }
 
 /// Inlined: `opt_float`
-pub(super) fn float(stream: &mut TokenStream) -> scan::Result<TypeName> {
+pub(super) fn float(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 
     /*
         FLOAT ( '(' ICONST ')' )?
@@ -57,7 +57,7 @@ pub(super) fn float(stream: &mut TokenStream) -> scan::Result<TypeName> {
     let (_, Located(precision, loc)) = seq!(
         Float,
         located!(precision.optional())
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     match precision {
         None | Some(25..=53) => Ok(Float8),
@@ -78,13 +78,13 @@ pub(super) fn bit(default_type_modifiers:  Option<i32>) -> impl Combinator<Outpu
         BIT ( VARYING )? ( '(' expr_list ')' )?
     */
 
-    parser(move |stream| {
+    parser(move |ctx| {
         let (_, varying, mut modifiers) = seq!(
             Kw::Bit,
             Varying.optional()
                 .map(|varying| varying),
             type_modifiers.optional()
-        ).parse(stream)?;
+        ).parse(ctx)?;
 
         if varying.is_some() {
             return Ok(Varbit(modifiers))
@@ -113,7 +113,7 @@ pub(super) fn character(default_len: Option<i32>) -> impl Combinator<Output = Ty
         | NATIONAL (CHAR | CHARACTER) ( VARYING )? ( precision )?
     */
 
-    parser(move |stream| {
+    parser(move |ctx| {
         let (varying, mut length) = seq!(
             alt!(
                 Kw::Varchar.map(|_| true),
@@ -134,7 +134,7 @@ pub(super) fn character(default_len: Option<i32>) -> impl Combinator<Output = Ty
                     .map(|(_, varying)| varying),
             ),
             precision.optional()
-        ).parse(stream)?;
+        ).parse(ctx)?;
 
         if varying {
             return Ok(Varchar { max_length: length })
@@ -147,7 +147,7 @@ pub(super) fn character(default_len: Option<i32>) -> impl Combinator<Output = Ty
 }
 
 /// Inlined: `ConstDatetime`
-pub(super) fn timestamp(stream: &mut TokenStream) -> scan::Result<TypeName> {
+pub(super) fn timestamp(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 
     /*
         TIMESTAMP ( '(' ICONST ')' )? ( with_timezone )?
@@ -158,7 +158,7 @@ pub(super) fn timestamp(stream: &mut TokenStream) -> scan::Result<TypeName> {
         precision.optional(),
         with_timezone.optional()
             .map(Option::unwrap_or_default)
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let typ = if with_tz {
         TimestampTz { precision }
@@ -171,7 +171,7 @@ pub(super) fn timestamp(stream: &mut TokenStream) -> scan::Result<TypeName> {
 }
 
 /// Inlined: `ConstDatetime`
-pub(super) fn time(stream: &mut TokenStream) -> scan::Result<TypeName> {
+pub(super) fn time(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 
     /*
         TIMESTAMP ( '(' ICONST ')' )? ( with_timezone )?
@@ -182,7 +182,7 @@ pub(super) fn time(stream: &mut TokenStream) -> scan::Result<TypeName> {
         precision.optional(),
         with_timezone.optional()
             .map(Option::unwrap_or_default)
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let typ = if with_tz {
         TimeTz { precision }
@@ -194,7 +194,7 @@ pub(super) fn time(stream: &mut TokenStream) -> scan::Result<TypeName> {
     Ok(typ)
 }
 
-fn interval_type(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
+fn interval_type(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
 
     /*
           INTERVAL '(' ICONST ')'
@@ -209,7 +209,7 @@ fn interval_type(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
             interval.optional()
                 .map(Option::unwrap_or_default)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(interval)
 }
@@ -217,7 +217,7 @@ fn interval_type(stream: &mut TokenStream) -> scan::Result<IntervalRange> {
 /// Alias: `GenericType`
 ///
 /// Includes `DOUBLE PRECISION` due to conflict with `Unreserved` keywords.
-fn generic_type(stream: &mut TokenStream) -> scan::Result<TypeName> {
+fn generic_type(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 
     /*
           DOUBLE PRECISION
@@ -227,15 +227,15 @@ fn generic_type(stream: &mut TokenStream) -> scan::Result<TypeName> {
     // `Double` conflicts with, and has lower precedence than, any other `Keyword::Unreserved`.
     // If it's followed by `Precision`, then it's a Float8.
     // Otherwise, it's a plain `Unreserved` keyword, which can be its own User Defined Type.
-    if matches!(stream.peek2(), Ok((TokenValue::Keyword(Double), TokenValue::Keyword(Precision)))) {
-        stream.skip(2);
+    if matches!(ctx.stream_mut().peek2(), Ok((TokenValue::Keyword(Double), TokenValue::Keyword(Precision)))) {
+        ctx.stream_mut().skip(2);
         return Ok(Float8)
     }
 
     let (name, type_modifiers) = seq!(
         attrs!(type_function_name),
         type_modifiers.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(Generic { name, type_modifiers })
 }
@@ -366,7 +366,7 @@ use pg_lexer::Keyword::Real;
 use pg_lexer::Keyword::Smallint;
 use pg_lexer::Keyword::Varying;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::attrs;
 use pg_sink_combinators::type_function_name;

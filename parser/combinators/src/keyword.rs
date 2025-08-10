@@ -17,8 +17,8 @@ where
     keyword_result(move |kw| Ok(pred(kw).then_some(kw)))
 }
 
-pub fn any_keyword(stream: &mut TokenStream) -> scan::Result<Keyword> {
-    stream.consume(|tok| match tok {
+pub fn any_keyword(ctx: &mut ParserContext) -> scan::Result<Keyword> {
+    ctx.stream_mut().consume(|tok| match tok {
         TokenValue::Keyword(kw) => Some(*kw),
         _ => None
     })
@@ -51,8 +51,8 @@ pub fn keyword_result<O>(
 impl Combinator for Keyword {
     type Output = Keyword;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
-        stream.consume(|tok| match tok {
+    fn parse(&self, ctx: &mut ParserContext) -> scan::Result<Self::Output> {
+        ctx.stream_mut().consume(|tok| match tok {
             TokenValue::Keyword(kw) if *kw == *self => Some(*kw),
             _ => None
         })
@@ -63,8 +63,8 @@ impl Combinator for Keyword {
 impl Combinator for KeywordCategory {
     type Output = Keyword;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
-        stream.consume(|tok| match tok {
+    fn parse(&self, ctx: &mut ParserContext) -> scan::Result<Self::Output> {
+        ctx.stream_mut().consume(|tok| match tok {
             TokenValue::Keyword(kw) if kw.category() == *self => Some(*kw),
             _ => None
         })
@@ -84,8 +84,8 @@ where
 {
     type Output = O;
 
-    fn parse(&self, stream: &mut TokenStream<'_>) -> scan::Result<Self::Output> {
-        stream.consume(|tok| {
+    fn parse(&self, ctx: &mut ParserContext) -> scan::Result<Self::Output> {
+        ctx.stream_mut().consume(|tok| {
             match tok {
                 TokenValue::Keyword(kw) => (self.mapper)(*kw),
                 _ => Ok(None)
@@ -136,5 +136,5 @@ use pg_lexer::KeywordCategory;
 use pg_parser_core::scan;
 use pg_parser_core::stream;
 use pg_parser_core::stream::TokenConsumer;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue;
+use pg_parser_core::ParserContext;

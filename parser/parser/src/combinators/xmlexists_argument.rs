@@ -1,4 +1,4 @@
-pub(super) fn xmlexists_argument(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn xmlexists_argument(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 
     /*
         Several variants are allowed for SQL and other compatibility.
@@ -11,22 +11,22 @@ pub(super) fn xmlexists_argument(stream: &mut TokenStream) -> scan::Result<ExprN
         xml_passing_mech.optional(),
         expr_primary,
         xml_passing_mech.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(expr)
 }
 
-fn xml_passing_mech(stream: &mut TokenStream) -> scan::Result<()> {
+fn xml_passing_mech(ctx: &mut ParserContext) -> scan::Result<()> {
 
     /*
         BY ( REF | VALUE )
     */
 
-    if ! matches!(stream.peek2(), Ok((K(By), K(RefKw | Value)))) {
-        return no_match(stream)
+    if ! matches!(ctx.stream_mut().peek2(), Ok((K(By), K(RefKw | Value)))) {
+        return no_match(ctx)
     }
 
-    stream.skip(2);
+    ctx.stream_mut().skip(2);
     Ok(())
 }
 
@@ -67,5 +67,5 @@ use pg_lexer::Keyword::Passing;
 use pg_lexer::Keyword::RefKw;
 use pg_lexer::Keyword::Value;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue::Keyword as K;
+use pg_parser_core::ParserContext;

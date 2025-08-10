@@ -1,4 +1,4 @@
-pub(super) fn xml_processing_instruction(stream: &mut TokenStream) -> scan::Result<XmlProcessingInstruction> {
+pub(super) fn xml_processing_instruction(ctx: &mut ParserContext) -> scan::Result<XmlProcessingInstruction> {
 
     /*
         XMLPI '(' NAME col_label ( ',' a_expr )? ')'
@@ -13,7 +13,7 @@ pub(super) fn xml_processing_instruction(stream: &mut TokenStream) -> scan::Resu
             col_label,
             seq!(Comma, a_expr).optional()
         ))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let value = value.map(|(_, val)| val);
 
@@ -52,5 +52,5 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Name;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_label;

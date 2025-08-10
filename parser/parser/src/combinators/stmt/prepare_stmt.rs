@@ -1,4 +1,4 @@
-pub(super) fn prepare_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn prepare_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
           PREPARE TRANSACTION SCONST
@@ -13,7 +13,7 @@ pub(super) fn prepare_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
             col_id
                 .map(|_name| todo!())
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(stmt)
 }
@@ -42,5 +42,5 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Prepare;
 use pg_lexer::Keyword::Transaction;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;

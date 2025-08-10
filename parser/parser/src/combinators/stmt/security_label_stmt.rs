@@ -1,5 +1,5 @@
 /// Alias: `SecLabelStmt`
-pub(super) fn security_label_stmt(stream: &mut TokenStream) -> scan::Result<SecurityLabelStmt> {
+pub(super) fn security_label_stmt(ctx: &mut ParserContext) -> scan::Result<SecurityLabelStmt> {
 
     /*
         SECURITY LABEL ( provider )? ON label_target IS security_label
@@ -12,7 +12,7 @@ pub(super) fn security_label_stmt(stream: &mut TokenStream) -> scan::Result<Secu
         On,
         label_target,
         security_label
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let stmt = SecurityLabelStmt::new(provider, target, label);
 
@@ -20,18 +20,18 @@ pub(super) fn security_label_stmt(stream: &mut TokenStream) -> scan::Result<Secu
 }
 
 /// Alias: `opt_provider`
-fn provider(stream: &mut TokenStream) -> scan::Result<Str> {
+fn provider(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     /*
         FOR NonReservedWord_or_Sconst
     */
 
-    let (_, provider) = seq!(For, non_reserved_word_or_sconst).parse(stream)?;
+    let (_, provider) = seq!(For, non_reserved_word_or_sconst).parse(ctx)?;
 
     Ok(provider)
 }
 
-fn label_target(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
+fn label_target(ctx: &mut ParserContext) -> scan::Result<SecurityLabelTarget> {
 
     /*
         ACCESS METHOD name
@@ -109,12 +109,12 @@ fn label_target(stream: &mut TokenStream) -> scan::Result<SecurityLabelTarget> {
         }),
         type_name.map(Type),
         view.map(View),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 /// The `Option` result does not come from an absence of value.
 /// It returns `None` when the token is the keyword `NULL`.
-fn security_label(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
+fn security_label(ctx: &mut ParserContext) -> scan::Result<Option<Box<str>>> {
 
     /*
           IS SCONST
@@ -122,7 +122,7 @@ fn security_label(stream: &mut TokenStream) -> scan::Result<Option<Box<str>>> {
     */
 
     let (_, label) = seq!(Is, string_or_null)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(label)
 }
@@ -277,7 +277,7 @@ use pg_lexer::Keyword::Label;
 use pg_lexer::Keyword::On;
 use pg_lexer::Keyword::Security;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::collation;
 use pg_sink_combinators::column;
 use pg_sink_combinators::conversion;

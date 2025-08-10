@@ -21,22 +21,22 @@ macro_rules! tuple_and_combinator {
             {
                 type Output = (T0::Output, $($t::Output),+);
 
-                fn parse(&self, stream: &mut TokenStream) -> scan::Result<Self::Output> {
+                fn parse(&self, ctx: &mut ParserContext) -> scan::Result<Self::Output> {
 
-                    let start_position = stream.current_location().range().start;
+                    let start_position = ctx.stream_mut().current_location().range().start;
 
                     Ok((
 
-                        self.0.parse(stream)?,
+                        self.0.parse(ctx)?,
 
                         $({
-                            match self.$f.parse(stream) {
+                            match self.$f.parse(ctx) {
                                 Ok(ok) => ok,
 
                                 Err(ScanErr(err)) => return Err(ScanErr(err)),
 
                                 Err(Eof(loc) | NoMatch(loc)) => {
-                                    let current_position = stream.current_location().range().start;
+                                    let current_position = ctx.stream_mut().current_location().range().start;
                                     return if start_position == current_position {
                                         // No consumption yet, so this is considered the first production.
                                         Err(NoMatch(loc))
@@ -70,5 +70,5 @@ use pg_parser_core::scan;
 use pg_parser_core::scan::Error::Eof;
 use pg_parser_core::scan::Error::NoMatch;
 use pg_parser_core::scan::Error::ScanErr;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::syntax;
+use pg_parser_core::ParserContext;

@@ -1,4 +1,4 @@
-pub(super) fn xml_root(stream: &mut TokenStream) -> scan::Result<XmlRoot> {
+pub(super) fn xml_root(ctx: &mut ParserContext) -> scan::Result<XmlRoot> {
 
     /*
         XMLROOT '('
@@ -19,7 +19,7 @@ pub(super) fn xml_root(stream: &mut TokenStream) -> scan::Result<XmlRoot> {
             xml_root_version,
             seq!(Comma, xml_root_standalone).optional()
         ))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let standalone = standalone.map(|(_, standalone)| standalone);
 
@@ -29,7 +29,7 @@ pub(super) fn xml_root(stream: &mut TokenStream) -> scan::Result<XmlRoot> {
     Ok(expr)
 }
 
-fn xml_root_version(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+fn xml_root_version(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 
     /*
         VERSION (
@@ -44,27 +44,27 @@ fn xml_root_version(stream: &mut TokenStream) -> scan::Result<ExprNode> {
             version_no_value,
             a_expr
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(version)
 }
 
-fn version_no_value(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+fn version_no_value(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 
     /*
         NO VALUE
     */
 
-    if ! matches!(stream.peek2(), Ok((K(Kw::No), K(Value)))) {
-        return no_match(stream)
+    if ! matches!(ctx.stream_mut().peek2(), Ok((K(Kw::No), K(Value)))) {
+        return no_match(ctx)
     }
 
-    stream.skip(2);
+    ctx.stream_mut().skip(2);
     Ok(ExprNode::NullConst)
 }
 
 /// Alias: `opt_xml_root_standalone`
-fn xml_root_standalone(stream: &mut TokenStream) -> scan::Result<XmlStandalone> {
+fn xml_root_standalone(ctx: &mut ParserContext) -> scan::Result<XmlStandalone> {
 
     /*
         STANDALONE (
@@ -82,7 +82,7 @@ fn xml_root_standalone(stream: &mut TokenStream) -> scan::Result<XmlStandalone> 
                     if val.is_some() { NoValue } else { No }
                 )
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(standalone)
 }
@@ -145,5 +145,5 @@ use pg_lexer::Keyword::Value;
 use pg_lexer::Keyword::Version;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue::Keyword as K;
+use pg_parser_core::ParserContext;

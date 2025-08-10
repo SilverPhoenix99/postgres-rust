@@ -1,10 +1,10 @@
 /// Alias: `NumericOnly`
-pub fn signed_number(stream: &mut TokenStream) -> scan::Result<SignedNumber> {
+pub fn signed_number(ctx: &mut ParserContext) -> scan::Result<SignedNumber> {
 
     // ('+' | '-')? (ICONST | FCONST)
 
     let (sign, num) = seq!(sign.optional(), number)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let mut num = SignedNumber::from(num);
 
@@ -16,16 +16,16 @@ pub fn signed_number(stream: &mut TokenStream) -> scan::Result<SignedNumber> {
 }
 
 /// Alias: `ICONST`
-pub fn i32_literal(stream: &mut TokenStream) -> scan::Result<i32> {
-    integer(stream).map(i32::from)
+pub fn i32_literal(ctx: &mut ParserContext) -> scan::Result<i32> {
+    integer(ctx).map(i32::from)
 }
 
 /// Alias: `SignedIconst`
-pub fn signed_i32_literal(stream: &mut TokenStream) -> scan::Result<i32> {
+pub fn signed_i32_literal(ctx: &mut ParserContext) -> scan::Result<i32> {
 
     // ('+' | '-')? ICONST
 
-    let (sign, mut int) = seq!(sign.optional(), i32_literal).parse(stream)?;
+    let (sign, mut int) = seq!(sign.optional(), i32_literal).parse(ctx)?;
 
     if let Some(Minus) = sign {
         int = -int;
@@ -35,10 +35,10 @@ pub fn signed_i32_literal(stream: &mut TokenStream) -> scan::Result<i32> {
 }
 
 /// '+' | '-'
-fn sign(stream: &mut TokenStream) -> scan::Result<OperatorKind> {
+fn sign(ctx: &mut ParserContext) -> scan::Result<OperatorKind> {
 
     alt!(Minus, Plus)
-        .parse(stream)
+        .parse(ctx)
 }
 
 #[cfg(test)]
@@ -84,5 +84,5 @@ use pg_lexer::OperatorKind;
 use pg_lexer::OperatorKind::Minus;
 use pg_lexer::OperatorKind::Plus;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::SignedNumber;

@@ -1,23 +1,23 @@
 /// Alias: `CreatedbStmt`
-pub(super) fn create_database_stmt(stream: &mut TokenStream) -> scan::Result<CreateDatabaseStmt> {
+pub(super) fn create_database_stmt(ctx: &mut ParserContext) -> scan::Result<CreateDatabaseStmt> {
 
     let (_, name, _, options) = seq!(
         Database,
         col_id,
         With.optional(),
         createdb_opt_list
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let stmt = CreateDatabaseStmt::new(name, options);
     Ok(stmt)
 }
 
-fn createdb_opt_list(stream: &mut TokenStream) -> scan::Result<Vec<CreatedbOption>> {
+fn createdb_opt_list(ctx: &mut ParserContext) -> scan::Result<Vec<CreatedbOption>> {
 
-    many!(createdb_opt_item).parse(stream)
+    many!(createdb_opt_item).parse(ctx)
 }
 
-fn createdb_opt_item(stream: &mut TokenStream) -> scan::Result<CreatedbOption> {
+fn createdb_opt_item(ctx: &mut ParserContext) -> scan::Result<CreatedbOption> {
 
     /*
           createdb_opt_name ( '=' )? DEFAULT
@@ -28,13 +28,13 @@ fn createdb_opt_item(stream: &mut TokenStream) -> scan::Result<CreatedbOption> {
         createdb_opt_name,
         Equals.optional(),
         createdb_opt_value
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let option = CreatedbOption::new(kind, value);
     Ok(option)
 }
 
-fn createdb_opt_name(stream: &mut TokenStream) -> scan::Result<CreatedbOptionKind> {
+fn createdb_opt_name(ctx: &mut ParserContext) -> scan::Result<CreatedbOptionKind> {
     alt!(
         seq!(Connection, Limit).map(|_| ConnectionLimit),
         Kw::Encoding.map(|_| Encoding),
@@ -58,10 +58,10 @@ fn createdb_opt_name(stream: &mut TokenStream) -> scan::Result<CreatedbOptionKin
             "strategy" => Strategy,
             _ => Unknown(ident)
         })
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-pub(in crate::combinators::stmt) fn createdb_opt_value(stream: &mut TokenStream) -> scan::Result<CreatedbOptionValue> {
+pub(in crate::combinators::stmt) fn createdb_opt_value(ctx: &mut ParserContext) -> scan::Result<CreatedbOptionValue> {
 
     /*
           DEFAULT
@@ -71,7 +71,7 @@ pub(in crate::combinators::stmt) fn createdb_opt_value(stream: &mut TokenStream)
     alt!(
         DefaultKw.map(|_| CreatedbOptionValue::Default),
         var_value.map(From::from)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -186,5 +186,5 @@ use pg_lexer::Keyword::LocationKw;
 use pg_lexer::Keyword::With;
 use pg_lexer::OperatorKind::Equals;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;

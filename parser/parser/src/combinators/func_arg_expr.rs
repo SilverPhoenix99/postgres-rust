@@ -1,13 +1,13 @@
-pub(super) fn func_arg_list(stream: &mut TokenStream<'_>) -> scan::Result<Vec<Located<NamedValue>>> {
+pub(super) fn func_arg_list(ctx: &mut ParserContext) -> scan::Result<Vec<Located<NamedValue>>> {
 
     /*
         func_arg_expr ( COMMA func_arg_expr )*
     */
 
-    many!(sep = Comma, func_arg_expr).parse(stream)
+    many!(sep = Comma, func_arg_expr).parse(ctx)
 }
 
-pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<Located<NamedValue>> {
+pub(super) fn func_arg_expr(ctx: &mut ParserContext) -> scan::Result<Located<NamedValue>> {
 
     /*
         type_function_name COLON_EQUALS a_expr
@@ -15,20 +15,20 @@ pub(super) fn func_arg_expr(stream: &mut TokenStream<'_>) -> scan::Result<Locate
       | a_expr
     */
 
-    match stream.peek2() {
+    match ctx.stream_mut().peek2() {
         Ok((first, Operator(ColonEquals | EqualsGreater))) if is_type_function_name(first) => {
 
             let Located((name, _, value), loc) = located!(seq!(
                 type_function_name,
                 alt!(ColonEquals, EqualsGreater),
                 a_expr
-            )).parse(stream)?;
+            )).parse(ctx)?;
 
             let arg = NamedValue::new(Some(name), value);
             Ok(Located(arg, loc))
         },
         _ => {
-            let Located(value, loc) = located!(a_expr).parse(stream)?;
+            let Located(value, loc) = located!(a_expr).parse(ctx)?;
             let arg = NamedValue::unnamed(value);
             Ok(Located(arg, loc))
         },
@@ -77,9 +77,9 @@ use pg_lexer::OperatorKind::ColonEquals;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::EqualsGreater;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue;
 use pg_parser_core::stream::TokenValue::Identifier;
 use pg_parser_core::stream::TokenValue::Keyword;
 use pg_parser_core::stream::TokenValue::Operator;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::type_function_name;

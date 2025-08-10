@@ -1,12 +1,12 @@
 /// Alias: `opt_collate_clause`
-pub(super) fn collate_clause(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
+pub(super) fn collate_clause(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
 
     /*
         COLLATE any_name
     */
 
     let (_, collation) = seq!(Collate, any_name)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(collation)
 }
@@ -28,5 +28,5 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Collate;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::any_name;

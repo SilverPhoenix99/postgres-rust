@@ -1,10 +1,10 @@
-pub fn view(stream: &mut TokenStream) -> scan::Result<QualifiedName> {
+pub fn view(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
 
     /*
         VIEW any_name
     */
 
-    let (_, view) = seq!(View, any_name).parse(stream)?;
+    let (_, view) = seq!(View, any_name).parse(ctx)?;
 
     Ok(view)
 }
@@ -30,4 +30,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::View;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

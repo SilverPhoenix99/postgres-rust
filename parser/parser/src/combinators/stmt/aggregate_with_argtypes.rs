@@ -1,26 +1,26 @@
-pub(super) fn aggregate_with_argtypes_list(stream: &mut TokenStream) -> scan::Result<Vec<AggregateWithArgs>> {
+pub(super) fn aggregate_with_argtypes_list(ctx: &mut ParserContext) -> scan::Result<Vec<AggregateWithArgs>> {
 
     /*
         aggr_func ( ',' aggr_func )*
     */
 
-    many!(sep = Comma, aggregate_with_argtypes).parse(stream)
+    many!(sep = Comma, aggregate_with_argtypes).parse(ctx)
 }
 
-pub(super) fn aggregate_with_argtypes(stream: &mut TokenStream) -> scan::Result<AggregateWithArgs> {
+pub(super) fn aggregate_with_argtypes(ctx: &mut ParserContext) -> scan::Result<AggregateWithArgs> {
 
     /*
         func_name aggr_args
     */
 
-    let (name, (args, order_by)) = seq!(func_name, aggr_args).parse(stream)?;
+    let (name, (args, order_by)) = seq!(func_name, aggr_args).parse(ctx)?;
 
     Ok(AggregateWithArgs::new(name, args, order_by))
 }
 
 /// Either `Vec` can be empty.
 /// When both `Vec`s are empty, it means `(*)` was used.
-pub(super) fn aggr_args(stream: &mut TokenStream) -> scan::Result<(Vec<FunctionParameter>, Vec<FunctionParameter>)> {
+pub(super) fn aggr_args(ctx: &mut ParserContext) -> scan::Result<(Vec<FunctionParameter>, Vec<FunctionParameter>)> {
 
     /*
           '(' '*' ')'
@@ -28,10 +28,10 @@ pub(super) fn aggr_args(stream: &mut TokenStream) -> scan::Result<(Vec<FunctionP
         | '(' aggr_args_list ( ORDER BY aggr_args_list )? ')'
     */
 
-    paren!(any_aggr_arg).parse(stream)
+    paren!(any_aggr_arg).parse(ctx)
 }
 
-pub(super) fn any_aggr_arg(stream: &mut TokenStream) -> scan::Result<(Vec<FunctionParameter>, Vec<FunctionParameter>)> {
+pub(super) fn any_aggr_arg(ctx: &mut ParserContext) -> scan::Result<(Vec<FunctionParameter>, Vec<FunctionParameter>)> {
     alt!(
         Mul.map(|_| (Vec::new(), Vec::new())),
         order_by_aggr_args.map(|args| (Vec::new(), args)),
@@ -41,32 +41,32 @@ pub(super) fn any_aggr_arg(stream: &mut TokenStream) -> scan::Result<(Vec<Functi
                 .optional()
                 .map(Option::unwrap_or_default)
         )
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn order_by_aggr_args(stream: &mut TokenStream) -> scan::Result<Vec<FunctionParameter>> {
+fn order_by_aggr_args(ctx: &mut ParserContext) -> scan::Result<Vec<FunctionParameter>> {
 
     /*
         ORDER BY aggr_args_list
     */
 
-    let (.., args) = seq!(Order, By, aggr_args_list).parse(stream)?;
+    let (.., args) = seq!(Order, By, aggr_args_list).parse(ctx)?;
 
     Ok(args)
 }
 
-fn aggr_args_list(stream: &mut TokenStream) -> scan::Result<Vec<FunctionParameter>> {
+fn aggr_args_list(ctx: &mut ParserContext) -> scan::Result<Vec<FunctionParameter>> {
 
     /*
         aggr_arg ( ',' aggr_arg )*
     */
 
-    many!(sep = Comma, aggr_arg).parse(stream)
+    many!(sep = Comma, aggr_arg).parse(ctx)
 }
 
-fn aggr_arg(stream: &mut TokenStream) -> scan::Result<FunctionParameter> {
+fn aggr_arg(ctx: &mut ParserContext) -> scan::Result<FunctionParameter> {
 
-    let Located(param, loc) = located!(func_arg).parse(stream)?;
+    let Located(param, loc) = located!(func_arg).parse(ctx)?;
 
     if matches!(param.mode(), Mode::Default | Mode::In | Mode::Variadic) {
         return Ok(param)
@@ -217,4 +217,4 @@ use pg_lexer::Keyword::Order;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::Mul;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

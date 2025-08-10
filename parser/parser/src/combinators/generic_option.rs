@@ -1,13 +1,13 @@
 /// Alias: `generic_option_list`
-pub(super) fn generic_options(stream: &mut TokenStream) -> scan::Result<Vec<GenericOption>> {
+pub(super) fn generic_options(ctx: &mut ParserContext) -> scan::Result<Vec<GenericOption>> {
 
-    many!(sep = Comma, generic_option).parse(stream)
+    many!(sep = Comma, generic_option).parse(ctx)
 }
 
 /// Alias: `generic_option_elem`
-pub(super) fn generic_option(stream: &mut TokenStream) -> scan::Result<GenericOption> {
+pub(super) fn generic_option(ctx: &mut ParserContext) -> scan::Result<GenericOption> {
 
-    let (name, arg) = seq!(col_label, string).parse(stream)?;
+    let (name, arg) = seq!(col_label, string).parse(ctx)?;
     let option = GenericOption::new(name, arg);
     Ok(option)
 }
@@ -46,5 +46,5 @@ use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_label;

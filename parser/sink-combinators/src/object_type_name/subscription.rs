@@ -1,11 +1,11 @@
-pub fn subscription(stream: &mut TokenStream) -> scan::Result<Str> {
+pub fn subscription(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     /*
         SUBSCRIPTION ColId
     */
 
     let (_, name) = seq!(Subscription, col_id)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(name)
 }
@@ -31,4 +31,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Subscription;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

@@ -1,6 +1,6 @@
 /// Alias: `common_func_opt_item`
 /// Inlined: `FunctionSetResetClause`
-pub(super) fn alter_function_option(stream: &mut TokenStream) -> scan::Result<AlterFunctionOption> {
+pub(super) fn alter_function_option(ctx: &mut ParserContext) -> scan::Result<AlterFunctionOption> {
 
     /*
           CALLED ON NULL INPUT
@@ -54,10 +54,10 @@ pub(super) fn alter_function_option(stream: &mut TokenStream) -> scan::Result<Al
         seq!(Kw::Set, set_rest_more)
             .map(|(_, option)| Set(option)),
         reset_stmt.map(Reset)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn security(stream: &mut TokenStream) -> scan::Result<AlterFunctionOption> {
+fn security(ctx: &mut ParserContext) -> scan::Result<AlterFunctionOption> {
 
     let (_, definer) = seq!(
         Kw::Security,
@@ -65,7 +65,7 @@ fn security(stream: &mut TokenStream) -> scan::Result<AlterFunctionOption> {
             Definer.map(|_| true),
             Invoker.map(|_| false)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(Security(definer))
 }
@@ -125,7 +125,7 @@ use pg_lexer::Keyword::Null;
 use pg_lexer::Keyword::On;
 use pg_lexer::Keyword::Returns;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::any_name;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::signed_number;

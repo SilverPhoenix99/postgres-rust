@@ -1,5 +1,5 @@
 /// Inlined: `position_list`
-pub(super) fn position(stream: &mut TokenStream) -> scan::Result<PositionFunc> {
+pub(super) fn position(ctx: &mut ParserContext) -> scan::Result<PositionFunc> {
 
     /*
         POSITION '(' b_expr IN b_expr ')'
@@ -14,7 +14,7 @@ pub(super) fn position(stream: &mut TokenStream) -> scan::Result<PositionFunc> {
     let (_, (needle, _, haystack)) = seq!(
         skip(1),
         paren!(seq!(b_expr, In, b_expr))
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let expr = PositionFunc::new(needle, haystack);
     Ok(expr)
@@ -47,4 +47,4 @@ use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::In;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

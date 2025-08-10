@@ -1,4 +1,4 @@
-pub(super) fn func_expr_windowless(stream: &mut TokenStream) -> scan::Result<FuncExprWindowless> {
+pub(super) fn func_expr_windowless(ctx: &mut ParserContext) -> scan::Result<FuncExprWindowless> {
 
     /*
           func_expr_common_subexpr
@@ -10,7 +10,7 @@ pub(super) fn func_expr_windowless(stream: &mut TokenStream) -> scan::Result<Fun
         func_expr_common_subexpr.map(From::from),
         json_aggregate_func.map(From::from),
         func_application.map(From::from),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -40,4 +40,4 @@ use pg_ast::FuncExprWindowless;
 use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

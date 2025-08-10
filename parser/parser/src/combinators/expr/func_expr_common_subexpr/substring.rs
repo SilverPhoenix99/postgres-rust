@@ -1,4 +1,4 @@
-pub(super) fn substring(stream: &mut TokenStream) -> scan::Result<SubstringFunc> {
+pub(super) fn substring(ctx: &mut ParserContext) -> scan::Result<SubstringFunc> {
 
     /*
         SUBSTRING '(' ( substring_args )? ')'
@@ -7,20 +7,20 @@ pub(super) fn substring(stream: &mut TokenStream) -> scan::Result<SubstringFunc>
     // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, args) = seq!(skip(1), paren!(substring_args.optional()))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let args = args.unwrap_or_default();
     Ok(args)
 }
 
-fn substring_args(stream: &mut TokenStream) -> scan::Result<SubstringFunc> {
+fn substring_args(ctx: &mut ParserContext) -> scan::Result<SubstringFunc> {
 
     /*
           func_arg_list
         | a_expr substring_list
     */
 
-    let mut args: Vec<_> = func_arg_list(stream)?
+    let mut args: Vec<_> = func_arg_list(ctx)?
         .into_iter()
         .map(|Located(arg, _)| arg)
         .collect();
@@ -28,7 +28,7 @@ fn substring_args(stream: &mut TokenStream) -> scan::Result<SubstringFunc> {
     if
     let [arg] = args.as_mut_slice()
         && arg.name().is_none()
-        && let Some((from, r#for)) = substring_list(stream).optional()?
+        && let Some((from, r#for)) = substring_list(ctx).optional()?
     {
         let (_, arg) = mem::replace(arg, NamedValue::unnamed(NullConst)).into();
         let args = SubstringFunc::SqlSyntax(arg, from, r#for);
@@ -39,7 +39,7 @@ fn substring_args(stream: &mut TokenStream) -> scan::Result<SubstringFunc> {
 }
 
 /// Alias: `substr_list`
-fn substring_list(stream: &mut TokenStream) -> scan::Result<(ExprNode, Option<ExprNode>)> {
+fn substring_list(ctx: &mut ParserContext) -> scan::Result<(ExprNode, Option<ExprNode>)> {
 
     /*
           SIMILAR a_expr ESCAPE a_expr
@@ -52,22 +52,22 @@ fn substring_list(stream: &mut TokenStream) -> scan::Result<(ExprNode, Option<Ex
             .map(|(similar, escape)| (similar, Some(escape))),
         from_for_args,
         for_from_args
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn similar_escape_args(stream: &mut TokenStream) -> scan::Result<(ExprNode, ExprNode)> {
+fn similar_escape_args(ctx: &mut ParserContext) -> scan::Result<(ExprNode, ExprNode)> {
 
     /*
         SIMILAR a_expr ESCAPE a_expr
     */
 
     let (_, similar, _, escape) = seq!(Similar, a_expr, Escape, a_expr)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok((similar, escape))
 }
 
-pub(super) fn from_for_args(stream: &mut TokenStream) -> scan::Result<(ExprNode, Option<ExprNode>)> {
+pub(super) fn from_for_args(ctx: &mut ParserContext) -> scan::Result<(ExprNode, Option<ExprNode>)> {
 
     /*
         FROM a_expr ( FOR a_expr )?
@@ -81,14 +81,14 @@ pub(super) fn from_for_args(stream: &mut TokenStream) -> scan::Result<(ExprNode,
     */
 
     let (_, from, r#for) = seq!(FromKw, a_expr, seq!(For, a_expr).optional())
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let for_arg = r#for.map(|(_, expr)| expr);
 
     Ok((from, for_arg))
 }
 
-fn for_from_args(stream: &mut TokenStream) -> scan::Result<(ExprNode, Option<ExprNode>)> {
+fn for_from_args(ctx: &mut ParserContext) -> scan::Result<(ExprNode, Option<ExprNode>)> {
 
     /*
         FOR a_expr ( FROM a_expr )?
@@ -97,7 +97,7 @@ fn for_from_args(stream: &mut TokenStream) -> scan::Result<(ExprNode, Option<Exp
     */
 
     let (_, r#for, from) = seq!(For, a_expr, seq!(FromKw, a_expr).optional())
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let args = match from {
         Some((_, from)) => (from, Some(r#for)),
@@ -222,5 +222,5 @@ use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::FromKw;
 use pg_lexer::Keyword::Similar;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::Optional;
+use pg_parser_core::ParserContext;

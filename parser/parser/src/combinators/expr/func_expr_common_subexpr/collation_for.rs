@@ -1,4 +1,4 @@
-pub(super) fn collation_for(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
+pub(super) fn collation_for(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 
     /*
         COLLATION FOR '(' a_expr ')'
@@ -7,7 +7,7 @@ pub(super) fn collation_for(stream: &mut TokenStream) -> scan::Result<SqlFunctio
     // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
     let (_, expr) = seq!(skip(2), paren!(a_expr))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(CollationFor(expr))
 }
@@ -38,4 +38,4 @@ use pg_combinators::seq;
 use pg_combinators::skip;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

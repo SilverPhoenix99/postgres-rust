@@ -1,5 +1,5 @@
 /// Alias: `AexprConst`
-pub(super) fn expr_const(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn expr_const(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 
     /*
           ICONST
@@ -25,11 +25,11 @@ pub(super) fn expr_const(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         True.map(|_| BooleanConst(true)),
         False.map(|_| BooleanConst(false)),
         Null.map(|_| NullConst),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 /// Alias: `ConstTypename`
-fn const_typename(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
+fn const_typename(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr> {
     use Keyword as K;
     use Operator as O;
 
@@ -56,32 +56,32 @@ fn const_typename(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> 
     // Lookahead is required to disambiguate with `prefixed_expr_const`,
     // due to conflicts with the 1st keyword.
 
-    match stream.peek2()? {
-        (K(Kw::Json), String(_)) => json_typecast(stream),
-        (K(Double), K(Precision)) => double_precision_typecast(stream),
-        (K(Boolean), String(_)) => bool_typecast(stream),
-        (K(Smallint), String(_)) => smallint_typecast(stream),
-        (K(Int | Integer), String(_)) => int_typecast(stream),
-        (K(Bigint), String(_)) => bigint_typecast(stream),
-        (K(Real), String(_)) => real_typecast(stream),
+    match ctx.stream_mut().peek2()? {
+        (K(Kw::Json), String(_)) => json_typecast(ctx),
+        (K(Double), K(Precision)) => double_precision_typecast(ctx),
+        (K(Boolean), String(_)) => bool_typecast(ctx),
+        (K(Smallint), String(_)) => smallint_typecast(ctx),
+        (K(Int | Integer), String(_)) => int_typecast(ctx),
+        (K(Bigint), String(_)) => bigint_typecast(ctx),
+        (K(Real), String(_)) => real_typecast(ctx),
 
         (
             K(Dec | Decimal | Kw::Numeric),
             O(OpenParenthesis) | String(_)
         ) =>
-            numeric_typecast(stream),
+            numeric_typecast(ctx),
 
         (
             K(Float),
             O(OpenParenthesis) | String(_)
         ) =>
-            float_typecast(stream),
+            float_typecast(ctx),
 
         (
             K(Kw::Bit),
             K(Varying) | O(OpenParenthesis) | String(_)
         ) =>
-            bit_string_typecast(stream),
+            bit_string_typecast(ctx),
 
         (
             K(Kw::Varchar),
@@ -95,122 +95,122 @@ fn const_typename(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> 
             K(National),
             K(Char | Character)
         ) =>
-            char_string_typecast(stream),
+            char_string_typecast(ctx),
 
         (
             K(Timestamp),
             O(OpenParenthesis) | K(With | Without) | String(_)
         ) =>
-            timestamp_typecast(stream),
+            timestamp_typecast(ctx),
 
         (
             K(Time),
             O(OpenParenthesis) | K(With | Without) | String(_)
         ) =>
-            time_typecast(stream),
+            time_typecast(ctx),
 
         (
             K(Interval),
             O(OpenParenthesis) | String(_)
         ) =>
-            interval_typecast(stream),
+            interval_typecast(ctx),
 
-        _ => no_match(stream)
+        _ => no_match(ctx)
     }
 }
 
-fn json_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
+fn json_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr> {
 
     /*
         JSON SCONST
     */
 
     let (_, value) = seq!(skip(1), string)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let expr = StringTypecastExpr::new(value, Json);
     Ok(expr)
 }
 
-fn double_precision_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
+fn double_precision_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr> {
 
     /*
         DOUBLE PRECISION SCONST
     */
 
     let (_, value) = seq!(skip(2), string)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let expr = StringTypecastExpr::new(value, Float8);
     Ok(expr)
 }
 
-fn bool_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
+fn bool_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr> {
 
     /*
         BOOLEAN SCONST
     */
 
     let (_, value) = seq!(skip(1), string)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let expr = StringTypecastExpr::new(value, Bool);
     Ok(expr)
 }
 
-fn smallint_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
+fn smallint_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr> {
 
     /*
         SMALLINT SCONST
     */
 
     let (_, value) = seq!(skip(1), string)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let expr = StringTypecastExpr::new(value, Int2);
     Ok(expr)
 }
 
-fn int_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
+fn int_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr> {
 
     /*
         ( INT | INTEGER ) SCONST
     */
 
     let (_, value) = seq!(skip(1), string)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let expr = StringTypecastExpr::new(value, Int4);
     Ok(expr)
 }
 
-fn bigint_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
+fn bigint_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr> {
 
     /*
         BIGINT SCONST
     */
 
     let (_, value) = seq!(skip(1), string)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let expr = StringTypecastExpr::new(value, Int8);
     Ok(expr)
 }
 
-fn real_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
+fn real_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr> {
 
     /*
         REAL SCONST
     */
 
     let (_, value) = seq!(skip(1), string)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     let expr = StringTypecastExpr::new(value, Float4);
     Ok(expr)
 }
 
-fn numeric_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
+fn numeric_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr> {
 
     /*
           NUMERIC ( type_modifiers )? SCONST
@@ -219,42 +219,42 @@ fn numeric_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr
     */
 
     let (type_name, value) = seq!(numeric, string)
-        .parse(stream)
+        .parse(ctx)
         .required()?;
 
     let expr = StringTypecastExpr::new(value, type_name);
     Ok(expr)
 }
 
-fn float_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
+fn float_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr> {
 
     /*
         FLOAT ( type_modifiers )? SCONST
     */
 
     let (type_name, value) = seq!(float, string)
-        .parse(stream)
+        .parse(ctx)
         .required()?;
 
     let expr = StringTypecastExpr::new(value, type_name);
     Ok(expr)
 }
 
-fn bit_string_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
+fn bit_string_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr> {
 
     /*
         BIT ( VARYING )? ( '(' expr_list ')' )? SCONST
     */
 
     let (type_name, value) = seq!(bit(None), string)
-        .parse(stream)
+        .parse(ctx)
         .required()?;
 
     let expr = StringTypecastExpr::new(value, type_name);
     Ok(expr)
 }
 
-fn char_string_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
+fn char_string_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr> {
 
     /*
           VARCHAR ( precision )? SCONST
@@ -263,42 +263,42 @@ fn char_string_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecast
     */
 
     let (type_name, value) = seq!(character(None), string)
-        .parse(stream)
+        .parse(ctx)
         .required()?;
 
     let expr = StringTypecastExpr::new(value, type_name);
     Ok(expr)
 }
 
-fn timestamp_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
+fn timestamp_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr> {
 
     /*
         TIMESTAMP ( precision )? ( with_timezone )? SCONST
     */
 
     let (type_name, value) = seq!(timestamp, string)
-        .parse(stream)
+        .parse(ctx)
         .required()?;
 
     let expr = StringTypecastExpr::new(value, type_name);
     Ok(expr)
 }
 
-fn time_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
+fn time_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr> {
 
     /*
         TIME ( precision )? ( with_timezone )? SCONST
     */
 
     let (type_name, value) = seq!(time, string)
-        .parse(stream)
+        .parse(ctx)
         .required()?;
 
     let expr = StringTypecastExpr::new(value, type_name);
     Ok(expr)
 }
 
-fn interval_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExpr> {
+fn interval_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr> {
 
     /*
           INTERVAL '(' ICONST ')' SCONST
@@ -320,7 +320,7 @@ fn interval_typecast(stream: &mut TokenStream) -> scan::Result<StringTypecastExp
                 (interval.unwrap_or_default(), value)
             )
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let type_name = TypeName::Interval(interval);
     let expr = StringTypecastExpr::new(value, type_name);
@@ -441,8 +441,8 @@ use pg_lexer::Keyword::With;
 use pg_lexer::Keyword::Without;
 use pg_lexer::OperatorKind::OpenParenthesis;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue::Keyword;
 use pg_parser_core::stream::TokenValue::Operator;
 use pg_parser_core::stream::TokenValue::String;
+use pg_parser_core::ParserContext;
 use pg_parser_core::Required;

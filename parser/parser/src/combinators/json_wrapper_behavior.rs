@@ -1,4 +1,4 @@
-pub(super) fn json_wrapper_behavior(stream: &mut TokenStream) -> scan::Result<JsonWrapperBehavior> {
+pub(super) fn json_wrapper_behavior(ctx: &mut ParserContext) -> scan::Result<JsonWrapperBehavior> {
 
     /*
         (* `ARRAY` is a noise word *)
@@ -9,12 +9,12 @@ pub(super) fn json_wrapper_behavior(stream: &mut TokenStream) -> scan::Result<Js
     */
 
     let (behavior, ..) = seq!(wrapper_behavior, Array.optional(), Wrapper)
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(behavior)
 }
 
-fn wrapper_behavior(stream: &mut TokenStream) -> scan::Result<JsonWrapperBehavior> {
+fn wrapper_behavior(ctx: &mut ParserContext) -> scan::Result<JsonWrapperBehavior> {
 
     alt!(
         Kw::Without.map(|_| Without),
@@ -25,7 +25,7 @@ fn wrapper_behavior(stream: &mut TokenStream) -> scan::Result<JsonWrapperBehavio
                 Kw::Unconditional.optional().map(|_| Unconditional),
             )
         ).map(|(_, behavior)| behavior),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -61,4 +61,4 @@ use pg_lexer::Keyword::Array;
 use pg_lexer::Keyword::With;
 use pg_lexer::Keyword::Wrapper;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

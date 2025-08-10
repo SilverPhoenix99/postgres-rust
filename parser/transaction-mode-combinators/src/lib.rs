@@ -1,5 +1,5 @@
 /// Alias: `transaction_mode_list_or_empty`
-pub fn transaction_mode_list(stream: &mut TokenStream) -> scan::Result<Vec<TransactionMode>> {
+pub fn transaction_mode_list(ctx: &mut ParserContext) -> scan::Result<Vec<TransactionMode>> {
 
     /*
         transaction_mode ( (',')? transaction_mode )*
@@ -12,11 +12,11 @@ pub fn transaction_mode_list(stream: &mut TokenStream) -> scan::Result<Vec<Trans
                 .map(|(_, mode)| mode),
             transaction_mode
         )
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 /// Alias: `transaction_mode_item`
-fn transaction_mode(stream: &mut TokenStream) -> scan::Result<TransactionMode> {
+fn transaction_mode(ctx: &mut ParserContext) -> scan::Result<TransactionMode> {
 
     /*
           ISOLATION LEVEL iso_level
@@ -43,11 +43,11 @@ fn transaction_mode(stream: &mut TokenStream) -> scan::Result<TransactionMode> {
             .map(|(.., mode)|
                 TransactionMode::IsolationLevel(mode)
             )
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 /// Alias: `iso_level`
-fn isolation_level(stream: &mut TokenStream) -> scan::Result<IsolationLevel> {
+fn isolation_level(ctx: &mut ParserContext) -> scan::Result<IsolationLevel> {
 
     /*
           READ UNCOMMITTED
@@ -69,7 +69,7 @@ fn isolation_level(stream: &mut TokenStream) -> scan::Result<IsolationLevel> {
             )
         )
             .map(|(_, isolation)| isolation)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -130,7 +130,7 @@ use pg_lexer::Keyword::Uncommitted;
 use pg_lexer::Keyword::Write;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_transaction_mode_ast::IsolationLevel;
 use pg_transaction_mode_ast::IsolationLevel::ReadCommitted;
 use pg_transaction_mode_ast::IsolationLevel::ReadUncommitted;

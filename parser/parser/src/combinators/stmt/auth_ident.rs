@@ -1,9 +1,9 @@
-pub(super) fn auth_ident(stream: &mut TokenStream) -> scan::Result<RoleSpec> {
+pub(super) fn auth_ident(ctx: &mut ParserContext) -> scan::Result<RoleSpec> {
 
     alt!(
         User.map(|_| CurrentUser),
         role_spec
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -23,7 +23,7 @@ use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::User;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::RoleSpec;
 use pg_sink_ast::RoleSpec::CurrentUser;
 use pg_sink_combinators::role_spec;

@@ -1,5 +1,5 @@
 /// Alias: `DeallocateStmt`
-pub(super) fn deallocate_stmt(stream: &mut TokenStream) -> scan::Result<OneOrAll<Str>> {
+pub(super) fn deallocate_stmt(ctx: &mut ParserContext) -> scan::Result<OneOrAll<Str>> {
 
     /*
         DEALLOCATE (PREPARE)? ALL
@@ -13,7 +13,7 @@ pub(super) fn deallocate_stmt(stream: &mut TokenStream) -> scan::Result<OneOrAll
             All.map(|_| OneOrAll::All),
             col_id.map(OneOrAll::One)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(stmt)
 }
@@ -42,6 +42,6 @@ use pg_lexer::Keyword::All;
 use pg_lexer::Keyword::Deallocate;
 use pg_lexer::Keyword::Prepare;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::OneOrAll;
 use pg_sink_combinators::col_id;

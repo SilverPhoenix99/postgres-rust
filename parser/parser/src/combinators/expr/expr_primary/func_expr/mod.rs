@@ -4,7 +4,7 @@ pg_basics::reexport! { pub(super)
     within_group_clause,
 }
 
-pub(super) fn func_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn func_expr(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 
     /*
           func_expr_common_subexpr
@@ -14,10 +14,10 @@ pub(super) fn func_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
     alt!(
         func_expr_common_subexpr.map(From::from),
         json_agg_func
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn json_agg_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+fn json_agg_func(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 
     /*
         json_aggregate_func filter_clause over_clause
@@ -27,7 +27,7 @@ fn json_agg_func(stream: &mut TokenStream) -> scan::Result<ExprNode> {
         json_aggregate_func,
         filter_clause.optional(),
         over_clause.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let expr = match func {
         JsonAggFunc::Array(agg) => JsonArrayAggExpr::new(agg, filter, over_clause).into(),
@@ -96,4 +96,4 @@ use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

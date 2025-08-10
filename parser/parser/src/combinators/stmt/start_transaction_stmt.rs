@@ -1,4 +1,4 @@
-pub(super) fn start_transaction_stmt(stream: &mut TokenStream) -> scan::Result<TransactionStmt> {
+pub(super) fn start_transaction_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
 
     /*
         START TRANSACTION ( transaction_mode_list )?
@@ -8,7 +8,7 @@ pub(super) fn start_transaction_stmt(stream: &mut TokenStream) -> scan::Result<T
         Start,
         Transaction,
         transaction_mode_list.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let stmt = TransactionStmt::Start(tx_modes.unwrap_or_default());
 
@@ -47,6 +47,6 @@ use pg_combinators::Combinator;
 use pg_lexer::Keyword::Start;
 use pg_lexer::Keyword::Transaction;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_transaction_mode_ast::TransactionStmt;
 use pg_transaction_mode_combinators::transaction_mode_list;

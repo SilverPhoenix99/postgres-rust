@@ -8,7 +8,7 @@ pg_basics::reexport! {
 }
 
 /// Alias: `c_expr`
-pub(in crate::combinators) fn expr_primary(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(in crate::combinators) fn expr_primary(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
     alt!(
         param_expr,
         expr_const,
@@ -20,7 +20,7 @@ pub(in crate::combinators) fn expr_primary(stream: &mut TokenStream) -> scan::Re
         // ❗ Must be after most other productions,
         // due to conflicts with the 1st keyword.
         prefixed_expr_const,
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -52,4 +52,4 @@ use pg_ast::ExprNode;
 use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

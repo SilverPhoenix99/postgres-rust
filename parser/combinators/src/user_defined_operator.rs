@@ -1,5 +1,5 @@
-pub fn user_defined_operator(stream: &mut TokenStream<'_>) -> scan::Result<Box<str>> {
-    stream.consume(|tok| {
+pub fn user_defined_operator(ctx: &mut ParserContext) -> scan::Result<Box<str>> {
+    ctx.stream_mut().consume(|tok| {
         let UserDefinedOperator(value) = tok else { return None };
         Some(mem::take(value))
     })
@@ -23,5 +23,5 @@ mod tests {
 use core::mem;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenConsumer;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue::UserDefinedOperator;
+use pg_parser_core::ParserContext;

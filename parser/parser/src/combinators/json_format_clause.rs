@@ -1,5 +1,5 @@
 /// Alias: `json_format_clause_opt`
-pub(super) fn json_format_clause(stream: &mut TokenStream) -> scan::Result<JsonFormat> {
+pub(super) fn json_format_clause(ctx: &mut ParserContext) -> scan::Result<JsonFormat> {
 
     /*
         FORMAT JSON ( ENCODING ColId )?
@@ -9,7 +9,7 @@ pub(super) fn json_format_clause(stream: &mut TokenStream) -> scan::Result<JsonF
         Format,
         Json,
         seq!(Encoding, located!(col_id)).optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let encoding = encoding.map(|(_, encoding)| encoding);
 
@@ -84,5 +84,5 @@ use pg_lexer::Keyword::Encoding;
 use pg_lexer::Keyword::Format;
 use pg_lexer::Keyword::Json;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;

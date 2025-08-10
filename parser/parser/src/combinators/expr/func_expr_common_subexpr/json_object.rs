@@ -1,4 +1,4 @@
-pub(super) fn json_object(stream: &mut TokenStream) -> scan::Result<JsonObjectExpr> {
+pub(super) fn json_object(ctx: &mut ParserContext) -> scan::Result<JsonObjectExpr> {
 
     /*
         JSON_OBJECT '(' ( json_object_args )? ')'
@@ -8,13 +8,13 @@ pub(super) fn json_object(stream: &mut TokenStream) -> scan::Result<JsonObjectEx
 
     let (_, expr) = seq!(skip(1), paren!(
         json_object_args.optional()
-    )).parse(stream)?;
+    )).parse(ctx)?;
 
     let expr = expr.unwrap_or_default();
     Ok(expr)
 }
 
-fn json_object_args(stream: &mut TokenStream) -> scan::Result<JsonObjectExpr> {
+fn json_object_args(ctx: &mut ParserContext) -> scan::Result<JsonObjectExpr> {
 
     /*
           json_returning_clause
@@ -25,22 +25,22 @@ fn json_object_args(stream: &mut TokenStream) -> scan::Result<JsonObjectExpr> {
             ( json_returning_clause )?
     */
 
-    if let K(Returning) = stream.peek()? {
-        let output = json_returning_clause(stream)?;
+    if let K(Returning) = ctx.stream_mut().peek()? {
+        let output = json_returning_clause(ctx)?;
         let expr = JsonObjectArgs::new()
             .with_output(output);
         return Ok(SqlSyntax(expr));
     }
 
-    let Located(first, _) = func_arg_expr(stream)?;
+    let Located(first, _) = func_arg_expr(ctx)?;
     if
         first.name().is_some()
-        || ! matches!(stream.peek(), Ok(K(Value) | Op(Colon)))
+        || ! matches!(ctx.stream_mut().peek(), Ok(K(Value) | Op(Colon)))
     {
         // ExplicitCall
 
         let args = seq!(Comma, func_arg_list)
-            .parse(stream)
+            .parse(ctx)
             .optional()?;
 
         let args = match args {
@@ -65,7 +65,7 @@ fn json_object_args(stream: &mut TokenStream) -> scan::Result<JsonObjectExpr> {
             Colon.skip()
         ),
         json_value_expr
-    ).parse(stream)
+    ).parse(ctx)
         .required()?;
 
     let (_, key) = first.into();
@@ -76,7 +76,7 @@ fn json_object_args(stream: &mut TokenStream) -> scan::Result<JsonObjectExpr> {
         json_constructor_null_clause.optional(),
         json_key_uniqueness_constraint.optional(),
         json_returning_clause.optional(),
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let exprs = match exprs {
         None => vec![first],
@@ -176,8 +176,8 @@ use pg_lexer::Keyword::Value;
 use pg_lexer::OperatorKind::Colon;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue::Keyword as K;
 use pg_parser_core::stream::TokenValue::Operator as Op;
 use pg_parser_core::Optional;
+use pg_parser_core::ParserContext;
 use pg_parser_core::Required;

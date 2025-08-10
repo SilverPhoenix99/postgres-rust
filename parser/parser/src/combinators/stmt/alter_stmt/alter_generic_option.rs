@@ -1,4 +1,4 @@
-pub(super) fn alter_generic_options(stream: &mut TokenStream) -> scan::Result<Vec<GenericOptionKind>> {
+pub(super) fn alter_generic_options(ctx: &mut ParserContext) -> scan::Result<Vec<GenericOptionKind>> {
 
     /*
         OPTIONS '(' alter_generic_option_list ')'
@@ -7,22 +7,22 @@ pub(super) fn alter_generic_options(stream: &mut TokenStream) -> scan::Result<Ve
     let (_, options) = seq!(
         Options,
         paren!(alter_generic_option_list)
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(options)
 }
 
-fn alter_generic_option_list(stream: &mut TokenStream) -> scan::Result<Vec<GenericOptionKind>> {
+fn alter_generic_option_list(ctx: &mut ParserContext) -> scan::Result<Vec<GenericOptionKind>> {
 
     /*
         alter_generic_option ( ',' alter_generic_option )*
     */
 
-    many!(sep = Comma, alter_generic_option).parse(stream)
+    many!(sep = Comma, alter_generic_option).parse(ctx)
 }
 
 /// Alias: `alter_generic_option_elem`
-fn alter_generic_option(stream: &mut TokenStream) -> scan::Result<GenericOptionKind> {
+fn alter_generic_option(ctx: &mut ParserContext) -> scan::Result<GenericOptionKind> {
 
     /*
           SET generic_option_elem
@@ -40,7 +40,7 @@ fn alter_generic_option(stream: &mut TokenStream) -> scan::Result<GenericOptionK
             .map(|(_, opt)| Drop(opt)),
         generic_option
             .map(Unspecified)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -101,5 +101,5 @@ use pg_lexer::Keyword::DropKw;
 use pg_lexer::Keyword::Options;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_label;

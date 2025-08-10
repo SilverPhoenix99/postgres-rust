@@ -1,14 +1,14 @@
-pub fn relation_expr_list(stream: &mut TokenStream) -> scan::Result<Vec<RelationExpr>> {
+pub fn relation_expr_list(ctx: &mut ParserContext) -> scan::Result<Vec<RelationExpr>> {
 
     /*
         relation_expr ( ',' relation_expr )*
     */
 
     many!(sep = Comma, relation_expr)
-        .parse(stream)
+        .parse(ctx)
 }
 
-pub fn relation_expr(stream: &mut TokenStream) -> scan::Result<RelationExpr> {
+pub fn relation_expr(ctx: &mut ParserContext) -> scan::Result<RelationExpr> {
 
     /*
           non_inherited_relation_expr
@@ -18,10 +18,10 @@ pub fn relation_expr(stream: &mut TokenStream) -> scan::Result<RelationExpr> {
     alt!(
         non_inherited_relation_expr,
         inherited_relation_expr
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn non_inherited_relation_expr(stream: &mut TokenStream) -> scan::Result<RelationExpr> {
+fn non_inherited_relation_expr(ctx: &mut ParserContext) -> scan::Result<RelationExpr> {
 
     /*
           ONLY '(' qualified_name ')'
@@ -34,13 +34,13 @@ fn non_inherited_relation_expr(stream: &mut TokenStream) -> scan::Result<Relatio
             paren!(qualified_name),
             qualified_name
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let expr = RelationExpr::new(name, false);
     Ok(expr)
 }
 
-fn inherited_relation_expr(stream: &mut TokenStream) -> scan::Result<RelationExpr> {
+fn inherited_relation_expr(ctx: &mut ParserContext) -> scan::Result<RelationExpr> {
 
     /*
         qualified_name ( '*' )?
@@ -49,7 +49,7 @@ fn inherited_relation_expr(stream: &mut TokenStream) -> scan::Result<RelationExp
     let (name, _) = seq!(
         qualified_name,
         Mul.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let expr = RelationExpr::new(name, true);
     Ok(expr)
@@ -94,5 +94,5 @@ use pg_lexer::Keyword::Only;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::Mul;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::RelationExpr;

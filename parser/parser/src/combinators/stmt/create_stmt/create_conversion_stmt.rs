@@ -1,5 +1,5 @@
 /// Alias: `CreateConversionStmt`
-pub(super) fn create_conversion_stmt(stream: &mut TokenStream) -> scan::Result<CreateConversionStmt> {
+pub(super) fn create_conversion_stmt(ctx: &mut ParserContext) -> scan::Result<CreateConversionStmt> {
 
     /*
         ( DEFAULT )? CONVERSION_P any_name FOR SCONST TO SCONST FROM any_name
@@ -16,7 +16,7 @@ pub(super) fn create_conversion_stmt(stream: &mut TokenStream) -> scan::Result<C
         To,string,
         FromKw,
         any_name
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let stmt = CreateConversionStmt::new(
         name,
@@ -57,5 +57,5 @@ use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::FromKw;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::any_name;

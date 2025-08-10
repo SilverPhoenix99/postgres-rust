@@ -1,5 +1,5 @@
 /// Alias: `AlterSystemStmt`
-pub(super) fn alter_system_stmt(stream: &mut TokenStream) -> scan::Result<AlterSystemStmt> {
+pub(super) fn alter_system_stmt(ctx: &mut ParserContext) -> scan::Result<AlterSystemStmt> {
 
     /*
           ALTER SYSTEM RESET generic_reset
@@ -20,7 +20,7 @@ pub(super) fn alter_system_stmt(stream: &mut TokenStream) -> scan::Result<AlterS
                     ValueOrDefault::Value(values) => AlterSystemStmt::Set { name, values }
                 })
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(stmt)
 }
@@ -50,7 +50,7 @@ use pg_lexer::Keyword::Reset;
 use pg_lexer::Keyword::Set;
 use pg_lexer::Keyword::SystemKw;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::OneOrAll;
 use pg_sink_ast::ValueOrDefault;
 use pg_sink_combinators::var_name;

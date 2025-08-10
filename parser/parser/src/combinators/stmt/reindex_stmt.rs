@@ -1,5 +1,5 @@
 /// Alias: `ReindexStmt`
-pub(super) fn reindex_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn reindex_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
           REINDEX ( utility_options )? reindex_target_relation opt_concurrently qualified_name
@@ -8,7 +8,7 @@ pub(super) fn reindex_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
     */
 
     let (_, stmt) = seq!(Reindex, parser(|_| todo!()))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(stmt)
 }
@@ -19,4 +19,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword::Reindex;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

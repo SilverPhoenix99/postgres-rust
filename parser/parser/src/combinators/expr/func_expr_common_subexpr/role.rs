@@ -1,4 +1,4 @@
-pub(super) fn role(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
+pub(super) fn role(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 
     /*
           CURRENT_ROLE
@@ -14,7 +14,7 @@ pub(super) fn role(stream: &mut TokenStream) -> scan::Result<SqlFunction> {
         Kw::SessionUser.map(|_| SessionUser),
         Kw::SystemUser.map(|_| SystemUser),
         Kw::User.map(|_| User),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -43,4 +43,4 @@ use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

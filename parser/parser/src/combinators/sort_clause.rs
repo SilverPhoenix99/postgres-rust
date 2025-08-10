@@ -1,28 +1,28 @@
 /// Aliases:
 /// * `opt_sort_clause`
 /// * `json_array_aggregate_order_by_clause_opt`
-pub(super) fn sort_clause(stream: &mut TokenStream) -> scan::Result<Located<Vec<SortBy>>> {
+pub(super) fn sort_clause(ctx: &mut ParserContext) -> scan::Result<Located<Vec<SortBy>>> {
 
     /*
         ORDER BY sortby_list
     */
 
     let Located((.., sorts), loc) = located!(seq!(Order, By, sortby_list))
-        .parse(stream)?;
+        .parse(ctx)?;
 
     Ok(Located(sorts, loc))
 }
 
-fn sortby_list(stream: &mut TokenStream) -> scan::Result<Vec<SortBy>> {
+fn sortby_list(ctx: &mut ParserContext) -> scan::Result<Vec<SortBy>> {
 
     /*
         sortby ( ',' sortby )*
     */
 
-    many!(sep = Comma, sortby).parse(stream)
+    many!(sep = Comma, sortby).parse(ctx)
 }
 
-fn sortby(stream: &mut TokenStream) -> scan::Result<SortBy> {
+fn sortby(ctx: &mut ParserContext) -> scan::Result<SortBy> {
 
     /*
           a_expr USING qual_all_Op ( nulls_order )?
@@ -39,7 +39,7 @@ fn sortby(stream: &mut TokenStream) -> scan::Result<SortBy> {
             .optional()
             .map(Option::unwrap_or_default),
         nulls_order.optional()
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(SortBy::new(expr, direction, nulls))
 }
@@ -61,9 +61,9 @@ mod tests {
 
     #[test]
     fn test_sort_clause() {
-        let mut stream = TokenStream::from("order by 1, 2");
+        let mut ctx = ParserContext::from("order by 1, 2");
 
-        let Located(actual, _) = sort_clause(&mut stream).unwrap();
+        let Located(actual, _) = sort_clause(&mut ctx).unwrap();
 
         let expected = vec![
             SortBy::new(IntegerConst(1), None, None),
@@ -133,5 +133,5 @@ use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Order;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::qual_all_op;

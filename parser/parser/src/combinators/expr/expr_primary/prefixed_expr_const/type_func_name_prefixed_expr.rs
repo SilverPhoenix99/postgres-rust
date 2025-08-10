@@ -1,4 +1,4 @@
-pub(super) fn type_func_name_prefixed_expr(stream: &mut TokenStream) -> scan::Result<ExprNode> {
+pub(super) fn type_func_name_prefixed_expr(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 
     /*
         type_func_name_keyword
@@ -9,7 +9,7 @@ pub(super) fn type_func_name_prefixed_expr(stream: &mut TokenStream) -> scan::Re
         )
     */
 
-    let (kw, tail) = seq!(TypeFuncName, attr_tail).parse(stream)?;
+    let (kw, tail) = seq!(TypeFuncName, attr_tail).parse(ctx)?;
     let name = vec![Str::from(kw)];
 
     let expr = tailed_expr(name, tail);
@@ -72,4 +72,4 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

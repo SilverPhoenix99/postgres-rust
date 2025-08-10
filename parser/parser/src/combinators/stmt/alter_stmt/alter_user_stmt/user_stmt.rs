@@ -7,7 +7,7 @@ enum Change {
     }
 }
 
-pub(super) fn user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+pub(super) fn user_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
           ALL ( in_database )? SetResetClause   => AlterRoleSetStmt
@@ -24,10 +24,10 @@ pub(super) fn user_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
                 AlterRoleSetStmt::new(OneOrAll::All, dbname, set_stmt).into()
             ),
         user_role_stmt
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn user_role_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
+fn user_role_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
           RoleId RENAME TO RoleId               => RenameStmt
@@ -51,7 +51,7 @@ fn user_role_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
                 .optional()
                 .map(Change::Options)
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     let stmt = match stmt {
         Change::Name { new_name } => {
@@ -70,13 +70,13 @@ fn user_role_stmt(stream: &mut TokenStream) -> scan::Result<RawStmt> {
     Ok(stmt)
 }
 
-fn rename(stream: &mut TokenStream) -> scan::Result<Change> {
+fn rename(ctx: &mut ParserContext) -> scan::Result<Change> {
 
-    let (.., new_name) = seq!(Rename, To, role_id).parse(stream)?;
+    let (.., new_name) = seq!(Rename, To, role_id).parse(ctx)?;
     Ok(Change::Name { new_name })
 }
 
-fn change_role(stream: &mut TokenStream) -> scan::Result<Change> {
+fn change_role(ctx: &mut ParserContext) -> scan::Result<Change> {
 
     alt!(
         seq!(in_database, set_reset_clause)
@@ -93,7 +93,7 @@ fn change_role(stream: &mut TokenStream) -> scan::Result<Change> {
                     set_stmt
                 }
             ),
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 #[cfg(test)]
@@ -204,7 +204,7 @@ use pg_lexer::Keyword::Rename;
 use pg_lexer::Keyword::To;
 use pg_lexer::Keyword::With;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_ast::OneOrAll;
 use pg_sink_combinators::role_id;
 use pg_sink_combinators::role_spec;

@@ -2,8 +2,8 @@
 /// * `SCONST`
 /// * `USCONST`
 /// * `file_name`
-pub fn string(stream: &mut TokenStream<'_>) -> scan::Result<Box<str>> {
-    stream.consume(|tok| {
+pub fn string(ctx: &mut ParserContext) -> scan::Result<Box<str>> {
+    ctx.stream_mut().consume(|tok| {
         let TokenValue::String(value) = tok else { return None };
         Some(mem::take(value))
     })
@@ -33,5 +33,5 @@ mod tests {
 use core::mem;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenConsumer;
-use pg_parser_core::stream::TokenStream;
 use pg_parser_core::stream::TokenValue;
+use pg_parser_core::ParserContext;

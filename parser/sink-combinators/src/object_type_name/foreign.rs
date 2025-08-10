@@ -4,7 +4,7 @@ pub enum Foreign {
     Table(QualifiedName),
 }
 
-pub fn foreign(stream: &mut TokenStream) -> scan::Result<Foreign> {
+pub fn foreign(ctx: &mut ParserContext) -> scan::Result<Foreign> {
 
     /*
         FOREIGN DATA WRAPPER any_name
@@ -19,7 +19,7 @@ pub fn foreign(stream: &mut TokenStream) -> scan::Result<Foreign> {
             seq!(Kw::Table, any_name)
                 .map(|(_, name)| Foreign::Table(name))
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(foreign)
 }
@@ -59,4 +59,4 @@ use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Data;
 use pg_lexer::Keyword::Wrapper;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;

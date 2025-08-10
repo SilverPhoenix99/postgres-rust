@@ -5,16 +5,16 @@
 // * [`check_func_name()`](https://github.com/postgres/postgres/blob/ae4569161a27823793ca24825bbabce2a91a0bc9/src/backend/parser/gram.y#L18866-L18882)
 // * [`check_indirection()`](https://github.com/postgres/postgres/blob/ae4569161a27823793ca24825bbabce2a91a0bc9/src/backend/parser/gram.y#L18884-L18903)
 // * [`makeRangeVarFromQualifiedName(..., List *namelist, ...)`](https://github.com/postgres/postgres/blob/ae4569161a27823793ca24825bbabce2a91a0bc9/src/backend/parser/gram.y#L19335)
-pub(super) fn indirection(stream: &mut TokenStream) -> scan::Result<Vec<Indirection>> {
+pub(super) fn indirection(ctx: &mut ParserContext) -> scan::Result<Vec<Indirection>> {
 
     /*
         ( indirection_el )+
     */
 
-    many!(indirection_el).parse(stream)
+    many!(indirection_el).parse(ctx)
 }
 
-fn indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
+fn indirection_el(ctx: &mut ParserContext) -> scan::Result<Indirection> {
 
     /*
           '.' '*'
@@ -29,10 +29,10 @@ fn indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
     alt!(
         dot_indirection_el,
         brackets!(index_indirection_el)
-    ).parse(stream)
+    ).parse(ctx)
 }
 
-fn dot_indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
+fn dot_indirection_el(ctx: &mut ParserContext) -> scan::Result<Indirection> {
 
     /*
           '.' '*'
@@ -45,12 +45,12 @@ fn dot_indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
             Mul.map(|_| Wildcard),
             col_label.map(Property),
         )
-    ).parse(stream)?;
+    ).parse(ctx)?;
 
     Ok(indirection)
 }
 
-fn index_indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
+fn index_indirection_el(ctx: &mut ParserContext) -> scan::Result<Indirection> {
 
     /*
           '[' ':' ']'
@@ -79,7 +79,7 @@ fn index_indirection_el(stream: &mut TokenStream) -> scan::Result<Indirection> {
                 Some(None) => Slice(Some(left), None),
                 Some(Some(right)) => Slice(Some(left), Some(right)),
             })
-    ).parse(stream)
+    ).parse(ctx)
 }
 
 pub(super) fn check_indirection(indirection: Located<Vec<Indirection>>) -> scan::Result<Vec<Indirection>> {
@@ -182,5 +182,5 @@ use pg_lexer::OperatorKind::Colon;
 use pg_lexer::OperatorKind::Dot;
 use pg_lexer::OperatorKind::Mul;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenStream;
+use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_label;

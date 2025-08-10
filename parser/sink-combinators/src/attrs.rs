@@ -2,7 +2,7 @@
 #[macro_export]
 macro_rules! attrs {
     ($prefix:expr) => {
-        pg_combinators::parser::<_, pg_basics::QualifiedName>(|stream| {
+        pg_combinators::parser::<_, pg_basics::QualifiedName>(|ctx| {
             let p = pg_combinators::many!(
                 pre = $prefix,
                 pg_combinators::Combinator::map(
@@ -14,7 +14,7 @@ macro_rules! attrs {
                 )
             );
 
-            pg_combinators::Combinator::parse(&p, stream)
+            pg_combinators::Combinator::parse(&p, ctx)
         })
     };
 }

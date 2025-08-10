@@ -16,10 +16,10 @@ macro_rules! alt {
         ),+
         $(,)?
     ) => {
-        pg_combinators::parser(|stream| {
+        pg_combinators::parser(|ctx| {
 
             let p = $head;
-            let result = pg_combinators::Combinator::parse(&p, stream);
+            let result = pg_combinators::Combinator::parse(&p, ctx);
             let result = pg_parser_core::Optional::optional(result)?;
             if let Some(ok) = result {
                 return Ok(ok)
@@ -27,14 +27,14 @@ macro_rules! alt {
 
             $(
                 let p = $tail;
-                let result = pg_combinators::Combinator::parse(&p, stream);
+                let result = pg_combinators::Combinator::parse(&p, ctx);
                 let result = pg_parser_core::Optional::optional(result)?;
                 if let Some(ok) = result {
                     return Ok(ok)
                 }
             )+
 
-            Err(pg_parser_core::scan::Error::NoMatch(stream.current_location()))
+            Err(pg_parser_core::scan::Error::NoMatch(ctx.stream_mut().current_location()))
         })
     };
 }
