@@ -34,6 +34,7 @@ pub(super) fn window_specification(ctx: &mut ParserContext) -> scan::Result<Wind
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::combinators::expr_list;
     use pg_ast::ExprNode;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
@@ -42,38 +43,27 @@ mod tests {
     use pg_ast::WindowExclusion;
     use pg_ast::WindowFrame;
     use pg_ast::WindowFrameKind;
-    use pg_basics::Str;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
-    #[test_case("(foo partition by 1 order by 2 range current row)", Some("foo".into()), some_partition(), some_order(), some_frame())]
-    #[test_case("(foo partition by 1 order by 2)",                   Some("foo".into()), some_partition(), some_order(), None)]
-    #[test_case("(foo partition by 1 range current row)",            Some("foo".into()), some_partition(), None,         some_frame())]
-    #[test_case("(foo partition by 1)",                              Some("foo".into()), some_partition(), None,         None)]
-    #[test_case("(foo order by 2 range current row)",                Some("foo".into()), None,             some_order(), some_frame())]
-    #[test_case("(foo order by 2)",                                  Some("foo".into()), None,             some_order(), None)]
-    #[test_case("(foo range current row)",                           Some("foo".into()), None,             None,         some_frame())]
-    #[test_case("(foo)",                                             Some("foo".into()), None,             None,         None)]
-    #[test_case("(partition by 1 order by 2 range current row)",     None,               some_partition(), some_order(), some_frame())]
-    #[test_case("(partition by 1 order by 2)",                       None,               some_partition(), some_order(), None)]
-    #[test_case("(partition by 1 range current row)",                None,               some_partition(), None,         some_frame())]
-    #[test_case("(partition by 1)",                                  None,               some_partition(), None,         None)]
-    #[test_case("(order by 2 range current row)",                    None,               None,             some_order(), some_frame())]
-    #[test_case("(order by 2)",                                      None,               None,             some_order(), None)]
-    #[test_case("(range current row)",                               None,               None,             None,         some_frame())]
-    #[test_case("()",                                                None,               None,             None,         None)]
-    fn test_window_specification(
-        source: &str,
-        name: Option<Str>,
-        partition: Option<Vec<ExprNode>>,
-        order: Option<Vec<SortBy>>,
-        frame: Option<WindowFrame>
-    ) {
-        test_parser!(
-            source,
-            window_specification,
-            WindowDefinition::new(name, partition, order, frame)
-        )
+    #[test_case("(foo partition by 1 order by 2 range current row)" => Ok(WindowDefinition::new(Some("foo".into()), some_partition(), some_order(), some_frame())))]
+    #[test_case("(foo partition by 1 order by 2)"                   => Ok(WindowDefinition::new(Some("foo".into()), some_partition(), some_order(), None)))]
+    #[test_case("(foo partition by 1 range current row)"            => Ok(WindowDefinition::new(Some("foo".into()), some_partition(), None,         some_frame())))]
+    #[test_case("(foo partition by 1)"                              => Ok(WindowDefinition::new(Some("foo".into()), some_partition(), None,         None)))]
+    #[test_case("(foo order by 2 range current row)"                => Ok(WindowDefinition::new(Some("foo".into()), None,             some_order(), some_frame())))]
+    #[test_case("(foo order by 2)"                                  => Ok(WindowDefinition::new(Some("foo".into()), None,             some_order(), None)))]
+    #[test_case("(foo range current row)"                           => Ok(WindowDefinition::new(Some("foo".into()), None,             None,         some_frame())))]
+    #[test_case("(foo)"                                             => Ok(WindowDefinition::new(Some("foo".into()), None,             None,         None)))]
+    #[test_case("(partition by 1 order by 2 range current row)"     => Ok(WindowDefinition::new(None,               some_partition(), some_order(), some_frame())))]
+    #[test_case("(partition by 1 order by 2)"                       => Ok(WindowDefinition::new(None,               some_partition(), some_order(), None)))]
+    #[test_case("(partition by 1 range current row)"                => Ok(WindowDefinition::new(None,               some_partition(), None,         some_frame())))]
+    #[test_case("(partition by 1)"                                  => Ok(WindowDefinition::new(None,               some_partition(), None,         None)))]
+    #[test_case("(order by 2 range current row)"                    => Ok(WindowDefinition::new(None,               None,             some_order(), some_frame())))]
+    #[test_case("(order by 2)"                                      => Ok(WindowDefinition::new(None,               None,             some_order(), None)))]
+    #[test_case("(range current row)"                               => Ok(WindowDefinition::new(None,               None,             None,         some_frame())))]
+    #[test_case("()"                                                => Ok(WindowDefinition::new(None,               None,             None,         None)))]
+    fn test_window_specification(source: &str) -> scan::Result<WindowDefinition> {
+        let mut ctx = ParserContext::new(source, expr_list);
+        window_specification(&mut ctx)
     }
 
     fn some_partition() -> Option<Vec<ExprNode>> {

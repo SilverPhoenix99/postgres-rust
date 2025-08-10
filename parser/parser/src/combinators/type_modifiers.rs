@@ -5,10 +5,10 @@ pub(super) fn type_modifiers(ctx: &mut ParserContext) -> scan::Result<TypeModifi
         '(' expr_list ')'
     */
 
+    let expr_list = ctx.expr_list();
     paren!(expr_list).parse(ctx)
 }
 
-use crate::combinators::expr_list;
 use pg_ast::TypeModifiers;
 use pg_combinators::paren;
 use pg_combinators::Combinator;

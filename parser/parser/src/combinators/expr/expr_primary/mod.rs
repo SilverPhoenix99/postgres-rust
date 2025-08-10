@@ -26,7 +26,7 @@ pub(in crate::combinators) fn expr_primary(ctx: &mut ParserContext) -> scan::Res
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::combinators::expr_list;
     use test_case::test_matrix;
 
     // These only quickly check that statements aren't missing:
@@ -43,7 +43,8 @@ mod tests {
         => matches Ok(_)
     )]
     fn test_expr_primary(source: &str) -> scan::Result<ExprNode> {
-        test_parser!(source, expr_primary)
+        let mut ctx = ParserContext::new(source, expr_list);
+        expr_primary(&mut ctx)
     }
 }
 

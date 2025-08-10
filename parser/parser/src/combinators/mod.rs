@@ -2,6 +2,7 @@ mod expr;
 
 // Entrypoint:
 pg_basics::reexport! { pub(super)
+    expr_list,
     stmtmulti
 }
 
@@ -12,7 +13,6 @@ pg_basics::reexport! {
     asc_desc,
     collate_clause,
     document_or_content,
-    expr_list,
     func_application,
     func_arg,
     func_arg_expr,

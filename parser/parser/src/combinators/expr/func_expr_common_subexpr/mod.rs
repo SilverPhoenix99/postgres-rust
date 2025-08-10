@@ -125,6 +125,7 @@ pub(in crate::combinators) fn func_expr_common_subexpr(ctx: &mut ParserContext) 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::combinators::expr_list;
     use pg_combinators::test_parser;
     #[allow(unused_imports)]
     use scan::Error::NoMatch;
@@ -175,7 +176,8 @@ mod tests {
         => matches Ok(_)
     )]
     fn test_func_expr_common_subexpr_ok(source: &str) -> scan::Result<SqlFunction> {
-        test_parser!(source, func_expr_common_subexpr)
+        let mut ctx = ParserContext::new(source, expr_list);
+        func_expr_common_subexpr(&mut ctx)
     }
 
     #[test_matrix(

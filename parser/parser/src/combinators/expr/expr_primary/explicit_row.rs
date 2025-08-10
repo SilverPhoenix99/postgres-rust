@@ -8,6 +8,7 @@ pub(super) fn explicit_row(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
         return no_match(ctx)
     };
 
+    let expr_list = ctx.expr_list();
     let (_, col_values) = seq!(skip(1), paren!(expr_list.optional()))
         .parse(ctx)?;
 
@@ -17,20 +18,20 @@ pub(super) fn explicit_row(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::combinators::expr_list;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::{IntegerConst, StringConst};
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
-    #[test_case("row()", None)]
-    #[test_case("row(1)", Some(vec![IntegerConst(1)]))]
-    #[test_case("row(1, 'foo')", Some(vec![IntegerConst(1), StringConst("foo".into())]))]
-    fn test_explicit_row(source: &str, expected: Option<Vec<ExprNode>>) {
-        test_parser!(source, explicit_row, Row(expected))
+    #[test_case("row()" => Ok(Row(None)))]
+    #[test_case("row(1)" => Ok(Row(Some(vec![IntegerConst(1)]))))]
+    #[test_case("row(1, 'foo')" => Ok(Row(Some(vec![IntegerConst(1), StringConst("foo".into())]))))]
+    fn test_explicit_row(source: &str) -> scan::Result<ExprNode> {
+        let mut ctx = ParserContext::new(source, expr_list);
+        explicit_row(&mut ctx)
     }
 }
 
-use crate::combinators::expr_list;
 use crate::no_match;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::Row;

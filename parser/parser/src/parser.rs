@@ -12,7 +12,7 @@ impl<'src> Parser<'src> {
     pub fn new(source: &'src str, config: ParserConfig) -> Self {
         let stream = TokenStream::new(source, config);
         Self {
-            context: ParserContext::new(stream)
+            context: ParserContext::new(stream, expr_list)
         }
     }
 
@@ -49,6 +49,7 @@ impl<'src> Parser<'src> {
     }
 }
 
+use crate::combinators::expr_list;
 use crate::combinators::stmtmulti;
 use core::mem;
 use pg_ast::RawStmt;

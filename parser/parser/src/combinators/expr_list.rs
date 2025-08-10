@@ -1,4 +1,4 @@
-pub(super) fn expr_list(ctx: &mut ParserContext) -> scan::Result<Vec<ExprNode>> {
+pub(crate) fn expr_list(ctx: &mut ParserContext) -> scan::Result<Vec<ExprNode>> {
 
     /*
         a_expr ( ',' a_expr )*

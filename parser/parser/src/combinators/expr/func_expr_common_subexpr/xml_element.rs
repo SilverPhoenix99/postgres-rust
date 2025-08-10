@@ -42,6 +42,8 @@ fn xml_element_extra_args(ctx: &mut ParserContext) -> scan::Result<ExtraArgs>
             | expr_list
         )
     */
+    
+    let expr_list = ctx.expr_list();
 
     let (_, (args, content)) = seq!(
         Comma,
@@ -76,9 +78,9 @@ fn xml_attributes(ctx: &mut ParserContext) -> scan::Result<Vec<NamedValue>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::combinators::expr_list;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::{IntegerConst, StringConst};
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("xmlelement(name foo)" => Ok(
@@ -100,7 +102,8 @@ mod tests {
             ])
     ))]
     fn test_xml_element(source: &str) -> scan::Result<XmlElement> {
-        test_parser!(source, xml_element)
+        let mut ctx = ParserContext::new(source, expr_list);
+        xml_element(&mut ctx)
     }
 
     #[test_case("xmlattributes(1, 2 as x)" => Ok(vec![
@@ -108,12 +111,12 @@ mod tests {
         NamedValue::new(Some("x".into()), IntegerConst(2)),
     ]))]
     fn test_xml_attributes(source: &str) -> scan::Result<Vec<NamedValue>> {
-        test_parser!(source, xml_attributes)
+        let mut ctx = ParserContext::new(source, expr_list);
+        xml_attributes(&mut ctx)
     }
 }
 
 use super::xml_attribute_list;
-use crate::combinators::expr_list;
 use pg_ast::ExprNode;
 use pg_ast::NamedValue;
 use pg_ast::XmlElement;

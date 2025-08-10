@@ -5,6 +5,7 @@ pub(super) fn partition_clause(ctx: &mut ParserContext) -> scan::Result<Vec<Expr
         PARTITION BY expr_list
     */
 
+    let expr_list = ctx.expr_list();
     let (.., exprs) = seq!(Partition, By, expr_list)
         .parse(ctx)?;
 
@@ -14,18 +15,18 @@ pub(super) fn partition_clause(ctx: &mut ParserContext) -> scan::Result<Vec<Expr
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::combinators::expr_list;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
-    #[test_case("partition by 1, 2", vec![IntegerConst(1), IntegerConst(2)])]
-    fn test_partition_clause(source: &str, expected: Vec<ExprNode>) {
-        test_parser!(source, partition_clause, expected);
+    #[test_case("partition by 1, 2" => Ok(vec![IntegerConst(1), IntegerConst(2)]))]
+    fn test_partition_clause(source: &str) -> scan::Result<Vec<ExprNode>> {
+        let mut ctx = ParserContext::new(source, expr_list);
+        partition_clause(&mut ctx)
     }
 }
 
-use crate::combinators::expr_list;
 use pg_ast::ExprNode;
 use pg_combinators::seq;
 use pg_combinators::Combinator;

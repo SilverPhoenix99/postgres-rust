@@ -330,8 +330,8 @@ fn interval_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::combinators::expr_list;
     use pg_ast::ExprNode::*;
-    use pg_ast::TypeName;
     use pg_combinators::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
@@ -356,28 +356,26 @@ mod tests {
 
     // NB: Methods using `stream.next()` cannot be tested directly with `test_parser!`.
     // NB2: A lot of cases are already tested in `simple_typename()`.
-    #[test_case("json '{}'",                        Json, "{}")]
-    #[test_case("double precision '1.23'",          Float8, "1.23")]
-    #[test_case("boolean 'true'",                   Bool, "true")]
-    #[test_case("smallint '11'",                    Int2, "11")]
-    #[test_case("int '42'",                         Int4, "42")]
-    #[test_case("integer '420'",                    Int4, "420")]
-    #[test_case("bigint '1'",                       Int8, "1")]
-    #[test_case("real '42.0'",                      Float4, "42.0")]
-    #[test_case("numeric '123.45'",                 Numeric(None), "123.45")]
-    #[test_case("float(25) '123.45'",               Float8, "123.45")]
-    #[test_case("bit varying(6) '7'",               Varbit(Some(vec![IntegerConst(6)])), "7")]
-    #[test_case("character varying 'foo'",          Varchar { max_length: None }, "foo")]
-    #[test_case("timestamp with time zone 'foo'",   TimestampTz { precision: None }, "foo")]
-    #[test_case("time(1) with time zone 'foo'",     TimeTz { precision: Some(1) }, "foo")]
-    #[test_case("interval '1 day'",                 TypeName::Interval(Full { precision: None }), "1 day")]
-    #[test_case("interval(3) '1 day'",              TypeName::Interval(Full { precision: Some(3) }), "1 day")]
-    #[test_case("interval '1970-01' year to month", TypeName::Interval(YearToMonth), "1970-01")]
-    fn test_const_typename(source: &str, expected_type: TypeName, value: &str) {
-
-        let expected = StringTypecastExpr::new(value, expected_type);
-
-        test_parser!(source, const_typename, expected)
+    #[test_case("json '{}'"                        => Ok(StringTypecastExpr::new("{}", Json)))]
+    #[test_case("double precision '1.23'"          => Ok(StringTypecastExpr::new("1.23", Float8)))]
+    #[test_case("boolean 'true'"                   => Ok(StringTypecastExpr::new("true", Bool)))]
+    #[test_case("smallint '11'"                    => Ok(StringTypecastExpr::new("11", Int2)))]
+    #[test_case("int '42'"                         => Ok(StringTypecastExpr::new("42", Int4)))]
+    #[test_case("integer '420'"                    => Ok(StringTypecastExpr::new("420", Int4)))]
+    #[test_case("bigint '1'"                       => Ok(StringTypecastExpr::new("1", Int8)))]
+    #[test_case("real '42.0'"                      => Ok(StringTypecastExpr::new("42.0", Float4)))]
+    #[test_case("numeric '123.45'"                 => Ok(StringTypecastExpr::new("123.45", Numeric(None))))]
+    #[test_case("float(25) '123.45'"               => Ok(StringTypecastExpr::new("123.45", Float8)))]
+    #[test_case("bit varying(6) '7'"               => Ok(StringTypecastExpr::new("7", Varbit(Some(vec![IntegerConst(6)])))))]
+    #[test_case("character varying 'foo'"          => Ok(StringTypecastExpr::new("foo", Varchar { max_length: None })))]
+    #[test_case("timestamp with time zone 'foo'"   => Ok(StringTypecastExpr::new("foo", TimestampTz { precision: None })))]
+    #[test_case("time(1) with time zone 'foo'"     => Ok(StringTypecastExpr::new("foo", TimeTz { precision: Some(1) })))]
+    #[test_case("interval '1 day'"                 => Ok(StringTypecastExpr::new("1 day", TypeName::Interval(Full { precision: None }))))]
+    #[test_case("interval(3) '1 day'"              => Ok(StringTypecastExpr::new("1 day", TypeName::Interval(Full { precision: Some(3) }))))]
+    #[test_case("interval '1970-01' year to month" => Ok(StringTypecastExpr::new("1970-01", TypeName::Interval(YearToMonth))))]
+    fn test_const_typename(source: &str) -> scan::Result<StringTypecastExpr> {
+        let mut ctx = ParserContext::new(source, expr_list);
+        const_typename(&mut ctx)
     }
 }
 
