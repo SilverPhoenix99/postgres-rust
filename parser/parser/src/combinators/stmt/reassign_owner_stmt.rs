@@ -33,11 +33,11 @@ mod tests {
 use pg_ast::ReassignOwnedStmt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::OwnedKw;
 use pg_lexer::Keyword::Reassign;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;
 use pg_sink_combinators::role_list;
 use pg_sink_combinators::role_spec;

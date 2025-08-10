@@ -66,9 +66,9 @@ tuple_and_combinator!(
 );
 
 use crate::Combinator;
+use crate::ParserContext;
 use pg_parser_core::scan;
 use pg_parser_core::scan::Error::Eof;
 use pg_parser_core::scan::Error::NoMatch;
 use pg_parser_core::scan::Error::ScanErr;
 use pg_parser_core::syntax;
-use pg_parser_core::ParserContext;

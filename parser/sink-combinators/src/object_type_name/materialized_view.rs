@@ -29,7 +29,7 @@ use crate::any_name;
 use pg_basics::QualifiedName;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Materialized;
 use pg_lexer::Keyword::View;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

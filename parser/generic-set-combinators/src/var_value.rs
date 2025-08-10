@@ -38,9 +38,9 @@ mod tests {
 use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_generic_set_ast::VarValue;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;
 use pg_sink_combinators::boolean_or_string;
 use pg_sink_combinators::signed_number;

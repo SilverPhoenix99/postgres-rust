@@ -29,5 +29,5 @@ use pg_combinators::alt;
 use pg_combinators::any_keyword;
 use pg_combinators::identifier;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

@@ -22,5 +22,5 @@ pub(super) fn b_expr(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 }
 
 use pg_ast::ExprNode;
+use pg_combinators::ParserContext;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

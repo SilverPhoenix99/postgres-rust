@@ -33,6 +33,6 @@ use pg_ast::GenericOption;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Options;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

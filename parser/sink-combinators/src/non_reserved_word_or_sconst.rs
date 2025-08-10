@@ -25,5 +25,5 @@ use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::string;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

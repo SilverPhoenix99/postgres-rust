@@ -29,8 +29,8 @@ mod tests {
 use crate::signed_number;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Large;
 use pg_lexer::Keyword::Object;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;
 use pg_sink_ast::SignedNumber;

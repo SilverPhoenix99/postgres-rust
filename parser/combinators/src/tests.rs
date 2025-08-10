@@ -18,7 +18,7 @@ macro_rules! test_parser {
 
     ($source:expr, $parser:expr) => {{
         let source = $source;
-        let mut ctx = pg_parser_core::ParserContext::from(source);
+        let mut ctx = $crate::ParserContext::from(source);
         let parser = $parser;
         $crate::Combinator::parse(&parser, &mut ctx)
     }};

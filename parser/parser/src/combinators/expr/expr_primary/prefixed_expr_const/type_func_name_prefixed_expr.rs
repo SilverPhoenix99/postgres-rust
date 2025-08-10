@@ -70,6 +70,6 @@ use pg_ast::ExprNode;
 use pg_basics::Str;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

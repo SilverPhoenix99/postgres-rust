@@ -130,6 +130,7 @@ mod tests {
 }
 
 use crate::Combinator;
+use crate::ParserContext;
 use core::marker::PhantomData;
 use pg_lexer::Keyword;
 use pg_lexer::KeywordCategory;
@@ -137,4 +138,3 @@ use pg_parser_core::scan;
 use pg_parser_core::stream;
 use pg_parser_core::stream::TokenConsumer;
 use pg_parser_core::stream::TokenValue;
-use pg_parser_core::ParserContext;

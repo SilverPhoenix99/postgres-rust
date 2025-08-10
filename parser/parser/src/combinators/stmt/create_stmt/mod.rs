@@ -53,6 +53,6 @@ use pg_ast::RawStmt;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Create;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

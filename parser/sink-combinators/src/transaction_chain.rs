@@ -29,8 +29,8 @@ mod tests {
 
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::And;
 use pg_lexer::Keyword::Chain;
 use pg_lexer::Keyword::No;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

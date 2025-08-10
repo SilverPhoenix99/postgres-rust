@@ -94,5 +94,5 @@ use pg_lexer::Keyword::Only;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::Mul;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;
+use pg_combinators::ParserContext;
 use pg_sink_ast::RelationExpr;

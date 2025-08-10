@@ -100,6 +100,6 @@ use pg_elog::parser::Error::ImproperQualifiedName;
 use pg_elog::parser::NameList;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;
+use pg_combinators::ParserContext;
 use pg_sink_ast::RelationName;
 use pg_sink_ast::SchemaName;

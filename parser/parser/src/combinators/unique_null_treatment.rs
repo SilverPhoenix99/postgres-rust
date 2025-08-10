@@ -32,8 +32,8 @@ mod tests {
 use pg_ast::UniqueNullTreatment;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Distinct;
 use pg_lexer::Keyword::Not;
 use pg_lexer::Keyword::Nulls;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

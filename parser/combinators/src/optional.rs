@@ -38,6 +38,6 @@ mod tests {
 }
 
 use crate::Combinator;
+use crate::ParserContext;
 use pg_parser_core::scan;
 use pg_parser_core::Optional as Opt;
-use pg_parser_core::ParserContext;

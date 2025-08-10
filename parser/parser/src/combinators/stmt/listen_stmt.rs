@@ -27,7 +27,7 @@ mod tests {
 use pg_basics::Str;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Listen;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;

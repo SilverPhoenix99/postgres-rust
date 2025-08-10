@@ -62,6 +62,7 @@ mod tests {
 
 use crate::no_match;
 use pg_basics::Str;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Between;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Current;
@@ -72,5 +73,4 @@ use pg_lexer::Keyword::Rows;
 use pg_lexer::Keyword::Unbounded;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenValue::Keyword as Kw;
-use pg_parser_core::ParserContext;
 use pg_sink_combinators::col_id;

@@ -33,9 +33,9 @@ mod tests {
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Time;
 use pg_lexer::Keyword::With;
 use pg_lexer::Keyword::Without;
 use pg_lexer::Keyword::Zone;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

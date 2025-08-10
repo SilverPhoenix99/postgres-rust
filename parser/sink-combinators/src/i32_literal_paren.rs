@@ -22,5 +22,5 @@ mod tests {
 use crate::i32_literal;
 use pg_combinators::paren;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

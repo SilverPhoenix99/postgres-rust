@@ -32,9 +32,9 @@ mod tests {
     }
 }
 
+use crate::ParserContext;
 use core::mem;
 use pg_lexer::BitStringKind;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenConsumer;
 use pg_parser_core::stream::TokenValue::BitString;
-use pg_parser_core::ParserContext;

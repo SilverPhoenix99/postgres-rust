@@ -18,6 +18,6 @@ use pg_ast::RawStmt;
 use pg_combinators::parser;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Explain;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

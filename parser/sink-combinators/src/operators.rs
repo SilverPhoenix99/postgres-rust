@@ -227,7 +227,7 @@ use pg_lexer::OperatorKind::NotEquals;
 use pg_lexer::OperatorKind::Percent;
 use pg_lexer::OperatorKind::Plus;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;
+use pg_combinators::ParserContext;
 use pg_sink_ast::Operator;
 use pg_sink_ast::Operator::Addition;
 use pg_sink_ast::Operator::Division;

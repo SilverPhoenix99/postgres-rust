@@ -29,7 +29,7 @@ use crate::combinators::expr_list;
 use pg_ast::ExprNode;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Partition;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

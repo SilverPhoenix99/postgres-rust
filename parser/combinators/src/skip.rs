@@ -16,5 +16,5 @@ impl Combinator for SkipCombi {
 }
 
 use crate::Combinator;
+use crate::ParserContext;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

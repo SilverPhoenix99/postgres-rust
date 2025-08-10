@@ -35,8 +35,8 @@ mod tests {
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Absent;
 use pg_lexer::Keyword::Null;
 use pg_lexer::Keyword::On;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

@@ -20,8 +20,8 @@ mod tests {
     }
 }
 
+use crate::ParserContext;
 use core::mem;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenConsumer;
 use pg_parser_core::stream::TokenValue::UserDefinedOperator;
-use pg_parser_core::ParserContext;

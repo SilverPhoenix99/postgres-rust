@@ -6,7 +6,6 @@ extern crate core;
 
 pg_basics::reexport! { pub
     config,
-    context,
     result,
 }
 

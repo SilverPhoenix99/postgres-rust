@@ -86,6 +86,6 @@ tuple_or_combinator!(
 );
 
 use crate::Combinator;
+use crate::ParserContext;
 use pg_parser_core::scan;
 use pg_parser_core::Optional;
-use pg_parser_core::ParserContext;

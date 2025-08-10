@@ -3,6 +3,7 @@ pg_basics::reexport! { pub
     between,
     bit_string,
     combinator,
+    context,
     identifier,
     integer,
     keyword,

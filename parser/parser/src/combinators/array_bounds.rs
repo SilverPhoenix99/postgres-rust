@@ -61,7 +61,7 @@ use pg_combinators::brackets;
 use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Array;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;
 use pg_sink_combinators::i32_literal;

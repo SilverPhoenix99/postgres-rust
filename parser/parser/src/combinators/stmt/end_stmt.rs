@@ -33,9 +33,9 @@ mod tests {
 
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::End;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;
 use pg_sink_combinators::transaction_chain;
 use pg_sink_combinators::work_or_transaction;
 use pg_transaction_mode_ast::TransactionStmt;

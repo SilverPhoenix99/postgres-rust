@@ -35,6 +35,6 @@ use pg_ast::RawStmt;
 use pg_ast::RawStmt::CheckPointStmt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Checkpoint;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

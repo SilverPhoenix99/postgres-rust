@@ -37,5 +37,5 @@ where
 
 use crate::map;
 use crate::optional;
+use crate::ParserContext;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

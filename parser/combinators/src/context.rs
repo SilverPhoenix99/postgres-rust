@@ -27,4 +27,4 @@ impl<'src> From<&'src str> for ParserContext<'src> {
     }
 }
 
-use crate::stream::TokenStream;
+use pg_parser_core::stream::TokenStream;

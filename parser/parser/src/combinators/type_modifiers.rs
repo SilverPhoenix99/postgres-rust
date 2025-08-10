@@ -12,5 +12,5 @@ use crate::combinators::expr_list;
 use pg_ast::TypeModifiers;
 use pg_combinators::paren;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;

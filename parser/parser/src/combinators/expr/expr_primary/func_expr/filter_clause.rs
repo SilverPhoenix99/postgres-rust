@@ -33,7 +33,7 @@ use pg_ast::ExprNode;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Filter;
 use pg_lexer::Keyword::Where;
 use pg_parser_core::scan;
-use pg_parser_core::ParserContext;
