@@ -1,5 +1,5 @@
 /// Alias: `opt_timezone`
-pub fn with_timezone(ctx: &mut ParserContext) -> scan::Result<bool> {
+pub(super) fn with_timezone(ctx: &mut ParserContext) -> scan::Result<bool> {
 
     /*
         (WITH | WITHOUT) TIME ZONE

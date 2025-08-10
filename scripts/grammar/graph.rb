@@ -133,6 +133,24 @@ module Graph
 
     opt_interval
       interval_second
+
+    Typename-don't_delete_yet
+      opt_array_bounds
+        opt_array_bounds_1
+      SimpleTypename-don't_delete_yet
+        opt_type_modifiers
+        GenericType
+        Character
+          CharacterWithLength
+          CharacterWithoutLength
+          character
+        Bit
+          BitWithLength
+          BitWithoutLength
+        Numeric
+          opt_float
+        ConstDatetime
+          opt_timezone
   ].to_set.freeze
 
   def self.run!(output: nil, exclude: EXCLUDE)
@@ -254,8 +272,8 @@ module Graph
       'digraph Grammar {',
       '',
       'rankdir=LR',
-      'concentrate=true',
-      # 'splines=polyline',
+      '# concentrate=true',
+      '# splines=polyline',
       'pencolor=darkorchid4',
       'penwidth=3',
       'ranksep=3',

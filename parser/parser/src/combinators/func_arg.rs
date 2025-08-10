@@ -81,7 +81,6 @@ fn is_arg_name(first: &TokenValue, second: &TokenValue) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_ast::FuncType;
     use pg_ast::SetOf;
     use pg_ast::Type;
     use pg_ast::TypeName;
@@ -106,7 +105,9 @@ mod tests {
         let expected = FunctionParameter::new(
             arg_name,
             mode,
-            FuncType::Type(Type::new(type_name, None, set_of))
+            Type::from(type_name)
+                .with_mult(set_of)
+                .into()
         );
 
         test_parser!(source, func_arg, expected)

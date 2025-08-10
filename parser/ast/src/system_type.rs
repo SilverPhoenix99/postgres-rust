@@ -10,24 +10,40 @@ pub struct Type {
 }
 
 impl Type {
-    pub fn new(name: TypeName, array_bounds: Option<Vec<Option<i32>>>, mult: SetOf) -> Self {
-        Self { name, array_bounds, mult }
-    }
-
-    pub fn with_array_bounds(self, array_bounds: Option<Vec<Option<i32>>>) -> Self {
-        Self::new(self.name, array_bounds, self.mult)
-    }
-
-    pub fn returning_table(self) -> Type {
-        Self::new(self.name, self.array_bounds, SetOf::Table)
+    pub fn new(name: TypeName) -> Self {
+        Self {
+            name,
+            mult: Default::default(),
+            array_bounds: Default::default(),
+        }
     }
 
     pub fn name(&self) -> &TypeName {
         &self.name
     }
 
+    pub fn with_array_bounds(mut self, array_bounds: Vec<Option<i32>>) -> Self {
+        self.array_bounds = if array_bounds.is_empty() { None } else { Some(array_bounds) };
+        self
+    }
+
+    pub fn set_array_bounds(&mut self, array_bounds: Option<Vec<Option<i32>>>) -> &mut Self {
+        self.array_bounds = array_bounds;
+        self
+    }
+
     pub fn array_bounds(&self) -> Option<&[Option<i32>]> {
         self.array_bounds.as_deref()
+    }
+
+    pub fn with_mult(mut self, mult: SetOf) -> Self {
+        self.mult = mult;
+        self
+    }
+
+    pub fn set_mult(&mut self, mult: SetOf) -> &mut Self {
+        self.mult = mult;
+        self
     }
 
     pub fn mult(&self) -> SetOf {
@@ -77,27 +93,34 @@ pub enum TypeName {
     },
 }
 
-impl TypeName {
-    pub fn with_array_bounds(self, array_bounds: Option<Vec<Option<i32>>>) -> Type {
-        Type::from(self).with_array_bounds(array_bounds)
-    }
-
-    pub fn returning_table(self) -> Type {
-        Type::from(self).returning_table()
+impl From<TypeName> for Type {
+    fn from(value: TypeName) -> Self {
+        Type::new(value)
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
 pub enum SetOf {
     /// When the type represents a single record, or scalar
+    #[default]
     Record,
     /// When the type represents a set of records (i.e., a table).
     Table,
 }
 
-impl From<TypeName> for Type {
-    fn from(value: TypeName) -> Self {
-        Type::new(value, None, SetOf::Record)
+impl From<bool> for SetOf {
+    fn from(value: bool) -> Self {
+        if value {
+            SetOf::Table
+        } else {
+            SetOf::Record
+        }
+    }
+}
+
+impl From<SetOf> for bool {
+    fn from(value: SetOf) -> Self {
+        value == SetOf::Table
     }
 }
 
@@ -132,7 +155,7 @@ impl TypeReference {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, From)]
 pub enum FuncType {
     Type(Type),
     /// When the type is specified with `%TYPE`.

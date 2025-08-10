@@ -47,7 +47,6 @@ mod tests {
 }
 
 use crate::combinators::expr::a_expr;
-use crate::combinators::typename;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::Treat;
 use pg_ast::TypecastExpr;
@@ -58,3 +57,4 @@ use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_lexer::Keyword::As;
 use pg_parser_core::scan;
+use pg_type_combinators::typename;

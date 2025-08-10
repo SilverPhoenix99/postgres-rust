@@ -1,7 +1,8 @@
 digraph Grammar {
 
 rankdir=LR
-concentrate=true
+# concentrate=true
+# splines=polyline
 pencolor=darkorchid4
 penwidth=3
 ranksep=3
@@ -67,14 +68,8 @@ AlterUserMappingStmt -> alter_generic_options
 AlterUserMappingStmt -> auth_ident
 AnalyzeStmt -> opt_utility_option_list
 AnalyzeStmt -> opt_vacuum_relation_list
-Bit -> BitWithLength
-Bit -> BitWithoutLength
 BitWithLength -> expr_list
 CallStmt -> func_application
-Character -> CharacterWithLength
-Character -> CharacterWithoutLength
-CharacterWithLength -> character
-CharacterWithoutLength -> character
 CheckPointStmt -> opt_utility_option_list
 ClusterStmt -> opt_utility_option_list
 ClusterStmt -> utility_option_list
@@ -91,12 +86,6 @@ CommentStmt -> Typename
 CommentStmt -> aggregate_with_argtypes
 CommentStmt -> function_with_argtypes
 CommentStmt -> operator_with_argtypes
-ConstBit -> BitWithLength
-ConstBit -> BitWithoutLength
-ConstCharacter -> CharacterWithLength
-ConstCharacter -> CharacterWithoutLength
-ConstTypename -> ConstDatetime
-ConstTypename -> Numeric
 ConstraintElem -> ConstraintAttributeSpec
 ConstraintElem -> OptConsTableSpace
 ConstraintElem -> OptWhereClause
@@ -192,7 +181,6 @@ ExplainableStmt -> SelectStmt
 ExplainableStmt -> UpdateStmt
 FunctionSetResetClause -> VariableResetStmt
 FunctionSetResetClause -> set_rest_more
-GenericType -> opt_type_modifiers
 GrantRoleStmt -> opt_granted_by
 GrantRoleStmt -> privilege_list
 GrantStmt -> grantee_list
@@ -214,7 +202,6 @@ MergeStmt -> opt_with_clause
 MergeStmt -> relation_expr_opt_alias
 MergeStmt -> returning_clause
 MergeStmt -> table_ref
-Numeric -> opt_type_modifiers
 OptParenthesizedSeqOptList -> SeqOptList
 OptSeqOptList -> SeqOptList
 OptTableFuncElementList -> TableFuncElementList
@@ -258,8 +245,6 @@ SeqOptElem -> SimpleTypename
 SeqOptList -> SeqOptElem
 SetResetClause -> VariableResetStmt
 SetResetClause -> set_rest
-SimpleTypename -> ConstDatetime
-SimpleTypename -> Numeric
 TableElement -> TableConstraint
 TableElement -> columnDef
 TableFuncElement -> Typename
@@ -654,10 +639,6 @@ subgraph cluster_CommentStmt {
   CommentStmt -> comment_text
 }
 
-subgraph cluster_ConstDatetime {
-  ConstDatetime -> opt_timezone
-}
-
 subgraph cluster_ConstraintAttributeSpec {
   ConstraintAttributeSpec -> ConstraintAttributeElem
 }
@@ -875,10 +856,6 @@ subgraph cluster_MergeStmt {
   merge_when_list -> merge_when_clause
 }
 
-subgraph cluster_Numeric {
-  Numeric -> opt_float
-}
-
 subgraph cluster_OptRoleList {
   OptRoleList -> CreateOptRoleElem
 }
@@ -937,12 +914,6 @@ subgraph cluster_SecLabelStmt {
   SecLabelStmt -> security_label
 }
 
-subgraph cluster_SimpleTypename {
-  SimpleTypename -> Bit
-  SimpleTypename -> Character
-  SimpleTypename -> GenericType
-}
-
 subgraph cluster_TableConstraint {
   ConstraintElem -> ExclusionConstraintList
   ConstraintElem -> ExistingIndex
@@ -957,11 +928,6 @@ subgraph cluster_TableConstraint {
 
 subgraph cluster_TruncateStmt {
   TruncateStmt -> opt_restart_seqs
-}
-
-subgraph cluster_Typename {
-  Typename -> opt_array_bounds
-  opt_array_bounds -> opt_array_bounds_1
 }
 
 subgraph cluster_VariableResetStmt {
@@ -1287,17 +1253,16 @@ subgraph cluster_xmlexists_argument {
 
 
 AlterOptRoleElem [color=blue penwidth=3]
-BitWithoutLength [color=blue penwidth=3]
 FUNCTION_or_PROCEDURE [color=blue penwidth=3]
 OnCommitOption [color=blue penwidth=3]
 OptConsTableSpace [color=blue penwidth=3]
 OptInherit [color=blue penwidth=3]
 OptTableSpace [color=blue penwidth=3]
 OptTemp [color=blue penwidth=3]
+SimpleTypename [color=blue penwidth=3]
 access_method_clause [color=blue penwidth=3]
 add_drop [color=blue penwidth=3]
 auth_ident [color=blue penwidth=3]
-character [color=blue penwidth=3]
 column_compression [color=blue penwidth=3]
 column_storage [color=blue penwidth=3]
 document_or_content [color=blue penwidth=3]

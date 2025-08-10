@@ -313,7 +313,6 @@ mod tests {
 
 use crate::combinators::expr::b_expr;
 use crate::combinators::expr::expr_primary;
-use crate::combinators::typename;
 use crate::combinators::xmlexists_argument;
 use pg_ast::ExprNode;
 use pg_ast::NamedValue;
@@ -349,6 +348,7 @@ use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::col_label;
+use pg_type_combinators::typename;
 use XmlTableColumnOption::Default as DefaultOption;
 use XmlTableColumnOption::NotNull;
 use XmlTableColumnOption::Null;

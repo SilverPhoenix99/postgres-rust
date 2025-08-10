@@ -83,7 +83,6 @@ mod tests {
 
 use crate::combinators::document_or_content;
 use crate::combinators::expr::a_expr;
-use crate::combinators::simple_typename;
 use pg_ast::XmlSerialize;
 use pg_combinators::alt;
 use pg_combinators::paren;
@@ -95,3 +94,4 @@ use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Indent;
 use pg_lexer::Keyword::No;
 use pg_parser_core::scan;
+use pg_type_combinators::simple_typename;

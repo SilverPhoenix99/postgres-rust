@@ -43,6 +43,7 @@ pub(super) fn func_type(ctx: &mut ParserContext) -> scan::Result<FuncType> {
 mod tests {
     use super::*;
     use pg_ast::SetOf;
+    use pg_ast::Type;
     use pg_combinators::test_parser;
 
     #[test]
@@ -64,21 +65,18 @@ mod tests {
         test_parser!(
             source = "setof some_.qualified_name[]",
             parser = func_type,
-            expected = FuncType::Type(
-                pg_ast::Type::new(
-            Generic {
-                name: vec!["some_".into(), "qualified_name".into()],
-                type_modifiers: None
-            },
-            Some(vec![None]),
-            SetOf::Table
-        )
+            expected = Type::from(
+                Generic {
+                    name: vec!["some_".into(), "qualified_name".into()],
+                    type_modifiers: None
+                }
             )
+            .with_array_bounds(vec![None])
+            .with_mult(SetOf::Table)
         )
     }
 }
 
-use crate::combinators::typename;
 use core::hint::unreachable_unchecked;
 use pg_ast::FuncType;
 use pg_ast::FuncType::Reference;
@@ -91,3 +89,4 @@ use pg_lexer::Keyword::Type;
 use pg_lexer::OperatorKind::Percent;
 use pg_parser_core::scan;
 use pg_parser_core::Optional;
+use pg_type_combinators::typename;

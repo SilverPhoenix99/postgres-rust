@@ -344,7 +344,6 @@ mod tests {
     }
 }
 
-use crate::combinators::simple_typename;
 use crate::combinators::stmt::access_method;
 use crate::combinators::stmt::aggregate;
 use crate::combinators::stmt::domain;
@@ -439,3 +438,4 @@ use pg_sink_combinators::text_search;
 use pg_sink_combinators::view;
 use pg_sink_combinators::Foreign;
 use pg_sink_combinators::TextSearch;
+use pg_type_combinators::simple_typename;

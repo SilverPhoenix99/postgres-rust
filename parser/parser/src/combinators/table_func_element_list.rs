@@ -51,7 +51,6 @@ mod tests {
 }
 
 use crate::combinators::collate_clause;
-use crate::combinators::simple_typename;
 use pg_ast::SimpleColumnDefinition;
 use pg_combinators::many;
 use pg_combinators::seq;
@@ -60,3 +59,4 @@ use pg_combinators::ParserContext;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
 use pg_sink_combinators::col_id;
+use pg_type_combinators::simple_typename;
