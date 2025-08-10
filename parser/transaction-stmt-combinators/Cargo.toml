@@ -1,5 +1,5 @@
 [package]
-name = "pg-transaction-mode-combinators"
+name = "pg-transaction-stmt-combinators"
 edition.workspace = true
 version.workspace = true
 
@@ -10,7 +10,7 @@ workspace = true
 pg-combinators.workspace = true
 pg-lexer.workspace = true
 pg-parser-core.workspace = true
-pg-transaction-mode-ast.workspace = true
+pg-transaction-stmt-ast.workspace = true
 
 [dev-dependencies]
 test-case.workspace = true

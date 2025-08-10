@@ -108,4 +108,4 @@ use derive_more::From;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
 use pg_sink_ast::OneOrAll;
-use pg_transaction_mode_ast::TransactionStmt;
+use pg_transaction_stmt_ast::TransactionStmt;

@@ -19,9 +19,9 @@ pub(super) fn start_transaction_stmt(ctx: &mut ParserContext) -> scan::Result<Tr
 mod tests {
     use super::*;
     use pg_combinators::test_parser;
-    use pg_transaction_mode_ast::TransactionMode::Deferrable;
-    use pg_transaction_mode_ast::TransactionMode::ReadOnly;
-    use pg_transaction_mode_ast::TransactionMode::ReadWrite;
+    use pg_transaction_stmt_ast::TransactionMode::Deferrable;
+    use pg_transaction_stmt_ast::TransactionMode::ReadOnly;
+    use pg_transaction_stmt_ast::TransactionMode::ReadWrite;
 
     #[test]
     fn test_start_transaction() {
@@ -48,5 +48,5 @@ use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Start;
 use pg_lexer::Keyword::Transaction;
 use pg_parser_core::scan;
-use pg_transaction_mode_ast::TransactionStmt;
-use pg_transaction_mode_combinators::transaction_mode_list;
+use pg_transaction_stmt_ast::TransactionStmt;
+use pg_transaction_stmt_combinators::transaction_mode_list;

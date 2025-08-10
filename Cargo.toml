@@ -16,8 +16,8 @@ members = [
     "parser/parser",
     "parser/sink-ast",
     "parser/sink-combinators",
-    "parser/transaction-mode-ast",
-    "parser/transaction-mode-combinators",
+    "parser/transaction-stmt-ast",
+    "parser/transaction-stmt-combinators",
     "parser/type-combinators",
 ]
 
@@ -58,6 +58,6 @@ pg-parser = { path = "parser/parser" }
 pg-parser-core = { path = "parser/core" }
 pg-sink-ast = { path = "parser/sink-ast" }
 pg-sink-combinators = { path = "parser/sink-combinators" }
-pg-transaction-mode-ast = { path = "parser/transaction-mode-ast" }
-pg-transaction-mode-combinators = { path = "parser/transaction-mode-combinators" }
+pg-transaction-stmt-ast = { path = "parser/transaction-stmt-ast" }
+pg-transaction-stmt-combinators = { path = "parser/transaction-stmt-combinators" }
 pg-type-combinators = { path = "parser/type-combinators" }

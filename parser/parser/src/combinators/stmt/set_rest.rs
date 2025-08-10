@@ -194,7 +194,7 @@ mod tests {
     use {
         pg_ast::XmlNodeKind::Document,
         pg_sink_ast::SignedNumber::IntegerConst,
-        pg_transaction_mode_ast::TransactionMode::ReadOnly,
+        pg_transaction_stmt_ast::TransactionMode::ReadOnly,
     };
 
     #[test_case("session characteristics as transaction read only", SetRest::SessionTransactionCharacteristics(vec![ReadOnly]))]
@@ -299,4 +299,4 @@ use pg_sink_combinators::non_reserved_word_or_sconst;
 use pg_sink_combinators::precision;
 use pg_sink_combinators::signed_number;
 use pg_sink_combinators::var_name;
-use pg_transaction_mode_combinators::transaction_mode_list;
+use pg_transaction_stmt_combinators::transaction_mode_list;

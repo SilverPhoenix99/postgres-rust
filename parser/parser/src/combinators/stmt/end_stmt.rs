@@ -38,5 +38,5 @@ use pg_lexer::Keyword::End;
 use pg_parser_core::scan;
 use pg_sink_combinators::transaction_chain;
 use pg_sink_combinators::work_or_transaction;
-use pg_transaction_mode_ast::TransactionStmt;
-use pg_transaction_mode_ast::TransactionStmt::Commit;
+use pg_transaction_stmt_ast::TransactionStmt;
+use pg_transaction_stmt_ast::TransactionStmt::Commit;

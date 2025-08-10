@@ -63,7 +63,7 @@ mod tests {
     use super::*;
     use pg_combinators::test_parser;
     #[allow(unused_imports)]
-    use pg_transaction_mode_ast::TransactionMode::ReadOnly;
+    use pg_transaction_stmt_ast::TransactionMode::ReadOnly;
     use test_case::test_case;
     use test_case::test_matrix;
 
@@ -101,4 +101,4 @@ use pg_combinators::ParserContext;
 use pg_lexer::OperatorKind::Semicolon;
 use pg_parser_core::scan;
 use pg_parser_core::scan::Error::Eof;
-use pg_transaction_mode_ast::TransactionStmt;
+use pg_transaction_stmt_ast::TransactionStmt;

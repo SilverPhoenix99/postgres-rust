@@ -13,4 +13,4 @@ pg-elog.workspace = true
 pg-generic-set-ast.workspace = true
 pg-interval-ast.workspace = true
 pg-sink-ast.workspace = true
-pg-transaction-mode-ast.workspace = true
+pg-transaction-stmt-ast.workspace = true

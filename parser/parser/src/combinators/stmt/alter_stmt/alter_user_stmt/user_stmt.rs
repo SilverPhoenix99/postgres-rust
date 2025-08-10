@@ -110,7 +110,7 @@ mod tests {
         pg_ast::VariableTarget::SessionAuthorization,
         pg_ast::VariableTarget::TimeZone,
         pg_sink_ast::RoleSpec,
-        pg_transaction_mode_ast::TransactionMode::Deferrable,
+        pg_transaction_stmt_ast::TransactionMode::Deferrable,
     };
 
     #[test_case(

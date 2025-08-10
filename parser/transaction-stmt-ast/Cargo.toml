@@ -1,5 +1,5 @@
 [package]
-name = "pg-transaction-mode-ast"
+name = "pg-transaction-stmt-ast"
 edition.workspace = true
 version.workspace = true
 
