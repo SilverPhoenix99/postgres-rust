@@ -3,7 +3,7 @@ require_relative '../grammar-transform'
 
 class GrammarTransform::Grammar
   def to_graph(exclude: Graph::EXCLUDE)
-    Graph.from_grammar(self, exclude:)
+    Graph.from_grammar(grammar: self, exclude:)
   end
 end
 
@@ -20,7 +20,7 @@ module Graph
     opt_distinct_clause
     plassign_target
     plassign_equals
-  ].to_set.freeze
+  ].to_set.freeze unless const_defined? :EXCLUDE_TOP_LEVEL
 
   # remove common (base package) sinks
   EXCLUDE_SINKS = %i[
@@ -83,7 +83,7 @@ module Graph
     object_type_name
     drop_type_name
     object_type_name_on_any_name
-  ].to_set.freeze
+  ].to_set.freeze unless const_defined? :EXCLUDE_SINKS
 
   # exclude single terminal productions - these are inlined
   EXCLUDE_SINGLE_TERMINALS = %i[
@@ -113,7 +113,7 @@ module Graph
     opt_verbose
     opt_with
     path_opt
-  ].to_set.freeze
+  ].to_set.freeze unless const_defined? :EXCLUDE_SINGLE_TERMINALS
 
   EXCLUDE = %i[
     generic_reset
@@ -156,7 +156,7 @@ module Graph
 
     comment_text
     security_label
-  ].to_set.freeze
+  ].to_set.freeze unless const_defined? :EXCLUDE
 
   def self.run!(output: nil, exclude: EXCLUDE)
     grammar_input = Pathname(__dir__) / 'grammar.bison'
@@ -171,11 +171,12 @@ module Graph
     graph
   end
 
-  def self.from_grammar(grammar, exclude: EXCLUDE)
+  def self.from_grammar(grammar:, exclude: EXCLUDE)
 
     graph = grammar.productions.each_with_object({}) do |(p, rules), g|
       g[p] = rules.flatten.to_set.delete(:__empty)
     end
+    graph.delete(:__empty)
 
     non_terms = graph.keys.to_set
     sources = graph[:stmt]
@@ -206,7 +207,7 @@ module Graph
     # delete the production, but it'll still show as a sink
     graph.delete(:stmt)
 
-    exclude = exclude || Set.new
+    exclude ||= Set.new
     exclude += EXCLUDE_TOP_LEVEL
     exclude += EXCLUDE_SINKS
     exclude += EXCLUDE_SINGLE_TERMINALS
@@ -215,8 +216,9 @@ module Graph
     graph.transform_values! { it - exclude }
 
     # remove empty productions: they're pseudo-terminals now
-    graph.reject! { |_, cs| cs.empty? }
+    graph.reject! { |p, cs| cs.empty? && exclude.include?(p) }
 
+    graph.transform_values!(&:freeze)
     graph
   end
 
@@ -229,7 +231,7 @@ module Graph
 
     edges = self.edges
       .reject do |parent, child|
-        next true if parent == :a_expr_3 && child == :a_expr_1
+        next true if parent == :a_expr_3 && child == :a_expr_1 # prevents failing loop in graphviz
         pr = subgraphs.key?(parent) ? parent : source_roots[parent]
         cr = subgraphs.key?(child) ? child : source_roots[child]
         pr && pr == cr
@@ -253,9 +255,6 @@ module Graph
           .flat_map do |parent, children|
             children
               .map do |child|
-                if child == :stmt
-                  child = '{stmt [color=red penwidth=3]}'
-                end
                 "#{parent} -> #{child}"
               end
           end
@@ -268,10 +267,19 @@ module Graph
         ]
       end
 
-    sinks = self.sinks
-      .reject { |s| source_roots.key?(s) }
-      .to_set
+    lhs_nodes = self.values.reduce(&:+)
+
+    sources = self.sources
       .sort
+      .map { "#{it} [color=green penwidth=3]" }
+
+    sinks = self.sinks
+      .sort
+      .map do
+        # stmt is a special sink
+        color = it == :stmt ? 'red' : 'blue'
+        "#{it} [color=#{color} penwidth=3]"
+      end
 
     lines = [
       'digraph Grammar {',
@@ -301,19 +309,23 @@ module Graph
       '',
       *edges,
       '',
-      '// subgraphs',
+      '# subgraphs',
       'edge [style=dotted]',
       '',
       *subs,
       '',
-      *sinks.map { "#{it} [color=blue penwidth=3]" },
+      '# sources',
+      *sources,
+      '',
+      '# sinks',
+      *sinks,
       '',
       '}'
     ].compact
 
     lines.map(&:rstrip).join("\n")
-
   end
+
 
   def transpose
     self.each_with_object({}) do |(p, cs), g|
@@ -359,12 +371,23 @@ module Graph
     end
   end
 
-  def sinks
-    @sinks ||= begin
-      values.reduce(&:+)
-        .reject { keys.include?(it) }
+  def sources
+    @sources ||= begin
+      lhs_nodes = self.values.reduce(&:+)
+      self.keys
+        .reject { lhs_nodes.include?(it) }
+        # .select { self[it].empty? }
         .to_set
+        .freeze
     end
+  end
+
+  def sinks
+    @sinks ||= self.values
+      .reduce(&:+)
+      .select { (self[it] || []).empty? }
+      .to_set
+      .freeze
   end
 
   def edges

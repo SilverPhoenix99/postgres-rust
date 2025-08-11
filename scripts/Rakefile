@@ -88,6 +88,7 @@ end
 # graph
 ###############################################################################
 
+desc "Generates the Graphviz grammar file"
 task :graph do
   require_relative 'grammar/graph.rb'
   graph_output = Pathname(__dir__) / 'grammar/grammar-graph.dot'
