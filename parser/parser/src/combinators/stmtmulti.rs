@@ -49,22 +49,12 @@ fn toplevel_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
     ).parse(ctx)
 }
 
-/// Alias: `TransactionStmtLegacy`
-fn transaction_stmt_legacy(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
-
-    alt!(
-        begin_stmt,
-        end_stmt
-    ).parse(ctx)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use pg_combinators::test_parser;
     #[allow(unused_imports)]
     use pg_transaction_stmt_ast::TransactionMode::ReadOnly;
-    use test_case::test_case;
     use test_case::test_matrix;
 
     // This only quickly tests that statement types aren't missing.
@@ -80,17 +70,9 @@ mod tests {
     fn test_toplevel_stmt(source: &str) -> scan::Result<RawStmt> {
         test_parser!(source, toplevel_stmt)
     }
-
-    #[test_case("begin transaction read only" => Ok(TransactionStmt::Begin(vec![ReadOnly])))]
-    #[test_case("end transaction" => Ok(TransactionStmt::Commit { chain: false }))]
-    fn test_transaction(source: &str) -> scan::Result<TransactionStmt> {
-        test_parser!(source, transaction_stmt_legacy)
-    }
 }
 
 use crate::combinators::stmt;
-use crate::combinators::stmt::begin_stmt;
-use crate::combinators::stmt::end_stmt;
 use crate::no_match;
 use pg_ast::RawStmt;
 use pg_combinators::alt;
@@ -101,4 +83,4 @@ use pg_combinators::ParserContext;
 use pg_lexer::OperatorKind::Semicolon;
 use pg_parser_core::scan;
 use pg_parser_core::scan::Error::Eof;
-use pg_transaction_stmt_ast::TransactionStmt;
+use pg_transaction_stmt_combinators::transaction_stmt_legacy;

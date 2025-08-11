@@ -1,4 +1,4 @@
-pub(super) fn rollback_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
+pub(crate) fn rollback_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
 
     /*
         ROLLBACK PREPARED SCONST

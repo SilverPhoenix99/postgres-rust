@@ -7,9 +7,11 @@ version.workspace = true
 workspace = true
 
 [dependencies]
+pg-basics.workspace = true
 pg-combinators.workspace = true
 pg-lexer.workspace = true
 pg-parser-core.workspace = true
+pg-sink-combinators.workspace = true
 pg-transaction-stmt-ast.workspace = true
 
 [dev-dependencies]

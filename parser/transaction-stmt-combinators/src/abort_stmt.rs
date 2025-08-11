@@ -1,4 +1,4 @@
-pub(super) fn abort_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
+pub(crate) fn abort_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
 
     /*
     TransactionStmt:

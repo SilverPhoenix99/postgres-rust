@@ -1,17 +1,11 @@
-mod begin_stmt;
-mod end_stmt;
 mod if_exists;
 mod privilege_target;
 mod object_type_name;
-
-pub(in crate::combinators) use self::begin_stmt::begin_stmt;
-pub(in crate::combinators) use self::end_stmt::end_stmt;
 
 pub(super) fn stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     alt!(
         alt!(
-            abort_stmt.map(From::from),
             alter_stmt,
             analyze_stmt,
             call_stmt,
@@ -19,7 +13,6 @@ pub(super) fn stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
             check_point_stmt,
             close_stmt.map(ClosePortalStmt),
             comment_stmt.map(From::from),
-            commit_stmt.map(From::from),
             copy_stmt,
             create_stmt,
             deallocate_stmt.map(DeallocateStmt),
@@ -31,22 +24,19 @@ pub(super) fn stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
             import_stmt,
             listen_stmt.map(ListenStmt),
             load_stmt.map(LoadStmt),
+            lock_stmt,
+            move_stmt,
         ),
-        lock_stmt,
-        move_stmt,
         notify_stmt.map(From::from),
         prepare_stmt,
         reassign_owned_stmt.map(From::from),
         reindex_stmt,
-        release_savepoint_stmt.map(From::from),
         reset_stmt.map(VariableResetStmt),
         revoke_stmt,
-        rollback_stmt.map(From::from),
-        savepoint_stmt.map(From::from),
         security_label_stmt.map(From::from),
         set_stmt,
         show_stmt.map(VariableShowStmt),
-        start_transaction_stmt.map(From::from),
+        transaction_stmt.map(From::from),
         truncate_stmt,
         unlisten_stmt.map(UnlistenStmt),
         vacuum_stmt,
@@ -63,12 +53,10 @@ mod tests {
     // More in-depth testing is within each statement's module.
     #[test_matrix(
         [
-            "abort transaction",
             "alter group some_group add user public",
             "checkpoint",
             "close all",
             "comment on type int is 'comment'",
-            "commit and no chain",
             "create database the_db with allow connections false",
             "deallocate all",
             "discard all",
@@ -77,10 +65,7 @@ mod tests {
             "notify test_ident, 'test-payload'",
             "prepare transaction 'tx id'",
             "reassign owned by public, test_role to target_role",
-            "release savepoint test_ident",
             "reset time zone",
-            "rollback to test_ident",
-            "savepoint test_ident",
             "security label for 'foo' on type int is 'bar'",
             "set schema 'abc123'",
             "show all",
@@ -95,7 +80,6 @@ mod tests {
 }
 
 pg_basics::reexport! {
-    abort_stmt,
     aggregate_with_argtypes,
     alter_function_option,
     alter_role_option,
@@ -107,7 +91,6 @@ pg_basics::reexport! {
     close_stmt,
     cluster_stmt,
     comment_stmt,
-    commit_stmt,
     copy_stmt,
     create_generic_options,
     create_stmt,
@@ -128,16 +111,12 @@ pg_basics::reexport! {
     prepare_stmt,
     reassign_owner_stmt,
     reindex_stmt,
-    release_savepoint_stmt,
     reset_stmt,
     revoke_stmt,
-    rollback_stmt,
-    savepoint_stmt,
     security_label_stmt,
     set_rest,
     set_stmt,
     show_stmt,
-    start_transaction_stmt,
     truncate_stmt,
     unlisten_stmt,
     utility_option,
@@ -170,3 +149,4 @@ use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_parser_core::scan;
+use pg_transaction_stmt_combinators::transaction_stmt;

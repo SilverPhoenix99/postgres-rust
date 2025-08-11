@@ -124,12 +124,14 @@ module Graph
     opt_transaction
     opt_transaction_chain
 
-    transaction_mode_list
-      transaction_mode_list_1
-      transaction_mode_list_2
-      transaction_mode_item
-      iso_level
-      transaction_mode_list_or_empty
+    TransactionStmt
+    TransactionStmtLegacy
+      transaction_mode_list
+        transaction_mode_list_1
+        transaction_mode_list_2
+        transaction_mode_item
+        iso_level
+        transaction_mode_list_or_empty
 
     opt_interval
       interval_second

@@ -1,4 +1,4 @@
-pub(super) fn release_savepoint_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
+pub(crate) fn release_savepoint_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
 
     /*
     TransactionStmt:

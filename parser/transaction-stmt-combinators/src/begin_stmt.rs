@@ -1,4 +1,4 @@
-pub(in crate::combinators) fn begin_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
+pub(crate) fn begin_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
 
     /*
     TransactionStmtLegacy:
@@ -35,6 +35,7 @@ mod tests {
     }
 }
 
+use crate::transaction_mode_list;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
@@ -42,4 +43,3 @@ use pg_lexer::Keyword::Begin;
 use pg_parser_core::scan;
 use pg_sink_combinators::work_or_transaction;
 use pg_transaction_stmt_ast::TransactionStmt;
-use pg_transaction_stmt_combinators::transaction_mode_list;

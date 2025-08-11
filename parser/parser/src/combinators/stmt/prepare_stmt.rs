@@ -1,8 +1,8 @@
 pub(super) fn prepare_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
-          PREPARE TRANSACTION SCONST
-        | PREPARE ColId ( '(' type_list ')' )? AS PreparableStmt
+          PREPARE TRANSACTION SCONST                             => TransactionStmt
+        | PREPARE ColId ( '(' type_list ')' )? AS PreparableStmt => PrepareStmt
     */
 
     let (_, stmt) = seq!(
