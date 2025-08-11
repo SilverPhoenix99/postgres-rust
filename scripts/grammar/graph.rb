@@ -158,6 +158,8 @@ module Graph
     security_label
   ].to_set.freeze unless const_defined? :EXCLUDE
 
+  EXPR_REGEX = /^([abc]_expr)_\d+$/ unless const_defined? :EXPR_REGEX
+
   def self.run!(output: nil, exclude: EXCLUDE)
     grammar_input = Pathname(__dir__) / 'grammar.bison'
     grammar = GrammarTransform::Grammar.load_bison(grammar_input)
@@ -178,9 +180,36 @@ module Graph
     end
     graph.delete(:__empty)
 
-    non_terms = graph.keys.to_set
-    sources = graph[:stmt]
+    # simplify expression productions, to avoid difficult cycles when generating the dot file
+    graph = graph.transform_values do |cs|
+      cs.map do |c|
+          c.match(EXPR_REGEX)&.deconstruct&.first&.to_sym || c
+        end
+        .to_set
+    end
 
+    exprs = graph
+      .filter_map do |p, cs|
+        root_expr = p.match(EXPR_REGEX)&.deconstruct&.first&.to_sym
+        next unless root_expr
+        [root_expr, { old_name: p, children: cs }]
+      end
+      .group_by(&:first)
+      .transform_values { it.map(&:last) }
+      .transform_values do |cs|
+        {
+          old_names: cs.map { it[:old_name] },
+          children: cs.map { it[:children] }.reduce(&:+)
+        }
+      end
+
+    exprs.each do |p, cs|
+      cs[:old_names].each { |old_name| graph.delete(old_name) }
+      graph[p] += cs[:children]
+    end
+
+    # remove terminals
+    non_terms = graph.keys.to_set
     graph.transform_values! { it & non_terms }
 
     # remove direct recursion
@@ -325,7 +354,6 @@ module Graph
 
     lines.map(&:rstrip).join("\n")
   end
-
 
   def transpose
     self.each_with_object({}) do |(p, cs), g|

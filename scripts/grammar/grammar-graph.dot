@@ -253,14 +253,13 @@ VariableSetStmt -> set_rest
 ViewStmt -> OptTemp
 ViewStmt -> SelectStmt
 ViewStmt -> opt_reloptions
-a_expr_1 -> b_expr
-a_expr_1 -> expr_list
-a_expr_1 -> json_key_uniqueness_constraint_opt
-a_expr_1 -> select_with_parens
-a_expr_1 -> unicode_normal_form
-a_expr_2 -> c_expr
-a_expr_2 -> opt_unique_null_treatment
-a_expr_2 -> select_with_parens
+a_expr -> b_expr
+a_expr -> c_expr
+a_expr -> expr_list
+a_expr -> json_key_uniqueness_constraint_opt
+a_expr -> opt_unique_null_treatment
+a_expr -> select_with_parens
+a_expr -> unicode_normal_form
 aggr_arg -> func_arg
 aggregate_with_argtypes -> aggr_args
 aggregate_with_argtypes -> func_name
@@ -289,7 +288,7 @@ alter_type_cmd -> opt_set_data
 alter_using -> a_expr
 alterfunc_opt_list -> common_func_opt_item
 array_expr -> expr_list
-b_expr_2 -> c_expr
+b_expr -> c_expr
 c_expr -> AexprConst
 c_expr -> a_expr
 c_expr -> array_expr
@@ -902,14 +901,9 @@ subgraph cluster_VariableResetStmt {
 }
 
 subgraph cluster_a_expr {
-  a_expr -> a_expr_2
-  a_expr -> a_expr_3
-  a_expr_1 -> a_expr
-  a_expr_1 -> json_predicate_type_constraint
-  a_expr_1 -> sub_type
-  a_expr_2 -> a_expr
-  a_expr_2 -> row
-  a_expr_3 -> a_expr_1
+  a_expr -> json_predicate_type_constraint
+  a_expr -> row
+  a_expr -> sub_type
   row -> a_expr
 }
 
@@ -926,14 +920,6 @@ subgraph cluster_alter_generic_options {
 subgraph cluster_array_expr {
   array_expr -> array_expr_list
   array_expr_list -> array_expr
-}
-
-subgraph cluster_b_expr {
-  b_expr -> b_expr_2
-  b_expr -> b_expr_3
-  b_expr_1 -> b_expr
-  b_expr_2 -> b_expr
-  b_expr_3 -> b_expr_1
 }
 
 subgraph cluster_c_expr {
