@@ -12,6 +12,7 @@ pg-ast.workspace = true
 pg-basics.workspace = true
 pg-combinators.workspace = true
 pg-elog.workspace = true
+pg-generic-options-combinators.workspace = true
 pg-generic-set-combinators.workspace = true
 pg-interval-ast.workspace = true
 pg-interval-combinators.workspace = true

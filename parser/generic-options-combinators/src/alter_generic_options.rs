@@ -1,4 +1,4 @@
-pub(super) fn alter_generic_options(ctx: &mut ParserContext) -> scan::Result<Vec<GenericOptionKind>> {
+pub fn alter_generic_options(ctx: &mut ParserContext) -> scan::Result<Vec<GenericOptionKind>> {
 
     /*
         OPTIONS '(' alter_generic_option_list ')'
@@ -85,7 +85,7 @@ mod tests {
     }
 }
 
-use crate::combinators::generic_option;
+use crate::generic_option;
 use pg_ast::GenericOptionKind;
 use pg_ast::GenericOptionKind::Add;
 use pg_ast::GenericOptionKind::Drop;

@@ -1,4 +1,4 @@
-pub(super) fn create_generic_options(ctx: &mut ParserContext) -> scan::Result<Vec<GenericOption>> {
+pub fn create_generic_options(ctx: &mut ParserContext) -> scan::Result<Vec<GenericOption>> {
 
     /*
         OPTIONS '(' generic_option_list ')'
@@ -8,6 +8,12 @@ pub(super) fn create_generic_options(ctx: &mut ParserContext) -> scan::Result<Ve
         .parse(ctx)?;
 
     Ok(options)
+}
+
+/// Alias: `generic_option_list`
+fn generic_options(ctx: &mut ParserContext) -> scan::Result<Vec<GenericOption>> {
+
+    many!(sep = Comma, generic_option).parse(ctx)
 }
 
 #[cfg(test)]
@@ -26,13 +32,27 @@ mod tests {
             ]
         );
     }
+
+    #[test]
+    fn test_generic_options() {
+        test_parser!(
+            source = "option1 'value1', option2 'value2'",
+            parser = generic_options,
+            expected = vec![
+                GenericOption::new("option1", "value1"),
+                GenericOption::new("option2", "value2")
+            ]
+        );
+    }
 }
 
-use crate::combinators::generic_options;
+use crate::generic_option;
 use pg_ast::GenericOption;
+use pg_combinators::many;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Options;
+use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

@@ -73,7 +73,6 @@ mod tests {
 }
 
 use self::user_stmt::user_stmt;
-use crate::combinators::stmt::alter_stmt::alter_generic_options;
 use crate::combinators::stmt::auth_ident;
 use pg_ast::AlterUserMappingStmt;
 use pg_ast::RawStmt;
@@ -81,6 +80,7 @@ use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
+use pg_generic_options_combinators::alter_generic_options;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::Mapping;

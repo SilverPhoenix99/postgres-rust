@@ -92,7 +92,6 @@ pg_basics::reexport! {
     cluster_stmt,
     comment_stmt,
     copy_stmt,
-    create_generic_options,
     create_stmt,
     deallocate_stmt,
     discard_stmt,

@@ -7,7 +7,6 @@ pg_basics::reexport! {
     alter_event_trigger_stmt,
     alter_extension_stmt,
     alter_function_stmt,
-    alter_generic_option,
     alter_group_stmt,
     alter_language_stmt,
     alter_large_object_stmt,

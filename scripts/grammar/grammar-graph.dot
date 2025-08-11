@@ -33,10 +33,8 @@ AlterExtensionContentsStmt -> add_drop
 AlterExtensionContentsStmt -> aggregate_with_argtypes
 AlterExtensionContentsStmt -> function_with_argtypes
 AlterExtensionContentsStmt -> operator_with_argtypes
-AlterFdwStmt -> alter_generic_options
 AlterFdwStmt -> fdw_options
 AlterFdwStmt -> opt_fdw_options
-AlterForeignServerStmt -> alter_generic_options
 AlterForeignServerStmt -> foreign_server_version
 AlterFunctionStmt -> function_with_argtypes
 AlterGroupStmt -> add_drop
@@ -63,7 +61,6 @@ AlterSubscriptionStmt -> opt_definition
 AlterTSDictionaryStmt -> definition
 AlterTblSpcStmt -> reloptions
 AlterTypeStmt -> operator_def_list
-AlterUserMappingStmt -> alter_generic_options
 AlterUserMappingStmt -> auth_ident
 AnalyzeStmt -> opt_utility_option_list
 AnalyzeStmt -> opt_vacuum_relation_list
@@ -103,14 +100,11 @@ CreateCastStmt -> function_with_argtypes
 CreateDomainStmt -> ColQualList
 CreateEventTrigStmt -> FUNCTION_or_PROCEDURE
 CreateEventTrigStmt -> func_name
-CreateFdwStmt -> create_generic_options
 CreateFdwStmt -> opt_fdw_options
-CreateForeignServerStmt -> create_generic_options
 CreateForeignTableStmt -> OptInherit
 CreateForeignTableStmt -> OptTableElementList
 CreateForeignTableStmt -> OptTypedTableElementList
 CreateForeignTableStmt -> PartitionBoundSpec
-CreateForeignTableStmt -> create_generic_options
 CreateFunctionStmt -> func_name
 CreateFunctionStmt -> func_type
 CreateFunctionStmt -> opt_or_replace
@@ -143,7 +137,6 @@ CreateTrigStmt -> FUNCTION_or_PROCEDURE
 CreateTrigStmt -> func_name
 CreateTrigStmt -> opt_or_replace
 CreateUserMappingStmt -> auth_ident
-CreateUserMappingStmt -> create_generic_options
 CreateUserStmt -> OptRoleList
 CreatedbStmt -> createdb_opt_list
 DeclareCursorStmt -> SelectStmt
@@ -180,7 +173,6 @@ GrantStmt -> opt_grant_grant_option
 GrantStmt -> opt_granted_by
 GrantStmt -> privilege_target
 GrantStmt -> privileges
-ImportForeignSchemaStmt -> create_generic_options
 IndexStmt -> OptTableSpace
 IndexStmt -> access_method_clause
 IndexStmt -> index_params
@@ -265,7 +257,6 @@ aggregate_with_argtypes -> aggr_args
 aggregate_with_argtypes -> func_name
 aggregate_with_argtypes_list -> aggregate_with_argtypes
 alter_column_default -> a_expr
-alter_generic_option_elem -> generic_option_elem
 alter_identity_column_option -> SeqOptElem
 alter_identity_column_option -> generated_when
 alter_table_cmd -> ConstraintAttributeSpec
@@ -273,7 +264,6 @@ alter_table_cmd -> OptParenthesizedSeqOptList
 alter_table_cmd -> TableConstraint
 alter_table_cmd -> a_expr
 alter_table_cmd -> alter_column_default
-alter_table_cmd -> alter_generic_options
 alter_table_cmd -> columnDef
 alter_table_cmd -> column_compression
 alter_table_cmd -> column_storage
@@ -299,7 +289,6 @@ c_expr -> select_with_parens
 case_arg -> a_expr
 case_default -> a_expr
 columnDef -> ColQualList
-columnDef -> create_generic_options
 columnOptions -> ColQualList
 columnref -> indirection
 common_table_expr -> PreparableStmt
@@ -365,7 +354,6 @@ func_table -> func_expr_windowless
 function_with_argtypes -> func_name
 function_with_argtypes -> indirection
 function_with_argtypes_list -> function_with_argtypes
-generic_option_list -> generic_option_elem
 group_by_item -> a_expr
 group_clause -> group_by_list
 having_clause -> a_expr
@@ -912,11 +900,6 @@ subgraph cluster_aggr_args {
   aggr_args_list -> aggr_arg
 }
 
-subgraph cluster_alter_generic_options {
-  alter_generic_option_list -> alter_generic_option_elem
-  alter_generic_options -> alter_generic_option_list
-}
-
 subgraph cluster_array_expr {
   array_expr -> array_expr_list
   array_expr_list -> array_expr
@@ -944,10 +927,6 @@ subgraph cluster_columnDef {
 
 subgraph cluster_common_func_opt_item {
   common_func_opt_item -> FunctionSetResetClause
-}
-
-subgraph cluster_create_generic_options {
-  create_generic_options -> generic_option_list
 }
 
 subgraph cluster_createdb_opt_list {
@@ -1388,7 +1367,6 @@ foreign_server_version [color=blue penwidth=3]
 func_as [color=blue penwidth=3]
 func_type [color=blue penwidth=3]
 generated_when [color=blue penwidth=3]
-generic_option_elem [color=blue penwidth=3]
 grant_role_opt_value [color=blue penwidth=3]
 grantee [color=blue penwidth=3]
 hash_partbound_elem [color=blue penwidth=3]
