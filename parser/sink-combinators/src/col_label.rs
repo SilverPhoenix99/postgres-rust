@@ -9,6 +9,13 @@ pub fn col_label(ctx: &mut ParserContext) -> scan::Result<Str> {
     ).parse(ctx)
 }
 
+fn any_keyword(ctx: &mut ParserContext) -> scan::Result<Keyword> {
+    ctx.stream_mut().consume(|tok| match tok {
+        TokenValue::Keyword(kw) => Some(*kw),
+        _ => None
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -26,8 +33,10 @@ mod tests {
 
 use pg_basics::Str;
 use pg_combinators::alt;
-use pg_combinators::any_keyword;
 use pg_combinators::identifier;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
+use pg_lexer::Keyword;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenConsumer;
+use pg_parser_core::stream::TokenValue;
