@@ -5,7 +5,7 @@ enum Change {
 }
 
 /// Includes: `AlterEventTrigStmt`
-pub(super) fn alter_event_trigger_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+pub fn alter_event_trigger_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER EVENT TRIGGER ColId enable_trigger
@@ -13,7 +13,7 @@ pub(super) fn alter_event_trigger_stmt(ctx: &mut ParserContext) -> scan::Result<
         ALTER EVENT TRIGGER ColId RENAME TO ColId
     */
 
-    let (.., event_trigger, change) = seq!(Event, Trigger, col_id, changes).parse(ctx)?;
+    let (.., event_trigger, change) = seq!(Event, Trigger, col_id, change).parse(ctx)?;
 
     let stmt = match change {
         Change::EnableTrigger(state) => {
@@ -36,7 +36,7 @@ pub(super) fn alter_event_trigger_stmt(ctx: &mut ParserContext) -> scan::Result<
     Ok(stmt)
 }
 
-fn changes(ctx: &mut ParserContext) -> scan::Result<Change> {
+fn change(ctx: &mut ParserContext) -> scan::Result<Change> {
     alt!(
         enable_trigger.map(Change::EnableTrigger),
         seq!(Owner, To, role_spec)
@@ -49,10 +49,8 @@ fn changes(ctx: &mut ParserContext) -> scan::Result<Change> {
 fn enable_trigger(ctx: &mut ParserContext) -> scan::Result<EventTriggerState> {
 
     /*
-        ENABLE_P
-      | ENABLE_P REPLICA
-      | ENABLE_P ALWAYS
-      | DISABLE_P
+        ENABLE ( REPLICA | ALWAYS )?
+      | DISABLE
     */
 
     alt!(

@@ -10,6 +10,7 @@ members = [
     "parser/combinators",
     "parser/conversion-stmt",
     "parser/core",
+    "parser/event-trigger-stmt",
     "parser/generic-options-combinators",
     "parser/generic-set-ast",
     "parser/generic-set-combinators",
@@ -53,6 +54,7 @@ pg-collation-stmt = { path = "parser/collation-stmt" }
 pg-combinators = { path = "parser/combinators", features = [] }
 pg-conversion-stmt = { path = "parser/conversion-stmt" }
 pg-elog = { path = "elog" }
+pg-event-trigger-stmt = { path = "parser/event-trigger-stmt" }
 pg-generic-options-combinators = { path = "parser/generic-options-combinators" }
 pg-generic-set-ast = { path = "parser/generic-set-ast" }
 pg-generic-set-combinators = { path = "parser/generic-set-combinators" }

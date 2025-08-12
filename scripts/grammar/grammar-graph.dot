@@ -535,10 +535,6 @@ subgraph cluster_AlterEnumStmt {
   AlterEnumStmt -> opt_if_not_exists
 }
 
-subgraph cluster_AlterEventTrigStmt {
-  AlterEventTrigStmt -> enable_trigger
-}
-
 subgraph cluster_AlterExtensionStmt {
   AlterExtensionStmt -> alter_extension_opt_list
   alter_extension_opt_list -> alter_extension_opt_item
@@ -1191,7 +1187,6 @@ AlterDatabaseStmt [color=green penwidth=3]
 AlterDefaultPrivilegesStmt [color=green penwidth=3]
 AlterDomainStmt [color=green penwidth=3]
 AlterEnumStmt [color=green penwidth=3]
-AlterEventTrigStmt [color=green penwidth=3]
 AlterExtensionContentsStmt [color=green penwidth=3]
 AlterExtensionStmt [color=green penwidth=3]
 AlterFdwStmt [color=green penwidth=3]
@@ -1352,7 +1347,6 @@ document_or_content [color=blue penwidth=3]
 dostmt_opt_item [color=blue penwidth=3]
 drop_option_list [color=blue penwidth=3]
 empty_grouping_set [color=blue penwidth=3]
-enable_trigger [color=blue penwidth=3]
 enum_val_list [color=blue penwidth=3]
 event [color=blue penwidth=3]
 event_trigger_value_list [color=blue penwidth=3]
