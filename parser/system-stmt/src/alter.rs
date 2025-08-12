@@ -1,5 +1,5 @@
 /// Alias: `AlterSystemStmt`
-pub(super) fn alter_system_stmt(ctx: &mut ParserContext) -> scan::Result<AlterSystemStmt> {
+pub fn alter_system_stmt(ctx: &mut ParserContext) -> scan::Result<AlterSystemStmt> {
 
     /*
           ALTER SYSTEM RESET generic_reset

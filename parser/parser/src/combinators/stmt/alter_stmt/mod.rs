@@ -5,7 +5,6 @@ pg_basics::reexport! {
     alter_extension_stmt,
     alter_function_stmt,
     alter_group_stmt,
-    alter_system_stmt,
     alter_user_stmt,
     set_reset_clause,
 }
@@ -77,3 +76,4 @@ use pg_language_stmt::alter::alter_language_stmt;
 use pg_large_object_stmt::alter::alter_large_object_stmt;
 use pg_lexer::Keyword::Alter;
 use pg_parser_core::scan;
+use pg_system_stmt::alter::alter_system_stmt;

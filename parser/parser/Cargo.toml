@@ -25,6 +25,7 @@ pg-lexer.workspace = true
 pg-parser-core.workspace = true
 pg-sink-ast.workspace = true
 pg-sink-combinators.workspace = true
+pg-system-stmt.workspace = true
 pg-transaction-stmt-ast.workspace = true
 pg-transaction-stmt-combinators.workspace = true
 pg-type-combinators.workspace = true
