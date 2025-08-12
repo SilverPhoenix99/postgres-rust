@@ -6,7 +6,7 @@ enum Change {
 }
 
 /// Alias: `AlterCollationStmt`
-pub(super) fn alter_collation_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+pub fn alter_collation_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER COLLATION any_name REFRESH VERSION_P
@@ -15,7 +15,7 @@ pub(super) fn alter_collation_stmt(ctx: &mut ParserContext) -> scan::Result<RawS
         ALTER COLLATION any_name SET SCHEMA ColId
     */
 
-    let (_, name, change) = seq!(Collation, any_name, changes).parse(ctx)?;
+    let (_, name, change) = seq!(Collation, any_name, change).parse(ctx)?;
 
     let stmt = match change {
         Change::RefreshVersion => {
@@ -44,7 +44,7 @@ pub(super) fn alter_collation_stmt(ctx: &mut ParserContext) -> scan::Result<RawS
     Ok(stmt)
 }
 
-fn changes(ctx: &mut ParserContext) -> scan::Result<Change> {
+fn change(ctx: &mut ParserContext) -> scan::Result<Change> {
     alt!(
         seq!(Refresh, Version)
             .map(|_| Change::RefreshVersion),

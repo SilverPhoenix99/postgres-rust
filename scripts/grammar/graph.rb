@@ -163,6 +163,8 @@ module Graph
     create_generic_options
       generic_option_list
         generic_option_elem
+
+    AlterCollationStmt
   ].to_set.freeze unless const_defined? :EXCLUDE
 
   EXPR_REGEX = /^([abc]_expr)_\d+$/ unless const_defined? :EXPR_REGEX

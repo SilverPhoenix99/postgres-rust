@@ -1185,7 +1185,6 @@ subgraph cluster_xmlexists_argument {
 
 
 # sources
-AlterCollationStmt [color=green penwidth=3]
 AlterCompositeTypeStmt [color=green penwidth=3]
 AlterDatabaseSetStmt [color=green penwidth=3]
 AlterDatabaseStmt [color=green penwidth=3]
