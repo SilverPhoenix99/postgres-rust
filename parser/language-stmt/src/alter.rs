@@ -3,11 +3,11 @@ enum Change {
     Name(Str),
 }
 
-pub(super) fn alter_language_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+pub fn alter_language_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
-        ALTER (PROCEDURAL)? LANGUAGE ColId OWNER TO RoleSpec # AlterOwnerStmt
-        ALTER (PROCEDURAL)? LANGUAGE ColId RENAME TO ColId # RenameStmt
+        ALTER (PROCEDURAL)? LANGUAGE ColId OWNER TO RoleSpec => AlterOwnerStmt
+        ALTER (PROCEDURAL)? LANGUAGE ColId RENAME TO ColId   => RenameStmt
     */
 
     let (_, language, stmt) = seq!(

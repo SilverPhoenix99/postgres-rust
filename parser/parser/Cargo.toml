@@ -19,6 +19,7 @@ pg-generic-options-combinators.workspace = true
 pg-generic-set-combinators.workspace = true
 pg-interval-ast.workspace = true
 pg-interval-combinators.workspace = true
+pg-language-stmt.workspace = true
 pg-lexer.workspace = true
 pg-parser-core.workspace = true
 pg-sink-ast.workspace = true
