@@ -26,7 +26,7 @@ pub(super) fn alter_function_stmt(ctx: &mut ParserContext) -> scan::Result<RawSt
 
     // SET SCHEMA is inlined, because it conflicts with `alter_function_option -> SET set_rest_more`.
 
-    let (func_type, signature, stmt) = seq!(func_type, function_with_argtypes, changes)
+    let (func_type, signature, stmt) = seq!(func_type, function_with_argtypes, change)
         .parse(ctx)?;
 
     let stmt = match (func_type, stmt) {
@@ -89,7 +89,7 @@ pub(super) fn alter_function_stmt(ctx: &mut ParserContext) -> scan::Result<RawSt
     Ok(stmt)
 }
 
-fn changes(ctx: &mut ParserContext) -> scan::Result<Change> {
+fn change(ctx: &mut ParserContext) -> scan::Result<Change> {
     alt!(
         change_extension,
         change_owner,

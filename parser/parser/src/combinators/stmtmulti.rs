@@ -83,4 +83,4 @@ use pg_combinators::ParserContext;
 use pg_lexer::OperatorKind::Semicolon;
 use pg_parser_core::scan;
 use pg_parser_core::scan::Error::Eof;
-use pg_transaction_stmt_combinators::transaction_stmt_legacy;
+use pg_transaction_stmt::transaction_stmt_legacy;

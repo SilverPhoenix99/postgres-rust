@@ -23,7 +23,7 @@ pub(super) fn alter_database_stmt(ctx: &mut ParserContext) -> scan::Result<RawSt
         )
     */
 
-    let (_, name, change) = seq!(Database, col_id, changes).parse(ctx)?;
+    let (_, name, change) = seq!(Database, col_id, change).parse(ctx)?;
 
     let stmt = match change {
         Change::RefreshVersion => {
@@ -61,7 +61,7 @@ pub(super) fn alter_database_stmt(ctx: &mut ParserContext) -> scan::Result<RawSt
     Ok(stmt)
 }
 
-fn changes(ctx: &mut ParserContext) -> scan::Result<Change> {
+fn change(ctx: &mut ParserContext) -> scan::Result<Change> {
     alt!(
         refresh_collation_version,
         change_owner,

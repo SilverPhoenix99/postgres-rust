@@ -1,6 +1,7 @@
 pub(crate) fn commit_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
 
     /*
+    TransactionStmt:
         COMMIT PREPARED SCONST
         COMMIT ( work_or_transaction )? ( transaction_chain )?
     */

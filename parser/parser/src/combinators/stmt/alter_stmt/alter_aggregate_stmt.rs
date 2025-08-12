@@ -14,7 +14,7 @@ pub(super) fn alter_aggregate_stmt(ctx: &mut ParserContext) -> scan::Result<RawS
         )
     */
 
-    let (_, aggregate, change) = seq!(Aggregate, aggregate_with_argtypes, changes)
+    let (_, aggregate, change) = seq!(Aggregate, aggregate_with_argtypes, change)
         .parse(ctx)?;
 
     let stmt = match change {
@@ -41,7 +41,7 @@ pub(super) fn alter_aggregate_stmt(ctx: &mut ParserContext) -> scan::Result<RawS
     Ok(stmt)
 }
 
-fn changes(ctx: &mut ParserContext) -> scan::Result<Change> {
+fn change(ctx: &mut ParserContext) -> scan::Result<Change> {
     alt!(
         seq!(Owner, To, role_spec)
             .map(|(.., new_owner)| Change::Owner(new_owner)),
