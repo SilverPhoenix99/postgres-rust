@@ -1,4 +1,4 @@
-pub(super) fn alter_large_object_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+pub fn alter_large_object_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER LARGE_P OBJECT_P NumericOnly OWNER TO RoleSpec

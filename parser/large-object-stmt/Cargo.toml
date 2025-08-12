@@ -1,0 +1,17 @@
+[package]
+name = "pg-large-object-stmt"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+pg-ast.workspace = true
+pg-combinators.workspace = true
+pg-lexer.workspace = true
+pg-parser-core.workspace = true
+pg-sink-combinators.workspace = true
+
+[dev-dependencies]
+pg-sink-ast.workspace = true

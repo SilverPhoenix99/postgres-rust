@@ -17,6 +17,7 @@ members = [
     "parser/interval-ast",
     "parser/interval-combinators",
     "parser/language-stmt",
+    "parser/large-object-stmt",
     "parser/lexer",
     "parser/parser",
     "parser/sink-ast",
@@ -63,6 +64,7 @@ pg-guc = { path = "guc" }
 pg-interval-ast = { path = "parser/interval-ast" }
 pg-interval-combinators = { path = "parser/interval-combinators" }
 pg-language-stmt = { path = "parser/language-stmt" }
+pg-large-object-stmt = { path = "parser/large-object-stmt" }
 pg-lexer = { path = "parser/lexer" }
 pg-parser = { path = "parser/parser" }
 pg-parser-core = { path = "parser/core" }
