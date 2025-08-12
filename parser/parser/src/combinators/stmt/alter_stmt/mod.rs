@@ -1,6 +1,5 @@
 pg_basics::reexport! {
     alter_aggregate_stmt,
-    alter_conversion_stmt,
     alter_database_stmt,
     alter_default_privileges_stmt,
     alter_event_trigger_stmt,
@@ -75,5 +74,6 @@ use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
+use pg_conversion_stmt::alter::alter_conversion_stmt;
 use pg_lexer::Keyword::Alter;
 use pg_parser_core::scan;

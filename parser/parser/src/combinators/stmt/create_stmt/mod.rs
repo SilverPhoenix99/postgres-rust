@@ -1,7 +1,6 @@
 pg_basics::reexport! {
     create_access_method_stmt,
     create_cast_stmt,
-    create_conversion_stmt,
     create_database_stmt,
     create_role_option,
     create_role_stmt,
@@ -54,5 +53,6 @@ use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
+use pg_conversion_stmt::create::create_conversion_stmt;
 use pg_lexer::Keyword::Create;
 use pg_parser_core::scan;

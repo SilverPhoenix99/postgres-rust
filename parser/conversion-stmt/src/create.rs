@@ -1,19 +1,18 @@
 /// Alias: `CreateConversionStmt`
-pub(super) fn create_conversion_stmt(ctx: &mut ParserContext) -> scan::Result<CreateConversionStmt> {
+pub fn create_conversion_stmt(ctx: &mut ParserContext) -> scan::Result<CreateConversionStmt> {
 
     /*
         ( DEFAULT )? CONVERSION_P any_name FOR SCONST TO SCONST FROM any_name
     */
 
-    let (is_default, name, _, for_encoding, _, to_encoding, _, function) = seq!(
-        alt!(
-            seq!(DefaultKw, Conversion).map(|_| true),
-            Conversion.map(|_| false)
-        ),
+    let (is_default, _, name, _, for_encoding, _, to_encoding, _, function) = seq!(
+        DefaultKw.optional(),
+        Conversion,
         any_name,
         For,
         string,
-        To,string,
+        To,
+        string,
         FromKw,
         any_name
     ).parse(ctx)?;
@@ -23,7 +22,7 @@ pub(super) fn create_conversion_stmt(ctx: &mut ParserContext) -> scan::Result<Cr
         for_encoding,
         to_encoding,
         function,
-        is_default
+        is_default.is_some()
     );
 
     Ok(stmt)
@@ -47,7 +46,6 @@ mod tests {
 }
 
 use pg_ast::CreateConversionStmt;
-use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::string;
 use pg_combinators::Combinator;

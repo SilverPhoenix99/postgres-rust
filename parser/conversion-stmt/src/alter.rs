@@ -4,7 +4,7 @@ enum Change {
     Schema(Str),
 }
 
-pub(super) fn alter_conversion_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+pub fn alter_conversion_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER CONVERSION any_name OWNER TO RoleSpec
@@ -12,7 +12,7 @@ pub(super) fn alter_conversion_stmt(ctx: &mut ParserContext) -> scan::Result<Raw
         ALTER CONVERSION any_name SET SCHEMA ColId
     */
 
-    let (_, name, change) = seq!(Conversion, any_name, changes).parse(ctx)?;
+    let (_, name, change) = seq!(Conversion, any_name, change).parse(ctx)?;
 
     let stmt = match change {
         Change::Owner(new_owner) => {
@@ -38,7 +38,7 @@ pub(super) fn alter_conversion_stmt(ctx: &mut ParserContext) -> scan::Result<Raw
     Ok(stmt)
 }
 
-fn changes(ctx: &mut ParserContext) -> scan::Result<Change> {
+fn change(ctx: &mut ParserContext) -> scan::Result<Change> {
     alt!(
         seq!(Owner, To, role_spec)
             .map(|(.., new_owner)| Change::Owner(new_owner)),
