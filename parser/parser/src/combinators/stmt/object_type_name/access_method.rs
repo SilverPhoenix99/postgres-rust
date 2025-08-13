@@ -1,4 +1,4 @@
-/// Inlines: `drop_type_name`
+/// Inlined: `drop_type_name`
 pub(in crate::combinators::stmt) fn access_method(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     /*
