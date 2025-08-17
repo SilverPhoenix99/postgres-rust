@@ -1,4 +1,4 @@
-pub(super) fn document_or_content(ctx: &mut ParserContext) -> scan::Result<XmlNodeKind> {
+pub fn document_or_content(ctx: &mut ParserContext) -> scan::Result<XmlNodeKind> {
 
     /*
           DOCUMENT
@@ -27,11 +27,11 @@ mod tests {
     }
 }
 
-use pg_ast::XmlNodeKind;
-use pg_ast::XmlNodeKind::Content;
-use pg_ast::XmlNodeKind::Document;
 use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_parser_core::scan;
+use pg_xml_ast::XmlNodeKind;
+use pg_xml_ast::XmlNodeKind::Content;
+use pg_xml_ast::XmlNodeKind::Document;

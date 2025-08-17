@@ -14,3 +14,4 @@ pg-generic-set-ast.workspace = true
 pg-interval-ast.workspace = true
 pg-sink-ast.workspace = true
 pg-transaction-stmt-ast.workspace = true
+pg-xml-ast.workspace = true

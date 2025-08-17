@@ -102,7 +102,6 @@ pg_basics::reexport! { pub
     window_frame,
     xml_element,
     xml_exists,
-    xml_node_kind,
     xml_parse,
     xml_processing_instruction,
     xml_root,

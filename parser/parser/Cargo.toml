@@ -29,6 +29,8 @@ pg-system-stmt.workspace = true
 pg-transaction-stmt-ast.workspace = true
 pg-transaction-stmt.workspace = true
 pg-type-combinators.workspace = true
+pg-xml-ast.workspace = true
+pg-xml-combinators.workspace = true
 
 [dev-dependencies]
 assert_matches.workspace = true

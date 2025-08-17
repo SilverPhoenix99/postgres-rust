@@ -49,7 +49,7 @@ mod tests {
     #[allow(unused_imports)]
     use {
         pg_ast::ExprNode::StringConst,
-        pg_ast::XmlNodeKind,
+        pg_xml_ast::XmlNodeKind,
     };
 
     #[test_case("xmlparse(content 'foo')" => Ok(
@@ -77,7 +77,6 @@ mod tests {
     }
 }
 
-use crate::combinators::document_or_content;
 use crate::combinators::expr::a_expr;
 use pg_ast::XmlParse;
 use pg_ast::XmlWhitespaceOption;
@@ -90,5 +89,6 @@ use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Whitespace;
 use pg_parser_core::scan;
+use pg_xml_combinators::document_or_content;
 use XmlWhitespaceOption::Preserve;
 use XmlWhitespaceOption::Strip;

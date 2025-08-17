@@ -1,0 +1,14 @@
+[package]
+name = "pg-xml-combinators"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+pg-basics.workspace = true
+pg-combinators.workspace = true
+pg-lexer.workspace = true
+pg-parser-core.workspace = true
+pg-xml-ast.workspace = true

@@ -26,6 +26,8 @@ members = [
     "parser/transaction-stmt",
     "parser/transaction-stmt-ast",
     "parser/type-combinators",
+    "parser/xml-ast",
+    "parser/xml-combinators",
 ]
 
 [workspace.package]
@@ -75,3 +77,5 @@ pg-system-stmt = { path = "parser/system-stmt" }
 pg-transaction-stmt = { path = "parser/transaction-stmt" }
 pg-transaction-stmt-ast = { path = "parser/transaction-stmt-ast" }
 pg-type-combinators = { path = "parser/type-combinators" }
+pg-xml-ast = { path = "parser/xml-ast" }
+pg-xml-combinators = { path = "parser/xml-combinators" }

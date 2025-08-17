@@ -52,7 +52,7 @@ mod tests {
     use {
         pg_ast::ExprNode::StringConst,
         pg_ast::TypeName::{Int4, Int8},
-        pg_ast::XmlNodeKind,
+        pg_xml_ast::XmlNodeKind,
     };
 
     #[test_case("xmlserialize(content 'foo' as int)" => Ok(
@@ -81,7 +81,6 @@ mod tests {
     }
 }
 
-use crate::combinators::document_or_content;
 use crate::combinators::expr::a_expr;
 use pg_ast::XmlSerialize;
 use pg_combinators::alt;
@@ -95,3 +94,4 @@ use pg_lexer::Keyword::Indent;
 use pg_lexer::Keyword::No;
 use pg_parser_core::scan;
 use pg_type_combinators::simple_typename;
+use pg_xml_combinators::document_or_content;
