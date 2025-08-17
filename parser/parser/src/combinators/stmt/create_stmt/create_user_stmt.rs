@@ -54,8 +54,7 @@ mod tests {
     #[allow(unused_imports)]
     use {
         pg_ast::GenericOption,
-        pg_ast::Presence,
-        pg_sink_ast::RoleSpec,
+        pg_sink_ast::{Presence, RoleSpec},
     };
 
     // This only quickly tests that statement types aren't missing.
@@ -107,7 +106,6 @@ mod tests {
 
 use crate::combinators::stmt::auth_ident;
 use crate::combinators::stmt::create_stmt::create_role_options;
-use crate::combinators::stmt::if_not_exists;
 use pg_ast::CreateRoleStmt;
 use pg_ast::CreateUserMappingStmt;
 use pg_ast::RawStmt;
@@ -124,4 +122,5 @@ use pg_lexer::Keyword::User;
 use pg_lexer::Keyword::With;
 use pg_parser_core::scan;
 use pg_sink_combinators::col_id;
+use pg_sink_combinators::if_not_exists;
 use pg_sink_combinators::role_id;

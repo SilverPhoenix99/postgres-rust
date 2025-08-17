@@ -9,6 +9,8 @@ pg_basics::reexport! { pub
     const_numeric,
     drop_behavior,
     i32_literal_paren,
+    if_exists,
+    if_not_exists,
     non_reserved_word,
     non_reserved_word_or_sconst,
     operators,

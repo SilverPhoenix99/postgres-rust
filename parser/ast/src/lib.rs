@@ -73,7 +73,6 @@ pg_basics::reexport! { pub
     overlay_func,
     position_func,
     prepare_stmt,
-    presence,
     privilege_target,
     range_function,
     range_var,

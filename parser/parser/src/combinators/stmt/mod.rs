@@ -1,4 +1,3 @@
-mod if_exists;
 mod privilege_target;
 mod object_type_name;
 
@@ -99,7 +98,6 @@ pg_basics::reexport! {
     drop_stmt,
     explain_stmt,
     fetch_stmt,
-    if_not_exists,
     import_stmt,
     listen_stmt,
     load_stmt,

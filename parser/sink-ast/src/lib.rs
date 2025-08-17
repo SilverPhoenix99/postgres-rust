@@ -3,6 +3,7 @@ pg_basics::reexport! { pub
     drop_behavior,
     one_or_all,
     operator,
+    presence,
     qualified_operator,
     relation_expr,
     relation_name,

@@ -1,4 +1,4 @@
-pub(super) fn if_exists(ctx: &mut ParserContext) -> scan::Result<Presence> {
+pub fn if_exists(ctx: &mut ParserContext) -> scan::Result<Presence> {
 
     /*
         IF EXISTS
@@ -24,10 +24,10 @@ mod tests {
     }
 }
 
-use pg_ast::Presence;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Exists;
 use pg_lexer::Keyword::If;
 use pg_parser_core::scan;
+use pg_sink_ast::Presence;
