@@ -67,7 +67,6 @@ pub enum AlterExtensionContentsTarget {
     View(QualifiedName),
 }
 
-use crate::AddDrop;
 use crate::AggregateWithArgs;
 use crate::FunctionWithArgs;
 use crate::OperatorWithArgs;
@@ -76,3 +75,4 @@ use crate::Type;
 use crate::Typecast;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
+use pg_sink_ast::AddDrop;

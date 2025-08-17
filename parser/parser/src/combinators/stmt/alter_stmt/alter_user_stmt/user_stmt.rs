@@ -184,7 +184,6 @@ mod tests {
 use super::in_database::in_database;
 use crate::combinators::stmt::alter_role_options;
 use crate::combinators::stmt::alter_stmt::set_reset_clause;
-use pg_ast::AddDrop::Add;
 use pg_ast::AlterRoleOption;
 use pg_ast::AlterRoleSetStmt;
 use pg_ast::AlterRoleStmt;
@@ -205,6 +204,7 @@ use pg_lexer::Keyword::Rename;
 use pg_lexer::Keyword::To;
 use pg_lexer::Keyword::With;
 use pg_parser_core::scan;
+use pg_sink_ast::AddDrop::Add;
 use pg_sink_ast::OneOrAll;
 use pg_sink_combinators::role_id;
 use pg_sink_combinators::role_spec;

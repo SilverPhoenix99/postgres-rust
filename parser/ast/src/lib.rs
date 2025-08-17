@@ -113,12 +113,6 @@ pg_basics::reexport! { pub
 
 pub type BinaryOperands = Box<(ExprNode, ExprNode)>;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum AddDrop {
-    Add,
-    Drop,
-}
-
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AclOption {
     Schemas(Vec<Str>),

@@ -38,7 +38,7 @@ pub enum AlterObjectDependsTarget {
     Trigger { name: Str, table: QualifiedName },
 }
 
-use crate::AddDrop;
 use crate::FunctionWithArgs;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
+use pg_sink_ast::AddDrop;

@@ -32,11 +32,11 @@ pub(super) fn alter_user_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_ast::AddDrop::Add;
     use pg_ast::AlterRoleStmt;
     use pg_ast::GenericOption;
     use pg_ast::GenericOptionKind::Unspecified;
     use pg_combinators::test_parser;
+    use pg_sink_ast::AddDrop::Add;
     use pg_sink_ast::RoleSpec::CurrentUser;
     use pg_sink_ast::RoleSpec::Public;
 
