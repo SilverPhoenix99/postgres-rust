@@ -44,10 +44,7 @@ fn rename(ctx: &mut ParserContext) -> scan::Result<Change> {
 fn change_role(ctx: &mut ParserContext) -> scan::Result<Change> {
 
     let (action, _, roles) = seq!(
-        alt!(
-            Add.map(|_| AddDrop::Add),
-            DropKw.map(|_| AddDrop::Drop)
-        ),
+        add_drop,
         User,
         role_list
     ).parse(ctx)?;
@@ -108,8 +105,6 @@ use pg_combinators::located;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
-use pg_lexer::Keyword::Add;
-use pg_lexer::Keyword::DropKw;
 use pg_lexer::Keyword::Group;
 use pg_lexer::Keyword::Rename;
 use pg_lexer::Keyword::To;
@@ -117,6 +112,7 @@ use pg_lexer::Keyword::User;
 use pg_parser_core::scan;
 use pg_sink_ast::AddDrop;
 use pg_sink_ast::RoleSpec;
+use pg_sink_combinators::add_drop;
 use pg_sink_combinators::role_id;
 use pg_sink_combinators::role_list;
 use pg_sink_combinators::role_spec;

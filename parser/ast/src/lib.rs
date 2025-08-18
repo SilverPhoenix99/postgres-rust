@@ -154,7 +154,7 @@ pub enum ExprNode {
     BinaryStringConst(Box<str>),
     HexStringConst(Box<str>),
     IntegerConst(i32),
-    NumericConst { radix: NumberRadix, value: Box<str> },
+    NumericConst { value: Box<str>, radix: NumberRadix },
     BooleanConst(bool),
 
     DefaultExpr,
@@ -187,7 +187,6 @@ pub enum ExprNode {
     /// `IS NOT DISTINCT FROM`
     NotDistinct(BinaryOperands),
 
-    // TODO: Are these 2 the same?
     #[from(IndirectionExpr)]
     Indirection(Box<IndirectionExpr>),
     #[from]

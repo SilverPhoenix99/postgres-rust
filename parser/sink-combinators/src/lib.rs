@@ -1,4 +1,5 @@
 pg_basics::reexport! { pub
+    add_drop,
     analyze_keyword,
     any_name,
     attrs,

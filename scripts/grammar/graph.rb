@@ -168,6 +168,8 @@ module Graph
     AlterEventTrigStmt
       enable_trigger
     AlterSystemStmt
+
+    add_drop
   ].to_set.freeze unless const_defined? :EXCLUDE
 
   EXPR_REGEX = /^([abc]_expr)_\d+$/ unless const_defined? :EXPR_REGEX

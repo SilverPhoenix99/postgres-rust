@@ -69,10 +69,7 @@ fn update_options(ctx: &mut ParserContext) -> scan::Result<Change> {
 fn change_content(ctx: &mut ParserContext) -> scan::Result<Change> {
 
     let (action, target) = seq!(
-        alt!(
-            Add.map(|_| AddDrop::Add),
-            DropKw.map(|_| AddDrop::Drop),
-        ),
+        add_drop,
         alter_extension_target
     ).parse(ctx)?;
 
@@ -366,11 +363,10 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
-use pg_lexer::Keyword::Add;
-use pg_lexer::Keyword::DropKw;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
 use pg_sink_ast::AddDrop;
+use pg_sink_combinators::add_drop;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::collation;
 use pg_sink_combinators::conversion;

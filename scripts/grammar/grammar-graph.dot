@@ -29,7 +29,6 @@ AexprConst -> opt_sort_clause
 AlterDatabaseSetStmt -> SetResetClause
 AlterDatabaseStmt -> createdb_opt_list
 AlterDomainStmt -> alter_column_default
-AlterExtensionContentsStmt -> add_drop
 AlterExtensionContentsStmt -> aggregate_with_argtypes
 AlterExtensionContentsStmt -> function_with_argtypes
 AlterExtensionContentsStmt -> operator_with_argtypes
@@ -37,7 +36,6 @@ AlterFdwStmt -> fdw_options
 AlterFdwStmt -> opt_fdw_options
 AlterForeignServerStmt -> foreign_server_version
 AlterFunctionStmt -> function_with_argtypes
-AlterGroupStmt -> add_drop
 AlterObjectDependsStmt -> function_with_argtypes
 AlterObjectSchemaStmt -> aggregate_with_argtypes
 AlterObjectSchemaStmt -> function_with_argtypes
@@ -1320,7 +1318,6 @@ TriggerForType [color=blue penwidth=3]
 TriggerFuncArg [color=blue penwidth=3]
 TriggerOneEvent [color=blue penwidth=3]
 access_method_clause [color=blue penwidth=3]
-add_drop [color=blue penwidth=3]
 alias_clause [color=blue penwidth=3]
 alter_extension_opt_item [color=blue penwidth=3]
 am_type [color=blue penwidth=3]
