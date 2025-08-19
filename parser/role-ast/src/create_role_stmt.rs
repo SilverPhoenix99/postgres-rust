@@ -43,6 +43,6 @@ impl CreateRoleStmt {
     }
 }
 
+use crate::CreateRoleOption;
+use crate::RoleKind;
 use pg_basics::Str;
-use pg_role_ast::CreateRoleOption;
-use pg_role_ast::RoleKind;

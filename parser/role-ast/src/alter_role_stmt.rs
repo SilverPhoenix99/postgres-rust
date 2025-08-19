@@ -32,6 +32,6 @@ impl AlterRoleStmt {
     }
 }
 
-use pg_role_ast::AlterRoleOption;
+use crate::AlterRoleOption;
 use pg_sink_ast::AddDrop;
 use pg_sink_ast::RoleSpec;

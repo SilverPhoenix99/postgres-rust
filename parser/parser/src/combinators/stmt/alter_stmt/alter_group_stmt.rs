@@ -92,7 +92,6 @@ mod tests {
     }
 }
 
-use pg_ast::AlterRoleStmt;
 use pg_ast::RawStmt;
 use pg_ast::RenameStmt;
 use pg_ast::RenameTarget::Role;
@@ -110,6 +109,7 @@ use pg_lexer::Keyword::To;
 use pg_lexer::Keyword::User;
 use pg_parser_core::scan;
 use pg_role_ast::AlterRoleOption::RoleMembers;
+use pg_role_ast::AlterRoleStmt;
 use pg_sink_ast::AddDrop;
 use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::add_drop;

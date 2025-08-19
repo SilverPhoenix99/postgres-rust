@@ -8,4 +8,6 @@ workspace = true
 
 [dependencies]
 pg-basics.workspace = true
+pg-generic-options-ast.workspace = true
+pg-generic-set-ast.workspace = true
 pg-sink-ast.workspace = true

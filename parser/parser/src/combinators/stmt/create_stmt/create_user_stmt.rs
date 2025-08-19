@@ -103,8 +103,6 @@ mod tests {
     }
 }
 
-use pg_ast::CreateRoleStmt;
-use pg_ast::CreateUserMappingStmt;
 use pg_ast::RawStmt;
 use pg_combinators::alt;
 use pg_combinators::seq;
@@ -117,6 +115,8 @@ use pg_lexer::Keyword::Server;
 use pg_lexer::Keyword::User;
 use pg_lexer::Keyword::With;
 use pg_parser_core::scan;
+use pg_role_ast::CreateRoleStmt;
+use pg_role_ast::CreateUserMappingStmt;
 use pg_role_ast::RoleKind;
 use pg_role_stmt::auth_ident;
 use pg_role_stmt::create_role_options;
