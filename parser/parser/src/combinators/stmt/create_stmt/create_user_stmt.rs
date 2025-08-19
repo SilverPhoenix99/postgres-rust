@@ -55,7 +55,7 @@ mod tests {
     use test_case::{test_case, test_matrix};
     #[allow(unused_imports)]
     use {
-        pg_ast::GenericOption,
+        pg_generic_options_ast::GenericOption,
         pg_sink_ast::{Presence, RoleSpec},
     };
 

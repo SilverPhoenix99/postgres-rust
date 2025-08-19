@@ -10,6 +10,7 @@ workspace = true
 derive_more = { workspace = true, features = ["from", "display", "error"] }
 pg-basics.workspace = true
 pg-elog.workspace = true
+pg-generic-options-ast.workspace = true
 pg-generic-set-ast.workspace = true
 pg-interval-ast.workspace = true
 pg-role-ast.workspace = true

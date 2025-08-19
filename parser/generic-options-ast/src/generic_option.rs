@@ -25,12 +25,4 @@ impl GenericOption {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum GenericOptionKind {
-    Unspecified(GenericOption),
-    Set(GenericOption),
-    Add(GenericOption),
-    Drop(Str)
-}
-
 use pg_basics::Str;

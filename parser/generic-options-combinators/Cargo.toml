@@ -8,8 +8,8 @@ workspace = true
 
 [dependencies]
 pg-basics.workspace = true
-pg-ast.workspace = true
 pg-combinators.workspace = true
+pg-generic-options-ast.workspace = true
 pg-lexer.workspace = true
 pg-parser-core.workspace = true
 pg-sink-combinators.workspace = true

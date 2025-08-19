@@ -11,6 +11,7 @@ members = [
     "parser/conversion-stmt",
     "parser/core",
     "parser/event-trigger-stmt",
+    "parser/generic-options-ast",
     "parser/generic-options-combinators",
     "parser/generic-set-ast",
     "parser/generic-set-combinators",
@@ -62,6 +63,7 @@ pg-combinators = { path = "parser/combinators", features = [] }
 pg-conversion-stmt = { path = "parser/conversion-stmt" }
 pg-elog = { path = "elog" }
 pg-event-trigger-stmt = { path = "parser/event-trigger-stmt" }
+pg-generic-options-ast = { path = "parser/generic-options-ast" }
 pg-generic-options-combinators = { path = "parser/generic-options-combinators" }
 pg-generic-set-ast = { path = "parser/generic-set-ast" }
 pg-generic-set-combinators = { path = "parser/generic-set-combinators" }

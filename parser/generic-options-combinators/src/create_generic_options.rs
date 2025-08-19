@@ -47,12 +47,12 @@ mod tests {
 }
 
 use crate::generic_option;
-use pg_ast::GenericOption;
 use pg_combinators::many;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
+use pg_generic_options_ast::GenericOption;
 use pg_lexer::Keyword::Options;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

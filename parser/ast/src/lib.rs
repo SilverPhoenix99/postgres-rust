@@ -38,7 +38,6 @@ pg_basics::reexport! { pub
     func_expr_windowless,
     function_parameter,
     function_with_args,
-    generic_option,
     grant_option,
     grant_stmt,
     indirection,
