@@ -1,4 +1,4 @@
-pub(super) fn auth_ident(ctx: &mut ParserContext) -> scan::Result<RoleSpec> {
+pub fn auth_ident(ctx: &mut ParserContext) -> scan::Result<RoleSpec> {
 
     alt!(
         User.map(|_| CurrentUser),

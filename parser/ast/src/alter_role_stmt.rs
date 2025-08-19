@@ -1,19 +1,3 @@
-/// Alias: `AlterOptRoleElem`
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum AlterRoleOption {
-    RoleMembers(Vec<RoleSpec>),
-    Password(Option<Box<str>>),
-    Inherit(bool),
-    ConnectionLimit(i32),
-    ValidUntil(Box<str>),
-    SuperUser(bool),
-    CreateRole(bool),
-    IsReplication(bool),
-    CreateDatabase(bool),
-    CanLogin(bool),
-    BypassRls(bool),
-}
-
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct AlterRoleStmt {
     role: RoleSpec,
@@ -48,5 +32,6 @@ impl AlterRoleStmt {
     }
 }
 
+use pg_role_ast::AlterRoleOption;
 use pg_sink_ast::AddDrop;
 use pg_sink_ast::RoleSpec;

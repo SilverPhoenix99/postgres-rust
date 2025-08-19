@@ -73,7 +73,6 @@ mod tests {
 }
 
 use self::user_stmt::user_stmt;
-use crate::combinators::stmt::auth_ident;
 use pg_ast::AlterUserMappingStmt;
 use pg_ast::RawStmt;
 use pg_combinators::alt;
@@ -87,4 +86,5 @@ use pg_lexer::Keyword::Mapping;
 use pg_lexer::Keyword::Server;
 use pg_lexer::Keyword::User;
 use pg_parser_core::scan;
+use pg_role_stmt::auth_ident;
 use pg_sink_combinators::col_id;

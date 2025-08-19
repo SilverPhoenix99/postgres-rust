@@ -20,6 +20,8 @@ members = [
     "parser/large-object-stmt",
     "parser/lexer",
     "parser/parser",
+    "parser/role-ast",
+    "parser/role-stmt",
     "parser/sink-ast",
     "parser/sink-combinators",
     "parser/system-stmt",
@@ -71,6 +73,8 @@ pg-large-object-stmt = { path = "parser/large-object-stmt" }
 pg-lexer = { path = "parser/lexer" }
 pg-parser = { path = "parser/parser" }
 pg-parser-core = { path = "parser/core" }
+pg-role-ast = { path = "parser/role-ast" }
+pg-role-stmt = { path = "parser/role-stmt" }
 pg-sink-ast = { path = "parser/sink-ast" }
 pg-sink-combinators = { path = "parser/sink-combinators" }
 pg-system-stmt = { path = "parser/system-stmt" }

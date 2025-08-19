@@ -1,5 +1,5 @@
 /// Alias: `AlterOptRoleList`
-pub(super) fn alter_role_options(ctx: &mut ParserContext) -> scan::Result<Vec<AlterRoleOption>> {
+pub fn alter_role_options(ctx: &mut ParserContext) -> scan::Result<Vec<AlterRoleOption>> {
     many!(alter_role_option).parse(ctx)
 }
 
@@ -147,18 +147,6 @@ mod tests {
     }
 }
 
-use pg_ast::AlterRoleOption;
-use pg_ast::AlterRoleOption::BypassRls;
-use pg_ast::AlterRoleOption::CanLogin;
-use pg_ast::AlterRoleOption::ConnectionLimit;
-use pg_ast::AlterRoleOption::CreateDatabase;
-use pg_ast::AlterRoleOption::CreateRole;
-use pg_ast::AlterRoleOption::Inherit;
-use pg_ast::AlterRoleOption::IsReplication;
-use pg_ast::AlterRoleOption::Password;
-use pg_ast::AlterRoleOption::RoleMembers;
-use pg_ast::AlterRoleOption::SuperUser;
-use pg_ast::AlterRoleOption::ValidUntil;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_combinators::alt;
@@ -181,5 +169,17 @@ use pg_lexer::Keyword::Until;
 use pg_lexer::Keyword::User;
 use pg_lexer::Keyword::Valid;
 use pg_parser_core::scan;
+use pg_role_ast::AlterRoleOption;
+use pg_role_ast::AlterRoleOption::BypassRls;
+use pg_role_ast::AlterRoleOption::CanLogin;
+use pg_role_ast::AlterRoleOption::ConnectionLimit;
+use pg_role_ast::AlterRoleOption::CreateDatabase;
+use pg_role_ast::AlterRoleOption::CreateRole;
+use pg_role_ast::AlterRoleOption::Inherit;
+use pg_role_ast::AlterRoleOption::IsReplication;
+use pg_role_ast::AlterRoleOption::Password;
+use pg_role_ast::AlterRoleOption::RoleMembers;
+use pg_role_ast::AlterRoleOption::SuperUser;
+use pg_role_ast::AlterRoleOption::ValidUntil;
 use pg_sink_combinators::role_list;
 use pg_sink_combinators::signed_i32_literal;

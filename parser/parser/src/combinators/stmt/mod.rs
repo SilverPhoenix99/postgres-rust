@@ -81,10 +81,8 @@ mod tests {
 pg_basics::reexport! {
     aggregate_with_argtypes,
     alter_function_option,
-    alter_role_option,
     alter_stmt,
     analyze_stmt,
-    auth_ident,
     call_stmt,
     check_point_stmt,
     close_stmt,

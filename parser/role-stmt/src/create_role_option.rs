@@ -1,5 +1,5 @@
 /// Alias: `OptRoleList`
-pub(super) fn create_role_options(ctx: &mut ParserContext) -> scan::Result<Vec<CreateRoleOption>> {
+pub fn create_role_options(ctx: &mut ParserContext) -> scan::Result<Vec<CreateRoleOption>> {
 
     many!(create_role_option).parse(ctx)
 }
@@ -83,8 +83,7 @@ mod tests {
     }
 }
 
-use crate::combinators::stmt::alter_role_option;
-use pg_ast::CreateRoleOption;
+use crate::alter_role_option;
 use pg_combinators::alt;
 use pg_combinators::integer;
 use pg_combinators::many;
@@ -97,4 +96,5 @@ use pg_lexer::Keyword::Inherit;
 use pg_lexer::Keyword::Role;
 use pg_lexer::Keyword::Sysid;
 use pg_parser_core::scan;
+use pg_role_ast::CreateRoleOption;
 use pg_sink_combinators::role_list;

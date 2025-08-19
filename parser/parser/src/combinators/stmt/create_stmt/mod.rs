@@ -2,7 +2,6 @@ pg_basics::reexport! {
     create_access_method_stmt,
     create_cast_stmt,
     create_database_stmt,
-    create_role_option,
     create_role_stmt,
     create_user_stmt,
 }

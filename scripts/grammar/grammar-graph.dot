@@ -43,7 +43,6 @@ AlterObjectSchemaStmt -> operator_with_argtypes
 AlterOpFamilyStmt -> opclass_item_list
 AlterOperatorStmt -> operator_def_list
 AlterOperatorStmt -> operator_with_argtypes
-AlterOptRoleList -> AlterOptRoleElem
 AlterOwnerStmt -> aggregate_with_argtypes
 AlterOwnerStmt -> function_with_argtypes
 AlterOwnerStmt -> operator_with_argtypes
@@ -59,7 +58,6 @@ AlterSubscriptionStmt -> opt_definition
 AlterTSDictionaryStmt -> definition
 AlterTblSpcStmt -> reloptions
 AlterTypeStmt -> operator_def_list
-AlterUserMappingStmt -> auth_ident
 AnalyzeStmt -> opt_utility_option_list
 AnalyzeStmt -> opt_vacuum_relation_list
 BitWithLength -> expr_list
@@ -106,16 +104,13 @@ CreateForeignTableStmt -> PartitionBoundSpec
 CreateFunctionStmt -> func_name
 CreateFunctionStmt -> func_type
 CreateFunctionStmt -> opt_or_replace
-CreateGroupStmt -> OptRoleList
 CreateMatViewStmt -> SelectStmt
 CreateOpClassStmt -> opclass_item_list
-CreateOptRoleElem -> AlterOptRoleElem
 CreatePLangStmt -> opt_or_replace
 CreatePolicyStmt -> RowSecurityOptionalExpr
 CreatePolicyStmt -> RowSecurityOptionalWithCheck
 CreatePublicationStmt -> opt_definition
 CreatePublicationStmt -> pub_obj_list
-CreateRoleStmt -> OptRoleList
 CreateSeqStmt -> OptTemp
 CreateStatsStmt -> from_list
 CreateStmt -> OnCommitOption
@@ -134,8 +129,6 @@ CreateTrigStmt -> ConstraintAttributeSpec
 CreateTrigStmt -> FUNCTION_or_PROCEDURE
 CreateTrigStmt -> func_name
 CreateTrigStmt -> opt_or_replace
-CreateUserMappingStmt -> auth_ident
-CreateUserStmt -> OptRoleList
 CreatedbStmt -> createdb_opt_list
 DeclareCursorStmt -> SelectStmt
 DefACLAction -> grantee_list
@@ -153,7 +146,6 @@ DomainConstraintElem -> ConstraintAttributeSpec
 DomainConstraintElem -> a_expr
 DropCastStmt -> opt_if_exists
 DropTransformStmt -> opt_if_exists
-DropUserMappingStmt -> auth_ident
 ExclusionConstraintElem -> index_elem
 ExecuteStmt -> OptTemp
 ExplainStmt -> utility_option_list
@@ -556,10 +548,6 @@ subgraph cluster_AlterRoleSetStmt {
   AlterRoleSetStmt -> opt_in_database
 }
 
-subgraph cluster_AlterRoleStmt {
-  AlterRoleStmt -> AlterOptRoleList
-}
-
 subgraph cluster_AlterTSConfigurationStmt {
   AlterTSConfigurationStmt -> any_with
 }
@@ -803,10 +791,6 @@ subgraph cluster_MergeStmt {
   merge_when_clause -> merge_when_tgt_not_matched
   merge_when_clause -> opt_merge_when_condition
   merge_when_list -> merge_when_clause
-}
-
-subgraph cluster_OptRoleList {
-  OptRoleList -> CreateOptRoleElem
 }
 
 subgraph cluster_OptTableElementList {
@@ -1287,7 +1271,6 @@ qualified_name [color=green penwidth=3]
 relation_expr [color=green penwidth=3]
 
 # sinks
-AlterOptRoleElem [color=blue penwidth=3]
 ConstBit [color=blue penwidth=3]
 ConstCharacter [color=blue penwidth=3]
 ConstraintAttr [color=blue penwidth=3]
@@ -1323,7 +1306,6 @@ alter_extension_opt_item [color=blue penwidth=3]
 am_type [color=blue penwidth=3]
 any_with [color=blue penwidth=3]
 arg_class [color=blue penwidth=3]
-auth_ident [color=blue penwidth=3]
 cast_context [color=blue penwidth=3]
 cluster_index_specification [color=blue penwidth=3]
 column_compression [color=blue penwidth=3]

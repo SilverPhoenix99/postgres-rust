@@ -38,18 +38,20 @@ fn create_user_role(ctx: &mut ParserContext) -> scan::Result<CreateRoleStmt> {
     let (name, _, options) = seq!(
         role_id,
         With.optional(),
-        create_role_options
+        create_role_options.optional()
     ).parse(ctx)?;
 
-    let stmt = CreateRoleStmt::new(name, RoleKind::User, options);
+    let mut stmt = CreateRoleStmt::new(name, RoleKind::User);
+    stmt.set_options(options);
+
     Ok(stmt)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_ast::CreateRoleOption;
     use pg_combinators::test_parser;
+    use pg_role_ast::CreateRoleOption;
     use test_case::{test_case, test_matrix};
     #[allow(unused_imports)]
     use {
@@ -95,21 +97,15 @@ mod tests {
         test_parser!(
             source = "test_user with sysid 42",
             parser = create_user_role,
-            expected = CreateRoleStmt::new(
-                "test_user",
-                RoleKind::User,
-                vec![CreateRoleOption::SysId(42.into())]
-            )
+            expected = CreateRoleStmt::new("test_user", RoleKind::User)
+                .with_options(vec![CreateRoleOption::SysId(42.into())])
         )
     }
 }
 
-use crate::combinators::stmt::auth_ident;
-use crate::combinators::stmt::create_stmt::create_role_options;
 use pg_ast::CreateRoleStmt;
 use pg_ast::CreateUserMappingStmt;
 use pg_ast::RawStmt;
-use pg_ast::RoleKind;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
@@ -121,6 +117,9 @@ use pg_lexer::Keyword::Server;
 use pg_lexer::Keyword::User;
 use pg_lexer::Keyword::With;
 use pg_parser_core::scan;
+use pg_role_ast::RoleKind;
+use pg_role_stmt::auth_ident;
+use pg_role_stmt::create_role_options;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::if_not_exists;
 use pg_sink_combinators::role_id;
