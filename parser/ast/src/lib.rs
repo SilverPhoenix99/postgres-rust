@@ -80,9 +80,6 @@ pg_basics::reexport! { pub
     reassign_owned_stmt,
     rename_stmt,
     security_label_stmt,
-    set_reset_clause,
-    set_rest,
-    set_rest_more,
     simple_column_definition,
     sort_by,
     sql_function,
@@ -97,7 +94,6 @@ pg_basics::reexport! { pub
     unique_null_treatment,
     utility_option,
     variable_set_stmt,
-    variable_target,
     window_definition,
     window_frame,
     xml_element,
@@ -107,7 +103,6 @@ pg_basics::reexport! { pub
     xml_root,
     xml_serialize,
     xmltable,
-    zone_value,
 }
 
 pub type BinaryOperands = Box<(ExprNode, ExprNode)>;

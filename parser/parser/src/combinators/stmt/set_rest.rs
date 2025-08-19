@@ -254,12 +254,6 @@ mod tests {
     }
 }
 
-use pg_ast::SetRest;
-use pg_ast::SetRestMore;
-use pg_ast::ZoneValue;
-use pg_ast::ZoneValue::Interval;
-use pg_ast::ZoneValue::Local;
-use pg_ast::ZoneValue::Numeric;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_basics::Str;
@@ -271,6 +265,12 @@ use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_elog::parser::Error::InvalidZoneValue;
+use pg_generic_set_ast::SetRest;
+use pg_generic_set_ast::SetRestMore;
+use pg_generic_set_ast::ZoneValue;
+use pg_generic_set_ast::ZoneValue::Interval;
+use pg_generic_set_ast::ZoneValue::Local;
+use pg_generic_set_ast::ZoneValue::Numeric;
 use pg_generic_set_combinators::generic_set_tail;
 use pg_interval_ast::IntervalRange;
 use pg_interval_ast::IntervalRange::Full;

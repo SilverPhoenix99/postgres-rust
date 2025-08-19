@@ -59,8 +59,8 @@ fn constraints_set_mode(ctx: &mut ParserContext) -> scan::Result<ConstraintsSetM
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_ast::SetRest;
     use pg_combinators::test_parser;
+    use pg_generic_set_ast::SetRest;
     use pg_sink_ast::OneOrAll;
     use test_case::test_case;
 

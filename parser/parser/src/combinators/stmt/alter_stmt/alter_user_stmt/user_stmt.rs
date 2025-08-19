@@ -91,12 +91,12 @@ mod tests {
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
-        pg_ast::SetResetClause::Reset,
-        pg_ast::SetResetClause::Set,
-        pg_ast::SetRest::LocalTransactionCharacteristics,
-        pg_ast::SetRest::TransactionSnapshot,
-        pg_ast::VariableTarget::SessionAuthorization,
-        pg_ast::VariableTarget::TimeZone,
+        pg_generic_set_ast::SetResetClause::Reset,
+        pg_generic_set_ast::SetResetClause::Set,
+        pg_generic_set_ast::SetRest::LocalTransactionCharacteristics,
+        pg_generic_set_ast::SetRest::TransactionSnapshot,
+        pg_generic_set_ast::VariableTarget::SessionAuthorization,
+        pg_generic_set_ast::VariableTarget::TimeZone,
         pg_sink_ast::RoleSpec,
         pg_transaction_stmt_ast::TransactionMode::Deferrable,
     };
@@ -176,7 +176,6 @@ use pg_ast::AlterRoleStmt;
 use pg_ast::RawStmt;
 use pg_ast::RenameStmt;
 use pg_ast::RenameTarget::Role;
-use pg_ast::SetResetClause;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_basics::Str;
@@ -185,6 +184,7 @@ use pg_combinators::located;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
+use pg_generic_set_ast::SetResetClause;
 use pg_lexer::Keyword::All;
 use pg_lexer::Keyword::Rename;
 use pg_lexer::Keyword::To;

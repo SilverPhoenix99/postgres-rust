@@ -9,4 +9,7 @@ workspace = true
 [dependencies]
 derive_more = { workspace = true, features = ["from"] }
 pg-basics.workspace = true
+pg-interval-ast.workspace = true
 pg-sink-ast.workspace = true
+pg-transaction-stmt-ast.workspace = true
+pg-xml-ast.workspace = true

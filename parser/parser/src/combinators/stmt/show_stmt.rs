@@ -27,9 +27,9 @@ mod tests {
 }
 
 use crate::combinators::stmt::variable_target;
-use pg_ast::VariableTarget;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
+use pg_generic_set_ast::VariableTarget;
 use pg_lexer::Keyword::Show;
 use pg_parser_core::scan;

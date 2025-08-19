@@ -53,8 +53,8 @@ pub enum Volatility {
 }
 
 use crate::FunctionWithArgs;
-use crate::SetRestMore;
-use crate::VariableTarget;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
+use pg_generic_set_ast::SetRestMore;
+use pg_generic_set_ast::VariableTarget;
 use pg_sink_ast::SignedNumber;

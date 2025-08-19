@@ -21,5 +21,5 @@ impl AlterDatabaseSetStmt {
     }
 }
 
-use crate::SetResetClause;
 use pg_basics::Str;
+use pg_generic_set_ast::SetResetClause;

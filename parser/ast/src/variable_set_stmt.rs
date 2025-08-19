@@ -22,4 +22,4 @@ impl VariableSetStmt {
     }
 }
 
-use crate::SetRest;
+use pg_generic_set_ast::SetRest;

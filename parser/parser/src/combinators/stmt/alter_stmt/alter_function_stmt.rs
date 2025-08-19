@@ -169,7 +169,7 @@ mod tests {
     #[allow(unused_imports)]
     use {
         pg_ast::FunctionWithArgs,
-        pg_ast::SetRestMore::ConfigurationParameter,
+        pg_generic_set_ast::SetRestMore::ConfigurationParameter,
         pg_sink_ast::RoleSpec::CurrentUser,
         pg_sink_ast::ValueOrDefault,
     };

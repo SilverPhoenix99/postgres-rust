@@ -37,7 +37,7 @@ impl AlterRoleSetStmt {
     }
 }
 
-use crate::SetResetClause;
 use pg_basics::Str;
+use pg_generic_set_ast::SetResetClause;
 use pg_sink_ast::OneOrAll;
 use pg_sink_ast::RoleSpec;

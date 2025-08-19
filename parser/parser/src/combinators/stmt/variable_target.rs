@@ -39,14 +39,14 @@ mod tests {
     }
 }
 
-use pg_ast::VariableTarget;
-use pg_ast::VariableTarget::SessionAuthorization;
-use pg_ast::VariableTarget::TimeZone;
-use pg_ast::VariableTarget::TransactionIsolation;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
+use pg_generic_set_ast::VariableTarget;
+use pg_generic_set_ast::VariableTarget::SessionAuthorization;
+use pg_generic_set_ast::VariableTarget::TimeZone;
+use pg_generic_set_ast::VariableTarget::TransactionIsolation;
 use pg_generic_set_combinators::all_or_var_name;
 use pg_lexer::Keyword::Authorization;
 use pg_lexer::Keyword::Isolation;
