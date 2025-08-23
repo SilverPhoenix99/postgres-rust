@@ -21,6 +21,7 @@ members = [
     "parser/large-object-stmt",
     "parser/lexer",
     "parser/parser",
+    "parser/reset-stmt",
     "parser/role-ast",
     "parser/role-stmt",
     "parser/sink-ast",
@@ -75,6 +76,7 @@ pg-large-object-stmt = { path = "parser/large-object-stmt" }
 pg-lexer = { path = "parser/lexer" }
 pg-parser = { path = "parser/parser" }
 pg-parser-core = { path = "parser/core" }
+pg-reset-stmt = { path = "parser/reset-stmt" }
 pg-role-ast = { path = "parser/role-ast" }
 pg-role-stmt = { path = "parser/role-stmt" }
 pg-sink-ast = { path = "parser/sink-ast" }

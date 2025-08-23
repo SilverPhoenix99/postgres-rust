@@ -106,7 +106,6 @@ pg_basics::reexport! {
     prepare_stmt,
     reassign_owner_stmt,
     reindex_stmt,
-    reset_stmt,
     revoke_stmt,
     security_label_stmt,
     set_rest,
@@ -116,7 +115,6 @@ pg_basics::reexport! {
     unlisten_stmt,
     utility_option,
     vacuum_stmt,
-    variable_target,
 }
 
 use object_type_name::{
@@ -144,4 +142,5 @@ use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_parser_core::scan;
+use pg_reset_stmt::reset_stmt;
 use pg_transaction_stmt::transaction_stmt;

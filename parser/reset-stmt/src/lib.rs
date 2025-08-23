@@ -1,5 +1,5 @@
 /// Alias: `VariableResetStmt`
-pub(super) fn reset_stmt(ctx: &mut ParserContext) -> scan::Result<VariableTarget> {
+pub fn reset_stmt(ctx: &mut ParserContext) -> scan::Result<VariableTarget> {
 
     /*
         RESET variable_target
@@ -26,10 +26,10 @@ mod tests {
     }
 }
 
-use crate::combinators::stmt::variable_target;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_generic_set_ast::VariableTarget;
+use pg_generic_set_combinators::variable_target;
 use pg_lexer::Keyword::Reset;
 use pg_parser_core::scan;

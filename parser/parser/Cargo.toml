@@ -25,6 +25,7 @@ pg-language-stmt.workspace = true
 pg-large-object-stmt.workspace = true
 pg-lexer.workspace = true
 pg-parser-core.workspace = true
+pg-reset-stmt.workspace = true
 pg-role-ast.workspace = true
 pg-role-stmt.workspace = true
 pg-sink-ast.workspace = true

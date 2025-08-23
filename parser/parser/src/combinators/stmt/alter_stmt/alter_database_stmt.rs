@@ -238,7 +238,6 @@ mod tests {
 }
 
 use crate::combinators::stmt::createdb_opt_value;
-use crate::combinators::stmt::reset_stmt::reset_stmt;
 use crate::combinators::stmt::set_rest;
 use pg_ast::AlterDatabaseSetStmt;
 use pg_ast::AlterDatabaseStmt;
@@ -279,6 +278,7 @@ use pg_lexer::Keyword::Version;
 use pg_lexer::Keyword::With;
 use pg_lexer::OperatorKind::Equals;
 use pg_parser_core::scan;
+use pg_reset_stmt::reset_stmt;
 use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::role_spec;

@@ -34,7 +34,6 @@ mod tests {
     }
 }
 
-use crate::combinators::stmt::reset_stmt::reset_stmt;
 use crate::combinators::stmt::set_rest;
 use pg_combinators::alt;
 use pg_combinators::seq;
@@ -43,3 +42,4 @@ use pg_combinators::ParserContext;
 use pg_generic_set_ast::SetResetClause;
 use pg_lexer::Keyword::Set;
 use pg_parser_core::scan;
+use pg_reset_stmt::reset_stmt;

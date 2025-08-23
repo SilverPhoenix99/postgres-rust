@@ -1,5 +1,5 @@
 /// Alias: `reset_rest`
-pub(super) fn variable_target(ctx: &mut ParserContext) -> scan::Result<VariableTarget> {
+pub fn variable_target(ctx: &mut ParserContext) -> scan::Result<VariableTarget> {
 
     /*
           TIME ZONE
@@ -39,6 +39,7 @@ mod tests {
     }
 }
 
+use crate::all_or_var_name;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
@@ -47,7 +48,6 @@ use pg_generic_set_ast::VariableTarget;
 use pg_generic_set_ast::VariableTarget::SessionAuthorization;
 use pg_generic_set_ast::VariableTarget::TimeZone;
 use pg_generic_set_ast::VariableTarget::TransactionIsolation;
-use pg_generic_set_combinators::all_or_var_name;
 use pg_lexer::Keyword::Authorization;
 use pg_lexer::Keyword::Isolation;
 use pg_lexer::Keyword::Level;
