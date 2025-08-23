@@ -42,4 +42,4 @@ use pg_combinators::ParserContext;
 use pg_generic_set_ast::SetResetClause;
 use pg_lexer::Keyword::Set;
 use pg_parser_core::scan;
-use pg_reset_stmt::reset_stmt;
+use pg_variable_stmt::reset_stmt;

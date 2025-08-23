@@ -21,7 +21,6 @@ members = [
     "parser/large-object-stmt",
     "parser/lexer",
     "parser/parser",
-    "parser/reset-stmt",
     "parser/role-ast",
     "parser/role-stmt",
     "parser/sink-ast",
@@ -30,6 +29,7 @@ members = [
     "parser/transaction-stmt",
     "parser/transaction-stmt-ast",
     "parser/type-combinators",
+    "parser/variable-stmt",
     "parser/xml-ast",
     "parser/xml-combinators",
 ]
@@ -76,7 +76,6 @@ pg-large-object-stmt = { path = "parser/large-object-stmt" }
 pg-lexer = { path = "parser/lexer" }
 pg-parser = { path = "parser/parser" }
 pg-parser-core = { path = "parser/core" }
-pg-reset-stmt = { path = "parser/reset-stmt" }
 pg-role-ast = { path = "parser/role-ast" }
 pg-role-stmt = { path = "parser/role-stmt" }
 pg-sink-ast = { path = "parser/sink-ast" }
@@ -85,5 +84,6 @@ pg-system-stmt = { path = "parser/system-stmt" }
 pg-transaction-stmt = { path = "parser/transaction-stmt" }
 pg-transaction-stmt-ast = { path = "parser/transaction-stmt-ast" }
 pg-type-combinators = { path = "parser/type-combinators" }
+pg-variable-stmt = { path = "parser/variable-stmt" }
 pg-xml-ast = { path = "parser/xml-ast" }
 pg-xml-combinators = { path = "parser/xml-combinators" }

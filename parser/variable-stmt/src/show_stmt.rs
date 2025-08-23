@@ -1,5 +1,5 @@
 /// Alias: `VariableShowStmt`
-pub(super) fn show_stmt(ctx: &mut ParserContext) -> scan::Result<VariableTarget> {
+pub fn show_stmt(ctx: &mut ParserContext) -> scan::Result<VariableTarget> {
 
     /*
         SHOW variable_target

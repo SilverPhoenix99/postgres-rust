@@ -1,5 +1,5 @@
 [package]
-name = "pg-reset-stmt"
+name = "pg-variable-stmt"
 edition.workspace = true
 version.workspace = true
 
@@ -7,6 +7,7 @@ version.workspace = true
 workspace = true
 
 [dependencies]
+pg-basics.workspace = true
 pg-combinators.workspace = true
 pg-generic-set-ast.workspace = true
 pg-generic-set-combinators.workspace = true

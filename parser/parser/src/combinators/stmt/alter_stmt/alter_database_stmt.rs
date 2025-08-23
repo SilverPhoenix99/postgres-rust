@@ -278,7 +278,7 @@ use pg_lexer::Keyword::Version;
 use pg_lexer::Keyword::With;
 use pg_lexer::OperatorKind::Equals;
 use pg_parser_core::scan;
-use pg_reset_stmt::reset_stmt;
 use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::role_spec;
+use pg_variable_stmt::reset_stmt;

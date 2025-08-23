@@ -110,7 +110,6 @@ pg_basics::reexport! {
     security_label_stmt,
     set_rest,
     set_stmt,
-    show_stmt,
     truncate_stmt,
     unlisten_stmt,
     utility_option,
@@ -142,5 +141,6 @@ use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_parser_core::scan;
-use pg_reset_stmt::reset_stmt;
 use pg_transaction_stmt::transaction_stmt;
+use pg_variable_stmt::reset_stmt;
+use pg_variable_stmt::show_stmt;

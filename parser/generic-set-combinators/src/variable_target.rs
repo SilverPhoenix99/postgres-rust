@@ -29,13 +29,13 @@ mod tests {
     use pg_combinators::test_parser;
     use test_case::test_case;
 
-    #[test_case("all", VariableTarget::All)]
-    #[test_case("session authorization", VariableTarget::SessionAuthorization)]
-    #[test_case("time zone", VariableTarget::TimeZone)]
-    #[test_case("transaction isolation level", VariableTarget::TransactionIsolation)]
-    #[test_case("qualified.name", VariableTarget::Variable { name: vec!["qualified".into(), "name".into()] })]
-    fn test_show_stmt(source: &str, expected: VariableTarget) {
-        test_parser!(source, variable_target, expected)
+    #[test_case("all" => Ok(VariableTarget::All))]
+    #[test_case("session authorization" => Ok(VariableTarget::SessionAuthorization))]
+    #[test_case("time zone" => Ok(VariableTarget::TimeZone))]
+    #[test_case("transaction isolation level" => Ok(VariableTarget::TransactionIsolation))]
+    #[test_case("qualified.name" => Ok(VariableTarget::Variable { name: vec!["qualified".into(), "name".into()] }))]
+    fn test_variable_target(source: &str) -> scan::Result<VariableTarget> {
+        test_parser!(source, variable_target)
     }
 }
 
