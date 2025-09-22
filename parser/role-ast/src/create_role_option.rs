@@ -20,7 +20,7 @@ pub enum CreateRoleOption {
 impl From<AlterRoleOption> for CreateRoleOption {
     fn from(value: AlterRoleOption) -> Self {
         match value {
-            AlterRoleOption::RoleMembers(members) => Self::RoleMembers(members),
+            AlterRoleOption::RoleMembers { members, .. } => Self::RoleMembers(members),
             AlterRoleOption::Password(password) => Self::Password(password),
             AlterRoleOption::Inherit(inherit) => Self::Inherit(inherit),
             AlterRoleOption::ConnectionLimit(limit) => Self::ConnectionLimit(limit),

@@ -2,7 +2,7 @@ enum Change {
     Rename(Str),
     Role {
         action: AddDrop,
-        roles: Vec<RoleSpec>,
+        members: Vec<RoleSpec>,
     }
 }
 
@@ -26,9 +26,9 @@ pub(super) fn alter_group_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt>
                 .map_err(|err| err.at_location(loc))?;
             RenameStmt::new(Role(group), new_name).into()
         },
-        Change::Role { action, roles } => {
-            let options = Some(vec![RoleMembers(roles)]);
-            AlterRoleStmt::new(group, action, options).into()
+        Change::Role { action, members } => {
+            let options = Some(vec![RoleMembers { action, members }]);
+            AlterRoleStmt::new(group, options).into()
         }
     };
 
@@ -43,13 +43,13 @@ fn rename(ctx: &mut ParserContext) -> scan::Result<Change> {
 
 fn change_role(ctx: &mut ParserContext) -> scan::Result<Change> {
 
-    let (action, _, roles) = seq!(
+    let (action, _, members) = seq!(
         add_drop,
         User,
         role_list
     ).parse(ctx)?;
 
-    Ok(Change::Role { action, roles })
+    Ok(Change::Role { action, members })
 }
 
 #[cfg(test)]
@@ -69,22 +69,26 @@ mod tests {
         "group some_group add user current_role, new_user",
         AlterRoleStmt::new(
             RoleSpec::Name("some_group".into()),
-            AddDrop::Add,
-            Some(vec![RoleMembers(vec![
-                RoleSpec::CurrentRole,
-                RoleSpec::Name("new_user".into())
-            ])])
+            Some(vec![RoleMembers {
+                action: AddDrop::Add,
+                members: vec![
+                    RoleSpec::CurrentRole,
+                    RoleSpec::Name("new_user".into())
+                ]
+            }])
         ).into()
     )]
     #[test_case(
         "group some_group drop user session_user, public",
         AlterRoleStmt::new(
             RoleSpec::Name("some_group".into()),
-            AddDrop::Drop,
-            Some(vec![RoleMembers(vec![
-                RoleSpec::SessionUser,
-                RoleSpec::Public
-            ])])
+            Some(vec![RoleMembers {
+                action: AddDrop::Drop,
+                members: vec![
+                    RoleSpec::SessionUser,
+                    RoleSpec::Public
+                ]
+            }])
         ).into()
     )]
     fn test_alter_group_stmt(source: &str, expected: RawStmt) {

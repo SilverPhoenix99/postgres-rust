@@ -54,7 +54,7 @@ fn user_role_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
             RenameStmt::new(Role(role_id), new_name).into()
         },
         Change::Options(options) => {
-            AlterRoleStmt::new(role, Add, options).into()
+            AlterRoleStmt::new(role, options).into()
         },
         Change::Role { db_name, set_stmt } => {
             let mut stmt = AlterRoleSetStmt::new(OneOrAll::One(role), set_stmt);
@@ -144,7 +144,6 @@ mod tests {
         "public encrypted password 'abc123'",
         AlterRoleStmt::new(
             RoleSpec::Public,
-            Add,
             Some(vec![AlterRoleOption::Password(Some("abc123".into()))]),
         ).into()
     )]
@@ -152,17 +151,16 @@ mod tests {
         "public with noinherit",
         AlterRoleStmt::new(
             RoleSpec::Public,
-            Add,
             Some(vec![AlterRoleOption::Inherit(false)]),
         ).into()
     )]
     #[test_case(
         "public",
-        AlterRoleStmt::new(RoleSpec::Public, Add, None).into()
+        AlterRoleStmt::new(RoleSpec::Public, None).into()
     )]
     #[test_case(
         "public with",
-        AlterRoleStmt::new(RoleSpec::Public, Add, None).into()
+        AlterRoleStmt::new(RoleSpec::Public, None).into()
     )]
     fn test_user_stmt(source: &str, expected: RawStmt) {
         test_parser!(source, user_stmt, expected)
@@ -192,7 +190,6 @@ use pg_role_ast::AlterRoleOption;
 use pg_role_ast::AlterRoleSetStmt;
 use pg_role_ast::AlterRoleStmt;
 use pg_role_stmt::alter_role_options;
-use pg_sink_ast::AddDrop::Add;
 use pg_sink_ast::OneOrAll;
 use pg_sink_combinators::role_id;
 use pg_sink_combinators::role_spec;

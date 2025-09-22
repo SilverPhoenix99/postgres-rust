@@ -1,7 +1,10 @@
 /// Alias: `AlterOptRoleElem`
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AlterRoleOption {
-    RoleMembers(Vec<RoleSpec>),
+    RoleMembers {
+        action: AddDrop,
+        members: Vec<RoleSpec>
+    },
     Password(Option<Box<str>>),
     Inherit(bool),
     ConnectionLimit(i32),
@@ -14,4 +17,5 @@ pub enum AlterRoleOption {
     BypassRls(bool),
 }
 
+use pg_sink_ast::AddDrop;
 use pg_sink_ast::RoleSpec;

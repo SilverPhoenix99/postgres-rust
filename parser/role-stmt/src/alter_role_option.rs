@@ -26,7 +26,9 @@ pub(super) fn alter_role_option(ctx: &mut ParserContext) -> scan::Result<AlterRo
             .map(|(.., valid)| ValidUntil(valid)),
         // Supported but not documented for roles, for use by ALTER GROUP.
         seq!(User, role_list)
-            .map(|(_, roles)| RoleMembers(roles)),
+            .map(|(_, members)|
+                RoleMembers { action: AddDrop::Add, members }
+            ),
         Kw::Inherit.map(|_| Inherit(true)),
         ident_option
     ).parse(ctx)
@@ -115,7 +117,7 @@ mod tests {
     #[test_case("password null", Password(None))]
     #[test_case("connection limit 5", ConnectionLimit(5))]
     #[test_case("valid until 'tomorrow'", ValidUntil("tomorrow".into()))]
-    #[test_case("user public", RoleMembers(vec![Public]))]
+    #[test_case("user public", RoleMembers { action: AddDrop::Add, members: vec![Public] })]
     #[test_case("inherit", Inherit(true))]
     #[test_case("noinherit", Inherit(false))]
     fn test_alter_role_option(source: &str, expected: AlterRoleOption) {
@@ -181,5 +183,6 @@ use pg_role_ast::AlterRoleOption::Password;
 use pg_role_ast::AlterRoleOption::RoleMembers;
 use pg_role_ast::AlterRoleOption::SuperUser;
 use pg_role_ast::AlterRoleOption::ValidUntil;
+use pg_sink_ast::AddDrop;
 use pg_sink_combinators::role_list;
 use pg_sink_combinators::signed_i32_literal;

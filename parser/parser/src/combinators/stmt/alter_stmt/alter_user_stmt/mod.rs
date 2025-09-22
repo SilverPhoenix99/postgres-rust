@@ -36,7 +36,6 @@ mod tests {
     use pg_generic_options_ast::GenericOption;
     use pg_generic_options_ast::GenericOptionKind::Unspecified;
     use pg_role_ast::AlterRoleStmt;
-    use pg_sink_ast::AddDrop::Add;
     use pg_sink_ast::RoleSpec::CurrentUser;
     use pg_sink_ast::RoleSpec::Public;
 
@@ -58,7 +57,7 @@ mod tests {
         test_parser!(
             source = "role public",
             parser = alter_user_stmt,
-            expected = AlterRoleStmt::new(Public, Add, None)
+            expected = AlterRoleStmt::new(Public, None)
         )
     }
 
@@ -67,7 +66,7 @@ mod tests {
         test_parser!(
             source = "user public",
             parser = alter_user_stmt,
-            expected = AlterRoleStmt::new(Public, Add, None)
+            expected = AlterRoleStmt::new(Public, None)
         )
     }
 }
