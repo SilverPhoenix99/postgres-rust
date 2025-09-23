@@ -7,7 +7,7 @@ enum Change {
 }
 
 /// Alias: `AlterGroupStmt`
-pub(super) fn alter_group_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+pub(super) fn alter_group_stmt(ctx: &mut ParserContext) -> scan::Result<RoleStmt> {
 
     /*
         ALTER GROUP role_id RENAME TO role_id
@@ -21,13 +21,19 @@ pub(super) fn alter_group_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt>
     ).parse(ctx)?;
 
     let stmt = match stmt {
+
         Change::Rename(new_name) => {
-            let group = group.into_role_id()
+
+            let role_name = group.into_role_id()
                 .map_err(|err| err.at_location(loc))?;
-            RenameStmt::new(Role(group), new_name).into()
+
+            RoleStmt::Rename { role_name, new_name }
         },
+
         Change::Role { action, members } => {
+
             let options = Some(vec![RoleMembers { action, members }]);
+
             AlterRoleStmt::new(group, options).into()
         }
     };
@@ -58,15 +64,13 @@ mod tests {
     use pg_combinators::test_parser;
     use test_case::test_case;
 
-    #[test_case(
-        "group some_group rename to new_group_name",
-        RenameStmt::new(
-            Role("some_group".into()),
-            "new_group_name"
-        ).into()
-    )]
-    #[test_case(
-        "group some_group add user current_role, new_user",
+    #[test_case("group some_group rename to new_group_name" => Ok(
+        RoleStmt::Rename {
+            role_name: "some_group".into(),
+            new_name: "new_group_name".into()
+        }
+    ))]
+    #[test_case("group some_group add user current_role, new_user" => Ok(
         AlterRoleStmt::new(
             RoleSpec::Name("some_group".into()),
             Some(vec![RoleMembers {
@@ -77,9 +81,8 @@ mod tests {
                 ]
             }])
         ).into()
-    )]
-    #[test_case(
-        "group some_group drop user session_user, public",
+    ))]
+    #[test_case("group some_group drop user session_user, public" => Ok(
         AlterRoleStmt::new(
             RoleSpec::Name("some_group".into()),
             Some(vec![RoleMembers {
@@ -90,15 +93,12 @@ mod tests {
                 ]
             }])
         ).into()
-    )]
-    fn test_alter_group_stmt(source: &str, expected: RawStmt) {
-        test_parser!(source, alter_group_stmt, expected)
+    ))]
+    fn test_alter_group_stmt(source: &str) -> scan::Result<RoleStmt> {
+        test_parser!(source, alter_group_stmt)
     }
 }
 
-use pg_ast::RawStmt;
-use pg_ast::RenameStmt;
-use pg_ast::RenameTarget::Role;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_basics::Str;
@@ -114,6 +114,7 @@ use pg_lexer::Keyword::User;
 use pg_parser_core::scan;
 use pg_role_ast::AlterRoleOption::RoleMembers;
 use pg_role_ast::AlterRoleStmt;
+use pg_role_ast::RoleStmt;
 use pg_sink_ast::AddDrop;
 use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::add_drop;

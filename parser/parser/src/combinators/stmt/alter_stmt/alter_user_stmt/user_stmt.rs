@@ -7,7 +7,7 @@ enum Change {
     }
 }
 
-pub(super) fn user_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+pub(super) fn user_stmt(ctx: &mut ParserContext) -> scan::Result<RoleStmt> {
 
     /*
           ALL ( in_database )? SetResetClause      => AlterRoleSetStmt
@@ -18,7 +18,7 @@ pub(super) fn user_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     alt!(
         seq!(All, in_database.optional(), set_reset_clause)
-            .map(|(_, db_name, set_stmt)|{
+            .map(|(_, db_name, set_stmt)| {
                 let mut stmt = AlterRoleSetStmt::new(OneOrAll::All, set_stmt);
                 stmt.set_database(db_name);
                 stmt.into()
@@ -27,7 +27,7 @@ pub(super) fn user_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
     ).parse(ctx)
 }
 
-fn user_role_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+fn user_role_stmt(ctx: &mut ParserContext) -> scan::Result<RoleStmt> {
 
     /*
           RoleId RENAME TO RoleId                  => RenameStmt
@@ -48,17 +48,24 @@ fn user_role_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
     ).parse(ctx)?;
 
     let stmt = match stmt {
+
         Change::Name { new_name } => {
-            let role_id = role.into_role_id()
+
+            let role_name = role.into_role_id()
                 .map_err(|err| err.at_location(loc))?;
-            RenameStmt::new(Role(role_id), new_name).into()
+
+            RoleStmt::Rename { role_name, new_name }
         },
+
         Change::Options(options) => {
             AlterRoleStmt::new(role, options).into()
         },
+
         Change::Role { db_name, set_stmt } => {
+
             let mut stmt = AlterRoleSetStmt::new(OneOrAll::One(role), set_stmt);
             stmt.set_database(db_name);
+
             stmt.into()
         },
     };
@@ -101,77 +108,65 @@ mod tests {
         pg_transaction_stmt_ast::TransactionMode::Deferrable,
     };
 
-    #[test_case(
-        "all in database foo set transaction snapshot 'bar'",
+    #[test_case("all in database foo set transaction snapshot 'bar'" => Ok(
         AlterRoleSetStmt::new(
             OneOrAll::All,
             Set(TransactionSnapshot("bar".into()))
         )
         .with_database("foo")
         .into()
-    )]
-    #[test_case(
-        "all set transaction deferrable",
+    ))]
+    #[test_case("all set transaction deferrable" => Ok(
         AlterRoleSetStmt::new(
             OneOrAll::All,
             Set(LocalTransactionCharacteristics(vec![Deferrable]))
         ).into()
-    )]
-    #[test_case(
-        "this_user rename to that_role",
-        RenameStmt::new(
-            Role("this_user".into()),
-            "that_role"
-        ).into()
-    )]
-    #[test_case(
-        "current_user in database test_db reset session authorization",
+    ))]
+    #[test_case("this_user rename to that_role" => Ok(
+        RoleStmt::Rename {
+            role_name: "this_user".into(),
+            new_name: "that_role".into()
+        }
+    ))]
+    #[test_case("current_user in database test_db reset session authorization" => Ok(
         AlterRoleSetStmt::new(
             OneOrAll::One(RoleSpec::CurrentUser),
             Reset(SessionAuthorization)
         )
         .with_database("test_db")
         .into()
-    )]
-    #[test_case(
-        "public reset time zone",
+    ))]
+    #[test_case("public reset time zone" => Ok(
         AlterRoleSetStmt::new(
             OneOrAll::One(RoleSpec::Public),
             Reset(TimeZone)
         ).into()
-    )]
-    #[test_case(
-        "public encrypted password 'abc123'",
+    ))]
+    #[test_case("public encrypted password 'abc123'" => Ok(
         AlterRoleStmt::new(
             RoleSpec::Public,
             Some(vec![AlterRoleOption::Password(Some("abc123".into()))]),
         ).into()
-    )]
-    #[test_case(
-        "public with noinherit",
+    ))]
+    #[test_case("public with noinherit" => Ok(
         AlterRoleStmt::new(
             RoleSpec::Public,
             Some(vec![AlterRoleOption::Inherit(false)]),
         ).into()
-    )]
-    #[test_case(
-        "public",
+    ))]
+    #[test_case("public" => Ok(
         AlterRoleStmt::new(RoleSpec::Public, None).into()
-    )]
-    #[test_case(
-        "public with",
+    ))]
+    #[test_case("public with" => Ok(
         AlterRoleStmt::new(RoleSpec::Public, None).into()
-    )]
-    fn test_user_stmt(source: &str, expected: RawStmt) {
-        test_parser!(source, user_stmt, expected)
+    ))]
+    fn test_user_stmt(source: &str) -> scan::Result<RoleStmt> {
+        test_parser!(source, user_stmt)
     }
 }
 
 use super::in_database::in_database;
 use crate::combinators::stmt::alter_stmt::set_reset_clause;
-use pg_ast::RawStmt;
-use pg_ast::RenameStmt;
-use pg_ast::RenameTarget::Role;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_basics::Str;
@@ -189,6 +184,7 @@ use pg_parser_core::scan;
 use pg_role_ast::AlterRoleOption;
 use pg_role_ast::AlterRoleSetStmt;
 use pg_role_ast::AlterRoleStmt;
+use pg_role_ast::RoleStmt;
 use pg_role_stmt::alter_role_options;
 use pg_sink_ast::OneOrAll;
 use pg_sink_combinators::role_id;

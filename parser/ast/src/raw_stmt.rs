@@ -73,6 +73,24 @@ pub enum RawStmt {
     VariableShowStmt(VariableTarget),
 }
 
+impl From<RoleStmt> for RawStmt {
+    fn from(value: RoleStmt) -> Self {
+        match value {
+            RoleStmt::Rename { role_name, new_name } => {
+                RenameStmt::new(
+                    RenameTarget::Role(role_name),
+                    new_name
+                ).into()
+            }
+            RoleStmt::AlterOptions(stmt) => stmt.into(),
+            RoleStmt::AlterConfig(stmt) => stmt.into(),
+            RoleStmt::AlterUserMappings(stmt) => stmt.into(),
+            RoleStmt::Create(stmt) => stmt.into(),
+            RoleStmt::CreateUserMapping(stmt) => stmt.into(),
+        }
+    }
+}
+
 use crate::AlterDatabaseSetStmt;
 use crate::AlterDatabaseStmt;
 use crate::AlterDefaultPrivilegesStmt;
@@ -95,6 +113,7 @@ use crate::NotifyStmt;
 use crate::PrepareStmt;
 use crate::ReassignOwnedStmt;
 use crate::RenameStmt;
+use crate::RenameTarget;
 use crate::SecurityLabelStmt;
 use crate::UtilityOption;
 use crate::VariableSetStmt;
@@ -107,5 +126,6 @@ use pg_role_ast::AlterRoleStmt;
 use pg_role_ast::AlterUserMappingStmt;
 use pg_role_ast::CreateRoleStmt;
 use pg_role_ast::CreateUserMappingStmt;
+use pg_role_ast::RoleStmt;
 use pg_sink_ast::OneOrAll;
 use pg_transaction_stmt_ast::TransactionStmt;

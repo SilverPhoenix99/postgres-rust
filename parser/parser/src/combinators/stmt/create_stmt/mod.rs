@@ -18,7 +18,7 @@ pub(super) fn create_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
             create_conversion_stmt.map(From::from),
             create_database_stmt.map(From::from),
             create_role_stmt.map(From::from),
-            create_user_stmt,
+            create_user_stmt.map(From::from),
         )
     ).parse(ctx)?;
 

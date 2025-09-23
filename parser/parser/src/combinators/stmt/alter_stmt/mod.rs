@@ -22,11 +22,11 @@ pub(super) fn alter_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
             alter_event_trigger_stmt,
             alter_extension_stmt,
             alter_function_stmt,
-            alter_group_stmt,
+            alter_group_stmt.map(From::from),
             alter_language_stmt,
             alter_large_object_stmt,
             alter_system_stmt.map(From::from),
-            alter_user_stmt,
+            alter_user_stmt.map(From::from),
         )
     ).parse(ctx)?;
 

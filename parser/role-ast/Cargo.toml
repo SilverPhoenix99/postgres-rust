@@ -7,6 +7,7 @@ version.workspace = true
 workspace = true
 
 [dependencies]
+derive_more = { workspace = true, features = ["from"] }
 pg-basics.workspace = true
 pg-generic-options-ast.workspace = true
 pg-generic-set-ast.workspace = true

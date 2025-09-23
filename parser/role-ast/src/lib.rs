@@ -7,4 +7,5 @@ pg_basics::reexport! { pub
     create_role_stmt,
     create_user_mapping_stmt,
     role_kind,
+    role_stmt,
 }

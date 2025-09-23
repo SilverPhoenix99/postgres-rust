@@ -1,4 +1,4 @@
-pub(super) fn create_user_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+pub(super) fn create_user_stmt(ctx: &mut ParserContext) -> scan::Result<RoleStmt> {
 
     /*
           USER MAPPING ( if_not_exists )? FOR auth_ident SERVER ColId create_generic_options => CreateUserMappingStmt
@@ -8,8 +8,8 @@ pub(super) fn create_user_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt>
     let (_, stmt) = seq!(
         User,
         alt!(
-            create_user_mapping.map(RawStmt::from),
-            create_user_role.map(RawStmt::from)
+            create_user_mapping.map(RoleStmt::from),
+            create_user_role.map(RoleStmt::from)
         )
     ).parse(ctx)?;
 
@@ -68,28 +68,28 @@ mod tests {
         ]
         => matches Ok(_)
     )]
-    fn test_create_user_stmt(source: &str) -> scan::Result<RawStmt> {
+    fn test_create_user_stmt(source: &str) -> scan::Result<RoleStmt> {
         test_parser!(source, create_user_stmt)
     }
 
-    #[test_case("mapping if not exists for test_user server test_server options (foo '42')",
+    #[test_case("mapping if not exists for test_user server test_server options (foo '42')" => Ok(
         CreateUserMappingStmt::new(
             RoleSpec::Name("test_user".into()),
             "test_server",
             Some(vec![GenericOption::new("foo", "42")]),
             Presence::Ignore
         )
-    )]
-    #[test_case("mapping for foo server bar",
+    ))]
+    #[test_case("mapping for foo server bar" => Ok(
         CreateUserMappingStmt::new(
             RoleSpec::Name("foo".into()),
             "bar",
             None,
             Presence::Fail
         )
-    )]
-    fn test_create_user_mapping(source: &str, expected: CreateUserMappingStmt) {
-        test_parser!(source, create_user_mapping, expected);
+    ))]
+    fn test_create_user_mapping(source: &str) -> scan::Result<CreateUserMappingStmt> {
+        test_parser!(source, create_user_mapping)
     }
 
     #[test]
@@ -103,7 +103,6 @@ mod tests {
     }
 }
 
-use pg_ast::RawStmt;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
@@ -118,6 +117,7 @@ use pg_parser_core::scan;
 use pg_role_ast::CreateRoleStmt;
 use pg_role_ast::CreateUserMappingStmt;
 use pg_role_ast::RoleKind;
+use pg_role_ast::RoleStmt;
 use pg_role_stmt::auth_ident;
 use pg_role_stmt::create_role_options;
 use pg_sink_combinators::col_id;
