@@ -26,7 +26,6 @@ edge [
 AexprConst -> func_arg_list
 AexprConst -> func_name
 AexprConst -> opt_sort_clause
-AlterDatabaseSetStmt -> SetResetClause
 AlterDatabaseStmt -> createdb_opt_list
 AlterDomainStmt -> alter_column_default
 AlterExtensionContentsStmt -> aggregate_with_argtypes
@@ -50,7 +49,6 @@ AlterPolicyStmt -> RowSecurityOptionalExpr
 AlterPolicyStmt -> RowSecurityOptionalWithCheck
 AlterPublicationStmt -> definition
 AlterPublicationStmt -> pub_obj_list
-AlterRoleSetStmt -> SetResetClause
 AlterSeqStmt -> SeqOptList
 AlterStatsStmt -> set_statistics_value
 AlterSubscriptionStmt -> definition
@@ -154,8 +152,6 @@ ExplainableStmt -> InsertStmt
 ExplainableStmt -> MergeStmt
 ExplainableStmt -> SelectStmt
 ExplainableStmt -> UpdateStmt
-FunctionSetResetClause -> VariableResetStmt
-FunctionSetResetClause -> set_rest_more
 GrantRoleStmt -> opt_granted_by
 GrantRoleStmt -> privilege_list
 GrantStmt -> grantee_list
@@ -215,8 +211,6 @@ SecLabelStmt -> function_with_argtypes
 SelectStmt -> select_no_parens
 SelectStmt -> select_with_parens
 SeqOptList -> SeqOptElem
-SetResetClause -> VariableResetStmt
-SetResetClause -> set_rest
 TableElement -> TableConstraint
 TableElement -> columnDef
 TableFuncElement -> opt_collate_clause
@@ -231,7 +225,6 @@ UpdateStmt -> set_clause_list
 UpdateStmt -> where_or_current_clause
 VacuumStmt -> opt_vacuum_relation_list
 VacuumStmt -> utility_option_list
-VariableSetStmt -> set_rest
 ViewStmt -> OptTemp
 ViewStmt -> SelectStmt
 ViewStmt -> opt_reloptions
@@ -319,7 +312,6 @@ func_expr -> func_expr_common_subexpr
 func_expr -> json_aggregate_func
 func_expr_common_subexpr -> a_expr
 func_expr_common_subexpr -> c_expr
-func_expr_common_subexpr -> document_or_content
 func_expr_common_subexpr -> expr_list
 func_expr_common_subexpr -> func_arg_list
 func_expr_common_subexpr -> json_array_constructor_null_clause_opt
@@ -457,8 +449,6 @@ select_no_parens -> sort_clause
 select_no_parens -> with_clause
 select_with_parens -> select_no_parens
 set_clause -> a_expr
-set_rest -> set_rest_more
-set_rest_more -> document_or_content
 set_target -> opt_indirection
 simple_select -> from_clause
 simple_select -> select_clause
@@ -542,10 +532,6 @@ subgraph cluster_AlterOpFamilyStmt {
 
 subgraph cluster_AlterPolicyStmt {
   AlterPolicyStmt -> RowSecurityOptionalToRole
-}
-
-subgraph cluster_AlterRoleSetStmt {
-  AlterRoleSetStmt -> opt_in_database
 }
 
 subgraph cluster_AlterTSConfigurationStmt {
@@ -862,10 +848,6 @@ subgraph cluster_TruncateStmt {
   TruncateStmt -> opt_restart_seqs
 }
 
-subgraph cluster_VariableResetStmt {
-  VariableResetStmt -> reset_rest
-}
-
 subgraph cluster_a_expr {
   a_expr -> json_predicate_type_constraint
   a_expr -> row
@@ -1076,11 +1058,6 @@ subgraph cluster_set_clause_list {
   set_target_list -> set_target
 }
 
-subgraph cluster_set_rest_more {
-  set_rest_more -> opt_encoding
-  set_rest_more -> zone_value
-}
-
 subgraph cluster_simple_select {
   group_clause -> set_quantifier
   into_clause -> OptTempTableName
@@ -1174,7 +1151,6 @@ AlterExtensionStmt [color=green penwidth=3]
 AlterFdwStmt [color=green penwidth=3]
 AlterForeignServerStmt [color=green penwidth=3]
 AlterFunctionStmt [color=green penwidth=3]
-AlterGroupStmt [color=green penwidth=3]
 AlterObjectDependsStmt [color=green penwidth=3]
 AlterObjectSchemaStmt [color=green penwidth=3]
 AlterOpFamilyStmt [color=green penwidth=3]
@@ -1182,8 +1158,6 @@ AlterOperatorStmt [color=green penwidth=3]
 AlterOwnerStmt [color=green penwidth=3]
 AlterPolicyStmt [color=green penwidth=3]
 AlterPublicationStmt [color=green penwidth=3]
-AlterRoleSetStmt [color=green penwidth=3]
-AlterRoleStmt [color=green penwidth=3]
 AlterSeqStmt [color=green penwidth=3]
 AlterStatsStmt [color=green penwidth=3]
 AlterSubscriptionStmt [color=green penwidth=3]
@@ -1192,7 +1166,6 @@ AlterTSDictionaryStmt [color=green penwidth=3]
 AlterTableStmt [color=green penwidth=3]
 AlterTblSpcStmt [color=green penwidth=3]
 AlterTypeStmt [color=green penwidth=3]
-AlterUserMappingStmt [color=green penwidth=3]
 AnalyzeStmt [color=green penwidth=3]
 BitWithLength [color=green penwidth=3]
 CallStmt [color=green penwidth=3]
@@ -1213,20 +1186,16 @@ CreateFdwStmt [color=green penwidth=3]
 CreateForeignServerStmt [color=green penwidth=3]
 CreateForeignTableStmt [color=green penwidth=3]
 CreateFunctionStmt [color=green penwidth=3]
-CreateGroupStmt [color=green penwidth=3]
 CreateOpClassStmt [color=green penwidth=3]
 CreateOpFamilyStmt [color=green penwidth=3]
 CreatePLangStmt [color=green penwidth=3]
 CreatePolicyStmt [color=green penwidth=3]
 CreatePublicationStmt [color=green penwidth=3]
-CreateRoleStmt [color=green penwidth=3]
 CreateSchemaStmt [color=green penwidth=3]
 CreateStatsStmt [color=green penwidth=3]
 CreateSubscriptionStmt [color=green penwidth=3]
 CreateTableSpaceStmt [color=green penwidth=3]
 CreateTransformStmt [color=green penwidth=3]
-CreateUserMappingStmt [color=green penwidth=3]
-CreateUserStmt [color=green penwidth=3]
 CreatedbStmt [color=green penwidth=3]
 DeallocateStmt [color=green penwidth=3]
 DefineStmt [color=green penwidth=3]
@@ -1236,12 +1205,10 @@ DropCastStmt [color=green penwidth=3]
 DropOpClassStmt [color=green penwidth=3]
 DropOpFamilyStmt [color=green penwidth=3]
 DropOwnedStmt [color=green penwidth=3]
-DropRoleStmt [color=green penwidth=3]
 DropStmt [color=green penwidth=3]
 DropSubscriptionStmt [color=green penwidth=3]
 DropTableSpaceStmt [color=green penwidth=3]
 DropTransformStmt [color=green penwidth=3]
-DropUserMappingStmt [color=green penwidth=3]
 DropdbStmt [color=green penwidth=3]
 ExplainStmt [color=green penwidth=3]
 FetchStmt [color=green penwidth=3]
@@ -1265,7 +1232,6 @@ TruncateStmt [color=green penwidth=3]
 UnlistenStmt [color=green penwidth=3]
 VacuumStmt [color=green penwidth=3]
 VariableSetStmt [color=green penwidth=3]
-VariableShowStmt [color=green penwidth=3]
 opt_type_modifiers [color=green penwidth=3]
 qualified_name [color=green penwidth=3]
 relation_expr [color=green penwidth=3]
@@ -1278,6 +1244,7 @@ ConstraintAttributeElem [color=blue penwidth=3]
 DefACLOption [color=blue penwidth=3]
 ExistingIndex [color=blue penwidth=3]
 FUNCTION_or_PROCEDURE [color=blue penwidth=3]
+FunctionSetResetClause [color=blue penwidth=3]
 NumericOnly_list [color=blue penwidth=3]
 OnCommitOption [color=blue penwidth=3]
 OptConsTableSpace [color=blue penwidth=3]
@@ -1321,7 +1288,6 @@ create_extension_opt_item [color=blue penwidth=3]
 createdb_opt_name [color=blue penwidth=3]
 cursor_options_1 [color=blue penwidth=3]
 defacl_privilege_target [color=blue penwidth=3]
-document_or_content [color=blue penwidth=3]
 dostmt_opt_item [color=blue penwidth=3]
 drop_option_list [color=blue penwidth=3]
 empty_grouping_set [color=blue penwidth=3]
@@ -1370,14 +1336,12 @@ opt_c_include [color=blue penwidth=3]
 opt_check_option [color=blue penwidth=3]
 opt_collate [color=blue penwidth=3]
 opt_collate_clause [color=blue penwidth=3]
-opt_encoding [color=blue penwidth=3]
 opt_existing_window_name [color=blue penwidth=3]
 opt_grant_grant_option [color=blue penwidth=3]
 opt_granted_by [color=blue penwidth=3]
 opt_hold [color=blue penwidth=3]
 opt_if_exists [color=blue penwidth=3]
 opt_if_not_exists [color=blue penwidth=3]
-opt_in_database [color=blue penwidth=3]
 opt_inline_handler [color=blue penwidth=3]
 opt_instead [color=blue penwidth=3]
 opt_materialized [color=blue penwidth=3]
@@ -1408,7 +1372,6 @@ reindex_target_all [color=blue penwidth=3]
 reindex_target_relation [color=blue penwidth=3]
 relation_expr_opt_alias [color=blue penwidth=3]
 replica_identity [color=blue penwidth=3]
-reset_rest [color=blue penwidth=3]
 returning_option_kind [color=blue penwidth=3]
 row_or_rows [color=blue penwidth=3]
 row_security_cmd [color=blue penwidth=3]
@@ -1429,6 +1392,5 @@ validator_clause [color=blue penwidth=3]
 xml_indent_option [color=blue penwidth=3]
 xml_passing_mech [color=blue penwidth=3]
 xml_whitespace_option [color=blue penwidth=3]
-zone_value [color=blue penwidth=3]
 
 }

@@ -176,6 +176,33 @@ module Graph
     CreateOptRoleElem
       OptRoleList
     auth_ident
+
+    CreateGroupStmt
+    AlterGroupStmt
+
+    CreateRoleStmt
+    AlterRoleStmt
+    AlterRoleSetStmt
+      opt_in_database
+    DropRoleStmt
+
+    CreateUserStmt
+
+    CreateUserMappingStmt
+    AlterUserMappingStmt
+    DropUserMappingStmt
+
+    reset_rest
+    set_rest
+    set_rest_more
+    SetResetClause
+    VariableResetStmt
+    VariableShowStmt
+
+    document_or_content
+    opt_encoding
+    zone_value
+
   ].to_set.freeze unless const_defined? :EXCLUDE
 
   EXPR_REGEX = /^([abc]_expr)_\d+$/ unless const_defined? :EXPR_REGEX

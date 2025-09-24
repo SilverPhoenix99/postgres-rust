@@ -169,6 +169,7 @@ fn zone_value_interval(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
     Err(InvalidZoneValue.at_location(loc).into())
 }
 
+/// Alias: `opt_encoding`
 fn encoding(ctx: &mut ParserContext) -> scan::Result<ValueOrDefault<Box<str>>> {
 
     /*
