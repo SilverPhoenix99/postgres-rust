@@ -2,8 +2,6 @@ pg_basics::reexport! {
     create_access_method_stmt,
     create_cast_stmt,
     create_database_stmt,
-    create_role_stmt,
-    create_user_stmt,
 }
 
 pub(super) use create_database_stmt::createdb_opt_value;
@@ -55,3 +53,5 @@ use pg_combinators::ParserContext;
 use pg_conversion_stmt::create::create_conversion_stmt;
 use pg_lexer::Keyword::Create;
 use pg_parser_core::scan;
+use pg_role_stmt::create::create_role_stmt;
+use pg_role_stmt::create::create_user_stmt;

@@ -7,7 +7,7 @@ enum Change {
 }
 
 /// Alias: `AlterGroupStmt`
-pub(super) fn alter_group_stmt(ctx: &mut ParserContext) -> scan::Result<RoleStmt> {
+pub fn alter_group_stmt(ctx: &mut ParserContext) -> scan::Result<RoleStmt> {
 
     /*
         ALTER GROUP role_id RENAME TO role_id

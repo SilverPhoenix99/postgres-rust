@@ -1,10 +1,10 @@
 /// Alias: `AlterOptRoleList`
-pub fn alter_role_options(ctx: &mut ParserContext) -> scan::Result<Vec<AlterRoleOption>> {
+pub(super) fn alter_role_options(ctx: &mut ParserContext) -> scan::Result<Vec<AlterRoleOption>> {
     many!(alter_role_option).parse(ctx)
 }
 
 /// Alias: `AlterOptRoleElem`
-pub(super) fn alter_role_option(ctx: &mut ParserContext) -> scan::Result<AlterRoleOption> {
+pub(crate) fn alter_role_option(ctx: &mut ParserContext) -> scan::Result<AlterRoleOption> {
 
     /*
           PASSWORD SCONST

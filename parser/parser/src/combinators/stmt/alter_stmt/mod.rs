@@ -4,8 +4,6 @@ pg_basics::reexport! {
     alter_default_privileges_stmt,
     alter_extension_stmt,
     alter_function_stmt,
-    alter_group_stmt,
-    alter_user_stmt,
 }
 
 pub(super) fn alter_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
@@ -75,4 +73,6 @@ use pg_language_stmt::alter::alter_language_stmt;
 use pg_large_object_stmt::alter::alter_large_object_stmt;
 use pg_lexer::Keyword::Alter;
 use pg_parser_core::scan;
+use pg_role_stmt::alter::alter_group_stmt;
+use pg_role_stmt::alter::alter_user_stmt;
 use pg_system_stmt::alter::alter_system_stmt;

@@ -166,6 +166,7 @@ mod tests {
 }
 
 use super::in_database::in_database;
+use crate::alter::alter_role_options;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_basics::Str;
@@ -184,7 +185,6 @@ use pg_role_ast::AlterRoleOption;
 use pg_role_ast::AlterRoleSetStmt;
 use pg_role_ast::AlterRoleStmt;
 use pg_role_ast::RoleStmt;
-use pg_role_stmt::alter_role_options;
 use pg_sink_ast::OneOrAll;
 use pg_sink_combinators::role_id;
 use pg_sink_combinators::role_spec;

@@ -1,5 +1,5 @@
 /// Alias: `OptRoleList`
-pub fn create_role_options(ctx: &mut ParserContext) -> scan::Result<Vec<CreateRoleOption>> {
+pub(super) fn create_role_options(ctx: &mut ParserContext) -> scan::Result<Vec<CreateRoleOption>> {
 
     many!(create_role_option).parse(ctx)
 }
@@ -83,7 +83,7 @@ mod tests {
     }
 }
 
-use crate::alter_role_option;
+use crate::alter::alter_role_option;
 use pg_combinators::alt;
 use pg_combinators::integer;
 use pg_combinators::many;

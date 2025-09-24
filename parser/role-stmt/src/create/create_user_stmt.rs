@@ -1,4 +1,4 @@
-pub(super) fn create_user_stmt(ctx: &mut ParserContext) -> scan::Result<RoleStmt> {
+pub fn create_user_stmt(ctx: &mut ParserContext) -> scan::Result<RoleStmt> {
 
     /*
           USER MAPPING ( if_not_exists )? FOR auth_ident SERVER ColId create_generic_options => CreateUserMappingStmt
@@ -103,6 +103,8 @@ mod tests {
     }
 }
 
+use crate::auth_ident;
+use crate::create::create_role_options;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
@@ -118,8 +120,6 @@ use pg_role_ast::CreateRoleStmt;
 use pg_role_ast::CreateUserMappingStmt;
 use pg_role_ast::RoleKind;
 use pg_role_ast::RoleStmt;
-use pg_role_stmt::auth_ident;
-use pg_role_stmt::create_role_options;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::if_not_exists;
 use pg_sink_combinators::role_id;
