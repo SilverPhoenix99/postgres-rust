@@ -238,7 +238,6 @@ mod tests {
 }
 
 use crate::combinators::stmt::createdb_opt_value;
-use crate::combinators::stmt::set_rest;
 use pg_ast::AlterDatabaseSetStmt;
 use pg_ast::AlterDatabaseStmt;
 use pg_ast::AlterOwnerStmt;
@@ -282,3 +281,4 @@ use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::role_spec;
 use pg_variable_stmt::reset_stmt;
+use pg_variable_stmt::set_rest;

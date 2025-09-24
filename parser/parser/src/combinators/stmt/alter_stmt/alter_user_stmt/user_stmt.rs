@@ -166,7 +166,6 @@ mod tests {
 }
 
 use super::in_database::in_database;
-use crate::combinators::stmt::alter_stmt::set_reset_clause;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_basics::Str;
@@ -190,3 +189,4 @@ use pg_sink_ast::OneOrAll;
 use pg_sink_combinators::role_id;
 use pg_sink_combinators::role_spec;
 use pg_sink_combinators::IntoRoleId;
+use pg_variable_stmt::set_reset_clause;

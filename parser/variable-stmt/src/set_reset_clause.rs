@@ -1,5 +1,5 @@
 /// Alias: `SetResetClause`
-pub(super) fn set_reset_clause(ctx: &mut ParserContext) -> scan::Result<SetResetClause> {
+pub fn set_reset_clause(ctx: &mut ParserContext) -> scan::Result<SetResetClause> {
 
     alt!(
         seq!(Set, set_rest)
@@ -34,7 +34,8 @@ mod tests {
     }
 }
 
-use crate::combinators::stmt::set_rest;
+use crate::reset_stmt;
+use crate::set_rest::set_rest;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
@@ -42,4 +43,3 @@ use pg_combinators::ParserContext;
 use pg_generic_set_ast::SetResetClause;
 use pg_lexer::Keyword::Set;
 use pg_parser_core::scan;
-use pg_variable_stmt::reset_stmt;

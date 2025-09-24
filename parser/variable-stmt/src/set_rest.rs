@@ -1,4 +1,4 @@
-pub(super) fn set_rest(ctx: &mut ParserContext) -> scan::Result<SetRest> {
+pub fn set_rest(ctx: &mut ParserContext) -> scan::Result<SetRest> {
 
     /*
           SESSION CHARACTERISTICS AS TRANSACTION transaction_mode_list
@@ -38,7 +38,7 @@ fn set_rest_transaction(ctx: &mut ParserContext) -> scan::Result<SetRest> {
     ).parse(ctx)
 }
 
-pub(super) fn set_rest_more(ctx: &mut ParserContext) -> scan::Result<SetRestMore> {
+pub fn set_rest_more(ctx: &mut ParserContext) -> scan::Result<SetRestMore> {
 
     /*
           SESSION AUTHORIZATION session_auth_user

@@ -108,7 +108,6 @@ pg_basics::reexport! {
     reindex_stmt,
     revoke_stmt,
     security_label_stmt,
-    set_rest,
     set_stmt,
     truncate_stmt,
     unlisten_stmt,

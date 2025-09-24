@@ -6,7 +6,6 @@ pg_basics::reexport! {
     alter_function_stmt,
     alter_group_stmt,
     alter_user_stmt,
-    set_reset_clause,
 }
 
 pub(super) fn alter_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
