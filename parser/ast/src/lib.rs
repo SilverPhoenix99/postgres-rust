@@ -22,7 +22,6 @@ pg_basics::reexport! { pub
     create_access_method_stmt,
     create_cast_stmt,
     create_conversion_stmt,
-    create_database_stmt,
     discard_stmt,
     extract_expr,
     frame_extent,

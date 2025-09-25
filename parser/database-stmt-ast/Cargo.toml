@@ -1,0 +1,13 @@
+[package]
+name = "pg-database-stmt-ast"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+derive_more.workspace = true
+pg-basics.workspace = true
+pg-generic-set-ast.workspace = true
+pg-sink-ast.workspace = true

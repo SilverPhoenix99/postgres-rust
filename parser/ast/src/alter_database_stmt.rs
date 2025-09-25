@@ -55,5 +55,5 @@ pub enum AlterdbOptionKind {
     Unknown(Box<str>),
 }
 
-use crate::CreatedbOptionValue;
 use pg_basics::Str;
+use pg_database_stmt_ast::CreatedbOptionValue;

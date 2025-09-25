@@ -147,8 +147,8 @@ fn alterdb_opt_name(ctx: &mut ParserContext) -> scan::Result<AlterdbOptionKind> 
 mod tests {
     #[allow(unused_imports)]
     use super::*;
-    use pg_ast::CreatedbOptionValue;
     use pg_combinators::test_parser;
+    use pg_database_stmt_ast::CreatedbOptionValue;
     use test_case::test_case;
 
     #[test]
