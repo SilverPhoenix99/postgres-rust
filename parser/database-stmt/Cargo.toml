@@ -7,12 +7,16 @@ version.workspace = true
 workspace = true
 
 [dependencies]
+pg-basics.workspace = true
 pg-combinators.workspace = true
 pg-database-stmt-ast.workspace = true
+pg-generic-set-ast.workspace = true
 pg-generic-set-combinators.workspace = true
 pg-lexer.workspace = true
 pg-parser-core.workspace = true
+pg-sink-ast.workspace = true
 pg-sink-combinators.workspace = true
+pg-variable-stmt.workspace = true
 
 [dev-dependencies]
 test-case.workspace = true

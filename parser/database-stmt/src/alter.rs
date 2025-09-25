@@ -9,7 +9,7 @@ enum Change {
 }
 
 /// Alias: `AlterDatabaseStmt`
-pub(super) fn alter_database_stmt(ctx: &mut ParserContext) -> scan::Result<DatabaseStmt> {
+pub fn alter_database_stmt(ctx: &mut ParserContext) -> scan::Result<DatabaseStmt> {
 
     /*
         ALTER DATABASE ColId (
@@ -232,6 +232,7 @@ mod tests {
     }
 }
 
+use crate::create::createdb_opt_value;
 use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::identifier;
@@ -239,7 +240,6 @@ use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
-use pg_database_stmt::create::createdb_opt_value;
 use pg_database_stmt_ast::AlterDatabaseSetStmt;
 use pg_database_stmt_ast::AlterDatabaseStmt;
 use pg_database_stmt_ast::AlterdbOption;

@@ -1,6 +1,5 @@
 pg_basics::reexport! {
     alter_aggregate_stmt,
-    alter_database_stmt,
     alter_default_privileges_stmt,
     alter_extension_stmt,
     alter_function_stmt,
@@ -68,6 +67,7 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_conversion_stmt::alter::alter_conversion_stmt;
+use pg_database_stmt::alter::alter_database_stmt;
 use pg_event_trigger_stmt::alter::alter_event_trigger_stmt;
 use pg_language_stmt::alter::alter_language_stmt;
 use pg_large_object_stmt::alter::alter_large_object_stmt;

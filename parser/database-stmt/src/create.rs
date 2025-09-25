@@ -61,7 +61,7 @@ fn createdb_opt_name(ctx: &mut ParserContext) -> scan::Result<CreatedbOptionKind
     ).parse(ctx)
 }
 
-pub fn createdb_opt_value(ctx: &mut ParserContext) -> scan::Result<CreatedbOptionValue> {
+pub(crate) fn createdb_opt_value(ctx: &mut ParserContext) -> scan::Result<CreatedbOptionValue> {
 
     /*
           DEFAULT
