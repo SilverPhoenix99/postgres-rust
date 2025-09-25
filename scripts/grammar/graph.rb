@@ -203,6 +203,14 @@ module Graph
     opt_encoding
     zone_value
 
+    CreatedbStmt
+      createdb_opt_list
+      createdb_opt_items
+      createdb_opt_item
+      createdb_opt_name
+    AlterDatabaseStmt
+    AlterDatabaseSetStmt
+
   ].to_set.freeze unless const_defined? :EXCLUDE
 
   EXPR_REGEX = /^([abc]_expr)_\d+$/ unless const_defined? :EXPR_REGEX

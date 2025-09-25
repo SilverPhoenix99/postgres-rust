@@ -26,7 +26,6 @@ edge [
 AexprConst -> func_arg_list
 AexprConst -> func_name
 AexprConst -> opt_sort_clause
-AlterDatabaseStmt -> createdb_opt_list
 AlterDomainStmt -> alter_column_default
 AlterExtensionContentsStmt -> aggregate_with_argtypes
 AlterExtensionContentsStmt -> function_with_argtypes
@@ -127,7 +126,6 @@ CreateTrigStmt -> ConstraintAttributeSpec
 CreateTrigStmt -> FUNCTION_or_PROCEDURE
 CreateTrigStmt -> func_name
 CreateTrigStmt -> opt_or_replace
-CreatedbStmt -> createdb_opt_list
 DeclareCursorStmt -> SelectStmt
 DefACLAction -> grantee_list
 DefACLAction -> opt_grant_grant_option
@@ -889,12 +887,6 @@ subgraph cluster_common_func_opt_item {
   common_func_opt_item -> FunctionSetResetClause
 }
 
-subgraph cluster_createdb_opt_list {
-  createdb_opt_item -> createdb_opt_name
-  createdb_opt_items -> createdb_opt_item
-  createdb_opt_list -> createdb_opt_items
-}
-
 subgraph cluster_definition {
   def_list -> def_elem
   definition -> def_list
@@ -1141,8 +1133,6 @@ subgraph cluster_xmlexists_argument {
 
 # sources
 AlterCompositeTypeStmt [color=green penwidth=3]
-AlterDatabaseSetStmt [color=green penwidth=3]
-AlterDatabaseStmt [color=green penwidth=3]
 AlterDefaultPrivilegesStmt [color=green penwidth=3]
 AlterDomainStmt [color=green penwidth=3]
 AlterEnumStmt [color=green penwidth=3]
@@ -1196,7 +1186,6 @@ CreateStatsStmt [color=green penwidth=3]
 CreateSubscriptionStmt [color=green penwidth=3]
 CreateTableSpaceStmt [color=green penwidth=3]
 CreateTransformStmt [color=green penwidth=3]
-CreatedbStmt [color=green penwidth=3]
 DeallocateStmt [color=green penwidth=3]
 DefineStmt [color=green penwidth=3]
 DiscardStmt [color=green penwidth=3]
@@ -1285,7 +1274,6 @@ copy_from [color=blue penwidth=3]
 copy_generic_opt_arg [color=blue penwidth=3]
 copy_opt_item [color=blue penwidth=3]
 create_extension_opt_item [color=blue penwidth=3]
-createdb_opt_name [color=blue penwidth=3]
 cursor_options_1 [color=blue penwidth=3]
 defacl_privilege_target [color=blue penwidth=3]
 dostmt_opt_item [color=blue penwidth=3]
