@@ -237,7 +237,6 @@ mod tests {
     }
 }
 
-use crate::combinators::stmt::createdb_opt_value;
 use pg_ast::AlterDatabaseSetStmt;
 use pg_ast::AlterDatabaseStmt;
 use pg_ast::AlterOwnerStmt;
@@ -260,6 +259,7 @@ use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
+use pg_database_stmt::create::createdb_opt_value;
 use pg_generic_set_ast::SetResetClause;
 use pg_generic_set_ast::SetRest;
 use pg_generic_set_ast::VariableTarget;

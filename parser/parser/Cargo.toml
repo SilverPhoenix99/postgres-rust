@@ -14,6 +14,7 @@ pg-collation-stmt.workspace = true
 pg-combinators.workspace = true
 pg-conversion-stmt.workspace = true
 pg-database-stmt-ast.workspace = true
+pg-database-stmt.workspace = true
 pg-elog.workspace = true
 pg-event-trigger-stmt.workspace = true
 pg-generic-set-ast.workspace = true

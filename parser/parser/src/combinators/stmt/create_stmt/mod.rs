@@ -1,10 +1,7 @@
 pg_basics::reexport! {
     create_access_method_stmt,
     create_cast_stmt,
-    create_database_stmt,
 }
-
-pub(super) use create_database_stmt::createdb_opt_value;
 
 pub(super) fn create_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
@@ -51,6 +48,7 @@ use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_conversion_stmt::create::create_conversion_stmt;
+use pg_database_stmt::create::create_database_stmt;
 use pg_lexer::Keyword::Create;
 use pg_parser_core::scan;
 use pg_role_stmt::create::create_role_stmt;

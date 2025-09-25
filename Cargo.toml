@@ -10,6 +10,7 @@ members = [
     "parser/combinators",
     "parser/conversion-stmt",
     "parser/core",
+    "parser/database-stmt",
     "parser/database-stmt-ast",
     "parser/event-trigger-stmt",
     "parser/generic-options-ast",
@@ -63,6 +64,7 @@ pg-basics = { path = "basics" }
 pg-collation-stmt = { path = "parser/collation-stmt" }
 pg-combinators = { path = "parser/combinators", features = [] }
 pg-conversion-stmt = { path = "parser/conversion-stmt" }
+pg-database-stmt = { path = "parser/database-stmt" }
 pg-database-stmt-ast = { path = "parser/database-stmt-ast" }
 pg-elog = { path = "elog" }
 pg-event-trigger-stmt = { path = "parser/event-trigger-stmt" }

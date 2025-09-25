@@ -1,5 +1,5 @@
 /// Alias: `CreatedbStmt`
-pub(super) fn create_database_stmt(ctx: &mut ParserContext) -> scan::Result<CreateDatabaseStmt> {
+pub fn create_database_stmt(ctx: &mut ParserContext) -> scan::Result<CreateDatabaseStmt> {
 
     let (_, name, _, options) = seq!(
         Database,
@@ -61,7 +61,7 @@ fn createdb_opt_name(ctx: &mut ParserContext) -> scan::Result<CreatedbOptionKind
     ).parse(ctx)
 }
 
-pub(in crate::combinators::stmt) fn createdb_opt_value(ctx: &mut ParserContext) -> scan::Result<CreatedbOptionValue> {
+pub fn createdb_opt_value(ctx: &mut ParserContext) -> scan::Result<CreatedbOptionValue> {
 
     /*
           DEFAULT
