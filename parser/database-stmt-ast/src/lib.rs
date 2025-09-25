@@ -7,4 +7,5 @@ pg_basics::reexport! { pub
     createdb_option,
     createdb_option_kind,
     createdb_option_value,
+    database_stmt,
 }

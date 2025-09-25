@@ -91,7 +91,28 @@ impl From<RoleStmt> for RawStmt {
     }
 }
 
-use crate::AlterDefaultPrivilegesStmt;
+impl From<DatabaseStmt> for RawStmt {
+    fn from(value: DatabaseStmt) -> Self {
+        match value {
+            DatabaseStmt::RefreshCollation(name) => Self::AlterDatabaseRefreshCollStmt(name),
+            DatabaseStmt::AlterOwner { db_name, new_owner } => {
+                AlterOwnerStmt::new(
+                    AlterOwnerTarget::Database(db_name),
+                    new_owner
+                ).into()
+            },
+            DatabaseStmt::Rename { db_name, new_name } => {
+                RenameStmt::new(
+                    RenameTarget::Database(db_name),
+                    new_name
+                ).into()
+            },
+            DatabaseStmt::AlterDatabase(stmt) => stmt.into(),
+            DatabaseStmt::AlterDatabaseSet(stmt) => stmt.into(),
+        }
+    }
+}
+
 use crate::AlterEventTrigStmt;
 use crate::AlterExtensionContentsStmt;
 use crate::AlterExtensionStmt;
@@ -114,12 +135,13 @@ use crate::RenameTarget;
 use crate::SecurityLabelStmt;
 use crate::UtilityOption;
 use crate::VariableSetStmt;
+use crate::{AlterDefaultPrivilegesStmt, AlterOwnerTarget};
 use derive_more::From;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
-use pg_database_stmt_ast::AlterDatabaseSetStmt;
 use pg_database_stmt_ast::AlterDatabaseStmt;
 use pg_database_stmt_ast::CreateDatabaseStmt;
+use pg_database_stmt_ast::{AlterDatabaseSetStmt, DatabaseStmt};
 use pg_generic_set_ast::VariableTarget;
 use pg_role_ast::AlterRoleSetStmt;
 use pg_role_ast::AlterRoleStmt;

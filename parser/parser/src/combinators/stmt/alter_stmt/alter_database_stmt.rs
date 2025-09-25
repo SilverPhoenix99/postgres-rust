@@ -9,7 +9,8 @@ enum Change {
 }
 
 /// Alias: `AlterDatabaseStmt`
-pub(super) fn alter_database_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+pub(super) fn alter_database_stmt(ctx: &mut ParserContext) -> scan::Result<DatabaseStmt> {
+
     /*
         ALTER DATABASE ColId (
               REFRESH COLLATION VERSION => AlterDatabaseRefreshCollStmt
@@ -23,38 +24,32 @@ pub(super) fn alter_database_stmt(ctx: &mut ParserContext) -> scan::Result<RawSt
         )
     */
 
-    let (_, name, change) = seq!(Database, col_id, change).parse(ctx)?;
+    let (_, db_name, change) = seq!(Database, col_id, change).parse(ctx)?;
 
     let stmt = match change {
         Change::RefreshVersion => {
-            AlterDatabaseRefreshCollStmt(name)
+            DatabaseStmt::RefreshCollation(db_name)
         }
         Change::Owner(new_owner) => {
-            AlterOwnerStmt::new(
-                AlterOwnerTarget::Database(name),
-                new_owner
-            ).into()
+            DatabaseStmt::AlterOwner { db_name, new_owner }
         }
         Change::Name(new_name) => {
-            RenameStmt::new(
-                RenameTarget::Database(name),
-                new_name
-            ).into()
+            DatabaseStmt::Rename { db_name, new_name }
         }
         Change::Tablespace(tablespace) => {
             let option = AlterdbOption::new(Tablespace, tablespace);
-            AlterDatabaseStmt::new(name, vec![option]).into()
+            AlterDatabaseStmt::new(db_name, vec![option]).into()
         }
         Change::SetOption(option) => {
             let option = SetResetClause::Set(option);
-            AlterDatabaseSetStmt::new(name, option).into()
+            AlterDatabaseSetStmt::new(db_name, option).into()
         }
         Change::ResetOption(option) => {
             let option = SetResetClause::Reset(option);
-            AlterDatabaseSetStmt::new(name, option).into()
+            AlterDatabaseSetStmt::new(db_name, option).into()
         }
         Change::Options(options) => {
-            AlterDatabaseStmt::new(name, options).into()
+            AlterDatabaseStmt::new(db_name, options).into()
         }
     };
 
@@ -156,7 +151,7 @@ mod tests {
         test_parser!(
             source = "database db_name refresh collation version",
             parser = alter_database_stmt,
-            expected = AlterDatabaseRefreshCollStmt("db_name".into())
+            expected = DatabaseStmt::RefreshCollation("db_name".into())
         )
     }
 
@@ -165,10 +160,10 @@ mod tests {
         test_parser!(
             source = "database db_name owner to public",
             parser = alter_database_stmt,
-            expected = AlterOwnerStmt::new(
-                AlterOwnerTarget::Database("db_name".into()),
-                RoleSpec::Public
-            )
+            expected = DatabaseStmt::AlterOwner {
+                db_name: "db_name".into(),
+                new_owner: RoleSpec::Public
+            }
         )
     }
 
@@ -177,10 +172,10 @@ mod tests {
         test_parser!(
             source = "database db_name rename to this_db",
             parser = alter_database_stmt,
-            expected = RenameStmt::new(
-                RenameTarget::Database("db_name".into()),
-                "this_db"
-            )
+            expected = DatabaseStmt::Rename {
+                db_name: "db_name".into(),
+                new_name: "this_db".into()
+            }
         )
     }
 
@@ -237,12 +232,6 @@ mod tests {
     }
 }
 
-use pg_ast::AlterOwnerStmt;
-use pg_ast::AlterOwnerTarget;
-use pg_ast::RawStmt;
-use pg_ast::RawStmt::AlterDatabaseRefreshCollStmt;
-use pg_ast::RenameStmt;
-use pg_ast::RenameTarget;
 use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::identifier;
@@ -260,6 +249,7 @@ use pg_database_stmt_ast::AlterdbOptionKind::ConnectionLimit;
 use pg_database_stmt_ast::AlterdbOptionKind::IsTemplate;
 use pg_database_stmt_ast::AlterdbOptionKind::Tablespace;
 use pg_database_stmt_ast::AlterdbOptionKind::Unknown;
+use pg_database_stmt_ast::DatabaseStmt;
 use pg_generic_set_ast::SetResetClause;
 use pg_generic_set_ast::SetRest;
 use pg_generic_set_ast::VariableTarget;
