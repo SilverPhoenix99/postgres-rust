@@ -217,6 +217,8 @@ module Graph
     utility_option_list
     utility_option_name
 
+    CheckPointStmt
+
   ].to_set.freeze unless const_defined? :EXCLUDE
 
   EXPR_REGEX = /^([abc]_expr)_\d+$/ unless const_defined? :EXPR_REGEX

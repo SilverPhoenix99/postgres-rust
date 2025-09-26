@@ -1,5 +1,5 @@
 /// Alias: `CheckPointStmt`
-pub(super) fn check_point_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+pub fn check_point_stmt(ctx: &mut ParserContext) -> scan::Result<Option<Vec<UtilityOption>>> {
 
     /*
         CHECKPOINT ( utility_options )?
@@ -10,7 +10,7 @@ pub(super) fn check_point_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt>
         utility_options.optional()
     ).parse(ctx)?;
 
-    Ok(CheckPointStmt(options))
+    Ok(options)
 }
 
 #[cfg(test)]
@@ -21,20 +21,17 @@ mod tests {
     use pg_utility_option_ast::UtilityOptionName::Analyze;
     use test_case::test_case;
 
-    #[test_case("checkpoint", CheckPointStmt(None))]
-    #[test_case("checkpoint(analyze)",
-        CheckPointStmt(Some(vec![Analyze.into()]))
-    )]
-    fn test_check_point_stmt(source: &str, expected: RawStmt) {
-        test_parser!(source, check_point_stmt, expected)
+    #[test_case("checkpoint" => Ok(None))]
+    #[test_case("checkpoint(analyze)" => Ok(Some(vec![Analyze.into()])))]
+    fn test_check_point_stmt(source: &str) -> scan::Result<Option<Vec<UtilityOption>>> {
+        test_parser!(source, check_point_stmt)
     }
 }
 
-use pg_ast::RawStmt;
-use pg_ast::RawStmt::CheckPointStmt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Checkpoint;
 use pg_parser_core::scan;
+use pg_utility_option_ast::UtilityOption;
 use pg_utility_option_combinators::utility_options;

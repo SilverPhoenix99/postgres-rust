@@ -10,6 +10,7 @@ workspace = true
 derive_more = { workspace = true, features = ["from"] }
 pg-ast.workspace = true
 pg-basics.workspace = true
+pg-check-point-stmt.workspace = true
 pg-collation-stmt.workspace = true
 pg-combinators.workspace = true
 pg-conversion-stmt.workspace = true
@@ -31,8 +32,6 @@ pg-transaction-stmt-ast.workspace = true
 pg-transaction-stmt.workspace = true
 pg-type-combinators.workspace = true
 pg-variable-stmt.workspace = true
-pg-utility-option-ast.workspace = true
-pg-utility-option-combinators.workspace = true
 pg-xml-ast.workspace = true
 pg-xml-combinators.workspace = true
 

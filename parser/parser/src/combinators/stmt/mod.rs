@@ -9,7 +9,7 @@ pub(super) fn stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
             analyze_stmt,
             call_stmt,
             cluster_stmt,
-            check_point_stmt,
+            check_point_stmt.map(CheckPointStmt),
             close_stmt.map(ClosePortalStmt),
             comment_stmt.map(From::from),
             copy_stmt,
@@ -84,7 +84,6 @@ pg_basics::reexport! {
     alter_stmt,
     analyze_stmt,
     call_stmt,
-    check_point_stmt,
     close_stmt,
     cluster_stmt,
     comment_stmt,
@@ -128,6 +127,7 @@ use object_type_name::{
 };
 
 use pg_ast::RawStmt;
+use pg_ast::RawStmt::CheckPointStmt;
 use pg_ast::RawStmt::ClosePortalStmt;
 use pg_ast::RawStmt::DeallocateStmt;
 use pg_ast::RawStmt::ListenStmt;
@@ -135,6 +135,7 @@ use pg_ast::RawStmt::LoadStmt;
 use pg_ast::RawStmt::UnlistenStmt;
 use pg_ast::RawStmt::VariableResetStmt;
 use pg_ast::RawStmt::VariableShowStmt;
+use pg_check_point_stmt::check_point_stmt;
 use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
