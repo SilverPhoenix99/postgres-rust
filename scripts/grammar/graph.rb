@@ -211,6 +211,12 @@ module Graph
     AlterDatabaseStmt
     AlterDatabaseSetStmt
 
+    opt_utility_option_list
+    utility_option_arg
+    utility_option_elem
+    utility_option_list
+    utility_option_name
+
   ].to_set.freeze unless const_defined? :EXCLUDE
 
   EXPR_REGEX = /^([abc]_expr)_\d+$/ unless const_defined? :EXPR_REGEX

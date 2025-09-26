@@ -55,13 +55,9 @@ AlterSubscriptionStmt -> opt_definition
 AlterTSDictionaryStmt -> definition
 AlterTblSpcStmt -> reloptions
 AlterTypeStmt -> operator_def_list
-AnalyzeStmt -> opt_utility_option_list
 AnalyzeStmt -> opt_vacuum_relation_list
 BitWithLength -> expr_list
 CallStmt -> func_application
-CheckPointStmt -> opt_utility_option_list
-ClusterStmt -> opt_utility_option_list
-ClusterStmt -> utility_option_list
 ColConstraintElem -> OptConsTableSpace
 ColConstraintElem -> OptParenthesizedSeqOptList
 ColConstraintElem -> a_expr
@@ -144,7 +140,6 @@ DropCastStmt -> opt_if_exists
 DropTransformStmt -> opt_if_exists
 ExclusionConstraintElem -> index_elem
 ExecuteStmt -> OptTemp
-ExplainStmt -> utility_option_list
 ExplainableStmt -> DeleteStmt
 ExplainableStmt -> InsertStmt
 ExplainableStmt -> MergeStmt
@@ -185,7 +180,6 @@ PrepareStmt -> PreparableStmt
 PublicationObjSpec -> OptWhereClause
 PublicationObjSpec -> extended_relation_expr
 PublicationObjSpec -> indirection
-ReindexStmt -> opt_utility_option_list
 RemoveFuncStmt -> function_with_argtypes_list
 RenameStmt -> aggregate_with_argtypes
 RenameStmt -> function_with_argtypes
@@ -222,7 +216,6 @@ UpdateStmt -> returning_clause
 UpdateStmt -> set_clause_list
 UpdateStmt -> where_or_current_clause
 VacuumStmt -> opt_vacuum_relation_list
-VacuumStmt -> utility_option_list
 ViewStmt -> OptTemp
 ViewStmt -> SelectStmt
 ViewStmt -> opt_reloptions
@@ -417,7 +410,6 @@ opt_slice_bound -> a_expr
 opt_sort_clause -> sort_clause
 opt_target_list -> target_list
 opt_type_modifiers -> expr_list
-opt_utility_option_list -> utility_option_list
 opt_with_clause -> with_clause
 over_clause -> window_specification
 overlay_list -> a_expr
@@ -1103,12 +1095,6 @@ subgraph cluster_target_list {
   target_list -> target_el
 }
 
-subgraph cluster_utility_option_list {
-  utility_option_elem -> utility_option_arg
-  utility_option_elem -> utility_option_name
-  utility_option_list -> utility_option_elem
-}
-
 subgraph cluster_window_specification {
   frame_extent -> frame_bound
   opt_frame_clause -> frame_extent
@@ -1373,8 +1359,6 @@ transform_type_list [color=blue penwidth=3]
 type_list [color=blue penwidth=3]
 type_name_list [color=blue penwidth=3]
 unicode_normal_form [color=blue penwidth=3]
-utility_option_arg [color=blue penwidth=3]
-utility_option_name [color=blue penwidth=3]
 vacuum_relation [color=blue penwidth=3]
 validator_clause [color=blue penwidth=3]
 xml_indent_option [color=blue penwidth=3]

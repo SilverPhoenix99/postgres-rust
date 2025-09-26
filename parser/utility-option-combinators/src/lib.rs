@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `utility_option_list`
 /// * `opt_utility_option_list`
-pub(super) fn utility_options(ctx: &mut ParserContext) -> scan::Result<Vec<UtilityOption>> {
+pub fn utility_options(ctx: &mut ParserContext) -> scan::Result<Vec<UtilityOption>> {
 
     /*
         '(' utility_option_list ')'

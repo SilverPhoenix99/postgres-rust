@@ -32,6 +32,7 @@ members = [
     "parser/transaction-stmt-ast",
     "parser/type-combinators",
     "parser/utility-option-ast",
+    "parser/utility-option-combinators",
     "parser/variable-stmt",
     "parser/xml-ast",
     "parser/xml-combinators",
@@ -90,6 +91,7 @@ pg-transaction-stmt = { path = "parser/transaction-stmt" }
 pg-transaction-stmt-ast = { path = "parser/transaction-stmt-ast" }
 pg-type-combinators = { path = "parser/type-combinators" }
 pg-utility-option-ast = { path = "parser/utility-option-ast" }
+pg-utility-option-combinators = { path = "parser/utility-option-combinators" }
 pg-variable-stmt = { path = "parser/variable-stmt" }
 pg-xml-ast = { path = "parser/xml-ast" }
 pg-xml-combinators = { path = "parser/xml-combinators" }

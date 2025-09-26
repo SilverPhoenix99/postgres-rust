@@ -17,7 +17,6 @@ pg-database-stmt.workspace = true
 pg-elog.workspace = true
 pg-event-trigger-stmt.workspace = true
 pg-generic-set-ast.workspace = true
-pg-generic-set-combinators.workspace = true
 pg-interval-ast.workspace = true
 pg-interval-combinators.workspace = true
 pg-language-stmt.workspace = true
@@ -33,6 +32,7 @@ pg-transaction-stmt.workspace = true
 pg-type-combinators.workspace = true
 pg-variable-stmt.workspace = true
 pg-utility-option-ast.workspace = true
+pg-utility-option-combinators.workspace = true
 pg-xml-ast.workspace = true
 pg-xml-combinators.workspace = true
 
