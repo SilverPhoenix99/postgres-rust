@@ -218,6 +218,7 @@ module Graph
     utility_option_name
 
     CheckPointStmt
+    ClosePortalStmt
 
   ].to_set.freeze unless const_defined? :EXCLUDE
 
