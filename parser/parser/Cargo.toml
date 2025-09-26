@@ -13,7 +13,6 @@ pg-basics.workspace = true
 pg-collation-stmt.workspace = true
 pg-combinators.workspace = true
 pg-conversion-stmt.workspace = true
-pg-database-stmt-ast.workspace = true
 pg-database-stmt.workspace = true
 pg-elog.workspace = true
 pg-event-trigger-stmt.workspace = true
@@ -33,6 +32,7 @@ pg-transaction-stmt-ast.workspace = true
 pg-transaction-stmt.workspace = true
 pg-type-combinators.workspace = true
 pg-variable-stmt.workspace = true
+pg-utility-option-ast.workspace = true
 pg-xml-ast.workspace = true
 pg-xml-combinators.workspace = true
 

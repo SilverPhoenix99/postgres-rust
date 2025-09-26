@@ -16,4 +16,5 @@ pg-interval-ast.workspace = true
 pg-role-ast.workspace = true
 pg-sink-ast.workspace = true
 pg-transaction-stmt-ast.workspace = true
+pg-utility-option-ast.workspace = true
 pg-xml-ast.workspace = true

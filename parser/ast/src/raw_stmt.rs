@@ -113,6 +113,7 @@ impl From<DatabaseStmt> for RawStmt {
     }
 }
 
+use crate::AlterDefaultPrivilegesStmt;
 use crate::AlterEventTrigStmt;
 use crate::AlterExtensionContentsStmt;
 use crate::AlterExtensionStmt;
@@ -120,6 +121,7 @@ use crate::AlterFunctionStmt;
 use crate::AlterObjectDependsStmt;
 use crate::AlterObjectSchemaStmt;
 use crate::AlterOwnerStmt;
+use crate::AlterOwnerTarget;
 use crate::AlterSystemStmt;
 use crate::CommentStmt;
 use crate::ConstraintsSetStmt;
@@ -133,15 +135,14 @@ use crate::ReassignOwnedStmt;
 use crate::RenameStmt;
 use crate::RenameTarget;
 use crate::SecurityLabelStmt;
-use crate::UtilityOption;
 use crate::VariableSetStmt;
-use crate::{AlterDefaultPrivilegesStmt, AlterOwnerTarget};
 use derive_more::From;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
+use pg_database_stmt_ast::AlterDatabaseSetStmt;
 use pg_database_stmt_ast::AlterDatabaseStmt;
 use pg_database_stmt_ast::CreateDatabaseStmt;
-use pg_database_stmt_ast::{AlterDatabaseSetStmt, DatabaseStmt};
+use pg_database_stmt_ast::DatabaseStmt;
 use pg_generic_set_ast::VariableTarget;
 use pg_role_ast::AlterRoleSetStmt;
 use pg_role_ast::AlterRoleStmt;
@@ -151,3 +152,4 @@ use pg_role_ast::CreateUserMappingStmt;
 use pg_role_ast::RoleStmt;
 use pg_sink_ast::OneOrAll;
 use pg_transaction_stmt_ast::TransactionStmt;
+use pg_utility_option_ast::UtilityOption;

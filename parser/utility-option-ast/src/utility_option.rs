@@ -18,24 +18,11 @@ impl UtilityOption {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum UtilityOptionName {
-    Analyze,
-    Format,
-    Generic(Str)
-}
-
-impl UtilityOptionName {
-    pub fn with_value<T: Into<VarValue>>(self, value: T) -> UtilityOption {
-        UtilityOption::new(self, Some(value.into()))
-    }
-}
-
 impl From<UtilityOptionName> for UtilityOption {
     fn from(name: UtilityOptionName) -> Self {
         Self::new(name, None)
     }
 }
 
-use pg_basics::Str;
+use crate::UtilityOptionName;
 use pg_generic_set_ast::VarValue;

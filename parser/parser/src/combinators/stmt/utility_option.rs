@@ -100,11 +100,6 @@ mod tests {
     }
 }
 
-use pg_ast::UtilityOption;
-use pg_ast::UtilityOptionName;
-use pg_ast::UtilityOptionName::Analyze;
-use pg_ast::UtilityOptionName::Format;
-use pg_ast::UtilityOptionName::Generic;
 use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::paren;
@@ -117,3 +112,8 @@ use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
 use pg_sink_combinators::analyze_keyword;
 use pg_sink_combinators::non_reserved_word;
+use pg_utility_option_ast::UtilityOption;
+use pg_utility_option_ast::UtilityOptionName;
+use pg_utility_option_ast::UtilityOptionName::Analyze;
+use pg_utility_option_ast::UtilityOptionName::Format;
+use pg_utility_option_ast::UtilityOptionName::Generic;

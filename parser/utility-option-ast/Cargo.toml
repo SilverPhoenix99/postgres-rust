@@ -1,0 +1,11 @@
+[package]
+name = "pg-utility-option-ast"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+pg-basics.workspace = true
+pg-generic-set-ast.workspace = true

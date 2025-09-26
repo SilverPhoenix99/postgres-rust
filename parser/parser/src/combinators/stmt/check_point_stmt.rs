@@ -16,9 +16,9 @@ pub(super) fn check_point_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt>
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use pg_ast::UtilityOptionName::Analyze;
     use pg_combinators::test_parser;
+    #[allow(unused_imports)]
+    use pg_utility_option_ast::UtilityOptionName::Analyze;
     use test_case::test_case;
 
     #[test_case("checkpoint", CheckPointStmt(None))]

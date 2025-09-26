@@ -83,7 +83,6 @@ pg_basics::reexport! { pub
     unary_expr,
     unicode_normal_form,
     unique_null_treatment,
-    utility_option,
     variable_set_stmt,
     window_definition,
     window_frame,
