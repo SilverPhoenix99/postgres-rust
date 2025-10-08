@@ -8,6 +8,7 @@ pub(super) enum AttrTail {
     FuncTail {
         args: FuncArgsKind,
         filter: Option<ExprNode>,
+        null_treatment: Option<NullTreatment>,
         over: Option<OverClause>,
     },
 }
@@ -95,6 +96,7 @@ pub(super) fn attr_tail(ctx: &mut ParserContext) -> scan::Result<AttrTail> {
     let func_tail = AttrTail::FuncTail {
         args,
         filter: tail.filter,
+        null_treatment: tail.null_treatment,
         over: tail.over,
     };
 
@@ -124,22 +126,24 @@ fn attr_suffix(ctx: &mut ParserContext) -> scan::Result<AttrSuffix> {
 struct FuncArgsTail {
     pub group: Option<Located<Vec<SortBy>>>,
     pub filter: Option<ExprNode>,
+    pub null_treatment: Option<NullTreatment>,
     pub over: Option<OverClause>,
 }
 
 fn func_args_tail(ctx: &mut ParserContext) -> scan::Result<FuncArgsTail> {
 
     /*
-        ( within_group_clause )? ( filter_clause )? ( over_clause )?
+        ( within_group_clause )? ( filter_clause )? ( null_treatment )? ( over_clause )?
     */
 
-    let (group, filter, over) = seq!(
+    let (group, filter, null_treatment, over) = seq!(
         located!(within_group_clause).optional(),
         filter_clause.optional(),
+        null_treatment.optional(),
         over_clause.optional()
     ).parse(ctx)?;
 
-    Ok(FuncArgsTail { group, filter, over })
+    Ok(FuncArgsTail { group, filter, null_treatment, over })
 }
 
 #[cfg(test)]
@@ -152,6 +156,7 @@ mod tests {
     use {
         pg_ast::ExprNode::IntegerConst,
         pg_ast::NamedValue,
+        pg_ast::NullTreatment,
         pg_basics::Location,
         pg_elog::Error::Parser,
         scan::Error::ScanErr,
@@ -167,6 +172,7 @@ mod tests {
         AttrTail::FuncTail {
             args: FuncArgsKind::Empty { order_within_group: None },
             filter: None,
+            null_treatment: None,
             over: None
         }
     ))]
@@ -186,6 +192,7 @@ mod tests {
                 order: None
             },
             filter: None,
+            null_treatment: None,
             over: Some(OverClause::WindowName("bar".into()))
         }
     ))]
@@ -222,8 +229,8 @@ mod tests {
         test_parser!(source, attr_suffix)
     }
 
-    #[test_case("", None, None, None)]
-    #[test_case("within group (order by 1) filter (where 2) over foo",
+    #[test_case("", None, None, None, None)]
+    #[test_case("within group (order by 1) filter (where 2) ignore nulls over foo",
         Some(Located(
             SortBy::new(
                 IntegerConst(1),
@@ -233,17 +240,20 @@ mod tests {
             Location::new(0..6, 1, 1)
         )),
         Some(IntegerConst(2)),
+        Some(NullTreatment::Ignore),
         Some("foo".into())
     )]
     fn test_func_args_tail(
         source: &str,
         group: Option<Located<SortBy>>,
         filter: Option<ExprNode>,
+        null_treatment: Option<NullTreatment>,
         over: Option<Str>
     ) {
         let expected = FuncArgsTail {
             group: group.map(|Located(sort, loc)| Located(vec![sort], loc)),
             filter,
+            null_treatment,
             over: over.map(OverClause::WindowName),
         };
 
@@ -252,12 +262,14 @@ mod tests {
 }
 
 use crate::combinators::expr::expr_primary::filter_clause;
+use crate::combinators::expr::expr_primary::func_expr::null_treatment;
 use crate::combinators::expr::expr_primary::over_clause;
 use crate::combinators::expr::expr_primary::within_group_clause;
 use crate::combinators::func_application_args;
 use pg_ast::ExprNode;
 use pg_ast::FuncArgsKind;
 use pg_ast::FuncArgsOrder;
+use pg_ast::NullTreatment;
 use pg_ast::OverClause;
 use pg_ast::SortBy;
 use pg_basics::IntoLocated;

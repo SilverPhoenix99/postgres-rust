@@ -2,6 +2,7 @@
 pub struct FuncCallExpr {
     func: FuncCall,
     agg_filter: Option<ExprNode>,
+    null_treatment: Option<NullTreatment>,
     over: Option<OverClause>,
 }
 
@@ -10,6 +11,7 @@ impl FuncCallExpr {
         Self {
             func,
             agg_filter: None,
+            null_treatment: None,
             over: None
         }
     }
@@ -30,6 +32,20 @@ impl FuncCallExpr {
 
     pub fn agg_filter(&self) -> Option<&ExprNode> {
         self.agg_filter.as_ref()
+    }
+
+    pub fn set_null_treatment(&mut self, null_treatment: Option<NullTreatment>) -> &mut Self {
+        self.null_treatment = null_treatment;
+        self
+    }
+
+    pub fn with_null_treatment(mut self, null_treatment: NullTreatment) -> Self {
+        self.null_treatment = Some(null_treatment);
+        self
+    }
+
+    pub fn null_treatment(&self) -> Option<&NullTreatment> {
+        self.null_treatment.as_ref()
     }
 
     pub  fn set_over(&mut self, over: Option<OverClause>) -> &mut Self {
@@ -55,4 +71,5 @@ impl From<FuncCall> for FuncCallExpr {
 
 use crate::ExprNode;
 use crate::FuncCall;
+use crate::NullTreatment;
 use crate::OverClause;

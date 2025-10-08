@@ -865,6 +865,7 @@ subgraph cluster_c_expr {
   case_expr -> case_default
   case_expr -> when_clause_list
   func_expr -> filter_clause
+  func_expr -> null_treatment
   func_expr -> over_clause
   func_expr -> within_group_clause
   when_clause_list -> when_clause
@@ -1299,6 +1300,7 @@ locked_rels_list [color=blue penwidth=3]
 merge_when_tgt_matched [color=blue penwidth=3]
 merge_when_tgt_not_matched [color=blue penwidth=3]
 notify_payload [color=blue penwidth=3]
+null_treatment [color=blue penwidth=3]
 opclass_purpose [color=blue penwidth=3]
 oper_argtypes [color=blue penwidth=3]
 opt_alias_clause_for_join_using [color=blue penwidth=3]

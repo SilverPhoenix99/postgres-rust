@@ -12,10 +12,11 @@ pub(super) fn tailed_expr(name: Vec<Str>, tail: AttrTail) -> ExprNode {
 
             typecast.into()
         },
-        AttrTail::FuncTail { args, filter, over } => {
+        AttrTail::FuncTail { args, filter, null_treatment, over } => {
             // func_expr
             let mut func_call = FuncCallExpr::from(FuncCall::new(name, args));
             func_call.set_agg_filter(filter)
+                .set_null_treatment(null_treatment)
                 .set_over(over);
             func_call.into()
         },
@@ -30,6 +31,7 @@ mod tests {
         ExprNode::IntegerConst,
         FuncArgsKind,
         FuncCallExpr,
+        NullTreatment::Respect,
         OverClause::WindowName,
     };
     use test_case::test_case;
@@ -53,6 +55,7 @@ mod tests {
         AttrTail::FuncTail {
             args: FuncArgsKind::Wildcard { order_within_group: None },
             filter: Some(IntegerConst(123)),
+            null_treatment: Some(Respect),
             over: Some(WindowName("bar".into()))
         }
         => ExprNode::from(
@@ -63,6 +66,7 @@ mod tests {
                 )
             )
             .with_agg_filter(IntegerConst(123))
+            .with_null_treatment(Respect)
             .with_over(WindowName("bar".into()))
         )
     )]

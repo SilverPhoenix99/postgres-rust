@@ -1,5 +1,6 @@
 pg_basics::reexport! { pub(super)
     filter_clause,
+    null_treatment,
     over_clause,
     within_group_clause,
 }

@@ -57,6 +57,7 @@ pg_basics::reexport! { pub
     named_value,
     normalize_func,
     notify_stmt,
+    null_treatment,
     numeric_spec,
     one_or_both,
     operator_with_args,

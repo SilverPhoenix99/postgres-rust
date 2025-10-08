@@ -3664,6 +3664,7 @@ first_or_next :
 
 group_clause :
     GROUP_P BY set_quantifier group_by_list
+  | GROUP_P BY ALL
   | __empty
 ;
 
@@ -4314,7 +4315,7 @@ func_application :
 ;
 
 func_expr :
-    func_application within_group_clause filter_clause over_clause
+    func_application within_group_clause filter_clause null_treatment over_clause
   | json_aggregate_func filter_clause over_clause
   | func_expr_common_subexpr
 ;
@@ -4455,6 +4456,12 @@ within_group_clause :
 
 filter_clause :
     FILTER '(' WHERE a_expr ')'
+  | __empty
+;
+
+null_treatment :
+    IGNORE_P NULLS_P
+  | RESPECT_P NULLS_P
   | __empty
 ;
 
@@ -5153,6 +5160,7 @@ unreserved_keyword :
   | HOUR_P
   | IDENTITY_P
   | IF_P
+  | IGNORE_P
   | IMMEDIATE
   | IMMUTABLE
   | IMPLICIT_P
@@ -5271,6 +5279,7 @@ unreserved_keyword :
   | REPLACE
   | REPLICA
   | RESET
+  | RESPECT_P
   | RESTART
   | RESTRICT
   | RETURN
