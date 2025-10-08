@@ -29,6 +29,7 @@ pg_basics::reexport! { pub
     func_call_expr,
     func_expr_windowless,
     function_parameter,
+    function_parameter_mode,
     function_with_args,
     grant_option,
     grant_stmt,
