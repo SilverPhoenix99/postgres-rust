@@ -35,7 +35,7 @@ pub(super) fn frame_bound(ctx: &mut ParserContext) -> scan::Result<FrameBound> {
 
     let (expr, bound) = seq!(
         a_expr,
-        alt!( Preceding, Following)
+        alt!(Preceding, Following)
     ).parse(ctx)?;
 
     let bound = if bound == Preceding {

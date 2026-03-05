@@ -53,6 +53,13 @@ macro_rules! seq {
     };
 }
 
+/**
+Joins multiple parsers into a single parser.
+* If all parsers return `Ok`, then a tuple with all results is returned.
+* If any parser returns `Err`, then the parser returns that first `Err`.
+
+Equivalent to `A & B ( & ... )*`.
+*/
 #[cfg(feature = "tuple_combinators")]
 #[macro_export]
 macro_rules! seq {

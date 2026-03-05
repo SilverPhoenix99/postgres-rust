@@ -39,6 +39,14 @@ macro_rules! alt {
     };
 }
 
+/**
+Joins multiple parsers into a single parser.
+* Returns the first `Ok` in order.
+* If none return `Ok`, then the parser returns `Err(NoMatch)`.
+* If a parser returns a `ScanErr`, that error is returned immediately.
+
+Equivalent to `A | B ( | ... )*`.
+*/
 #[cfg(feature = "tuple_combinators")]
 #[macro_export]
 macro_rules! alt {

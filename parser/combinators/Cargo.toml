@@ -17,5 +17,5 @@ pg-parser-core.workspace = true
 test-case.workspace = true
 
 [features]
-default = []
+default = ["tuple_combinators"]
 tuple_combinators = []
