@@ -62,12 +62,12 @@ mod tests {
 
 use crate::combinators::stmt::collation_stmt::alter_collation_stmt;
 use crate::combinators::stmt::conversion_stmt::alter_conversion_stmt;
+use crate::combinators::stmt::database_stmt::alter_database_stmt;
 use pg_ast::RawStmt;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
-use pg_database_stmt::alter::alter_database_stmt;
 use pg_event_trigger_stmt::alter::alter_event_trigger_stmt;
 use pg_language_stmt::alter::alter_language_stmt;
 use pg_large_object_stmt::alter::alter_large_object_stmt;

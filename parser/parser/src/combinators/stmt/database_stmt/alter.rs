@@ -142,8 +142,8 @@ fn alterdb_opt_name(ctx: &mut ParserContext) -> scan::Result<AlterdbOptionKind> 
 mod tests {
     #[allow(unused_imports)]
     use super::*;
+    use pg_ast::CreatedbOptionValue;
     use pg_combinators::test_parser;
-    use pg_database_stmt_ast::CreatedbOptionValue;
     use test_case::test_case;
 
     #[test]
@@ -232,7 +232,17 @@ mod tests {
     }
 }
 
-use crate::create::createdb_opt_value;
+use crate::combinators::stmt::database_stmt::createdb_opt_value;
+use pg_ast::AlterDatabaseSetStmt;
+use pg_ast::AlterDatabaseStmt;
+use pg_ast::AlterdbOption;
+use pg_ast::AlterdbOptionKind;
+use pg_ast::AlterdbOptionKind::AllowConnections;
+use pg_ast::AlterdbOptionKind::ConnectionLimit;
+use pg_ast::AlterdbOptionKind::IsTemplate;
+use pg_ast::AlterdbOptionKind::Tablespace;
+use pg_ast::AlterdbOptionKind::Unknown;
+use pg_ast::DatabaseStmt;
 use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::identifier;
@@ -240,16 +250,6 @@ use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
-use pg_database_stmt_ast::AlterDatabaseSetStmt;
-use pg_database_stmt_ast::AlterDatabaseStmt;
-use pg_database_stmt_ast::AlterdbOption;
-use pg_database_stmt_ast::AlterdbOptionKind;
-use pg_database_stmt_ast::AlterdbOptionKind::AllowConnections;
-use pg_database_stmt_ast::AlterdbOptionKind::ConnectionLimit;
-use pg_database_stmt_ast::AlterdbOptionKind::IsTemplate;
-use pg_database_stmt_ast::AlterdbOptionKind::Tablespace;
-use pg_database_stmt_ast::AlterdbOptionKind::Unknown;
-use pg_database_stmt_ast::DatabaseStmt;
 use pg_generic_set_ast::SetResetClause;
 use pg_generic_set_ast::SetRest;
 use pg_generic_set_ast::VariableTarget;

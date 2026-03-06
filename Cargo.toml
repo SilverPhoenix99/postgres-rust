@@ -8,8 +8,6 @@ members = [
     "parser/ast",
     "parser/combinators",
     "parser/core",
-    "parser/database-stmt",
-    "parser/database-stmt-ast",
     "parser/event-trigger-stmt",
     "parser/generic-options-ast",
     "parser/generic-options-combinators",
@@ -62,8 +60,6 @@ test-case = "3"
 pg-ast = { path = "parser/ast" }
 pg-basics = { path = "basics" }
 pg-combinators = { path = "parser/combinators", features = [] }
-pg-database-stmt = { path = "parser/database-stmt" }
-pg-database-stmt-ast = { path = "parser/database-stmt-ast" }
 pg-elog = { path = "elog" }
 pg-event-trigger-stmt = { path = "parser/event-trigger-stmt" }
 pg-generic-options-ast = { path = "parser/generic-options-ast" }

@@ -90,6 +90,7 @@ pg_basics::reexport! {
     comment_stmt,
     copy_stmt,
     create_stmt,
+    database_stmt,
     deallocate_stmt,
     discard_stmt,
     do_stmt,

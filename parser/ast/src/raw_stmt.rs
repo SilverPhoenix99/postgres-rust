@@ -113,6 +113,8 @@ impl From<DatabaseStmt> for RawStmt {
     }
 }
 
+use crate::AlterDatabaseSetStmt;
+use crate::AlterDatabaseStmt;
 use crate::AlterDefaultPrivilegesStmt;
 use crate::AlterEventTrigStmt;
 use crate::AlterExtensionContentsStmt;
@@ -128,6 +130,8 @@ use crate::ConstraintsSetStmt;
 use crate::CreateAccessMethodStmt;
 use crate::CreateCastStmt;
 use crate::CreateConversionStmt;
+use crate::CreateDatabaseStmt;
+use crate::DatabaseStmt;
 use crate::DiscardStmt;
 use crate::NotifyStmt;
 use crate::PrepareStmt;
@@ -139,10 +143,6 @@ use crate::VariableSetStmt;
 use derive_more::From;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
-use pg_database_stmt_ast::AlterDatabaseSetStmt;
-use pg_database_stmt_ast::AlterDatabaseStmt;
-use pg_database_stmt_ast::CreateDatabaseStmt;
-use pg_database_stmt_ast::DatabaseStmt;
 use pg_generic_set_ast::VariableTarget;
 use pg_role_ast::AlterRoleSetStmt;
 use pg_role_ast::AlterRoleStmt;
