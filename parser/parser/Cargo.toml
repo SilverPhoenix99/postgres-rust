@@ -12,7 +12,6 @@ pg-ast.workspace = true
 pg-basics.workspace = true
 pg-check-point-stmt.workspace = true
 pg-close-stmt.workspace = true
-pg-collation-stmt.workspace = true
 pg-combinators.workspace = true
 pg-conversion-stmt.workspace = true
 pg-database-stmt.workspace = true

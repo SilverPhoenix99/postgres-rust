@@ -1,5 +1,6 @@
-mod privilege_target;
+mod collation_stmt;
 mod object_type_name;
+mod privilege_target;
 
 pub(super) fn stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 

@@ -60,8 +60,8 @@ mod tests {
     }
 }
 
+use crate::combinators::stmt::collation_stmt::alter_collation_stmt;
 use pg_ast::RawStmt;
-use pg_collation_stmt::alter::alter_collation_stmt;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;

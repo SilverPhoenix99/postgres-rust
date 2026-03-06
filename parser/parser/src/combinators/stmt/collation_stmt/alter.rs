@@ -6,7 +6,7 @@ enum Change {
 }
 
 /// Alias: `AlterCollationStmt`
-pub fn alter_collation_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+pub(in crate::combinators::stmt) fn alter_collation_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER COLLATION any_name REFRESH VERSION_P
