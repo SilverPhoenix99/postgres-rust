@@ -1,5 +1,5 @@
 /// Alias: `AlterSystemStmt`
-pub fn alter_system_stmt(ctx: &mut ParserContext) -> scan::Result<AlterSystemStmt> {
+pub(in crate::combinators::stmt) fn alter_system_stmt(ctx: &mut ParserContext) -> scan::Result<AlterSystemStmt> {
 
     /*
           ALTER SYSTEM RESET generic_reset

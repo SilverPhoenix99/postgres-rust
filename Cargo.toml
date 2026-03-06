@@ -20,7 +20,6 @@ members = [
     "parser/role-stmt",
     "parser/sink-ast",
     "parser/sink-combinators",
-    "parser/system-stmt",
     "parser/transaction-stmt",
     "parser/transaction-stmt-ast",
     "parser/type-combinators",
@@ -72,7 +71,6 @@ pg-role-ast = { path = "parser/role-ast" }
 pg-role-stmt = { path = "parser/role-stmt" }
 pg-sink-ast = { path = "parser/sink-ast" }
 pg-sink-combinators = { path = "parser/sink-combinators" }
-pg-system-stmt = { path = "parser/system-stmt" }
 pg-transaction-stmt = { path = "parser/transaction-stmt" }
 pg-transaction-stmt-ast = { path = "parser/transaction-stmt-ast" }
 pg-type-combinators = { path = "parser/type-combinators" }

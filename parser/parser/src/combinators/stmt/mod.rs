@@ -113,6 +113,7 @@ pg_basics::reexport! {
     revoke_stmt,
     security_label_stmt,
     set_stmt,
+    system_stmt,
     truncate_stmt,
     unlisten_stmt,
     vacuum_stmt,
