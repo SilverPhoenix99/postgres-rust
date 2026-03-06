@@ -5,7 +5,7 @@ enum Change {
 }
 
 /// Includes: `AlterEventTrigStmt`
-pub fn alter_event_trigger_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+pub(in crate::combinators::stmt) fn alter_event_trigger_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER EVENT TRIGGER ColId enable_trigger

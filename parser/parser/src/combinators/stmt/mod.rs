@@ -95,6 +95,7 @@ pg_basics::reexport! {
     discard_stmt,
     do_stmt,
     drop_stmt,
+    event_trigger_stmt,
     explain_stmt,
     fetch_stmt,
     import_stmt,
