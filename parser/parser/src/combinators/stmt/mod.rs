@@ -83,6 +83,7 @@ pg_basics::reexport! {
     alter_stmt,
     analyze_stmt,
     call_stmt,
+    check_point_stmt,
     cluster_stmt,
     comment_stmt,
     copy_stmt,
@@ -133,7 +134,6 @@ use pg_ast::RawStmt::LoadStmt;
 use pg_ast::RawStmt::UnlistenStmt;
 use pg_ast::RawStmt::VariableResetStmt;
 use pg_ast::RawStmt::VariableShowStmt;
-use pg_check_point_stmt::check_point_stmt;
 use pg_close_stmt::close_stmt;
 use pg_combinators::alt;
 use pg_combinators::Combinator;
