@@ -10,7 +10,6 @@ workspace = true
 derive_more = { workspace = true, features = ["from"] }
 pg-ast.workspace = true
 pg-basics.workspace = true
-pg-close-stmt.workspace = true
 pg-combinators.workspace = true
 pg-conversion-stmt.workspace = true
 pg-database-stmt.workspace = true

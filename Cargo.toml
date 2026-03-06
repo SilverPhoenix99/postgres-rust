@@ -6,7 +6,6 @@ members = [
     "elog",
     "guc",
     "parser/ast",
-    "parser/close-stmt",
     "parser/combinators",
     "parser/conversion-stmt",
     "parser/core",
@@ -63,7 +62,6 @@ test-case = "3"
 
 pg-ast = { path = "parser/ast" }
 pg-basics = { path = "basics" }
-pg-close-stmt = { path = "parser/close-stmt" }
 pg-combinators = { path = "parser/combinators", features = [] }
 pg-conversion-stmt = { path = "parser/conversion-stmt" }
 pg-database-stmt = { path = "parser/database-stmt" }
