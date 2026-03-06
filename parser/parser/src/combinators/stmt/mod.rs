@@ -99,6 +99,7 @@ pg_basics::reexport! {
     explain_stmt,
     fetch_stmt,
     import_stmt,
+    language_stmt,
     listen_stmt,
     load_stmt,
     lock_stmt,

@@ -3,7 +3,7 @@ enum Change {
     Name(Str),
 }
 
-pub fn alter_language_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+pub(in crate::combinators::stmt) fn alter_language_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER (PROCEDURAL)? LANGUAGE ColId OWNER TO RoleSpec => AlterOwnerStmt
