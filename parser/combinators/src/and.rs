@@ -6,65 +6,82 @@
 ///
 /// Equivalent to `A & B ( & ... )*`.
 macro_rules! tuple_and_combinator {
-    (
-        $(
-            ($($t:ident : $f:tt),+ $(,)? )
-        );+
-        $(;)?
-    ) => {
 
-        $(
-            impl<T0, $($t),+> Combinator for (T0, $($t),+)
-            where
-                T0: Combinator,
-                $($t: Combinator),+
-            {
-                type Output = (T0::Output, $($t::Output),+);
+    (@impl $($t:ident : $f:tt),+) => {
 
-                fn parse(&self, ctx: &mut ParserContext) -> scan::Result<Self::Output> {
+        impl<T0, $($t),+> Combinator for (T0, $($t),+)
+        where
+            T0: Combinator,
+            $($t: Combinator),+
+        {
+            type Output = (T0::Output, $($t::Output),+);
 
-                    let start_position = ctx.stream_mut().current_location().range().start;
+            fn parse(&self, ctx: &mut ParserContext) -> scan::Result<Self::Output> {
 
-                    Ok((
+                let start_position = ctx.stream_mut().current_location().range().start;
 
-                        self.0.parse(ctx)?,
+                Ok((
 
-                        $({
-                            match self.$f.parse(ctx) {
-                                Ok(ok) => ok,
+                    self.0.parse(ctx)?,
 
-                                Err(ScanErr(err)) => return Err(ScanErr(err)),
+                    $({
+                        match self.$f.parse(ctx) {
+                            Ok(ok) => ok,
 
-                                Err(Eof(loc) | NoMatch(loc)) => {
-                                    let current_position = ctx.stream_mut().current_location().range().start;
-                                    return if start_position == current_position {
-                                        // No consumption yet, so this is considered the first production.
-                                        Err(NoMatch(loc))
-                                    } else {
-                                        // Otherwise, some consumed before, and this is not considered the first production.
-                                        // In this case, there was a partial match, and this is now considered a syntax error.
-                                        Err(syntax(loc))
-                                    }
+                            Err(ScanErr(err)) => return Err(ScanErr(err)),
+
+                            Err(Eof(loc) | NoMatch(loc)) => {
+                                let current_position = ctx.stream_mut().current_location().range().start;
+                                return if start_position == current_position {
+                                    // No consumption yet, so this is considered the first production.
+                                    Err(NoMatch(loc))
+                                } else {
+                                    // Otherwise, some consumed before, and this is not considered the first production.
+                                    // In this case, there was a partial match, and this is now considered a syntax error.
+                                    Err(syntax(loc))
                                 }
                             }
-                        }),+
-                    ))
-                }
+                        }
+                    }),+
+                ))
             }
-        )+
+        }
+    };
+
+    (
+        [($t_last:ident : $f_last:tt)], [$(($t_prefix:ident : $f_prefix:tt)),+]
+    ) => {
+        tuple_and_combinator! { @impl $($t_prefix : $f_prefix),+ , $t_last : $f_last }
+    };
+
+    (
+        [($t_next:ident : $f_next:tt) , $(($t_suffix:ident : $f_suffix:tt)),+], []
+    ) => {
+        tuple_and_combinator! { @impl $t_next : $f_next }
+
+        tuple_and_combinator! {
+            [$(($t_suffix : $f_suffix)),+],
+            [($t_next : $f_next)]
+        }
+    };
+
+    (
+        [($t_next:ident : $f_next:tt) , $(($t_suffix:ident : $f_suffix:tt)),+], [$(($t_prefix:ident : $f_prefix:tt)),+]
+    ) => {
+        tuple_and_combinator! { @impl $($t_prefix : $f_prefix),+ , $t_next : $f_next }
+
+        tuple_and_combinator! {
+            [$(($t_suffix : $f_suffix)),+],
+            [$(($t_prefix : $f_prefix)),+ , ($t_next : $f_next)]
+        }
+    };
+
+    ($($t:ident : $f:tt),+ $(,)?) => {
+        tuple_and_combinator! { [$(($t : $f)),+], [] }
     };
 }
 
-tuple_and_combinator!(
-    (T1:1);
-    (T1:1, T2:2);
-    (T1:1, T2:2, T3:3);
-    (T1:1, T2:2, T3:3, T4:4);
-    (T1:1, T2:2, T3:3, T4:4, T5:5);
-    (T1:1, T2:2, T3:3, T4:4, T5:5, T6:6);
-    (T1:1, T2:2, T3:3, T4:4, T5:5, T6:6, T7:7);
-    (T1:1, T2:2, T3:3, T4:4, T5:5, T6:6, T7:7, T8:8);
-);
+tuple_and_combinator! { T1:1, T2:2, T3:3, T4:4, T5:5, T6:6, T7:7, T8:8 }
 
 use crate::Combinator;
 use crate::ParserContext;
