@@ -9,7 +9,7 @@ enum Change {
 }
 
 /// Alias: `AlterDatabaseStmt`
-pub fn alter_database_stmt(ctx: &mut ParserContext) -> scan::Result<DatabaseStmt> {
+pub(in crate::combinators::stmt) fn alter_database_stmt(ctx: &mut ParserContext) -> scan::Result<DatabaseStmt> {
 
     /*
         ALTER DATABASE ColId (

@@ -4,7 +4,7 @@ enum Change {
     Schema(Str),
 }
 
-pub fn alter_conversion_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+pub(in crate::combinators::stmt) fn alter_conversion_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER CONVERSION any_name OWNER TO RoleSpec

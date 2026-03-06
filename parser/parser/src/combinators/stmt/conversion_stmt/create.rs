@@ -1,5 +1,5 @@
 /// Alias: `CreateConversionStmt`
-pub fn create_conversion_stmt(ctx: &mut ParserContext) -> scan::Result<CreateConversionStmt> {
+pub(in crate::combinators::stmt) fn create_conversion_stmt(ctx: &mut ParserContext) -> scan::Result<CreateConversionStmt> {
 
     /*
         ( DEFAULT )? CONVERSION_P any_name FOR SCONST TO SCONST FROM any_name

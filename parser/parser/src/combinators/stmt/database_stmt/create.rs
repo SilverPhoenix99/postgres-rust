@@ -1,5 +1,5 @@
 /// Alias: `CreatedbStmt`
-pub fn create_database_stmt(ctx: &mut ParserContext) -> scan::Result<CreateDatabaseStmt> {
+pub(in crate::combinators::stmt) fn create_database_stmt(ctx: &mut ParserContext) -> scan::Result<CreateDatabaseStmt> {
 
     let (_, name, _, options) = seq!(
         Database,
