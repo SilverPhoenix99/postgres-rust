@@ -1,4 +1,4 @@
-pg_basics::reexport! { pub
+pg_basics::reexport! { pub(in crate::combinators::stmt)
     create_role_stmt,
     create_user_stmt,
 }

@@ -1,4 +1,4 @@
-pub fn create_user_stmt(ctx: &mut ParserContext) -> scan::Result<RoleStmt> {
+pub(in crate::combinators::stmt) fn create_user_stmt(ctx: &mut ParserContext) -> scan::Result<RoleStmt> {
 
     /*
           USER MAPPING ( if_not_exists )? FOR auth_ident SERVER ColId create_generic_options => CreateUserMappingStmt
@@ -103,8 +103,8 @@ mod tests {
     }
 }
 
-use crate::auth_ident;
-use crate::create::create_role_options;
+use crate::combinators::stmt::role_stmt::auth_ident::auth_ident;
+use crate::combinators::stmt::role_stmt::create::create_role_option::create_role_options;
 use pg_ast::CreateRoleStmt;
 use pg_ast::CreateUserMappingStmt;
 use pg_ast::RoleKind;

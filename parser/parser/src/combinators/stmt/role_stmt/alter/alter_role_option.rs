@@ -4,7 +4,7 @@ pub(super) fn alter_role_options(ctx: &mut ParserContext) -> scan::Result<Vec<Al
 }
 
 /// Alias: `AlterOptRoleElem`
-pub(crate) fn alter_role_option(ctx: &mut ParserContext) -> scan::Result<AlterRoleOption> {
+pub(in crate::combinators::stmt::role_stmt) fn alter_role_option(ctx: &mut ParserContext) -> scan::Result<AlterRoleOption> {
 
     /*
           PASSWORD SCONST

@@ -44,6 +44,8 @@ mod tests {
 
 use crate::combinators::stmt::conversion_stmt::create_conversion_stmt;
 use crate::combinators::stmt::database_stmt::create_database_stmt;
+use crate::combinators::stmt::role_stmt::create_role_stmt;
+use crate::combinators::stmt::role_stmt::create_user_stmt;
 use pg_ast::RawStmt;
 use pg_combinators::alt;
 use pg_combinators::seq;
@@ -51,5 +53,3 @@ use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Create;
 use pg_parser_core::scan;
-use pg_role_stmt::create::create_role_stmt;
-use pg_role_stmt::create::create_user_stmt;

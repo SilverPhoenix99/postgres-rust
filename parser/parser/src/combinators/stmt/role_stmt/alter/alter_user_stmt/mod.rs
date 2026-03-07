@@ -5,7 +5,7 @@ mod user_stmt;
 /// * `AlterRoleStmt`
 /// * `AlterRoleSetStmt`
 /// * `AlterUserMappingStmt`
-pub fn alter_user_stmt(ctx: &mut ParserContext) -> scan::Result<RoleStmt> {
+pub(in crate::combinators::stmt) fn alter_user_stmt(ctx: &mut ParserContext) -> scan::Result<RoleStmt> {
 
     /*
           ALTER USER MAPPING FOR auth_ident SERVER ColId alter_generic_options  => AlterUserMappingStmt
@@ -72,7 +72,7 @@ mod tests {
 }
 
 use self::user_stmt::user_stmt;
-use crate::auth_ident::auth_ident;
+use crate::combinators::stmt::role_stmt::auth_ident;
 use pg_ast::AlterUserMappingStmt;
 use pg_ast::RoleStmt;
 use pg_combinators::alt;

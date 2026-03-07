@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `CreateGroupStmt`
 /// * `CreateRoleStmt`
-pub fn create_role_stmt(ctx: &mut ParserContext) -> scan::Result<CreateRoleStmt> {
+pub(in crate::combinators::stmt) fn create_role_stmt(ctx: &mut ParserContext) -> scan::Result<CreateRoleStmt> {
 
     /*
         CREATE (ROLE | GROUP) RoleId ( WITH )? OptRoleList
@@ -59,7 +59,7 @@ mod tests {
     }
 }
 
-use crate::create::create_role_options;
+use crate::combinators::stmt::role_stmt::create::create_role_option::create_role_options;
 use pg_ast::CreateRoleStmt;
 use pg_ast::RoleKind;
 use pg_combinators::alt;

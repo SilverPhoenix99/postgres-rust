@@ -13,7 +13,6 @@ members = [
     "parser/interval-combinators",
     "parser/lexer",
     "parser/parser",
-    "parser/role-stmt",
     "parser/sink-combinators",
     "parser/transaction-stmt",
     "parser/type-combinators",
@@ -56,7 +55,6 @@ pg-interval-combinators = { path = "parser/interval-combinators" }
 pg-lexer = { path = "parser/lexer" }
 pg-parser = { path = "parser/parser" }
 pg-parser-core = { path = "parser/core" }
-pg-role-stmt = { path = "parser/role-stmt" }
 pg-sink-combinators = { path = "parser/sink-combinators" }
 pg-transaction-stmt = { path = "parser/transaction-stmt" }
 pg-type-combinators = { path = "parser/type-combinators" }

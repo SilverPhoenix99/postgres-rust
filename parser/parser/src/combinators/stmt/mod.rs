@@ -111,6 +111,7 @@ pg_basics::reexport! {
     reassign_owner_stmt,
     reindex_stmt,
     revoke_stmt,
+    role_stmt,
     security_label_stmt,
     set_stmt,
     system_stmt,

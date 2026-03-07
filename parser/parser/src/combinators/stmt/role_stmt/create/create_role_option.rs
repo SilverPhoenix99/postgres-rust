@@ -83,7 +83,7 @@ mod tests {
     }
 }
 
-use crate::alter::alter_role_option;
+use crate::combinators::stmt::role_stmt::alter::alter_role_option;
 use pg_ast::CreateRoleOption;
 use pg_combinators::alt;
 use pg_combinators::integer;

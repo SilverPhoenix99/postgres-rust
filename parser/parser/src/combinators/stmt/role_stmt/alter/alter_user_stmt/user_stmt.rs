@@ -168,7 +168,7 @@ mod tests {
 }
 
 use super::in_database::in_database;
-use crate::alter::alter_role_options;
+use crate::combinators::stmt::role_stmt::alter::alter_role_option::alter_role_options;
 use pg_ast::AlterRoleOption;
 use pg_ast::AlterRoleSetStmt;
 use pg_ast::AlterRoleStmt;
