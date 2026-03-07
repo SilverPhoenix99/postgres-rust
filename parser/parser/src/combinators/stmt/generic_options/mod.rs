@@ -1,4 +1,4 @@
-pg_basics::reexport! { pub
+pg_basics::reexport! { pub(super)
     alter_generic_options,
     create_generic_options,
 }

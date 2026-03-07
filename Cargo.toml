@@ -8,7 +8,6 @@ members = [
     "parser/ast",
     "parser/combinators",
     "parser/core",
-    "parser/generic-options-combinators",
     "parser/generic-set-combinators",
     "parser/interval-combinators",
     "parser/lexer",
@@ -48,7 +47,6 @@ pg-ast = { path = "parser/ast" }
 pg-basics = { path = "basics" }
 pg-combinators = { path = "parser/combinators", features = [] }
 pg-elog = { path = "elog" }
-pg-generic-options-combinators = { path = "parser/generic-options-combinators" }
 pg-generic-set-combinators = { path = "parser/generic-set-combinators" }
 pg-guc = { path = "guc" }
 pg-interval-combinators = { path = "parser/interval-combinators" }

@@ -1,4 +1,4 @@
-pub fn create_generic_options(ctx: &mut ParserContext) -> scan::Result<Vec<GenericOption>> {
+pub(in crate::combinators::stmt) fn create_generic_options(ctx: &mut ParserContext) -> scan::Result<Vec<GenericOption>> {
 
     /*
         OPTIONS '(' generic_option_list ')'
@@ -46,7 +46,7 @@ mod tests {
     }
 }
 
-use crate::generic_option;
+use super::generic_option;
 use pg_ast::GenericOption;
 use pg_combinators::many;
 use pg_combinators::paren;

@@ -98,6 +98,7 @@ pg_basics::reexport! {
     event_trigger_stmt,
     explain_stmt,
     fetch_stmt,
+    generic_options,
     import_stmt,
     language_stmt,
     large_object_stmt,
