@@ -1,4 +1,4 @@
-pub(crate) fn end_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
+pub(super) fn end_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
 
     /*
     TransactionStmtLegacy:

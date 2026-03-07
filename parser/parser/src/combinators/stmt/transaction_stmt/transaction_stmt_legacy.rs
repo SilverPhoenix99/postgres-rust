@@ -1,5 +1,5 @@
 /// Alias: `TransactionStmtLegacy`
-pub fn transaction_stmt_legacy(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
+pub(in crate::combinators) fn transaction_stmt_legacy(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
 
     alt!(
         begin_stmt,
@@ -25,8 +25,8 @@ mod tests {
     }
 }
 
-use crate::begin_stmt;
-use crate::end_stmt;
+use super::begin_stmt;
+use super::end_stmt;
 use pg_ast::TransactionStmt;
 use pg_combinators::alt;
 use pg_combinators::Combinator;

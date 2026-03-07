@@ -1,4 +1,4 @@
-pub(crate) fn start_transaction_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
+pub(super) fn start_transaction_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
 
     /*
         START TRANSACTION ( transaction_mode_list )?
@@ -42,7 +42,7 @@ mod tests {
     }
 }
 
-use crate::transaction_mode_list;
+use super::transaction_mode_list;
 use pg_ast::TransactionStmt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;

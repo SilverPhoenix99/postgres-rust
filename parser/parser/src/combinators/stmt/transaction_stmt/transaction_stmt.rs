@@ -1,5 +1,5 @@
 /// Alias: `TransactionStmt`
-pub fn transaction_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
+pub(in crate::combinators::stmt) fn transaction_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
 
     alt!(
         abort_stmt,
@@ -35,12 +35,12 @@ mod tests {
     }
 }
 
-use crate::abort_stmt;
-use crate::commit_stmt;
-use crate::release_savepoint_stmt;
-use crate::rollback_stmt;
-use crate::savepoint_stmt;
-use crate::start_transaction_stmt;
+use super::abort_stmt;
+use super::commit_stmt;
+use super::release_savepoint_stmt;
+use super::rollback_stmt;
+use super::savepoint_stmt;
+use super::start_transaction_stmt;
 use pg_ast::TransactionStmt;
 use pg_combinators::alt;
 use pg_combinators::Combinator;

@@ -73,6 +73,7 @@ mod tests {
 }
 
 use crate::combinators::stmt;
+use crate::combinators::stmt::transaction_stmt_legacy;
 use crate::no_match;
 use pg_ast::RawStmt;
 use pg_combinators::alt;
@@ -83,4 +84,3 @@ use pg_combinators::ParserContext;
 use pg_lexer::OperatorKind::Semicolon;
 use pg_parser_core::scan;
 use pg_parser_core::scan::Error::Eof;
-use pg_transaction_stmt::transaction_stmt_legacy;

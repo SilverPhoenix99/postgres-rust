@@ -126,6 +126,10 @@ pg_basics::reexport! {
     vacuum_stmt,
 }
 
+mod transaction_stmt;
+pub(in crate::combinators) use transaction_stmt::transaction_stmt_legacy;
+use transaction_stmt::{transaction_mode_list, transaction_stmt};
+
 use object_type_name::{
     access_method::*,
     aggregate::*,
@@ -152,4 +156,3 @@ use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_parser_core::scan;
-use pg_transaction_stmt::transaction_stmt;

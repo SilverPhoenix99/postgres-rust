@@ -1,4 +1,4 @@
-pub(crate) fn commit_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
+pub(super) fn commit_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt> {
 
     /*
     TransactionStmt:

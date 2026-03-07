@@ -1,6 +1,9 @@
-pg_basics::reexport! { pub
+pg_basics::reexport! { pub(super)
     transaction_mode_list,
     transaction_stmt,
+}
+
+pg_basics::reexport! { pub(in crate::combinators)
     transaction_stmt_legacy,
 }
 

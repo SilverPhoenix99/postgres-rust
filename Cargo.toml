@@ -13,7 +13,6 @@ members = [
     "parser/lexer",
     "parser/parser",
     "parser/sink-combinators",
-    "parser/transaction-stmt",
     "parser/type-combinators",
     "parser/xml-combinators",
 ]
@@ -52,6 +51,5 @@ pg-lexer = { path = "parser/lexer" }
 pg-parser = { path = "parser/parser" }
 pg-parser-core = { path = "parser/core" }
 pg-sink-combinators = { path = "parser/sink-combinators" }
-pg-transaction-stmt = { path = "parser/transaction-stmt" }
 pg-type-combinators = { path = "parser/type-combinators" }
 pg-xml-combinators = { path = "parser/xml-combinators" }
