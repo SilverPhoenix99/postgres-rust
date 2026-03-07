@@ -86,6 +86,7 @@ mod tests {
 }
 
 use super::generic_option;
+use crate::combinators::col_label;
 use pg_ast::GenericOptionKind;
 use pg_ast::GenericOptionKind::Add;
 use pg_ast::GenericOptionKind::Drop;
@@ -102,4 +103,3 @@ use pg_lexer::Keyword::DropKw;
 use pg_lexer::Keyword::Options;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_label;

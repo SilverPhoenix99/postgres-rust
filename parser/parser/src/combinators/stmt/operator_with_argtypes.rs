@@ -135,6 +135,7 @@ mod tests {
     }
 }
 
+use crate::combinators::any_operator;
 use crate::combinators::typename;
 use pg_ast::OneOrBoth;
 use pg_ast::OperatorWithArgs;
@@ -153,4 +154,3 @@ use pg_lexer::Keyword::NoneKw;
 use pg_lexer::OperatorKind::CloseParenthesis;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_sink_combinators::any_operator;

@@ -213,7 +213,9 @@ mod tests {
     }
 }
 
+use crate::combinators::col_id;
 use crate::combinators::collate_clause;
+use crate::combinators::name_list;
 use crate::combinators::table_func_element_list;
 use crate::combinators::typename;
 use pg_ast::FuncAlias;
@@ -227,5 +229,3 @@ use pg_lexer::Keyword::As;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
 use pg_parser_core::Optional;
-use pg_sink_combinators::col_id;
-use pg_sink_combinators::name_list;

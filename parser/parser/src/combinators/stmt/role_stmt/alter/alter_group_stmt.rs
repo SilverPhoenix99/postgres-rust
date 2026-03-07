@@ -99,6 +99,11 @@ mod tests {
     }
 }
 
+use crate::combinators::add_drop;
+use crate::combinators::role_id;
+use crate::combinators::role_list;
+use crate::combinators::role_spec;
+use crate::combinators::IntoRoleId;
 use pg_ast::AddDrop;
 use pg_ast::AlterRoleOption::RoleMembers;
 use pg_ast::AlterRoleStmt;
@@ -117,8 +122,3 @@ use pg_lexer::Keyword::Rename;
 use pg_lexer::Keyword::To;
 use pg_lexer::Keyword::User;
 use pg_parser_core::scan;
-use pg_sink_combinators::add_drop;
-use pg_sink_combinators::role_id;
-use pg_sink_combinators::role_list;
-use pg_sink_combinators::role_spec;
-use pg_sink_combinators::IntoRoleId;

@@ -72,7 +72,8 @@ mod tests {
 }
 
 use self::user_stmt::user_stmt;
-use crate::combinators::stmt::generic_options::alter_generic_options;
+use crate::combinators::col_id;
+use crate::combinators::stmt::alter_generic_options;
 use crate::combinators::stmt::role_stmt::auth_ident;
 use pg_ast::AlterUserMappingStmt;
 use pg_ast::RoleStmt;
@@ -86,4 +87,3 @@ use pg_lexer::Keyword::Mapping;
 use pg_lexer::Keyword::Server;
 use pg_lexer::Keyword::User;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_id;

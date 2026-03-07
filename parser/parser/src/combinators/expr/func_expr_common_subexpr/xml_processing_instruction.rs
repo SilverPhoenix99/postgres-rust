@@ -43,6 +43,7 @@ mod tests {
     }
 }
 
+use crate::combinators::col_label;
 use crate::combinators::expr::a_expr;
 use pg_ast::XmlProcessingInstruction;
 use pg_combinators::paren;
@@ -53,4 +54,3 @@ use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Name;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_label;

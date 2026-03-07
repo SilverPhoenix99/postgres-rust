@@ -115,6 +115,7 @@ mod tests {
 }
 
 use super::type_modifiers;
+use crate::combinators::precision;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Bool;
 use pg_ast::TypeName::Float4;
@@ -143,4 +144,3 @@ use pg_lexer::Keyword::Integer;
 use pg_lexer::Keyword::Real;
 use pg_lexer::Keyword::Smallint;
 use pg_parser_core::scan;
-use pg_sink_combinators::precision;

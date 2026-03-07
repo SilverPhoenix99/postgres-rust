@@ -1,0 +1,105 @@
+pub fn qualified_name_list(ctx: &mut ParserContext) -> scan::Result<Vec<RelationName>> {
+
+    /*
+        qualified_name ( ',' qualified_name )*
+    */
+
+    many!(sep = Comma, qualified_name).parse(ctx)
+}
+
+pub fn qualified_name(ctx: &mut ParserContext) -> scan::Result<RelationName> {
+
+    /*
+        (col_id attrs){1,3}
+    */
+
+    let Located(mut qn, loc) = located!(any_name).parse(ctx)?;
+
+    match qn.as_mut_slice() {
+        [relation] => {
+            let relation = mem::take(relation);
+            Ok(RelationName::new(relation, None))
+        },
+        [schema, relation] => {
+            let schema = mem::take(schema);
+            let relation = mem::take(relation);
+            Ok(RelationName::new(
+                relation,
+                Some(SchemaName::new(schema, None))
+            ))
+        },
+        [catalog, schema, relation] => {
+            let catalog = mem::take(catalog);
+            let schema = mem::take(schema);
+            let relation = mem::take(relation);
+            Ok(RelationName::new(
+                relation,
+                Some(SchemaName::new(
+                    schema,
+                    Some(catalog)
+                ))
+            ))
+        },
+        _ => {
+            Err(ImproperQualifiedName(NameList(qn)).at_location(loc).into())
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pg_combinators::test_parser;
+
+    #[test]
+    fn test_qualified_name_list() {
+        test_parser!(
+            source = "relation_,schema_.relation_, catalog_.schema_.relation_",
+            parser = qualified_name_list,
+            expected = vec![
+                RelationName::new("relation_", None),
+                RelationName::new(
+                    "relation_",
+                    Some(SchemaName::new("schema_", None))
+                ),
+                RelationName::new(
+                    "relation_",
+                    Some(SchemaName::new(
+                        "schema_",
+                        Some("catalog_".into())
+                    ))
+                )
+            ]
+        )
+    }
+
+    #[test]
+    fn test_qualified_name() {
+        test_parser!(
+            source = "some_catalog.some_schema.some_relation",
+            parser = qualified_name,
+            expected = RelationName::new(
+                "some_relation",
+                Some(SchemaName::new(
+                    "some_schema",
+                    Some("some_catalog".into())
+                ))
+            )
+        )
+    }
+}
+
+use crate::combinators::any_name;
+use core::mem;
+use pg_ast::RelationName;
+use pg_ast::SchemaName;
+use pg_basics::IntoLocated;
+use pg_basics::Located;
+use pg_combinators::located;
+use pg_combinators::many;
+use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
+use pg_elog::parser::Error::ImproperQualifiedName;
+use pg_elog::parser::NameList;
+use pg_lexer::OperatorKind::Comma;
+use pg_parser_core::scan;

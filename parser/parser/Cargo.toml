@@ -14,7 +14,6 @@ pg-combinators.workspace = true
 pg-elog.workspace = true
 pg-lexer.workspace = true
 pg-parser-core.workspace = true
-pg-sink-combinators.workspace = true
 
 [dev-dependencies]
 assert_matches.workspace = true

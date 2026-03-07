@@ -14,10 +14,10 @@ pub(super) fn analyze_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
     Ok(stmt)
 }
 
+use crate::combinators::analyze_keyword;
 use pg_ast::RawStmt;
 use pg_combinators::parser;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_parser_core::scan;
-use pg_sink_combinators::analyze_keyword;

@@ -152,6 +152,7 @@ mod tests {
     }
 }
 
+use crate::attrs;
 use crate::combinators::func_arg;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionWithArgs;
@@ -170,4 +171,3 @@ use pg_lexer::KeywordCategory::Unreserved;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
 use pg_parser_core::Optional;
-use pg_sink_combinators::attrs;

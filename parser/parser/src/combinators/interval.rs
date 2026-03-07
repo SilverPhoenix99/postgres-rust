@@ -159,6 +159,7 @@ mod tests {
     }
 }
 
+use crate::combinators::precision;
 use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Day;
 use pg_ast::IntervalRange::DayToHour;
@@ -180,4 +181,3 @@ use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
-use pg_sink_combinators::precision;

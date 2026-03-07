@@ -316,7 +316,9 @@ mod tests {
     }
 }
 
+use crate::combinators::col_id;
 use crate::combinators::function_with_argtypes;
+use crate::combinators::role_spec;
 use crate::combinators::stmt::alter_function_option;
 use pg_ast::AddDrop;
 use pg_ast::AlterFunctionKind;
@@ -351,5 +353,3 @@ use pg_lexer::Keyword::Schema;
 use pg_lexer::Keyword::Set;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_id;
-use pg_sink_combinators::role_spec;

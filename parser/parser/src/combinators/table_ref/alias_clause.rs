@@ -38,6 +38,8 @@ mod tests {
     }
 }
 
+use crate::combinators::col_id;
+use crate::combinators::name_list;
 use pg_ast::Alias;
 use pg_combinators::paren;
 use pg_combinators::seq;
@@ -45,5 +47,3 @@ use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_lexer::Keyword::As;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_id;
-use pg_sink_combinators::name_list;

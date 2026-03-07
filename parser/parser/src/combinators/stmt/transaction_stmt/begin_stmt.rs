@@ -36,10 +36,10 @@ mod tests {
 }
 
 use super::transaction_mode_list;
+use crate::combinators::work_or_transaction;
 use pg_ast::TransactionStmt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Begin;
 use pg_parser_core::scan;
-use pg_sink_combinators::work_or_transaction;

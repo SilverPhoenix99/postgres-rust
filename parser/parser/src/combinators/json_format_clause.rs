@@ -70,6 +70,7 @@ mod tests {
 
 }
 
+use crate::combinators::col_id;
 use pg_ast::JsonEncoding::UTF16;
 use pg_ast::JsonEncoding::UTF32;
 use pg_ast::JsonEncoding::UTF8;
@@ -85,4 +86,3 @@ use pg_lexer::Keyword::Encoding;
 use pg_lexer::Keyword::Format;
 use pg_lexer::Keyword::Json;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_id;

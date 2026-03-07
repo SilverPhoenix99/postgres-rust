@@ -148,6 +148,7 @@ mod tests {
     }
 }
 
+use crate::combinators::col_id;
 use crate::combinators::var_value;
 use pg_ast::CreateDatabaseStmt;
 use pg_ast::CreatedbOption;
@@ -187,4 +188,3 @@ use pg_lexer::Keyword::LocationKw;
 use pg_lexer::Keyword::With;
 use pg_lexer::OperatorKind::Equals;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_id;

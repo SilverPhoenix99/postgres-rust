@@ -45,6 +45,7 @@ mod tests {
     }
 }
 
+use crate::combinators::any_name;
 use pg_ast::CreateConversionStmt;
 use pg_combinators::seq;
 use pg_combinators::string;
@@ -56,4 +57,3 @@ use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::FromKw;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
-use pg_sink_combinators::any_name;

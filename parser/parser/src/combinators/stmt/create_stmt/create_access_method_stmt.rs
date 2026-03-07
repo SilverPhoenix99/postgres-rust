@@ -42,6 +42,8 @@ mod tests {
     }
 }
 
+use crate::combinators::any_name;
+use crate::combinators::col_id;
 use pg_ast::AccessMethodKind;
 use pg_ast::AccessMethodKind::Index;
 use pg_ast::AccessMethodKind::Table;
@@ -56,5 +58,3 @@ use pg_lexer::Keyword::Handler;
 use pg_lexer::Keyword::Method;
 use pg_lexer::Keyword::Type;
 use pg_parser_core::scan;
-use pg_sink_combinators::any_name;
-use pg_sink_combinators::col_id;

@@ -45,6 +45,8 @@ mod tests {
 }
 
 use super::type_modifiers;
+use crate::attrs;
+use crate::combinators::type_function_name;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Float8;
 use pg_ast::TypeName::Generic;
@@ -55,6 +57,4 @@ use pg_lexer::Keyword::Double;
 use pg_lexer::Keyword::Precision;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenValue;
-use pg_sink_combinators::attrs;
-use pg_sink_combinators::type_function_name;
 use TokenValue::Keyword;

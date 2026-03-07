@@ -45,6 +45,7 @@ mod tests {
     }
 }
 
+use crate::combinators::col_id;
 use pg_ast::NotifyStmt;
 use pg_combinators::seq;
 use pg_combinators::string;
@@ -53,4 +54,3 @@ use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Notify;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_id;

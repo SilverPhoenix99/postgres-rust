@@ -35,6 +35,7 @@ mod tests {
     }
 }
 
+use crate::combinators::col_id;
 use crate::combinators::window_specification;
 use pg_ast::OverClause;
 use pg_ast::OverClause::WindowDefinition;
@@ -45,4 +46,3 @@ use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Over;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_id;

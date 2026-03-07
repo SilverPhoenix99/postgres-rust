@@ -1,0 +1,33 @@
+pub(in crate::combinators::stmt) fn view(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
+
+    /*
+        VIEW any_name
+    */
+
+    let (_, view) = seq!(View, any_name).parse(ctx)?;
+
+    Ok(view)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pg_combinators::test_parser;
+
+    #[test]
+    fn test_view() {
+        test_parser!(
+            source = "view foo",
+            parser = view,
+            expected = vec!["foo".into()]
+        )
+    }
+}
+
+use crate::combinators::any_name;
+use pg_basics::QualifiedName;
+use pg_combinators::seq;
+use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
+use pg_lexer::Keyword::View;
+use pg_parser_core::scan;

@@ -4,5 +4,6 @@ pg_basics::reexport! { pub(super)
 }
 
 pg_basics::reexport! {
+    alter_role_option,
     auth_ident,
 }

@@ -83,7 +83,8 @@ mod tests {
     }
 }
 
-use crate::combinators::stmt::role_stmt::alter::alter_role_option;
+use crate::combinators::role_list;
+use crate::combinators::stmt::role_stmt::alter_role_option;
 use pg_ast::CreateRoleOption;
 use pg_combinators::alt;
 use pg_combinators::integer;
@@ -97,4 +98,3 @@ use pg_lexer::Keyword::Inherit;
 use pg_lexer::Keyword::Role;
 use pg_lexer::Keyword::Sysid;
 use pg_parser_core::scan;
-use pg_sink_combinators::role_list;

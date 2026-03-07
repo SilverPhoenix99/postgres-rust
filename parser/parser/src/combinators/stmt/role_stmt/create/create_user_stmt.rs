@@ -103,9 +103,12 @@ mod tests {
     }
 }
 
-use crate::combinators::stmt::generic_options::create_generic_options;
-use crate::combinators::stmt::role_stmt::auth_ident::auth_ident;
-use crate::combinators::stmt::role_stmt::create::create_role_option::create_role_options;
+use crate::combinators::col_id;
+use crate::combinators::if_not_exists;
+use crate::combinators::role_id;
+use crate::combinators::stmt::create_generic_options;
+use crate::combinators::stmt::role_stmt::auth_ident;
+use crate::combinators::stmt::role_stmt::create::create_role_options;
 use pg_ast::CreateRoleStmt;
 use pg_ast::CreateUserMappingStmt;
 use pg_ast::RoleKind;
@@ -120,6 +123,3 @@ use pg_lexer::Keyword::Server;
 use pg_lexer::Keyword::User;
 use pg_lexer::Keyword::With;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_id;
-use pg_sink_combinators::if_not_exists;
-use pg_sink_combinators::role_id;

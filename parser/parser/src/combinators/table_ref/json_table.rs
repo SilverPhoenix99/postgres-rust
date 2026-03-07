@@ -395,6 +395,7 @@ mod tests {
 }
 
 use crate::combinators::alias;
+use crate::combinators::col_id;
 use crate::combinators::expr::a_expr;
 use crate::combinators::json_behavior_clause;
 use crate::combinators::json_format_clause;
@@ -437,4 +438,4 @@ use pg_lexer::Keyword::Ordinality;
 use pg_lexer::Keyword::Path;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_id;
+

@@ -67,6 +67,8 @@ mod tests {
     }
 }
 
+use crate::combinators::any_name;
+use crate::combinators::col_id;
 use crate::combinators::stmt::operator_with_argtypes;
 use pg_ast::OperatorWithArgs;
 use pg_basics::QualifiedName;
@@ -80,5 +82,3 @@ use pg_lexer::Keyword::Class;
 use pg_lexer::Keyword::Family;
 use pg_lexer::Keyword::Using;
 use pg_parser_core::scan;
-use pg_sink_combinators::any_name;
-use pg_sink_combinators::col_id;

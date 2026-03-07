@@ -70,6 +70,7 @@ mod tests {
     }
 }
 
+use crate::attrs;
 use pg_basics::Located;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
@@ -83,4 +84,3 @@ use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_lexer::KeywordCategory::Unreserved;
 use pg_parser_core::scan;
 use pg_parser_core::syntax;
-use pg_sink_combinators::attrs;

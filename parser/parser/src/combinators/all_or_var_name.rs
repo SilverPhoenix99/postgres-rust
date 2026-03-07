@@ -25,6 +25,7 @@ mod tests {
     }
 }
 
+use crate::combinators::var_name;
 use pg_ast::OneOrAll;
 use pg_basics::QualifiedName;
 use pg_combinators::alt;
@@ -32,4 +33,3 @@ use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_lexer::Keyword;
 use pg_parser_core::scan;
-use pg_sink_combinators::var_name;

@@ -222,8 +222,11 @@ mod tests {
     }
 }
 
+use crate::combinators::drop_behavior;
 use crate::combinators::grantee_list;
+use crate::combinators::name_list;
 use crate::combinators::privileges;
+use crate::combinators::role_list;
 use crate::combinators::with_grant_option;
 use pg_ast::AclOption;
 use pg_ast::AlterDefaultPrivilegesStmt;
@@ -257,6 +260,3 @@ use pg_lexer::Keyword::Schema;
 use pg_lexer::Keyword::To;
 use pg_lexer::Keyword::User;
 use pg_parser_core::scan;
-use pg_sink_combinators::drop_behavior;
-use pg_sink_combinators::name_list;
-use pg_sink_combinators::role_list;

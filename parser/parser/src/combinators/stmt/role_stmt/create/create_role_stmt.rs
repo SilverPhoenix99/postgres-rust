@@ -59,7 +59,8 @@ mod tests {
     }
 }
 
-use crate::combinators::stmt::role_stmt::create::create_role_option::create_role_options;
+use super::create_role_options;
+use crate::combinators::role_id;
 use pg_ast::CreateRoleStmt;
 use pg_ast::RoleKind;
 use pg_combinators::alt;
@@ -70,4 +71,3 @@ use pg_lexer::Keyword::Group;
 use pg_lexer::Keyword::Role;
 use pg_lexer::Keyword::With;
 use pg_parser_core::scan;
-use pg_sink_combinators::role_id;

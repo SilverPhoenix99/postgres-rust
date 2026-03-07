@@ -69,6 +69,8 @@ mod tests {
     }
 }
 
+use crate::combinators::col_id;
+use crate::combinators::role_spec;
 use pg_ast::AlterOwnerStmt;
 use pg_ast::AlterOwnerTarget;
 use pg_ast::RawStmt;
@@ -86,5 +88,3 @@ use pg_lexer::Keyword::Procedural;
 use pg_lexer::Keyword::Rename;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_id;
-use pg_sink_combinators::role_spec;

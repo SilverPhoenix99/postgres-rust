@@ -108,6 +108,9 @@ mod tests {
 
 use super::reset_stmt;
 use super::set_rest_more;
+use crate::combinators::any_name;
+use crate::combinators::col_id;
+use crate::combinators::signed_number;
 use pg_ast::AlterFunctionOption;
 use pg_ast::AlterFunctionOption::*;
 use pg_ast::Volatility::*;
@@ -126,6 +129,3 @@ use pg_lexer::Keyword::Null;
 use pg_lexer::Keyword::On;
 use pg_lexer::Keyword::Returns;
 use pg_parser_core::scan;
-use pg_sink_combinators::any_name;
-use pg_sink_combinators::col_id;
-use pg_sink_combinators::signed_number;

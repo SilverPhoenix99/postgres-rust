@@ -79,6 +79,7 @@ mod tests {
     }
 }
 
+use crate::combinators::precision;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Bpchar;
 use pg_ast::TypeName::Varchar;
@@ -92,4 +93,3 @@ use pg_lexer::Keyword::Character;
 use pg_lexer::Keyword::National;
 use pg_lexer::Keyword::Nchar;
 use pg_lexer::Keyword::Varying;
-use pg_sink_combinators::precision;

@@ -185,6 +185,7 @@ mod tests {
 }
 
 use crate::combinators::interval;
+use crate::combinators::precision;
 use crate::combinators::simple_typename;
 use crate::no_match;
 use pg_ast::ExprNode;
@@ -235,4 +236,3 @@ use pg_parser_core::scan;
 use pg_parser_core::stream::TokenValue::Keyword;
 use pg_parser_core::stream::TokenValue::Operator;
 use pg_parser_core::stream::TokenValue::String;
-use pg_sink_combinators::precision;

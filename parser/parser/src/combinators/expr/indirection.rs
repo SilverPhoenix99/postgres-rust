@@ -164,6 +164,7 @@ mod tests {
     }
 }
 
+use crate::combinators::col_label;
 use crate::combinators::expr::a_expr;
 use pg_ast::Indirection;
 use pg_ast::Indirection::Index;
@@ -183,4 +184,3 @@ use pg_lexer::OperatorKind::Colon;
 use pg_lexer::OperatorKind::Dot;
 use pg_lexer::OperatorKind::Mul;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_label;

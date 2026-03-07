@@ -60,6 +60,7 @@ mod tests {
     }
 }
 
+use crate::combinators::col_label;
 use crate::combinators::json_value_expr;
 use pg_ast::JsonArgument;
 use pg_combinators::many;
@@ -70,4 +71,3 @@ use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Passing;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_label;

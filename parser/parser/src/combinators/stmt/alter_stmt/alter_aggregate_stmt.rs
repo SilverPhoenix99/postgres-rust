@@ -101,6 +101,8 @@ mod tests {
     }
 }
 
+use crate::combinators::col_id;
+use crate::combinators::role_spec;
 use crate::combinators::stmt::aggregate_with_argtypes;
 use pg_ast::AlterObjectSchemaStmt;
 use pg_ast::AlterObjectSchemaTarget;
@@ -122,5 +124,3 @@ use pg_lexer::Keyword::Schema;
 use pg_lexer::Keyword::Set;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_id;
-use pg_sink_combinators::role_spec;

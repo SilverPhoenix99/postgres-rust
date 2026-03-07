@@ -36,6 +36,7 @@ mod tests {
     }
 }
 
+use crate::combinators::col_id;
 use pg_ast::TransactionStmt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
@@ -43,4 +44,3 @@ use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Release;
 use pg_lexer::Keyword::Savepoint;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_id;

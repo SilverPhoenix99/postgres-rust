@@ -10,7 +10,6 @@ members = [
     "parser/core",
     "parser/lexer",
     "parser/parser",
-    "parser/sink-combinators",
 ]
 
 [workspace.package]
@@ -44,4 +43,3 @@ pg-guc = { path = "guc" }
 pg-lexer = { path = "parser/lexer" }
 pg-parser = { path = "parser/parser" }
 pg-parser-core = { path = "parser/core" }
-pg-sink-combinators = { path = "parser/sink-combinators" }

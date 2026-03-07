@@ -109,6 +109,9 @@ mod tests {
     }
 }
 
+use crate::combinators::any_name;
+use crate::combinators::col_id;
+use crate::combinators::role_spec;
 use pg_ast::AlterObjectSchemaStmt;
 use pg_ast::AlterObjectSchemaTarget;
 use pg_ast::AlterOwnerStmt;
@@ -132,6 +135,3 @@ use pg_lexer::Keyword::Set;
 use pg_lexer::Keyword::To;
 use pg_lexer::Keyword::Version;
 use pg_parser_core::scan;
-use pg_sink_combinators::any_name;
-use pg_sink_combinators::col_id;
-use pg_sink_combinators::role_spec;

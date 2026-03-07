@@ -311,6 +311,8 @@ mod tests {
     }
 }
 
+use crate::combinators::col_id;
+use crate::combinators::col_label;
 use crate::combinators::expr::b_expr;
 use crate::combinators::expr::expr_primary;
 use crate::combinators::typename;
@@ -347,8 +349,6 @@ use pg_lexer::Keyword::Xmlnamespaces;
 use pg_lexer::Keyword::Xmltable;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_id;
-use pg_sink_combinators::col_label;
 use XmlTableColumnOption::Default as DefaultOption;
 use XmlTableColumnOption::NotNull;
 use XmlTableColumnOption::Null;

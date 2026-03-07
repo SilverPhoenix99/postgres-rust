@@ -43,6 +43,7 @@ mod tests {
     }
 }
 
+use crate::combinators::col_label;
 use crate::combinators::expr::a_expr;
 use pg_ast::NamedValue;
 use pg_combinators::many;
@@ -52,4 +53,3 @@ use pg_combinators::ParserContext;
 use pg_lexer::Keyword::As;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_label;

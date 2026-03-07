@@ -40,6 +40,7 @@ mod tests {
 }
 
 use super::with_timezone;
+use crate::combinators::precision;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Time;
 use pg_ast::TypeName::TimeTz;
@@ -48,4 +49,3 @@ use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_parser_core::scan;
-use pg_sink_combinators::precision;

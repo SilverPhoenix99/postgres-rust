@@ -33,6 +33,7 @@ mod tests {
     }
 }
 
+use crate::combinators::col_id;
 use pg_ast::RawStmt;
 use pg_ast::RawStmt::PrepareTransactionStmt;
 use pg_combinators::alt;
@@ -43,4 +44,3 @@ use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Prepare;
 use pg_lexer::Keyword::Transaction;
 use pg_parser_core::scan;
-use pg_sink_combinators::col_id;
