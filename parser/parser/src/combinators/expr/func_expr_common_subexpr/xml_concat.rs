@@ -6,7 +6,6 @@ pub(super) fn xml_concat(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 
     // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
-    let expr_list = ctx.expr_list();
     let (_, args) = seq!(skip(1), paren!(expr_list))
         .parse(ctx)?;
 
@@ -16,7 +15,6 @@ pub(super) fn xml_concat(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::combinators::expr_list;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::StringConst;
     use pg_ast::SqlFunction;
@@ -29,11 +27,12 @@ mod tests {
         ])
     ))]
     fn test_xml_concat(source: &str) -> scan::Result<SqlFunction> {
-        let mut ctx = ParserContext::new(source, expr_list);
+        let mut ctx = ParserContext::new(source);
         xml_concat(&mut ctx)
     }
 }
 
+use crate::combinators::expr_list;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::XmlConcat;
 use pg_combinators::paren;

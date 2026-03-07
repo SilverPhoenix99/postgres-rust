@@ -136,7 +136,6 @@ fn interval_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::combinators::expr_list;
     use pg_ast::ExprNode::*;
     use pg_combinators::test_parser;
     use test_case::test_case;
@@ -180,7 +179,7 @@ mod tests {
     #[test_case("interval(3) '1 day'"              => Ok(StringTypecastExpr::new("1 day", TypeName::Interval(Full { precision: Some(3) }))))]
     #[test_case("interval '1970-01' year to month" => Ok(StringTypecastExpr::new("1970-01", TypeName::Interval(YearToMonth))))]
     fn test_const_typename(source: &str) -> scan::Result<StringTypecastExpr> {
-        let mut ctx = ParserContext::new(source, expr_list);
+        let mut ctx = ParserContext::new(source);
         const_typename(&mut ctx)
     }
 }

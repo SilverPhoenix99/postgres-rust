@@ -8,7 +8,6 @@ pub(super) fn grouping_func(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
         return no_match(ctx);
     };
 
-    let expr_list = ctx.expr_list();
     let (_, args) = seq!(skip(1), paren!(expr_list))
         .parse(ctx)?;
 
@@ -18,17 +17,17 @@ pub(super) fn grouping_func(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::combinators::expr_list;
     use pg_ast::ColumnRef::SingleName;
 
     #[test]
     fn test_grouping_func() {
-        let mut ctx = ParserContext::new("grouping(foo)", expr_list);
+        let mut ctx = ParserContext::new("grouping(foo)");
         let actual = grouping_func(&mut ctx);
         assert_eq!(Ok(GroupingFunc(vec![SingleName("foo".into()).into()])), actual)
     }
 }
 
+use crate::combinators::expr_list;
 use crate::no_match;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::GroupingFunc;

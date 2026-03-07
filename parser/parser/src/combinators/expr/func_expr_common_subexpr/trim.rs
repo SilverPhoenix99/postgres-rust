@@ -45,8 +45,6 @@ fn trim_list(ctx: &mut ParserContext) -> scan::Result<Vec<ExprNode>> {
           FROM expr_list
         | a_expr ( ( FROM | ',') expr_list )?
     */
-    
-    let expr_list = ctx.expr_list();
 
     alt!(
         seq!(FromKw, expr_list).map(|(_, args)| args),
@@ -77,7 +75,6 @@ fn trim_list(ctx: &mut ParserContext) -> scan::Result<Vec<ExprNode>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::combinators::expr_list;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::StringConst;
     use test_case::test_case;
@@ -89,7 +86,7 @@ mod tests {
         )
     ))]
     fn test_trim(source: &str) -> scan::Result<TrimFunc> {
-        let mut ctx = ParserContext::new(source, expr_list);
+        let mut ctx = ParserContext::new(source);
         trim(&mut ctx)
     }
 
@@ -110,7 +107,7 @@ mod tests {
         vec![StringConst("foo".into()), StringConst("bar".into())]
     )))]
     fn test_trim_args(source: &str) -> scan::Result<TrimFunc> {
-        let mut ctx = ParserContext::new(source, expr_list);
+        let mut ctx = ParserContext::new(source);
         trim_args(&mut ctx)
     }
 
@@ -139,12 +136,13 @@ mod tests {
         StringConst("baz".into()),
     ]))]
     fn test_trim_list(source: &str) -> scan::Result<Vec<ExprNode>> {
-        let mut ctx = ParserContext::new(source, expr_list);
+        let mut ctx = ParserContext::new(source);
         trim_list(&mut ctx)
     }
 }
 
 use crate::combinators::expr::a_expr;
+use crate::combinators::expr_list;
 use pg_ast::ExprNode;
 use pg_ast::TrimFunc;
 use pg_ast::TrimSide::Both;

@@ -78,7 +78,6 @@ fn float(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::combinators::expr_list;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -110,7 +109,7 @@ mod tests {
         Located(Parser(FloatPrecisionOverflow(99)), _)
     )))]
     fn test_numeric(source: &str) -> scan::Result<TypeName> {
-        let mut ctx = ParserContext::new(source, expr_list);
+        let mut ctx = ParserContext::new(source);
         numeric(&mut ctx)
     }
 }

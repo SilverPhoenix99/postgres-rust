@@ -34,7 +34,6 @@ pub(super) fn window_specification(ctx: &mut ParserContext) -> scan::Result<Wind
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::combinators::expr_list;
     use pg_ast::ExprNode;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
@@ -62,7 +61,7 @@ mod tests {
     #[test_case("(range current row)"                               => Ok(WindowDefinition::new(None,               None,             None,         some_frame())))]
     #[test_case("()"                                                => Ok(WindowDefinition::new(None,               None,             None,         None)))]
     fn test_window_specification(source: &str) -> scan::Result<WindowDefinition> {
-        let mut ctx = ParserContext::new(source, expr_list);
+        let mut ctx = ParserContext::new(source);
         window_specification(&mut ctx)
     }
 

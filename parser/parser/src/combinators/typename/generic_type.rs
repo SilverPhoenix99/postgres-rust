@@ -27,7 +27,6 @@ pub(super) fn generic_type(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::combinators::expr_list;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
     use test_case::test_case;
@@ -40,7 +39,7 @@ mod tests {
     #[test_case("double.unreserved(55)" => Ok(TypeName::Generic { name: vec!["double".into(), "unreserved".into()], type_modifiers: Some(vec![IntegerConst(55)]) }))]
     #[test_case("full.type_func_name"   => Ok(TypeName::Generic { name: vec!["full".into(), "type_func_name".into()], type_modifiers: None }))]
     fn test_generic_type(source: &str) -> scan::Result<TypeName> {
-        let mut ctx = ParserContext::new(source, expr_list);
+        let mut ctx = ParserContext::new(source);
         generic_type(&mut ctx)
     }
 }

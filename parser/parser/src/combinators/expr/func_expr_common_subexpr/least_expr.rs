@@ -6,7 +6,6 @@ pub(super) fn least_expr(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 
     // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
-    let expr_list = ctx.expr_list();
     let (_, args) = seq!(skip(1), paren!(expr_list))
         .parse(ctx)?;
 
@@ -16,7 +15,6 @@ pub(super) fn least_expr(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::combinators::expr_list;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -31,11 +29,12 @@ mod tests {
         ])
     ))]
     fn test_greatest_expr(source: &str) -> scan::Result<SqlFunction> {
-        let mut ctx = ParserContext::new(source, expr_list);
+        let mut ctx = ParserContext::new(source);
         least_expr(&mut ctx)
     }
 }
 
+use crate::combinators::expr_list;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::Least;
 use pg_combinators::paren;

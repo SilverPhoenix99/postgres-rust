@@ -16,7 +16,6 @@ pub(in crate::combinators) fn simple_typename(ctx: &mut ParserContext) -> scan::
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::combinators::expr_list;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
     use test_case::test_case;
@@ -32,7 +31,7 @@ mod tests {
     #[test_case("bit" => Ok(TypeName::Bit(Some(vec![IntegerConst(1)]))))]
     #[test_case("char" => Ok(TypeName::Bpchar { length: Some(1) }))]
     fn test_simple_typename(source: &str) -> scan::Result<TypeName> {
-        let mut ctx = ParserContext::new(source, expr_list);
+        let mut ctx = ParserContext::new(source);
         simple_typename(&mut ctx)
     }
 }
