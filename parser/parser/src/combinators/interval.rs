@@ -1,5 +1,5 @@
 /// Alias: `opt_interval`
-pub fn interval(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
+pub(super) fn interval(ctx: &mut ParserContext) -> scan::Result<IntervalRange> {
 
     /*
           YEAR

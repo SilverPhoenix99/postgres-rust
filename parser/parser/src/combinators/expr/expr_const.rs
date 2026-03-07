@@ -184,6 +184,7 @@ mod tests {
     }
 }
 
+use crate::combinators::interval;
 use crate::combinators::simple_typename;
 use crate::no_match;
 use pg_ast::ExprNode;
@@ -203,7 +204,6 @@ use pg_combinators::skip;
 use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
-use pg_interval_combinators::interval;
 use pg_lexer::BitStringKind;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Bigint;

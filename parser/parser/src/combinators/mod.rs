@@ -21,6 +21,7 @@ pg_basics::reexport! {
     func_type,
     function_with_argtypes,
     generic_set_tail,
+    interval,
     json_aggregate_func,
     json_behavior,
     json_constructor_null_clause,
