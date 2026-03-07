@@ -11,6 +11,7 @@ pg_basics::reexport! {
     alias,
     asc_desc,
     collate_clause,
+    document_or_content,
     func_application,
     func_arg,
     func_arg_expr,

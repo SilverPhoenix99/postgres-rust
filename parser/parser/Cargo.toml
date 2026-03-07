@@ -17,7 +17,6 @@ pg-interval-combinators.workspace = true
 pg-lexer.workspace = true
 pg-parser-core.workspace = true
 pg-sink-combinators.workspace = true
-pg-xml-combinators.workspace = true
 
 [dev-dependencies]
 assert_matches.workspace = true

@@ -252,6 +252,7 @@ mod tests {
     }
 }
 
+use crate::combinators::document_or_content;
 use crate::combinators::stmt::transaction_mode_list;
 use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Full;
@@ -297,4 +298,3 @@ use pg_sink_combinators::non_reserved_word_or_sconst;
 use pg_sink_combinators::precision;
 use pg_sink_combinators::signed_number;
 use pg_sink_combinators::var_name;
-use pg_xml_combinators::document_or_content;
