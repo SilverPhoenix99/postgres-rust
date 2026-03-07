@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `ColLabel`
 /// * `attr_name`
-pub fn col_label(ctx: &mut ParserContext) -> scan::Result<Str> {
+pub(super) fn col_label(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     alt!(
         identifier.map(From::from),

@@ -1,5 +1,5 @@
 /// Alias: `transaction_mode_list_or_empty`
-pub fn transaction_mode_list(ctx: &mut ParserContext) -> scan::Result<Vec<TransactionMode>> {
+pub(in crate::combinators::stmt) fn transaction_mode_list(ctx: &mut ParserContext) -> scan::Result<Vec<TransactionMode>> {
 
     /*
         transaction_mode ( (',')? transaction_mode )*

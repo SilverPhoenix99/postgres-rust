@@ -1,11 +1,11 @@
 /// Alias: `copy_generic_opt_arg_list`
-pub fn boolean_or_string_list(ctx: &mut ParserContext) -> scan::Result<Vec<BooleanOrString>> {
+pub(super) fn boolean_or_string_list(ctx: &mut ParserContext) -> scan::Result<Vec<BooleanOrString>> {
 
     many!(sep = Comma, boolean_or_string).parse(ctx)
 }
 
 /// Alias: `opt_boolean_or_string`
-pub fn boolean_or_string(ctx: &mut ParserContext) -> scan::Result<BooleanOrString> {
+pub(super) fn boolean_or_string(ctx: &mut ParserContext) -> scan::Result<BooleanOrString> {
 
     alt!(
         True.map(|_| true.into()),

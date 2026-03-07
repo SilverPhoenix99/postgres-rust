@@ -1,5 +1,5 @@
 /// Alias: `opt_transaction_chain`
-pub fn transaction_chain(ctx: &mut ParserContext) -> scan::Result<bool> {
+pub(super) fn transaction_chain(ctx: &mut ParserContext) -> scan::Result<bool> {
 
     /*
         AND ( NO )? CHAIN

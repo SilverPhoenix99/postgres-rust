@@ -1,5 +1,5 @@
 /// Alias: `columnList`
-pub fn name_list(ctx: &mut ParserContext) -> scan::Result<Vec<Str>> {
+pub(super) fn name_list(ctx: &mut ParserContext) -> scan::Result<Vec<Str>> {
 
     /*
         col_id ( ',' col_id )*
@@ -8,7 +8,7 @@ pub fn name_list(ctx: &mut ParserContext) -> scan::Result<Vec<Str>> {
     many!(sep = Comma, col_id).parse(ctx)
 }
 
-pub fn var_name(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
+pub(super) fn var_name(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
 
     /*
         col_id ( '.' col_id )*
@@ -21,7 +21,7 @@ pub fn var_name(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
 /// * `ColId`
 /// * `name`
 /// * `opt_single_name`
-pub fn col_id(ctx: &mut ParserContext) -> scan::Result<Str> {
+pub(super) fn col_id(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     alt!(
         identifier.map(From::from),

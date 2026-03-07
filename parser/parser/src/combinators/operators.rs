@@ -1,5 +1,5 @@
 /// Alias: `subquery_Op`
-pub fn subquery_op(ctx: &mut ParserContext) -> scan::Result<QualifiedOperator> {
+pub(super) fn subquery_op(ctx: &mut ParserContext) -> scan::Result<QualifiedOperator> {
 
     // Intentionally excludes NOT LIKE/NOT ILIKE, due to conflicts.
     // Those will have to be checked separately.
@@ -11,7 +11,7 @@ pub fn subquery_op(ctx: &mut ParserContext) -> scan::Result<QualifiedOperator> {
 }
 
 /// Alias: `qual_all_Op`
-pub fn qual_all_op(ctx: &mut ParserContext) -> scan::Result<QualifiedOperator> {
+pub(super) fn qual_all_op(ctx: &mut ParserContext) -> scan::Result<QualifiedOperator> {
     alt!(
         all_op.map(From::from),
         explicit_op
@@ -19,7 +19,7 @@ pub fn qual_all_op(ctx: &mut ParserContext) -> scan::Result<QualifiedOperator> {
 }
 
 /// Alias: `qual_Op`
-pub fn qual_op(ctx: &mut ParserContext) -> scan::Result<QualifiedOperator> {
+pub(super) fn qual_op(ctx: &mut ParserContext) -> scan::Result<QualifiedOperator> {
     alt!(
         user_defined_operator
             .map(|op| UserDefined(op).into()),
@@ -27,7 +27,7 @@ pub fn qual_op(ctx: &mut ParserContext) -> scan::Result<QualifiedOperator> {
     ).parse(ctx)
 }
 
-pub fn explicit_op(ctx: &mut ParserContext) -> scan::Result<QualifiedOperator> {
+pub(super) fn explicit_op(ctx: &mut ParserContext) -> scan::Result<QualifiedOperator> {
 
     /*
         OPERATOR '(' any_operator ')'
@@ -39,7 +39,7 @@ pub fn explicit_op(ctx: &mut ParserContext) -> scan::Result<QualifiedOperator> {
     Ok(op)
 }
 
-pub fn any_operator(ctx: &mut ParserContext) -> scan::Result<QualifiedOperator> {
+pub(super) fn any_operator(ctx: &mut ParserContext) -> scan::Result<QualifiedOperator> {
 
     /*
         ( col_id '.' )* all_op

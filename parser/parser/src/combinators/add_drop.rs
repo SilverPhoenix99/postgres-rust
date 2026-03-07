@@ -1,4 +1,4 @@
-pub fn add_drop(ctx: &mut ParserContext) -> scan::Result<AddDrop> {
+pub(super) fn add_drop(ctx: &mut ParserContext) -> scan::Result<AddDrop> {
 
     /*
           ADD

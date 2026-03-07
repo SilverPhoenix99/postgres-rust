@@ -1,4 +1,4 @@
-pub fn type_function_name(ctx: &mut ParserContext) -> scan::Result<Str> {
+pub(super) fn type_function_name(ctx: &mut ParserContext) -> scan::Result<Str> {
     alt!(
         identifier.map(Str::from),
         Unreserved.map(Str::from),

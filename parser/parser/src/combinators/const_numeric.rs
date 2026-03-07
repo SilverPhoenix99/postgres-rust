@@ -1,5 +1,5 @@
 /// Alias: `NumericOnly`
-pub fn signed_number(ctx: &mut ParserContext) -> scan::Result<SignedNumber> {
+pub(super) fn signed_number(ctx: &mut ParserContext) -> scan::Result<SignedNumber> {
 
     // ('+' | '-')? (ICONST | FCONST)
 
@@ -16,12 +16,12 @@ pub fn signed_number(ctx: &mut ParserContext) -> scan::Result<SignedNumber> {
 }
 
 /// Alias: `ICONST`
-pub fn i32_literal(ctx: &mut ParserContext) -> scan::Result<i32> {
+pub(super) fn i32_literal(ctx: &mut ParserContext) -> scan::Result<i32> {
     integer(ctx).map(i32::from)
 }
 
 /// Alias: `SignedIconst`
-pub fn signed_i32_literal(ctx: &mut ParserContext) -> scan::Result<i32> {
+pub(super) fn signed_i32_literal(ctx: &mut ParserContext) -> scan::Result<i32> {
 
     // ('+' | '-')? ICONST
 

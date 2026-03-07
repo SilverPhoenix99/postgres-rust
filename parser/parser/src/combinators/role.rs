@@ -1,4 +1,4 @@
-pub fn role_list(ctx: &mut ParserContext) -> scan::Result<Vec<RoleSpec>> {
+pub(super) fn role_list(ctx: &mut ParserContext) -> scan::Result<Vec<RoleSpec>> {
 
     /*
         role_spec ( ',' role_spec )*
@@ -8,7 +8,7 @@ pub fn role_list(ctx: &mut ParserContext) -> scan::Result<Vec<RoleSpec>> {
 }
 
 /// Alias: `RoleId`
-pub fn role_id(ctx: &mut ParserContext) -> scan::Result<Str> {
+pub(super) fn role_id(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     // Similar to role_spec, but only allows an identifier, i.e., disallows builtin roles
 
@@ -21,7 +21,7 @@ pub fn role_id(ctx: &mut ParserContext) -> scan::Result<Str> {
 }
 
 /// Alias: `RoleSpec`
-pub fn role_spec(ctx: &mut ParserContext) -> scan::Result<RoleSpec> {
+pub(super) fn role_spec(ctx: &mut ParserContext) -> scan::Result<RoleSpec> {
 
     /*
         role_spec :
@@ -52,7 +52,7 @@ fn role_none(ctx: &mut ParserContext) -> scan::Result<RoleSpec> {
     Err(ReservedRoleSpec { role: "none" }.at_location(loc).into())
 }
 
-pub trait IntoRoleId {
+pub(super) trait IntoRoleId {
     fn into_role_id(self) -> role_spec::Result<Str>;
 }
 

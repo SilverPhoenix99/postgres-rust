@@ -1,5 +1,5 @@
 /// Alias: `BareColLabel`
-pub fn bare_col_label(ctx: &mut ParserContext) -> scan::Result<Str> {
+pub(super) fn bare_col_label(ctx: &mut ParserContext) -> scan::Result<Str> {
     alt!(
         identifier.map(From::from),
         bare_keyword

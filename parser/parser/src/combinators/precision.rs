@@ -1,4 +1,4 @@
-pub fn precision(ctx: &mut ParserContext) -> scan::Result<i32> {
+pub(super) fn precision(ctx: &mut ParserContext) -> scan::Result<i32> {
     i32_literal_paren(ctx)
 }
 

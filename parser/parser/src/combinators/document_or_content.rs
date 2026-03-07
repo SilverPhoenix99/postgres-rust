@@ -1,4 +1,4 @@
-pub fn document_or_content(ctx: &mut ParserContext) -> scan::Result<XmlNodeKind> {
+pub(super) fn document_or_content(ctx: &mut ParserContext) -> scan::Result<XmlNodeKind> {
 
     /*
           DOCUMENT

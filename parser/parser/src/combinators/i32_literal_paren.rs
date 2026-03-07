@@ -1,5 +1,5 @@
 /// Production: `'(' ICONST ')'`
-pub fn i32_literal_paren(ctx: &mut ParserContext) -> scan::Result<i32> {
+pub(super) fn i32_literal_paren(ctx: &mut ParserContext) -> scan::Result<i32> {
 
     paren!(i32_literal).parse(ctx)
 }

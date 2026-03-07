@@ -1,4 +1,4 @@
-pub fn any_name_list(ctx: &mut ParserContext) -> scan::Result<Vec<QualifiedName>> {
+pub(super) fn any_name_list(ctx: &mut ParserContext) -> scan::Result<Vec<QualifiedName>> {
 
     /*
         any_name ( ',' any_name )*
@@ -10,7 +10,7 @@ pub fn any_name_list(ctx: &mut ParserContext) -> scan::Result<Vec<QualifiedName>
 /// Aliases:
 /// * `handler_name`
 /// * `opt_qualified_name`
-pub fn any_name(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
+pub(super) fn any_name(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
 
     /*
         col_id attrs

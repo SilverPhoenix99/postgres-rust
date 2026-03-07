@@ -1,4 +1,4 @@
-pub fn relation_expr_list(ctx: &mut ParserContext) -> scan::Result<Vec<RelationExpr>> {
+pub(super) fn relation_expr_list(ctx: &mut ParserContext) -> scan::Result<Vec<RelationExpr>> {
 
     /*
         relation_expr ( ',' relation_expr )*
@@ -8,7 +8,7 @@ pub fn relation_expr_list(ctx: &mut ParserContext) -> scan::Result<Vec<RelationE
         .parse(ctx)
 }
 
-pub fn relation_expr(ctx: &mut ParserContext) -> scan::Result<RelationExpr> {
+pub(super) fn relation_expr(ctx: &mut ParserContext) -> scan::Result<RelationExpr> {
 
     /*
           non_inherited_relation_expr

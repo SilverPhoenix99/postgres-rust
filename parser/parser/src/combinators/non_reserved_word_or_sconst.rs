@@ -1,5 +1,5 @@
 /// Alias: `NonReservedWord_or_Sconst`
-pub fn non_reserved_word_or_sconst(ctx: &mut ParserContext) -> scan::Result<Str> {
+pub(super) fn non_reserved_word_or_sconst(ctx: &mut ParserContext) -> scan::Result<Str> {
 
     alt!(
         non_reserved_word,

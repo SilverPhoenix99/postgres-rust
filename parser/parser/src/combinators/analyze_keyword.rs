@@ -1,5 +1,5 @@
 /// Alias: `opt_analyze`
-pub fn analyze_keyword(ctx: &mut ParserContext) -> scan::Result<()> {
+pub(super) fn analyze_keyword(ctx: &mut ParserContext) -> scan::Result<()> {
 
     /*
           ANALYZE

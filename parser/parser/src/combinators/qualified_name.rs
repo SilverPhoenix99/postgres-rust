@@ -1,4 +1,4 @@
-pub fn qualified_name_list(ctx: &mut ParserContext) -> scan::Result<Vec<RelationName>> {
+pub(super) fn qualified_name_list(ctx: &mut ParserContext) -> scan::Result<Vec<RelationName>> {
 
     /*
         qualified_name ( ',' qualified_name )*
@@ -7,7 +7,7 @@ pub fn qualified_name_list(ctx: &mut ParserContext) -> scan::Result<Vec<Relation
     many!(sep = Comma, qualified_name).parse(ctx)
 }
 
-pub fn qualified_name(ctx: &mut ParserContext) -> scan::Result<RelationName> {
+pub(super) fn qualified_name(ctx: &mut ParserContext) -> scan::Result<RelationName> {
 
     /*
         (col_id attrs){1,3}

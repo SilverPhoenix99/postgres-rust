@@ -1,5 +1,5 @@
 /// Alias: `opt_drop_behavior`
-pub fn drop_behavior(ctx: &mut ParserContext) -> scan::Result<DropBehavior> {
+pub(super) fn drop_behavior(ctx: &mut ParserContext) -> scan::Result<DropBehavior> {
 
     /*
         CASCADE | RESTRICT

@@ -1,4 +1,4 @@
-pub fn if_not_exists(ctx: &mut ParserContext) -> scan::Result<Presence> {
+pub(super) fn if_not_exists(ctx: &mut ParserContext) -> scan::Result<Presence> {
 
     let _ = seq!(If, Not, Exists).parse(ctx)?;
 

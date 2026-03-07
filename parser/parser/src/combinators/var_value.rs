@@ -4,7 +4,7 @@ pub(super) fn var_list(ctx: &mut ParserContext) -> scan::Result<Vec<VarValue>> {
 }
 
 /// Alias: `utility_option_arg`
-pub fn var_value(ctx: &mut ParserContext) -> scan::Result<VarValue> {
+pub(super) fn var_value(ctx: &mut ParserContext) -> scan::Result<VarValue> {
 
     /*
           boolean_or_string

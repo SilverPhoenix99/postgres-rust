@@ -1,5 +1,5 @@
 /// Alias: `NonReservedWord`
-pub fn non_reserved_word(ctx: &mut ParserContext) -> scan::Result<Str> {
+pub(super) fn non_reserved_word(ctx: &mut ParserContext) -> scan::Result<Str> {
     alt!(
         identifier.map(Str::from),
         Unreserved.map(Str::from),

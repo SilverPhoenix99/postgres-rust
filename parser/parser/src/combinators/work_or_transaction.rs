@@ -1,5 +1,5 @@
 /// Alias: `opt_transaction`
-pub fn work_or_transaction(ctx: &mut ParserContext) -> scan::Result<()> {
+pub(super) fn work_or_transaction(ctx: &mut ParserContext) -> scan::Result<()> {
 
     // Skips over WORK | TRANSACTION
 

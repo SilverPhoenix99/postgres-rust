@@ -1,4 +1,4 @@
-pub fn if_exists(ctx: &mut ParserContext) -> scan::Result<Presence> {
+pub(super) fn if_exists(ctx: &mut ParserContext) -> scan::Result<Presence> {
 
     /*
         IF EXISTS
