@@ -35,4 +35,4 @@ impl AlterRoleStmt {
 }
 
 use crate::AlterRoleOption;
-use pg_sink_ast::RoleSpec;
+use crate::RoleSpec;

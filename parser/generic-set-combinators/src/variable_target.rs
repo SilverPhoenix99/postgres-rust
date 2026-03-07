@@ -40,14 +40,15 @@ mod tests {
 }
 
 use crate::all_or_var_name;
+use pg_ast::OneOrAll;
+use pg_ast::VariableTarget;
+use pg_ast::VariableTarget::SessionAuthorization;
+use pg_ast::VariableTarget::TimeZone;
+use pg_ast::VariableTarget::TransactionIsolation;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
-use pg_generic_set_ast::VariableTarget;
-use pg_generic_set_ast::VariableTarget::SessionAuthorization;
-use pg_generic_set_ast::VariableTarget::TimeZone;
-use pg_generic_set_ast::VariableTarget::TransactionIsolation;
 use pg_lexer::Keyword::Authorization;
 use pg_lexer::Keyword::Isolation;
 use pg_lexer::Keyword::Level;
@@ -56,4 +57,3 @@ use pg_lexer::Keyword::Time;
 use pg_lexer::Keyword::Transaction;
 use pg_lexer::Keyword::Zone;
 use pg_parser_core::scan;
-use pg_sink_ast::OneOrAll;

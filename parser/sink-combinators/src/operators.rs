@@ -204,12 +204,23 @@ mod tests {
 }
 
 use crate::col_id;
+use pg_ast::Operator;
+use pg_ast::Operator::Addition;
+use pg_ast::Operator::Division;
+use pg_ast::Operator::Exponentiation;
+use pg_ast::Operator::ILike;
+use pg_ast::Operator::Modulo;
+use pg_ast::Operator::Multiplication;
+use pg_ast::Operator::Subtraction;
+use pg_ast::Operator::UserDefined;
+use pg_ast::QualifiedOperator;
 use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::user_defined_operator;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Ilike;
 use pg_lexer::Keyword::Like;
 use pg_lexer::Keyword::Operator as OperatorKw;
@@ -227,14 +238,3 @@ use pg_lexer::OperatorKind::NotEquals;
 use pg_lexer::OperatorKind::Percent;
 use pg_lexer::OperatorKind::Plus;
 use pg_parser_core::scan;
-use pg_combinators::ParserContext;
-use pg_sink_ast::Operator;
-use pg_sink_ast::Operator::Addition;
-use pg_sink_ast::Operator::Division;
-use pg_sink_ast::Operator::Exponentiation;
-use pg_sink_ast::Operator::ILike;
-use pg_sink_ast::Operator::Modulo;
-use pg_sink_ast::Operator::Multiplication;
-use pg_sink_ast::Operator::Subtraction;
-use pg_sink_ast::Operator::UserDefined;
-use pg_sink_ast::QualifiedOperator;

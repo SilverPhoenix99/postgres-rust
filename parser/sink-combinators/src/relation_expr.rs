@@ -58,9 +58,9 @@ fn inherited_relation_expr(ctx: &mut ParserContext) -> scan::Result<RelationExpr
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
     #[allow(unused_imports)]
-    use pg_sink_ast::RelationName;
+    use pg_ast::RelationName;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("foo"
@@ -85,14 +85,14 @@ mod tests {
 }
 
 use crate::qualified_name;
+use pg_ast::RelationExpr;
 use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Only;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::Mul;
 use pg_parser_core::scan;
-use pg_combinators::ParserContext;
-use pg_sink_ast::RelationExpr;

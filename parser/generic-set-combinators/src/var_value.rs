@@ -21,7 +21,6 @@ pub fn var_value(ctx: &mut ParserContext) -> scan::Result<VarValue> {
 mod tests {
     use super::*;
     use pg_combinators::test_parser;
-    use pg_generic_set_ast::VarValue;
     use test_case::test_case;
 
     #[test_case("true", true.into())]
@@ -35,11 +34,11 @@ mod tests {
     }
 }
 
+use pg_ast::VarValue;
 use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
-use pg_generic_set_ast::VarValue;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
 use pg_sink_combinators::boolean_or_string;

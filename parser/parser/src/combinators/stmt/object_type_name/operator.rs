@@ -39,9 +39,9 @@ mod tests {
     #[allow(unused_imports)]
     use {
         pg_ast::OneOrBoth,
+        pg_ast::Operator::Addition,
+        pg_ast::QualifiedOperator,
         pg_ast::TypeName::Int4,
-        pg_sink_ast::Operator::Addition,
-        pg_sink_ast::QualifiedOperator,
     };
 
     #[test_case("operator +(int, int)", Operator::WithArgs(

@@ -138,6 +138,7 @@ mod tests {
 }
 
 use crate::non_reserved_word;
+use pg_ast::RoleSpec;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_basics::Str;
@@ -155,4 +156,3 @@ use pg_lexer::Keyword::NoneKw;
 use pg_lexer::Keyword::SessionUser;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_sink_ast::RoleSpec;

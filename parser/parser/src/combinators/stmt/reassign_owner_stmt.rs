@@ -14,8 +14,8 @@ pub(super) fn reassign_owned_stmt(ctx: &mut ParserContext) -> scan::Result<Reass
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pg_ast::RoleSpec;
     use pg_combinators::test_parser;
-    use pg_sink_ast::RoleSpec;
 
     #[test]
     fn test_reassign_owner_stmt() {

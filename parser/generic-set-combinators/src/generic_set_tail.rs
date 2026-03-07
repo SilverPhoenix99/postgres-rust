@@ -36,13 +36,13 @@ mod tests {
 }
 
 use crate::var_list;
+use pg_ast::ValueOrDefault;
+use pg_ast::VarValue;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
-use pg_generic_set_ast::VarValue;
 use pg_lexer::Keyword::DefaultKw;
 use pg_lexer::Keyword::To;
 use pg_lexer::OperatorKind::Equals;
 use pg_parser_core::scan;
-use pg_sink_ast::ValueOrDefault;

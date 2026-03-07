@@ -52,9 +52,9 @@ fn toplevel_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
     #[allow(unused_imports)]
-    use pg_transaction_stmt_ast::TransactionMode::ReadOnly;
+    use pg_ast::TransactionMode::ReadOnly;
+    use pg_combinators::test_parser;
     use test_case::test_matrix;
 
     // This only quickly tests that statement types aren't missing.

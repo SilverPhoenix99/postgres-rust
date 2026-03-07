@@ -134,8 +134,8 @@ mod tests {
     use {
         pg_ast::AggregateWithArgs,
         pg_ast::FunctionWithArgs,
+        pg_ast::SignedNumber::IntegerConst,
         pg_ast::TypeName::Int4,
-        pg_sink_ast::SignedNumber::IntegerConst,
     };
 
     #[test_case(

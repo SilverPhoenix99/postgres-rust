@@ -142,9 +142,9 @@ mod tests {
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
+        pg_ast::IntervalRange::YearToMonth,
         pg_ast::TypeName::*,
         pg_basics::NumberRadix::Decimal,
-        pg_interval_ast::IntervalRange::YearToMonth,
     };
 
     #[test_case("123", IntegerConst(123))]
@@ -192,6 +192,7 @@ use pg_ast::ExprNode::BooleanConst;
 use pg_ast::ExprNode::HexStringConst;
 use pg_ast::ExprNode::NullConst;
 use pg_ast::ExprNode::StringConst;
+use pg_ast::IntervalRange::Full;
 use pg_ast::StringTypecastExpr;
 use pg_ast::TypeName;
 use pg_combinators::alt;
@@ -202,7 +203,6 @@ use pg_combinators::skip;
 use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
-use pg_interval_ast::IntervalRange::Full;
 use pg_interval_combinators::interval;
 use pg_lexer::BitStringKind;
 use pg_lexer::Keyword as Kw;

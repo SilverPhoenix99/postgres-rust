@@ -48,6 +48,9 @@ mod tests {
     }
 }
 
+use pg_ast::TransactionStmt;
+use pg_ast::TransactionStmt::Commit;
+use pg_ast::TransactionStmt::CommitPrepared;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::string;
@@ -58,6 +61,3 @@ use pg_lexer::Keyword::Prepared;
 use pg_parser_core::scan;
 use pg_sink_combinators::transaction_chain;
 use pg_sink_combinators::work_or_transaction;
-use pg_transaction_stmt_ast::TransactionStmt;
-use pg_transaction_stmt_ast::TransactionStmt::Commit;
-use pg_transaction_stmt_ast::TransactionStmt::CommitPrepared;

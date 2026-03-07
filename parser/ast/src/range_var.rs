@@ -42,4 +42,4 @@ pub enum RelationPersistence {
     Temp      = b't',
 }
 
-use pg_sink_ast::RelationName;
+use crate::RelationName;

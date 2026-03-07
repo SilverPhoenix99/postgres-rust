@@ -16,7 +16,6 @@ pub fn all_or_var_name(ctx: &mut ParserContext) -> scan::Result<OneOrAll<Qualifi
 mod tests {
     use super::*;
     use pg_combinators::test_parser;
-    use pg_sink_ast::OneOrAll;
     use test_case::test_case;
 
     #[test_case("all" => Ok(OneOrAll::All))]
@@ -26,11 +25,11 @@ mod tests {
     }
 }
 
+use pg_ast::OneOrAll;
 use pg_basics::QualifiedName;
 use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_lexer::Keyword;
 use pg_parser_core::scan;
-use pg_sink_ast::OneOrAll;
 use pg_sink_combinators::var_name;

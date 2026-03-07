@@ -99,6 +99,11 @@ mod tests {
     }
 }
 
+use pg_ast::AddDrop;
+use pg_ast::AlterRoleOption::RoleMembers;
+use pg_ast::AlterRoleStmt;
+use pg_ast::RoleSpec;
+use pg_ast::RoleStmt;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_basics::Str;
@@ -112,11 +117,6 @@ use pg_lexer::Keyword::Rename;
 use pg_lexer::Keyword::To;
 use pg_lexer::Keyword::User;
 use pg_parser_core::scan;
-use pg_role_ast::AlterRoleOption::RoleMembers;
-use pg_role_ast::AlterRoleStmt;
-use pg_role_ast::RoleStmt;
-use pg_sink_ast::AddDrop;
-use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::add_drop;
 use pg_sink_combinators::role_id;
 use pg_sink_combinators::role_list;

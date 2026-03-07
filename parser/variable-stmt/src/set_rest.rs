@@ -186,16 +186,13 @@ fn encoding(ctx: &mut ParserContext) -> scan::Result<ValueOrDefault<Box<str>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_basics::Str;
     use pg_combinators::test_parser;
-    use pg_interval_ast::IntervalRange;
-    use pg_sink_ast::ValueOrDefault;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
-        pg_sink_ast::SignedNumber::IntegerConst,
-        pg_transaction_stmt_ast::TransactionMode::ReadOnly,
-        pg_xml_ast::XmlNodeKind::Document,
+        pg_ast::SignedNumber::IntegerConst,
+        pg_ast::TransactionMode::ReadOnly,
+        pg_ast::XmlNodeKind::Document,
     };
 
     #[test_case("session characteristics as transaction read only", SetRest::SessionTransactionCharacteristics(vec![ReadOnly]))]
@@ -255,6 +252,17 @@ mod tests {
     }
 }
 
+use pg_ast::IntervalRange;
+use pg_ast::IntervalRange::Full;
+use pg_ast::IntervalRange::Hour;
+use pg_ast::IntervalRange::HourToMinute;
+use pg_ast::SetRest;
+use pg_ast::SetRestMore;
+use pg_ast::ValueOrDefault;
+use pg_ast::ZoneValue;
+use pg_ast::ZoneValue::Interval;
+use pg_ast::ZoneValue::Local;
+use pg_ast::ZoneValue::Numeric;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_basics::Str;
@@ -266,17 +274,7 @@ use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_elog::parser::Error::InvalidZoneValue;
-use pg_generic_set_ast::SetRest;
-use pg_generic_set_ast::SetRestMore;
-use pg_generic_set_ast::ZoneValue;
-use pg_generic_set_ast::ZoneValue::Interval;
-use pg_generic_set_ast::ZoneValue::Local;
-use pg_generic_set_ast::ZoneValue::Numeric;
 use pg_generic_set_combinators::generic_set_tail;
-use pg_interval_ast::IntervalRange;
-use pg_interval_ast::IntervalRange::Full;
-use pg_interval_ast::IntervalRange::Hour;
-use pg_interval_ast::IntervalRange::HourToMinute;
 use pg_interval_combinators::interval;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::As;
@@ -294,7 +292,6 @@ use pg_lexer::Keyword::Transaction;
 use pg_lexer::Keyword::Xml;
 use pg_lexer::Keyword::Zone;
 use pg_parser_core::scan;
-use pg_sink_ast::ValueOrDefault;
 use pg_sink_combinators::non_reserved_word_or_sconst;
 use pg_sink_combinators::precision;
 use pg_sink_combinators::signed_number;

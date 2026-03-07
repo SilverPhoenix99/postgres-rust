@@ -90,6 +90,7 @@ mod tests {
 }
 
 use pg_ast::GrantOption;
+use pg_ast::RoleSpec;
 use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
@@ -102,5 +103,4 @@ use pg_lexer::Keyword::OptionKw;
 use pg_lexer::Keyword::With;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::role_spec;

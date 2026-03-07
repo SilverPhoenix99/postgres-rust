@@ -91,15 +91,15 @@ mod tests {
 
 use crate::any_name;
 use core::mem;
+use pg_ast::RelationName;
+use pg_ast::SchemaName;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_combinators::located;
 use pg_combinators::many;
 use pg_combinators::Combinator;
+use pg_combinators::ParserContext;
 use pg_elog::parser::Error::ImproperQualifiedName;
 use pg_elog::parser::NameList;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_combinators::ParserContext;
-use pg_sink_ast::RelationName;
-use pg_sink_ast::SchemaName;

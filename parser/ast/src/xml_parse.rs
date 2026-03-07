@@ -31,5 +31,5 @@ impl XmlParse {
 }
 
 use crate::ExprNode;
-use pg_xml_ast::XmlNodeKind;
+use crate::XmlNodeKind;
 

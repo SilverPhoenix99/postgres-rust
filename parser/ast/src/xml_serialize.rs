@@ -45,4 +45,4 @@ impl XmlSerialize {
 
 use crate::ExprNode;
 use crate::TypeName;
-use pg_xml_ast::XmlNodeKind;
+use crate::XmlNodeKind;

@@ -98,9 +98,9 @@ fn close_paren(ctx: &mut ParserContext) -> scan::Result<Option<Type>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pg_ast::Operator::Equals;
     use pg_ast::TypeName::Int4;
     use pg_combinators::test_parser;
-    use pg_sink_ast::Operator::Equals;
     use test_case::test_case;
 
     #[test]

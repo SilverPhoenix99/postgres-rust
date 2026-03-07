@@ -32,12 +32,12 @@ pub fn alter_user_stmt(ctx: &mut ParserContext) -> scan::Result<RoleStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pg_ast::AlterRoleStmt;
+    use pg_ast::GenericOption;
+    use pg_ast::GenericOptionKind::Unspecified;
+    use pg_ast::RoleSpec::CurrentUser;
+    use pg_ast::RoleSpec::Public;
     use pg_combinators::test_parser;
-    use pg_generic_options_ast::GenericOption;
-    use pg_generic_options_ast::GenericOptionKind::Unspecified;
-    use pg_role_ast::AlterRoleStmt;
-    use pg_sink_ast::RoleSpec::CurrentUser;
-    use pg_sink_ast::RoleSpec::Public;
 
     #[test]
     fn test_user_mapping() {
@@ -73,6 +73,8 @@ mod tests {
 
 use self::user_stmt::user_stmt;
 use crate::auth_ident::auth_ident;
+use pg_ast::AlterUserMappingStmt;
+use pg_ast::RoleStmt;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
@@ -84,6 +86,4 @@ use pg_lexer::Keyword::Mapping;
 use pg_lexer::Keyword::Server;
 use pg_lexer::Keyword::User;
 use pg_parser_core::scan;
-use pg_role_ast::AlterUserMappingStmt;
-use pg_role_ast::RoleStmt;
 use pg_sink_combinators::col_id;

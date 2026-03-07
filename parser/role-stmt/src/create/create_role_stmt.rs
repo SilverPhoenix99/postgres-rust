@@ -35,8 +35,8 @@ mod tests {
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
-        pg_role_ast::CreateRoleOption,
-        pg_sink_ast::RoleSpec::Public,
+        pg_ast::CreateRoleOption,
+        pg_ast::RoleSpec::Public,
     };
 
     #[test_case("role foo" => Ok(CreateRoleStmt::new("foo", RoleKind::Role)))]
@@ -60,6 +60,8 @@ mod tests {
 }
 
 use crate::create::create_role_options;
+use pg_ast::CreateRoleStmt;
+use pg_ast::RoleKind;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
@@ -68,6 +70,4 @@ use pg_lexer::Keyword::Group;
 use pg_lexer::Keyword::Role;
 use pg_lexer::Keyword::With;
 use pg_parser_core::scan;
-use pg_role_ast::CreateRoleStmt;
-use pg_role_ast::RoleKind;
 use pg_sink_combinators::role_id;

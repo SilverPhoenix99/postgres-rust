@@ -10,12 +10,12 @@ pub fn transaction_stmt_legacy(ctx: &mut ParserContext) -> scan::Result<Transact
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
     #[allow(unused_imports)]
-    use pg_transaction_stmt_ast::{
+    use pg_ast::{
         TransactionMode::ReadOnly,
         TransactionStmt::{Begin, Commit}
     };
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("begin transaction read only" => Ok(Begin(vec![ReadOnly])))]
@@ -27,8 +27,8 @@ mod tests {
 
 use crate::begin_stmt;
 use crate::end_stmt;
+use pg_ast::TransactionStmt;
 use pg_combinators::alt;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_parser_core::scan;
-use pg_transaction_stmt_ast::TransactionStmt;

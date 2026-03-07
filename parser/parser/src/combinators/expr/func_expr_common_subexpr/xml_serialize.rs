@@ -52,7 +52,7 @@ mod tests {
     use {
         pg_ast::ExprNode::StringConst,
         pg_ast::TypeName::{Int4, Int8},
-        pg_xml_ast::XmlNodeKind,
+        pg_ast::XmlNodeKind,
     };
 
     #[test_case("xmlserialize(content 'foo' as int)" => Ok(

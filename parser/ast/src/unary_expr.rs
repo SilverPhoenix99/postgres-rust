@@ -17,4 +17,4 @@ impl UnaryExpr {
 }
 
 use crate::ExprNode;
-use pg_sink_ast::QualifiedOperator;
+use crate::QualifiedOperator;

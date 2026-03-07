@@ -50,13 +50,13 @@ fn create_user_role(ctx: &mut ParserContext) -> scan::Result<CreateRoleStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pg_ast::CreateRoleOption;
     use pg_combinators::test_parser;
-    use pg_role_ast::CreateRoleOption;
     use test_case::{test_case, test_matrix};
     #[allow(unused_imports)]
     use {
-        pg_generic_options_ast::GenericOption,
-        pg_sink_ast::{Presence, RoleSpec},
+        pg_ast::GenericOption,
+        pg_ast::{Presence, RoleSpec},
     };
 
     // This only quickly tests that statement types aren't missing.
@@ -105,6 +105,10 @@ mod tests {
 
 use crate::auth_ident;
 use crate::create::create_role_options;
+use pg_ast::CreateRoleStmt;
+use pg_ast::CreateUserMappingStmt;
+use pg_ast::RoleKind;
+use pg_ast::RoleStmt;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
@@ -116,10 +120,6 @@ use pg_lexer::Keyword::Server;
 use pg_lexer::Keyword::User;
 use pg_lexer::Keyword::With;
 use pg_parser_core::scan;
-use pg_role_ast::CreateRoleStmt;
-use pg_role_ast::CreateUserMappingStmt;
-use pg_role_ast::RoleKind;
-use pg_role_ast::RoleStmt;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::if_not_exists;
 use pg_sink_combinators::role_id;

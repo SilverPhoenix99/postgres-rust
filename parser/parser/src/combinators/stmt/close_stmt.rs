@@ -21,7 +21,6 @@ pub fn close_stmt(ctx: &mut ParserContext) -> scan::Result<OneOrAll<Str>> {
 mod tests {
     use super::*;
     use pg_combinators::test_parser;
-    use pg_sink_ast::OneOrAll;
     use test_case::test_case;
 
     #[test_case("close all", OneOrAll::All)]
@@ -32,6 +31,7 @@ mod tests {
     }
 }
 
+use pg_ast::OneOrAll;
 use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::seq;
@@ -40,5 +40,4 @@ use pg_combinators::ParserContext;
 use pg_lexer::Keyword::All;
 use pg_lexer::Keyword::Close;
 use pg_parser_core::scan;
-use pg_sink_ast::OneOrAll;
 use pg_sink_combinators::col_id;

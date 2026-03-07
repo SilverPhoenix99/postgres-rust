@@ -25,4 +25,4 @@ impl From<UtilityOptionName> for UtilityOption {
 }
 
 use crate::UtilityOptionName;
-use pg_generic_set_ast::VarValue;
+use crate::VarValue;

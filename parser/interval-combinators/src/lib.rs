@@ -139,7 +139,6 @@ fn interval_second(ctx: &mut ParserContext) -> scan::Result<Option<i32>> {
 mod tests {
     use super::*;
     use pg_combinators::test_parser;
-    use pg_interval_ast::IntervalRange;
     use test_case::test_case;
 
     #[test_case("year",              IntervalRange::Year)]
@@ -160,24 +159,24 @@ mod tests {
     }
 }
 
+use pg_ast::IntervalRange;
+use pg_ast::IntervalRange::Day;
+use pg_ast::IntervalRange::DayToHour;
+use pg_ast::IntervalRange::DayToMinute;
+use pg_ast::IntervalRange::DayToSecond;
+use pg_ast::IntervalRange::Hour;
+use pg_ast::IntervalRange::HourToMinute;
+use pg_ast::IntervalRange::HourToSecond;
+use pg_ast::IntervalRange::Minute;
+use pg_ast::IntervalRange::MinuteToSecond;
+use pg_ast::IntervalRange::Month;
+use pg_ast::IntervalRange::Second;
+use pg_ast::IntervalRange::Year;
+use pg_ast::IntervalRange::YearToMonth;
 use pg_combinators::alt;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
-use pg_interval_ast::IntervalRange;
-use pg_interval_ast::IntervalRange::Day;
-use pg_interval_ast::IntervalRange::DayToHour;
-use pg_interval_ast::IntervalRange::DayToMinute;
-use pg_interval_ast::IntervalRange::DayToSecond;
-use pg_interval_ast::IntervalRange::Hour;
-use pg_interval_ast::IntervalRange::HourToMinute;
-use pg_interval_ast::IntervalRange::HourToSecond;
-use pg_interval_ast::IntervalRange::Minute;
-use pg_interval_ast::IntervalRange::MinuteToSecond;
-use pg_interval_ast::IntervalRange::Month;
-use pg_interval_ast::IntervalRange::Second;
-use pg_interval_ast::IntervalRange::Year;
-use pg_interval_ast::IntervalRange::YearToMonth;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;

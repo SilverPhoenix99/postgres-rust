@@ -17,5 +17,5 @@ pub enum AlterRoleOption {
     BypassRls(bool),
 }
 
-use pg_sink_ast::AddDrop;
-use pg_sink_ast::RoleSpec;
+use crate::AddDrop;
+use crate::RoleSpec;

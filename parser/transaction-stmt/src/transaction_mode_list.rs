@@ -76,7 +76,6 @@ fn isolation_level(ctx: &mut ParserContext) -> scan::Result<IsolationLevel> {
 mod tests {
     use super::*;
     use pg_combinators::test_parser;
-    use pg_transaction_stmt_ast::{IsolationLevel, TransactionMode};
     #[allow(unused_imports)]
     use scan::Error::NoMatch;
     use test_case::test_case;
@@ -114,6 +113,16 @@ mod tests {
     }
 }
 
+use pg_ast::IsolationLevel;
+use pg_ast::IsolationLevel::ReadCommitted;
+use pg_ast::IsolationLevel::ReadUncommitted;
+use pg_ast::IsolationLevel::RepeatableRead;
+use pg_ast::IsolationLevel::Serializable;
+use pg_ast::TransactionMode;
+use pg_ast::TransactionMode::Deferrable;
+use pg_ast::TransactionMode::NotDeferrable;
+use pg_ast::TransactionMode::ReadOnly;
+use pg_ast::TransactionMode::ReadWrite;
 use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::seq;
@@ -131,13 +140,3 @@ use pg_lexer::Keyword::Uncommitted;
 use pg_lexer::Keyword::Write;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_transaction_stmt_ast::IsolationLevel;
-use pg_transaction_stmt_ast::IsolationLevel::ReadCommitted;
-use pg_transaction_stmt_ast::IsolationLevel::ReadUncommitted;
-use pg_transaction_stmt_ast::IsolationLevel::RepeatableRead;
-use pg_transaction_stmt_ast::IsolationLevel::Serializable;
-use pg_transaction_stmt_ast::TransactionMode;
-use pg_transaction_stmt_ast::TransactionMode::Deferrable;
-use pg_transaction_stmt_ast::TransactionMode::NotDeferrable;
-use pg_transaction_stmt_ast::TransactionMode::ReadOnly;
-use pg_transaction_stmt_ast::TransactionMode::ReadWrite;

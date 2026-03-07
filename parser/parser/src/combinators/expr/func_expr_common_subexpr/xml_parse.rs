@@ -49,7 +49,7 @@ mod tests {
     #[allow(unused_imports)]
     use {
         pg_ast::ExprNode::StringConst,
-        pg_xml_ast::XmlNodeKind,
+        pg_ast::XmlNodeKind,
     };
 
     #[test_case("xmlparse(content 'foo')" => Ok(

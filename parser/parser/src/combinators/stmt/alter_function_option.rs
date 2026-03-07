@@ -77,10 +77,10 @@ mod tests {
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
-        pg_generic_set_ast::SetRestMore::TimeZone,
-        pg_generic_set_ast::VariableTarget::All,
-        pg_generic_set_ast::ZoneValue::Local,
-        pg_sink_ast::SignedNumber::IntegerConst,
+        pg_ast::SetRestMore::TimeZone,
+        pg_ast::SignedNumber::IntegerConst,
+        pg_ast::VariableTarget::All,
+        pg_ast::ZoneValue::Local,
     };
 
     #[test_case("called on null input", Strict(false))]

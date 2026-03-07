@@ -169,9 +169,9 @@ mod tests {
     #[allow(unused_imports)]
     use {
         pg_ast::FunctionWithArgs,
-        pg_generic_set_ast::SetRestMore::ConfigurationParameter,
-        pg_sink_ast::RoleSpec::CurrentUser,
-        pg_sink_ast::ValueOrDefault,
+        pg_ast::RoleSpec::CurrentUser,
+        pg_ast::SetRestMore::ConfigurationParameter,
+        pg_ast::ValueOrDefault,
     };
 
     #[test_case(
@@ -318,6 +318,7 @@ mod tests {
 
 use crate::combinators::function_with_argtypes;
 use crate::combinators::stmt::alter_function_option;
+use pg_ast::AddDrop;
 use pg_ast::AlterFunctionKind;
 use pg_ast::AlterFunctionOption;
 use pg_ast::AlterFunctionStmt;
@@ -330,6 +331,7 @@ use pg_ast::AlterOwnerTarget;
 use pg_ast::RawStmt;
 use pg_ast::RenameStmt;
 use pg_ast::RenameTarget;
+use pg_ast::RoleSpec;
 use pg_basics::Str;
 use pg_combinators::alt;
 use pg_combinators::many;
@@ -349,7 +351,5 @@ use pg_lexer::Keyword::Schema;
 use pg_lexer::Keyword::Set;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
-use pg_sink_ast::AddDrop;
-use pg_sink_ast::RoleSpec;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::role_spec;

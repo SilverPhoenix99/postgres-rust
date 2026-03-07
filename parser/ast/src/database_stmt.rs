@@ -17,6 +17,6 @@ pub enum DatabaseStmt {
 
 use crate::AlterDatabaseSetStmt;
 use crate::AlterDatabaseStmt;
+use crate::RoleSpec;
 use derive_more::From;
 use pg_basics::Str;
-use pg_sink_ast::RoleSpec;

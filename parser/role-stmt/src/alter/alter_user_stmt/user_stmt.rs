@@ -1,3 +1,5 @@
+#![allow(unused_imports)]
+
 enum Change {
     Name { new_name: Str },
     Options(Option<Vec<AlterRoleOption>>),
@@ -98,14 +100,14 @@ mod tests {
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
-        pg_generic_set_ast::SetResetClause::Reset,
-        pg_generic_set_ast::SetResetClause::Set,
-        pg_generic_set_ast::SetRest::LocalTransactionCharacteristics,
-        pg_generic_set_ast::SetRest::TransactionSnapshot,
-        pg_generic_set_ast::VariableTarget::SessionAuthorization,
-        pg_generic_set_ast::VariableTarget::TimeZone,
-        pg_sink_ast::RoleSpec,
-        pg_transaction_stmt_ast::TransactionMode::Deferrable,
+        pg_ast::RoleSpec,
+        pg_ast::SetResetClause::Reset,
+        pg_ast::SetResetClause::Set,
+        pg_ast::SetRest::LocalTransactionCharacteristics,
+        pg_ast::SetRest::TransactionSnapshot,
+        pg_ast::TransactionMode::Deferrable,
+        pg_ast::VariableTarget::SessionAuthorization,
+        pg_ast::VariableTarget::TimeZone,
     };
 
     #[test_case("all in database foo set transaction snapshot 'bar'" => Ok(
@@ -167,6 +169,12 @@ mod tests {
 
 use super::in_database::in_database;
 use crate::alter::alter_role_options;
+use pg_ast::AlterRoleOption;
+use pg_ast::AlterRoleSetStmt;
+use pg_ast::AlterRoleStmt;
+use pg_ast::OneOrAll;
+use pg_ast::RoleStmt;
+use pg_ast::SetResetClause;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_basics::Str;
@@ -175,17 +183,11 @@ use pg_combinators::located;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
-use pg_generic_set_ast::SetResetClause;
 use pg_lexer::Keyword::All;
 use pg_lexer::Keyword::Rename;
 use pg_lexer::Keyword::To;
 use pg_lexer::Keyword::With;
 use pg_parser_core::scan;
-use pg_role_ast::AlterRoleOption;
-use pg_role_ast::AlterRoleSetStmt;
-use pg_role_ast::AlterRoleStmt;
-use pg_role_ast::RoleStmt;
-use pg_sink_ast::OneOrAll;
 use pg_sink_combinators::role_id;
 use pg_sink_combinators::role_spec;
 use pg_sink_combinators::IntoRoleId;

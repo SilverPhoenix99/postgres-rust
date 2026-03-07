@@ -34,6 +34,7 @@ mod tests {
 }
 
 use crate::non_reserved_word;
+use pg_ast::BooleanOrString;
 use pg_combinators::alt;
 use pg_combinators::many;
 use pg_combinators::string;
@@ -44,4 +45,3 @@ use pg_lexer::Keyword::On;
 use pg_lexer::Keyword::True;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-use pg_sink_ast::BooleanOrString;

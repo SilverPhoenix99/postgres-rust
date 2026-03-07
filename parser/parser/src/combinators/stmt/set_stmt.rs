@@ -59,9 +59,8 @@ fn constraints_set_mode(ctx: &mut ParserContext) -> scan::Result<ConstraintsSetM
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pg_ast::SetRest;
     use pg_combinators::test_parser;
-    use pg_generic_set_ast::SetRest;
-    use pg_sink_ast::OneOrAll;
     use test_case::test_case;
 
     #[test]
@@ -106,7 +105,9 @@ use pg_ast::ConstraintsSetMode;
 use pg_ast::ConstraintsSetMode::Deferred;
 use pg_ast::ConstraintsSetMode::Immediate;
 use pg_ast::ConstraintsSetStmt;
+use pg_ast::OneOrAll;
 use pg_ast::RawStmt;
+use pg_ast::RelationName;
 use pg_ast::VariableSetStmt;
 use pg_combinators::alt;
 use pg_combinators::seq;
@@ -119,7 +120,5 @@ use pg_lexer::Keyword::Local;
 use pg_lexer::Keyword::Session;
 use pg_lexer::Keyword::Set;
 use pg_parser_core::scan;
-use pg_sink_ast::OneOrAll;
-use pg_sink_ast::RelationName;
 use pg_sink_combinators::qualified_name_list;
 use pg_variable_stmt::set_rest;

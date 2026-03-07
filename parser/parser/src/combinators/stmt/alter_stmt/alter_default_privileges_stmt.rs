@@ -133,10 +133,10 @@ fn def_acl_privilege_target(ctx: &mut ParserContext) -> scan::Result<PrivilegeDe
 mod tests {
     use super::*;
     use pg_ast::AccessPrivilege;
-    use pg_combinators::test_parser;
     #[allow(unused_imports)]
-    use pg_sink_ast::DropBehavior;
-    use pg_sink_ast::RoleSpec::*;
+    use pg_ast::DropBehavior;
+    use pg_ast::RoleSpec::*;
+    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]

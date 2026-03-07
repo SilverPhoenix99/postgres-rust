@@ -152,8 +152,8 @@ pub enum FuncType {
 }
 
 use crate::ExprNode;
+use crate::IntervalRange;
 use derive_more::From;
 use derive_more::Into;
 use pg_basics::Oid;
 use pg_basics::QualifiedName;
-use pg_interval_ast::IntervalRange;

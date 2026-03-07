@@ -20,9 +20,9 @@ pub enum SetRestMore {
     }
 }
 
+use crate::ValueOrDefault;
 use crate::VarValue;
+use crate::XmlNodeKind;
 use crate::ZoneValue;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
-use pg_sink_ast::ValueOrDefault;
-use pg_xml_ast::XmlNodeKind;

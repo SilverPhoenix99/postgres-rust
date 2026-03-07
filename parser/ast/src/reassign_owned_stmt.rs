@@ -19,4 +19,4 @@ impl ReassignOwnedStmt {
     }
 }
 
-use pg_sink_ast::RoleSpec;
+use crate::RoleSpec;

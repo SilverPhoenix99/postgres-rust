@@ -18,9 +18,9 @@ pub(in crate::combinators::stmt) fn alter_large_object_stmt(ctx: &mut ParserCont
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pg_ast::RoleSpec;
+    use pg_ast::SignedNumber;
     use pg_combinators::test_parser;
-    use pg_sink_ast::RoleSpec;
-    use pg_sink_ast::SignedNumber;
 
     #[test]
     fn test_alter_large_object() {

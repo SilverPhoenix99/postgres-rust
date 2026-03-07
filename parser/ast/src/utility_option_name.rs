@@ -12,5 +12,5 @@ impl UtilityOptionName {
 }
 
 use crate::UtilityOption;
+use crate::VarValue;
 use pg_basics::Str;
-use pg_generic_set_ast::VarValue;

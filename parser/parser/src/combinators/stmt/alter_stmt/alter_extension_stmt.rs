@@ -182,7 +182,6 @@ fn alter_extension_target(ctx: &mut ParserContext) -> scan::Result<AlterExtensio
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_ast::RawStmt;
     #[allow(unused_imports)]
     use pg_ast::{
         AggregateWithArgs,
@@ -312,6 +311,7 @@ use crate::combinators::stmt::transform;
 use crate::combinators::stmt::type_name;
 use crate::combinators::stmt::typecast;
 use crate::combinators::stmt::Operator as Op;
+use pg_ast::AddDrop;
 use pg_ast::AlterExtensionContentsStmt;
 use pg_ast::AlterExtensionContentsTarget;
 use pg_ast::AlterExtensionContentsTarget::AccessMethod;
@@ -363,7 +363,6 @@ use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;
-use pg_sink_ast::AddDrop;
 use pg_sink_combinators::add_drop;
 use pg_sink_combinators::col_id;
 use pg_sink_combinators::collation;
