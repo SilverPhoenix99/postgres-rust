@@ -1,5 +1,5 @@
 /// Alias: `ClosePortalStmt`
-pub fn close_stmt(ctx: &mut ParserContext) -> scan::Result<OneOrAll<Str>> {
+pub(super) fn close_stmt(ctx: &mut ParserContext) -> scan::Result<OneOrAll<Str>> {
 
     /*
           CLOSE ALL

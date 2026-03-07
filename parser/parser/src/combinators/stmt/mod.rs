@@ -1,5 +1,3 @@
-mod collation_stmt;
-mod conversion_stmt;
 mod object_type_name;
 mod privilege_target;
 
@@ -87,7 +85,9 @@ pg_basics::reexport! {
     check_point_stmt,
     close_stmt,
     cluster_stmt,
+    collation_stmt,
     comment_stmt,
+    conversion_stmt,
     copy_stmt,
     create_stmt,
     database_stmt,

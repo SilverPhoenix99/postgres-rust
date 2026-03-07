@@ -1,5 +1,5 @@
 /// Alias: `CheckPointStmt`
-pub fn check_point_stmt(ctx: &mut ParserContext) -> scan::Result<Option<Vec<UtilityOption>>> {
+pub(super) fn check_point_stmt(ctx: &mut ParserContext) -> scan::Result<Option<Vec<UtilityOption>>> {
 
     /*
         CHECKPOINT ( utility_options )?
