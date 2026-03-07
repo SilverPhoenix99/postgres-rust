@@ -28,10 +28,10 @@ mod tests {
     }
 }
 
+use super::utility_options;
 use pg_ast::UtilityOption;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Checkpoint;
 use pg_parser_core::scan;
-use pg_utility_option_combinators::utility_options;

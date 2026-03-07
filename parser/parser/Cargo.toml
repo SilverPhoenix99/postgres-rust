@@ -19,7 +19,6 @@ pg-parser-core.workspace = true
 pg-sink-combinators.workspace = true
 pg-transaction-stmt.workspace = true
 pg-type-combinators.workspace = true
-pg-utility-option-combinators.workspace = true
 pg-variable-stmt.workspace = true
 pg-xml-combinators.workspace = true
 

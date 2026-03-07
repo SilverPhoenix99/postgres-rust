@@ -118,6 +118,7 @@ pg_basics::reexport! {
     system_stmt,
     truncate_stmt,
     unlisten_stmt,
+    utility_options,
     vacuum_stmt,
 }
 
