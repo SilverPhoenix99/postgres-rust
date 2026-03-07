@@ -100,6 +100,7 @@ mod tests {
     }
 }
 
+use crate::combinators::var_value;
 use pg_ast::UtilityOption;
 use pg_ast::UtilityOptionName;
 use pg_ast::UtilityOptionName::Analyze;
@@ -111,7 +112,6 @@ use pg_combinators::paren;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
-use pg_generic_set_combinators::var_value;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

@@ -1,4 +1,4 @@
-pub fn var_list(ctx: &mut ParserContext) -> scan::Result<Vec<VarValue>> {
+pub(super) fn var_list(ctx: &mut ParserContext) -> scan::Result<Vec<VarValue>> {
 
     many!(sep = Comma, var_value).parse(ctx)
 }

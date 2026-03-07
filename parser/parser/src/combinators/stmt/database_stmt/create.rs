@@ -148,6 +148,7 @@ mod tests {
     }
 }
 
+use crate::combinators::var_value;
 use pg_ast::CreateDatabaseStmt;
 use pg_ast::CreatedbOption;
 use pg_ast::CreatedbOptionKind;
@@ -177,7 +178,6 @@ use pg_combinators::many;
 use pg_combinators::seq;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
-use pg_generic_set_combinators::var_value;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Connection;
 use pg_lexer::Keyword::Database;

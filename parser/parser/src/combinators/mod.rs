@@ -9,6 +9,7 @@ pg_basics::reexport! { pub(super)
 pg_basics::reexport! {
     acl,
     alias,
+    all_or_var_name,
     asc_desc,
     collate_clause,
     document_or_content,
@@ -19,6 +20,7 @@ pg_basics::reexport! {
     func_name,
     func_type,
     function_with_argtypes,
+    generic_set_tail,
     json_aggregate_func,
     json_behavior,
     json_constructor_null_clause,
@@ -39,6 +41,8 @@ pg_basics::reexport! {
     table_ref,
     typename,
     unique_null_treatment,
+    var_value,
+    variable_target,
     window_specification,
     xmlexists_argument,
 }

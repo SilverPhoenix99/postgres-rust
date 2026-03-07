@@ -1,5 +1,5 @@
 /// Alias: `generic_reset`
-pub fn all_or_var_name(ctx: &mut ParserContext) -> scan::Result<OneOrAll<QualifiedName>> {
+pub(super) fn all_or_var_name(ctx: &mut ParserContext) -> scan::Result<OneOrAll<QualifiedName>> {
 
     /*
           ALL

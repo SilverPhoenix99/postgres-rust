@@ -253,6 +253,7 @@ mod tests {
 }
 
 use crate::combinators::document_or_content;
+use crate::combinators::generic_set_tail;
 use crate::combinators::stmt::transaction_mode_list;
 use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Full;
@@ -276,7 +277,6 @@ use pg_combinators::string;
 use pg_combinators::Combinator;
 use pg_combinators::ParserContext;
 use pg_elog::parser::Error::InvalidZoneValue;
-use pg_generic_set_combinators::generic_set_tail;
 use pg_interval_combinators::interval;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::As;

@@ -1,5 +1,5 @@
 /// Alias: `generic_set`
-pub fn generic_set_tail(ctx: &mut ParserContext) -> scan::Result<ValueOrDefault<Vec<VarValue>>> {
+pub(super) fn generic_set_tail(ctx: &mut ParserContext) -> scan::Result<ValueOrDefault<Vec<VarValue>>> {
 
     /*
           (TO | '=') DEFAULT
@@ -35,7 +35,7 @@ mod tests {
     }
 }
 
-use crate::var_list;
+use super::var_list;
 use pg_ast::ValueOrDefault;
 use pg_ast::VarValue;
 use pg_combinators::alt;
