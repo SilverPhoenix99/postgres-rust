@@ -101,6 +101,7 @@ mod tests {
     }
 }
 
+use super::set_rest;
 use pg_ast::ConstraintsSetMode;
 use pg_ast::ConstraintsSetMode::Deferred;
 use pg_ast::ConstraintsSetMode::Immediate;
@@ -121,4 +122,3 @@ use pg_lexer::Keyword::Session;
 use pg_lexer::Keyword::Set;
 use pg_parser_core::scan;
 use pg_sink_combinators::qualified_name_list;
-use pg_variable_stmt::set_rest;

@@ -1,5 +1,5 @@
 /// Alias: `VariableResetStmt`
-pub fn reset_stmt(ctx: &mut ParserContext) -> scan::Result<VariableTarget> {
+pub(super) fn reset_stmt(ctx: &mut ParserContext) -> scan::Result<VariableTarget> {
 
     /*
         RESET variable_target
