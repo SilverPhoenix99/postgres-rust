@@ -1,5 +1,5 @@
 /// Alias: `Typename`
-pub fn typename(ctx: &mut ParserContext) -> scan::Result<Type> {
+pub(in crate::combinators) fn typename(ctx: &mut ParserContext) -> scan::Result<Type> {
 
     /*
         ( SETOF )? SimpleTypename ( array_bounds )?
@@ -60,8 +60,8 @@ mod tests {
     }
 }
 
-use crate::array_bounds;
-use crate::simple_typename;
+use super::array_bounds;
+use super::simple_typename;
 use pg_ast::Type;
 use pg_combinators::seq;
 use pg_combinators::Combinator;

@@ -77,6 +77,7 @@ mod tests {
     }
 }
 
+use crate::combinators::typename;
 use core::hint::unreachable_unchecked;
 use pg_ast::FuncType;
 use pg_ast::FuncType::Reference;
@@ -89,4 +90,3 @@ use pg_lexer::Keyword::Type;
 use pg_lexer::OperatorKind::Percent;
 use pg_parser_core::scan;
 use pg_parser_core::Optional;
-use pg_type_combinators::typename;

@@ -78,7 +78,7 @@ fn float(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::expr_list;
+    use crate::combinators::expr_list;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -115,7 +115,7 @@ mod tests {
     }
 }
 
-use crate::type_modifiers;
+use super::type_modifiers;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Bool;
 use pg_ast::TypeName::Float4;

@@ -27,7 +27,7 @@ pub(super) fn generic_type(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::expr_list;
+    use crate::combinators::expr_list;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
     use test_case::test_case;
@@ -45,7 +45,7 @@ mod tests {
     }
 }
 
-use crate::type_modifiers;
+use super::type_modifiers;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Float8;
 use pg_ast::TypeName::Generic;

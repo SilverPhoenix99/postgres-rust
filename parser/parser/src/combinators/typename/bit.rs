@@ -33,7 +33,7 @@ pub(super) fn bit(default_type_modifiers:  Option<i32>) -> impl Combinator<Outpu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::expr_list;
+    use crate::combinators::expr_list;
     use pg_combinators::ParserContext;
     use pg_parser_core::scan;
     use test_case::test_case;
@@ -48,7 +48,7 @@ mod tests {
     }
 }
 
-use crate::type_modifiers;
+use super::type_modifiers;
 use pg_ast::ExprNode::IntegerConst;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Bit;

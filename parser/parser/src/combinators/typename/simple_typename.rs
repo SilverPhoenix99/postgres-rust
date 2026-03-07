@@ -1,5 +1,5 @@
 /// Alias: `SimpleTypename`
-pub fn simple_typename(ctx: &mut ParserContext) -> scan::Result<TypeName> {
+pub(in crate::combinators) fn simple_typename(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 
     alt!(
         Kw::Json.map(|_| Json),
@@ -16,7 +16,7 @@ pub fn simple_typename(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::expr_list;
+    use crate::combinators::expr_list;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
     use test_case::test_case;
@@ -37,13 +37,13 @@ mod tests {
     }
 }
 
-use crate::bit;
-use crate::character;
-use crate::generic_type;
-use crate::interval_type;
-use crate::numeric;
-use crate::time;
-use crate::timestamp;
+use super::bit;
+use super::character;
+use super::generic_type;
+use super::interval_type;
+use super::numeric;
+use super::time;
+use super::timestamp;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Json;
 use pg_combinators::alt;

@@ -39,7 +39,7 @@ mod tests {
     }
 }
 
-use crate::with_timezone;
+use super::with_timezone;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Time;
 use pg_ast::TypeName::TimeTz;

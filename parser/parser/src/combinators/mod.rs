@@ -36,6 +36,7 @@ pg_basics::reexport! {
     stmt,
     table_func_element_list,
     table_ref,
+    typename,
     unique_null_treatment,
     window_specification,
     xmlexists_argument,

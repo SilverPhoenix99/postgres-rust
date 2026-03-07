@@ -185,6 +185,7 @@ mod tests {
     }
 }
 
+use crate::combinators::simple_typename;
 use crate::no_match;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::BinaryStringConst;
@@ -236,4 +237,3 @@ use pg_parser_core::stream::TokenValue::Keyword;
 use pg_parser_core::stream::TokenValue::Operator;
 use pg_parser_core::stream::TokenValue::String;
 use pg_sink_combinators::precision;
-use pg_type_combinators::simple_typename;
