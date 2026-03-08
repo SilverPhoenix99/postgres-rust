@@ -22,7 +22,7 @@ pg_basics::reexport! { pub(super)
 }
 
 #[cfg(feature = "tuple_combinators")]
-pg_basics::reexport! { pub
+pg_basics::reexport! { pub(super)
     and,
     or,
 }
