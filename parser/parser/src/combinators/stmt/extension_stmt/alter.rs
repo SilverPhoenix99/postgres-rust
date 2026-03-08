@@ -10,7 +10,7 @@ enum Change {
 /// Aliases:
 /// * `AlterExtensionContentsStmt`
 /// * `AlterExtensionStmt`
-pub(super) fn alter_extension_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+pub(in crate::combinators::stmt) fn alter_extension_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER EXTENSION ColId (

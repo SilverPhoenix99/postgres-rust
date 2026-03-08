@@ -10,7 +10,7 @@ enum Change {
 }
 
 /// Alias: `AlterFunctionStmt`
-pub(super) fn alter_function_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+pub(in crate::combinators::stmt) fn alter_function_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         ALTER (FUNCTION|PROCEDURE|ROUTINE) function_with_argtypes

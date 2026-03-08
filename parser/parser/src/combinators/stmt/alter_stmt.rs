@@ -1,10 +1,3 @@
-pg_basics::reexport! {
-    alter_aggregate_stmt,
-    alter_default_privileges_stmt,
-    alter_extension_stmt,
-    alter_function_stmt,
-}
-
 pub(super) fn alter_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     let (_, stmt) = seq!(
@@ -62,15 +55,19 @@ mod tests {
 
 use crate::alt;
 use crate::combinators::core::Combinator;
-use crate::combinators::stmt::collation_stmt::alter_collation_stmt;
-use crate::combinators::stmt::conversion_stmt::alter_conversion_stmt;
-use crate::combinators::stmt::database_stmt::alter_database_stmt;
-use crate::combinators::stmt::event_trigger_stmt::alter_event_trigger_stmt;
-use crate::combinators::stmt::language_stmt::alter_language_stmt;
-use crate::combinators::stmt::large_object_stmt::alter_large_object_stmt;
-use crate::combinators::stmt::role_stmt::alter_group_stmt;
-use crate::combinators::stmt::role_stmt::alter_user_stmt;
-use crate::combinators::stmt::system_stmt::alter_system_stmt;
+use crate::combinators::stmt::alter_aggregate_stmt;
+use crate::combinators::stmt::alter_collation_stmt;
+use crate::combinators::stmt::alter_conversion_stmt;
+use crate::combinators::stmt::alter_database_stmt;
+use crate::combinators::stmt::alter_default_privileges_stmt;
+use crate::combinators::stmt::alter_event_trigger_stmt;
+use crate::combinators::stmt::alter_extension_stmt;
+use crate::combinators::stmt::alter_function_stmt;
+use crate::combinators::stmt::alter_group_stmt;
+use crate::combinators::stmt::alter_language_stmt;
+use crate::combinators::stmt::alter_large_object_stmt;
+use crate::combinators::stmt::alter_system_stmt;
+use crate::combinators::stmt::alter_user_stmt;
 use crate::seq;
 use crate::ParserContext;
 use pg_ast::RawStmt;

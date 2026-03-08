@@ -1,5 +1,5 @@
 /// Alias: `CreateAmStmt`
-pub(super) fn create_access_method_stmt(ctx: &mut ParserContext) -> scan::Result<CreateAccessMethodStmt> {
+pub(in crate::combinators::stmt) fn create_access_method_stmt(ctx: &mut ParserContext) -> scan::Result<CreateAccessMethodStmt> {
 
     /*
         ACCESS METHOD ColId TYPE_P am_type HANDLER any_name

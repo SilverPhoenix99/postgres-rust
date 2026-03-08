@@ -1,8 +1,3 @@
-pg_basics::reexport! {
-    create_access_method_stmt,
-    create_cast_stmt,
-}
-
 pub(super) fn create_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     let (_, stmt) = seq!(
@@ -44,10 +39,12 @@ mod tests {
 
 use crate::alt;
 use crate::combinators::core::Combinator;
-use crate::combinators::stmt::conversion_stmt::create_conversion_stmt;
-use crate::combinators::stmt::database_stmt::create_database_stmt;
-use crate::combinators::stmt::role_stmt::create_role_stmt;
-use crate::combinators::stmt::role_stmt::create_user_stmt;
+use crate::combinators::stmt::create_access_method_stmt;
+use crate::combinators::stmt::create_cast_stmt;
+use crate::combinators::stmt::create_conversion_stmt;
+use crate::combinators::stmt::create_database_stmt;
+use crate::combinators::stmt::create_role_stmt;
+use crate::combinators::stmt::create_user_stmt;
 use crate::seq;
 use crate::ParserContext;
 use pg_ast::RawStmt;

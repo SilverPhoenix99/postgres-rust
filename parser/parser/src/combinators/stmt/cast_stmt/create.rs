@@ -1,4 +1,4 @@
-pub(super) fn create_cast_stmt(ctx: &mut ParserContext) -> scan::Result<CreateCastStmt> {
+pub(in crate::combinators::stmt) fn create_cast_stmt(ctx: &mut ParserContext) -> scan::Result<CreateCastStmt> {
 
     /*
         typecast cast_conversion cast_context

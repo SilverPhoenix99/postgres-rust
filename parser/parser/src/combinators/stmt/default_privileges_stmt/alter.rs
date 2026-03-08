@@ -1,5 +1,5 @@
 /// Alias: `AlterDefaultPrivilegesStmt`
-pub(super) fn alter_default_privileges_stmt(ctx: &mut ParserContext) -> scan::Result<AlterDefaultPrivilegesStmt> {
+pub(in crate::combinators::stmt) fn alter_default_privileges_stmt(ctx: &mut ParserContext) -> scan::Result<AlterDefaultPrivilegesStmt> {
 
     /*
         ALTER DEFAULT PRIVILEGES DefACLOptionList DefACLAction
