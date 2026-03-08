@@ -32,10 +32,10 @@ fn table_func_element(ctx: &mut ParserContext) -> scan::Result<SimpleColumnDefin
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::SimpleColumnDefinition;
     #[allow(unused_imports)]
     use pg_ast::TypeName;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("json json" => Ok(
@@ -52,11 +52,11 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::combinators::collate_clause;
+use crate::combinators::core::Combinator;
 use crate::combinators::simple_typename;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::SimpleColumnDefinition;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

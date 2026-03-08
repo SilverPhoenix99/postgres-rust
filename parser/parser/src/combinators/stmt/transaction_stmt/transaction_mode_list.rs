@@ -75,7 +75,7 @@ fn isolation_level(ctx: &mut ParserContext) -> scan::Result<IsolationLevel> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use scan::Error::NoMatch;
     use test_case::test_case;
@@ -113,6 +113,11 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::IsolationLevel;
 use pg_ast::IsolationLevel::ReadCommitted;
 use pg_ast::IsolationLevel::ReadUncommitted;
@@ -123,11 +128,6 @@ use pg_ast::TransactionMode::Deferrable;
 use pg_ast::TransactionMode::NotDeferrable;
 use pg_ast::TransactionMode::ReadOnly;
 use pg_ast::TransactionMode::ReadWrite;
-use pg_combinators::alt;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Committed;
 use pg_lexer::Keyword::Isolation;

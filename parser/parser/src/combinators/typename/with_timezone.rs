@@ -20,7 +20,7 @@ pub(super) fn with_timezone(ctx: &mut ParserContext) -> scan::Result<bool> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("with time zone", true)]
@@ -30,10 +30,10 @@ mod tests {
     }
 }
 
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_lexer::Keyword::Time;
 use pg_lexer::Keyword::With;
 use pg_lexer::Keyword::Without;

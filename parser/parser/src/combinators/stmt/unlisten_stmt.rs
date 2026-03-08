@@ -20,7 +20,7 @@ pub(super) fn unlisten_stmt(ctx: &mut ParserContext) -> scan::Result<OneOrAll<St
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("unlisten *" => Ok(OneOrAll::All))]
@@ -30,13 +30,13 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::OneOrAll;
 use pg_basics::Str;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Unlisten;
 use pg_lexer::OperatorKind::Mul;
 use pg_parser_core::scan;

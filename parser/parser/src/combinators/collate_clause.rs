@@ -14,7 +14,7 @@ pub(super) fn collate_clause(ctx: &mut ParserContext) -> scan::Result<QualifiedN
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("collate foo.bar" => Ok(vec!["foo".into(), "bar".into()]))]
@@ -24,9 +24,9 @@ mod tests {
 }
 
 use crate::combinators::any_name;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_basics::QualifiedName;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Collate;
 use pg_parser_core::scan;

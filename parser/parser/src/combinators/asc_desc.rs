@@ -15,7 +15,7 @@ pub(super) fn asc_desc(ctx: &mut ParserContext) -> scan::Result<SortDirection> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("asc", Ascending)]
@@ -25,12 +25,12 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::ParserContext;
 use pg_ast::SortDirection;
 use pg_ast::SortDirection::Ascending;
 use pg_ast::SortDirection::Descending;
-use pg_combinators::alt;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Asc;
 use pg_lexer::Keyword::Desc;
 use pg_parser_core::scan;

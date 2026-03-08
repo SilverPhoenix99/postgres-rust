@@ -82,11 +82,11 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::sort_clause;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::WindowDefinition;
 use pg_basics::Located;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_parser_core::scan;

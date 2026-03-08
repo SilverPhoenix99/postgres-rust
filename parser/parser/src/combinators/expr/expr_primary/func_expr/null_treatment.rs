@@ -20,7 +20,7 @@ fn null_treatment(ctx: &mut ParserContext) -> scan::Result<NullTreatment> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("ignore nulls" => Ok(NullTreatment::Ignore))]
@@ -30,11 +30,11 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::NullTreatment;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Nulls;
 use pg_parser_core::scan;

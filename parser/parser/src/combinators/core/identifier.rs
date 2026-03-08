@@ -1,7 +1,7 @@
 /// Aliases:
 /// * `IDENT`
 /// * `UIDENT`
-pub fn identifier(ctx: &mut ParserContext) -> scan::Result<Box<str>> {
+pub(in crate::combinators) fn identifier(ctx: &mut ParserContext) -> scan::Result<Box<str>> {
     ctx.stream_mut().consume(|tok| {
         let Identifier(ident) = tok else { return None };
         Some(mem::take(ident))

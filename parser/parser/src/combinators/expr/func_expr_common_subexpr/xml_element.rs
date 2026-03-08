@@ -114,17 +114,17 @@ mod tests {
 }
 
 use super::xml_attribute_list;
+use crate::alt;
 use crate::combinators::col_label;
+use crate::combinators::core::skip;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr_list;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::ExprNode;
 use pg_ast::NamedValue;
 use pg_ast::XmlElement;
-use pg_combinators::alt;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::skip;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Name;
 use pg_lexer::Keyword::Xmlattributes;
 use pg_lexer::OperatorKind::Comma;

@@ -25,7 +25,7 @@ pub(super) fn commit_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionSt
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("commit" => Ok(Commit { chain: false }))]
@@ -48,16 +48,16 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::string;
+use crate::combinators::core::Combinator;
 use crate::combinators::transaction_chain;
 use crate::combinators::work_or_transaction;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::TransactionStmt;
 use pg_ast::TransactionStmt::Commit;
 use pg_ast::TransactionStmt::CommitPrepared;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::string;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Prepared;
 use pg_parser_core::scan;

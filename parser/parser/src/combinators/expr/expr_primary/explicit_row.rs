@@ -30,15 +30,15 @@ mod tests {
     }
 }
 
+use crate::combinators::core::skip;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr_list;
 use crate::no_match;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::Row;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::skip;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::OperatorKind::OpenParenthesis;
 use pg_parser_core::scan;

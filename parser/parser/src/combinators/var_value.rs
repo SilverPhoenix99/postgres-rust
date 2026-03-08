@@ -20,7 +20,7 @@ pub(super) fn var_value(ctx: &mut ParserContext) -> scan::Result<VarValue> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("true", true.into())]
@@ -34,12 +34,12 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::boolean_or_string;
+use crate::combinators::core::Combinator;
 use crate::combinators::signed_number;
+use crate::many;
+use crate::ParserContext;
 use pg_ast::VarValue;
-use pg_combinators::alt;
-use pg_combinators::many;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

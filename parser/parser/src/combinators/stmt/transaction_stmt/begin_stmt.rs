@@ -18,9 +18,9 @@ pub(super) fn begin_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStm
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::IsolationLevel::*;
     use pg_ast::TransactionMode::{self, *};
-    use pg_combinators::test_parser;
     use test_case::test_case;
     use TransactionStmt::Begin;
 
@@ -36,10 +36,10 @@ mod tests {
 }
 
 use super::transaction_mode_list;
+use crate::combinators::core::Combinator;
 use crate::combinators::work_or_transaction;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::TransactionStmt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Begin;
 use pg_parser_core::scan;

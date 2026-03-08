@@ -141,19 +141,19 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::skip;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
 use crate::combinators::expr_list;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::ExprNode;
 use pg_ast::TrimFunc;
 use pg_ast::TrimSide::Both;
 use pg_ast::TrimSide::Leading;
 use pg_ast::TrimSide::Trailing;
-use pg_combinators::alt;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::skip;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::FromKw;
 use pg_lexer::OperatorKind::Comma;

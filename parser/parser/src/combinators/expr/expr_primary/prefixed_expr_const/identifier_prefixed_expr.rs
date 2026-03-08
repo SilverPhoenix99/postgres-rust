@@ -61,6 +61,7 @@ fn column_ref(ctx: &mut ParserContext) -> scan::Result<ColumnRef> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         ExprNode::{IntegerConst, StringConst},
@@ -71,7 +72,6 @@ mod tests {
         StringTypecastExpr,
         TypeName,
     };
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("foo" => Ok(
@@ -250,19 +250,19 @@ mod tests {
 
 use super::attr_tail;
 use super::tailed_expr;
+use crate::alt;
+use crate::combinators::core::identifier;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::indirection;
 use crate::combinators::make_column_ref;
+use crate::located;
+use crate::seq;
+use crate::ParserContext;
 use core::mem;
 use pg_ast::ColumnRef;
 use pg_ast::ExprNode;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
-use pg_combinators::alt;
-use pg_combinators::identifier;
-use pg_combinators::located;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::KeywordCategory::ColumnName;
 use pg_lexer::KeywordCategory::Unreserved;
 use pg_parser_core::scan;

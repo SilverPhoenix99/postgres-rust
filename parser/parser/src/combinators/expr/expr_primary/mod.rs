@@ -47,9 +47,9 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::expr_const;
+use crate::ParserContext;
 use pg_ast::ExprNode;
-use pg_combinators::alt;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_parser_core::scan;

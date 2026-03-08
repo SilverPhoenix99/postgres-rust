@@ -25,7 +25,7 @@ pub(super) fn timestamp(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("timestamp"                      => Ok(Timestamp { precision: None }))]
@@ -40,12 +40,12 @@ mod tests {
 }
 
 use super::with_timezone;
+use crate::combinators::core::Combinator;
 use crate::combinators::precision;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Timestamp;
 use pg_ast::TypeName::TimestampTz;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_parser_core::scan;

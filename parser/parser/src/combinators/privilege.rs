@@ -93,7 +93,7 @@ fn named(ctx: &mut ParserContext) -> scan::Result<SpecificAccessPrivilege> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("all", All { columns: None })]
@@ -137,8 +137,14 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
 use crate::combinators::name_list;
+use crate::many;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::AccessPrivilege;
 use pg_ast::AccessPrivilege::All;
 use pg_ast::AccessPrivilege::Specific;
@@ -148,12 +154,6 @@ use pg_ast::SpecificAccessPrivilege::Create;
 use pg_ast::SpecificAccessPrivilege::Named;
 use pg_ast::SpecificAccessPrivilege::References;
 use pg_ast::SpecificAccessPrivilege::Select;
-use pg_combinators::alt;
-use pg_combinators::many;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::All as AllKw;
 use pg_lexer::Keyword::Alter;
 use pg_lexer::Keyword::Create as CreateKw;

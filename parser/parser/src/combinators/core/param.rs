@@ -1,4 +1,4 @@
-pub fn param(ctx: &mut ParserContext) -> scan::Result<i32> {
+pub(in crate::combinators) fn param(ctx: &mut ParserContext) -> scan::Result<i32> {
     ctx.stream_mut().consume(|tok| match tok {
         Param { index } => Some(*index),
         _ => None

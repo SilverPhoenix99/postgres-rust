@@ -48,7 +48,7 @@ pub(super) fn character(default_len: Option<i32>) -> impl Combinator<Output = Ty
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use pg_parser_core::scan;
     use test_case::test_case;
 
@@ -79,14 +79,14 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::parser;
+use crate::combinators::core::Combinator;
 use crate::combinators::precision;
+use crate::seq;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Bpchar;
 use pg_ast::TypeName::Varchar;
-use pg_combinators::alt;
-use pg_combinators::parser;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Char;
 use pg_lexer::Keyword::Character;

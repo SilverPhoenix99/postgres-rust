@@ -24,7 +24,7 @@ pub(super) fn window_exclusion_clause(ctx: &mut ParserContext) -> scan::Result<W
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("exclude current row", CurrentRow)]
@@ -36,15 +36,15 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::WindowExclusion;
 use pg_ast::WindowExclusion::CurrentRow;
 use pg_ast::WindowExclusion::Group;
 use pg_ast::WindowExclusion::NoOthers;
 use pg_ast::WindowExclusion::Ties;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Current;
 use pg_lexer::Keyword::Exclude;

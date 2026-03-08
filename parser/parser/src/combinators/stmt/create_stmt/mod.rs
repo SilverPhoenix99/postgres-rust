@@ -23,7 +23,7 @@ pub(super) fn create_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_matrix;
 
     #[test_matrix(
@@ -42,14 +42,14 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::stmt::conversion_stmt::create_conversion_stmt;
 use crate::combinators::stmt::database_stmt::create_database_stmt;
 use crate::combinators::stmt::role_stmt::create_role_stmt;
 use crate::combinators::stmt::role_stmt::create_user_stmt;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::RawStmt;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Create;
 use pg_parser_core::scan;

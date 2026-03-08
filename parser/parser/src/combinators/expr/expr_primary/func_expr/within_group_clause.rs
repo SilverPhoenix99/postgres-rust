@@ -14,8 +14,8 @@ fn within_group_clause(ctx: &mut ParserContext) -> scan::Result<Vec<SortBy>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::ExprNode::IntegerConst;
-    use pg_combinators::test_parser;
 
     #[test]
     fn test_within_group_clause() {
@@ -29,13 +29,13 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::sort_clause;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::SortBy;
 use pg_basics::Located;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Group;
 use pg_lexer::Keyword::Within;
 use pg_parser_core::scan;

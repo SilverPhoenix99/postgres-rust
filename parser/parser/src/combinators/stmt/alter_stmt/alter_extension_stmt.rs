@@ -182,6 +182,7 @@ fn alter_extension_target(ctx: &mut ParserContext) -> scan::Result<AlterExtensio
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         AggregateWithArgs,
@@ -190,7 +191,6 @@ mod tests {
         TypeName::{Int4, Varchar},
         Typecast as Cast,
     };
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("extension some_extension set schema some_schema",
@@ -300,8 +300,10 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::add_drop;
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
 use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::stmt::access_method;
 use crate::combinators::stmt::aggregate;
@@ -336,6 +338,9 @@ use crate::combinators::stmt::view;
 use crate::combinators::stmt::Foreign;
 use crate::combinators::stmt::Operator as Op;
 use crate::combinators::stmt::TextSearch;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::AddDrop;
 use pg_ast::AlterExtensionContentsStmt;
 use pg_ast::AlterExtensionContentsTarget;
@@ -380,11 +385,6 @@ use pg_ast::AlterObjectSchemaStmt;
 use pg_ast::AlterObjectSchemaTarget;
 use pg_ast::RawStmt;
 use pg_basics::Str;
-use pg_combinators::alt;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;

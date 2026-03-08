@@ -132,11 +132,11 @@ fn def_acl_privilege_target(ctx: &mut ParserContext) -> scan::Result<PrivilegeDe
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::AccessPrivilege;
     #[allow(unused_imports)]
     use pg_ast::DropBehavior;
     use pg_ast::RoleSpec::*;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]
@@ -222,12 +222,17 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::drop_behavior;
 use crate::combinators::grantee_list;
 use crate::combinators::name_list;
 use crate::combinators::privileges;
 use crate::combinators::role_list;
 use crate::combinators::with_grant_option;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::AclOption;
 use pg_ast::AlterDefaultPrivilegesStmt;
 use pg_ast::GrantOption;
@@ -239,11 +244,6 @@ use pg_ast::PrivilegeDefaultsTarget::Schemas;
 use pg_ast::PrivilegeDefaultsTarget::Sequences;
 use pg_ast::PrivilegeDefaultsTarget::Tables;
 use pg_ast::PrivilegeDefaultsTarget::Types;
-use pg_combinators::alt;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::DefaultKw;
 use pg_lexer::Keyword::For;

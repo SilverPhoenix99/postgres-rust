@@ -1,5 +1,5 @@
 #[derive(derive_more::Debug)]
-pub struct ParserContext<'src> {
+pub(super) struct ParserContext<'src> {
     stream: TokenStream<'src>,
 }
 

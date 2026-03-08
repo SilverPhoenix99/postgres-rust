@@ -15,7 +15,7 @@ pub(super) fn analyze_keyword(ctx: &mut ParserContext) -> scan::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("analyze")]
@@ -25,9 +25,9 @@ mod tests {
     }
 }
 
-use pg_combinators::alt;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::ParserContext;
 use pg_lexer::Keyword::Analyse;
 use pg_lexer::Keyword::Analyze;
 use pg_parser_core::scan;

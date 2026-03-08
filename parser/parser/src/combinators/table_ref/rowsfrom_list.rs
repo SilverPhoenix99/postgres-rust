@@ -38,8 +38,8 @@ fn col_def_list(ctx: &mut ParserContext) -> scan::Result<Vec<SimpleColumnDefinit
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::RangeFunction;
-    use pg_combinators::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -88,15 +88,15 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::func_expr_windowless;
 use crate::combinators::table_func_element_list;
+use crate::many;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::RangeFunction;
 use pg_ast::SimpleColumnDefinition;
-use pg_combinators::many;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::As;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

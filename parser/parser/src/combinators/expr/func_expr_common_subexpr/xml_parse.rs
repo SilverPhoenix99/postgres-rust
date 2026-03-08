@@ -44,7 +44,7 @@ fn xml_whitespace_option(ctx: &mut ParserContext) -> scan::Result<XmlWhitespaceO
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -77,16 +77,16 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::skip;
+use crate::combinators::core::Combinator;
 use crate::combinators::document_or_content;
 use crate::combinators::expr::a_expr;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::XmlParse;
 use pg_ast::XmlWhitespaceOption;
-use pg_combinators::alt;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::skip;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Whitespace;
 use pg_parser_core::scan;

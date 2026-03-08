@@ -131,9 +131,9 @@ fn single_frame_bound(ctx: &mut ParserContext) -> scan::Result<FrameExtent> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("unbounded preceding",
@@ -211,22 +211,22 @@ mod tests {
 }
 
 use super::frame_bound::frame_bound;
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::window_specification::frame_bound::FrameBound::CurrentRow;
 use crate::combinators::window_specification::frame_bound::FrameBound::OffsetFollowing;
 use crate::combinators::window_specification::frame_bound::FrameBound::OffsetPreceding;
 use crate::combinators::window_specification::frame_bound::FrameBound::UnboundedFollowing;
 use crate::combinators::window_specification::frame_bound::FrameBound::UnboundedPreceding;
+use crate::located;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::CurrentRowEnd;
 use pg_ast::FollowingEnd;
 use pg_ast::FrameExtent;
 use pg_ast::PrecedingEnd;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
-use pg_combinators::alt;
-use pg_combinators::located;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_elog::parser::Error::InvalidCurrentRowFrame;
 use pg_elog::parser::Error::InvalidOffsetFollowingFrame;
 use pg_elog::parser::Error::InvalidStartFollowingEndPrecedingFrame;

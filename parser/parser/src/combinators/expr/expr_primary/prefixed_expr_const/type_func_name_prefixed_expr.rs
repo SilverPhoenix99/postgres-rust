@@ -19,6 +19,7 @@ pub(super) fn type_func_name_prefixed_expr(ctx: &mut ParserContext) -> scan::Res
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         ExprNode::{IntegerConst, StringConst},
@@ -28,7 +29,6 @@ mod tests {
         StringTypecastExpr,
         TypeName,
     };
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("verbose 'foo'" => Ok(
@@ -66,10 +66,10 @@ mod tests {
 
 use super::attr_tail;
 use super::tailed_expr;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::ExprNode;
 use pg_basics::Str;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_parser_core::scan;

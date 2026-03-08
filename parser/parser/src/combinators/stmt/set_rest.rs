@@ -186,7 +186,7 @@ fn encoding(ctx: &mut ParserContext) -> scan::Result<ValueOrDefault<Box<str>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -252,6 +252,10 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::identifier;
+use crate::combinators::core::string;
+use crate::combinators::core::Combinator;
 use crate::combinators::document_or_content;
 use crate::combinators::generic_set_tail;
 use crate::combinators::interval;
@@ -260,6 +264,9 @@ use crate::combinators::precision;
 use crate::combinators::signed_number;
 use crate::combinators::stmt::transaction_mode_list;
 use crate::combinators::var_name;
+use crate::located;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Full;
 use pg_ast::IntervalRange::Hour;
@@ -274,13 +281,6 @@ use pg_ast::ZoneValue::Numeric;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_basics::Str;
-use pg_combinators::alt;
-use pg_combinators::identifier;
-use pg_combinators::located;
-use pg_combinators::seq;
-use pg_combinators::string;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_elog::parser::Error::InvalidZoneValue;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::As;

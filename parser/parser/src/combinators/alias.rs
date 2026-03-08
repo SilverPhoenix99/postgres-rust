@@ -14,9 +14,9 @@ pub(super) fn alias(ctx: &mut ParserContext) -> scan::Result<Str> {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_basics::Str;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::As;
 use pg_parser_core::scan;

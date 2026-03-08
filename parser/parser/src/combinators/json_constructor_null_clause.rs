@@ -22,7 +22,7 @@ pub(super) fn json_constructor_null_clause(ctx: &mut ParserContext) -> scan::Res
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("null on null" => Ok(false))]
@@ -32,10 +32,10 @@ mod tests {
     }
 }
 
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_lexer::Keyword::Absent;
 use pg_lexer::Keyword::Null;
 use pg_lexer::Keyword::On;

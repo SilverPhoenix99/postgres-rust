@@ -12,7 +12,7 @@ pub(in crate::combinators::stmt) fn aggregate(ctx: &mut ParserContext) -> scan::
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_aggregate() {
@@ -24,10 +24,10 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::stmt::aggregate_with_argtypes;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::AggregateWithArgs;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Aggregate;
 use pg_parser_core::scan;

@@ -138,7 +138,7 @@ fn interval_second(ctx: &mut ParserContext) -> scan::Result<Option<i32>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("year",              IntervalRange::Year)]
@@ -159,7 +159,11 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::precision;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Day;
 use pg_ast::IntervalRange::DayToHour;
@@ -174,10 +178,6 @@ use pg_ast::IntervalRange::Month;
 use pg_ast::IntervalRange::Second;
 use pg_ast::IntervalRange::Year;
 use pg_ast::IntervalRange::YearToMonth;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::To;
 use pg_parser_core::scan;

@@ -54,9 +54,9 @@ fn extract_arg(ctx: &mut ParserContext) -> scan::Result<ExtractArg> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::{IntegerConst, StringConst};
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("extract(year from 'foo')" => Ok(
@@ -98,7 +98,15 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::identifier;
+use crate::combinators::core::skip;
+use crate::combinators::core::string;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::ExtractArg;
 use pg_ast::ExtractArg::Day;
 use pg_ast::ExtractArg::Hour;
@@ -108,14 +116,6 @@ use pg_ast::ExtractArg::Named;
 use pg_ast::ExtractArg::Second;
 use pg_ast::ExtractArg::Year;
 use pg_ast::ExtractFunc;
-use pg_combinators::alt;
-use pg_combinators::identifier;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::skip;
-use pg_combinators::string;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::FromKw;
 use pg_parser_core::scan;

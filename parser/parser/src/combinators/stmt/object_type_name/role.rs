@@ -13,7 +13,7 @@ pub(in crate::combinators::stmt) fn role(ctx: &mut ParserContext) -> scan::Resul
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_role() {
@@ -26,9 +26,9 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_basics::Str;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Role;
 use pg_parser_core::scan;

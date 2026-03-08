@@ -24,7 +24,7 @@ pub(super) fn notify_stmt(ctx: &mut ParserContext) -> scan::Result<NotifyStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_notify() {
@@ -46,11 +46,11 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::core::string;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::NotifyStmt;
-use pg_combinators::seq;
-use pg_combinators::string;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Notify;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

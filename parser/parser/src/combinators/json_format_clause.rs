@@ -37,9 +37,9 @@ pub(super) fn json_format_clause(ctx: &mut ParserContext) -> scan::Result<JsonFo
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::JsonFormatKind::Text;
-    use pg_combinators::test_parser;
     use pg_elog::Error::Parser;
     use scan::Error::ScanErr;
     use test_case::test_case;
@@ -71,16 +71,16 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
+use crate::located;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::JsonEncoding::UTF16;
 use pg_ast::JsonEncoding::UTF32;
 use pg_ast::JsonEncoding::UTF8;
 use pg_ast::JsonFormat;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
-use pg_combinators::located;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_elog::parser::Error::UnrecognizedJsonEncoding;
 use pg_lexer::Keyword::Encoding;
 use pg_lexer::Keyword::Format;

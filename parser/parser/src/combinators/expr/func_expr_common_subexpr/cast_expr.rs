@@ -16,9 +16,9 @@ pub(super) fn cast_expr(ctx: &mut ParserContext) -> scan::Result<TypecastExpr> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::ExprNode;
     use pg_ast::TypeName::Varchar;
-    use pg_combinators::test_parser;
 
     #[test]
     fn test_cast_expr() {
@@ -33,13 +33,13 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
 use crate::combinators::typename;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::TypecastExpr;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Cast;
 use pg_parser_core::scan;

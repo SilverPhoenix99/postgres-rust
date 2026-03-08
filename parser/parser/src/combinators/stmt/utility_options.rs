@@ -53,7 +53,7 @@ fn utility_option_name(ctx: &mut ParserContext) -> scan::Result<UtilityOptionNam
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test]
@@ -100,20 +100,20 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::analyze_keyword;
+use crate::combinators::core::Combinator;
 use crate::combinators::non_reserved_word;
 use crate::combinators::var_value;
+use crate::many;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::UtilityOption;
 use pg_ast::UtilityOptionName;
 use pg_ast::UtilityOptionName::Analyze;
 use pg_ast::UtilityOptionName::Format;
 use pg_ast::UtilityOptionName::Generic;
-use pg_combinators::alt;
-use pg_combinators::many;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

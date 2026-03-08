@@ -77,7 +77,7 @@ pub(super) fn createdb_opt_value(ctx: &mut ParserContext) -> scan::Result<Create
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test]
@@ -148,8 +148,14 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::col_id;
+use crate::combinators::core::identifier;
+use crate::combinators::core::Combinator;
 use crate::combinators::var_value;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::CreateDatabaseStmt;
 use pg_ast::CreatedbOption;
 use pg_ast::CreatedbOptionKind;
@@ -173,12 +179,6 @@ use pg_ast::CreatedbOptionKind::Tablespace;
 use pg_ast::CreatedbOptionKind::Template;
 use pg_ast::CreatedbOptionKind::Unknown;
 use pg_ast::CreatedbOptionValue;
-use pg_combinators::alt;
-use pg_combinators::identifier;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Connection;
 use pg_lexer::Keyword::Database;

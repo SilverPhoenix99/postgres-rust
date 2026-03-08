@@ -32,12 +32,12 @@ pub(in crate::combinators::stmt) fn alter_user_stmt(ctx: &mut ParserContext) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::AlterRoleStmt;
     use pg_ast::GenericOption;
     use pg_ast::GenericOptionKind::Unspecified;
     use pg_ast::RoleSpec::CurrentUser;
     use pg_ast::RoleSpec::Public;
-    use pg_combinators::test_parser;
 
     #[test]
     fn test_user_mapping() {
@@ -72,15 +72,15 @@ mod tests {
 }
 
 use self::user_stmt::user_stmt;
+use crate::alt;
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
 use crate::combinators::stmt::alter_generic_options;
 use crate::combinators::stmt::role_stmt::auth_ident;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::AlterUserMappingStmt;
 use pg_ast::RoleStmt;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::Mapping;

@@ -23,7 +23,7 @@ pub(super) fn generic_set_tail(ctx: &mut ParserContext) -> scan::Result<ValueOrD
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("TO Default", ValueOrDefault::Default)]
@@ -36,12 +36,12 @@ mod tests {
 }
 
 use super::var_list;
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::ValueOrDefault;
 use pg_ast::VarValue;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::DefaultKw;
 use pg_lexer::Keyword::To;
 use pg_lexer::OperatorKind::Equals;

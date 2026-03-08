@@ -20,7 +20,7 @@ macro_rules! test_parser {
         let source = $source;
         let mut ctx = $crate::ParserContext::from(source);
         let parser = $parser;
-        $crate::Combinator::parse(&parser, &mut ctx)
+        $crate::combinators::core::Combinator::parse(&parser, &mut ctx)
     }};
 
     (

@@ -18,9 +18,9 @@ pub(in crate::combinators::stmt) fn alter_large_object_stmt(ctx: &mut ParserCont
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::RoleSpec;
     use pg_ast::SignedNumber;
-    use pg_combinators::test_parser;
 
     #[test]
     fn test_alter_large_object() {
@@ -35,14 +35,14 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::role_spec;
 use crate::combinators::signed_number;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::AlterOwnerStmt;
 use pg_ast::AlterOwnerTarget;
 use pg_ast::RawStmt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Large;
 use pg_lexer::Keyword::Object;
 use pg_lexer::Keyword::Owner;

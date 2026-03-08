@@ -47,6 +47,7 @@ fn sortby(ctx: &mut ParserContext) -> scan::Result<SortBy> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::ExprNode::IntegerConst;
     use pg_ast::Operator::Less;
     use pg_ast::SortDirection::Ascending;
@@ -56,7 +57,6 @@ mod tests {
         SortDirection,
         SortNulls::NullsFirst,
     };
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]
@@ -117,19 +117,19 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::asc_desc;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
 use crate::combinators::nulls_order;
 use crate::combinators::qual_all_op;
+use crate::located;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::SortBy;
 use pg_ast::SortDirection::Using;
 use pg_basics::Located;
-use pg_combinators::alt;
-use pg_combinators::located;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Order;

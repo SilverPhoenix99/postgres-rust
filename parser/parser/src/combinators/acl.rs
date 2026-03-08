@@ -48,7 +48,7 @@ pub(super) fn granted_by(ctx: &mut ParserContext) -> scan::Result<RoleSpec> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_grantee_list() {
@@ -89,13 +89,13 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::role_spec;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::GrantOption;
 use pg_ast::RoleSpec;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Grant;
 use pg_lexer::Keyword::Granted;

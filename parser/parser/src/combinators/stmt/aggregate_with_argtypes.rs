@@ -78,11 +78,11 @@ fn aggr_arg(ctx: &mut ParserContext) -> scan::Result<FunctionParameter> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::FuncType;
     use pg_ast::TypeName::Int4;
     use pg_ast::TypeName::Int8;
     use pg_ast::TypeName::Json;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]
@@ -198,20 +198,20 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::func_arg;
 use crate::combinators::func_name;
+use crate::located;
+use crate::many;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::AggregateWithArgs;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionParameterMode as Mode;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
-use pg_combinators::alt;
-use pg_combinators::located;
-use pg_combinators::many;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_elog::parser::Error::AggregateWithOutputParameters;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Order;

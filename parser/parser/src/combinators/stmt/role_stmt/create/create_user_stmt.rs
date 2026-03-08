@@ -50,8 +50,8 @@ fn create_user_role(ctx: &mut ParserContext) -> scan::Result<CreateRoleStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::CreateRoleOption;
-    use pg_combinators::test_parser;
     use test_case::{test_case, test_matrix};
     #[allow(unused_imports)]
     use {
@@ -103,20 +103,20 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
 use crate::combinators::if_not_exists;
 use crate::combinators::role_id;
 use crate::combinators::stmt::create_generic_options;
 use crate::combinators::stmt::role_stmt::auth_ident;
 use crate::combinators::stmt::role_stmt::create::create_role_options;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::CreateRoleStmt;
 use pg_ast::CreateUserMappingStmt;
 use pg_ast::RoleKind;
 use pg_ast::RoleStmt;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::Mapping;
 use pg_lexer::Keyword::Server;

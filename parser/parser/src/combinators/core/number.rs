@@ -1,7 +1,7 @@
 /// Returns `ICONST | FCONST`.
 ///
 /// Alias: `I_or_F_const`
-pub fn number(ctx: &mut ParserContext) -> scan::Result<UnsignedNumber> {
+pub(in crate::combinators) fn number(ctx: &mut ParserContext) -> scan::Result<UnsignedNumber> {
     ctx.stream_mut().consume(|tok| {
         let TokenValue::UnsignedNumber(value) = tok else {
             return None

@@ -42,9 +42,9 @@ pub(super) fn func_type(ctx: &mut ParserContext) -> scan::Result<FuncType> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::SetOf;
     use pg_ast::Type;
-    use pg_combinators::test_parser;
 
     #[test]
     fn test_ref_func_type() {
@@ -77,15 +77,15 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::typename;
+use crate::seq;
+use crate::ParserContext;
 use core::hint::unreachable_unchecked;
 use pg_ast::FuncType;
 use pg_ast::FuncType::Reference;
 use pg_ast::TypeName::Generic;
 use pg_ast::TypeReference;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Type;
 use pg_lexer::OperatorKind::Percent;
 use pg_parser_core::scan;

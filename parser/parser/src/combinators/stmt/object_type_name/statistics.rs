@@ -13,7 +13,7 @@ pub(in crate::combinators::stmt) fn statistics(ctx: &mut ParserContext) -> scan:
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_statistics() {
@@ -26,9 +26,9 @@ mod tests {
 }
 
 use crate::combinators::any_name;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_basics::QualifiedName;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Statistics;
 use pg_parser_core::scan;

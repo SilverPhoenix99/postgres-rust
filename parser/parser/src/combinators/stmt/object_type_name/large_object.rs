@@ -13,8 +13,8 @@ pub(in crate::combinators::stmt) fn large_object(ctx: &mut ParserContext) -> sca
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::SignedNumber::IntegerConst;
-    use pg_combinators::test_parser;
 
     #[test]
     fn test_large_object() {
@@ -26,11 +26,11 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::signed_number;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::SignedNumber;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Large;
 use pg_lexer::Keyword::Object;
 use pg_parser_core::scan;

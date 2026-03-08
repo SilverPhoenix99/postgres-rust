@@ -23,7 +23,7 @@ fn am_type(ctx: &mut ParserContext) -> scan::Result<AccessMethodKind> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test]
@@ -42,16 +42,16 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::any_name;
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::AccessMethodKind;
 use pg_ast::AccessMethodKind::Index;
 use pg_ast::AccessMethodKind::Table;
 use pg_ast::CreateAccessMethodStmt;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Access;
 use pg_lexer::Keyword::Handler;

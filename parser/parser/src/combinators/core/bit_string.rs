@@ -5,7 +5,7 @@
 /// Note that it doesn't validate the content.
 /// That needs to be done in a separate stage,
 /// when we know the actual type from the catalog.
-pub fn bit_string(ctx: &mut ParserContext) -> scan::Result<(BitStringKind, Box<str>)> {
+pub(in crate::combinators) fn bit_string(ctx: &mut ParserContext) -> scan::Result<(BitStringKind, Box<str>)> {
     ctx.stream_mut().consume(|tok| {
         let BitString { kind, value } = tok else { return None };
         let value = mem::take(value);

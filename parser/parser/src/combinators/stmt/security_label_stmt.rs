@@ -128,7 +128,7 @@ fn security_label(ctx: &mut ParserContext) -> scan::Result<Option<Box<str>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -222,6 +222,8 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::non_reserved_word_or_sconst;
 use crate::combinators::stmt::access_method;
 use crate::combinators::stmt::aggregate;
@@ -255,6 +257,8 @@ use crate::combinators::stmt::view;
 use crate::combinators::stmt::Foreign;
 use crate::combinators::stmt::TextSearch;
 use crate::combinators::string_or_null;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::SecurityLabelStmt;
 use pg_ast::SecurityLabelTarget;
 use pg_ast::SecurityLabelTarget::AccessMethod;
@@ -291,10 +295,6 @@ use pg_ast::SecurityLabelTarget::TextSearchTemplate;
 use pg_ast::SecurityLabelTarget::Type;
 use pg_ast::SecurityLabelTarget::View;
 use pg_basics::Str;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::Is;
 use pg_lexer::Keyword::Label;

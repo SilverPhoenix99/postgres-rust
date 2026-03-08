@@ -20,7 +20,7 @@ pub(super) fn nulls_order(ctx: &mut ParserContext) -> scan::Result<SortNulls> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("nulls first", NullsFirst)]
@@ -30,13 +30,13 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::SortNulls;
 use pg_ast::SortNulls::NullsFirst;
 use pg_ast::SortNulls::NullsLast;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::First;
 use pg_lexer::Keyword::Last;
 use pg_lexer::Keyword::Nulls;

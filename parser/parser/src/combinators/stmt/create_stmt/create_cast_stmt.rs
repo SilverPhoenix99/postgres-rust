@@ -57,12 +57,12 @@ fn cast_context(ctx: &mut ParserContext) -> scan::Result<CoercionContext> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::FunctionWithArgs;
     use pg_ast::TypeName::Int4;
     use pg_ast::TypeName::Int8;
     use pg_ast::Typecast;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]
@@ -92,18 +92,18 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::function_with_argtypes;
 use crate::combinators::stmt::typecast;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::CastConversion;
 use pg_ast::CastConversion::WithFunction;
 use pg_ast::CastConversion::WithInout;
 use pg_ast::CastConversion::WithoutFunction;
 use pg_ast::CoercionContext;
 use pg_ast::CreateCastStmt;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Function;

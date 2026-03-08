@@ -238,9 +238,9 @@ fn json_table_column_path_clause(ctx: &mut ParserContext) -> scan::Result<JsonTa
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::TypeName::Int4;
-    use pg_combinators::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -394,8 +394,11 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::alias;
 use crate::combinators::col_id;
+use crate::combinators::core::string;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
 use crate::combinators::json_behavior_clause;
 use crate::combinators::json_format_clause;
@@ -405,6 +408,11 @@ use crate::combinators::json_quotes_clause;
 use crate::combinators::json_value_expr;
 use crate::combinators::json_wrapper_behavior;
 use crate::combinators::typename;
+use crate::located;
+use crate::many;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use derive_more::From;
 use pg_ast::ExprNode::StringConst;
 use pg_ast::JsonBehavior;
@@ -422,14 +430,6 @@ use pg_ast::JsonWrapperBehavior;
 use pg_ast::Type;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
-use pg_combinators::alt;
-use pg_combinators::located;
-use pg_combinators::many;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::string;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_elog::parser::Error::NonStringJsonTablePathSpec;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Columns;
@@ -438,4 +438,3 @@ use pg_lexer::Keyword::Ordinality;
 use pg_lexer::Keyword::Path;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;
-

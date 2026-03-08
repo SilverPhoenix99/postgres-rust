@@ -31,7 +31,7 @@ fn role_kind(ctx: &mut ParserContext) -> scan::Result<RoleKind> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -60,13 +60,13 @@ mod tests {
 }
 
 use super::create_role_options;
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::role_id;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::CreateRoleStmt;
 use pg_ast::RoleKind;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Group;
 use pg_lexer::Keyword::Role;
 use pg_lexer::Keyword::With;

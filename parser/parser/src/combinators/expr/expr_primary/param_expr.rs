@@ -26,8 +26,8 @@ pub(super) fn param_expr(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::Indirection::Slice;
-    use pg_combinators::test_parser;
 
     #[test]
     fn test_param_expr() {
@@ -42,14 +42,14 @@ mod tests {
     }
 }
 
+use crate::combinators::core::param;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::check_indirection;
 use crate::combinators::expr::indirection;
+use crate::located;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::ParamRef;
 use pg_ast::IndirectionExpr;
-use pg_combinators::located;
-use pg_combinators::param;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_parser_core::scan;

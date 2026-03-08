@@ -8,7 +8,7 @@ pub(super) fn if_not_exists(ctx: &mut ParserContext) -> scan::Result<Presence> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_if_not_exists() {
@@ -20,10 +20,10 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::Presence;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Exists;
 use pg_lexer::Keyword::If;
 use pg_lexer::Keyword::Not;

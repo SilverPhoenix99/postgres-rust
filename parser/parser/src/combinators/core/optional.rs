@@ -1,5 +1,5 @@
 /// `Eof` and `NoMatch` become `Ok(None)`.
-pub fn optional<P>(parser: P) -> OptionalCombi<P>
+pub(in crate::combinators) fn optional<P>(parser: P) -> OptionalCombi<P>
 where
     P: Combinator
 {
@@ -7,7 +7,7 @@ where
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct OptionalCombi<P>(P);
+pub(in crate::combinators) struct OptionalCombi<P>(P);
 
 impl<P> Combinator for OptionalCombi<P>
 where
@@ -37,7 +37,7 @@ mod tests {
     }
 }
 
-use crate::Combinator;
+use crate::combinators::core::Combinator;
 use crate::ParserContext;
 use pg_parser_core::scan;
 use pg_parser_core::Optional as Opt;

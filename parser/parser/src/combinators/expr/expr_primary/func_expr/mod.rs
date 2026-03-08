@@ -41,7 +41,7 @@ fn json_agg_func(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use pg_parser_core::scan;
     use test_case::test_case;
     #[allow(unused_imports)]
@@ -87,14 +87,14 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::func_expr_common_subexpr;
 use crate::combinators::json_aggregate_func;
 use crate::combinators::JsonAggFunc;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::ExprNode;
 use pg_ast::JsonArrayAggExpr;
 use pg_ast::JsonObjectAggExpr;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_parser_core::scan;

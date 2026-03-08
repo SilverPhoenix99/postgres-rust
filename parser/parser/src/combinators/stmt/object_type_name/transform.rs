@@ -13,8 +13,8 @@ pub(in crate::combinators::stmt) fn transform(ctx: &mut ParserContext) -> scan::
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::TypeName::Int4;
-    use pg_combinators::test_parser;
 
     #[test]
     fn test_transform() {
@@ -27,11 +27,11 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
 use crate::combinators::typename;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::Transform;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::Language;

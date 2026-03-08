@@ -22,6 +22,7 @@ pub(super) fn json(ctx: &mut ParserContext) -> scan::Result<JsonFunc> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         ExprNode::StringConst,
@@ -29,7 +30,6 @@ mod tests {
         JsonFormat,
         JsonValueExpr,
     };
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("json('foo')" => Ok(
@@ -53,12 +53,12 @@ mod tests {
     }
 }
 
+use crate::combinators::core::skip;
+use crate::combinators::core::Combinator;
 use crate::combinators::json_key_uniqueness_constraint;
 use crate::combinators::json_value_expr;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::JsonFunc;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::skip;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_parser_core::scan;

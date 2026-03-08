@@ -19,7 +19,7 @@ fn generic_options(ctx: &mut ParserContext) -> scan::Result<Vec<GenericOption>> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_create_generic_options() {
@@ -47,12 +47,12 @@ mod tests {
 }
 
 use super::generic_option;
+use crate::combinators::core::Combinator;
+use crate::many;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::GenericOption;
-use pg_combinators::many;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Options;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

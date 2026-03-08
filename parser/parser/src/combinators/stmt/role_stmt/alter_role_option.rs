@@ -100,9 +100,9 @@ fn ident_option(ctx: &mut ParserContext) -> scan::Result<AlterRoleOption> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::RoleSpec::Public;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]
@@ -149,8 +149,16 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::identifier;
+use crate::combinators::core::string;
+use crate::combinators::core::Combinator;
 use crate::combinators::role_list;
 use crate::combinators::signed_i32_literal;
+use crate::located;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::AddDrop;
 use pg_ast::AlterRoleOption;
 use pg_ast::AlterRoleOption::BypassRls;
@@ -166,14 +174,6 @@ use pg_ast::AlterRoleOption::SuperUser;
 use pg_ast::AlterRoleOption::ValidUntil;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
-use pg_combinators::alt;
-use pg_combinators::identifier;
-use pg_combinators::located;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::string;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_elog::parser::Error::UnencryptedPassword;
 use pg_elog::parser::Error::UnrecognizedRoleOption;
 use pg_lexer::Keyword as Kw;

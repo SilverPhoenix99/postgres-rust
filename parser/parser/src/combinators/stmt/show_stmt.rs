@@ -14,7 +14,7 @@ pub(super) fn show_stmt(ctx: &mut ParserContext) -> scan::Result<VariableTarget>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_show_stmt() {
@@ -26,10 +26,10 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::variable_target;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::VariableTarget;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Show;
 use pg_parser_core::scan;

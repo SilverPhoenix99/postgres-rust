@@ -24,11 +24,11 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::identifier;
+use crate::combinators::core::Combinator;
+use crate::ParserContext;
 use pg_basics::Str;
-use pg_combinators::alt;
-use pg_combinators::identifier;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::KeywordCategory::ColumnName;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_lexer::KeywordCategory::Unreserved;

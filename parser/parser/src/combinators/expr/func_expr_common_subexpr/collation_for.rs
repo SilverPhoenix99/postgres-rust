@@ -15,9 +15,9 @@ pub(super) fn collation_for(ctx: &mut ParserContext) -> scan::Result<SqlFunction
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::StringConst;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("collation for ('foo')" => Ok(
@@ -30,12 +30,12 @@ mod tests {
     }
 }
 
+use crate::combinators::core::skip;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::CollationFor;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::skip;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_parser_core::scan;

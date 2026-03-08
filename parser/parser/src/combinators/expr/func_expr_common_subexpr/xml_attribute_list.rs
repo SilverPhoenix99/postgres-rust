@@ -27,9 +27,9 @@ fn xml_attribute(ctx: &mut ParserContext) -> scan::Result<NamedValue> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("1" => Ok(
@@ -44,12 +44,12 @@ mod tests {
 }
 
 use crate::combinators::col_label;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::NamedValue;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::As;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

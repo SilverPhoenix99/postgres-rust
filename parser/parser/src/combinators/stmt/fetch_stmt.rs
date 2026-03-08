@@ -11,10 +11,10 @@ pub(super) fn fetch_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
     Ok(stmt)
 }
 
+use crate::combinators::core::parser;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::RawStmt;
-use pg_combinators::parser;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Fetch;
 use pg_parser_core::scan;

@@ -125,7 +125,7 @@ pub(in crate::combinators) fn func_expr_common_subexpr(ctx: &mut ParserContext) 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use scan::Error::NoMatch;
     use test_case::test_case;
@@ -246,11 +246,11 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::ParserContext;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::CurrentCatalog;
-use pg_combinators::alt;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Coalesce;
 use pg_lexer::Keyword::Collation;

@@ -31,7 +31,7 @@ pub(in crate::combinators::stmt) fn create_conversion_stmt(ctx: &mut ParserConte
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("conversion foo for 'bar' to 'baz' from qux",
@@ -46,11 +46,11 @@ mod tests {
 }
 
 use crate::combinators::any_name;
+use crate::combinators::core::string;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::CreateConversionStmt;
-use pg_combinators::seq;
-use pg_combinators::string;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Conversion;
 use pg_lexer::Keyword::DefaultKw;
 use pg_lexer::Keyword::For;

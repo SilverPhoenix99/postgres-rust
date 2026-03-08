@@ -12,7 +12,7 @@ pub(in crate::combinators::stmt) fn database(ctx: &mut ParserContext) -> scan::R
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_database() {
@@ -25,9 +25,9 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_basics::Str;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Database;
 use pg_parser_core::scan;

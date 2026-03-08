@@ -7,7 +7,7 @@ pub(super) fn i32_literal_paren(ctx: &mut ParserContext) -> scan::Result<i32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_i32_literal_paren() {
@@ -19,8 +19,8 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::i32_literal;
-use pg_combinators::paren;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
+use crate::paren;
+use crate::ParserContext;
 use pg_parser_core::scan;

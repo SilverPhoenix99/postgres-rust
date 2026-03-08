@@ -12,7 +12,7 @@ pub(in crate::combinators::stmt) fn view(ctx: &mut ParserContext) -> scan::Resul
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_view() {
@@ -25,9 +25,9 @@ mod tests {
 }
 
 use crate::combinators::any_name;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_basics::QualifiedName;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::View;
 use pg_parser_core::scan;

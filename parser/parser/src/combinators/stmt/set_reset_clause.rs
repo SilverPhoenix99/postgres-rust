@@ -11,9 +11,9 @@ pub(super) fn set_reset_clause(ctx: &mut ParserContext) -> scan::Result<SetReset
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::SetRest;
     use pg_ast::VariableTarget;
-    use pg_combinators::test_parser;
 
     #[test]
     fn test_set() {
@@ -36,10 +36,10 @@ mod tests {
 
 use super::reset_stmt;
 use super::set_rest;
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::SetResetClause;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Set;
 use pg_parser_core::scan;

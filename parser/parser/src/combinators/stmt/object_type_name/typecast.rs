@@ -15,9 +15,9 @@ pub(in crate::combinators::stmt) fn typecast(ctx: &mut ParserContext) -> scan::R
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::TypeName::Int4;
     use pg_ast::TypeName::Int8;
-    use pg_combinators::test_parser;
 
     #[test]
     fn test_typecast() {
@@ -29,12 +29,12 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::typename;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::Typecast;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Cast;
 use pg_parser_core::scan;

@@ -186,8 +186,8 @@ fn variadic_arg(ctx: &mut ParserContext) -> scan::Result<(Located<NamedValue>, O
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::ExprNode::IntegerConst;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]
@@ -339,10 +339,17 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::func_arg_expr;
 use crate::combinators::func_arg_list;
 use crate::combinators::func_name;
 use crate::combinators::sort_clause;
+use crate::located;
+use crate::many;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::FuncArgsKind;
 use pg_ast::FuncArgsKind::All;
 use pg_ast::FuncArgsKind::Distinct;
@@ -354,13 +361,6 @@ use pg_ast::FuncCall;
 use pg_ast::NamedValue;
 use pg_basics::Located;
 use pg_basics::Location;
-use pg_combinators::alt;
-use pg_combinators::located;
-use pg_combinators::many;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::Mul;

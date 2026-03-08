@@ -14,8 +14,8 @@ pub(super) fn reassign_owned_stmt(ctx: &mut ParserContext) -> scan::Result<Reass
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::RoleSpec;
-    use pg_combinators::test_parser;
 
     #[test]
     fn test_reassign_owner_stmt() {
@@ -30,12 +30,12 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::role_list;
 use crate::combinators::role_spec;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::ReassignOwnedStmt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::OwnedKw;
 use pg_lexer::Keyword::Reassign;

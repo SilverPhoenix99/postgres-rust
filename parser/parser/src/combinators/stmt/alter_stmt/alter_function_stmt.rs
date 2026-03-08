@@ -164,7 +164,7 @@ fn alterfunc_opt_list(ctx: &mut ParserContext) -> scan::Result<Vec<AlterFunction
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -316,10 +316,16 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::col_id;
+use crate::combinators::core::string;
+use crate::combinators::core::Combinator;
 use crate::combinators::function_with_argtypes;
 use crate::combinators::role_spec;
 use crate::combinators::stmt::alter_function_option;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::AddDrop;
 use pg_ast::AlterFunctionKind;
 use pg_ast::AlterFunctionOption;
@@ -335,12 +341,6 @@ use pg_ast::RenameStmt;
 use pg_ast::RenameTarget;
 use pg_ast::RoleSpec;
 use pg_basics::Str;
-use pg_combinators::alt;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::string;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Depends;
 use pg_lexer::Keyword::Extension;

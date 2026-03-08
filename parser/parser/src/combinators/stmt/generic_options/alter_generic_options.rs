@@ -46,8 +46,8 @@ fn alter_generic_option(ctx: &mut ParserContext) -> scan::Result<GenericOptionKi
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::GenericOption;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]
@@ -86,18 +86,18 @@ mod tests {
 }
 
 use super::generic_option;
+use crate::alt;
 use crate::combinators::col_label;
+use crate::combinators::core::Combinator;
+use crate::many;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::GenericOptionKind;
 use pg_ast::GenericOptionKind::Add;
 use pg_ast::GenericOptionKind::Drop;
 use pg_ast::GenericOptionKind::Set;
 use pg_ast::GenericOptionKind::Unspecified;
-use pg_combinators::alt;
-use pg_combinators::many;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::DropKw;
 use pg_lexer::Keyword::Options;

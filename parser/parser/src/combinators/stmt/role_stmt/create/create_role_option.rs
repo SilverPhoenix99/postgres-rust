@@ -54,8 +54,8 @@ fn inherit(ctx: &mut ParserContext) -> scan::Result<CreateRoleOption> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::RoleSpec::Public;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]
@@ -83,15 +83,15 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::integer;
+use crate::combinators::core::Combinator;
 use crate::combinators::role_list;
 use crate::combinators::stmt::role_stmt::alter_role_option;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::CreateRoleOption;
-use pg_combinators::alt;
-use pg_combinators::integer;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Admin;
 use pg_lexer::Keyword::Group;
 use pg_lexer::Keyword::Inherit;

@@ -21,7 +21,7 @@ pub(super) fn interval_type(ctx: &mut ParserContext) -> scan::Result<IntervalRan
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("interval"     => Ok(IntervalRange::default()))]
@@ -32,13 +32,13 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::interval;
 use crate::combinators::precision;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::IntervalRange;
 use pg_ast::IntervalRange::Full;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_parser_core::scan;

@@ -22,9 +22,9 @@ pub(in crate::combinators) fn typename(ctx: &mut ParserContext) -> scan::Result<
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{SetOf, TypeName};
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("int" => Ok(Type::from(TypeName::Int4)))]
@@ -62,9 +62,9 @@ mod tests {
 
 use super::array_bounds;
 use super::simple_typename;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::Type;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Setof;
 use pg_parser_core::scan;

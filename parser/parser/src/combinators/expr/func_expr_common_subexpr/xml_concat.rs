@@ -32,12 +32,12 @@ mod tests {
     }
 }
 
+use crate::combinators::core::skip;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr_list;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::XmlConcat;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::skip;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_parser_core::scan;

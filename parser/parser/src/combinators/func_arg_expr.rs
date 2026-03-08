@@ -47,9 +47,9 @@ fn is_type_function_name(tok: &TokenValue) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("1" => Ok(NamedValue::unnamed(IntegerConst(1))))]
@@ -63,16 +63,16 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
 use crate::combinators::type_function_name;
+use crate::located;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::NamedValue;
 use pg_basics::Located;
-use pg_combinators::alt;
-use pg_combinators::located;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_lexer::KeywordCategory::Unreserved;
 use pg_lexer::OperatorKind::ColonEquals;

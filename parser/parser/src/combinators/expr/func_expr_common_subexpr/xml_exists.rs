@@ -18,9 +18,9 @@ pub(super) fn xml_exists(ctx: &mut ParserContext) -> scan::Result<XmlExists> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::StringConst;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("xmlexists('foo' passing 'bar')" => Ok(
@@ -34,12 +34,12 @@ mod tests {
     }
 }
 
+use crate::combinators::core::skip;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::expr_primary;
 use crate::combinators::xmlexists_argument;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::XmlExists;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::skip;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_parser_core::scan;

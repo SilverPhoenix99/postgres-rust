@@ -20,7 +20,7 @@ pub(super) fn role(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("CURRENT_role" => Ok(CurrentRole))]
@@ -33,14 +33,14 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::ParserContext;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::CurrentRole;
 use pg_ast::SqlFunction::CurrentUser;
 use pg_ast::SqlFunction::SessionUser;
 use pg_ast::SqlFunction::SystemUser;
 use pg_ast::SqlFunction::User;
-use pg_combinators::alt;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_parser_core::scan;

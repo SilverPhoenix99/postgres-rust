@@ -22,11 +22,11 @@ macro_rules! seq {
             Ok((
                 {
                     let p = $head;
-                    $crate::Combinator::parse(&p, ctx)?
+                    $crate::combinators::core::Combinator::parse(&p, ctx)?
                 },
                 $({
                     let p = $tail;
-                    let result = $crate::Combinator::parse(&p, ctx);
+                    let result = $crate::combinators::core::Combinator::parse(&p, ctx);
 
                     match result {
                         Ok(ok) => ok,

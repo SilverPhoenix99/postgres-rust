@@ -38,7 +38,7 @@ pub(in crate::combinators::stmt) fn text_search(ctx: &mut ParserContext) -> scan
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("text search configuration foo", TextSearch::Configuration(vec!["foo".into()]))]
@@ -50,12 +50,12 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::any_name;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_basics::QualifiedName;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Configuration;
 use pg_lexer::Keyword::Dictionary;
 use pg_lexer::Keyword::ParserKw;

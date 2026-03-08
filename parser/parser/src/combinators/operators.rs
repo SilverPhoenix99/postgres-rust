@@ -112,7 +112,7 @@ fn like_op(ctx: &mut ParserContext) -> scan::Result<Operator> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_user_defined_op() {
@@ -203,7 +203,14 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::col_id;
+use crate::combinators::core::user_defined_operator;
+use crate::combinators::core::Combinator;
+use crate::many;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::Operator;
 use pg_ast::Operator::Addition;
 use pg_ast::Operator::Division;
@@ -214,13 +221,6 @@ use pg_ast::Operator::Multiplication;
 use pg_ast::Operator::Subtraction;
 use pg_ast::Operator::UserDefined;
 use pg_ast::QualifiedOperator;
-use pg_combinators::alt;
-use pg_combinators::many;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::user_defined_operator;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Ilike;
 use pg_lexer::Keyword::Like;
 use pg_lexer::Keyword::Operator as OperatorKw;

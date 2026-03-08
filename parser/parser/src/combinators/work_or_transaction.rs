@@ -21,9 +21,9 @@ mod tests {
     }
 }
 
-use pg_combinators::alt;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::ParserContext;
 use pg_lexer::Keyword::Transaction;
 use pg_lexer::Keyword::Work;
 use pg_parser_core::scan;

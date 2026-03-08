@@ -22,7 +22,7 @@ pub(super) fn discard_stmt(ctx: &mut ParserContext) -> scan::Result<DiscardStmt>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("discard all", DiscardStmt::All)]
@@ -35,11 +35,11 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::DiscardStmt;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::All;
 use pg_lexer::Keyword::Discard;
 use pg_lexer::Keyword::Plans;

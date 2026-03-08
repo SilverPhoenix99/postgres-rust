@@ -49,7 +49,7 @@ pub(super) fn qualified_name(ctx: &mut ParserContext) -> scan::Result<RelationNa
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_qualified_name_list() {
@@ -90,15 +90,15 @@ mod tests {
 }
 
 use crate::combinators::any_name;
+use crate::combinators::core::Combinator;
+use crate::located;
+use crate::many;
+use crate::ParserContext;
 use core::mem;
 use pg_ast::RelationName;
 use pg_ast::SchemaName;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
-use pg_combinators::located;
-use pg_combinators::many;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_elog::parser::Error::ImproperQualifiedName;
 use pg_elog::parser::NameList;
 use pg_lexer::OperatorKind::Comma;

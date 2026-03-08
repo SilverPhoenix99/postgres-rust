@@ -98,9 +98,9 @@ fn close_paren(ctx: &mut ParserContext) -> scan::Result<Option<Type>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::Operator::Equals;
     use pg_ast::TypeName::Int4;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test]
@@ -135,20 +135,20 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::any_operator;
+use crate::combinators::core::Combinator;
 use crate::combinators::typename;
+use crate::located;
+use crate::many;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::OneOrBoth;
 use pg_ast::OperatorWithArgs;
 use pg_ast::Type;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
-use pg_combinators::alt;
-use pg_combinators::located;
-use pg_combinators::many;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_elog::parser::Error::MissingOperatorArgumentType;
 use pg_lexer::Keyword::NoneKw;
 use pg_lexer::OperatorKind::CloseParenthesis;

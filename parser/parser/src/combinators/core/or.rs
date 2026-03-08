@@ -1,6 +1,6 @@
 #![cfg(feature = "tuple_combinators")]
 
-pub fn or<T: OrCombinator>(alternatives: T) -> impl Combinator<Output = T::Output> {
+pub(in crate::combinators) fn or<T: OrCombinator>(alternatives: T) -> impl Combinator<Output = T::Output> {
     OrCombi(alternatives)
 }
 
@@ -15,7 +15,7 @@ impl<T: OrCombinator> Combinator for OrCombi<T>
     }
 }
 
-pub trait OrCombinator {
+pub(in crate::combinators) trait OrCombinator {
     type Output;
 
     fn parse(&self, ctx: &mut ParserContext) -> scan::Result<Self::Output>;
@@ -96,7 +96,7 @@ tuple_or_combinator! {
     T31:31, T32:32, T33:33, T34:34, T35:35, T36:36,
 }
 
-use crate::Combinator;
+use crate::combinators::core::Combinator;
 use crate::ParserContext;
 use pg_parser_core::scan;
 use pg_parser_core::Optional;

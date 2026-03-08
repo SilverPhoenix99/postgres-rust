@@ -6,7 +6,6 @@ members = [
     "elog",
     "guc",
     "parser/ast",
-    "parser/combinators",
     "parser/core",
     "parser/lexer",
     "parser/parser",
@@ -37,7 +36,6 @@ test-case = "3"
 
 pg-ast = { path = "parser/ast" }
 pg-basics = { path = "basics" }
-pg-combinators = { path = "parser/combinators", features = [] }
 pg-elog = { path = "elog" }
 pg-guc = { path = "guc" }
 pg-lexer = { path = "parser/lexer" }

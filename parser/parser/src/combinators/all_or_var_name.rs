@@ -15,7 +15,7 @@ pub(super) fn all_or_var_name(ctx: &mut ParserContext) -> scan::Result<OneOrAll<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("all" => Ok(OneOrAll::All))]
@@ -25,11 +25,11 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::var_name;
+use crate::ParserContext;
 use pg_ast::OneOrAll;
 use pg_basics::QualifiedName;
-use pg_combinators::alt;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword;
 use pg_parser_core::scan;

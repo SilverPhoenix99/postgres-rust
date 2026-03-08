@@ -15,7 +15,7 @@ pub(super) fn current_schema(ctx: &mut ParserContext) -> scan::Result<SqlFunctio
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use scan::Error::NoMatch;
     use test_case::test_case;
@@ -28,11 +28,11 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::no_match;
+use crate::ParserContext;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::CurrentSchema;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::OperatorKind::OpenParenthesis;
 use pg_parser_core::scan;

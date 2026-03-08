@@ -2,7 +2,7 @@
 #[macro_export]
 macro_rules! paren {
     ($parser:expr) => {
-        $crate::parser(|ctx| {
+        $crate::combinators::core::parser(|ctx| {
 
             let p = $crate::seq!(
                 pg_lexer::OperatorKind::OpenParenthesis,
@@ -10,7 +10,7 @@ macro_rules! paren {
                 pg_lexer::OperatorKind::CloseParenthesis
             );
 
-            let (_, value, _) = $crate::Combinator::parse(&p, ctx)?;
+            let (_, value, _) = $crate::combinators::core::Combinator::parse(&p, ctx)?;
             Ok(value)
         })
     };
@@ -20,7 +20,7 @@ macro_rules! paren {
 #[macro_export]
 macro_rules! brackets {
     ($parser:expr) => {
-        $crate::parser(|ctx| {
+        $crate::combinators::core::parser(|ctx| {
 
             let p = $crate::seq!(
                 pg_lexer::OperatorKind::OpenBracket,
@@ -28,7 +28,7 @@ macro_rules! brackets {
                 pg_lexer::OperatorKind::CloseBracket
             );
 
-            let (_, value, _) = $crate::Combinator::parse(&p, ctx)?;
+            let (_, value, _) = $crate::combinators::core::Combinator::parse(&p, ctx)?;
             Ok(value)
         })
     };
@@ -36,7 +36,7 @@ macro_rules! brackets {
 
 #[cfg(test)]
 mod tests {
-    use crate::integer;
+    use crate::combinators::core::integer;
     use crate::test_parser;
     use pg_basics::NonNegative;
 

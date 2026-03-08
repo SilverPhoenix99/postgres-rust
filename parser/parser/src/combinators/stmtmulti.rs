@@ -52,9 +52,9 @@ fn toplevel_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::TransactionMode::ReadOnly;
-    use pg_combinators::test_parser;
     use test_case::test_matrix;
 
     // This only quickly tests that statement types aren't missing.
@@ -72,15 +72,15 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::stmt;
 use crate::combinators::stmt::transaction_stmt_legacy;
+use crate::many;
 use crate::no_match;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::RawStmt;
-use pg_combinators::alt;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::OperatorKind::Semicolon;
 use pg_parser_core::scan;
 use pg_parser_core::scan::Error::Eof;

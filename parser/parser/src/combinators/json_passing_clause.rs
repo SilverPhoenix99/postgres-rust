@@ -28,7 +28,7 @@ fn json_argument(ctx: &mut ParserContext) -> scan::Result<JsonArgument> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -61,12 +61,12 @@ mod tests {
 }
 
 use crate::combinators::col_label;
+use crate::combinators::core::Combinator;
 use crate::combinators::json_value_expr;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::JsonArgument;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Passing;
 use pg_lexer::OperatorKind::Comma;

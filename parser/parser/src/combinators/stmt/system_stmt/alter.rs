@@ -28,7 +28,7 @@ pub(in crate::combinators::stmt) fn alter_system_stmt(ctx: &mut ParserContext) -
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("system reset all", AlterSystemStmt::ResetAll)]
@@ -40,16 +40,16 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::all_or_var_name;
+use crate::combinators::core::Combinator;
 use crate::combinators::generic_set_tail;
 use crate::combinators::var_name;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::AlterSystemStmt;
 use pg_ast::OneOrAll;
 use pg_ast::ValueOrDefault;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Reset;
 use pg_lexer::Keyword::Set;
 use pg_lexer::Keyword::SystemKw;

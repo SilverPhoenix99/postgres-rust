@@ -25,13 +25,13 @@ pub(super) fn json_value_expr(ctx: &mut ParserContext) -> scan::Result<JsonValue
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         ExprNode::StringConst,
         JsonEncoding::UTF8,
         JsonFormat,
     };
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("'foo'" => Ok(
@@ -57,12 +57,12 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
 use crate::combinators::json_format_clause;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::JsonValueExpr;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

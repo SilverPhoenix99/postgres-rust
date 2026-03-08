@@ -1,9 +1,8 @@
-pg_basics::reexport! { pub
+pg_basics::reexport! { pub(super)
     alt,
     between,
     bit_string,
     combinator,
-    context,
     identifier,
     integer,
     keyword,

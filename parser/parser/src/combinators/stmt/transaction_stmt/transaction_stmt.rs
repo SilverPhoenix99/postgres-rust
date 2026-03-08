@@ -14,7 +14,7 @@ pub(in crate::combinators::stmt) fn transaction_stmt(ctx: &mut ParserContext) ->
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_matrix;
 
     // This only quickly tests that statement types aren't missing.
@@ -41,8 +41,8 @@ use super::release_savepoint_stmt;
 use super::rollback_stmt;
 use super::savepoint_stmt;
 use super::start_transaction_stmt;
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::ParserContext;
 use pg_ast::TransactionStmt;
-use pg_combinators::alt;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_parser_core::scan;

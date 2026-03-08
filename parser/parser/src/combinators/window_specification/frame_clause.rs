@@ -26,6 +26,7 @@ pub(super) fn frame_clause(ctx: &mut ParserContext) -> scan::Result<WindowFrame>
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         CurrentRowEnd,
@@ -33,7 +34,6 @@ mod tests {
         FrameExtent,
         WindowExclusion::{NoOthers, Ties},
     };
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("range between current row and unbounded following",
@@ -62,16 +62,16 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::window_specification::frame_extent;
 use crate::combinators::window_specification::window_exclusion_clause;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::WindowFrame;
 use pg_ast::WindowFrameKind::Groups;
 use pg_ast::WindowFrameKind::Range;
 use pg_ast::WindowFrameKind::Rows;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::RangeKw;
 use pg_parser_core::scan;

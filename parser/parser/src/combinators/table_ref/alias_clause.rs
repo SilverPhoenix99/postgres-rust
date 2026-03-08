@@ -20,7 +20,7 @@ pub(super) fn alias_clause(ctx: &mut ParserContext) -> scan::Result<Alias> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("foo" => Ok(Alias::new("foo")))]
@@ -39,11 +39,11 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
 use crate::combinators::name_list;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::Alias;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::As;
 use pg_parser_core::scan;

@@ -104,10 +104,10 @@ fn default_behavior(ctx: &mut ParserContext) -> scan::Result<JsonBehavior> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::{IntegerConst, StringConst};
     use pg_ast::JsonBehavior;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("error on error" => Ok(
@@ -146,7 +146,11 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::JsonBehavior;
 use pg_ast::JsonBehavior::EmptyArray;
 use pg_ast::JsonBehavior::EmptyObject;
@@ -156,10 +160,6 @@ use pg_ast::JsonBehavior::Null;
 use pg_ast::JsonBehavior::True;
 use pg_ast::JsonBehavior::Unknown;
 use pg_ast::JsonBehaviorClause;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Array;
 use pg_lexer::Keyword::DefaultKw;

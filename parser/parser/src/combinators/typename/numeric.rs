@@ -115,7 +115,12 @@ mod tests {
 }
 
 use super::type_modifiers;
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::precision;
+use crate::located;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Bool;
 use pg_ast::TypeName::Float4;
@@ -126,11 +131,6 @@ use pg_ast::TypeName::Int8;
 use pg_ast::TypeName::Numeric;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
-use pg_combinators::alt;
-use pg_combinators::located;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_elog::parser::Error::FloatPrecisionOverflow;
 use pg_elog::parser::Error::FloatPrecisionUnderflow;
 use pg_lexer::Keyword as Kw;

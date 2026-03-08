@@ -15,7 +15,7 @@ pub(super) fn release_savepoint_stmt(ctx: &mut ParserContext) -> scan::Result<Tr
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_release() {
@@ -37,10 +37,10 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::TransactionStmt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Release;
 use pg_lexer::Keyword::Savepoint;
 use pg_parser_core::scan;

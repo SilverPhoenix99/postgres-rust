@@ -1,5 +1,5 @@
 /// Maps the `Ok(_)` value of a parser combinator into another type.
-pub fn map<P, M, O>(parser: P, mapper: M) -> MapCombi<P, M, O>
+pub(in crate::combinators) fn map<P, M, O>(parser: P, mapper: M) -> MapCombi<P, M, O>
 where
     P: Combinator,
     M: Fn(P::Output) -> O
@@ -12,7 +12,7 @@ where
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct MapCombi<P, M, O> {
+pub(in crate::combinators) struct MapCombi<P, M, O> {
     parser: P,
     mapper: M,
     boo: PhantomData<O>
@@ -32,7 +32,7 @@ where
     }
 }
 
-use crate::Combinator;
+use crate::combinators::core::Combinator;
 use crate::ParserContext;
 use core::marker::PhantomData;
 use pg_parser_core::scan;

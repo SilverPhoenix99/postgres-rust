@@ -8,6 +8,10 @@ pg_basics::reexport! { pub
     parser,
 }
 
-fn no_match<T>(ctx: &mut pg_combinators::ParserContext) -> pg_parser_core::scan::Result<T> {
+pg_basics::reexport! { pub(crate)
+    context,
+}
+
+fn no_match<T>(ctx: &mut ParserContext) -> pg_parser_core::scan::Result<T> {
     Err(pg_parser_core::scan::Error::NoMatch(ctx.stream_mut().current_location()))
 }

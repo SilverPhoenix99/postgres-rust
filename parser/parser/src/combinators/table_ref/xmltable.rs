@@ -181,7 +181,7 @@ fn xml_namespace_el(ctx: &mut ParserContext) -> scan::Result<NamedValue> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -311,12 +311,20 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::col_id;
 use crate::combinators::col_label;
+use crate::combinators::core::identifier;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::b_expr;
 use crate::combinators::expr::expr_primary;
 use crate::combinators::typename;
 use crate::combinators::xmlexists_argument;
+use crate::located;
+use crate::many;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::ExprNode;
 use pg_ast::NamedValue;
 use pg_ast::XmlTable;
@@ -325,14 +333,6 @@ use pg_ast::XmlTableColumnDefinition;
 use pg_ast::XmlTableColumnKind::ForOrdinality;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
-use pg_combinators::alt;
-use pg_combinators::identifier;
-use pg_combinators::located;
-use pg_combinators::many;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_elog::parser::Error::ConflictingNullability;
 use pg_elog::parser::Error::DefaultValueAlreadyDeclared;
 use pg_elog::parser::Error::InvalidXmlTableOptionName;

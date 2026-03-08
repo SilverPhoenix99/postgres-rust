@@ -74,7 +74,7 @@ impl IntoRoleId for RoleSpec {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -137,16 +137,16 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::non_reserved_word;
+use crate::located;
+use crate::many;
+use crate::ParserContext;
 use pg_ast::RoleSpec;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_basics::Str;
-use pg_combinators::alt;
-use pg_combinators::located;
-use pg_combinators::many;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_elog::role_spec;
 use pg_elog::role_spec::Error::ForbiddenRoleSpec;
 use pg_elog::role_spec::Error::ReservedRoleSpec;

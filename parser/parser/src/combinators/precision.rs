@@ -3,5 +3,5 @@ pub(super) fn precision(ctx: &mut ParserContext) -> scan::Result<i32> {
 }
 
 use crate::combinators::i32_literal_paren;
-use pg_combinators::ParserContext;
+use crate::ParserContext;
 use pg_parser_core::scan;

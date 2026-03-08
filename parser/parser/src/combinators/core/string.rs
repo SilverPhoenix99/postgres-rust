@@ -2,7 +2,7 @@
 /// * `SCONST`
 /// * `USCONST`
 /// * `file_name`
-pub fn string(ctx: &mut ParserContext) -> scan::Result<Box<str>> {
+pub(in crate::combinators) fn string(ctx: &mut ParserContext) -> scan::Result<Box<str>> {
     ctx.stream_mut().consume(|tok| {
         let TokenValue::String(value) = tok else { return None };
         Some(mem::take(value))

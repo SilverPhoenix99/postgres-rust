@@ -119,7 +119,7 @@ fn func_alias_column(ctx: &mut ParserContext) -> scan::Result<FuncAliasColumn> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -213,18 +213,18 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::col_id;
 use crate::combinators::collate_clause;
+use crate::combinators::core::Combinator;
 use crate::combinators::name_list;
 use crate::combinators::table_func_element_list;
 use crate::combinators::typename;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::FuncAlias;
 use pg_ast::FuncAliasColumn;
-use pg_combinators::alt;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::As;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

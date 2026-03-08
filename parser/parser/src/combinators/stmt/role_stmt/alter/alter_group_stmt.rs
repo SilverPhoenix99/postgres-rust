@@ -61,7 +61,7 @@ fn change_role(ctx: &mut ParserContext) -> scan::Result<Change> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("group some_group rename to new_group_name" => Ok(
@@ -99,11 +99,16 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::add_drop;
+use crate::combinators::core::Combinator;
 use crate::combinators::role_id;
 use crate::combinators::role_list;
 use crate::combinators::role_spec;
 use crate::combinators::IntoRoleId;
+use crate::located;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::AddDrop;
 use pg_ast::AlterRoleOption::RoleMembers;
 use pg_ast::AlterRoleStmt;
@@ -112,11 +117,6 @@ use pg_ast::RoleStmt;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
 use pg_basics::Str;
-use pg_combinators::alt;
-use pg_combinators::located;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Group;
 use pg_lexer::Keyword::Rename;
 use pg_lexer::Keyword::To;

@@ -16,7 +16,7 @@ fn filter_clause(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_filter_clause() {
@@ -28,12 +28,12 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::ExprNode;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Filter;
 use pg_lexer::Keyword::Where;
 use pg_parser_core::scan;

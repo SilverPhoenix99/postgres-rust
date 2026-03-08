@@ -10,7 +10,7 @@ pub(crate) fn expr_list(ctx: &mut ParserContext) -> scan::Result<Vec<ExprNode>> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_expr_list() {
@@ -26,10 +26,10 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
+use crate::many;
+use crate::ParserContext;
 use pg_ast::ExprNode;
-use pg_combinators::many;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

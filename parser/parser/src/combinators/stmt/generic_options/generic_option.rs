@@ -9,7 +9,7 @@ pub(super) fn generic_option(ctx: &mut ParserContext) -> scan::Result<GenericOpt
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_generic_option() {
@@ -22,9 +22,9 @@ mod tests {
 }
 
 use crate::combinators::col_label;
+use crate::combinators::core::string;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::GenericOption;
-use pg_combinators::seq;
-use pg_combinators::string;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_parser_core::scan;

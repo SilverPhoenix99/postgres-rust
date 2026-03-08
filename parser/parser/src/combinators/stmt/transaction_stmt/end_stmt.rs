@@ -17,7 +17,7 @@ pub(super) fn end_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("end" => Ok(Commit { chain: false }))]
@@ -31,12 +31,12 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::transaction_chain;
 use crate::combinators::work_or_transaction;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::TransactionStmt;
 use pg_ast::TransactionStmt::Commit;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::End;
 use pg_parser_core::scan;

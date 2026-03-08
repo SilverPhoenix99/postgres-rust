@@ -11,7 +11,7 @@ pub(super) fn unicode_normal_form(ctx: &mut ParserContext) -> scan::Result<Unico
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("nfc", CanonicalComposition)]
@@ -23,14 +23,14 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::ParserContext;
 use pg_ast::UnicodeNormalForm;
 use pg_ast::UnicodeNormalForm::CanonicalComposition;
 use pg_ast::UnicodeNormalForm::CanonicalDecomposition;
 use pg_ast::UnicodeNormalForm::CompatibilityComposition;
 use pg_ast::UnicodeNormalForm::CompatibilityDecomposition;
-use pg_combinators::alt;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Nfc;
 use pg_lexer::Keyword::Nfd;
 use pg_lexer::Keyword::Nfkc;

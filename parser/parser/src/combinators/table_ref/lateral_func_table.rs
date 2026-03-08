@@ -13,7 +13,7 @@ fn ordinality(ctx: &mut ParserContext) -> scan::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("with ordinality" => Ok(()))]
@@ -22,9 +22,9 @@ mod tests {
     }
 }
 
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_lexer::Keyword::Ordinality;
 use pg_lexer::Keyword::With;
 use pg_parser_core::scan;

@@ -20,7 +20,7 @@ pub(super) fn json_quotes_clause(ctx: &mut ParserContext) -> scan::Result<JsonQu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("keep quotes" => Ok(JsonQuotes::Keep))]
@@ -32,13 +32,13 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::JsonQuotes;
 use pg_ast::JsonQuotes::Keep;
 use pg_ast::JsonQuotes::Omit;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::On;
 use pg_lexer::Keyword::Quotes;

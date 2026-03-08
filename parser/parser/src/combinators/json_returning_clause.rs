@@ -20,13 +20,13 @@ pub(super) fn json_returning_clause(ctx: &mut ParserContext) -> scan::Result<Jso
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         JsonEncoding::UTF8,
         JsonFormat,
         TypeName::Json,
     };
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("returning json" => Ok(
@@ -48,11 +48,11 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::json_format_clause;
 use crate::combinators::typename;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::JsonOutput;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Returning;
 use pg_parser_core::scan;

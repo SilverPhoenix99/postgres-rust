@@ -23,8 +23,8 @@ pub(super) fn existing_window_name(ctx: &mut ParserContext) -> scan::Result<Str>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
-    use pg_combinators::Combinator;
+    use crate::combinators::core::Combinator;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("partition by", None)]
@@ -62,8 +62,8 @@ mod tests {
 
 use crate::combinators::col_id;
 use crate::no_match;
+use crate::ParserContext;
 use pg_basics::Str;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Between;
 use pg_lexer::Keyword::By;
 use pg_lexer::Keyword::Current;

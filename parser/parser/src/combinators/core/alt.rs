@@ -16,10 +16,10 @@ macro_rules! alt {
         ),+
         $(,)?
     ) => {
-        pg_combinators::parser(|ctx| {
+        $crate::combinators::core::parser(|ctx| {
 
             let p = $head;
-            let result = pg_combinators::Combinator::parse(&p, ctx);
+            let result = $crate::combinators::core::Combinator::parse(&p, ctx);
             let result = pg_parser_core::Optional::optional(result)?;
             if let Some(ok) = result {
                 return Ok(ok)
@@ -27,7 +27,7 @@ macro_rules! alt {
 
             $(
                 let p = $tail;
-                let result = pg_combinators::Combinator::parse(&p, ctx);
+                let result = $crate::combinators::core::Combinator::parse(&p, ctx);
                 let result = pg_parser_core::Optional::optional(result)?;
                 if let Some(ok) = result {
                     return Ok(ok)
@@ -57,6 +57,6 @@ macro_rules! alt {
         ),+
         $(,)?
     ) => {
-        $crate::or(($head, $($tail),+))
+        $crate::combinators::core::or(($head, $($tail),+))
     };
 }

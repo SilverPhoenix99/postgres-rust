@@ -149,8 +149,8 @@ fn func_args_tail(ctx: &mut ParserContext) -> scan::Result<FuncArgsTail> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_basics::Str;
-    use pg_combinators::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -261,11 +261,17 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::string;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::expr_primary::filter_clause;
 use crate::combinators::expr::expr_primary::func_expr::null_treatment;
 use crate::combinators::expr::expr_primary::over_clause;
 use crate::combinators::expr::expr_primary::within_group_clause;
 use crate::combinators::func_application_args;
+use crate::located;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::ExprNode;
 use pg_ast::FuncArgsKind;
 use pg_ast::FuncArgsOrder;
@@ -274,12 +280,6 @@ use pg_ast::OverClause;
 use pg_ast::SortBy;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
-use pg_combinators::alt;
-use pg_combinators::located;
-use pg_combinators::seq;
-use pg_combinators::string;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_elog::parser;
 use pg_elog::parser::Error::DistinctWithinGroup;
 use pg_elog::parser::Error::InvalidNamedTypeModifier;

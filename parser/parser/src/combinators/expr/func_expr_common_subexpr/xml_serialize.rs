@@ -46,7 +46,7 @@ fn xml_indent_option(ctx: &mut ParserContext) -> scan::Result<bool> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -81,16 +81,16 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::skip;
+use crate::combinators::core::Combinator;
 use crate::combinators::document_or_content;
 use crate::combinators::expr::a_expr;
 use crate::combinators::simple_typename;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::XmlSerialize;
-use pg_combinators::alt;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::skip;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::As;
 use pg_lexer::Keyword::Indent;
 use pg_lexer::Keyword::No;

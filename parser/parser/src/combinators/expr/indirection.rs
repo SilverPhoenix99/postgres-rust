@@ -103,13 +103,13 @@ pub(super) fn check_indirection(indirection: Located<Vec<Indirection>>) -> scan:
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
     use pg_ast::Indirection;
     use pg_ast::Indirection::Property;
     use pg_ast::Indirection::Slice;
     use pg_basics::Location;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case(".*", Wildcard)]
@@ -164,8 +164,14 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::brackets;
 use crate::combinators::col_label;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::Indirection;
 use pg_ast::Indirection::Index;
 use pg_ast::Indirection::Property;
@@ -173,12 +179,6 @@ use pg_ast::Indirection::Slice;
 use pg_ast::Indirection::Wildcard;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
-use pg_combinators::alt;
-use pg_combinators::brackets;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_elog::parser::Error::ImproperUseOfStar;
 use pg_lexer::OperatorKind::Colon;
 use pg_lexer::OperatorKind::Dot;

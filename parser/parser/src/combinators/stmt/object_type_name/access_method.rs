@@ -13,7 +13,7 @@ pub(in crate::combinators::stmt) fn access_method(ctx: &mut ParserContext) -> sc
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_access_method() {
@@ -26,10 +26,10 @@ mod tests {
 }
 
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_basics::Str;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Access;
 use pg_lexer::Keyword::Method;
 use pg_parser_core::scan;

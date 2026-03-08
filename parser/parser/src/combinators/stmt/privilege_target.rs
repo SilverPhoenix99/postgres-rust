@@ -110,11 +110,11 @@ fn signed_number_list(ctx: &mut ParserContext) -> scan::Result<Vec<SignedNumber>
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::FunctionWithArgs;
     #[allow(unused_imports)]
     use pg_ast::RelationName;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("all functions in schema a, b",
@@ -243,12 +243,17 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::any_name_list;
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
 use crate::combinators::function_with_argtypes_list;
 use crate::combinators::name_list;
 use crate::combinators::qualified_name_list;
 use crate::combinators::signed_number;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::PrivilegeTarget;
 use pg_ast::PrivilegeTarget::AllFunctionsInSchema;
 use pg_ast::PrivilegeTarget::AllProceduresInSchema;
@@ -272,11 +277,6 @@ use pg_ast::PrivilegeTarget::Tablespace;
 use pg_ast::PrivilegeTarget::Type;
 use pg_ast::SignedNumber;
 use pg_basics::QualifiedName;
-use pg_combinators::alt;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::All;
 use pg_lexer::Keyword::Data;

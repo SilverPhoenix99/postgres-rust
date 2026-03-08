@@ -34,7 +34,7 @@ pub(in crate::combinators::stmt) fn operator(ctx: &mut ParserContext) -> scan::R
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -67,16 +67,16 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::any_name;
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
 use crate::combinators::stmt::operator_with_argtypes;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::OperatorWithArgs;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Class;
 use pg_lexer::Keyword::Family;

@@ -22,7 +22,7 @@ pub(super) fn any_name(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_any_name_list() {
@@ -52,9 +52,9 @@ mod tests {
 
 use super::col_id;
 use crate::attrs;
+use crate::combinators::core::Combinator;
+use crate::many;
+use crate::ParserContext;
 use pg_basics::QualifiedName;
-use pg_combinators::many;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::OperatorKind::Comma;
 use pg_parser_core::scan;

@@ -51,9 +51,9 @@ pub(super) fn frame_bound(ctx: &mut ParserContext) -> scan::Result<FrameBound> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("unbounded preceding", UnboundedPreceding)]
@@ -71,12 +71,12 @@ use self::FrameBound::OffsetFollowing;
 use self::FrameBound::OffsetPreceding;
 use self::FrameBound::UnboundedFollowing;
 use self::FrameBound::UnboundedPreceding;
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::ExprNode;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Current;
 use pg_lexer::Keyword::Following;
 use pg_lexer::Keyword::Preceding;

@@ -21,6 +21,7 @@ pg_basics::reexport! {
     col_label,
     collate_clause,
     const_numeric,
+    core,
     document_or_content,
     drop_behavior,
     func_application,

@@ -46,7 +46,7 @@ mod tests {
     }
 }
 
-use crate::Combinator;
+use crate::combinators::core::Combinator;
 use crate::ParserContext;
 use pg_lexer::Keyword;
 use pg_lexer::KeywordCategory;

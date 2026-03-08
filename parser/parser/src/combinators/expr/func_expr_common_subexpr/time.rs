@@ -29,7 +29,7 @@ pub(super) fn time(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("current_date" => Ok(CurrentDate))]
@@ -46,16 +46,16 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::precision;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::SqlFunction;
 use pg_ast::SqlFunction::CurrentDate;
 use pg_ast::SqlFunction::CurrentTime;
 use pg_ast::SqlFunction::CurrentTimestamp;
 use pg_ast::SqlFunction::LocalTime;
 use pg_ast::SqlFunction::LocalTimestamp;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_parser_core::scan;

@@ -136,8 +136,8 @@ fn interval_typecast(ctx: &mut ParserContext) -> scan::Result<StringTypecastExpr
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::ExprNode::*;
-    use pg_combinators::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -184,10 +184,18 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::bit_string;
+use crate::combinators::core::number;
+use crate::combinators::core::skip;
+use crate::combinators::core::string;
+use crate::combinators::core::Combinator;
 use crate::combinators::interval;
 use crate::combinators::precision;
 use crate::combinators::simple_typename;
 use crate::no_match;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::BinaryStringConst;
 use pg_ast::ExprNode::BooleanConst;
@@ -197,14 +205,6 @@ use pg_ast::ExprNode::StringConst;
 use pg_ast::IntervalRange::Full;
 use pg_ast::StringTypecastExpr;
 use pg_ast::TypeName;
-use pg_combinators::alt;
-use pg_combinators::bit_string;
-use pg_combinators::number;
-use pg_combinators::seq;
-use pg_combinators::skip;
-use pg_combinators::string;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::BitStringKind;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Bigint;

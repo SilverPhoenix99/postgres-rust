@@ -16,9 +16,9 @@ pub(super) fn check_point_stmt(ctx: &mut ParserContext) -> scan::Result<Option<V
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::UtilityOptionName::Analyze;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("checkpoint" => Ok(None))]
@@ -29,9 +29,9 @@ mod tests {
 }
 
 use super::utility_options;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::UtilityOption;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Checkpoint;
 use pg_parser_core::scan;

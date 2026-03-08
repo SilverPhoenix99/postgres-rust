@@ -42,7 +42,7 @@ fn implicit_array(ctx: &mut ParserContext) -> scan::Result<Vec<Option<i32>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("array", vec![None])]
@@ -56,12 +56,12 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::brackets;
+use crate::combinators::core::Combinator;
 use crate::combinators::i32_literal;
-use pg_combinators::alt;
-use pg_combinators::brackets;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_lexer::Keyword::Array;
 use pg_parser_core::scan;

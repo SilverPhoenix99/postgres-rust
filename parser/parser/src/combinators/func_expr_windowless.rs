@@ -16,7 +16,7 @@ pub(super) fn func_expr_windowless(ctx: &mut ParserContext) -> scan::Result<Func
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_matrix;
 
     // These only quickly check that statements aren't missing
@@ -33,11 +33,11 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::func_expr_common_subexpr;
 use crate::combinators::func_application;
 use crate::combinators::json_aggregate_func;
+use crate::ParserContext;
 use pg_ast::FuncExprWindowless;
-use pg_combinators::alt;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_parser_core::scan;

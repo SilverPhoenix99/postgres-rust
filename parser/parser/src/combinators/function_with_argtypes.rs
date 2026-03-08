@@ -110,13 +110,13 @@ fn func_args_list(ctx: &mut ParserContext) -> scan::Result<Vec<FunctionParameter
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         FuncType,
         TypeName,
     };
     use pg_ast::{FunctionParameter, FunctionWithArgs};
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     // type_func_name_keyword ( func_args )?
@@ -152,19 +152,19 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::attrs;
+use crate::combinators::core::identifier;
+use crate::combinators::core::Combinator;
 use crate::combinators::func_arg;
+use crate::many;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionWithArgs;
 use pg_basics::QualifiedName;
 use pg_basics::Str;
-use pg_combinators::alt;
-use pg_combinators::identifier;
-use pg_combinators::many;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::KeywordCategory::ColumnName;
 use pg_lexer::KeywordCategory::TypeFuncName;
 use pg_lexer::KeywordCategory::Unreserved;

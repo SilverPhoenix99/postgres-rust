@@ -23,7 +23,7 @@ pub(super) fn json_serialize_expr(ctx: &mut ParserContext) -> scan::Result<JsonS
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -45,12 +45,12 @@ mod tests {
     }
 }
 
+use crate::combinators::core::skip;
+use crate::combinators::core::Combinator;
 use crate::combinators::json_returning_clause;
 use crate::combinators::json_value_expr;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::JsonSerializeExpr;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::skip;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_parser_core::scan;

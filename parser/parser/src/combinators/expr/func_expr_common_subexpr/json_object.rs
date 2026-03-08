@@ -98,8 +98,8 @@ fn json_object_args(ctx: &mut ParserContext) -> scan::Result<JsonObjectExpr> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     use pg_ast::JsonObjectExpr;
-    use pg_combinators::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -152,6 +152,9 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::skip;
+use crate::combinators::core::Combinator;
 use crate::combinators::func_arg_expr;
 use crate::combinators::func_arg_list;
 use crate::combinators::json_constructor_null_clause;
@@ -159,6 +162,9 @@ use crate::combinators::json_key_uniqueness_constraint;
 use crate::combinators::json_name_and_value_list;
 use crate::combinators::json_returning_clause;
 use crate::combinators::json_value_expr;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use core::iter;
 use pg_ast::JsonKeyValue;
 use pg_ast::JsonObjectArgs;
@@ -166,12 +172,6 @@ use pg_ast::JsonObjectExpr;
 use pg_ast::JsonObjectExpr::ExplicitCall;
 use pg_ast::JsonObjectExpr::SqlSyntax;
 use pg_basics::Located;
-use pg_combinators::alt;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::skip;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Returning;
 use pg_lexer::Keyword::Value;
 use pg_lexer::OperatorKind::Colon;

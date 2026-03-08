@@ -44,9 +44,9 @@ fn sign(ctx: &mut ParserContext) -> scan::Result<OperatorKind> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_basics::NumberRadix::Decimal;
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case( "1.01" => Ok(SignedNumber::NumericConst { value: "1.01".into(), radix: Decimal, negative: false }))]
@@ -75,13 +75,13 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::integer;
+use crate::combinators::core::number;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::SignedNumber;
-use pg_combinators::alt;
-use pg_combinators::integer;
-use pg_combinators::number;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::OperatorKind;
 use pg_lexer::OperatorKind::Minus;
 use pg_lexer::OperatorKind::Plus;

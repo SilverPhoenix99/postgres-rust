@@ -21,6 +21,6 @@ pub(super) fn b_expr(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
     expr_primary(ctx)
 }
 
+use crate::ParserContext;
 use pg_ast::ExprNode;
-use pg_combinators::ParserContext;
 use pg_parser_core::scan;

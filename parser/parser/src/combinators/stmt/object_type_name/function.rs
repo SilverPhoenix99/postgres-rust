@@ -13,7 +13,7 @@ pub(in crate::combinators::stmt) fn function(ctx: &mut ParserContext) -> scan::R
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_function() {
@@ -25,10 +25,10 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::function_with_argtypes;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::FunctionWithArgs;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Function;
 use pg_parser_core::scan;

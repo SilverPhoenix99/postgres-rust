@@ -25,7 +25,7 @@ pub(super) fn prefixed_expr_const(ctx: &mut ParserContext) -> scan::Result<ExprN
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_matrix;
 
     // These only quickly check that statements aren't missing:
@@ -41,8 +41,8 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::ParserContext;
 use pg_ast::ExprNode;
-use pg_combinators::alt;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_parser_core::scan;

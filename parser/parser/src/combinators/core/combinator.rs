@@ -1,4 +1,4 @@
-pub trait Combinator
+pub(in crate::combinators) trait Combinator
 where
     Self: Sized,
 {
@@ -35,7 +35,7 @@ where
     }
 }
 
-use crate::map;
-use crate::optional;
+use super::map;
+use super::optional;
 use crate::ParserContext;
 use pg_parser_core::scan;

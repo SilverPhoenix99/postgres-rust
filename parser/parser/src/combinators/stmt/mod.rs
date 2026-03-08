@@ -43,7 +43,7 @@ pub(super) fn stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_matrix;
 
     // This only quickly tests that statement types aren't missing.
@@ -165,6 +165,9 @@ use object_type_name::{
     view::*,
 };
 
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::ParserContext;
 use pg_ast::RawStmt;
 use pg_ast::RawStmt::CheckPointStmt;
 use pg_ast::RawStmt::ClosePortalStmt;
@@ -174,7 +177,4 @@ use pg_ast::RawStmt::LoadStmt;
 use pg_ast::RawStmt::UnlistenStmt;
 use pg_ast::RawStmt::VariableResetStmt;
 use pg_ast::RawStmt::VariableShowStmt;
-use pg_combinators::alt;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_parser_core::scan;

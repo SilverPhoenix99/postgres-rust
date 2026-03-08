@@ -10,7 +10,7 @@ pub(super) fn non_reserved_word_or_sconst(ctx: &mut ParserContext) -> scan::Resu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("action", Str::Static("action"))]
@@ -20,10 +20,10 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::string;
+use crate::combinators::core::Combinator;
 use crate::combinators::non_reserved_word;
+use crate::ParserContext;
 use pg_basics::Str;
-use pg_combinators::alt;
-use pg_combinators::string;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_parser_core::scan;

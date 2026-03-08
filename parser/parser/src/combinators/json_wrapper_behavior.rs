@@ -31,7 +31,7 @@ fn wrapper_behavior(ctx: &mut ParserContext) -> scan::Result<JsonWrapperBehavior
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("without wrapper" => Ok(Without))]
@@ -49,14 +49,14 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::JsonWrapperBehavior;
 use pg_ast::JsonWrapperBehavior::Conditional;
 use pg_ast::JsonWrapperBehavior::Unconditional;
 use pg_ast::JsonWrapperBehavior::Without;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Array;
 use pg_lexer::Keyword::With;

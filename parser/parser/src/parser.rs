@@ -50,10 +50,10 @@ impl<'src> Parser<'src> {
 }
 
 use crate::combinators::stmtmulti;
+use crate::ParserContext;
 use core::mem;
 use pg_ast::RawStmt;
 use pg_basics::Located;
-use pg_combinators::ParserContext;
 use pg_elog::parser;
 use pg_parser_core::scan::Error::Eof;
 use pg_parser_core::scan::Error::NoMatch;

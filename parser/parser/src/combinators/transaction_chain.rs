@@ -17,7 +17,7 @@ pub(super) fn transaction_chain(ctx: &mut ParserContext) -> scan::Result<bool> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("and no chain" => Ok(false))]
@@ -27,9 +27,9 @@ mod tests {
     }
 }
 
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_lexer::Keyword::And;
 use pg_lexer::Keyword::Chain;
 use pg_lexer::Keyword::No;

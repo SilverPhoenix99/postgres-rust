@@ -1,5 +1,5 @@
 /// Alias: `ICONST`
-pub fn integer(ctx: &mut ParserContext) -> scan::Result<NonNegative> {
+pub(in crate::combinators) fn integer(ctx: &mut ParserContext) -> scan::Result<NonNegative> {
     ctx.stream_mut().consume(|tok| {
         let UnsignedNumber(IntegerConst(value)) = tok else { return None };
         Some(*value)

@@ -73,7 +73,7 @@ fn security(ctx: &mut ParserContext) -> scan::Result<AlterFunctionOption> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -108,16 +108,16 @@ mod tests {
 
 use super::reset_stmt;
 use super::set_rest_more;
+use crate::alt;
 use crate::combinators::any_name;
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
 use crate::combinators::signed_number;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::AlterFunctionOption;
 use pg_ast::AlterFunctionOption::*;
 use pg_ast::Volatility::*;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Called;
 use pg_lexer::Keyword::Definer;

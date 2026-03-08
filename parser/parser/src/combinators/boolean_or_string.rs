@@ -20,7 +20,7 @@ pub(super) fn boolean_or_string(ctx: &mut ParserContext) -> scan::Result<Boolean
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("true", true.into())]
@@ -33,13 +33,13 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::string;
+use crate::combinators::core::Combinator;
 use crate::combinators::non_reserved_word;
+use crate::many;
+use crate::ParserContext;
 use pg_ast::BooleanOrString;
-use pg_combinators::alt;
-use pg_combinators::many;
-use pg_combinators::string;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::False;
 use pg_lexer::Keyword::On;
 use pg_lexer::Keyword::True;

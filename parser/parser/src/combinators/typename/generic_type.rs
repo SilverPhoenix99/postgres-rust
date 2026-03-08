@@ -46,13 +46,13 @@ mod tests {
 
 use super::type_modifiers;
 use crate::attrs;
+use crate::combinators::core::Combinator;
 use crate::combinators::type_function_name;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::TypeName;
 use pg_ast::TypeName::Float8;
 use pg_ast::TypeName::Generic;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Double;
 use pg_lexer::Keyword::Precision;
 use pg_parser_core::scan;

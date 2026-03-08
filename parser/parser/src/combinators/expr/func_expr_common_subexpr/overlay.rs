@@ -55,9 +55,9 @@ fn overlay_list(ctx: &mut ParserContext) -> scan::Result<(ExprNode, ExprNode, Op
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::{IntegerConst, StringConst};
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("overlay()" => Ok(OverlayFunc::ExplicitCall(None)))]
@@ -114,8 +114,13 @@ mod tests {
 }
 
 use super::from_for_args;
+use crate::combinators::core::skip;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
 use crate::combinators::func_arg_list;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use core::mem;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::NullConst;
@@ -123,11 +128,6 @@ use pg_ast::NamedValue;
 use pg_ast::OverlayFunc;
 use pg_ast::OverlaySqlArgs;
 use pg_basics::Located;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::skip;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Placing;
 use pg_parser_core::scan;
 use pg_parser_core::Optional;

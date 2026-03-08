@@ -199,7 +199,7 @@ fn comment_text(ctx: &mut ParserContext) -> scan::Result<Option<Box<str>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
@@ -342,8 +342,10 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::any_name;
 use crate::combinators::col_id;
+use crate::combinators::core::Combinator;
 use crate::combinators::simple_typename;
 use crate::combinators::stmt::access_method;
 use crate::combinators::stmt::aggregate;
@@ -381,6 +383,8 @@ use crate::combinators::stmt::Foreign;
 use crate::combinators::stmt::Operator as Op;
 use crate::combinators::stmt::TextSearch;
 use crate::combinators::string_or_null;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::CommentStmt;
 use pg_ast::CommentTarget;
 use pg_ast::CommentTarget::AccessMethod;
@@ -428,10 +432,6 @@ use pg_ast::CommentTarget::Typecast;
 use pg_ast::CommentTarget::View;
 use pg_ast::TypeName;
 use pg_basics::QualifiedName;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Comment;
 use pg_lexer::Keyword::Is;

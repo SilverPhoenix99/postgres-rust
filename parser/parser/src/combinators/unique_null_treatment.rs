@@ -19,7 +19,7 @@ pub(super) fn unique_null_treatment(ctx: &mut ParserContext) -> scan::Result<Uni
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_case;
 
     #[test_case("nulls distinct", UniqueNullTreatment::NullsDistinct)]
@@ -29,10 +29,10 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::UniqueNullTreatment;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Distinct;
 use pg_lexer::Keyword::Not;
 use pg_lexer::Keyword::Nulls;

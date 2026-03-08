@@ -30,13 +30,13 @@ pub(crate) fn json_name_and_value(ctx: &mut ParserContext) -> scan::Result<JsonK
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::{
         ExprNode::{IntegerConst, StringConst},
         JsonFormat,
         JsonValueExpr,
     };
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("'foo' : 1" => Ok(JsonKeyValue::new(
@@ -58,14 +58,14 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
 use crate::combinators::json_value_expr;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::JsonKeyValue;
-use pg_combinators::alt;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Value;
 use pg_lexer::OperatorKind::Colon;
 use pg_lexer::OperatorKind::Comma;

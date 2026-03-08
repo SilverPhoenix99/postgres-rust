@@ -90,9 +90,9 @@ fn xml_root_standalone(ctx: &mut ParserContext) -> scan::Result<XmlStandalone> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::{NullConst, StringConst};
-    use pg_combinators::test_parser;
     use test_case::test_case;
 
     #[test_case("xmlroot('foo', version '1.0', standalone yes)" => Ok(
@@ -126,20 +126,20 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::skip;
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
 use crate::no_match;
+use crate::paren;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::ExprNode;
 use pg_ast::XmlRoot;
 use pg_ast::XmlStandalone;
 use pg_ast::XmlStandalone::No;
 use pg_ast::XmlStandalone::NoValue;
 use pg_ast::XmlStandalone::Yes;
-use pg_combinators::alt;
-use pg_combinators::paren;
-use pg_combinators::seq;
-use pg_combinators::skip;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Standalone;
 use pg_lexer::Keyword::Value;

@@ -32,7 +32,7 @@ pub(super) fn alter_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
     use test_case::test_matrix;
 
     // This only quickly tests that statement types aren't missing.
@@ -60,6 +60,8 @@ mod tests {
     }
 }
 
+use crate::alt;
+use crate::combinators::core::Combinator;
 use crate::combinators::stmt::collation_stmt::alter_collation_stmt;
 use crate::combinators::stmt::conversion_stmt::alter_conversion_stmt;
 use crate::combinators::stmt::database_stmt::alter_database_stmt;
@@ -69,10 +71,8 @@ use crate::combinators::stmt::large_object_stmt::alter_large_object_stmt;
 use crate::combinators::stmt::role_stmt::alter_group_stmt;
 use crate::combinators::stmt::role_stmt::alter_user_stmt;
 use crate::combinators::stmt::system_stmt::alter_system_stmt;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::RawStmt;
-use pg_combinators::alt;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Alter;
 use pg_parser_core::scan;

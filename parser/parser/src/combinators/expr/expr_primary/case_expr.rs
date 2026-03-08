@@ -37,7 +37,7 @@ fn else_clause(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pg_combinators::test_parser;
+    use crate::test_parser;
 
     #[test]
     fn test_case_value_when_else() {
@@ -85,14 +85,14 @@ mod tests {
     }
 }
 
+use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
+use crate::many;
+use crate::seq;
+use crate::ParserContext;
 use pg_ast::CaseExpr;
 use pg_ast::CaseWhen;
 use pg_ast::ExprNode;
-use pg_combinators::many;
-use pg_combinators::seq;
-use pg_combinators::Combinator;
-use pg_combinators::ParserContext;
 use pg_lexer::Keyword::Case;
 use pg_lexer::Keyword::Else;
 use pg_lexer::Keyword::Then;

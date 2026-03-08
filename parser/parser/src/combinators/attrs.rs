@@ -2,11 +2,11 @@
 #[macro_export]
 macro_rules! attrs {
     ($prefix:expr) => {
-        pg_combinators::parser::<_, pg_basics::QualifiedName>(|ctx| {
-            let p = pg_combinators::many!(
+        $crate::combinators::core::parser::<_, pg_basics::QualifiedName>(|ctx| {
+            let p = $crate::many!(
                 pre = $prefix,
-                pg_combinators::Combinator::map(
-                    pg_combinators::seq!(
+                $crate::combinators::core::Combinator::map(
+                    $crate::seq!(
                         pg_lexer::OperatorKind::Dot,
                         $crate::combinators::col_label
                     ),
@@ -14,15 +14,15 @@ macro_rules! attrs {
                 )
             );
 
-            pg_combinators::Combinator::parse(&p, ctx)
+            $crate::combinators::core::Combinator::parse(&p, ctx)
         })
     };
 }
 
 #[cfg(test)]
 mod tests {
-    use pg_combinators::parser;
-    use pg_combinators::test_parser;
+    use crate::combinators::core::parser;
+    use crate::test_parser;
     use pg_parser_core::scan;
 
     #[test]
