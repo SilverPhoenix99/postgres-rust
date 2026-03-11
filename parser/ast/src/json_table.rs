@@ -5,6 +5,7 @@ pub struct JsonTable {
     columns: Vec<JsonTableColumnDefinition>,
     passing: Option<Vec<JsonArgument>>,
     on_error: Option<JsonBehavior>,
+    alias: Option<Alias>,
 }
 
 impl JsonTable {
@@ -19,6 +20,7 @@ impl JsonTable {
             columns,
             passing: None,
             on_error: None,
+            alias: None,
         }
     }
 
@@ -61,8 +63,23 @@ impl JsonTable {
     pub fn on_error(&self) -> Option<&JsonBehavior> {
         self.on_error.as_ref()
     }
+
+    pub fn set_alias(&mut self, alias: Option<Alias>) -> &mut Self {
+        self.alias = alias;
+        self
+    }
+
+    pub fn with_alias(mut self, alias: Alias) -> Self {
+        self.alias = Some(alias);
+        self
+    }
+
+    pub fn alias(&self) -> Option<&Alias> {
+        self.alias.as_ref()
+    }
 }
 
+use crate::Alias;
 use crate::JsonArgument;
 use crate::JsonBehavior;
 use crate::JsonTableColumnDefinition;

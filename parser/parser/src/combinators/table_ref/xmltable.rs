@@ -8,9 +8,10 @@ pub(super) fn xmltable(ctx: &mut ParserContext) -> scan::Result<XmlTable> {
             COLUMNS
             xmltable_column_list
         ')'
+        ( alias_clause )?
     */
 
-    let (_, (namespaces, row_spec, doc, _, columns)) = seq!(
+    let (_, (namespaces, row_spec, doc, _, columns), alias) = seq!(
         Xmltable,
         paren!(seq!(
             xml_namespaces.optional(),
@@ -18,11 +19,13 @@ pub(super) fn xmltable(ctx: &mut ParserContext) -> scan::Result<XmlTable> {
             xmlexists_argument,
             Columns,
             xmltable_column_list
-        ))
+        )),
+        alias_clause.optional()
     ).parse(ctx)?;
 
     let mut xml_table = XmlTable::new(doc, row_spec, columns);
-    xml_table.set_namespaces(namespaces);
+    xml_table.set_namespaces(namespaces)
+        .set_alias(alias);
 
     Ok(xml_table)
 }
@@ -185,6 +188,7 @@ mod tests {
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
+        pg_ast::Alias,
         pg_ast::ExprNode::{IntegerConst, StringConst},
         pg_ast::TypeName::Int4,
         pg_elog::Error::Parser,
@@ -198,7 +202,7 @@ mod tests {
             columns \
                 a for ordinality, \
                 b int\
-        )"
+        ) as x(y, z)"
         => Ok(
             XmlTable::new(
                 StringConst("doc".into()),
@@ -209,6 +213,9 @@ mod tests {
                         XmlTableColumnDefinition::from(Int4)
                     ),
                 ]
+            )
+            .with_alias(Alias::new("x")
+                .with_columns(vec!["y".into(), "z".into()])
             )
         )
     )]
@@ -318,6 +325,7 @@ use crate::combinators::core::identifier;
 use crate::combinators::core::Combinator;
 use crate::combinators::expr::b_expr;
 use crate::combinators::expr::expr_primary;
+use crate::combinators::table_ref::alias_clause;
 use crate::combinators::typename;
 use crate::combinators::xmlexists_argument;
 use crate::located;

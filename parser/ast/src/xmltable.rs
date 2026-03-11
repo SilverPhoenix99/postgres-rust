@@ -4,6 +4,7 @@ pub struct XmlTable {
     row_spec: ExprNode,
     doc: ExprNode,
     columns: Vec<XmlTableColumn>,
+    alias: Option<Alias>,
 }
 
 impl XmlTable {
@@ -12,7 +13,8 @@ impl XmlTable {
             namespaces: None,
             row_spec,
             doc,
-            columns
+            columns,
+            alias: None,
         }
     }
 
@@ -40,6 +42,20 @@ impl XmlTable {
 
     pub fn columns(&self) -> &[XmlTableColumn] {
         &self.columns
+    }
+
+    pub fn set_alias(&mut self, alias: Option<Alias>) -> &mut Self {
+        self.alias = alias;
+        self
+    }
+
+    pub fn with_alias(mut self, alias: Alias) -> Self {
+        self.alias = Some(alias);
+        self
+    }
+
+    pub fn alias(&self) -> Option<&Alias> {
+        self.alias.as_ref()
     }
 }
 
@@ -153,6 +169,7 @@ where
     }
 }
 
+use crate::Alias;
 use crate::ExprNode;
 use crate::NamedValue;
 use crate::Type;

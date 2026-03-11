@@ -9,20 +9,27 @@ pub(super) fn json_table(ctx: &mut ParserContext) -> scan::Result<JsonTable> {
             json_table_column_definition_list
             ( json_on_error_clause )?
         ')'
+        ( alias_clause )?
     */
 
-    let (_, (ctx, _, path_spec, passing, columns, on_error)) = seq!(Kw::JsonTable, paren!(seq!(
-        json_value_expr,
-        Comma,
-        path_spec,
-        json_passing_clause.optional(),
-        json_table_column_definition_list,
-        json_on_error_clause.optional()
-    ))).parse(ctx)?;
+    let (_, (ctx, _, path_spec, passing, columns, on_error), alias) =
+        seq!(
+            Kw::JsonTable,
+            paren!(seq!(
+                json_value_expr,
+                Comma,
+                path_spec,
+                json_passing_clause.optional(),
+                json_table_column_definition_list,
+                json_on_error_clause.optional()
+            )),
+            alias_clause.optional()
+        ).parse(ctx)?;
 
     let mut expr = JsonTable::new(ctx, path_spec, columns);
     expr.set_passing(passing)
-        .set_on_error(on_error);
+        .set_on_error(on_error)
+        .set_alias(alias);
 
     Ok(expr)
 }
@@ -244,6 +251,7 @@ mod tests {
     use test_case::test_case;
     #[allow(unused_imports)]
     use {
+        pg_ast::Alias,
         pg_ast::JsonValueExpr,
         pg_elog::Error::Parser,
         scan::Error::ScanErr,
@@ -256,7 +264,7 @@ mod tests {
             columns(\
                bar for ordinality\
             )\
-        )"
+        ) as j"
         => Ok(
             JsonTable::new(
                 JsonValueExpr::from(StringConst("doc".into())),
@@ -265,6 +273,7 @@ mod tests {
                     ForOrdinality { column_name: "bar".into() }
                 ]
             )
+            .with_alias(Alias::new("j"))
         )
     )]
     #[test_case(
@@ -407,6 +416,7 @@ use crate::combinators::json_passing_clause;
 use crate::combinators::json_quotes_clause;
 use crate::combinators::json_value_expr;
 use crate::combinators::json_wrapper_behavior;
+use crate::combinators::table_ref::alias_clause;
 use crate::combinators::typename;
 use crate::located;
 use crate::many;
