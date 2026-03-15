@@ -5,9 +5,9 @@ pub struct RangeFunction {
 }
 
 impl RangeFunction {
-    pub fn new(func_call: FuncExprWindowless) -> Self {
+    pub fn new<F: Into<FuncExprWindowless>>(func_call: F) -> Self {
         Self {
-            func_call,
+            func_call: func_call.into(),
             column_definitions: None,
         }
     }

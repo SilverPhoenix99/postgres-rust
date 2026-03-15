@@ -56,7 +56,7 @@ mod tests {
             FuncCall::new(
                 vec!["foo".into()],
                 FuncArgsKind::Wildcard { order_within_group: None }
-            ).into()
+            )
         )
     ))]
     #[test_case("bar(1) as (a int)" => Ok(
@@ -72,7 +72,7 @@ mod tests {
                     ],
                     order: None
                 }
-            ).into()
+            )
         )
         .with_column_definitions(vec![
             SimpleColumnDefinition::new("a", Int4)
