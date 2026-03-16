@@ -38,6 +38,7 @@ pg_basics::reexport! { pub
     createdb_option_kind,
     createdb_option_value,
     database_stmt,
+    defaultable_value,
     discard_stmt,
     drop_behavior,
     extract_expr,

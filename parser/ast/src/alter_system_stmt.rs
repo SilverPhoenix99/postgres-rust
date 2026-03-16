@@ -7,6 +7,9 @@ pub enum AlterSystemStmt {
     SetDefault {
         name: QualifiedName
     },
+    SetNull {
+        name: QualifiedName
+    },
     Set {
         name: QualifiedName,
         values: Vec<VarValue>

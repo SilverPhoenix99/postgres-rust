@@ -326,6 +326,8 @@ set_rest :
 generic_set :
     var_name TO var_list
   | var_name '=' var_list
+  | var_name TO NULL_P
+  | var_name '=' NULL_P
   | var_name TO DEFAULT
   | var_name '=' DEFAULT
 ;

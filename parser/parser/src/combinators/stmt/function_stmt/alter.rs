@@ -165,14 +165,14 @@ fn alterfunc_opt_list(ctx: &mut ParserContext) -> scan::Result<Vec<AlterFunction
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
     #[allow(unused_imports)]
-    use {
-        pg_ast::FunctionWithArgs,
-        pg_ast::RoleSpec::CurrentUser,
-        pg_ast::SetRestMore::ConfigurationParameter,
-        pg_ast::ValueOrDefault,
+    use pg_ast::{
+        DefaultableValue,
+        FunctionWithArgs,
+        RoleSpec::CurrentUser,
+        SetRestMore::ConfigurationParameter,
     };
+    use test_case::test_case;
 
     #[test_case(
         "function my_func() depends on extension my_extension",
@@ -287,7 +287,7 @@ mod tests {
                 AlterFunctionOption::Leakproof(false),
                 AlterFunctionOption::Set(ConfigurationParameter {
                     name: vec!["foo".into()],
-                    value: ValueOrDefault::Value(vec!["bar".into()])
+                    value: DefaultableValue::Value(vec!["bar".into()])
                 })
             ]
         ).into()

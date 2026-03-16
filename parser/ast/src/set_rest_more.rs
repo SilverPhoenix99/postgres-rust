@@ -16,10 +16,11 @@ pub enum SetRestMore {
     },
     ConfigurationParameter {
         name: QualifiedName,
-        value: ValueOrDefault<Vec<VarValue>>
+        value: DefaultableValue<Vec<VarValue>>
     }
 }
 
+use crate::DefaultableValue;
 use crate::ValueOrDefault;
 use crate::VarValue;
 use crate::XmlNodeKind;

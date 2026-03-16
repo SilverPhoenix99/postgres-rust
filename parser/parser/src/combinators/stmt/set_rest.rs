@@ -187,13 +187,14 @@ fn encoding(ctx: &mut ParserContext) -> scan::Result<ValueOrDefault<Box<str>>> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
     #[allow(unused_imports)]
-    use {
-        pg_ast::SignedNumber::IntegerConst,
-        pg_ast::TransactionMode::ReadOnly,
-        pg_ast::XmlNodeKind::Document,
+    use pg_ast::{
+        DefaultableValue,
+        SignedNumber::IntegerConst,
+        TransactionMode::ReadOnly,
+        XmlNodeKind::Document,
     };
+    use test_case::test_case;
 
     #[test_case("session characteristics as transaction read only", SetRest::SessionTransactionCharacteristics(vec![ReadOnly]))]
     #[test_case("session authorization default", SetRest::SessionAuthorization { user: ValueOrDefault::Default })]
@@ -215,7 +216,10 @@ mod tests {
     #[test_case("role action", SetRestMore::Role("action".into()))]
     #[test_case("xml option document", SetRestMore::XmlOption(Document))]
     #[test_case("_var from current", SetRestMore::FromCurrent { name: vec!["_var".into()] })]
-    #[test_case("_var to default", SetRestMore::ConfigurationParameter { name: vec!["_var".into()], value: ValueOrDefault::Default })]
+    #[test_case("_var to default", SetRestMore::ConfigurationParameter {
+        name: vec!["_var".into()],
+        value: DefaultableValue::Default
+    })]
     fn test_set_rest_more(source: &str, expected: SetRestMore) {
         test_parser!(source, set_rest_more, expected)
     }

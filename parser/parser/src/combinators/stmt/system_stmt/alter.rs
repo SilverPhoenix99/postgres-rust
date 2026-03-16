@@ -16,8 +16,9 @@ pub(in crate::combinators::stmt) fn alter_system_stmt(ctx: &mut ParserContext) -
                 }),
             seq!(Set, var_name, generic_set_tail)
                 .map(|(_, name, set)| match set {
-                    ValueOrDefault::Default => AlterSystemStmt::SetDefault { name },
-                    ValueOrDefault::Value(values) => AlterSystemStmt::Set { name, values }
+                    DefaultableValue::Default => AlterSystemStmt::SetDefault { name },
+                    DefaultableValue::Null => AlterSystemStmt::SetNull { name },
+                    DefaultableValue::Value(values) => AlterSystemStmt::Set { name, values }
                 })
         )
     ).parse(ctx)?;
@@ -48,8 +49,8 @@ use crate::combinators::var_name;
 use crate::seq;
 use crate::ParserContext;
 use pg_ast::AlterSystemStmt;
+use pg_ast::DefaultableValue;
 use pg_ast::OneOrAll;
-use pg_ast::ValueOrDefault;
 use pg_lexer::Keyword::Reset;
 use pg_lexer::Keyword::Set;
 use pg_lexer::Keyword::SystemKw;

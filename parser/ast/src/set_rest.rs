@@ -20,7 +20,7 @@ pub enum SetRest {
     },
     ConfigurationParameter {
         name: QualifiedName,
-        value: ValueOrDefault<Vec<VarValue>>
+        value: DefaultableValue<Vec<VarValue>>
     }
 }
 
@@ -41,6 +41,7 @@ impl From<SetRestMore> for SetRest {
     }
 }
 
+use crate::DefaultableValue;
 use crate::SetRestMore;
 use crate::TransactionMode;
 use crate::ValueOrDefault;
