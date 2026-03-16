@@ -89,7 +89,7 @@ mod tests {
     }
 
     #[test_case("all", OneOrAll::All)]
-    #[test_case("_relation", OneOrAll::One(vec![RelationName::new("_relation", None)]))]
+    #[test_case("_relation", OneOrAll::One(vec![RelationName::new("_relation")]))]
     fn test_constraints_set_list(source: &str, expected: OneOrAll<Vec<RelationName>>) {
         test_parser!(source, constraints_set_list, expected)
     }

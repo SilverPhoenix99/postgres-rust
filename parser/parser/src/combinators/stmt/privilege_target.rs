@@ -179,8 +179,8 @@ mod tests {
     )]
     #[test_case("sequence a, b",
         Sequence(vec![
-            RelationName::new("a", None),
-            RelationName::new("b", None)
+            RelationName::new("a"),
+            RelationName::new("b")
         ])
     )]
     #[test_case("tablespace a, b",
@@ -194,14 +194,14 @@ mod tests {
     )]
     #[test_case("table a, b",
         Table(vec![
-            RelationName::new("a", None),
-            RelationName::new("b", None)
+            RelationName::new("a"),
+            RelationName::new("b")
         ])
     )]
     #[test_case("a, b",
         Table(vec![
-            RelationName::new("a", None),
-            RelationName::new("b", None)
+            RelationName::new("a"),
+            RelationName::new("b")
         ])
     )]
     fn test_privilege_target(source: &str, expected: PrivilegeTarget) {

@@ -36,7 +36,9 @@ fn non_inherited_relation_expr(ctx: &mut ParserContext) -> scan::Result<Relation
         )
     ).parse(ctx)?;
 
-    let expr = RelationExpr::new(name, false);
+    let expr = RelationExpr::new(name)
+        .with_inherited(false);
+
     Ok(expr)
 }
 
@@ -51,7 +53,8 @@ fn inherited_relation_expr(ctx: &mut ParserContext) -> scan::Result<RelationExpr
         Mul.optional()
     ).parse(ctx)?;
 
-    let expr = RelationExpr::new(name, true);
+    let expr = RelationExpr::new(name)
+        .with_inherited(true);
     Ok(expr)
 }
 
@@ -64,19 +67,19 @@ mod tests {
     use test_case::test_case;
 
     #[test_case("foo"
-        => Ok(RelationExpr::new(RelationName::new("foo", None), true))
+        => Ok(RelationExpr::new("foo").with_inherited(true))
         ; "inherited without wildcard"
     )]
     #[test_case("foo *"
-        => Ok(RelationExpr::new(RelationName::new("foo", None), true))
+        => Ok(RelationExpr::new("foo").with_inherited(true))
         ; "inherited with wildcard"
     )]
     #[test_case("only foo"
-        => Ok(RelationExpr::new(RelationName::new("foo", None), false))
+        => Ok(RelationExpr::new("foo"))
         ; "non-inherited without parens"
     )]
     #[test_case("only(foo)"
-        => Ok(RelationExpr::new(RelationName::new("foo", None), false))
+        => Ok(RelationExpr::new("foo"))
         ; "non-inherited with parens"
     )]
     fn test_relation_expr(source: &str) -> scan::Result<RelationExpr> {

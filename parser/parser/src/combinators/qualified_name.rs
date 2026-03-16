@@ -18,27 +18,26 @@ pub(super) fn qualified_name(ctx: &mut ParserContext) -> scan::Result<RelationNa
     match qn.as_mut_slice() {
         [relation] => {
             let relation = mem::take(relation);
-            Ok(RelationName::new(relation, None))
+            Ok(RelationName::new(relation))
         },
         [schema, relation] => {
             let schema = mem::take(schema);
             let relation = mem::take(relation);
-            Ok(RelationName::new(
-                relation,
-                Some(SchemaName::new(schema, None))
-            ))
+            Ok(RelationName::new(relation)
+                .with_schema(schema)
+            )
         },
         [catalog, schema, relation] => {
             let catalog = mem::take(catalog);
             let schema = mem::take(schema);
             let relation = mem::take(relation);
-            Ok(RelationName::new(
-                relation,
-                Some(SchemaName::new(
-                    schema,
-                    Some(catalog)
-                ))
-            ))
+
+            let schema = SchemaName::new(schema)
+                .with_catalog(catalog);
+
+            Ok(RelationName::new(relation)
+                .with_schema(schema)
+            )
         },
         _ => {
             Err(ImproperQualifiedName(NameList(qn)).at_location(loc).into())
@@ -57,18 +56,14 @@ mod tests {
             source = "relation_,schema_.relation_, catalog_.schema_.relation_",
             parser = qualified_name_list,
             expected = vec![
-                RelationName::new("relation_", None),
-                RelationName::new(
-                    "relation_",
-                    Some(SchemaName::new("schema_", None))
-                ),
-                RelationName::new(
-                    "relation_",
-                    Some(SchemaName::new(
-                        "schema_",
-                        Some("catalog_".into())
-                    ))
-                )
+                RelationName::new("relation_"),
+                RelationName::new("relation_")
+                    .with_schema("schema_"),
+                RelationName::new("relation_")
+                    .with_schema(
+                        SchemaName::new("schema_")
+                            .with_catalog("catalog_")
+                    )
             ]
         )
     }
@@ -78,13 +73,11 @@ mod tests {
         test_parser!(
             source = "some_catalog.some_schema.some_relation",
             parser = qualified_name,
-            expected = RelationName::new(
-                "some_relation",
-                Some(SchemaName::new(
-                    "some_schema",
-                    Some("some_catalog".into())
-                ))
-            )
+            expected = RelationName::new("some_relation")
+                .with_schema(
+                    SchemaName::new("some_schema")
+                        .with_catalog("some_catalog")
+                )
         )
     }
 }
