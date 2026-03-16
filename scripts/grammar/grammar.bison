@@ -2809,7 +2809,7 @@ AlterOwnerStmt :
 
 CreatePublicationStmt :
     CREATE PUBLICATION ColId opt_definition
-  | CREATE PUBLICATION ColId FOR ALL TABLES opt_definition
+  | CREATE PUBLICATION ColId FOR pub_obj_type_list opt_definition
   | CREATE PUBLICATION ColId FOR pub_obj_list opt_definition
 ;
 
@@ -2831,6 +2831,21 @@ pub_obj_list :
 pub_obj_list_1 :
     ',' PublicationObjSpec pub_obj_list_1
   | ',' PublicationObjSpec
+;
+
+PublicationAllObjSpec :
+    ALL TABLES
+  | ALL SEQUENCES
+;
+
+pub_obj_type_list :
+    PublicationAllObjSpec pub_obj_type_list_1
+  | PublicationAllObjSpec
+;
+
+pub_obj_type_list_1 :
+    ',' PublicationAllObjSpec pub_obj_type_list_1
+  | ',' PublicationAllObjSpec
 ;
 
 AlterPublicationStmt :
