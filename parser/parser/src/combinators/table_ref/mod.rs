@@ -4,5 +4,6 @@ pg_basics::reexport! {
     json_table,
     lateral_func_table,
     rowsfrom_list,
+    tablesample_table_ref,
     xmltable,
 }

@@ -105,6 +105,7 @@ pg_basics::reexport! { pub
     role_spec,
     role_stmt,
     rows_table_ref,
+    sample_table_ref,
     security_label_stmt,
     set_reset_clause,
     set_rest,
