@@ -8,7 +8,7 @@ impl RelationExpr {
     pub fn new<T: Into<RelationName>>(name: T) -> Self {
         Self {
             name: name.into(),
-            inherited: false
+            inherited: true,
         }
     }
 

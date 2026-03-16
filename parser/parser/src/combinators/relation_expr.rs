@@ -67,19 +67,19 @@ mod tests {
     use test_case::test_case;
 
     #[test_case("foo"
-        => Ok(RelationExpr::new("foo").with_inherited(true))
+        => Ok(RelationExpr::new("foo"))
         ; "inherited without wildcard"
     )]
     #[test_case("foo *"
-        => Ok(RelationExpr::new("foo").with_inherited(true))
+        => Ok(RelationExpr::new("foo"))
         ; "inherited with wildcard"
     )]
     #[test_case("only foo"
-        => Ok(RelationExpr::new("foo"))
+        => Ok(RelationExpr::new("foo").with_inherited(false))
         ; "non-inherited without parens"
     )]
     #[test_case("only(foo)"
-        => Ok(RelationExpr::new("foo"))
+        => Ok(RelationExpr::new("foo").with_inherited(false))
         ; "non-inherited with parens"
     )]
     fn test_relation_expr(source: &str) -> scan::Result<RelationExpr> {
