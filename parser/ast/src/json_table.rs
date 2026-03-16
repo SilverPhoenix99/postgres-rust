@@ -6,6 +6,7 @@ pub struct JsonTable {
     passing: Option<Vec<JsonArgument>>,
     on_error: Option<JsonBehavior>,
     alias: Option<Alias>,
+    lateral: bool,
 }
 
 impl JsonTable {
@@ -21,6 +22,7 @@ impl JsonTable {
             passing: None,
             on_error: None,
             alias: None,
+            lateral: false,
         }
     }
 
@@ -76,6 +78,20 @@ impl JsonTable {
 
     pub fn alias(&self) -> Option<&Alias> {
         self.alias.as_ref()
+    }
+
+    pub fn set_lateral(&mut self, lateral: bool) -> &mut Self {
+        self.lateral = lateral;
+        self
+    }
+
+    pub fn with_lateral(mut self, lateral: bool) -> Self {
+        self.lateral = lateral;
+        self
+    }
+
+    pub fn lateral(&self) -> bool {
+        self.lateral
     }
 }
 

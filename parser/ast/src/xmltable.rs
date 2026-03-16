@@ -5,6 +5,7 @@ pub struct XmlTable {
     doc: ExprNode,
     columns: Vec<XmlTableColumn>,
     alias: Option<Alias>,
+    lateral: bool,
 }
 
 impl XmlTable {
@@ -15,6 +16,7 @@ impl XmlTable {
             doc,
             columns,
             alias: None,
+            lateral: false,
         }
     }
 
@@ -56,6 +58,20 @@ impl XmlTable {
 
     pub fn alias(&self) -> Option<&Alias> {
         self.alias.as_ref()
+    }
+
+    pub fn set_lateral(&mut self, lateral: bool) -> &mut Self {
+        self.lateral = lateral;
+        self
+    }
+
+    pub fn with_lateral(mut self, lateral: bool) -> Self {
+        self.lateral = lateral;
+        self
+    }
+
+    pub fn lateral(&self) -> bool {
+        self.lateral
     }
 }
 

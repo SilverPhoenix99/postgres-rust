@@ -1,4 +1,4 @@
-fn tablesample_table_ref(ctx: &mut ParserContext) -> scan::Result<SampleTableRef> {
+pub(super) fn tablesample_table_ref(ctx: &mut ParserContext) -> scan::Result<SampleTableRef> {
 
     /*
         relation_expr ( alias_clause )? ( tablesample_clause )?

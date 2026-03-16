@@ -4,6 +4,7 @@ pub struct FunctionTableRef {
     function: FuncExprWindowless,
     alias: Option<FuncAlias>,
     ordinality: bool,
+    lateral: bool,
 }
 
 impl FunctionTableRef {
@@ -12,6 +13,7 @@ impl FunctionTableRef {
             function: function.into(),
             alias: None,
             ordinality: false,
+            lateral: false,
         }
     }
 
@@ -45,6 +47,20 @@ impl FunctionTableRef {
 
     pub fn ordinality(&self) -> bool {
         self.ordinality
+    }
+
+    pub fn set_lateral(&mut self, lateral: bool) -> &mut Self {
+        self.lateral = lateral;
+        self
+    }
+
+    pub fn with_lateral(mut self, lateral: bool) -> Self {
+        self.lateral = lateral;
+        self
+    }
+
+    pub fn lateral(&self) -> bool {
+        self.lateral
     }
 }
 
