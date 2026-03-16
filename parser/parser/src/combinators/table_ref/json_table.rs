@@ -273,7 +273,7 @@ mod tests {
                     ForOrdinality { column_name: "bar".into() }
                 ]
             )
-            .with_alias(Alias::new("j"))
+            .with_alias("j")
         )
     )]
     #[test_case(

@@ -69,8 +69,8 @@ impl JsonTable {
         self
     }
 
-    pub fn with_alias(mut self, alias: Alias) -> Self {
-        self.alias = Some(alias);
+    pub fn with_alias<T: Into<Alias>>(mut self, alias: T) -> Self {
+        self.alias = Some(alias.into());
         self
     }
 

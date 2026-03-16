@@ -15,6 +15,10 @@ impl Alias {
         }
     }
 
+    pub fn alias(&self) -> &Str {
+        &self.alias
+    }
+
     pub fn set_columns(&mut self, columns: Option<Vec<Str>>) -> &mut Self {
 
         self.columns = columns.and_then(|cols|
@@ -36,12 +40,20 @@ impl Alias {
         self
     }
 
-    pub fn alias(&self) -> &Str {
-        &self.alias
-    }
-
     pub fn columns(&self) -> Option<&[Str]> {
         self.columns.as_deref()
+    }
+}
+
+impl From<Str> for Alias {
+    fn from(alias: Str) -> Self {
+        Self::new(alias)
+    }
+}
+
+impl From<&'static str> for Alias {
+    fn from(alias: &'static str) -> Self {
+        Self::new(alias)
     }
 }
 
