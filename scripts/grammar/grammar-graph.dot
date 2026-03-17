@@ -466,6 +466,7 @@ json_table_column_definition -> json_wrapper_behavior
 json_value_expr -> a_expr
 json_value_expr -> json_format_clause_opt
 json_value_expr_list -> json_value_expr
+labeled_expr -> a_expr
 limit_clause -> a_expr
 merge_insert -> insert_column_list
 merge_insert -> override_kind
@@ -570,7 +571,6 @@ where_or_current_clause -> a_expr
 window_definition -> window_specification
 window_specification -> opt_sort_clause
 within_group_clause -> sort_clause
-xml_attribute_el -> a_expr
 xml_namespace_el -> b_expr
 xml_root_version -> a_expr
 xmlexists_argument -> c_expr
@@ -1078,18 +1078,18 @@ subgraph cluster_func_expr_common_subexpr {
   func_expr_common_subexpr -> func_arg_list_opt
   func_expr_common_subexpr -> json_name_and_value_list
   func_expr_common_subexpr -> json_value_expr_list
+  func_expr_common_subexpr -> labeled_expr_list
   func_expr_common_subexpr -> opt_xml_root_standalone
   func_expr_common_subexpr -> overlay_list
   func_expr_common_subexpr -> position_list
   func_expr_common_subexpr -> substr_list
   func_expr_common_subexpr -> trim_list
-  func_expr_common_subexpr -> xml_attribute_list
   func_expr_common_subexpr -> xml_attributes
   func_expr_common_subexpr -> xml_indent_option
   func_expr_common_subexpr -> xml_root_version
   func_expr_common_subexpr -> xml_whitespace_option
-  xml_attribute_list -> xml_attribute_el
-  xml_attributes -> xml_attribute_list
+  labeled_expr_list -> labeled_expr
+  xml_attributes -> labeled_expr_list
 }
 
 subgraph cluster_function_with_argtypes {

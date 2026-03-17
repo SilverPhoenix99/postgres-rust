@@ -64,10 +64,10 @@ fn xml_element_extra_args(ctx: &mut ParserContext) -> scan::Result<ExtraArgs>
 fn xml_attributes(ctx: &mut ParserContext) -> scan::Result<Vec<NamedValue>> {
 
     /*
-        XMLATTRIBUTES '(' xml_attribute_list ')'
+        XMLATTRIBUTES '(' labeled_expr_list ')'
     */
 
-    let (_, attrs) = seq!(Xmlattributes, paren!(xml_attribute_list))
+    let (_, attrs) = seq!(Xmlattributes, paren!(labeled_expr_list))
         .parse(ctx)?;
 
     Ok(attrs)
@@ -113,7 +113,7 @@ mod tests {
     }
 }
 
-use super::xml_attribute_list;
+use super::labeled_expr_list;
 use crate::alt;
 use crate::combinators::col_label;
 use crate::combinators::core::skip;

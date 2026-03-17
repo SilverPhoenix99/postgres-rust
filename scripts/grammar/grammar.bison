@@ -4432,7 +4432,7 @@ func_expr_common_subexpr :
   | XMLELEMENT '(' NAME_P ColLabel ',' expr_list ')'
   | XMLELEMENT '(' NAME_P ColLabel ',' xml_attributes ',' expr_list ')'
   | XMLEXISTS '(' c_expr xmlexists_argument ')'
-  | XMLFOREST '(' xml_attribute_list ')'
+  | XMLFOREST '(' labeled_expr_list ')'
   | XMLPARSE '(' document_or_content a_expr xml_whitespace_option ')'
   | XMLPI '(' NAME_P ColLabel ')'
   | XMLPI '(' NAME_P ColLabel ',' a_expr ')'
@@ -4466,20 +4466,20 @@ opt_xml_root_standalone :
 ;
 
 xml_attributes :
-    XMLATTRIBUTES '(' xml_attribute_list ')'
+    XMLATTRIBUTES '(' labeled_expr_list ')'
 ;
 
-xml_attribute_list :
-    xml_attribute_el xml_attribute_list_1
-  | xml_attribute_el
+labeled_expr_list :
+    labeled_expr labeled_expr_list_1
+  | labeled_expr
 ;
 
-xml_attribute_list_1 :
-    ',' xml_attribute_el xml_attribute_list_1
-  | ',' xml_attribute_el
+labeled_expr_list_1 :
+    ',' labeled_expr labeled_expr_list_1
+  | ',' labeled_expr
 ;
 
-xml_attribute_el :
+labeled_expr :
     a_expr AS ColLabel
   | a_expr
 ;

@@ -1,14 +1,13 @@
-pub(super) fn xml_attribute_list(ctx: &mut ParserContext) -> scan::Result<Vec<NamedValue>> {
+pub(super) fn labeled_expr_list(ctx: &mut ParserContext) -> scan::Result<Vec<NamedValue>> {
 
     /*
-        xml_attribute ( ',' xml_attribute )*
+        labeled_expr ( ',' labeled_expr )*
     */
 
-    many!(sep = Comma, xml_attribute).parse(ctx)
+    many!(sep = Comma, labeled_expr).parse(ctx)
 }
 
-/// Alias: `xml_attribute_el`
-fn xml_attribute(ctx: &mut ParserContext) -> scan::Result<NamedValue> {
+fn labeled_expr(ctx: &mut ParserContext) -> scan::Result<NamedValue> {
 
     /*
         a_expr ( AS col_label )?
@@ -38,8 +37,8 @@ mod tests {
     #[test_case("2 as x" => Ok(
         NamedValue::new(Some("x".into()), IntegerConst(2))
     ))]
-    fn test_xml_attribute(source: &str) -> scan::Result<NamedValue> {
-        test_parser!(source, xml_attribute)
+    fn test_labeled_expr(source: &str) -> scan::Result<NamedValue> {
+        test_parser!(source, labeled_expr)
     }
 }
 

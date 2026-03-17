@@ -1,12 +1,12 @@
 pub(super) fn xml_forest(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 
     /*
-        XMLFOREST '(' xml_attribute_list ')'
+        XMLFOREST '(' labeled_expr_list ')'
     */
 
     // ❗ Don't call directly. Prefix is checked by `func_expr_common_subexpr`.
 
-    let (_, content) = seq!(skip(1), paren!(xml_attribute_list))
+    let (_, content) = seq!(skip(1), paren!(labeled_expr_list))
         .parse(ctx)?;
 
     Ok(XmlForest(content))
@@ -34,7 +34,7 @@ mod tests {
     }
 }
 
-use super::xml_attribute_list;
+use super::labeled_expr_list;
 use crate::combinators::core::skip;
 use crate::combinators::core::Combinator;
 use crate::paren;

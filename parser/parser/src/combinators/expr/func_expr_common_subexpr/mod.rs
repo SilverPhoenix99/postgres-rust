@@ -12,6 +12,7 @@ pg_basics::reexport! {
     json_scalar,
     json_serialize_expr,
     json_value_func,
+    labeled_expr_list,
     least_expr,
     merge_action,
     normalize,
@@ -23,7 +24,6 @@ pg_basics::reexport! {
     time,
     treat_expr,
     trim,
-    xml_attribute_list,
     xml_concat,
     xml_element,
     xml_exists,
@@ -73,7 +73,7 @@ pub(in crate::combinators) fn func_expr_common_subexpr(ctx: &mut ParserContext) 
         | XMLCONCAT '(' expr_list ')'
         | XMLELEMENT '(' ... ')'
         | XMLEXISTS '(' c_expr xmlexists_argument ')'
-        | XMLFOREST '(' xml_attribute_list ')'
+        | XMLFOREST '(' labeled_expr_list ')'
         | XMLPARSE '(' ... ')'
         | XMLPI '(' ... ')'
         | XMLROOT '(' ... ')'
