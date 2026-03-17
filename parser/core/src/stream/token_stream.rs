@@ -7,7 +7,7 @@ pub struct TokenStream<'src> {
 impl<'src> TokenStream<'src> {
 
     pub fn new(source: &'src str, config: ParserConfig) -> Self {
-        let lexer = Lexer::new(source, config.standard_conforming_strings());
+        let lexer = Lexer::new(source);
         Self::with_lexer(lexer, config.backslash_quote())
     }
 
@@ -16,8 +16,7 @@ impl<'src> TokenStream<'src> {
             lexer: BufferedLexer {
                 lexer,
                 peek: None,
-                backslash_quote,
-                warnings: Vec::new()
+                backslash_quote
             },
             buf: VecDeque::with_capacity(2),
         }
@@ -25,15 +24,6 @@ impl<'src> TokenStream<'src> {
 
     pub fn source(&self) -> &'src str {
         self.lexer.lexer.source()
-    }
-
-    pub fn warnings(&mut self) -> Option<&mut Vec<Located<Warning>>> {
-        if self.lexer.warnings.is_empty() {
-            None
-        }
-        else {
-            Some(&mut self.lexer.warnings)
-        }
     }
 
     pub fn eof(&mut self) -> bool {
@@ -366,6 +356,5 @@ use pg_basics::NumberRadix;
 use pg_basics::UnsignedNumber;
 use pg_basics::UnsignedNumber::IntegerConst;
 use pg_basics::UnsignedNumber::NumericConst;
-use pg_elog::parser::Warning;
 use pg_lexer::Lexer;
 use pg_lexer::RawTokenKind;

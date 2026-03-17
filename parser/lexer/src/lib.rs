@@ -12,7 +12,6 @@ type Result<T = RawTokenKind> = lexer::Result<T>;
 
 #[derive(Debug)]
 pub struct Lexer<'src> {
-    standard_conforming_strings: bool,
     buffer: CharBuffer<'src>,
     peeked: Option<Option<LocatedResult>>,
 }
@@ -39,9 +38,8 @@ impl FusedIterator for Lexer<'_> {}
 impl<'src> Lexer<'src> {
 
     // The limit for source strings is 1gb
-    pub fn new(source: &'src str, standard_conforming_strings: bool) -> Self {
+    pub fn new(source: &'src str) -> Self {
         Self {
-            standard_conforming_strings,
             buffer: CharBuffer::new(source),
             peeked: None
         }
@@ -130,12 +128,7 @@ impl<'src> Lexer<'src> {
                 _ => Err(UnexpectedChar { unknown: '$' }),
             }
             '\'' => {
-                if self.standard_conforming_strings {
-                    self.lex_quote_string(StringKind::Basic { concatenable: concatenable_string })
-                }
-                else {
-                    self.lex_extended_string(concatenable_string)
-                }
+                self.lex_quote_string(StringKind::Basic { concatenable: concatenable_string })
             }
             '"' => self.lex_quote_ident(Quoted),
             'b' | 'B' => {
@@ -169,9 +162,6 @@ impl<'src> Lexer<'src> {
                 if self.buffer.consume_char('&') {
                     match self.buffer.peek() {
                         Some('\'') => { // u&'...'
-                            if !self.standard_conforming_strings {
-                                return Err(UnsafeUnicodeString)
-                            }
                             self.buffer.consume_one();
                             self.lex_quote_string(StringKind::Unicode)
                         }
@@ -717,7 +707,7 @@ mod tests {
     #[test]
     fn test_empty_string() {
         let source = "";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_eq!(None, lex.next());
     }
@@ -725,7 +715,7 @@ mod tests {
     #[test]
     fn test_whitespace() {
         let source = "\t\r\x0b\x0c\n \x0b\t\r\n \x0c\r\x0b\x0c \n\t";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_eq!(None, lex.next());
     }
@@ -733,7 +723,7 @@ mod tests {
     #[test]
     fn test_unknown_char() {
         let source = "\x00";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_err(UnexpectedChar { unknown: '\x00' }, 0..1, 1, 1, lex.next());
         assert_eq!(None, lex.next());
@@ -742,7 +732,7 @@ mod tests {
     #[test]
     fn test_operators() {
         let source = ". .. ( ) , ; [ ] : :: := % * + - / < = > ^ => <= >= != <>";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_tok(Operator(Dot), 0..1, 1, 1, lex.next());
         assert_tok(Operator(DotDot), 2..4, 1, 3, lex.next());
@@ -778,7 +768,7 @@ mod tests {
         //=-\n\
         -@-\n\
         ";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_tok(UserDefinedOperator, 0..3, 1, 1, lex.next());
         assert_tok(Operator(Minus), 3..4, 1, 4, lex.next());
@@ -789,7 +779,7 @@ mod tests {
     #[test]
     fn test_param() {
         let source = "$0123";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_tok(Param { index: 123 }, 0..5, 1, 1, lex.next());
         assert_eq!(None, lex.next());
@@ -798,7 +788,7 @@ mod tests {
     #[test]
     fn test_hex_number() {
         let source = "0x_1_C0e_E_a92";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_tok(NumberLiteral(Hexadecimal), 0..14, 1, 1, lex.next());
         assert_eq!(None, lex.next());
@@ -807,7 +797,7 @@ mod tests {
     #[test]
     fn test_oct_number() {
         let source = "0o20155_53_7";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_tok(NumberLiteral(Octal), 0..12, 1, 1, lex.next());
         assert_eq!(None, lex.next());
@@ -816,7 +806,7 @@ mod tests {
     #[test]
     fn test_bin_number() {
         let source = "0b1_001000_01001_01101";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_tok(NumberLiteral(NumberRadix::Binary), 0..22, 1, 1, lex.next());
         assert_eq!(None, lex.next());
@@ -829,7 +819,7 @@ mod tests {
         9_8_7_6\n\
         0\
         ";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_tok(NumberLiteral(Decimal), 0..5, 1, 1, lex.next());
         assert_tok(NumberLiteral(Decimal), 6..13, 2, 1, lex.next());
@@ -840,7 +830,7 @@ mod tests {
     #[test]
     fn test_integer_dot_dot() {
         let source = "184..";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_tok(NumberLiteral(Decimal), 0..3, 1, 1, lex.next());
         assert_tok(Operator(DotDot), 3..5, 1, 4, lex.next());
@@ -854,7 +844,7 @@ mod tests {
         475.\n\
         1.1\
         ";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_tok(NumberLiteral(Decimal), 0..16, 1, 1, lex.next());
         assert_tok(NumberLiteral(Decimal), 17..21, 2, 1, lex.next());
@@ -865,7 +855,7 @@ mod tests {
     #[test]
     fn test_dollar_string_with_empty_delim() {
         let source = "$$some string$$";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_tok(StringLiteral(Dollar), 0..15, 1, 1, lex.next());
         assert_eq!(None, lex.next());
@@ -874,7 +864,7 @@ mod tests {
     #[test]
     fn test_dollar_string() {
         let source = "$foo$bar baz$foo$";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_tok(StringLiteral(Dollar), 0..17, 1, 1, lex.next());
         assert_eq!(None, lex.next());
@@ -883,7 +873,7 @@ mod tests {
     #[test]
     fn test_dollar_string_with_dollars() {
         let source = "$foo$dolla $ dolla $$ bill$$foo$";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_tok(StringLiteral(Dollar), 0..32, 1, 1, lex.next());
         assert_eq!(None, lex.next());
@@ -892,7 +882,7 @@ mod tests {
     #[test]
     fn test_dollar_string_mismatch() {
         let source = "$not a string";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_err(UnexpectedChar { unknown: '$' }, 0..1, 1, 1, lex.next());
         assert_kw(Not, lex.next());
@@ -908,7 +898,7 @@ mod tests {
         'concatenable' '\\'''\n\
         N'national'\
         ";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_tok(StringLiteral(StringKind::Basic { concatenable: false }), 0..2, 1, 1, lex.next());
         assert_tok(StringLiteral(StringKind::Basic { concatenable: true }), 3..17, 2, 1, lex.next());
@@ -920,24 +910,17 @@ mod tests {
 
     #[test]
     fn test_escape_strings() {
-        let source = "\
-        '''quotes\\''\n\
-        e'''quotes\\''\n\
-        n'national'\
-        ";
-        let mut lex = Lexer::new(source, false);
+        let source = "e'''quotes\\''";
+        let mut lex = Lexer::new(source);
 
-        assert_tok(StringLiteral(Extended { concatenable: false }), 0..12, 1, 1, lex.next());
-        assert_tok(StringLiteral(Extended { concatenable: false }), 13..26, 2, 1, lex.next());
-        assert_tok(Kw(Nchar), 27..28, 3, 1, lex.next());
-        assert_tok(StringLiteral(Extended { concatenable: false }), 28..38, 3, 2, lex.next());
+        assert_tok(StringLiteral(Extended { concatenable: false }), 0..13, 1, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
     #[test]
     fn test_bit_string() {
         let source = "b'0_156e_wf' x'048_96a_f_d'"; // lexer doesn't validate chars
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_tok(BitStringLiteral(Binary), 0..12, 1, 1, lex.next());
         assert_tok(BitStringLiteral(Hex), 13..27, 1, 14, lex.next());
@@ -950,7 +933,7 @@ mod tests {
         u&''\n\
         U&'unicode\\'\
         ";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_tok(StringLiteral(StringKind::Unicode), 0..4, 1, 1, lex.next());
         assert_tok(StringLiteral(StringKind::Unicode), 5..17, 2, 1, lex.next());
@@ -960,7 +943,7 @@ mod tests {
     #[test]
     fn test_identifier() {
         let source = "bar xyz efg nun ube foo u&x";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
         assert_tok(Identifier(IdentifierKind::Basic), 0..3, 1, 1, lex.next());
         assert_tok(Identifier(IdentifierKind::Basic), 4..7, 1, 5, lex.next());
         assert_tok(Identifier(IdentifierKind::Basic), 8..11, 1, 9, lex.next());
@@ -976,7 +959,7 @@ mod tests {
     #[test]
     fn test_keyword() {
         let source = "SeLeCt FrOm";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
         assert_kw(Select, lex.next());
         assert_kw(FromKw, lex.next());
         assert_eq!(None, lex.next());
@@ -989,7 +972,7 @@ mod tests {
         \"\"\"escaped\"\n\
         u&\"uni\"\"code\"\
         ";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_err(EmptyDelimitedIdentifier, 0..2, 1, 1, lex.next());
         assert_tok(Identifier(Quoted), 3..14, 2, 1, lex.next());
@@ -1000,7 +983,7 @@ mod tests {
     #[test]
     fn test_peek() {
         let source = "two identifiers";
-        let mut lex = Lexer::new(source, true);
+        let mut lex = Lexer::new(source);
 
         assert_tok(Identifier(IdentifierKind::Basic), 0..3, 1, 1, lex.peek());
         assert_tok(Identifier(IdentifierKind::Basic), 0..3, 1, 1, lex.next());
@@ -1118,7 +1101,6 @@ use pg_elog::lexer::Error::ParameterNumberTooLarge;
 use pg_elog::lexer::Error::TrailingJunkAfterNumericLiteral;
 use pg_elog::lexer::Error::TrailingJunkAfterParameter;
 use pg_elog::lexer::Error::UnexpectedChar;
-use pg_elog::lexer::Error::UnsafeUnicodeString;
 use pg_elog::lexer::Error::UnterminatedBitString;
 use pg_elog::lexer::Error::UnterminatedBlockComment;
 use pg_elog::lexer::Error::UnterminatedDollarQuotedString;

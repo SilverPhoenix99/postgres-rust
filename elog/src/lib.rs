@@ -1,6 +1,5 @@
 pub mod extended_string {
     pub use crate::error::extended_string::error::*;
-    pub use crate::error::extended_string::warning::*;
 }
 
 pub mod lexer {

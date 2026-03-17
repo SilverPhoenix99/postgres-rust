@@ -40,18 +40,15 @@ impl<'src> Parser<'src> {
             result = Err(syntax(loc));
         }
 
-        let warnings = match self.context.stream_mut().warnings() {
-            None => None,
-            Some(warnings) => Some(mem::take(warnings))
-        };
-
-        ParserResult { result, warnings }
+        ParserResult {
+            result,
+            warnings: None
+        }
     }
 }
 
 use crate::combinators::stmtmulti;
 use crate::ParserContext;
-use core::mem;
 use pg_ast::RawStmt;
 use pg_basics::Located;
 use pg_elog::parser;

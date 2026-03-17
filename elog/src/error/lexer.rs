@@ -49,9 +49,6 @@ pub enum Error {
 
     #[display("unterminated quoted identifier")]
     UnterminatedQuotedIdentifier,
-
-    #[display("unsafe use of string constant with Unicode escapes")]
-    UnsafeUnicodeString,
 }
 
 impl core::error::Error for Error {}
@@ -61,17 +58,6 @@ impl LogMessage for Error {
     fn sql_state(&self) -> SqlState {
         SyntaxError
     }
-
-    fn detail(&self) -> Option<&str> {
-        if UnsafeUnicodeString.eq(self) {
-            Some(
-                r#"String constants with Unicode escapes cannot be used when "standard_conforming_strings" is off."#
-            )
-        }
-        else {
-            None
-        }
-    }
 }
 
 use crate::LogMessage;
@@ -80,4 +66,3 @@ use crate::SqlState::SyntaxError;
 use derive_more::Display;
 use pg_basics::Located;
 use pg_basics::NumberRadix;
-use Error::UnsafeUnicodeString;

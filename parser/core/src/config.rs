@@ -1,27 +1,16 @@
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Default)]
 pub struct ParserConfig {
-    standard_conforming_strings: bool,
     backslash_quote: BackslashQuote,
 }
 
 impl ParserConfig {
 
-    pub const fn new(standard_conforming_strings: bool, backslash_quote: BackslashQuote) -> Self {
-        Self { standard_conforming_strings, backslash_quote }
-    }
-
-    pub fn standard_conforming_strings(&self) -> bool {
-        self.standard_conforming_strings
+    pub const fn new(backslash_quote: BackslashQuote) -> Self {
+        Self { backslash_quote }
     }
 
     pub fn backslash_quote(&self) -> BackslashQuote {
         self.backslash_quote
-    }
-}
-
-impl Default for ParserConfig {
-    fn default() -> Self {
-        Self::new(true, Default::default())
     }
 }
 

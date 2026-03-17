@@ -2,9 +2,7 @@
 pub(super) struct BufferedLexer<'src> {
     pub lexer: Lexer<'src>,
     pub peek: Option<eof::Result<Located<RawTokenKind>>>,
-    pub backslash_quote: BackslashQuote,
-    /// All the warnings that have been collected while parsing.
-    pub warnings: Vec<Located<Warning>>
+    pub backslash_quote: BackslashQuote
 }
 
 impl BufferedLexer<'_> {
@@ -146,11 +144,7 @@ impl BufferedLexer<'_> {
             Extended { .. } => {
 
                 let mut decoder = ExtendedStringDecoder::new(&buffer, self.backslash_quote);
-                let ExtendedStringResult { result, warning } = decoder.decode();
-
-                if let Some(warning) = warning {
-                    self.warnings.push(Located(warning.into(), loc.clone()));
-                }
+                let result = decoder.decode();
 
                 result.map_err(|err|
                     Located(err, loc.clone())
@@ -238,7 +232,6 @@ use crate::eof::Error::Eof;
 use crate::eof::Error::NotEof;
 use crate::stream::string_decoders::BasicStringDecoder;
 use crate::stream::string_decoders::ExtendedStringDecoder;
-use crate::stream::string_decoders::ExtendedStringResult;
 use crate::stream::string_decoders::UnicodeStringDecoder;
 use crate::stream::strip_delimiters::strip_delimiters;
 use crate::stream::token_value::TokenValue;
@@ -250,7 +243,6 @@ use pg_basics::Location;
 use pg_basics::NAMEDATALEN;
 use pg_elog::parser::Error::InvalidUescapeDelimiter;
 use pg_elog::parser::Error::UescapeDelimiterMissing;
-use pg_elog::parser::Warning;
 use pg_lexer::BitStringKind;
 use pg_lexer::IdentifierKind;
 use pg_lexer::IdentifierKind::Quoted;

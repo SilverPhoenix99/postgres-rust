@@ -3,11 +3,6 @@ pub(in crate::stream) struct ExtendedStringDecoder<'src> {
     backslash_quote: BackslashQuote,
 }
 
-pub(in crate::stream) struct ExtendedStringResult {
-    pub result: extended_string::Result,
-    pub warning: Option<extended_string::Warning>,
-}
-
 impl<'src> ExtendedStringDecoder<'src> {
 
     pub fn new(source: &'src str, backslash_quote: BackslashQuote) -> Self {
@@ -15,7 +10,7 @@ impl<'src> ExtendedStringDecoder<'src> {
         Self { input, backslash_quote }
     }
 
-    pub fn decode(&mut self) -> ExtendedStringResult {
+    pub fn decode(&mut self) -> extended_string::Result {
         // see `<xe>` and <xeu> rules in
         // [scan.l](https://github.com/postgres/postgres/blob/77761ee5dddc0518235a51c533893e81e5f375b9/src/backend/parser/scan.l#L275-L281)
 
@@ -31,7 +26,6 @@ impl<'src> ExtendedStringDecoder<'src> {
         // UNICODE: [\\]U[0-9A-Fa-f]{8} => consume_unicode_char(8) (Ok(None) is an error here)
 
         let mut out = Vec::<u8>::with_capacity(self.input.source().len());
-        let mut warning: Option<extended_string::Warning> = None;
 
         while let Some(c) = self.input.consume_one() {
 
@@ -62,18 +56,13 @@ impl<'src> ExtendedStringDecoder<'src> {
                 't' => out.push(b'\t'),
                 'v' => out.push(b'\x0b'), // '\v'
                 '\\' => {
-                    warning.get_or_insert(NonstandardBackslashEscape);
                     out.push(b'\\')
                 },
                 '\'' => { // "\\'"
                     if self.forbid_backslash_quote() {
                         // TODO: check client encoding in the condition
-                        return ExtendedStringResult {
-                            result: Err(NonstandardUseOfBackslashQuote),
-                            warning
-                        }
+                        return Err(NonstandardUseOfBackslashQuote)
                     }
-                    warning.get_or_insert(NonstandardQuoteEscape);
                     out.push(b'\'')
                 },
                 '0'..='7' => { // octal escape
@@ -114,34 +103,21 @@ impl<'src> ExtendedStringDecoder<'src> {
                     }
                 },
                 'u' | 'U' => {
-
-                    warning.get_or_insert(NonstandardEscape);
-
                     let unicode_len = if c.is_ascii_lowercase() { 4 } else { 8 };
-
-                    let c = match self.consume_unicode(unicode_len) {
-                        Ok(c) => c,
-                        Err(err) => return ExtendedStringResult {
-                            result: Err(err),
-                            warning
-                        }
-                    };
-
+                    let c = self.consume_unicode(unicode_len)?;
                     push_char(&mut out, c)
                 },
                 _ => push_char(&mut out, c),
             }
         }
 
-        let result = String::from_utf8(out)
+        String::from_utf8(out)
             .map(String::into_boxed_str)
             .map_err(|err| {
                 // pg_verifymbstr -> pg_verify_mbstr -> report_invalid_encoding
                 // see [report_invalid_encoding](https://github.com/postgres/postgres/blob/d5622acb32b3c11a27b323138fbee9c715742b38/src/backend/utils/mb/mbutils.c#L1698-L1721)
                 Utf8(err.utf8_error())
-            });
-
-        ExtendedStringResult { result, warning }
+            })
     }
 
     fn consume_unicode(&mut self, unicode_len: u32) -> extended_string::Result<char> {
@@ -211,7 +187,7 @@ mod tests {
             r"\x64\u0061\164\U00000061\'\\''\b\f\n\r\t\v x\y",
             BackslashQuote::On
         );
-        assert_eq!("data'\\'\x08\x0c\n\r\t\x0b xy", decoder.decode().result.unwrap().as_ref())
+        assert_eq!("data'\\'\x08\x0c\n\r\t\x0b xy", decoder.decode().unwrap().as_ref())
     }
 }
 
@@ -232,6 +208,3 @@ use pg_elog::extended_string::Error::InvalidUnicodeSurrogatePair;
 use pg_elog::extended_string::Error::InvalidUnicodeValue;
 use pg_elog::extended_string::Error::NonstandardUseOfBackslashQuote;
 use pg_elog::extended_string::Error::Utf8;
-use pg_elog::extended_string::Warning::NonstandardBackslashEscape;
-use pg_elog::extended_string::Warning::NonstandardEscape;
-use pg_elog::extended_string::Warning::NonstandardQuoteEscape;
