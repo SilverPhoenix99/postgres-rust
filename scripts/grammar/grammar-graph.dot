@@ -500,6 +500,7 @@ opt_sort_clause -> sort_clause
 opt_target_list -> target_list
 opt_type_modifiers -> expr_list
 opt_utility_option_list -> utility_option_list
+opt_wait_with_clause -> utility_option_list
 opt_with_clause -> with_clause
 over_clause -> window_specification
 overlay_list -> a_expr
@@ -988,6 +989,10 @@ subgraph cluster_VariableResetStmt {
   VariableResetStmt -> reset_rest
 }
 
+subgraph cluster_WaitStmt {
+  WaitStmt -> opt_wait_with_clause
+}
+
 subgraph cluster_a_expr {
   a_expr -> json_predicate_type_constraint
   a_expr -> row
@@ -1419,6 +1424,7 @@ UnlistenStmt [color=green penwidth=3]
 VacuumStmt [color=green penwidth=3]
 VariableSetStmt [color=green penwidth=3]
 VariableShowStmt [color=green penwidth=3]
+WaitStmt [color=green penwidth=3]
 qualified_name [color=green penwidth=3]
 relation_expr [color=green penwidth=3]
 

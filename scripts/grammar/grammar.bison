@@ -147,6 +147,7 @@ stmt :
   | VariableSetStmt
   | VariableShowStmt
   | ViewStmt
+  | WaitStmt
   | __empty
 ;
 
@@ -4467,6 +4468,15 @@ xml_passing_mech :
   | BY VALUE_P
 ;
 
+WaitStmt :
+    WAIT FOR LSN_P SCONST opt_wait_with_clause
+;
+
+opt_wait_with_clause :
+    WITH '(' utility_option_list ')'
+  | __empty
+;
+
 within_group_clause :
     WITHIN GROUP_P '(' sort_clause ')'
   | __empty
@@ -5214,6 +5224,7 @@ unreserved_keyword :
   | LOCK_P
   | LOCKED
   | LOGGED
+  | LSN_P
   | MAPPING
   | MATCH
   | MATCHED
@@ -5384,6 +5395,7 @@ unreserved_keyword :
   | VIEWS
   | VIRTUAL
   | VOLATILE
+  | WAIT
   | WHITESPACE_P
   | WITHIN
   | WITHOUT
@@ -5795,6 +5807,7 @@ bare_label_keyword :
   | LOCK_P
   | LOCKED
   | LOGGED
+  | LSN_P
   | MAPPING
   | MATCH
   | MATCHED
@@ -6006,6 +6019,7 @@ bare_label_keyword :
   | VIEWS
   | VIRTUAL
   | VOLATILE
+  | WAIT
   | WHEN
   | WHITESPACE_P
   | WORK

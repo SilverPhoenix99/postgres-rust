@@ -37,6 +37,7 @@ pub(super) fn stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
         truncate_stmt,
         unlisten_stmt.map(UnlistenStmt),
         vacuum_stmt,
+        wait_stmt,
     ).parse(ctx)
 }
 
@@ -130,6 +131,7 @@ pg_basics::reexport! {
     unlisten_stmt,
     utility_options,
     vacuum_stmt,
+    wait_stmt,
 }
 
 mod transaction_stmt;
