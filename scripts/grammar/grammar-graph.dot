@@ -55,6 +55,11 @@ AlterOwnerStmt -> function_with_argtypes
 AlterOwnerStmt -> operator_with_argtypes
 AlterPolicyStmt -> RowSecurityOptionalExpr
 AlterPolicyStmt -> RowSecurityOptionalWithCheck
+AlterPropGraphStmt -> edge_synonym
+AlterPropGraphStmt -> edge_tables_clause
+AlterPropGraphStmt -> labeled_expr_list
+AlterPropGraphStmt -> vertex_synonym
+AlterPropGraphStmt -> vertex_tables_clause
 AlterPublicationStmt -> definition
 AlterPublicationStmt -> pub_obj_list
 AlterRoleSetStmt -> SetResetClause
@@ -139,6 +144,7 @@ CreateOptRoleElem -> AlterOptRoleElem
 CreatePLangStmt -> opt_or_replace
 CreatePolicyStmt -> RowSecurityOptionalExpr
 CreatePolicyStmt -> RowSecurityOptionalWithCheck
+CreatePropGraphStmt -> OptTemp
 CreatePublicationStmt -> opt_definition
 CreatePublicationStmt -> pub_obj_list
 CreateRoleStmt -> OptRoleList
@@ -301,6 +307,7 @@ a_expr -> json_key_uniqueness_constraint_opt
 a_expr -> opt_unique_null_treatment
 a_expr -> select_with_parens
 a_expr -> unicode_normal_form
+add_label -> element_table_properties
 aggr_arg -> func_arg
 aggregate_with_argtypes -> aggr_args
 aggregate_with_argtypes -> func_name
@@ -360,6 +367,11 @@ cube_clause -> expr_list
 def_arg -> func_type
 def_elem -> def_arg
 distinct_clause -> expr_list
+edge_table_definition -> opt_element_table_label_and_properties
+edge_table_definition -> opt_graph_table_key_clause
+edge_table_definition -> opt_propgraph_table_alias
+edge_tables_clause -> edge_synonym
+element_table_properties -> labeled_expr_list
 execute_param_clause -> expr_list
 explicit_row -> expr_list
 expr_list -> a_expr
@@ -402,6 +414,7 @@ func_expr_common_subexpr -> json_quotes_clause_opt
 func_expr_common_subexpr -> json_returning_clause_opt
 func_expr_common_subexpr -> json_value_expr
 func_expr_common_subexpr -> json_wrapper_behavior
+func_expr_common_subexpr -> labeled_expr_list
 func_expr_common_subexpr -> select_no_parens
 func_expr_common_subexpr -> unicode_normal_form
 func_expr_common_subexpr -> xmlexists_argument
@@ -415,6 +428,7 @@ function_with_argtypes -> func_name
 function_with_argtypes -> indirection
 function_with_argtypes_list -> function_with_argtypes
 generic_option_list -> generic_option_elem
+graph_pattern -> where_clause
 group_by_item -> a_expr
 group_clause -> group_by_list
 having_clause -> a_expr
@@ -467,6 +481,7 @@ json_table_column_definition -> json_wrapper_behavior
 json_value_expr -> a_expr
 json_value_expr -> json_format_clause_opt
 json_value_expr_list -> json_value_expr
+label_and_properties -> element_table_properties
 labeled_expr -> a_expr
 limit_clause -> a_expr
 merge_insert -> insert_column_list
@@ -490,10 +505,13 @@ opt_conf_expr -> index_params
 opt_conf_expr -> where_clause
 opt_cycle_clause -> AexprConst
 opt_definition -> definition
+opt_edge_tables_clause -> edge_tables_clause
+opt_element_table_label_and_properties -> element_table_properties
 opt_fdw_options -> fdw_options
 opt_for_locking_strength -> for_locking_strength
 opt_foreign_server_version -> foreign_server_version
 opt_indirection -> indirection_el
+opt_is_label_expression -> label_expression
 opt_merge_when_condition -> a_expr
 opt_on_conflict -> set_clause_list
 opt_on_conflict -> where_clause
@@ -505,6 +523,7 @@ opt_sort_clause -> sort_clause
 opt_target_list -> target_list
 opt_type_modifiers -> expr_list
 opt_utility_option_list -> utility_option_list
+opt_vertex_tables_clause -> vertex_tables_clause
 opt_wait_with_clause -> utility_option_list
 opt_with_clause -> with_clause
 over_clause -> window_specification
@@ -513,6 +532,8 @@ part_elem -> a_expr
 part_elem -> func_expr_windowless
 part_elem -> opt_collate
 partition_cmd -> PartitionBoundSpec
+path_pattern -> path_pattern_expression
+path_primary -> where_clause
 position_list -> b_expr
 prep_type_clause -> type_list
 privilege_target -> function_with_argtypes_list
@@ -553,6 +574,7 @@ stats_param -> a_expr
 stats_param -> func_expr_windowless
 substr_list -> a_expr
 table_func_column -> func_type
+table_ref -> labeled_expr_list
 table_ref -> select_with_parens
 tablesample_clause -> expr_list
 tablesample_clause -> func_name
@@ -567,12 +589,19 @@ type_name_list -> Typename
 using_clause -> from_list
 vacuum_relation_list -> vacuum_relation
 values_clause -> expr_list
+vertex_or_edge -> edge_synonym
+vertex_or_edge -> vertex_synonym
+vertex_table_definition -> opt_element_table_label_and_properties
+vertex_table_definition -> opt_graph_table_key_clause
+vertex_table_definition -> opt_propgraph_table_alias
+vertex_tables_clause -> vertex_synonym
 when_clause -> a_expr
 where_clause -> a_expr
 where_or_current_clause -> a_expr
 window_definition -> window_specification
 window_specification -> opt_sort_clause
 within_group_clause -> sort_clause
+xml_attributes -> labeled_expr_list
 xml_namespace_el -> b_expr
 xml_root_version -> a_expr
 xmlexists_argument -> c_expr
@@ -633,6 +662,12 @@ subgraph cluster_AlterOpFamilyStmt {
 
 subgraph cluster_AlterPolicyStmt {
   AlterPolicyStmt -> RowSecurityOptionalToRole
+}
+
+subgraph cluster_AlterPropGraphStmt {
+  AlterPropGraphStmt -> add_label_list
+  AlterPropGraphStmt -> vertex_or_edge
+  add_label_list -> add_label
 }
 
 subgraph cluster_AlterRoleSetStmt {
@@ -757,6 +792,11 @@ subgraph cluster_CreatePolicyStmt {
   CreatePolicyStmt -> RowSecurityDefaultPermissive
   CreatePolicyStmt -> RowSecurityDefaultToRole
   RowSecurityDefaultForCmd -> row_security_cmd
+}
+
+subgraph cluster_CreatePropGraphStmt {
+  CreatePropGraphStmt -> opt_edge_tables_clause
+  CreatePropGraphStmt -> opt_vertex_tables_clause
 }
 
 subgraph cluster_CreatePublicationStmt {
@@ -1067,6 +1107,13 @@ subgraph cluster_definition {
   definition -> def_list
 }
 
+subgraph cluster_edge_tables_clause {
+  edge_table_definition -> destination_vertex_table
+  edge_table_definition -> source_vertex_table
+  edge_table_list -> edge_table_definition
+  edge_tables_clause -> edge_table_list
+}
+
 subgraph cluster_fdw_options {
   fdw_options -> fdw_option
 }
@@ -1081,7 +1128,6 @@ subgraph cluster_func_expr_common_subexpr {
   func_expr_common_subexpr -> func_arg_list_opt
   func_expr_common_subexpr -> json_name_and_value_list
   func_expr_common_subexpr -> json_value_expr_list
-  func_expr_common_subexpr -> labeled_expr_list
   func_expr_common_subexpr -> opt_xml_root_standalone
   func_expr_common_subexpr -> overlay_list
   func_expr_common_subexpr -> position_list
@@ -1091,8 +1137,6 @@ subgraph cluster_func_expr_common_subexpr {
   func_expr_common_subexpr -> xml_indent_option
   func_expr_common_subexpr -> xml_root_version
   func_expr_common_subexpr -> xml_whitespace_option
-  labeled_expr_list -> labeled_expr
-  xml_attributes -> labeled_expr_list
 }
 
 subgraph cluster_function_with_argtypes {
@@ -1156,6 +1200,17 @@ subgraph cluster_key_actions {
   key_update -> key_action
 }
 
+subgraph cluster_label_expression {
+  label_disjunction -> label_expression
+  label_disjunction -> label_term
+  label_expression -> label_disjunction
+  label_expression -> label_term
+}
+
+subgraph cluster_labeled_expr_list {
+  labeled_expr_list -> labeled_expr
+}
+
 subgraph cluster_opclass_item_list {
   opclass_item -> opclass_purpose
   opclass_item_list -> opclass_item
@@ -1170,12 +1225,28 @@ subgraph cluster_operator_with_argtypes {
   operator_with_argtypes -> oper_argtypes
 }
 
+subgraph cluster_opt_element_table_label_and_properties {
+  label_and_properties -> element_table_label_clause
+  label_and_properties_list -> label_and_properties
+  opt_element_table_label_and_properties -> label_and_properties_list
+}
+
 subgraph cluster_opt_interval {
   opt_interval -> interval_second
 }
 
 subgraph cluster_opt_vacuum_relation_list {
   opt_vacuum_relation_list -> vacuum_relation_list
+}
+
+subgraph cluster_path_pattern_expression {
+  path_factor -> opt_graph_pattern_quantifier
+  path_factor -> path_primary
+  path_pattern_expression -> path_term
+  path_primary -> opt_colid
+  path_primary -> opt_is_label_expression
+  path_primary -> path_pattern_expression
+  path_term -> path_factor
 }
 
 subgraph cluster_privilege_list {
@@ -1260,6 +1331,7 @@ subgraph cluster_table_ref {
   func_alias_clause -> alias_clause
   func_table -> opt_ordinality
   func_table -> rowsfrom_list
+  graph_pattern -> path_pattern_list
   join_qual -> opt_alias_clause_for_join_using
   join_type -> opt_outer
   joined_table -> join_qual
@@ -1267,11 +1339,13 @@ subgraph cluster_table_ref {
   joined_table -> table_ref
   json_table -> json_table_path_name_opt
   opt_alias_clause -> alias_clause
+  path_pattern_list -> path_pattern
   rowsfrom_item -> opt_col_def_list
   rowsfrom_list -> rowsfrom_item
   table_ref -> alias_clause
   table_ref -> func_alias_clause
   table_ref -> func_table
+  table_ref -> graph_pattern
   table_ref -> joined_table
   table_ref -> json_table
   table_ref -> opt_alias_clause
@@ -1302,6 +1376,11 @@ subgraph cluster_utility_option_list {
   utility_option_elem -> utility_option_arg
   utility_option_elem -> utility_option_name
   utility_option_list -> utility_option_elem
+}
+
+subgraph cluster_vertex_tables_clause {
+  vertex_table_list -> vertex_table_definition
+  vertex_tables_clause -> vertex_table_list
 }
 
 subgraph cluster_window_specification {
@@ -1347,6 +1426,7 @@ AlterOpFamilyStmt [color=green penwidth=3]
 AlterOperatorStmt [color=green penwidth=3]
 AlterOwnerStmt [color=green penwidth=3]
 AlterPolicyStmt [color=green penwidth=3]
+AlterPropGraphStmt [color=green penwidth=3]
 AlterPublicationStmt [color=green penwidth=3]
 AlterRoleSetStmt [color=green penwidth=3]
 AlterRoleStmt [color=green penwidth=3]
@@ -1383,6 +1463,7 @@ CreateOpClassStmt [color=green penwidth=3]
 CreateOpFamilyStmt [color=green penwidth=3]
 CreatePLangStmt [color=green penwidth=3]
 CreatePolicyStmt [color=green penwidth=3]
+CreatePropGraphStmt [color=green penwidth=3]
 CreatePublicationStmt [color=green penwidth=3]
 CreateRoleStmt [color=green penwidth=3]
 CreateSchemaStmt [color=green penwidth=3]
@@ -1493,9 +1574,12 @@ create_extension_opt_item [color=blue penwidth=3]
 createdb_opt_name [color=blue penwidth=3]
 cursor_options_1 [color=blue penwidth=3]
 defacl_privilege_target [color=blue penwidth=3]
+destination_vertex_table [color=blue penwidth=3]
 document_or_content [color=blue penwidth=3]
 dostmt_opt_item [color=blue penwidth=3]
 drop_option_list [color=blue penwidth=3]
+edge_synonym [color=blue penwidth=3]
+element_table_label_clause [color=blue penwidth=3]
 empty_grouping_set [color=blue penwidth=3]
 enable_trigger [color=blue penwidth=3]
 enum_val_list [color=blue penwidth=3]
@@ -1532,6 +1616,7 @@ json_table_path_name_opt [color=blue penwidth=3]
 json_wrapper_behavior [color=blue penwidth=3]
 key_action [color=blue penwidth=3]
 key_match [color=blue penwidth=3]
+label_term [color=blue penwidth=3]
 lock_type [color=blue penwidth=3]
 locked_rels_list [color=blue penwidth=3]
 merge_when_tgt_matched [color=blue penwidth=3]
@@ -1545,6 +1630,7 @@ opt_asc_desc [color=blue penwidth=3]
 opt_binary [color=blue penwidth=3]
 opt_c_include [color=blue penwidth=3]
 opt_check_option [color=blue penwidth=3]
+opt_colid [color=blue penwidth=3]
 opt_collate [color=blue penwidth=3]
 opt_collate_clause [color=blue penwidth=3]
 opt_encoding [color=blue penwidth=3]
@@ -1552,6 +1638,8 @@ opt_existing_window_name [color=blue penwidth=3]
 opt_float [color=blue penwidth=3]
 opt_grant_grant_option [color=blue penwidth=3]
 opt_granted_by [color=blue penwidth=3]
+opt_graph_pattern_quantifier [color=blue penwidth=3]
+opt_graph_table_key_clause [color=blue penwidth=3]
 opt_hold [color=blue penwidth=3]
 opt_if_exists [color=blue penwidth=3]
 opt_if_not_exists [color=blue penwidth=3]
@@ -1566,6 +1654,7 @@ opt_opfamily [color=blue penwidth=3]
 opt_or_replace [color=blue penwidth=3]
 opt_ordinality [color=blue penwidth=3]
 opt_outer [color=blue penwidth=3]
+opt_propgraph_table_alias [color=blue penwidth=3]
 opt_provider [color=blue penwidth=3]
 opt_restart_seqs [color=blue penwidth=3]
 opt_restrict [color=blue penwidth=3]
@@ -1597,6 +1686,7 @@ security_label [color=blue penwidth=3]
 set_access_method_name [color=blue penwidth=3]
 set_quantifier [color=blue penwidth=3]
 set_statistics_value [color=blue penwidth=3]
+source_vertex_table [color=blue penwidth=3]
 stmt [color=red penwidth=3]
 sub_type [color=blue penwidth=3]
 table_access_method_clause [color=blue penwidth=3]
@@ -1606,6 +1696,7 @@ utility_option_name [color=blue penwidth=3]
 vacuum_relation [color=blue penwidth=3]
 validator_clause [color=blue penwidth=3]
 var_value [color=blue penwidth=3]
+vertex_synonym [color=blue penwidth=3]
 xml_indent_option [color=blue penwidth=3]
 xml_passing_mech [color=blue penwidth=3]
 xml_whitespace_option [color=blue penwidth=3]

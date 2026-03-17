@@ -42,6 +42,7 @@ stmt :
   | AlterOperatorStmt
   | AlterTypeStmt
   | AlterPolicyStmt
+  | AlterPropGraphStmt
   | AlterSeqStmt
   | AlterSystemStmt
   | AlterTableStmt
@@ -81,6 +82,7 @@ stmt :
   | AlterOpFamilyStmt
   | CreatePolicyStmt
   | CreatePLangStmt
+  | CreatePropGraphStmt
   | CreateSchemaStmt
   | CreateSeqStmt
   | CreateStmt
@@ -1926,6 +1928,7 @@ object_type_any_name :
   | MATERIALIZED VIEW
   | INDEX
   | FOREIGN TABLE
+  | PROPERTY GRAPH
   | COLLATION
   | CONVERSION_P
   | STATISTICS
@@ -2152,6 +2155,7 @@ privilege_target :
   | LANGUAGE name_list
   | LARGE_P OBJECT_P NumericOnly_list
   | PARAMETER parameter_name_list
+  | PROPERTY GRAPH qualified_name_list
   | SCHEMA name_list
   | TABLESPACE name_list
   | TYPE_P any_name_list
@@ -2626,6 +2630,139 @@ opt_if_exists :
   | __empty
 ;
 
+CreatePropGraphStmt :
+    CREATE OptTemp PROPERTY GRAPH qualified_name opt_vertex_tables_clause opt_edge_tables_clause
+;
+
+opt_vertex_tables_clause :
+    vertex_tables_clause
+  | __empty
+;
+
+vertex_tables_clause :
+    vertex_synonym TABLES '(' vertex_table_list ')'
+;
+
+vertex_synonym :
+    NODE
+  | VERTEX
+;
+
+vertex_table_list :
+    vertex_table_definition vertex_table_list_1
+  | vertex_table_definition
+;
+
+vertex_table_list_1 :
+    ',' vertex_table_definition vertex_table_list_1
+  | ',' vertex_table_definition
+;
+
+vertex_table_definition :
+    qualified_name opt_propgraph_table_alias opt_graph_table_key_clause opt_element_table_label_and_properties
+;
+
+opt_propgraph_table_alias :
+    AS ColId
+  | __empty
+;
+
+opt_graph_table_key_clause :
+    KEY '(' columnList ')'
+  | __empty
+;
+
+opt_edge_tables_clause :
+    edge_tables_clause
+  | __empty
+;
+
+edge_tables_clause :
+    edge_synonym TABLES '(' edge_table_list ')'
+;
+
+edge_synonym :
+    EDGE
+  | RELATIONSHIP
+;
+
+edge_table_list :
+    edge_table_definition edge_table_list_1
+  | edge_table_definition
+;
+
+edge_table_list_1 :
+    ',' edge_table_definition edge_table_list_1
+  | ',' edge_table_definition
+;
+
+edge_table_definition :
+    qualified_name opt_propgraph_table_alias opt_graph_table_key_clause source_vertex_table destination_vertex_table opt_element_table_label_and_properties
+;
+
+source_vertex_table :
+    SOURCE ColId
+  | SOURCE KEY '(' columnList ')' REFERENCES ColId '(' columnList ')'
+;
+
+destination_vertex_table :
+    DESTINATION ColId
+  | DESTINATION KEY '(' columnList ')' REFERENCES ColId '(' columnList ')'
+;
+
+opt_element_table_label_and_properties :
+    element_table_properties
+  | label_and_properties_list
+  | __empty
+;
+
+element_table_properties :
+    NO PROPERTIES
+  | PROPERTIES ALL COLUMNS
+  | PROPERTIES '(' labeled_expr_list ')'
+;
+
+label_and_properties_list :
+    label_and_properties label_and_properties_list
+  | label_and_properties
+;
+
+label_and_properties :
+    element_table_label_clause
+  | element_table_label_clause element_table_properties
+;
+
+element_table_label_clause :
+    LABEL ColId
+  | DEFAULT LABEL
+;
+
+AlterPropGraphStmt :
+    ALTER PROPERTY GRAPH qualified_name ADD_P vertex_tables_clause
+  | ALTER PROPERTY GRAPH qualified_name ADD_P vertex_tables_clause ADD_P edge_tables_clause
+  | ALTER PROPERTY GRAPH qualified_name ADD_P edge_tables_clause
+  | ALTER PROPERTY GRAPH qualified_name DROP vertex_synonym TABLES '(' name_list ')' opt_drop_behavior
+  | ALTER PROPERTY GRAPH qualified_name DROP edge_synonym TABLES '(' name_list ')' opt_drop_behavior
+  | ALTER PROPERTY GRAPH qualified_name ALTER vertex_or_edge TABLE ColId add_label_list
+  | ALTER PROPERTY GRAPH qualified_name ALTER vertex_or_edge TABLE ColId DROP LABEL ColId opt_drop_behavior
+  | ALTER PROPERTY GRAPH qualified_name ALTER vertex_or_edge TABLE ColId ALTER LABEL ColId ADD_P PROPERTIES '(' labeled_expr_list ')'
+  | ALTER PROPERTY GRAPH qualified_name ALTER vertex_or_edge TABLE ColId ALTER LABEL ColId DROP PROPERTIES '(' name_list ')' opt_drop_behavior
+;
+
+vertex_or_edge :
+    vertex_synonym
+  | edge_synonym
+;
+
+add_label_list :
+    add_label add_label_list
+  | add_label
+;
+
+add_label :
+    ADD_P LABEL ColId element_table_properties
+;
+
 CreateTransformStmt :
     CREATE opt_or_replace TRANSFORM FOR Typename LANGUAGE ColId '(' transform_element_list ')'
 ;
@@ -2678,6 +2815,7 @@ RenameStmt :
   | ALTER POLICY ColId ON qualified_name RENAME TO ColId
   | ALTER POLICY IF_P EXISTS ColId ON qualified_name RENAME TO ColId
   | ALTER PROCEDURE function_with_argtypes RENAME TO ColId
+  | ALTER PROPERTY GRAPH qualified_name RENAME TO ColId
   | ALTER PUBLICATION ColId RENAME TO ColId
   | ALTER ROUTINE function_with_argtypes RENAME TO ColId
   | ALTER SCHEMA ColId RENAME TO ColId
@@ -2755,6 +2893,8 @@ AlterObjectSchemaStmt :
   | ALTER OPERATOR CLASS any_name USING ColId SET SCHEMA ColId
   | ALTER OPERATOR FAMILY any_name USING ColId SET SCHEMA ColId
   | ALTER PROCEDURE function_with_argtypes SET SCHEMA ColId
+  | ALTER PROPERTY GRAPH qualified_name SET SCHEMA ColId
+  | ALTER PROPERTY GRAPH IF_P EXISTS qualified_name SET SCHEMA ColId
   | ALTER ROUTINE function_with_argtypes SET SCHEMA ColId
   | ALTER TABLE relation_expr SET SCHEMA ColId
   | ALTER TABLE IF_P EXISTS relation_expr SET SCHEMA ColId
@@ -2819,6 +2959,7 @@ AlterOwnerStmt :
   | ALTER OPERATOR CLASS any_name USING ColId OWNER TO RoleSpec
   | ALTER OPERATOR FAMILY any_name USING ColId OWNER TO RoleSpec
   | ALTER PROCEDURE function_with_argtypes OWNER TO RoleSpec
+  | ALTER PROPERTY GRAPH qualified_name OWNER TO RoleSpec
   | ALTER ROUTINE function_with_argtypes OWNER TO RoleSpec
   | ALTER SCHEMA ColId OWNER TO RoleSpec
   | ALTER TYPE_P any_name OWNER TO RoleSpec
@@ -3842,6 +3983,7 @@ table_ref :
   | LATERAL_P func_table func_alias_clause
   | xmltable opt_alias_clause
   | LATERAL_P xmltable opt_alias_clause
+  | GRAPH_TABLE '(' qualified_name MATCH graph_pattern COLUMNS '(' labeled_expr_list ')' ')' opt_alias_clause
   | select_with_parens opt_alias_clause
   | LATERAL_P select_with_parens opt_alias_clause
   | joined_table
@@ -4257,6 +4399,8 @@ a_expr_1 :
   | LESS_EQUALS a_expr
   | GREATER_EQUALS a_expr
   | NOT_EQUALS a_expr
+  | RIGHT_ARROW a_expr
+  | '|' a_expr
   | qual_Op a_expr
   | AND a_expr
   | OR a_expr
@@ -4340,6 +4484,8 @@ b_expr_1 :
   | LESS_EQUALS b_expr
   | GREATER_EQUALS b_expr
   | NOT_EQUALS b_expr
+  | RIGHT_ARROW b_expr
+  | '|' b_expr
   | qual_Op b_expr
   | IS DISTINCT FROM b_expr
   | IS NOT DISTINCT FROM b_expr
@@ -4652,6 +4798,8 @@ MathOp :
   | LESS_EQUALS
   | GREATER_EQUALS
   | NOT_EQUALS
+  | RIGHT_ARROW
+  | '|'
 ;
 
 qual_Op :
@@ -4979,6 +5127,80 @@ json_array_aggregate_order_by_clause_opt :
   | __empty
 ;
 
+graph_pattern :
+    path_pattern_list where_clause
+;
+
+path_pattern_list :
+    path_pattern path_pattern_list_1
+  | path_pattern
+;
+
+path_pattern_list_1 :
+    ',' path_pattern path_pattern_list_1
+  | ',' path_pattern
+;
+
+path_pattern :
+    path_pattern_expression
+;
+
+path_pattern_expression :
+    path_term
+;
+
+path_term :
+    path_factor path_term
+  | path_factor
+;
+
+path_factor :
+    path_primary opt_graph_pattern_quantifier
+;
+
+path_primary :
+    '(' opt_colid opt_is_label_expression where_clause ')'
+  | '<' '-' '[' opt_colid opt_is_label_expression where_clause ']' '-'
+  | '-' '[' opt_colid opt_is_label_expression where_clause ']' '-' '>'
+  | '-' '[' opt_colid opt_is_label_expression where_clause ']' RIGHT_ARROW
+  | '-' '[' opt_colid opt_is_label_expression where_clause ']' '-'
+  | '<' '-'
+  | '-' '>'
+  | RIGHT_ARROW
+  | '-'
+  | '(' path_pattern_expression where_clause ')'
+;
+
+opt_colid :
+    ColId
+  | __empty
+;
+
+opt_is_label_expression :
+    IS label_expression
+  | __empty
+;
+
+opt_graph_pattern_quantifier :
+    '{' ICONST '}'
+  | '{' ',' ICONST '}'
+  | '{' ICONST ',' ICONST '}'
+  | __empty
+;
+
+label_expression :
+    label_term
+  | label_disjunction
+;
+
+label_disjunction :
+    label_expression '|' label_term
+;
+
+label_term :
+    ColId
+;
+
 opt_target_list :
     target_list
   | __empty
@@ -5195,6 +5417,7 @@ unreserved_keyword :
   | DELIMITERS
   | DEPENDS
   | DEPTH
+  | DESTINATION
   | DETACH
   | DICTIONARY
   | DISABLE_P
@@ -5204,6 +5427,7 @@ unreserved_keyword :
   | DOUBLE_P
   | DROP
   | EACH
+  | EDGE
   | EMPTY_P
   | ENABLE_P
   | ENCODING
@@ -5234,6 +5458,7 @@ unreserved_keyword :
   | GENERATED
   | GLOBAL
   | GRANTED
+  | GRAPH
   | GROUPS
   | HANDLER
   | HEADER_P
@@ -5300,6 +5525,7 @@ unreserved_keyword :
   | NFKC
   | NFKD
   | NO
+  | NODE
   | NORMALIZED
   | NOTHING
   | NOTIFY
@@ -5344,6 +5570,8 @@ unreserved_keyword :
   | PROCEDURE
   | PROCEDURES
   | PROGRAM
+  | PROPERTIES
+  | PROPERTY
   | PUBLICATION
   | QUOTE
   | QUOTES
@@ -5355,6 +5583,7 @@ unreserved_keyword :
   | REFERENCING
   | REFRESH
   | REINDEX
+  | RELATIONSHIP
   | RELATIVE_P
   | RELEASE
   | RENAME
@@ -5447,6 +5676,7 @@ unreserved_keyword :
   | VALUE_P
   | VARYING
   | VERSION_P
+  | VERTEX
   | VIEW
   | VIEWS
   | VIRTUAL
@@ -5477,6 +5707,7 @@ col_name_keyword :
   | EXISTS
   | EXTRACT
   | FLOAT_P
+  | GRAPH_TABLE
   | GREATEST
   | GROUPING
   | INOUT
@@ -5743,6 +5974,7 @@ bare_label_keyword :
   | DEPENDS
   | DEPTH
   | DESC
+  | DESTINATION
   | DETACH
   | DICTIONARY
   | DISABLE_P
@@ -5754,6 +5986,7 @@ bare_label_keyword :
   | DOUBLE_P
   | DROP
   | EACH
+  | EDGE
   | ELSE
   | EMPTY_P
   | ENABLE_P
@@ -5792,6 +6025,8 @@ bare_label_keyword :
   | GENERATED
   | GLOBAL
   | GRANTED
+  | GRAPH
+  | GRAPH_TABLE
   | GREATEST
   | GROUPING
   | GROUPS
@@ -5888,6 +6123,7 @@ bare_label_keyword :
   | NFKC
   | NFKD
   | NO
+  | NODE
   | NONE
   | NORMALIZE
   | NORMALIZED
@@ -5945,6 +6181,8 @@ bare_label_keyword :
   | PROCEDURE
   | PROCEDURES
   | PROGRAM
+  | PROPERTIES
+  | PROPERTY
   | PUBLICATION
   | QUOTE
   | QUOTES
@@ -5958,6 +6196,7 @@ bare_label_keyword :
   | REFERENCING
   | REFRESH
   | REINDEX
+  | RELATIONSHIP
   | RELATIVE_P
   | RELEASE
   | RENAME
@@ -6074,6 +6313,7 @@ bare_label_keyword :
   | VARIADIC
   | VERBOSE
   | VERSION_P
+  | VERTEX
   | VIEW
   | VIEWS
   | VIRTUAL
