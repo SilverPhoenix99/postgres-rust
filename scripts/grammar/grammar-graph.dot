@@ -763,7 +763,10 @@ subgraph cluster_CreatePolicyStmt {
 
 subgraph cluster_CreatePublicationStmt {
   CreatePublicationStmt -> pub_all_obj_type_list
+  PublicationAllObjSpec -> opt_pub_except_clause
+  opt_pub_except_clause -> pub_except_obj_list
   pub_all_obj_type_list -> PublicationAllObjSpec
+  pub_except_obj_list -> PublicationExceptObjSpec
 }
 
 subgraph cluster_CreateSchemaStmt {
@@ -1451,7 +1454,7 @@ OptTableSpace [color=blue penwidth=3]
 OptTableSpaceOwner [color=blue penwidth=3]
 OptTemp [color=blue penwidth=3]
 OptTempTableName [color=blue penwidth=3]
-PublicationAllObjSpec [color=blue penwidth=3]
+PublicationExceptObjSpec [color=blue penwidth=3]
 RowSecurityDefaultPermissive [color=blue penwidth=3]
 RowSecurityDefaultToRole [color=blue penwidth=3]
 RowSecurityOptionalToRole [color=blue penwidth=3]

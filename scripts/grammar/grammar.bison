@@ -2852,8 +2852,13 @@ pub_obj_list_1 :
   | ',' PublicationObjSpec
 ;
 
+opt_pub_except_clause :
+    EXCEPT TABLE '(' pub_except_obj_list ')'
+  | __empty
+;
+
 PublicationAllObjSpec :
-    ALL TABLES
+    ALL TABLES opt_pub_except_clause
   | ALL SEQUENCES
 ;
 
@@ -2865,6 +2870,20 @@ pub_all_obj_type_list :
 pub_all_obj_type_list_1 :
     ',' PublicationAllObjSpec pub_all_obj_type_list_1
   | ',' PublicationAllObjSpec
+;
+
+PublicationExceptObjSpec :
+    relation_expr
+;
+
+pub_except_obj_list :
+    PublicationExceptObjSpec pub_except_obj_list_1
+  | PublicationExceptObjSpec
+;
+
+pub_except_obj_list_1 :
+    ',' PublicationExceptObjSpec pub_except_obj_list_1
+  | ',' PublicationExceptObjSpec
 ;
 
 AlterPublicationStmt :
