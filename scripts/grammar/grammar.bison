@@ -59,7 +59,6 @@ stmt :
   | CallStmt
   | CheckPointStmt
   | ClosePortalStmt
-  | ClusterStmt
   | CommentStmt
   | ConstraintsSetStmt
   | CopyStmt
@@ -133,6 +132,7 @@ stmt :
   | RemoveFuncStmt
   | RemoveOperStmt
   | RenameStmt
+  | RepackStmt
   | RevokeStmt
   | RevokeRoleStmt
   | RuleStmt
@@ -163,6 +163,11 @@ opt_qualified_name :
 
 opt_concurrently :
     CONCURRENTLY
+  | __empty
+;
+
+opt_usingindex :
+    USING INDEX
   | __empty
 ;
 
@@ -3174,8 +3179,11 @@ CreateConversionStmt :
     CREATE opt_default CONVERSION_P any_name FOR SCONST TO SCONST FROM any_name
 ;
 
-ClusterStmt :
-    CLUSTER '(' utility_option_list ')' qualified_name cluster_index_specification
+RepackStmt :
+    REPACK opt_utility_option_list vacuum_relation USING INDEX ColId
+  | REPACK opt_utility_option_list vacuum_relation opt_usingindex
+  | REPACK opt_utility_option_list opt_usingindex
+  | CLUSTER '(' utility_option_list ')' qualified_name cluster_index_specification
   | CLUSTER opt_utility_option_list
   | CLUSTER opt_verbose qualified_name cluster_index_specification
   | CLUSTER VERBOSE
@@ -5350,6 +5358,7 @@ unreserved_keyword :
   | RELATIVE_P
   | RELEASE
   | RENAME
+  | REPACK
   | REPEATABLE
   | REPLACE
   | REPLICA
@@ -5952,6 +5961,7 @@ bare_label_keyword :
   | RELATIVE_P
   | RELEASE
   | RENAME
+  | REPACK
   | REPEATABLE
   | REPLACE
   | REPLICA

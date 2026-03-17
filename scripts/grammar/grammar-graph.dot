@@ -80,8 +80,6 @@ Character -> CharacterWithoutLength
 CharacterWithLength -> character
 CharacterWithoutLength -> character
 CheckPointStmt -> opt_utility_option_list
-ClusterStmt -> opt_utility_option_list
-ClusterStmt -> utility_option_list
 ColConstraintElem -> OptConsTableSpace
 ColConstraintElem -> OptParenthesizedSeqOptList
 ColConstraintElem -> a_expr
@@ -238,6 +236,9 @@ ReindexStmt -> opt_utility_option_list
 RemoveFuncStmt -> function_with_argtypes_list
 RenameStmt -> aggregate_with_argtypes
 RenameStmt -> function_with_argtypes
+RepackStmt -> opt_utility_option_list
+RepackStmt -> utility_option_list
+RepackStmt -> vacuum_relation
 ReturnStmt -> a_expr
 RevokeRoleStmt -> opt_granted_by
 RevokeRoleStmt -> privilege_list
@@ -564,6 +565,7 @@ trim_list -> expr_list
 type_list -> Typename
 type_name_list -> Typename
 using_clause -> from_list
+vacuum_relation_list -> vacuum_relation
 values_clause -> expr_list
 when_clause -> a_expr
 where_clause -> a_expr
@@ -657,10 +659,6 @@ subgraph cluster_AlterTableStmt {
   alter_table_cmds -> alter_table_cmd
   partition_cmd -> partitions_list
   partitions_list -> SinglePartitionSpec
-}
-
-subgraph cluster_ClusterStmt {
-  ClusterStmt -> cluster_index_specification
 }
 
 subgraph cluster_ColQualList {
@@ -950,6 +948,11 @@ subgraph cluster_RemoveOperStmt {
   RemoveOperStmt -> operator_with_argtypes_list
 }
 
+subgraph cluster_RepackStmt {
+  RepackStmt -> cluster_index_specification
+  RepackStmt -> opt_usingindex
+}
+
 subgraph cluster_RuleStmt {
   NotifyStmt -> notify_payload
   RuleActionList -> RuleActionMulti
@@ -1173,7 +1176,6 @@ subgraph cluster_opt_interval {
 
 subgraph cluster_opt_vacuum_relation_list {
   opt_vacuum_relation_list -> vacuum_relation_list
-  vacuum_relation_list -> vacuum_relation
 }
 
 subgraph cluster_privilege_list {
@@ -1362,7 +1364,6 @@ AnalyzeStmt [color=green penwidth=3]
 CallStmt [color=green penwidth=3]
 CheckPointStmt [color=green penwidth=3]
 ClosePortalStmt [color=green penwidth=3]
-ClusterStmt [color=green penwidth=3]
 CommentStmt [color=green penwidth=3]
 ConstraintsSetStmt [color=green penwidth=3]
 CopyStmt [color=green penwidth=3]
@@ -1421,6 +1422,7 @@ RemoveAggrStmt [color=green penwidth=3]
 RemoveFuncStmt [color=green penwidth=3]
 RemoveOperStmt [color=green penwidth=3]
 RenameStmt [color=green penwidth=3]
+RepackStmt [color=green penwidth=3]
 RevokeRoleStmt [color=green penwidth=3]
 RevokeStmt [color=green penwidth=3]
 RuleStmt [color=green penwidth=3]
@@ -1574,6 +1576,7 @@ opt_transaction [color=blue penwidth=3]
 opt_transaction_chain [color=blue penwidth=3]
 opt_type [color=blue penwidth=3]
 opt_unique_null_treatment [color=blue penwidth=3]
+opt_usingindex [color=blue penwidth=3]
 opt_virtual_or_stored [color=blue penwidth=3]
 opt_window_exclusion_clause [color=blue penwidth=3]
 opt_with_data [color=blue penwidth=3]
