@@ -265,6 +265,7 @@ SetResetClause -> set_rest
 SimpleTypename -> ConstDatetime
 SimpleTypename -> Numeric
 SimpleTypename -> opt_interval
+SinglePartitionSpec -> PartitionBoundSpec
 TableElement -> TableConstraint
 TableElement -> columnDef
 TableFuncElement -> Typename
@@ -652,6 +653,8 @@ subgraph cluster_AlterTableStmt {
   alter_table_cmd -> replica_identity
   alter_table_cmd -> set_access_method_name
   alter_table_cmds -> alter_table_cmd
+  partition_cmd -> partitions_list
+  partitions_list -> SinglePartitionSpec
 }
 
 subgraph cluster_ClusterStmt {

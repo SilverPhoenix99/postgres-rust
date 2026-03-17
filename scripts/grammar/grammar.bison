@@ -501,10 +501,25 @@ alter_table_cmds_1 :
   | ',' alter_table_cmd
 ;
 
+partitions_list :
+    SinglePartitionSpec partitions_list_1
+  | SinglePartitionSpec
+;
+
+partitions_list_1 :
+    ',' SinglePartitionSpec partitions_list_1
+  | ',' SinglePartitionSpec
+;
+
+SinglePartitionSpec :
+    PARTITION qualified_name PartitionBoundSpec
+;
+
 partition_cmd :
     ATTACH PARTITION qualified_name PartitionBoundSpec
   | DETACH PARTITION qualified_name opt_concurrently
   | DETACH PARTITION qualified_name FINALIZE
+  | SPLIT PARTITION qualified_name INTO '(' partitions_list ')'
   | MERGE PARTITIONS '(' qualified_name_list ')' INTO qualified_name
 ;
 
@@ -5344,6 +5359,7 @@ unreserved_keyword :
   | SKIP
   | SNAPSHOT
   | SOURCE
+  | SPLIT
   | SQL_P
   | STABLE
   | STANDALONE_P
@@ -5951,6 +5967,7 @@ bare_label_keyword :
   | SNAPSHOT
   | SOME
   | SOURCE
+  | SPLIT
   | SQL_P
   | STABLE
   | STANDALONE_P
