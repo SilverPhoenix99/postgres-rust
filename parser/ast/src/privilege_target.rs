@@ -15,6 +15,7 @@ pub enum PrivilegeTarget {
     LargeObject(Vec<SignedNumber>),
     ParameterAcl(Vec<QualifiedName>),
     Procedure(Vec<FunctionWithArgs>),
+    PropertyGraph(Vec<RelationName>),
     Routine(Vec<FunctionWithArgs>),
     Schema(Vec<Str>),
     Sequence(Vec<RelationName>),

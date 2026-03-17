@@ -15,6 +15,7 @@ pub(super) fn privilege_target(ctx: &mut ParserContext) -> scan::Result<Privileg
       | LARGE OBJECT NumericOnly_list
       | PARAMETER parameter_name_list
       | PROCEDURE function_with_argtypes_list
+      | PROPERTY GRAPH qualified_name_list
       | ROUTINE function_with_argtypes_list
       | SCHEMA name_list
       | SEQUENCE qualified_name_list
@@ -64,6 +65,8 @@ pub(super) fn privilege_target(ctx: &mut ParserContext) -> scan::Result<Privileg
             .map(|(_, config_parameters)| ParameterAcl(config_parameters)),
         seq!(Kw::Procedure, function_with_argtypes_list)
             .map(|(_, signatures)| Procedure(signatures)),
+        seq!(Property, Graph, qualified_name_list)
+            .map(|(.., graphs)| PropertyGraph(graphs)),
         seq!(Kw::Routine, function_with_argtypes_list)
             .map(|(_, signatures)| Routine(signatures)),
         seq!(Kw::Schema, name_list)
@@ -113,99 +116,103 @@ mod tests {
     use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::FunctionWithArgs;
-    #[allow(unused_imports)]
-    use pg_ast::RelationName;
     use test_case::test_case;
 
-    #[test_case("all functions in schema a, b",
+    #[test_case("all functions in schema a, b" => Ok(
         AllFunctionsInSchema(vec!["a".into(), "b".into()])
-    )]
-    #[test_case("all procedures in schema a, b",
+    ))]
+    #[test_case("all procedures in schema a, b" => Ok(
         AllProceduresInSchema(vec!["a".into(), "b".into()])
-    )]
-    #[test_case("all routines in schema a, b",
+    ))]
+    #[test_case("all routines in schema a, b" => Ok(
         AllRoutinesInSchema(vec!["a".into(), "b".into()])
-    )]
-    #[test_case("all sequences in schema a, b",
+    ))]
+    #[test_case("all sequences in schema a, b" => Ok(
         AllSequencesInSchema(vec!["a".into(), "b".into()])
-    )]
-    #[test_case("all tables in schema a, b",
+    ))]
+    #[test_case("all tables in schema a, b" => Ok(
         AllTablesInSchema(vec!["a".into(), "b".into()])
-    )]
-    #[test_case("database a, b",
+    ))]
+    #[test_case("database a, b" => Ok(
         Database(vec!["a".into(), "b".into()])
-    )]
-    #[test_case("domain a, b",
+    ))]
+    #[test_case("domain a, b" => Ok(
         Domain(vec![vec!["a".into()], vec!["b".into()]])
-    )]
-    #[test_case("foreign data wrapper a, b",
+    ))]
+    #[test_case("foreign data wrapper a, b" => Ok(
         ForeignDataWrapper(vec!["a".into(), "b".into()])
-    )]
-    #[test_case("foreign server a, b",
+    ))]
+    #[test_case("foreign server a, b" => Ok(
         ForeignServer(vec!["a".into(), "b".into()])
-    )]
-    #[test_case("function a, b",
+    ))]
+    #[test_case("function a, b" => Ok(
         Function(vec![
             FunctionWithArgs::new(vec!["a".into()], None),
             FunctionWithArgs::new(vec!["b".into()], None)
         ])
-    )]
-    #[test_case("language a, b",
+    ))]
+    #[test_case("language a, b" => Ok(
         Language(vec!["a".into(), "b".into()])
-    )]
-    #[test_case("large object 1, 2",
+    ))]
+    #[test_case("large object 1, 2" => Ok(
         LargeObject(vec![1.into(), 2.into()])
-    )]
-    #[test_case("parameter a, b",
+    ))]
+    #[test_case("parameter a, b" => Ok(
         ParameterAcl(vec![
             vec!["a".into()],
             vec!["b".into()]
         ])
-    )]
-    #[test_case("procedure a, b",
+    ))]
+    #[test_case("procedure a, b" => Ok(
         Procedure(vec![
             FunctionWithArgs::new(vec!["a".into()], None),
             FunctionWithArgs::new(vec!["b".into()], None)
         ])
-    )]
-    #[test_case("routine a, b",
+    ))]
+    #[test_case("property graph a, b" => Ok(
+        PropertyGraph(vec![
+            "a".into(),
+            "b".into()
+        ])
+    ))]
+    #[test_case("routine a, b" => Ok(
         Routine(vec![
             FunctionWithArgs::new(vec!["a".into()], None),
             FunctionWithArgs::new(vec!["b".into()], None)
         ])
-    )]
-    #[test_case("schema a, b",
+    ))]
+    #[test_case("schema a, b" => Ok(
         Schema(vec!["a".into(), "b".into()])
-    )]
-    #[test_case("sequence a, b",
+    ))]
+    #[test_case("sequence a, b" => Ok(
         Sequence(vec![
-            RelationName::new("a"),
-            RelationName::new("b")
+            "a".into(),
+            "b".into()
         ])
-    )]
-    #[test_case("tablespace a, b",
+    ))]
+    #[test_case("tablespace a, b" => Ok(
         Tablespace(vec!["a".into(), "b".into()])
-    )]
-    #[test_case("type a, b",
+    ))]
+    #[test_case("type a, b" => Ok(
         Type(vec![
             vec!["a".into()],
             vec!["b".into()]
         ])
-    )]
-    #[test_case("table a, b",
+    ))]
+    #[test_case("table a, b" => Ok(
         Table(vec![
-            RelationName::new("a"),
-            RelationName::new("b")
+            "a".into(),
+            "b".into()
         ])
-    )]
-    #[test_case("a, b",
+    ))]
+    #[test_case("a, b" => Ok(
         Table(vec![
-            RelationName::new("a"),
-            RelationName::new("b")
+            "a".into(),
+            "b".into()
         ])
-    )]
-    fn test_privilege_target(source: &str, expected: PrivilegeTarget) {
-        test_parser!(source, privilege_target, expected)
+    ))]
+    fn test_privilege_target(source: &str) -> scan::Result<PrivilegeTarget> {
+        test_parser!(source, privilege_target)
     }
 
     #[test]
@@ -269,6 +276,7 @@ use pg_ast::PrivilegeTarget::Language;
 use pg_ast::PrivilegeTarget::LargeObject;
 use pg_ast::PrivilegeTarget::ParameterAcl;
 use pg_ast::PrivilegeTarget::Procedure;
+use pg_ast::PrivilegeTarget::PropertyGraph;
 use pg_ast::PrivilegeTarget::Routine;
 use pg_ast::PrivilegeTarget::Schema;
 use pg_ast::PrivilegeTarget::Sequence;
@@ -282,11 +290,13 @@ use pg_lexer::Keyword::All;
 use pg_lexer::Keyword::Data;
 use pg_lexer::Keyword::Foreign;
 use pg_lexer::Keyword::Functions;
+use pg_lexer::Keyword::Graph;
 use pg_lexer::Keyword::In;
 use pg_lexer::Keyword::Large;
 use pg_lexer::Keyword::Object;
 use pg_lexer::Keyword::Parameter;
 use pg_lexer::Keyword::Procedures;
+use pg_lexer::Keyword::Property;
 use pg_lexer::Keyword::Routines;
 use pg_lexer::Keyword::Sequences;
 use pg_lexer::Keyword::Server;
