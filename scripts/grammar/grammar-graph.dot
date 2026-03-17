@@ -757,8 +757,8 @@ subgraph cluster_CreatePolicyStmt {
 }
 
 subgraph cluster_CreatePublicationStmt {
-  CreatePublicationStmt -> pub_obj_type_list
-  pub_obj_type_list -> PublicationAllObjSpec
+  CreatePublicationStmt -> pub_all_obj_type_list
+  pub_all_obj_type_list -> PublicationAllObjSpec
 }
 
 subgraph cluster_CreateSchemaStmt {
