@@ -113,6 +113,10 @@ pub enum OperatorKind {
     GreaterEquals,
     /// `<>` or `!=`
     NotEquals,
+    /// `|`
+    Pipe,
+    /// `->`
+    RightArrow,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]

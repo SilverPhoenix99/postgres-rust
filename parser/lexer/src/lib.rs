@@ -236,11 +236,13 @@ impl<'src> Lexer<'src> {
             "="  => Ok(Operator(Equals)),
             ">"  => Ok(Operator(Greater)),
             "^"  => Ok(Operator(Circumflex)),
+            "|" => Ok(Operator(Pipe)),
             "=>" => Ok(Operator(EqualsGreater)),
             "<=" => Ok(Operator(LessEquals)),
             ">=" => Ok(Operator(GreaterEquals)),
             "!=" => Ok(Operator(NotEquals)),
             "<>" => Ok(Operator(NotEquals)),
+            "->" => Ok(Operator(RightArrow)),
             _ => {
                 // Custom operator with PG op chars can have '+' or '-' as suffixes.
                 // E.g., '?-' is a valid operator.
@@ -731,7 +733,7 @@ mod tests {
 
     #[test]
     fn test_operators() {
-        let source = ". .. ( ) , ; [ ] : :: := % * + - / < = > ^ => <= >= != <>";
+        let source = ". .. ( ) , ; [ ] : :: := % * + - / < = > ^ => <= >= != <> | ->";
         let mut lex = Lexer::new(source);
 
         assert_tok(Operator(Dot), 0..1, 1, 1, lex.next());
@@ -759,6 +761,8 @@ mod tests {
         assert_tok(Operator(GreaterEquals), 49..51, 1, 50, lex.next());
         assert_tok(Operator(NotEquals), 52..54, 1, 53, lex.next());
         assert_tok(Operator(NotEquals), 55..57, 1, 56, lex.next());
+        assert_tok(Operator(Pipe), 58..59, 1, 59, lex.next());
+        assert_tok(Operator(RightArrow), 60..62, 1, 61, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -767,12 +771,14 @@ mod tests {
         let source = "\
         //=-\n\
         -@-\n\
+        ||-\n\
         ";
         let mut lex = Lexer::new(source);
 
         assert_tok(UserDefinedOperator, 0..3, 1, 1, lex.next());
         assert_tok(Operator(Minus), 3..4, 1, 4, lex.next());
         assert_tok(UserDefinedOperator, 5..8, 2, 1, lex.next());
+        assert_tok(UserDefinedOperator, 9..12, 3, 1, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -1059,7 +1065,9 @@ use crate::OperatorKind::NotEquals;
 use crate::OperatorKind::OpenBracket;
 use crate::OperatorKind::OpenParenthesis;
 use crate::OperatorKind::Percent;
+use crate::OperatorKind::Pipe;
 use crate::OperatorKind::Plus;
+use crate::OperatorKind::RightArrow;
 use crate::OperatorKind::Semicolon;
 use crate::OperatorKind::Typecast;
 use crate::RawTokenKind::BitStringLiteral;
