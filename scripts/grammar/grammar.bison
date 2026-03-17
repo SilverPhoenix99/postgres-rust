@@ -3315,7 +3315,8 @@ insert_column_item :
 ;
 
 opt_on_conflict :
-    ON CONFLICT opt_conf_expr DO UPDATE SET set_clause_list where_clause
+    ON CONFLICT opt_conf_expr DO SELECT opt_for_locking_strength where_clause
+  | ON CONFLICT opt_conf_expr DO UPDATE SET set_clause_list where_clause
   | ON CONFLICT opt_conf_expr DO NOTHING
   | __empty
 ;
@@ -3766,6 +3767,11 @@ for_locking_strength :
   | FOR NO KEY UPDATE
   | FOR SHARE
   | FOR KEY SHARE
+;
+
+opt_for_locking_strength :
+    for_locking_strength
+  | __empty
 ;
 
 locked_rels_list :

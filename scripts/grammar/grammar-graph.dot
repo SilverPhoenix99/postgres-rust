@@ -364,6 +364,7 @@ explicit_row -> expr_list
 expr_list -> a_expr
 extract_list -> a_expr
 filter_clause -> a_expr
+for_locking_item -> for_locking_strength
 frame_bound -> a_expr
 from_clause -> from_list
 from_list -> table_ref
@@ -488,6 +489,7 @@ opt_conf_expr -> where_clause
 opt_cycle_clause -> AexprConst
 opt_definition -> definition
 opt_fdw_options -> fdw_options
+opt_for_locking_strength -> for_locking_strength
 opt_foreign_server_version -> foreign_server_version
 opt_indirection -> indirection_el
 opt_merge_when_condition -> a_expr
@@ -881,6 +883,7 @@ subgraph cluster_InsertStmt {
   InsertStmt -> insert_target
   InsertStmt -> opt_on_conflict
   opt_on_conflict -> opt_conf_expr
+  opt_on_conflict -> opt_for_locking_strength
 }
 
 subgraph cluster_LockStmt {
@@ -1198,7 +1201,6 @@ subgraph cluster_returning_clause {
 
 subgraph cluster_select_no_parens {
   for_locking_clause -> for_locking_items
-  for_locking_item -> for_locking_strength
   for_locking_item -> locked_rels_list
   for_locking_item -> opt_nowait_or_skip
   for_locking_items -> for_locking_item
