@@ -1381,6 +1381,8 @@ fdw_option :
   | NO HANDLER
   | VALIDATOR handler_name
   | NO VALIDATOR
+  | CONNECTION handler_name
+  | NO CONNECTION
 ;
 
 fdw_options :
@@ -2895,11 +2897,13 @@ AlterPublicationStmt :
 
 CreateSubscriptionStmt :
     CREATE SUBSCRIPTION ColId CONNECTION SCONST PUBLICATION name_list opt_definition
+  | CREATE SUBSCRIPTION ColId SERVER ColId PUBLICATION name_list opt_definition
 ;
 
 AlterSubscriptionStmt :
     ALTER SUBSCRIPTION ColId SET definition
   | ALTER SUBSCRIPTION ColId CONNECTION SCONST
+  | ALTER SUBSCRIPTION ColId SERVER ColId
   | ALTER SUBSCRIPTION ColId REFRESH PUBLICATION opt_definition
   | ALTER SUBSCRIPTION ColId REFRESH SEQUENCES
   | ALTER SUBSCRIPTION ColId ADD_P PUBLICATION name_list opt_definition
