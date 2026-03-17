@@ -23,6 +23,7 @@ pub(super) mod large_object;
 pub(super) mod materialized_view;
 pub(super) mod operator;
 pub(super) mod procedure;
+pub(super) mod property_graph;
 pub(super) mod publication;
 pub(super) mod role;
 pub(super) mod routine;

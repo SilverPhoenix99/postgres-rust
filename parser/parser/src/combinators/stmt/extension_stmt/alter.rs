@@ -114,6 +114,7 @@ fn alter_extension_target(ctx: &mut ParserContext) -> scan::Result<AlterExtensio
         | OPERATOR operator_with_argtypes
         | ( PROCEDURAL )? LANGUAGE ColId
         | PROCEDURE function_with_argtypes
+        | PROPERTY GRAPH any_name
         | PUBLICATION ColId
         | ROLE ColId
         | ROUTINE function_with_argtypes
@@ -157,6 +158,7 @@ fn alter_extension_target(ctx: &mut ParserContext) -> scan::Result<AlterExtensio
         }),
         language.map(Language),
         procedure.map(Procedure),
+        property_graph.map(PropertyGraph),
         publication.map(Publication),
         role.map(Role),
         routine.map(Routine),
@@ -275,6 +277,7 @@ mod tests {
         FunctionWithArgs::new(vec!["some_procedure".into()], None)
     ))]
     #[test_case("publication some_publication", Publication("some_publication".into()))]
+    #[test_case("property graph some_prop_graph", PropertyGraph(vec!["some_prop_graph".into()]))]
     #[test_case("role some_role", Role("some_role".into()))]
     #[test_case("routine some_routine", Routine(
         FunctionWithArgs::new(vec!["some_routine".into()], None)
@@ -320,6 +323,7 @@ use crate::combinators::stmt::language;
 use crate::combinators::stmt::materialized_view;
 use crate::combinators::stmt::operator;
 use crate::combinators::stmt::procedure;
+use crate::combinators::stmt::property_graph;
 use crate::combinators::stmt::publication;
 use crate::combinators::stmt::role;
 use crate::combinators::stmt::routine;
@@ -364,6 +368,7 @@ use pg_ast::AlterExtensionContentsTarget::Operator;
 use pg_ast::AlterExtensionContentsTarget::OperatorClass;
 use pg_ast::AlterExtensionContentsTarget::OperatorFamily;
 use pg_ast::AlterExtensionContentsTarget::Procedure;
+use pg_ast::AlterExtensionContentsTarget::PropertyGraph;
 use pg_ast::AlterExtensionContentsTarget::Publication;
 use pg_ast::AlterExtensionContentsTarget::Role;
 use pg_ast::AlterExtensionContentsTarget::Routine;

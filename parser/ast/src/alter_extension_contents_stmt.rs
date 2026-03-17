@@ -49,6 +49,7 @@ pub enum AlterExtensionContentsTarget {
     OperatorClass { name: QualifiedName, index_method: Str },
     OperatorFamily { name: QualifiedName, index_method: Str },
     Procedure(FunctionWithArgs),
+    PropertyGraph(QualifiedName),
     Publication(Str),
     Role(Str),
     Routine(FunctionWithArgs),

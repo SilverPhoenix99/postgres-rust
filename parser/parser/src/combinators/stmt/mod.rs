@@ -159,6 +159,7 @@ use object_type_name::{
     materialized_view::*,
     operator::*,
     procedure::*,
+    property_graph::*,
     publication::*,
     role::*,
     routine::*,
