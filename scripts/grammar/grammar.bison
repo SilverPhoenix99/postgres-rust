@@ -505,6 +505,7 @@ partition_cmd :
     ATTACH PARTITION qualified_name PartitionBoundSpec
   | DETACH PARTITION qualified_name opt_concurrently
   | DETACH PARTITION qualified_name FINALIZE
+  | MERGE PARTITIONS '(' qualified_name_list ')' INTO qualified_name
 ;
 
 index_partition_cmd :
@@ -5273,6 +5274,7 @@ unreserved_keyword :
   | PARSER
   | PARTIAL
   | PARTITION
+  | PARTITIONS
   | PASSING
   | PASSWORD
   | PATH
@@ -5868,6 +5870,7 @@ bare_label_keyword :
   | PARSER
   | PARTIAL
   | PARTITION
+  | PARTITIONS
   | PASSING
   | PASSWORD
   | PATH
