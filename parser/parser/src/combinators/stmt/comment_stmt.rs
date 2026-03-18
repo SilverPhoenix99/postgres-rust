@@ -38,6 +38,7 @@ fn comment_target(ctx: &mut ParserContext) -> scan::Result<CommentTarget> {
         | ( PROCEDURAL )? LANGUAGE name
         | POLICY name ON any_name
         | PROCEDURE function_with_argtypes
+        | PROPERTY GRAPH any_name
         | PUBLICATION name
         | ROLE name
         | ROUTINE function_with_argtypes
@@ -87,6 +88,7 @@ fn comment_target(ctx: &mut ParserContext) -> scan::Result<CommentTarget> {
         language.map(Language),
         policy,
         procedure.map(Procedure),
+        property_graph.map(PropertyGraph),
         publication.map(Publication),
         role.map(Role),
         routine.map(Routine),
@@ -298,6 +300,7 @@ mod tests {
     #[test_case("procedure some_procedure", Procedure(
         FunctionWithArgs::new(vec!["some_procedure".into()], None)
     ))]
+    #[test_case("property graph some_prop_graph", PropertyGraph(vec!["some_prop_graph".into()]))]
     #[test_case("publication some_publication", Publication("some_publication".into()))]
     #[test_case("role some_role", Role("some_role".into()))]
     #[test_case("routine some_routine", Routine(
@@ -364,6 +367,7 @@ use crate::combinators::stmt::large_object;
 use crate::combinators::stmt::materialized_view;
 use crate::combinators::stmt::operator;
 use crate::combinators::stmt::procedure;
+use crate::combinators::stmt::property_graph;
 use crate::combinators::stmt::publication;
 use crate::combinators::stmt::role;
 use crate::combinators::stmt::routine;
@@ -411,6 +415,7 @@ use pg_ast::CommentTarget::OperatorClass;
 use pg_ast::CommentTarget::OperatorFamily;
 use pg_ast::CommentTarget::Policy;
 use pg_ast::CommentTarget::Procedure;
+use pg_ast::CommentTarget::PropertyGraph;
 use pg_ast::CommentTarget::Publication;
 use pg_ast::CommentTarget::Role;
 use pg_ast::CommentTarget::Routine;

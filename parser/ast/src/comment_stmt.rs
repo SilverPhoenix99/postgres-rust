@@ -44,6 +44,7 @@ pub enum CommentTarget {
     OperatorFamily { name: QualifiedName, index_method: Str },
     Policy { name: Str, table: QualifiedName },
     Procedure(FunctionWithArgs),
+    PropertyGraph(QualifiedName),
     Publication(Str),
     Role(Str),
     Routine(FunctionWithArgs),

@@ -45,6 +45,7 @@ pub enum SecurityLabelTarget {
     LargeObject(SignedNumber),
     MaterializedView(QualifiedName),
     Procedure(FunctionWithArgs),
+    PropertyGraph(QualifiedName),
     Publication(Str),
     Role(Str),
     Routine(FunctionWithArgs),

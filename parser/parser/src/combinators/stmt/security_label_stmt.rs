@@ -51,6 +51,7 @@ fn label_target(ctx: &mut ParserContext) -> scan::Result<SecurityLabelTarget> {
       | MATERIALIZED VIEW any_name
       | ( PROCEDURAL )? LANGUAGE name
       | PROCEDURE function_with_argtypes
+      | PROPERTY GRAPH any_name
       | PUBLICATION name
       | ROLE name
       | ROUTINE function_with_argtypes
@@ -89,6 +90,7 @@ fn label_target(ctx: &mut ParserContext) -> scan::Result<SecurityLabelTarget> {
         materialized_view.map(MaterializedView),
         language.map(Language),
         procedure.map(Procedure),
+        property_graph.map(PropertyGraph),
         publication.map(Publication),
         role.map(Role),
         routine.map(Routine),
@@ -191,6 +193,7 @@ mod tests {
     #[test_case("procedure some_procedure", Procedure(
         FunctionWithArgs::new(vec!["some_procedure".into()], None)
     ))]
+    #[test_case("property graph some_prop_graph", PropertyGraph(vec!["some_prop_graph".into()]))]
     #[test_case("publication some_publication", Publication("some_publication".into()))]
     #[test_case("role some_role", Role("some_role".into()))]
     #[test_case("routine some_routine", Routine(
@@ -241,6 +244,7 @@ use crate::combinators::stmt::language;
 use crate::combinators::stmt::large_object;
 use crate::combinators::stmt::materialized_view;
 use crate::combinators::stmt::procedure;
+use crate::combinators::stmt::property_graph;
 use crate::combinators::stmt::publication;
 use crate::combinators::stmt::role;
 use crate::combinators::stmt::routine;
@@ -280,6 +284,7 @@ use pg_ast::SecurityLabelTarget::Language;
 use pg_ast::SecurityLabelTarget::LargeObject;
 use pg_ast::SecurityLabelTarget::MaterializedView;
 use pg_ast::SecurityLabelTarget::Procedure;
+use pg_ast::SecurityLabelTarget::PropertyGraph;
 use pg_ast::SecurityLabelTarget::Publication;
 use pg_ast::SecurityLabelTarget::Role;
 use pg_ast::SecurityLabelTarget::Routine;
