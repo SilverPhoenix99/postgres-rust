@@ -753,6 +753,7 @@ copy_opt_item :
   | DELIMITER opt_as SCONST
   | NULL_P opt_as SCONST
   | CSV
+  | JSON
   | HEADER_P
   | QUOTE opt_as SCONST
   | ESCAPE opt_as SCONST
@@ -792,6 +793,7 @@ copy_generic_opt_list_1 :
 
 copy_generic_opt_elem :
     ColLabel copy_generic_opt_arg
+  | FORMAT_LA copy_generic_opt_arg
 ;
 
 copy_generic_opt_arg :
