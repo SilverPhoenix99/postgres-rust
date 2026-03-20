@@ -3038,6 +3038,7 @@ AlterPublicationStmt :
     ALTER PUBLICATION ColId SET definition
   | ALTER PUBLICATION ColId ADD_P pub_obj_list
   | ALTER PUBLICATION ColId SET pub_obj_list
+  | ALTER PUBLICATION ColId SET pub_all_obj_type_list
   | ALTER PUBLICATION ColId DROP pub_obj_list
 ;
 

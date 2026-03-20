@@ -61,6 +61,7 @@ AlterPropGraphStmt -> labeled_expr_list
 AlterPropGraphStmt -> vertex_synonym
 AlterPropGraphStmt -> vertex_tables_clause
 AlterPublicationStmt -> definition
+AlterPublicationStmt -> pub_all_obj_type_list
 AlterPublicationStmt -> pub_obj_list
 AlterRoleSetStmt -> SetResetClause
 AlterSeqStmt -> SeqOptList
@@ -146,6 +147,7 @@ CreatePolicyStmt -> RowSecurityOptionalExpr
 CreatePolicyStmt -> RowSecurityOptionalWithCheck
 CreatePropGraphStmt -> OptTemp
 CreatePublicationStmt -> opt_definition
+CreatePublicationStmt -> pub_all_obj_type_list
 CreatePublicationStmt -> pub_obj_list
 CreateRoleStmt -> OptRoleList
 CreateSeqStmt -> OptTemp
@@ -799,14 +801,6 @@ subgraph cluster_CreatePropGraphStmt {
   CreatePropGraphStmt -> opt_vertex_tables_clause
 }
 
-subgraph cluster_CreatePublicationStmt {
-  CreatePublicationStmt -> pub_all_obj_type_list
-  PublicationAllObjSpec -> opt_pub_except_clause
-  opt_pub_except_clause -> pub_except_obj_list
-  pub_all_obj_type_list -> PublicationAllObjSpec
-  pub_except_obj_list -> PublicationExceptObjSpec
-}
-
 subgraph cluster_CreateSchemaStmt {
   CreateSchemaStmt -> OptSchemaEltList
   CreateSeqStmt -> OptSeqOptList
@@ -1257,6 +1251,13 @@ subgraph cluster_privilege_target {
   parameter_name_list -> parameter_name
   privilege_target -> NumericOnly_list
   privilege_target -> parameter_name_list
+}
+
+subgraph cluster_pub_all_obj_type_list {
+  PublicationAllObjSpec -> opt_pub_except_clause
+  opt_pub_except_clause -> pub_except_obj_list
+  pub_all_obj_type_list -> PublicationAllObjSpec
+  pub_except_obj_list -> PublicationExceptObjSpec
 }
 
 subgraph cluster_pub_obj_list {
