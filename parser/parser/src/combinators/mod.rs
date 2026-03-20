@@ -47,6 +47,7 @@ pg_basics::reexport! {
     json_returning_clause,
     json_value_expr,
     json_wrapper_behavior,
+    labeled_expr_list,
     make_column_ref,
     non_reserved_word,
     non_reserved_word_or_sconst,

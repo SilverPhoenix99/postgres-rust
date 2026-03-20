@@ -113,12 +113,12 @@ mod tests {
     }
 }
 
-use super::labeled_expr_list;
 use crate::alt;
 use crate::combinators::col_label;
 use crate::combinators::core::skip;
 use crate::combinators::core::Combinator;
 use crate::combinators::expr_list;
+use crate::combinators::labeled_expr_list;
 use crate::paren;
 use crate::seq;
 use crate::ParserContext;

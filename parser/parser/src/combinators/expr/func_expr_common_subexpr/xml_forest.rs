@@ -34,9 +34,9 @@ mod tests {
     }
 }
 
-use super::labeled_expr_list;
 use crate::combinators::core::skip;
 use crate::combinators::core::Combinator;
+use crate::combinators::labeled_expr_list;
 use crate::paren;
 use crate::seq;
 use crate::ParserContext;

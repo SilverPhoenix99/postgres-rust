@@ -12,7 +12,6 @@ pg_basics::reexport! {
     json_scalar,
     json_serialize_expr,
     json_value_func,
-    labeled_expr_list,
     least_expr,
     merge_action,
     normalize,
