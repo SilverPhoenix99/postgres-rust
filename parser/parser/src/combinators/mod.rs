@@ -69,6 +69,7 @@ pg_basics::reexport! {
     unique_null_treatment,
     var_value,
     variable_target,
+    where_clause,
     window_specification,
     work_or_transaction,
     xmlexists_argument,

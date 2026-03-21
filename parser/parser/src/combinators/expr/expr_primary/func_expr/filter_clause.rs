@@ -5,9 +5,9 @@ fn filter_clause(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
         FILTER '(' WHERE a_expr ')'
     */
 
-    let (_, (_, expr)) = seq!(
+    let (_, expr) = seq!(
         Filter,
-        paren!(seq!(Where, a_expr))
+        paren!(where_clause)
     ).parse(ctx)?;
 
     Ok(expr)
@@ -29,11 +29,10 @@ mod tests {
 }
 
 use crate::combinators::core::Combinator;
-use crate::combinators::expr::a_expr;
+use crate::combinators::where_clause;
 use crate::paren;
 use crate::seq;
 use crate::ParserContext;
 use pg_ast::ExprNode;
 use pg_lexer::Keyword::Filter;
-use pg_lexer::Keyword::Where;
 use pg_parser_core::scan;
