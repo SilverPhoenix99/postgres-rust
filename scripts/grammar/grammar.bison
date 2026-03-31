@@ -3003,7 +3003,7 @@ pub_obj_list_1 :
 ;
 
 opt_pub_except_clause :
-    EXCEPT TABLE '(' pub_except_obj_list ')'
+    EXCEPT '(' TABLE pub_except_obj_list ')'
   | __empty
 ;
 
@@ -3032,8 +3032,8 @@ pub_except_obj_list :
 ;
 
 pub_except_obj_list_1 :
-    ',' PublicationExceptObjSpec pub_except_obj_list_1
-  | ',' PublicationExceptObjSpec
+    ',' opt_table PublicationExceptObjSpec pub_except_obj_list_1
+  | ',' opt_table PublicationExceptObjSpec
 ;
 
 AlterPublicationStmt :
