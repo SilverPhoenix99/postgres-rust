@@ -3533,6 +3533,7 @@ returning_option_kind :
 
 DeleteStmt :
     opt_with_clause DELETE_P FROM relation_expr_opt_alias using_clause where_or_current_clause returning_clause
+  | opt_with_clause DELETE_P FROM relation_expr for_portion_of_clause for_portion_of_opt_alias using_clause where_or_current_clause returning_clause
 ;
 
 using_clause :
@@ -3573,6 +3574,7 @@ opt_nowait_or_skip :
 
 UpdateStmt :
     opt_with_clause UPDATE relation_expr_opt_alias SET set_clause_list from_clause where_or_current_clause returning_clause
+  | opt_with_clause UPDATE relation_expr for_portion_of_clause for_portion_of_opt_alias SET set_clause_list from_clause where_or_current_clause returning_clause
 ;
 
 set_clause_list :
@@ -4071,6 +4073,17 @@ relation_expr_opt_alias :
     relation_expr
   | relation_expr ColId
   | relation_expr AS ColId
+;
+
+for_portion_of_opt_alias :
+    AS ColId
+  | BareColLabel
+  | __empty
+;
+
+for_portion_of_clause :
+    FOR PORTION OF ColId '(' a_expr ')'
+  | FOR PORTION OF ColId FROM a_expr TO a_expr
 ;
 
 tablesample_clause :
@@ -5563,6 +5576,7 @@ unreserved_keyword :
   | PLAN
   | PLANS
   | POLICY
+  | PORTION
   | PRECEDING
   | PREPARE
   | PREPARED
@@ -6172,6 +6186,7 @@ bare_label_keyword :
   | PLAN
   | PLANS
   | POLICY
+  | PORTION
   | POSITION
   | PRECEDING
   | PREPARE

@@ -181,6 +181,8 @@ DefineStmt -> aggr_args
 DefineStmt -> definition
 DefineStmt -> func_name
 DefineStmt -> opt_or_replace
+DeleteStmt -> for_portion_of_clause
+DeleteStmt -> for_portion_of_opt_alias
 DeleteStmt -> opt_with_clause
 DeleteStmt -> relation_expr_opt_alias
 DeleteStmt -> returning_clause
@@ -289,6 +291,8 @@ TransactionStmtLegacy -> transaction_mode_list_or_empty
 TriggerWhen -> a_expr
 TypedTableElement -> TableConstraint
 Typename -> SimpleTypename
+UpdateStmt -> for_portion_of_clause
+UpdateStmt -> for_portion_of_opt_alias
 UpdateStmt -> from_clause
 UpdateStmt -> opt_with_clause
 UpdateStmt -> relation_expr_opt_alias
@@ -380,6 +384,7 @@ expr_list -> a_expr
 extract_list -> a_expr
 filter_clause -> a_expr
 for_locking_item -> for_locking_strength
+for_portion_of_clause -> a_expr
 frame_bound -> a_expr
 from_clause -> from_list
 from_list -> table_ref
@@ -1592,6 +1597,7 @@ fdw_option [color=blue penwidth=3]
 fetch_args [color=blue penwidth=3]
 first_or_next [color=blue penwidth=3]
 for_locking_strength [color=blue penwidth=3]
+for_portion_of_opt_alias [color=blue penwidth=3]
 foreign_server_version [color=blue penwidth=3]
 func_as [color=blue penwidth=3]
 generated_when [color=blue penwidth=3]
