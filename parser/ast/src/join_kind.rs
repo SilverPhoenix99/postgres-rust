@@ -6,4 +6,20 @@ pub enum JoinKind {
     Right(JoinQual),
 }
 
+impl Default for JoinKind {
+    fn default() -> Self {
+        Self::Inner(Some(Default::default()))
+    }
+}
+
+impl JoinKind {
+    pub fn cross_join() -> Self {
+        Self::Inner(None)
+    }
+
+    pub fn is_cross_join(&self) -> bool {
+        matches!(self, Self::Inner(None))
+    }
+}
+
 use crate::JoinQual;
