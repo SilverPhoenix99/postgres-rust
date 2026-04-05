@@ -2,6 +2,7 @@ pg_basics::reexport! {
     alias_clause,
     func_alias_clause,
     join_qual,
+    join_type,
     json_table,
     lateral_func_table,
     rowsfrom_list,
