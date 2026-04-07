@@ -6,6 +6,7 @@ pg_basics::reexport! {
     join_qual,
     join_type,
     join_type_prefix,
+    json_aggregate_table_ref,
     json_table,
     lateral_table_ref,
     ordinality,

@@ -76,11 +76,27 @@ impl From<SqlFunction> for FunctionTableRef {
     }
 }
 
+impl From<JsonArrayAgg> for FunctionTableRef {
+    fn from(value: JsonArrayAgg) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<JsonObjectAgg> for FunctionTableRef {
+    fn from(value: JsonObjectAgg) -> Self {
+        Self::new(value)
+    }
+}
+
 impl From<FuncCall> for FunctionTableRef {
     fn from(value: FuncCall) -> Self {
         Self::new(value)
     }
 }
 
+use crate::FuncAlias;
+use crate::FuncCall;
 use crate::FuncExprWindowless;
-use crate::{FuncAlias, FuncCall, SqlFunction};
+use crate::JsonArrayAgg;
+use crate::JsonObjectAgg;
+use crate::SqlFunction;

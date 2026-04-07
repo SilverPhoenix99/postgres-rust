@@ -100,7 +100,6 @@ mod tests {
         pg_ast::ExprNode::{IntegerConst, StringConst},
         pg_ast::JsonKeyValue,
         pg_ast::JsonOutput,
-        pg_ast::JsonValueExpr,
         pg_ast::SortBy,
         pg_ast::TypeName::{Int4, Int8},
         scan::Error::{Eof, NoMatch},
@@ -110,7 +109,7 @@ mod tests {
         JsonObjectAgg::new(
             JsonKeyValue::new(
                 StringConst("foo".into()),
-                JsonValueExpr::from(IntegerConst(1))
+                IntegerConst(1)
             )
         )
         .into()
@@ -119,7 +118,7 @@ mod tests {
         JsonObjectAgg::new(
             JsonKeyValue::new(
                 StringConst("bar".into()),
-                JsonValueExpr::from(IntegerConst(2))
+                IntegerConst(2)
             )
         )
         .with_output(JsonOutput::from(Int4))
