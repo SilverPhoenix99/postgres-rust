@@ -11,17 +11,16 @@ pub(super) fn table_ref_primary(ctx: &mut ParserContext) -> scan::Result<TableRe
         seq!(
             Lateral,
             alt!(
-                select_table_ref.map(From::from),
-                lateral_func_table
+                select_table_ref.map(|table_ref| table_ref.with_lateral(true).into()),
+                lateral_func_table.map(|table_ref| match table_ref {
+                    XmlTable(table_ref) => table_ref.with_lateral(true).into(),
+                    JsonTable(table_ref) => table_ref.with_lateral(true).into(),
+                    Rows(table_ref) => table_ref.with_lateral(true).into(),
+                    Function(table_ref) => table_ref.with_lateral(true).into(),
+                    _ => unreachable!(),
+                })
             )
-        ).map(|(_, table_ref)| match table_ref {
-            XmlTable(table_ref) => table_ref.with_lateral(true).into(),
-            JsonTable(table_ref) => table_ref.with_lateral(true).into(),
-            Rows(table_ref) => table_ref.with_lateral(true).into(),
-            Function(table_ref) => table_ref.with_lateral(true).into(),
-            Subselect(table_ref) => table_ref.with_lateral(true).into(),
-            _ => unreachable!(),
-        }),
+        ).map(|(_, table_ref)| table_ref),
         lateral_func_table,
         tablesample_table_ref.map(From::from),
     ).parse(ctx)
@@ -50,11 +49,15 @@ mod tests {
 
 use super::lateral_func_table;
 use super::tablesample_table_ref;
+use crate::alt;
 use crate::combinators::core::Combinator;
-use crate::combinators::table_ref::select_table_ref::select_table_ref;
+use crate::combinators::table_ref::select_table_ref;
 use crate::context::ParserContext;
-use crate::{alt, seq};
+use crate::seq;
 use pg_ast::TableRef;
 use pg_lexer::Keyword::Lateral;
 use pg_parser_core::scan;
-use TableRef::{Function, JsonTable, Rows, Subselect, XmlTable};
+use TableRef::Function;
+use TableRef::JsonTable;
+use TableRef::Rows;
+use TableRef::XmlTable;
