@@ -36,6 +36,8 @@ impl<'src> Parser<'src> {
         };
 
         if !self.context.stream_mut().eof() {
+            // Note that calling eof() will skip all whitespace and comments.
+            // If it reached EOF, then the input is valid, even if there are trailing comments or whitespace.
             let loc = self.context.stream_mut().current_location();
             result = Err(syntax(loc));
         }
