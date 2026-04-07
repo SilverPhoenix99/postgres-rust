@@ -9,7 +9,7 @@ pub(super) fn table_ref_primary(ctx: &mut ParserContext) -> scan::Result<TableRe
         | lateral_table_ref
         | func_expr_common_subexpr ( ordinality )? ( func_alias_clause )?
         | json_aggregate_func ( ordinality )? ( func_alias_clause )?
-        | TODO: non_inherited_relation_expr ( alias_clause )? ( tablesample_clause )?
+        | non_inherited_relation_expr ( alias_clause )? ( tablesample_clause )?
         | TODO: ambiguous_table_ref
     */
 
@@ -57,7 +57,7 @@ mod tests {
     #[test_case("rows from ( foo() )" => matches Ok(_))]
     #[test_case("current_time" => matches Ok(_))]
     #[test_case("json_arrayagg(1)" => matches Ok(_))]
-    #[test_case("bar" => matches Ok(_))]
+    #[test_case("only bar" => matches Ok(_))]
     fn test_table_ref_primary(source: &str) -> scan::Result<TableRef> {
         test_parser!(source, table_ref_primary)
     }

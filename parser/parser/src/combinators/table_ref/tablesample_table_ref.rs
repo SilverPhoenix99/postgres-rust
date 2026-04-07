@@ -1,11 +1,11 @@
 pub(super) fn tablesample_table_ref(ctx: &mut ParserContext) -> scan::Result<SampleTableRef> {
 
     /*
-        relation_expr ( alias_clause )? ( tablesample_clause )?
+        non_inherited_relation_expr ( alias_clause )? ( tablesample_clause )?
     */
 
     let (relation, alias, tablesample) = seq!(
-        relation_expr,
+        non_inherited_relation_expr,
         alias_clause.optional(),
         tablesample_clause.optional()
     ).parse(ctx)?;
@@ -17,7 +17,7 @@ pub(super) fn tablesample_table_ref(ctx: &mut ParserContext) -> scan::Result<Sam
     Ok(table_ref)
 }
 
-fn tablesample_clause(ctx: &mut ParserContext) -> scan::Result<TableSample> {
+pub(super) fn tablesample_clause(ctx: &mut ParserContext) -> scan::Result<TableSample> {
 
     /*
         TABLESAMPLE func_name '(' expr_list ')' ( REPEATABLE '(' a_expr ')' )?
@@ -55,35 +55,47 @@ mod tests {
     #[allow(unused_imports)]
     use pg_ast::{
         ExprNode::IntegerConst,
-        RelationExpr
+        RelationExpr,
     };
     use test_case::test_case;
 
-    #[test_case("foo as t tablesample f(1)" => Ok(
-        SampleTableRef::new("foo")
-            .with_alias("t")
-            .with_table_sample(
-                TableSample::new(
-                    vec!["f".into()],
-                    vec![IntegerConst(1)],
-                )
+    #[test_case("only(foo) as t tablesample f(1)" => Ok(
+        SampleTableRef::new(
+            RelationExpr::new("foo")
+                .with_inherited(false)
+        )
+        .with_alias("t")
+        .with_table_sample(
+            TableSample::new(
+                vec!["f".into()],
+                vec![IntegerConst(1)],
             )
+        )
     ))]
-    #[test_case("bar as s" => Ok(
-        SampleTableRef::new("bar")
-            .with_alias("s")
+    #[test_case("only bar as s" => Ok(
+        SampleTableRef::new(
+            RelationExpr::new("bar")
+                .with_inherited(false)
+        )
+        .with_alias("s")
     ))]
-    #[test_case("baz" => Ok(
-        SampleTableRef::new("baz")
+    #[test_case("only(baz)" => Ok(
+        SampleTableRef::new(
+            RelationExpr::new("baz")
+                .with_inherited(false)
+        )
     ))]
-    #[test_case("qux tablesample g(2)" => Ok(
-        SampleTableRef::new("qux")
-            .with_table_sample(
-                TableSample::new(
-                    vec!["g".into()],
-                    vec![IntegerConst(2)],
-                )
+    #[test_case("only qux tablesample g(2)" => Ok(
+        SampleTableRef::new(
+            RelationExpr::new("qux")
+                .with_inherited(false)
+        )
+        .with_table_sample(
+            TableSample::new(
+                vec!["g".into()],
+                vec![IntegerConst(2)],
             )
+        )
     ))]
     fn test_tablesample_table_ref(source: &str) -> scan::Result<SampleTableRef> {
         test_parser!(source, tablesample_table_ref)
@@ -116,7 +128,7 @@ use crate::combinators::core::Combinator;
 use crate::combinators::expr::a_expr;
 use crate::combinators::expr_list;
 use crate::combinators::func_name;
-use crate::combinators::relation_expr;
+use crate::combinators::relation_expr::non_inherited_relation_expr;
 use crate::combinators::table_ref::alias_clause;
 use crate::context::ParserContext;
 use crate::paren;

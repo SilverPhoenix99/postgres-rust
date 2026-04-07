@@ -21,7 +21,7 @@ pub(super) fn relation_expr(ctx: &mut ParserContext) -> scan::Result<RelationExp
     ).parse(ctx)
 }
 
-fn non_inherited_relation_expr(ctx: &mut ParserContext) -> scan::Result<RelationExpr> {
+pub(super) fn non_inherited_relation_expr(ctx: &mut ParserContext) -> scan::Result<RelationExpr> {
 
     /*
           ONLY '(' qualified_name ')'
