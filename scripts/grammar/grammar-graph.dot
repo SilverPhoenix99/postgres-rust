@@ -765,25 +765,6 @@ subgraph cluster_CreateForeignServerStmt {
   CreateForeignServerStmt -> opt_type
 }
 
-subgraph cluster_CreateFunctionStmt {
-  CreateFunctionStmt -> func_args_with_defaults
-  CreateFunctionStmt -> opt_createfunc_opt_list
-  CreateFunctionStmt -> opt_routine_body
-  CreateFunctionStmt -> table_func_column_list
-  createfunc_opt_item -> func_as
-  createfunc_opt_item -> transform_type_list
-  createfunc_opt_list -> createfunc_opt_item
-  func_args_with_defaults -> func_args_with_defaults_list
-  func_args_with_defaults_list -> func_arg_with_default
-  opt_createfunc_opt_list -> createfunc_opt_list
-  opt_routine_body -> ReturnStmt
-  opt_routine_body -> routine_body_stmt_list
-  routine_body_stmt -> ReturnStmt
-  routine_body_stmt -> stmt
-  routine_body_stmt_list -> routine_body_stmt
-  table_func_column_list -> table_func_column
-}
-
 subgraph cluster_CreateOpClassStmt {
   CreateOpClassStmt -> opt_opfamily
 }
@@ -807,6 +788,10 @@ subgraph cluster_CreatePropGraphStmt {
 }
 
 subgraph cluster_CreateSchemaStmt {
+  CreateFunctionStmt -> func_args_with_defaults
+  CreateFunctionStmt -> opt_createfunc_opt_list
+  CreateFunctionStmt -> opt_routine_body
+  CreateFunctionStmt -> table_func_column_list
   CreateSchemaStmt -> OptSchemaEltList
   CreateSeqStmt -> OptSeqOptList
   CreateStmt -> OptPartitionSpec
@@ -817,6 +802,9 @@ subgraph cluster_CreateSchemaStmt {
   CreateTrigStmt -> TriggerFuncArgs
   CreateTrigStmt -> TriggerReferencing
   CreateTrigStmt -> TriggerWhen
+  DefineStmt -> OptTableFuncElementList
+  DefineStmt -> old_aggr_definition
+  DefineStmt -> opt_enum_val_list
   IndexStmt -> opt_include
   OptPartitionSpec -> PartitionSpec
   OptSchemaEltList -> schema_stmt
@@ -833,14 +821,32 @@ subgraph cluster_CreateSchemaStmt {
   TriggerTransition -> TransitionRowOrTable
   TriggerTransitions -> TriggerTransition
   ViewStmt -> opt_check_option
+  createfunc_opt_item -> func_as
+  createfunc_opt_item -> transform_type_list
+  createfunc_opt_list -> createfunc_opt_item
+  func_args_with_defaults -> func_args_with_defaults_list
+  func_args_with_defaults_list -> func_arg_with_default
+  old_aggr_definition -> old_aggr_list
+  old_aggr_list -> old_aggr_elem
+  opt_createfunc_opt_list -> createfunc_opt_list
+  opt_enum_val_list -> enum_val_list
   opt_include -> index_including_params
+  opt_routine_body -> ReturnStmt
+  opt_routine_body -> routine_body_stmt_list
   part_params -> part_elem
+  routine_body_stmt -> ReturnStmt
+  routine_body_stmt -> stmt
+  routine_body_stmt_list -> routine_body_stmt
+  schema_stmt -> CreateDomainStmt
+  schema_stmt -> CreateFunctionStmt
   schema_stmt -> CreateSeqStmt
   schema_stmt -> CreateStmt
   schema_stmt -> CreateTrigStmt
+  schema_stmt -> DefineStmt
   schema_stmt -> GrantStmt
   schema_stmt -> IndexStmt
   schema_stmt -> ViewStmt
+  table_func_column_list -> table_func_column
 }
 
 subgraph cluster_CreateStatsStmt {
@@ -854,15 +860,6 @@ subgraph cluster_CreateTableSpaceStmt {
 
 subgraph cluster_CreateTransformStmt {
   CreateTransformStmt -> transform_element_list
-}
-
-subgraph cluster_DefineStmt {
-  DefineStmt -> OptTableFuncElementList
-  DefineStmt -> old_aggr_definition
-  DefineStmt -> opt_enum_val_list
-  old_aggr_definition -> old_aggr_list
-  old_aggr_list -> old_aggr_elem
-  opt_enum_val_list -> enum_val_list
 }
 
 subgraph cluster_DeleteStmt {
@@ -1457,13 +1454,11 @@ CreateAmStmt [color=green penwidth=3]
 CreateAssertionStmt [color=green penwidth=3]
 CreateCastStmt [color=green penwidth=3]
 CreateConversionStmt [color=green penwidth=3]
-CreateDomainStmt [color=green penwidth=3]
 CreateEventTrigStmt [color=green penwidth=3]
 CreateExtensionStmt [color=green penwidth=3]
 CreateFdwStmt [color=green penwidth=3]
 CreateForeignServerStmt [color=green penwidth=3]
 CreateForeignTableStmt [color=green penwidth=3]
-CreateFunctionStmt [color=green penwidth=3]
 CreateGroupStmt [color=green penwidth=3]
 CreateOpClassStmt [color=green penwidth=3]
 CreateOpFamilyStmt [color=green penwidth=3]
@@ -1481,7 +1476,6 @@ CreateUserMappingStmt [color=green penwidth=3]
 CreateUserStmt [color=green penwidth=3]
 CreatedbStmt [color=green penwidth=3]
 DeallocateStmt [color=green penwidth=3]
-DefineStmt [color=green penwidth=3]
 DiscardStmt [color=green penwidth=3]
 DoStmt [color=green penwidth=3]
 DropCastStmt [color=green penwidth=3]
