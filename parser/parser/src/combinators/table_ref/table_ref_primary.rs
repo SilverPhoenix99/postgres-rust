@@ -12,7 +12,7 @@ pub(super) fn table_ref_primary(ctx: &mut ParserContext) -> scan::Result<TableRe
             Lateral,
             alt!(
                 select_table_ref.map(|table_ref| table_ref.with_lateral(true).into()),
-                lateral_func_table.map(|table_ref| match table_ref {
+                lateral_table_ref.map(|table_ref| match table_ref {
                     XmlTable(table_ref) => table_ref.with_lateral(true).into(),
                     JsonTable(table_ref) => table_ref.with_lateral(true).into(),
                     Rows(table_ref) => table_ref.with_lateral(true).into(),
@@ -21,7 +21,7 @@ pub(super) fn table_ref_primary(ctx: &mut ParserContext) -> scan::Result<TableRe
                 })
             )
         ).map(|(_, table_ref)| table_ref),
-        lateral_func_table,
+        lateral_table_ref,
         tablesample_table_ref.map(From::from),
     ).parse(ctx)
 }
@@ -47,7 +47,7 @@ mod tests {
     }
 }
 
-use super::lateral_func_table;
+use super::lateral_table_ref;
 use super::tablesample_table_ref;
 use crate::alt;
 use crate::combinators::core::Combinator;

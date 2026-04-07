@@ -1,5 +1,5 @@
 /// Inlined: `func_table`
-pub(super) fn lateral_func_table(ctx: &mut ParserContext) -> scan::Result<TableRef> {
+pub(super) fn lateral_table_ref(ctx: &mut ParserContext) -> scan::Result<TableRef> {
 
     /*
           xmltable
@@ -206,8 +206,8 @@ mod tests {
     ))]
     #[test_case("rows from ( foo(1), bar(*) )" => matches Ok(_))]
     #[test_case("baz()" => matches Ok(_))]
-    fn test_lateral_func_table(source: &str) -> scan::Result<TableRef> {
-        test_parser!(source, lateral_func_table)
+    fn test_lateral_table_ref(source: &str) -> scan::Result<TableRef> {
+        test_parser!(source, lateral_table_ref)
     }
 }
 

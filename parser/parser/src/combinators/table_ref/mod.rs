@@ -5,7 +5,7 @@ pg_basics::reexport! {
     join_type,
     join_type_prefix,
     json_table,
-    lateral_func_table,
+    lateral_table_ref,
     rowsfrom_list,
     select_table_ref,
     table_ref_primary,
