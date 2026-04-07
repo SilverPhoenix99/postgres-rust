@@ -73,8 +73,11 @@ mod tests {
         SampleTableRef::new("bar")
             .with_alias("s")
     ))]
-    #[test_case("baz tablesample g(2)" => Ok(
+    #[test_case("baz" => Ok(
         SampleTableRef::new("baz")
+    ))]
+    #[test_case("qux tablesample g(2)" => Ok(
+        SampleTableRef::new("qux")
             .with_table_sample(
                 TableSample::new(
                     vec!["g".into()],
