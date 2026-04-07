@@ -5,8 +5,11 @@ pub struct JsonKeyValue {
 }
 
 impl JsonKeyValue {
-    pub fn new(key: ExprNode, value: JsonValueExpr) -> Self {
-        Self { key, value }
+    pub fn new<T: Into<JsonValueExpr>>(key: ExprNode, value: T) -> Self {
+        Self {
+            key,
+            value: value.into()
+        }
     }
 
     pub fn key(&self) -> &ExprNode {

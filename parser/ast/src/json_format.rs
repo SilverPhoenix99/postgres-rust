@@ -5,25 +5,40 @@ pub struct JsonFormat {
 }
 
 impl JsonFormat {
-    pub fn new(kind: Option<JsonFormatKind>, encoding: Option<JsonEncoding>) -> Self {
-        Self { kind, encoding }
-    }
 
     pub fn text() -> Self {
-        Self::new(Some(Text), None)
+        Self {
+            kind: Some(Text),
+            encoding: None
+        }
+    }
+
+    pub fn set_kind(&mut self, kind: Option<JsonFormatKind>) -> &mut Self {
+        self.kind = kind;
+        self
+    }
+
+    pub fn with_kind(mut self, kind: JsonFormatKind) -> Self {
+        self.kind = Some(kind);
+        self
     }
 
     pub fn kind(&self) -> Option<JsonFormatKind> {
         self.kind
     }
 
-    pub fn encoding(&self) -> Option<JsonEncoding> {
-        self.encoding
+    pub fn set_encoding(&mut self, encoding: Option<JsonEncoding>) -> &mut Self {
+        self.encoding = encoding;
+        self
     }
 
     pub fn with_encoding(mut self, encoding: JsonEncoding) -> Self {
         self.encoding = Some(encoding);
         self
+    }
+
+    pub fn encoding(&self) -> Option<JsonEncoding> {
+        self.encoding
     }
 }
 

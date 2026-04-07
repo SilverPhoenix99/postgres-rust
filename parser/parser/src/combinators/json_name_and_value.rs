@@ -41,17 +41,12 @@ mod tests {
 
     #[test_case("'foo' : 1" => Ok(JsonKeyValue::new(
         StringConst("foo".into()),
-        JsonValueExpr::new(
-            IntegerConst(1),
-            JsonFormat::default()
-        )
+        IntegerConst(1)
     )))]
     #[test_case("'foo' : 1 format json" => Ok(JsonKeyValue::new(
         StringConst("foo".into()),
-        JsonValueExpr::new(
-            IntegerConst(1),
-            JsonFormat::text()
-        )
+        JsonValueExpr::new(IntegerConst(1))
+            .with_format(JsonFormat::text())
     )))]
     fn test_json_name_and_value(source: &str) -> scan::Result<JsonKeyValue> {
         test_parser!(source, json_name_and_value)

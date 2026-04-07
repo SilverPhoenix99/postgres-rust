@@ -17,7 +17,8 @@ pub(super) fn json_value_expr(ctx: &mut ParserContext) -> scan::Result<JsonValue
         .parse(ctx)?;
 
     let format = format.unwrap_or_default();
-    let expr = JsonValueExpr::new(expr, format);
+    let expr = JsonValueExpr::new(expr)
+        .with_format(format);
 
     Ok(expr)
 }
@@ -36,21 +37,19 @@ mod tests {
 
     #[test_case("'foo'" => Ok(
         JsonValueExpr::new(
-            StringConst("foo".into()),
-            JsonFormat::default()
+            StringConst("foo".into())
         )
     ))]
     #[test_case("'foo' format json" => Ok(
-        JsonValueExpr::new(
-            StringConst("foo".into()),
-            JsonFormat::text()
-        )
+        JsonValueExpr::new(StringConst("foo".into()))
+            .with_format(JsonFormat::text())
     ))]
     #[test_case("'foo' format json encoding utf8" => Ok(
-        JsonValueExpr::new(
-            StringConst("foo".into()),
-            JsonFormat::text().with_encoding(UTF8)
-        )
+        JsonValueExpr::new(StringConst("foo".into()))
+            .with_format(
+                JsonFormat::text()
+                    .with_encoding(UTF8)
+            )
     ))]
     fn test_json_value_expr(source: &str) -> scan::Result<JsonValueExpr> {
         test_parser!(source, json_value_expr)

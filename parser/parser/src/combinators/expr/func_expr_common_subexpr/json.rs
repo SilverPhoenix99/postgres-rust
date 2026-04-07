@@ -15,7 +15,8 @@ pub(super) fn json(ctx: &mut ParserContext) -> scan::Result<JsonFunc> {
 
     let unique = unique.unwrap_or_default();
 
-    let func = JsonFunc::new(value, unique);
+    let func = JsonFunc::new(value)
+        .with_unique(unique);
     Ok(func)
 }
 
@@ -33,20 +34,17 @@ mod tests {
     use test_case::test_case;
 
     #[test_case("json('foo')" => Ok(
-        JsonFunc::new(
-            JsonValueExpr::from(StringConst("foo".into())),
-            false
-        )
+        JsonFunc::new(StringConst("foo".into()))
     ))]
     #[test_case("json('bar' format json encoding UTF8 with unique keys)" => Ok(
         JsonFunc::new(
-            JsonValueExpr::new(
-                StringConst("bar".into()),
-                JsonFormat::text()
-                    .with_encoding(JsonEncoding::UTF8)
-            ),
-            true
+            JsonValueExpr::new(StringConst("bar".into()))
+                .with_format(
+                    JsonFormat::text()
+                        .with_encoding(JsonEncoding::UTF8)
+                )
         )
+        .with_unique(true)
     ))]
     fn test_json(source: &str) -> scan::Result<JsonFunc> {
         test_parser!(source, json)

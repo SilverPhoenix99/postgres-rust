@@ -46,13 +46,16 @@ mod tests {
 
     #[test_case("format json" => Ok(JsonFormat::text()))]
     #[test_case("format json encoding UTF8" => Ok(
-        JsonFormat::new(Some(Text), Some(UTF8))
+        JsonFormat::text()
+            .with_encoding(UTF8)
     ))]
     #[test_case("format json encoding uTf16" => Ok(
-        JsonFormat::new(Some(Text), Some(UTF16))
+        JsonFormat::text()
+            .with_encoding(UTF16)
     ))]
     #[test_case("format json encoding utf32" => Ok(
-        JsonFormat::new(Some(Text), Some(UTF32))
+        JsonFormat::text()
+            .with_encoding(UTF32)
     ))]
     fn test_json_format_clause(source: &str) -> scan::Result<JsonFormat> {
         test_parser!(source, json_format_clause)
@@ -67,7 +70,6 @@ mod tests {
 
         assert_eq!(&Parser(UnrecognizedJsonEncoding("en_us".into())), err.source());
     }
-
 }
 
 use crate::combinators::col_id;

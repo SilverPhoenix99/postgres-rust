@@ -64,5 +64,23 @@ impl FunctionTableRef {
     }
 }
 
-use crate::FuncAlias;
+impl From<FuncExprWindowless> for FunctionTableRef {
+    fn from(function: FuncExprWindowless) -> Self {
+        Self::new(function)
+    }
+}
+
+impl From<SqlFunction> for FunctionTableRef {
+    fn from(value: SqlFunction) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<FuncCall> for FunctionTableRef {
+    fn from(value: FuncCall) -> Self {
+        Self::new(value)
+    }
+}
+
 use crate::FuncExprWindowless;
+use crate::{FuncAlias, FuncCall, SqlFunction};

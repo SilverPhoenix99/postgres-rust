@@ -7,12 +7,12 @@ pub struct JsonObjectAgg {
 }
 
 impl JsonObjectAgg {
-    pub fn new(arg: JsonKeyValue, output: Option<JsonOutput>, unique: bool, absent_on_null: bool) -> Self {
+    pub fn new(arg: JsonKeyValue) -> Self {
         Self {
             arg,
-            output,
-            unique,
-            absent_on_null,
+            output: None,
+            unique: false,
+            absent_on_null: false,
         }
     }
 

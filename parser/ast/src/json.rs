@@ -5,14 +5,27 @@ pub struct JsonFunc {
 }
 
 impl JsonFunc {
-    pub fn new(value: JsonValueExpr, unique: bool) -> Self {
-        Self { value, unique }
+    pub fn new<T: Into<JsonValueExpr>>(value: T) -> Self {
+        Self {
+            value: value.into(),
+            unique: false,
+        }
     }
 
     pub fn value(&self) -> &JsonValueExpr {
         &self.value
     }
 
+    pub fn set_unique(&mut self, unique: bool) -> &mut Self {
+        self.unique = unique;
+        self
+    }
+    
+    pub fn with_unique(mut self, unique: bool) -> Self {
+        self.unique = unique;
+        self
+    }
+    
     pub fn is_unique(&self) -> bool {
         self.unique
     }

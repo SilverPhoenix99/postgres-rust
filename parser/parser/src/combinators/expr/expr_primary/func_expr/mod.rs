@@ -31,8 +31,18 @@ fn json_agg_func(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
     ).parse(ctx)?;
 
     let expr = match func {
-        JsonAggFunc::Array(agg) => JsonArrayAggExpr::new(agg, filter, over_clause).into(),
-        JsonAggFunc::Object(agg) => JsonObjectAggExpr::new(agg, filter, over_clause).into(),
+        JsonAggFunc::Array(agg) => {
+            let mut expr = JsonArrayAggExpr::new(agg);
+            expr.set_filter(filter)
+                .set_over_clause(over_clause);
+            expr.into()
+        },
+        JsonAggFunc::Object(agg) => {
+            let mut expr = JsonObjectAggExpr::new(agg);
+            expr.set_filter(filter)
+                .set_over_clause(over_clause);
+            expr.into()
+        },
     };
 
     Ok(expr)
@@ -55,14 +65,8 @@ mod tests {
 
     #[test_case("json_arrayagg(1)" => Ok(
         JsonArrayAggExpr::new(
-            JsonArrayAgg::new(
-                JsonValueExpr::from(IntegerConst(1)),
-                None,
-                true,
-                None
-            ),
-            None,
-            None
+            JsonArrayAgg::new(IntegerConst(1))
+                .with_absent_on_null(true)
         ).into()
     ))]
     #[test_case("json_objectagg('foo': 1) where 2 over foo" => Ok(
@@ -71,13 +75,8 @@ mod tests {
                 JsonKeyValue::new(
                     StringConst("foo".into()),
                     JsonValueExpr::from(IntegerConst(1)),
-                ),
-                None,
-                false,
-                false
-            ),
-            None,
-            None
+                )
+            )
         ).into()
     ))]
     // These only quickly check that statements aren't missing:

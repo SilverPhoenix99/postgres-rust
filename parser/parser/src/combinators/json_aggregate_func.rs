@@ -53,12 +53,10 @@ fn json_objectagg(ctx: &mut ParserContext) -> scan::Result<JsonObjectAgg> {
         ))
     ).parse(ctx)?;
 
-    let func = JsonObjectAgg::new(
-        arg,
-        output,
-        unique.unwrap_or_default(),
-        absent_on_null.unwrap_or_default()
-    );
+    let mut func = JsonObjectAgg::new(arg);
+    func.set_output(output)
+        .set_unique(unique.unwrap_or_default())
+        .set_absent_on_null(absent_on_null.unwrap_or_default());
 
     Ok(func)
 }
@@ -84,12 +82,10 @@ fn json_arrayagg(ctx: &mut ParserContext) -> scan::Result<JsonArrayAgg> {
         ))
     ).parse(ctx)?;
 
-    let func = JsonArrayAgg::new(
-        arg,
-        output,
-        absent_on_null.unwrap_or(true),
-        sort.map(|Located(sort, _)| sort)
-    );
+    let mut func = JsonArrayAgg::new(arg);
+    func.set_output(output)
+        .set_absent_on_null(absent_on_null.unwrap_or(true))
+        .set_sort(sort.map(|Located(sort, _)| sort));
 
     Ok(func)
 }
@@ -110,48 +106,42 @@ mod tests {
         scan::Error::{Eof, NoMatch},
     };
 
-    #[test_case("json_objectagg('foo': 1)" => Ok(JsonAggFunc::Object(
+    #[test_case("json_objectagg('foo': 1)" => Ok(
         JsonObjectAgg::new(
             JsonKeyValue::new(
                 StringConst("foo".into()),
                 JsonValueExpr::from(IntegerConst(1))
-            ),
-            None,
-            false,
-            false
+            )
         )
-    )))]
-    #[test_case("json_objectagg('bar': 2 absent on null with unique returning int)" => Ok(JsonAggFunc::Object(
+        .into()
+    ))]
+    #[test_case("json_objectagg('bar': 2 absent on null with unique returning int)" => Ok(
         JsonObjectAgg::new(
             JsonKeyValue::new(
                 StringConst("bar".into()),
                 JsonValueExpr::from(IntegerConst(2))
-            ),
-            Some(JsonOutput::from(Int4)),
-            true,
-            true
+            )
         )
-    )))]
-    #[test_case("json_arrayagg(1)" => Ok(JsonAggFunc::Array(
-        JsonArrayAgg::new(
-            JsonValueExpr::from(IntegerConst(1)),
-            None,
-            true,
-            None
-        )
-    )))]
-    #[test_case("json_arrayagg(2 order by 3 null on null returning bigint)" => Ok(JsonAggFunc::Array(
-        JsonArrayAgg::new(
-            JsonValueExpr::from(IntegerConst(2)),
-            Some(JsonOutput::from(Int8)),
-            false,
-            Some(vec![SortBy::new(
+        .with_output(JsonOutput::from(Int4))
+        .with_unique(true)
+        .with_absent_on_null(true)
+        .into()
+    ))]
+    #[test_case("json_arrayagg(1)" => Ok(
+        JsonArrayAgg::new(IntegerConst(1))
+            .with_absent_on_null(true)
+            .into()
+    ))]
+    #[test_case("json_arrayagg(2 order by 3 null on null returning bigint)" => Ok(
+        JsonArrayAgg::new(IntegerConst(2))
+            .with_output(JsonOutput::from(Int8))
+            .with_sort(vec![SortBy::new(
                 IntegerConst(3),
                 None,
                 None
             )])
-        )
-    )))]
+            .into()
+    ))]
     #[test_case("json_objectagg" => matches Err(Eof(_)))]
     #[test_case("json_objectagg 1" => matches Err(NoMatch(_)))]
     #[test_case("json_arrayagg" => matches Err(Eof(_)))]

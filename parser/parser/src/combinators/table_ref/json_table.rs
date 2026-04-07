@@ -288,10 +288,8 @@ mod tests {
         )"
         => Ok(
             JsonTable::new(
-                JsonValueExpr::new(
-                    StringConst("umpus".into()),
-                    JsonFormat::text()
-                ),
+                JsonValueExpr::new(StringConst("umpus".into()))
+                    .with_format(JsonFormat::text()),
                 JsonTablePathSpec::new("wawas")
                     .with_name("foo"),
                 vec![
