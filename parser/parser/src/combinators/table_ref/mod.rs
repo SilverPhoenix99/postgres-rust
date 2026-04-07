@@ -1,6 +1,7 @@
 pg_basics::reexport! {
     alias_clause,
     func_alias_clause,
+    func_subexpr_table_ref,
     func_windowless_table_ref,
     join_qual,
     join_type,

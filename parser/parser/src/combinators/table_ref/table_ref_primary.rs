@@ -7,7 +7,7 @@ pub(super) fn table_ref_primary(ctx: &mut ParserContext) -> scan::Result<TableRe
         | LATERAL lateral_table_ref
         | LATERAL func_expr_windowless ( ordinality )? ( func_alias_clause )?
         | lateral_table_ref
-        | TODO: func_expr_common_subexpr ( ordinality )? ( func_alias_clause )?
+        | func_expr_common_subexpr ( ordinality )? ( func_alias_clause )?
         | TODO: json_aggregate_func ( ordinality )? ( func_alias_clause )?
         | TODO: non_inherited_relation_expr ( alias_clause )? ( tablesample_clause )?
         | TODO: ambiguous_table_ref
@@ -33,6 +33,7 @@ pub(super) fn table_ref_primary(ctx: &mut ParserContext) -> scan::Result<TableRe
             )
         ).map(|(_, table_ref)| table_ref),
         lateral_table_ref,
+        func_subexpr_table_ref.map(From::from),
         tablesample_table_ref.map(From::from),
     ).parse(ctx)
 }
@@ -53,6 +54,7 @@ mod tests {
     #[test_case("lateral rows from ( foo() )" => matches Ok(_))]
     #[test_case("lateral baz()" => matches Ok(_))]
     #[test_case("rows from ( foo() )" => matches Ok(_))]
+    #[test_case("current_time" => matches Ok(_))]
     #[test_case("bar" => matches Ok(_))]
     fn test_table_ref_primary(source: &str) -> scan::Result<TableRef> {
         test_parser!(source, table_ref_primary)
@@ -61,6 +63,7 @@ mod tests {
 
 use crate::alt;
 use crate::combinators::core::Combinator;
+use crate::combinators::table_ref::func_subexpr_table_ref;
 use crate::combinators::table_ref::func_windowless_table_ref;
 use crate::combinators::table_ref::lateral_table_ref;
 use crate::combinators::table_ref::select_table_ref;
