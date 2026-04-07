@@ -10,7 +10,7 @@ pub(super) fn table_ref_primary(ctx: &mut ParserContext) -> scan::Result<TableRe
         | func_expr_common_subexpr ( ordinality )? ( func_alias_clause )?
         | json_aggregate_func ( ordinality )? ( func_alias_clause )?
         | non_inherited_relation_expr ( alias_clause )? ( tablesample_clause )?
-        | TODO: ambiguous_table_ref
+        | ambiguous_table_ref
     */
 
     alt!(
@@ -36,6 +36,8 @@ pub(super) fn table_ref_primary(ctx: &mut ParserContext) -> scan::Result<TableRe
         func_subexpr_table_ref.map(From::from),
         json_aggregate_table_ref.map(From::from),
         tablesample_table_ref.map(From::from),
+        // Needs to be last due to conflicts with the previous 4 productions
+        ambiguous_table_ref
     ).parse(ctx)
 }
 
@@ -58,6 +60,7 @@ mod tests {
     #[test_case("current_time" => matches Ok(_))]
     #[test_case("json_arrayagg(1)" => matches Ok(_))]
     #[test_case("only bar" => matches Ok(_))]
+    #[test_case("row.integer()" => matches Ok(_))]
     fn test_table_ref_primary(source: &str) -> scan::Result<TableRef> {
         test_parser!(source, table_ref_primary)
     }
@@ -65,6 +68,7 @@ mod tests {
 
 use crate::alt;
 use crate::combinators::core::Combinator;
+use crate::combinators::table_ref::ambiguous_table_ref;
 use crate::combinators::table_ref::func_subexpr_table_ref;
 use crate::combinators::table_ref::func_windowless_table_ref;
 use crate::combinators::table_ref::json_aggregate_table_ref;

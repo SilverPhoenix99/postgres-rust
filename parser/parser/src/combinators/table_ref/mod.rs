@@ -1,5 +1,6 @@
 pg_basics::reexport! {
     alias_clause,
+    ambiguous_table_ref,
     func_alias_clause,
     func_subexpr_table_ref,
     func_windowless_table_ref,

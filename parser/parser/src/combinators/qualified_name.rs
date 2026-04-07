@@ -13,7 +13,12 @@ pub(super) fn qualified_name(ctx: &mut ParserContext) -> scan::Result<RelationNa
         (col_id attrs){1,3}
     */
 
-    let Located(mut qn, loc) = located!(any_name).parse(ctx)?;
+    let Located(qn, loc) = located!(any_name).parse(ctx)?;
+    make_qualified_name(qn, loc)
+}
+
+/// Alias: `makeRangeVarFromQualifiedName`
+pub(super) fn make_qualified_name(mut qn: QualifiedName, loc: Location) -> scan::Result<RelationName> {
 
     match qn.as_mut_slice() {
         [relation] => {
@@ -92,6 +97,8 @@ use pg_ast::RelationName;
 use pg_ast::SchemaName;
 use pg_basics::IntoLocated;
 use pg_basics::Located;
+use pg_basics::Location;
+use pg_basics::QualifiedName;
 use pg_elog::parser::Error::ImproperQualifiedName;
 use pg_elog::parser::NameList;
 use pg_lexer::OperatorKind::Comma;
