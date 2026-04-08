@@ -14,6 +14,7 @@ pg_basics::reexport! {
     rowsfrom_list,
     select_table_ref,
     table_ref_primary,
+    tablesample_clause,
     tablesample_table_ref,
     xmltable,
 }

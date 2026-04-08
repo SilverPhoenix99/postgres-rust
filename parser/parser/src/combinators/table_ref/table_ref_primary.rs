@@ -35,7 +35,7 @@ pub(super) fn table_ref_primary(ctx: &mut ParserContext) -> scan::Result<TableRe
         lateral_table_ref,
         func_subexpr_table_ref.map(From::from),
         json_aggregate_table_ref.map(From::from),
-        tablesample_table_ref.map(From::from),
+        tablesample_table_ref,
         // Needs to be last due to conflicts with the previous 4 productions
         ambiguous_table_ref
     ).parse(ctx)

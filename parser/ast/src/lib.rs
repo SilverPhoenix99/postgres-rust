@@ -103,6 +103,7 @@ pg_basics::reexport! { pub
     reassign_owned_stmt,
     relation_expr,
     relation_name,
+    relation_table_ref,
     rename_stmt,
     role_kind,
     role_spec,

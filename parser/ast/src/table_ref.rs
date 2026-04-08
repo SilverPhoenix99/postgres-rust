@@ -4,12 +4,14 @@ pub enum TableRef {
     JsonTable(JsonTable),
     Rows(RowsTableRef),
     Function(FunctionTableRef),
-    TableSample(SampleTableRef),
+    Relation(RelationTableRef),
+    Sample(SampleTableRef),
     Subselect(SubselectTableRef),
 }
 
 use crate::FunctionTableRef;
 use crate::JsonTable;
+use crate::RelationTableRef;
 use crate::RowsTableRef;
 use crate::SampleTableRef;
 use crate::SubselectTableRef;

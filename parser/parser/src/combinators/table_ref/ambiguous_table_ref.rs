@@ -47,11 +47,19 @@ pub(super) fn ambiguous_table_ref(ctx: &mut ParserContext) -> scan::Result<Table
     let relation = RelationExpr::new(name)
         .with_inherited(true);
 
-    let mut table_ref = SampleTableRef::new(relation);
-    table_ref.set_alias(alias)
-        .set_table_sample(tablesample);
+    let mut table_ref = RelationTableRef::new(relation);
+    table_ref.set_alias(alias);
 
-    Ok(table_ref.into())
+    if let Some(SampleClause { function_name, args, repeatable_expr }) = tablesample {
+
+        let mut table_ref = SampleTableRef::new(table_ref, function_name, args);
+        table_ref.set_repeatable(repeatable_expr);
+
+        Ok(table_ref.into())
+    }
+    else {
+        Ok(table_ref.into())
+    }
 }
 
 #[cfg(test)]
@@ -59,18 +67,6 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::IntegerConst,
-        pg_ast::FuncArgsKind::Empty,
-        pg_ast::OneOrBoth::Left,
-        pg_ast::RelationName,
-        pg_ast::TableSample,
-        pg_elog::parser::Error::Syntax,
-        pg_elog::Error::Parser,
-        pg_parser_core::scan::Error::ScanErr,
-    };
-
     #[test_case("abort()" => Ok(
         FunctionTableRef::new(
             FuncCall::new(
@@ -115,7 +111,7 @@ mod tests {
         .into()
     ))]
     #[test_case("abort" => Ok(
-        SampleTableRef::new(
+        RelationTableRef::new(
             RelationExpr::new("abort")
                 .with_inherited(true)
         )
@@ -124,18 +120,14 @@ mod tests {
     #[test_case("integer * tablesample fun1(1)" => Ok(
         SampleTableRef::new(
             RelationExpr::new("integer")
-                .with_inherited(true)
-        )
-        .with_table_sample(
-            TableSample::new(
-                vec!["fun1".into()],
-                vec![IntegerConst(1)],
-            )
+                .with_inherited(true),
+            vec!["fun1".into()],
+            vec![IntegerConst(1)]
         )
         .into()
     ))]
     #[test_case("integer.row c" => Ok(
-        SampleTableRef::new(
+        RelationTableRef::new(
             RelationExpr::new(
                 RelationName::new("row")
                     .with_schema("integer")
@@ -147,21 +139,30 @@ mod tests {
     ))]
     #[test_case("qux * as d tablesample fun2(2)" => Ok(
         SampleTableRef::new(
-            RelationExpr::new("qux")
-                .with_inherited(true)
-        )
-        .with_alias("d")
-        .with_table_sample(
-            TableSample::new(
-                vec!["fun2".into()],
-                vec![IntegerConst(2)],
+            RelationTableRef::new(
+                RelationExpr::new("qux")
+                    .with_inherited(true)
             )
+            .with_alias("d"),
+            vec!["fun2".into()],
+            vec![IntegerConst(2)]
         )
         .into()
     ))]
     fn test_ambiguous_table_ref(source: &str) -> scan::Result<TableRef> {
         test_parser!(source, ambiguous_table_ref)
     }
+
+    #[allow(unused_imports)]
+    use {
+        pg_ast::ExprNode::IntegerConst,
+        pg_ast::FuncArgsKind::Empty,
+        pg_ast::OneOrBoth::Left,
+        pg_ast::RelationName,
+        pg_elog::parser::Error::Syntax,
+        pg_elog::Error::Parser,
+        pg_parser_core::scan::Error::ScanErr,
+    };
 }
 
 use crate::combinators::any_name;
@@ -172,12 +173,14 @@ use crate::combinators::table_ref::alias_clause;
 use crate::combinators::table_ref::func_alias_clause;
 use crate::combinators::table_ref::ordinality;
 use crate::combinators::table_ref::tablesample_clause;
+use crate::combinators::table_ref::SampleClause;
 use crate::context::ParserContext;
 use crate::located;
 use crate::seq;
 use pg_ast::FuncCall;
 use pg_ast::FunctionTableRef;
 use pg_ast::RelationExpr;
+use pg_ast::RelationTableRef;
 use pg_ast::SampleTableRef;
 use pg_ast::TableRef;
 use pg_basics::Located;
