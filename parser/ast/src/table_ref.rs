@@ -1,5 +1,6 @@
 #[derive(Debug, Clone, PartialEq, Eq, From)]
 pub enum TableRef {
+    // TODO: GraphTable(GraphTable),
     XmlTable(XmlTable),
     JsonTable(JsonTable),
     Rows(RowsTableRef),
@@ -7,9 +8,17 @@ pub enum TableRef {
     Relation(RelationTableRef),
     Sample(SampleTableRef),
     Subselect(SubselectTableRef),
+    Join(Box<JoinExpr>)
+}
+
+impl From<JoinExpr> for TableRef {
+    fn from(join_expr: JoinExpr) -> Self {
+        Self::Join(Box::new(join_expr))
+    }
 }
 
 use crate::FunctionTableRef;
+use crate::JoinExpr;
 use crate::JsonTable;
 use crate::RelationTableRef;
 use crate::RowsTableRef;

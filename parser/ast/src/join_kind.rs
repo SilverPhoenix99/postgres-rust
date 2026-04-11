@@ -7,6 +7,7 @@ pub enum JoinKind {
 }
 
 impl Default for JoinKind {
+    /// `NATURAL INNER JOIN`
     fn default() -> Self {
         Self::Inner(Some(Default::default()))
     }

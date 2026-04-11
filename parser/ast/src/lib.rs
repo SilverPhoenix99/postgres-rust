@@ -59,6 +59,7 @@ pg_basics::reexport! { pub
     indirection,
     indirection_expr,
     interval_range,
+    join_expr,
     join_kind,
     join_qual,
     json,
