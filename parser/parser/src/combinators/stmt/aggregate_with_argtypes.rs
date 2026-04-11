@@ -79,7 +79,6 @@ fn aggr_arg(ctx: &mut ParserContext) -> scan::Result<FunctionParameter> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use pg_ast::FuncType;
     use pg_ast::TypeName::Int4;
     use pg_ast::TypeName::Int8;
     use pg_ast::TypeName::Json;
@@ -93,7 +92,7 @@ mod tests {
             expected = vec![
                 AggregateWithArgs::new(
                     vec!["agg_name".into()],
-                    vec![FuncType::Type(Json.into()).into()],
+                    vec![Json.into()],
                     vec![]
                 ),
                 AggregateWithArgs::new(vec!["agg_name".into()], vec![], vec![])
@@ -108,41 +107,24 @@ mod tests {
             parser = aggregate_with_argtypes,
             expected = AggregateWithArgs::new(
                 vec!["agg_name".into()],
-                vec![
-                    FuncType::Type(Json.into()).into(),
-                    FuncType::Type(Int4.into()).into(),
-                ],
-                vec![
-                    FuncType::Type(Int8.into()).into(),
-                ]
+                vec![Json.into(), Int4.into()],
+                vec![Int8.into()]
             )
         )
     }
 
     #[test_case("(*)", vec![], vec![])]
     #[test_case("(int, json)",
-        vec![
-            FuncType::Type(Int4.into()).into(),
-            FuncType::Type(Json.into()).into(),
-        ],
+        vec![Int4.into(), Json.into()],
         vec![]
     )]
     #[test_case("(order by bigint, int)",
         vec![],
-        vec![
-            FuncType::Type(Int8.into()).into(),
-            FuncType::Type(Int4.into()).into(),
-        ]
+        vec![Int8.into(), Int4.into()]
     )]
     #[test_case("(int, bigint order by json, bigint)",
-        vec![
-            FuncType::Type(Int4.into()).into(),
-            FuncType::Type(Int8.into()).into(),
-        ],
-        vec![
-            FuncType::Type(Json.into()).into(),
-            FuncType::Type(Int8.into()).into(),
-        ]
+        vec![Int4.into(), Int8.into()],
+        vec![Json.into(), Int8.into()]
     )]
     fn test_aggr_args(source: &str, args: Vec<FunctionParameter>, order_by: Vec<FunctionParameter>) {
         test_parser!(source, aggr_args, (args, order_by))
@@ -154,12 +136,8 @@ mod tests {
             source = "ORDER BY bigint, var2 json",
             parser = order_by_aggr_args,
             expected = vec![
-                FuncType::Type(Int8.into()).into(),
-                FunctionParameter::new(
-                    Some("var2".into()),
-                    Mode::Default,
-                    FuncType::Type(Json.into())
-                )
+                Int8.into(),
+                FunctionParameter::new(Json).with_name("var2")
             ]
         )
     }
@@ -170,16 +148,8 @@ mod tests {
             source = "tis json, tis_an int",
             parser = aggr_args_list,
             expected = vec![
-                FunctionParameter::new(
-                    Some("tis".into()),
-                    Mode::Default,
-                    FuncType::Type(Json.into())
-                ),
-                FunctionParameter::new(
-                    Some("tis_an".into()),
-                    Mode::Default,
-                    FuncType::Type(Int4.into())
-                )
+                FunctionParameter::new(Json).with_name("tis"),
+                FunctionParameter::new(Int4).with_name("tis_an")
             ]
         )
     }
@@ -189,11 +159,7 @@ mod tests {
         test_parser!(
             source = "tis json",
             parser = aggr_arg,
-            expected = FunctionParameter::new(
-                Some("tis".into()),
-                Mode::Default,
-                FuncType::Type(Json.into())
-            )
+            expected = FunctionParameter::new(Json).with_name("tis")
         )
     }
 }

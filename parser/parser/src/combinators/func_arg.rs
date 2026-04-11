@@ -42,7 +42,10 @@ pub(super) fn func_arg(ctx: &mut ParserContext) -> scan::Result<FunctionParamete
     // In case `arg_class` didn't match, there's still a default that can be applied.
     let mode = mode.unwrap_or_default();
 
-    let func_arg = FunctionParameter::new(arg_name, mode, func_type);
+    let mut func_arg = FunctionParameter::new(func_type);
+    func_arg.set_name(arg_name);
+    func_arg.set_mode(mode);
+
     Ok(func_arg)
 }
 
@@ -102,13 +105,12 @@ mod tests {
         type_name: TypeName,
         set_of: SetOf
     ) {
-        let expected = FunctionParameter::new(
-            arg_name,
-            mode,
+        let mut expected = FunctionParameter::new(
             Type::from(type_name)
                 .with_mult(set_of)
-                .into()
         );
+        expected.set_name(arg_name);
+        expected.set_mode(mode);
 
         test_parser!(source, func_arg, expected)
     }

@@ -146,7 +146,11 @@ impl TypeReference {
 
 #[derive(Debug, Clone, Eq, PartialEq, From)]
 pub enum FuncType {
+
+    #[from(Type, TypeName)]
     Type(Type),
+
+    #[from]
     /// When the type is specified with `%TYPE`.
     Reference(TypeReference),
 }

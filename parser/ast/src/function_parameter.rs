@@ -6,12 +6,37 @@ pub struct FunctionParameter {
 }
 
 impl FunctionParameter {
-    pub fn new(name: Option<Str>, mode: FunctionParameterMode, arg_type: FuncType) -> Self {
-        Self { name, mode, arg_type }
+
+    pub fn new<T: Into<FuncType>>(arg_type: T) -> Self {
+        Self {
+            name: None,
+            mode: Default::default(),
+            arg_type: arg_type.into(),
+        }
+    }
+
+    pub fn set_name(&mut self, name: Option<Str>) -> &mut Self {
+        self.name = name;
+        self
+    }
+
+    pub fn with_name<T: Into<Str>>(mut self, name: T) -> Self {
+        self.name = Some(name.into());
+        self
     }
 
     pub fn name(&self) -> Option<&str> {
         self.name.as_deref()
+    }
+
+    pub fn set_mode(&mut self, mode: FunctionParameterMode) -> &mut Self {
+        self.mode = mode;
+        self
+    }
+
+    pub fn with_mode(mut self, mode: FunctionParameterMode) -> Self {
+        self.mode = mode;
+        self
     }
 
     pub fn mode(&self) -> FunctionParameterMode {
@@ -23,9 +48,9 @@ impl FunctionParameter {
     }
 }
 
-impl From<FuncType> for FunctionParameter {
-    fn from(value: FuncType) -> Self {
-        Self::new(None, Default::default(), value)
+impl<T: Into<FuncType>> From<T> for FunctionParameter {
+    fn from(value: T) -> Self {
+        Self::new(value)
     }
 }
 

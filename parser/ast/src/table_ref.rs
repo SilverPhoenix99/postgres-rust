@@ -1,27 +1,24 @@
 #[derive(Debug, Clone, PartialEq, Eq, From)]
 pub enum TableRef {
     // TODO: GraphTable(GraphTable),
+    #[from]
     Xml(XmlTable),
+    #[from]
     Json(JsonTable),
+    #[from]
     Rows(RowsTableRef),
+    #[from]
     Function(FunctionTableRef),
+    #[from]
     Relation(RelationTableRef),
+    #[from]
     Sample(SampleTableRef),
+    #[from]
     Subselect(SubselectTableRef),
+    #[from(JoinExpr)]
     Join(Box<JoinExpr>),
+    #[from(ParenTableRef)]
     Parenthesized(Box<ParenTableRef>),
-}
-
-impl From<JoinExpr> for TableRef {
-    fn from(join_expr: JoinExpr) -> Self {
-        Self::Join(Box::new(join_expr))
-    }
-}
-
-impl From<ParenTableRef> for TableRef {
-    fn from(value: ParenTableRef) -> Self {
-        Self::Parenthesized(Box::new(value))
-    }
 }
 
 use crate::FunctionTableRef;

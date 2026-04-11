@@ -32,7 +32,10 @@ fn utility_option(ctx: &mut ParserContext) -> scan::Result<UtilityOption> {
         var_value.optional()
     ).parse(ctx)?;
 
-    Ok(UtilityOption::new(name, value))
+    let mut option = UtilityOption::new(name);
+    option.set_value(value);
+
+    Ok(option)
 }
 
 fn utility_option_name(ctx: &mut ParserContext) -> scan::Result<UtilityOptionName> {
@@ -62,8 +65,8 @@ mod tests {
             source = "(analyze, format)",
             parser = utility_options,
             expected = vec![
-                UtilityOption::new(Analyze, None),
-                UtilityOption::new(Format, None)
+                Analyze.into(),
+                Format.into()
             ]
         )
     }
@@ -74,16 +77,22 @@ mod tests {
             source = "analyze false, format csv, bar true",
             parser = utility_option_list,
             expected = vec![
-                Analyze.with_value(false),
-                Format.with_value("csv"),
-                Generic("bar".into()).with_value(true)
+                UtilityOption::new(Analyze).with_value(false),
+                UtilityOption::new(Format).with_value("csv"),
+                UtilityOption::new(Generic("bar".into())).with_value(true)
             ]
         )
     }
 
-    #[test_case("format 'json'", Format.with_value("json"))]
+    #[test_case("format 'json'",
+        UtilityOption::new(Format)
+            .with_value("json")
+    )]
     #[test_case("analyse", Analyze.into())]
-    #[test_case("foo false", Generic("foo".into()).with_value(false))]
+    #[test_case("foo false",
+        UtilityOption::new(Generic("foo".into()))
+            .with_value(false)
+    )]
     fn test_utility_option(source: &str, expected: UtilityOption) {
         test_parser!(source, utility_option, expected)
     }

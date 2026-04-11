@@ -12,8 +12,14 @@ impl RangeVar {
         }
     }
 
-    pub fn with_persistence(relation: RelationName, persistence: RelationPersistence) -> Self {
-        Self { relation, persistence }
+    pub fn set_persistence(&mut self, persistence: RelationPersistence) -> &mut Self {
+        self.persistence = persistence;
+        self
+    }
+
+    pub fn with_persistence(mut self, persistence: RelationPersistence) -> Self {
+        self.persistence = persistence;
+        self
     }
 
     pub fn relation(&self) -> &RelationName {

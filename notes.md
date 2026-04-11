@@ -32,6 +32,7 @@
 # TO DO
 * Allow case-insensitive search on Mphf, specifically to search for keywords.
   * Maybe use the `unicase` crate?
+* Maybe change Mphf to borrow field(s) as the key.
 * Change `ParserResult.result` to be `Vec<ParseResult<RawStmt>>`.
   * Introduce a fail fast (compile time) flag.
   * In debug mode: fail fast == false, and returns all errors until EOF.
@@ -54,6 +55,13 @@
   * Every object will have access to the global instance, but that will change in the future.
 * For now logging is reported via `Result`.
   * Later, this will be used to actually log out at certain end/finish/completion points.
+* Organize pg_ast into submodules.
+* Replace `RenameStmt` with `<ObjectType>::Rename` variant.
+  * For example, `RoleStmt::Rename(RenameRole)`, `RoleStmt::Create(CreateRole)`, etc.
+  * It won't match PG-C structures, but it'll make searching for the relevant types easier.
+  * Same replacement for `AlterOwnerStmt`.
+  * See `DatabaseStmt` for a (clunky) example of this.
+  * Generically, search for these enums: `enum\s+\w+Target\b` - and filter for the ones that are list of object type.
 
 # Build C Postgres
 
