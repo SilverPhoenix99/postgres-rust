@@ -1,7 +1,7 @@
 pub(super) fn table_ref_primary(ctx: &mut ParserContext) -> scan::Result<TableRef> {
 
     /*
-          TODO: '(' table_ref_paren ')' ( alias_clause )?
+          paren_table_ref
         | TODO: GRAPH_TABLE '(' qualified_name MATCH graph_pattern COLUMNS '(' labeled_expr_list ')' ')' ( alias_clause )?
         | LATERAL '(' SelectStmt ')' ( alias_clause )?
         | LATERAL lateral_table_ref
@@ -14,6 +14,7 @@ pub(super) fn table_ref_primary(ctx: &mut ParserContext) -> scan::Result<TableRe
     */
 
     alt!(
+        paren_table_ref,
         seq!(
             Lateral,
             alt!(
@@ -21,8 +22,8 @@ pub(super) fn table_ref_primary(ctx: &mut ParserContext) -> scan::Result<TableRe
                     table_ref.with_lateral(true).into()
                 ),
                 lateral_table_ref.map(|table_ref| match table_ref {
-                    XmlTable(table_ref) => table_ref.with_lateral(true).into(),
-                    JsonTable(table_ref) => table_ref.with_lateral(true).into(),
+                    Xml(table_ref) => table_ref.with_lateral(true).into(),
+                    Json(table_ref) => table_ref.with_lateral(true).into(),
                     Rows(table_ref) => table_ref.with_lateral(true).into(),
                     _ => unreachable!(),
                 }),
@@ -54,6 +55,7 @@ mod tests {
         test_parser!(source, table_ref_primary)
     }
 
+    #[test_case("(foo) as bar" => matches Ok(_))]
     #[test_case("lateral rows from ( foo() )" => matches Ok(_))]
     #[test_case("lateral baz()" => matches Ok(_))]
     #[test_case("rows from ( foo() )" => matches Ok(_))]
@@ -73,13 +75,14 @@ use crate::combinators::table_ref::func_subexpr_table_ref;
 use crate::combinators::table_ref::func_windowless_table_ref;
 use crate::combinators::table_ref::json_aggregate_table_ref;
 use crate::combinators::table_ref::lateral_table_ref;
+use crate::combinators::table_ref::paren_table_ref;
 use crate::combinators::table_ref::select_table_ref;
 use crate::combinators::table_ref::tablesample_table_ref;
 use crate::context::ParserContext;
 use crate::seq;
 use pg_ast::TableRef;
-use pg_ast::TableRef::JsonTable;
+use pg_ast::TableRef::Json;
 use pg_ast::TableRef::Rows;
-use pg_ast::TableRef::XmlTable;
+use pg_ast::TableRef::Xml;
 use pg_lexer::Keyword::Lateral;
 use pg_parser_core::scan;

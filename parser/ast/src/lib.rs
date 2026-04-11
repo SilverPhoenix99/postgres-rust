@@ -93,6 +93,7 @@ pg_basics::reexport! { pub
     operator_with_args,
     over_clause,
     overlay_func,
+    paren_table_ref,
     position_func,
     prepare_stmt,
     presence,

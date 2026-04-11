@@ -12,6 +12,7 @@ pg_basics::reexport! {
     json_table,
     lateral_table_ref,
     ordinality,
+    paren_table_ref,
     rowsfrom_list,
     select_table_ref,
     table_ref_primary,
@@ -85,11 +86,6 @@ mod tests {
             RelationTableRef::new("c")
         ).into()
     ))]
-    fn test_table_ref(source: &str) -> scan::Result<TableRef> {
-        test_parser!(source, table_ref)
-    }
-
-    #[ignore]
     #[test_case("a cross join b left join c using(d) join (e cross join f) using(g) as h" => Ok(
         JoinExpr::new(
             JoinKind::Inner(Some(
@@ -115,10 +111,11 @@ mod tests {
                 RelationTableRef::new("e"),
                 RelationTableRef::new("f")
             )
-            .with_alias("h")
-        ).into()
+        )
+        .with_alias("h")
+        .into()
     ))]
-    fn test_table_ref_recursive(source: &str) -> scan::Result<TableRef> {
+    fn test_table_ref(source: &str) -> scan::Result<TableRef> {
         test_parser!(source, table_ref)
     }
 }
