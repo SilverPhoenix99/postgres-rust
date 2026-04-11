@@ -15,14 +15,12 @@ pub(super) fn is_label_expression(ctx: &mut ParserContext) -> scan::Result<Vec<S
 mod tests {
     use super::*;
     use crate::test_parser;
+    use test_case::test_case;
 
-    #[test]
-    fn test_is_label_expression() {
-        test_parser! {
-            source = "is foo | bar",
-            parser = is_label_expression,
-            expected = vec!["foo".into(), "bar".into()]
-        }
+    #[test_case("is foo" => Ok(vec!["foo".into()]))]
+    #[test_case("is foo | bar" => Ok(vec!["foo".into(), "bar".into()]))]
+    fn test_is_label_expression(source: &str) -> scan::Result<Vec<Str>> {
+        test_parser!(source, is_label_expression)
     }
 }
 

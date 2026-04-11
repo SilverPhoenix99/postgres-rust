@@ -146,16 +146,20 @@ pg_basics::reexport! { pub
 }
 
 mod database_stmt;
+mod graph_pattern;
+
 #[allow(unused_imports)]
-pub use database_stmt::{
-    alterdb_option::*,
-    alterdb_option_kind::*,
-    createdb_option::*,
-    createdb_option_kind::*,
-    createdb_option_value::*,
-    database_stmt_option::*,
-    DatabaseStmt,
+pub use {
+    database_stmt::alterdb_option::*,
+    database_stmt::alterdb_option_kind::*,
+    database_stmt::createdb_option::*,
+    database_stmt::createdb_option_kind::*,
+    database_stmt::createdb_option_value::*,
+    database_stmt::database_stmt_option::*,
+    database_stmt::*,
+    graph_pattern::graph_element_pattern::*,
 };
+
 
 pub type BinaryOperands = Box<(ExprNode, ExprNode)>;
 

@@ -1,1 +1,4 @@
-mod is_label_expression;
+pg_basics::reexport! {
+    is_label_expression,
+    path_primary_expr,
+}

@@ -1,4 +1,4 @@
-#[derive(Debug, Default, Copy, Clone, Eq, PartialEq, Into)]
+#[derive(Debug, Default, Copy, Clone, Eq, PartialEq, PartialOrd, Ord, Into)]
 pub struct NonNegative(i32);
 
 impl NonNegative {
