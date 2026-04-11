@@ -30,13 +30,7 @@ impl Alias {
     }
 
     pub fn with_columns(mut self, columns: Vec<Str>) -> Self {
-
-        self.columns = if columns.is_empty() {
-            None
-        } else {
-            Some(columns)
-        };
-
+        self.columns = if columns.is_empty() { None } else { Some(columns) };
         self
     }
 

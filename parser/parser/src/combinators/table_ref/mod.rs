@@ -4,6 +4,7 @@ pg_basics::reexport! {
     func_alias_clause,
     func_subexpr_table_ref,
     func_windowless_table_ref,
+    graph_pattern,
     join_qual,
     join_type,
     join_type_prefix,
