@@ -34,6 +34,24 @@ macro_rules! brackets {
     };
 }
 
+/// Matches `'{' P '}'`, and returns the result of `P`, discarding both Brace tokens.
+#[macro_export]
+macro_rules! braces {
+    ($parser:expr) => {
+        $crate::combinators::core::parser(|ctx| {
+
+            let p = $crate::seq!(
+                pg_lexer::OperatorKind::OpenBrace,
+                $parser,
+                pg_lexer::OperatorKind::CloseBrace
+            );
+
+            let (_, value, _) = $crate::combinators::core::Combinator::parse(&p, ctx)?;
+            Ok(value)
+        })
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use crate::combinators::core::integer;
@@ -54,6 +72,15 @@ mod tests {
         test_parser!(
             source = "[1]",
             parser = brackets!(integer),
+            expected = NonNegative::from(1u32)
+        )
+    }
+
+    #[test]
+    fn test_between_braces() {
+        test_parser!(
+            source = "{1}",
+            parser = braces!(integer),
             expected = NonNegative::from(1u32)
         )
     }

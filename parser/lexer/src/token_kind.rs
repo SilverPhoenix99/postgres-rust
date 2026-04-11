@@ -77,6 +77,10 @@ pub enum OperatorKind {
     OpenBracket,
     /// `]`
     CloseBracket,
+    /// `{`
+    OpenBrace,
+    /// `}`
+    CloseBrace,
     /// `.`
     Dot,
     /// `..`

@@ -99,6 +99,8 @@ impl<'src> Lexer<'src> {
             ';' => Ok(Operator(Semicolon)),
             '[' => Ok(Operator(OpenBracket)),
             ']' => Ok(Operator(CloseBracket)),
+            '{' => Ok(Operator(OpenBrace)),
+            '}' => Ok(Operator(CloseBrace)),
             '.' => {
                 if self.buffer.consume_char('.') {
                     Ok(Operator(DotDot))
@@ -236,7 +238,7 @@ impl<'src> Lexer<'src> {
             "="  => Ok(Operator(Equals)),
             ">"  => Ok(Operator(Greater)),
             "^"  => Ok(Operator(Circumflex)),
-            "|" => Ok(Operator(Pipe)),
+            "|"  => Ok(Operator(Pipe)),
             "=>" => Ok(Operator(EqualsGreater)),
             "<=" => Ok(Operator(LessEquals)),
             ">=" => Ok(Operator(GreaterEquals)),
@@ -733,7 +735,7 @@ mod tests {
 
     #[test]
     fn test_operators() {
-        let source = ". .. ( ) , ; [ ] : :: := % * + - / < = > ^ => <= >= != <> | ->";
+        let source = ". .. ( ) , ; [ ] { } : :: := % * + - / < = > ^ => <= >= != <> | ->";
         let mut lex = Lexer::new(source);
 
         assert_tok(Operator(Dot), 0..1, 1, 1, lex.next());
@@ -744,25 +746,27 @@ mod tests {
         assert_tok(Operator(Semicolon), 11..12, 1, 12, lex.next());
         assert_tok(Operator(OpenBracket), 13..14, 1, 14, lex.next());
         assert_tok(Operator(CloseBracket), 15..16, 1, 16, lex.next());
-        assert_tok(Operator(Colon), 17..18, 1, 18, lex.next());
-        assert_tok(Operator(Typecast), 19..21, 1, 20, lex.next());
-        assert_tok(Operator(ColonEquals), 22..24, 1, 23, lex.next());
-        assert_tok(Operator(Percent), 25..26, 1, 26, lex.next());
-        assert_tok(Operator(Mul), 27..28, 1, 28, lex.next());
-        assert_tok(Operator(Plus), 29..30, 1, 30, lex.next());
-        assert_tok(Operator(Minus), 31..32, 1, 32, lex.next());
-        assert_tok(Operator(Div), 33..34, 1, 34, lex.next());
-        assert_tok(Operator(Less), 35..36, 1, 36, lex.next());
-        assert_tok(Operator(Equals), 37..38, 1, 38, lex.next());
-        assert_tok(Operator(Greater), 39..40, 1, 40, lex.next());
-        assert_tok(Operator(Circumflex), 41..42, 1, 42, lex.next());
-        assert_tok(Operator(EqualsGreater), 43..45, 1, 44, lex.next());
-        assert_tok(Operator(LessEquals), 46..48, 1, 47, lex.next());
-        assert_tok(Operator(GreaterEquals), 49..51, 1, 50, lex.next());
-        assert_tok(Operator(NotEquals), 52..54, 1, 53, lex.next());
-        assert_tok(Operator(NotEquals), 55..57, 1, 56, lex.next());
-        assert_tok(Operator(Pipe), 58..59, 1, 59, lex.next());
-        assert_tok(Operator(RightArrow), 60..62, 1, 61, lex.next());
+        assert_tok(Operator(OpenBrace), 17..18, 1, 18, lex.next());
+        assert_tok(Operator(CloseBrace), 19..20, 1, 20, lex.next());
+        assert_tok(Operator(Colon), 21..22, 1, 22, lex.next());
+        assert_tok(Operator(Typecast), 23..25, 1, 24, lex.next());
+        assert_tok(Operator(ColonEquals), 26..28, 1, 27, lex.next());
+        assert_tok(Operator(Percent), 29..30, 1, 30, lex.next());
+        assert_tok(Operator(Mul), 31..32, 1, 32, lex.next());
+        assert_tok(Operator(Plus), 33..34, 1, 34, lex.next());
+        assert_tok(Operator(Minus), 35..36, 1, 36, lex.next());
+        assert_tok(Operator(Div), 37..38, 1, 38, lex.next());
+        assert_tok(Operator(Less), 39..40, 1, 40, lex.next());
+        assert_tok(Operator(Equals), 41..42, 1, 42, lex.next());
+        assert_tok(Operator(Greater), 43..44, 1, 44, lex.next());
+        assert_tok(Operator(Circumflex), 45..46, 1, 46, lex.next());
+        assert_tok(Operator(EqualsGreater), 47..49, 1, 48, lex.next());
+        assert_tok(Operator(LessEquals), 50..52, 1, 51, lex.next());
+        assert_tok(Operator(GreaterEquals), 53..55, 1, 54, lex.next());
+        assert_tok(Operator(NotEquals), 56..58, 1, 57, lex.next());
+        assert_tok(Operator(NotEquals), 59..61, 1, 60, lex.next());
+        assert_tok(Operator(Pipe), 62..63, 1, 63, lex.next());
+        assert_tok(Operator(RightArrow), 64..66, 1, 65, lex.next());
         assert_eq!(None, lex.next());
     }
 
@@ -1045,6 +1049,7 @@ use crate::BitStringKind::Binary;
 use crate::BitStringKind::Hex;
 use crate::IdentifierKind::Quoted;
 use crate::OperatorKind::Circumflex;
+use crate::OperatorKind::CloseBrace;
 use crate::OperatorKind::CloseBracket;
 use crate::OperatorKind::CloseParenthesis;
 use crate::OperatorKind::Colon;
@@ -1062,6 +1067,7 @@ use crate::OperatorKind::LessEquals;
 use crate::OperatorKind::Minus;
 use crate::OperatorKind::Mul;
 use crate::OperatorKind::NotEquals;
+use crate::OperatorKind::OpenBrace;
 use crate::OperatorKind::OpenBracket;
 use crate::OperatorKind::OpenParenthesis;
 use crate::OperatorKind::Percent;
