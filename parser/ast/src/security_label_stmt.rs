@@ -2,25 +2,20 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SecurityLabelStmt {
     target: SecurityLabelTarget,
-    provider: Option<Str>,
-    label: Option<Box<str>>
+    label: SecurityLabel
 }
 
 impl SecurityLabelStmt {
-    pub fn new(provider: Option<Str>, target: SecurityLabelTarget, label: Option<Box<str>>) -> Self {
-        Self { provider, target, label }
+    pub fn new(target: SecurityLabelTarget, label: SecurityLabel) -> Self {
+        Self { target, label }
     }
 
     pub fn target(&self) -> &SecurityLabelTarget {
         &self.target
     }
 
-    pub fn provider(&self) -> Option<&str> {
-        self.provider.as_deref()
-    }
-
-    pub fn label(&self) -> Option<&str> {
-        self.label.as_deref()
+    pub fn label(&self) -> &SecurityLabel {
+        &self.label
     }
 }
 
@@ -31,7 +26,6 @@ pub enum SecurityLabelTarget {
     Collation(QualifiedName),
     Column(QualifiedName),
     Conversion(QualifiedName),
-    Database(Str),
     Domain(Type),
     EventTrigger(Str),
     ExtendedStatistics(QualifiedName),
@@ -62,9 +56,9 @@ pub enum SecurityLabelTarget {
     View(QualifiedName),
 }
 
-use crate::AggregateWithArgs;
 use crate::FunctionWithArgs;
 use crate::SignedNumber;
 use crate::Type;
+use crate::{AggregateWithArgs, SecurityLabel};
 use pg_basics::QualifiedName;
 use pg_basics::Str;

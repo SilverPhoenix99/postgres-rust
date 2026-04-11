@@ -1,5 +1,9 @@
 /// Alias: `CreatedbStmt`
-pub(in crate::combinators::stmt) fn create_database_stmt(ctx: &mut ParserContext) -> scan::Result<CreateDatabaseStmt> {
+pub(in crate::combinators::stmt) fn create_database_stmt(ctx: &mut ParserContext) -> scan::Result<DatabaseStmt> {
+
+    /*
+        CREATE DATABASE ColId ( WITH )? createdb_opt_list
+    */
 
     let (_, name, _, options) = seq!(
         Database,
@@ -8,11 +12,16 @@ pub(in crate::combinators::stmt) fn create_database_stmt(ctx: &mut ParserContext
         createdb_opt_list
     ).parse(ctx)?;
 
-    let stmt = CreateDatabaseStmt::new(name, options);
+    let options = DatabaseStmtOption::Create(options);
+    let stmt = DatabaseStmt::new(name, options);
     Ok(stmt)
 }
 
 fn createdb_opt_list(ctx: &mut ParserContext) -> scan::Result<Vec<CreatedbOption>> {
+
+    /*
+        ( createdb_opt_item )+
+    */
 
     many!(createdb_opt_item).parse(ctx)
 }
@@ -85,12 +94,14 @@ mod tests {
         test_parser!(
             source = "database db_name with connection limit = 753 allow_connections 'on'",
             parser = create_database_stmt,
-            expected = CreateDatabaseStmt::new(
+            expected = DatabaseStmt::new(
                 "db_name",
-                vec![
-                    CreatedbOption::new(ConnectionLimit, 753),
-                    CreatedbOption::new(AllowConnections, "on"),
-                ]
+                DatabaseStmtOption::Create(
+                    vec![
+                        CreatedbOption::new(ConnectionLimit, 753),
+                        CreatedbOption::new(AllowConnections, "on"),
+                    ]
+                )
             )
         )
     }
@@ -156,7 +167,6 @@ use crate::combinators::var_value;
 use crate::many;
 use crate::seq;
 use crate::ParserContext;
-use pg_ast::CreateDatabaseStmt;
 use pg_ast::CreatedbOption;
 use pg_ast::CreatedbOptionKind;
 use pg_ast::CreatedbOptionKind::AllowConnections;
@@ -179,6 +189,8 @@ use pg_ast::CreatedbOptionKind::Tablespace;
 use pg_ast::CreatedbOptionKind::Template;
 use pg_ast::CreatedbOptionKind::Unknown;
 use pg_ast::CreatedbOptionValue;
+use pg_ast::DatabaseStmt;
+use pg_ast::DatabaseStmtOption;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Connection;
 use pg_lexer::Keyword::Database;

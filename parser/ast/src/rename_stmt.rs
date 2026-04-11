@@ -27,7 +27,6 @@ pub enum RenameTarget {
     Aggregate(AggregateWithArgs),
     Collation(QualifiedName),
     Conversion(QualifiedName),
-    Database(Str),
     Domain(QualifiedName),
     DomainConstraint { domain: QualifiedName, constraint: Str },
     EventTrigger(Str),

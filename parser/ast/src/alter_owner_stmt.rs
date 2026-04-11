@@ -24,7 +24,6 @@ pub enum AlterOwnerTarget {
     Aggregate(AggregateWithArgs),
     Collation(QualifiedName),
     Conversion(QualifiedName),
-    Database(Str),
     Domain(QualifiedName),
     EventTrigger(Str),
     ForeignDataWrapper(Str),

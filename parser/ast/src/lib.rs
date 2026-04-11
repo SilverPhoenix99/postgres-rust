@@ -2,8 +2,6 @@ pg_basics::reexport! { pub
     add_drop,
     aggregate_with_args,
     alias,
-    alter_database_set_stmt,
-    alter_database_stmt,
     alter_default_privileges_stmt,
     alter_event_trig_stmt,
     alter_extension_contents_stmt,
@@ -17,8 +15,6 @@ pg_basics::reexport! { pub
     alter_role_stmt,
     alter_system_stmt,
     alter_user_mapping_stmt,
-    alterdb_option,
-    alterdb_option_kind,
     binary_expr,
     bool_expr,
     boolean_or_string,
@@ -30,14 +26,9 @@ pg_basics::reexport! { pub
     create_access_method_stmt,
     create_cast_stmt,
     create_conversion_stmt,
-    create_database_stmt,
     create_role_option,
     create_role_stmt,
     create_user_mapping_stmt,
-    createdb_option,
-    createdb_option_kind,
-    createdb_option_value,
-    database_stmt,
     defaultable_value,
     discard_stmt,
     drop_behavior,
@@ -113,6 +104,7 @@ pg_basics::reexport! { pub
     role_stmt,
     rows_table_ref,
     sample_table_ref,
+    security_label,
     security_label_stmt,
     select_stmt,
     set_reset_clause,
@@ -152,6 +144,18 @@ pg_basics::reexport! { pub
     xmltable,
     zone_value,
 }
+
+mod database_stmt;
+#[allow(unused_imports)]
+pub use database_stmt::{
+    alterdb_option::*,
+    alterdb_option_kind::*,
+    createdb_option::*,
+    createdb_option_kind::*,
+    createdb_option_value::*,
+    database_stmt_option::*,
+    DatabaseStmt,
+};
 
 pub type BinaryOperands = Box<(ExprNode, ExprNode)>;
 

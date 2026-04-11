@@ -1,5 +1,10 @@
 /// Alias: `SetResetClause`
 pub(super) fn set_reset_clause(ctx: &mut ParserContext) -> scan::Result<SetResetClause> {
+    
+    /*
+          SET set_rest
+        | reset_stmt
+    */
 
     alt!(
         seq!(Set, set_rest)

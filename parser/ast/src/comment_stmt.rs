@@ -25,7 +25,6 @@ pub enum CommentTarget {
     Collation(QualifiedName),
     Column(QualifiedName),
     Conversion(QualifiedName),
-    Database(Str),
     Domain(Type),
     DomainConstraint { domain: TypeName, constraint: Str },
     EventTrigger(Str),

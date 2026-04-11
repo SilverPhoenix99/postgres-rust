@@ -1,11 +1,11 @@
 /// Alias: `SecLabelStmt`
-pub(super) fn security_label_stmt(ctx: &mut ParserContext) -> scan::Result<SecurityLabelStmt> {
+pub(super) fn security_label_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
 
     /*
         SECURITY LABEL ( provider )? ON label_target IS security_label
     */
 
-    let (_, _, provider, _, target, label) = seq!(
+    let (.., provider, _, target, label) = seq!(
         Security,
         Label,
         provider.optional(),
@@ -14,7 +14,17 @@ pub(super) fn security_label_stmt(ctx: &mut ParserContext) -> scan::Result<Secur
         security_label
     ).parse(ctx)?;
 
-    let stmt = SecurityLabelStmt::new(provider, target, label);
+    let stmt = match target {
+        Target::Database { db_name } => {
+            let label = SecurityLabel::new(provider, label);
+            let option = DatabaseStmtOption::SecurityLabel(label);
+            DatabaseStmt::new(db_name, option).into()
+        }
+        Target::Label(target) => {
+            let label = SecurityLabel::new(provider, label);
+            SecurityLabelStmt::new(target, label).into()
+        }
+    };
 
     Ok(stmt)
 }
@@ -31,7 +41,13 @@ fn provider(ctx: &mut ParserContext) -> scan::Result<Str> {
     Ok(provider)
 }
 
-fn label_target(ctx: &mut ParserContext) -> scan::Result<SecurityLabelTarget> {
+#[derive(Debug, Clone, Eq, PartialEq)]
+enum Target {
+    Database { db_name: Str },
+    Label(SecurityLabelTarget),
+}
+
+fn label_target(ctx: &mut ParserContext) -> scan::Result<Target> {
 
     /*
         ACCESS METHOD name
@@ -71,44 +87,44 @@ fn label_target(ctx: &mut ParserContext) -> scan::Result<SecurityLabelTarget> {
     */
 
     alt!(
-        access_method.map(AccessMethod),
-        aggregate.map(Aggregate),
-        collation.map(Collation),
-        column.map(Column),
-        conversion.map(Conversion),
-        database.map(Database),
-        domain.map(Domain),
-        event_trigger.map(EventTrigger),
-        extension.map(Extension),
+        access_method.map(AccessMethod).map(Target::Label),
+        aggregate.map(Aggregate).map(Target::Label),
+        collation.map(Collation).map(Target::Label),
+        column.map(Column).map(Target::Label),
+        conversion.map(Conversion).map(Target::Label),
+        database.map(|db_name| Target::Database { db_name }),
+        domain.map(Domain).map(Target::Label),
+        event_trigger.map(EventTrigger).map(Target::Label),
+        extension.map(Extension).map(Target::Label),
         foreign.map(|foreign| match foreign {
             Foreign::DataWrapper(name) => ForeignDataWrapper(name),
             Foreign::Table(name) => ForeignTable(name),
-        }),
-        function.map(Function),
-        index.map(Index),
-        large_object.map(LargeObject),
-        materialized_view.map(MaterializedView),
-        language.map(Language),
-        procedure.map(Procedure),
-        property_graph.map(PropertyGraph),
-        publication.map(Publication),
-        role.map(Role),
-        routine.map(Routine),
-        schema.map(Schema),
-        sequence.map(Sequence),
-        server.map(ForeignServer),
-        statistics.map(ExtendedStatistics),
-        subscription.map(Subscription),
-        table.map(Table),
-        tablespace.map(Tablespace),
+        }).map(Target::Label),
+        function.map(Function).map(Target::Label),
+        index.map(Index).map(Target::Label),
+        large_object.map(LargeObject).map(Target::Label),
+        materialized_view.map(MaterializedView).map(Target::Label),
+        language.map(Language).map(Target::Label),
+        procedure.map(Procedure).map(Target::Label),
+        property_graph.map(PropertyGraph).map(Target::Label),
+        publication.map(Publication).map(Target::Label),
+        role.map(Role).map(Target::Label),
+        routine.map(Routine).map(Target::Label),
+        schema.map(Schema).map(Target::Label),
+        sequence.map(Sequence).map(Target::Label),
+        server.map(ForeignServer).map(Target::Label),
+        statistics.map(ExtendedStatistics).map(Target::Label),
+        subscription.map(Subscription).map(Target::Label),
+        table.map(Table).map(Target::Label),
+        tablespace.map(Tablespace).map(Target::Label),
         text_search.map(|text_search| match text_search {
             TextSearch::Configuration(name) => TextSearchConfiguration(name),
             TextSearch::Dictionary(name) => TextSearchDictionary(name),
             TextSearch::Parser(name) => TextSearchParser(name),
             TextSearch::Template(name) => TextSearchTemplate(name),
-        }),
-        type_name.map(Type),
-        view.map(View),
+        }).map(Target::Label),
+        type_name.map(Type).map(Target::Label),
+        view.map(View).map(Target::Label),
     ).parse(ctx)
 }
 
@@ -143,17 +159,21 @@ mod tests {
     #[test_case(
         "SECURITY LABEL ON access method some_method IS 'foo'",
         SecurityLabelStmt::new(
-            None,
             AccessMethod("some_method".into()),
-            Some("foo".into())
+            SecurityLabel::new(
+                None,
+                Some("foo".into())
+            )
         )
     )]
     #[test_case(
         "SECURITY LABEL FOR 'some_label' ON access method some_method IS 'foo'",
         SecurityLabelStmt::new(
-            Some("some_label".into()),
             AccessMethod("some_method".into()),
-            Some("foo".into())
+            SecurityLabel::new(
+                Some("some_label".into()),
+                Some("foo".into())
+            )
         )
     )]
     fn test_security_label_stmt(source: &str, expected: SecurityLabelStmt) {
@@ -165,57 +185,123 @@ mod tests {
         test_parser!(source, provider, expected);
     }
 
-    #[test_case("access method some_method", AccessMethod("some_method".into()))]
-    #[test_case("aggregate some_aggregate(*)",
+    #[test_case("access method some_method" => Ok(Target::Label(
+        AccessMethod("some_method".into())
+    )))]
+    #[test_case("aggregate some_aggregate(*)" => Ok(Target::Label(
         Aggregate(AggregateWithArgs::new(
             vec!["some_aggregate".into()],
             vec![],
             vec![]
         ))
-    )]
-    #[test_case("collation some_collation", Collation(vec!["some_collation".into()]))]
-    #[test_case("column some_column", Column(vec!["some_column".into()]))]
-    #[test_case("conversion some_conversion", Conversion(vec!["some_conversion".into()]))]
-    #[test_case("database some_database", Database("some_database".into()))]
-    #[test_case("domain int", Domain(Int4.into()))]
-    #[test_case("event trigger some_trigger", EventTrigger("some_trigger".into()))]
-    #[test_case("extension some_extension", Extension("some_extension".into()))]
-    #[test_case("foreign data wrapper some_wrapper", ForeignDataWrapper("some_wrapper".into()))]
-    #[test_case("foreign table some_table", ForeignTable(vec!["some_table".into()]))]
-    #[test_case("function some_function", Function(
-        FunctionWithArgs::new(vec!["some_function".into()], None)
+    )))]
+    #[test_case("collation some_collation" => Ok(Target::Label(
+        Collation(vec!["some_collation".into()])
+    )))]
+    #[test_case("column some_column" => Ok(Target::Label(
+        Column(vec!["some_column".into()])
+    )))]
+    #[test_case("conversion some_conversion" => Ok(Target::Label(
+        Conversion(vec!["some_conversion".into()])
+    )))]
+    #[test_case("database some_database" => Ok(
+        Target::Database{ db_name: "some_database".into() }
     ))]
-    #[test_case("index some_index", Index(vec!["some_index".into()]))]
-    #[test_case("large object 123", LargeObject(IntegerConst(123)))]
-    #[test_case("materialized view some_view", MaterializedView(vec!["some_view".into()]))]
-    #[test_case("procedural language some_language", Language("some_language".into()))]
-    #[test_case("language some_language", Language("some_language".into()))]
-    #[test_case("procedure some_procedure", Procedure(
-        FunctionWithArgs::new(vec!["some_procedure".into()], None)
-    ))]
-    #[test_case("property graph some_prop_graph", PropertyGraph(vec!["some_prop_graph".into()]))]
-    #[test_case("publication some_publication", Publication("some_publication".into()))]
-    #[test_case("role some_role", Role("some_role".into()))]
-    #[test_case("routine some_routine", Routine(
-        FunctionWithArgs::new(vec!["some_routine".into()], None)
-    ))]
-    #[test_case("schema some_schema", Schema("some_schema".into()))]
-    #[test_case("sequence some_sequence", Sequence(vec!["some_sequence".into()]))]
-    #[test_case("server some_server", ForeignServer("some_server".into()))]
-    #[test_case("statistics some_statistics", ExtendedStatistics(vec!["some_statistics".into()]))]
-    #[test_case("subscription some_subscription", Subscription("some_subscription".into()))]
-    #[test_case("table some_table", Table(vec!["some_table".into()]))]
-    #[test_case("tablespace some_tablespace", Tablespace("some_tablespace".into()))]
-    #[test_case("text search configuration some_configuration",
+    #[test_case("domain int" => Ok(Target::Label(
+        Domain(Int4.into())
+    )))]
+    #[test_case("event trigger some_trigger" => Ok(Target::Label(
+        EventTrigger("some_trigger".into())
+    )))]
+    #[test_case("extension some_extension" => Ok(Target::Label(
+        Extension("some_extension".into())
+    )))]
+    #[test_case("foreign data wrapper some_wrapper" => Ok(Target::Label(
+        ForeignDataWrapper("some_wrapper".into())
+    )))]
+    #[test_case("foreign table some_table" => Ok(Target::Label(
+        ForeignTable(vec!["some_table".into()])
+    )))]
+    #[test_case("function some_function" => Ok(Target::Label(
+        Function(
+            FunctionWithArgs::new(vec!["some_function".into()], None)
+        )
+    )))]
+    #[test_case("index some_index" => Ok(Target::Label(
+        Index(vec!["some_index".into()])
+    )))]
+    #[test_case("large object 123" => Ok(Target::Label(
+        LargeObject(IntegerConst(123))
+    )))]
+    #[test_case("materialized view some_view" => Ok(Target::Label(
+        MaterializedView(vec!["some_view".into()])
+    )))]
+    #[test_case("procedural language some_language" => Ok(Target::Label(
+        Language("some_language".into())
+    )))]
+    #[test_case("language some_language" => Ok(Target::Label(
+        Language("some_language".into())
+    )))]
+    #[test_case("procedure some_procedure" => Ok(Target::Label(
+        Procedure(
+            FunctionWithArgs::new(vec!["some_procedure".into()], None)
+        )
+    )))]
+    #[test_case("property graph some_prop_graph" => Ok(Target::Label(
+        PropertyGraph(vec!["some_prop_graph".into()])
+    )))]
+    #[test_case("publication some_publication" => Ok(Target::Label(
+        Publication("some_publication".into())
+    )))]
+    #[test_case("role some_role" => Ok(Target::Label(
+        Role("some_role".into())
+    )))]
+    #[test_case("routine some_routine" => Ok(Target::Label(
+        Routine(
+            FunctionWithArgs::new(vec!["some_routine".into()], None)
+        )
+    )))]
+    #[test_case("schema some_schema" => Ok(Target::Label(
+        Schema("some_schema".into())
+    )))]
+    #[test_case("sequence some_sequence" => Ok(Target::Label(
+        Sequence(vec!["some_sequence".into()])
+    )))]
+    #[test_case("server some_server" => Ok(Target::Label(
+        ForeignServer("some_server".into())
+    )))]
+    #[test_case("statistics some_statistics" => Ok(Target::Label(
+        ExtendedStatistics(vec!["some_statistics".into()])
+    )))]
+    #[test_case("subscription some_subscription" => Ok(Target::Label(
+        Subscription("some_subscription".into())
+    )))]
+    #[test_case("table some_table" => Ok(Target::Label(
+        Table(vec!["some_table".into()])
+    )))]
+    #[test_case("tablespace some_tablespace" => Ok(Target::Label(
+        Tablespace("some_tablespace".into())
+    )))]
+    #[test_case("text search configuration some_configuration" => Ok(Target::Label(
         TextSearchConfiguration(vec!["some_configuration".into()])
-    )]
-    #[test_case("text search dictionary some_dictionary", TextSearchDictionary(vec!["some_dictionary".into()]))]
-    #[test_case("text search parser some_parser", TextSearchParser(vec!["some_parser".into()]))]
-    #[test_case("text search template some_template", TextSearchTemplate(vec!["some_template".into()]))]
-    #[test_case("type int", Type(Int4.into()))]
-    #[test_case("view some_view", View(vec!["some_view".into()]))]
-    fn test_label_target(source: &str, expected: SecurityLabelTarget) {
-        test_parser!(source, label_target, expected)
+    )))]
+    #[test_case("text search dictionary some_dictionary" => Ok(Target::Label(
+        TextSearchDictionary(vec!["some_dictionary".into()])
+    )))]
+    #[test_case("text search parser some_parser" => Ok(Target::Label(
+        TextSearchParser(vec!["some_parser".into()])
+    )))]
+    #[test_case("text search template some_template" => Ok(Target::Label(
+        TextSearchTemplate(vec!["some_template".into()])
+    )))]
+    #[test_case("type int" => Ok(Target::Label(
+        Type(Int4.into())
+    )))]
+    #[test_case("view some_view" => Ok(Target::Label(
+        View(vec!["some_view".into()])
+    )))]
+    fn test_label_target(source: &str) -> scan::Result<Target> {
+        test_parser!(source, label_target)
     }
 
     #[test_case("is 'abc'", Some("abc".into()))]
@@ -263,6 +349,10 @@ use crate::combinators::stmt::TextSearch;
 use crate::combinators::string_or_null;
 use crate::seq;
 use crate::ParserContext;
+use pg_ast::DatabaseStmt;
+use pg_ast::DatabaseStmtOption;
+use pg_ast::RawStmt;
+use pg_ast::SecurityLabel;
 use pg_ast::SecurityLabelStmt;
 use pg_ast::SecurityLabelTarget;
 use pg_ast::SecurityLabelTarget::AccessMethod;
@@ -270,7 +360,6 @@ use pg_ast::SecurityLabelTarget::Aggregate;
 use pg_ast::SecurityLabelTarget::Collation;
 use pg_ast::SecurityLabelTarget::Column;
 use pg_ast::SecurityLabelTarget::Conversion;
-use pg_ast::SecurityLabelTarget::Database;
 use pg_ast::SecurityLabelTarget::Domain;
 use pg_ast::SecurityLabelTarget::EventTrigger;
 use pg_ast::SecurityLabelTarget::ExtendedStatistics;

@@ -1,10 +1,7 @@
 #[derive(Debug, Clone, Eq, PartialEq, From)]
 pub enum RawStmt {
-    AlterDatabaseRefreshCollStmt(Str),
     #[from]
-    AlterDatabaseSetStmt(AlterDatabaseSetStmt),
-    #[from]
-    AlterDatabaseStmt(AlterDatabaseStmt),
+    Database(DatabaseStmt),
     #[from(AlterDefaultPrivilegesStmt)]
     AlterDefaultPrivilegesStmt(Box<AlterDefaultPrivilegesStmt>),
     #[from]
@@ -41,8 +38,6 @@ pub enum RawStmt {
     CreateCastStmt(CreateCastStmt),
     #[from]
     CreateConversionStmt(CreateConversionStmt),
-    #[from]
-    CreateDatabaseStmt(CreateDatabaseStmt),
     #[from]
     CreateRoleStmt(CreateRoleStmt),
     #[from]
@@ -91,30 +86,6 @@ impl From<RoleStmt> for RawStmt {
     }
 }
 
-impl From<DatabaseStmt> for RawStmt {
-    fn from(value: DatabaseStmt) -> Self {
-        match value {
-            DatabaseStmt::RefreshCollation(name) => Self::AlterDatabaseRefreshCollStmt(name),
-            DatabaseStmt::AlterOwner { db_name, new_owner } => {
-                AlterOwnerStmt::new(
-                    AlterOwnerTarget::Database(db_name),
-                    new_owner
-                ).into()
-            },
-            DatabaseStmt::Rename { db_name, new_name } => {
-                RenameStmt::new(
-                    RenameTarget::Database(db_name),
-                    new_name
-                ).into()
-            },
-            DatabaseStmt::AlterDatabase(stmt) => stmt.into(),
-            DatabaseStmt::AlterDatabaseSet(stmt) => stmt.into(),
-        }
-    }
-}
-
-use crate::AlterDatabaseSetStmt;
-use crate::AlterDatabaseStmt;
 use crate::AlterDefaultPrivilegesStmt;
 use crate::AlterEventTrigStmt;
 use crate::AlterExtensionContentsStmt;
@@ -123,7 +94,6 @@ use crate::AlterFunctionStmt;
 use crate::AlterObjectDependsStmt;
 use crate::AlterObjectSchemaStmt;
 use crate::AlterOwnerStmt;
-use crate::AlterOwnerTarget;
 use crate::AlterRoleSetStmt;
 use crate::AlterRoleStmt;
 use crate::AlterSystemStmt;
@@ -133,7 +103,6 @@ use crate::ConstraintsSetStmt;
 use crate::CreateAccessMethodStmt;
 use crate::CreateCastStmt;
 use crate::CreateConversionStmt;
-use crate::CreateDatabaseStmt;
 use crate::CreateRoleStmt;
 use crate::CreateUserMappingStmt;
 use crate::DatabaseStmt;

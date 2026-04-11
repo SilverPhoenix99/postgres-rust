@@ -1,103 +1,72 @@
-enum Change {
-    RefreshVersion,
-    Owner(RoleSpec),
-    Name(Str),
-    Tablespace(Str),
-    SetOption(SetRest),
-    ResetOption(VariableTarget),
-    Options(Vec<AlterdbOption>)
-}
-
 /// Alias: `AlterDatabaseStmt`
 pub(in crate::combinators::stmt) fn alter_database_stmt(ctx: &mut ParserContext) -> scan::Result<DatabaseStmt> {
 
     /*
         ALTER DATABASE ColId (
-              REFRESH COLLATION VERSION => AlterDatabaseRefreshCollStmt
-            | OWNER TO RoleSpec         => AlterOwnerStmt
-            | RENAME TO ColId           => RenameStmt
-            | SET TABLESPACE ColId      => AlterDatabaseStmt
-            | SET set_rest              => AlterDatabaseSetStmt (SetResetClause)
-            | VariableResetStmt         => AlterDatabaseSetStmt (SetResetClause)
-            | WITH alterdb_opt_list     => AlterDatabaseStmt
-            | alterdb_opt_list          => AlterDatabaseStmt
+              REFRESH COLLATION VERSION  => AlterDatabaseRefreshCollStmt
+            | OWNER TO RoleSpec          => AlterOwnerStmt
+            | RENAME TO ColId            => RenameStmt
+            | SET TABLESPACE ColId       => AlterDatabaseStmt
+            | SET set_rest               => AlterDatabaseSetStmt (SetResetClause)
+            | VariableResetStmt          => AlterDatabaseSetStmt (SetResetClause)
+            | ( WITH )? alterdb_opt_list => AlterDatabaseStmt
         )
+
+        NB: The RHS are the struct names in PG-C.
     */
 
     let (_, db_name, change) = seq!(Database, col_id, change).parse(ctx)?;
 
-    let stmt = match change {
-        Change::RefreshVersion => {
-            DatabaseStmt::RefreshCollation(db_name)
-        }
-        Change::Owner(new_owner) => {
-            DatabaseStmt::AlterOwner { db_name, new_owner }
-        }
-        Change::Name(new_name) => {
-            DatabaseStmt::Rename { db_name, new_name }
-        }
-        Change::Tablespace(tablespace) => {
-            let option = AlterdbOption::new(Tablespace, tablespace);
-            AlterDatabaseStmt::new(db_name, vec![option]).into()
-        }
-        Change::SetOption(option) => {
-            let option = SetResetClause::Set(option);
-            AlterDatabaseSetStmt::new(db_name, option).into()
-        }
-        Change::ResetOption(option) => {
-            let option = SetResetClause::Reset(option);
-            AlterDatabaseSetStmt::new(db_name, option).into()
-        }
-        Change::Options(options) => {
-            AlterDatabaseStmt::new(db_name, options).into()
-        }
-    };
+    let stmt = DatabaseStmt::new(db_name, change);
 
     Ok(stmt)
 }
 
-fn change(ctx: &mut ParserContext) -> scan::Result<Change> {
+fn change(ctx: &mut ParserContext) -> scan::Result<DatabaseStmtOption> {
     alt!(
         refresh_collation_version,
         change_owner,
         rename,
         set_option,
-        reset_stmt
-            .map(Change::ResetOption),
-        seq!(With, alterdb_opt_list)
-            .map(|(_, options)| Change::Options(options)),
-        alterdb_opt_list
-            .map(Change::Options),
+        reset_stmt.map(Reset),
+        seq!(With.optional(), alterdb_opt_list)
+            .map(|(_, options)| AlterOptions(options)),
     ).parse(ctx)
 }
 
-fn refresh_collation_version(ctx: &mut ParserContext) -> scan::Result<Change> {
+fn refresh_collation_version(ctx: &mut ParserContext) -> scan::Result<DatabaseStmtOption> {
 
     seq!(Refresh, Collation, Version).parse(ctx)?;
-    Ok(Change::RefreshVersion)
+
+    Ok(RefreshCollationVersion)
 }
 
-fn change_owner(ctx: &mut ParserContext) -> scan::Result<Change> {
+fn change_owner(ctx: &mut ParserContext) -> scan::Result<DatabaseStmtOption> {
 
     let (.., new_owner) = seq!(Owner, To, role_spec).parse(ctx)?;
-    Ok(Change::Owner(new_owner))
+
+    Ok(AlterOwner { new_owner })
 }
 
-fn rename(ctx: &mut ParserContext) -> scan::Result<Change> {
+fn rename(ctx: &mut ParserContext) -> scan::Result<DatabaseStmtOption> {
 
-    let (.., new_name) = seq!(Rename, To, col_id).parse(ctx)?;
-    Ok(Change::Name(new_name))
+    let (.., new_name) = seq!(Kw::Rename, To, col_id).parse(ctx)?;
+
+    Ok(Rename { new_name })
 }
 
-fn set_option(ctx: &mut ParserContext) -> scan::Result<Change> {
+fn set_option(ctx: &mut ParserContext) -> scan::Result<DatabaseStmtOption> {
 
     let (_, change) = seq!(
-        Set,
+        Kw::Set,
         alt!(
             seq!(Kw::Tablespace, col_id)
-                .map(|(_, tablespace)| Change::Tablespace(tablespace)),
+                .map(|(_, tablespace)| {
+                    let option = AlterdbOption::new(Tablespace, tablespace);
+                    AlterOptions(vec![option])
+                }),
             set_rest
-                .map(Change::SetOption)
+                .map(Set)
         )
     ).parse(ctx)?;
     Ok(change)
@@ -143,92 +112,68 @@ mod tests {
     #[allow(unused_imports)]
     use super::*;
     use crate::test_parser;
-    use pg_ast::CreatedbOptionValue;
+    #[allow(unused_imports)]
+    use pg_ast::{
+        CreatedbOptionValue,
+        RoleSpec,
+        SetResetClause,
+        SetRest::TransactionSnapshot,
+        VariableTarget::TimeZone,
+    };
     use test_case::test_case;
 
-    #[test]
-    fn test_refresh_collation_version() {
-        test_parser!(
-            source = "database db_name refresh collation version",
-            parser = alter_database_stmt,
-            expected = DatabaseStmt::RefreshCollation("db_name".into())
+    #[test_case("database db_name refresh collation version" => Ok(
+        DatabaseStmt::new("db_name", RefreshCollationVersion)
+    ))]
+    #[test_case("database db_name owner to public" => Ok(
+        DatabaseStmt::new("db_name",
+            AlterOwner { new_owner: RoleSpec::Public }
         )
-    }
-
-    #[test]
-    fn test_alter_owner() {
-        test_parser!(
-            source = "database db_name owner to public",
-            parser = alter_database_stmt,
-            expected = DatabaseStmt::AlterOwner {
-                db_name: "db_name".into(),
-                new_owner: RoleSpec::Public
-            }
+    ))]
+    #[test_case("database db_name rename to this_db" => Ok(
+        DatabaseStmt::new("db_name",
+            Rename { new_name: "this_db".into() }
         )
-    }
-
-    #[test]
-    fn test_rename() {
-        test_parser!(
-            source = "database db_name rename to this_db",
-            parser = alter_database_stmt,
-            expected = DatabaseStmt::Rename {
-                db_name: "db_name".into(),
-                new_name: "this_db".into()
-            }
+    ))]
+    #[test_case("database db_name set tablespace some_name" => Ok(
+        DatabaseStmt::new("db_name",
+            AlterOptions(vec![
+                AlterdbOption::new(Tablespace, "some_name")
+            ])
         )
-    }
-
-    #[test]
-    fn test_set_tablespace() {
-        test_parser!(
-            source = "database db_name set tablespace some_name",
-            parser = alter_database_stmt,
-            expected = AlterDatabaseStmt::new(
-                "db_name",
-                vec![AlterdbOption::new(Tablespace, "some_name")]
-            )
+    ))]
+    #[test_case("database db_name set transaction snapshot 'tx'" => Ok(
+        DatabaseStmt::new("db_name",
+            Set(TransactionSnapshot("tx".into()))
         )
-    }
-
-    #[test]
-    fn test_set_rest() {
-        test_parser!(
-            source = "database db_name set transaction snapshot 'tx'",
-            parser = alter_database_stmt,
-            expected = AlterDatabaseSetStmt::new(
-                "db_name",
-                SetResetClause::Set(SetRest::TransactionSnapshot("tx".into())),
-            )
+    ))]
+    #[test_case("database db_name reset time zone" => Ok(
+        DatabaseStmt::new("db_name",
+            Reset(TimeZone)
         )
-    }
-
-    #[test]
-    fn test_reset() {
-        test_parser!(
-            source = "database db_name reset time zone",
-            parser = alter_database_stmt,
-            expected = AlterDatabaseSetStmt::new(
-                "db_name",
-                SetResetClause::Reset(VariableTarget::TimeZone)
-            )
-        )
-    }
-
-    #[test_case("database the_db_name with ALLOW_CONNECTIONS default CONNECTION LIMIT = +5 IS_TEMPLATE false TABLESPACE = tbspace")]
-    #[test_case("database the_db_name ALLOW_CONNECTIONS = default CONNECTION LIMIT 5 IS_TEMPLATE = false TABLESPACE tbspace")]
-    fn test_opt_list(source: &str) {
-        let expected = AlterDatabaseStmt::new(
-            "the_db_name",
-            vec![
+    ))]
+    #[test_case("database the_db_name with ALLOW_CONNECTIONS default CONNECTION LIMIT = +5 IS_TEMPLATE false TABLESPACE = tbspace" => Ok(
+        DatabaseStmt::new("the_db_name",
+            AlterOptions(vec![
                 AlterdbOption::new(AllowConnections, CreatedbOptionValue::Default),
                 AlterdbOption::new(ConnectionLimit, 5),
                 AlterdbOption::new(IsTemplate, false),
                 AlterdbOption::new(Tablespace, "tbspace")
-            ]
-        );
-
-        test_parser!(source, alter_database_stmt, expected)
+            ])
+        )
+    ))]
+    #[test_case("database the_db_name ALLOW_CONNECTIONS = default CONNECTION LIMIT 5 IS_TEMPLATE = false TABLESPACE tbspace" => Ok(
+        DatabaseStmt::new("the_db_name",
+            AlterOptions(vec![
+                AlterdbOption::new(AllowConnections, CreatedbOptionValue::Default),
+                AlterdbOption::new(ConnectionLimit, 5),
+                AlterdbOption::new(IsTemplate, false),
+                AlterdbOption::new(Tablespace, "tbspace")
+            ])
+        )
+    ))]
+    fn test_alter_database_stmt(source: &str) -> scan::Result<DatabaseStmt> {
+        test_parser!(source, alter_database_stmt)
     }
 }
 
@@ -243,8 +188,6 @@ use crate::combinators::stmt::set_rest;
 use crate::many;
 use crate::seq;
 use crate::ParserContext;
-use pg_ast::AlterDatabaseSetStmt;
-use pg_ast::AlterDatabaseStmt;
 use pg_ast::AlterdbOption;
 use pg_ast::AlterdbOptionKind;
 use pg_ast::AlterdbOptionKind::AllowConnections;
@@ -253,11 +196,13 @@ use pg_ast::AlterdbOptionKind::IsTemplate;
 use pg_ast::AlterdbOptionKind::Tablespace;
 use pg_ast::AlterdbOptionKind::Unknown;
 use pg_ast::DatabaseStmt;
-use pg_ast::RoleSpec;
-use pg_ast::SetResetClause;
-use pg_ast::SetRest;
-use pg_ast::VariableTarget;
-use pg_basics::Str;
+use pg_ast::DatabaseStmtOption;
+use pg_ast::DatabaseStmtOption::AlterOptions;
+use pg_ast::DatabaseStmtOption::AlterOwner;
+use pg_ast::DatabaseStmtOption::RefreshCollationVersion;
+use pg_ast::DatabaseStmtOption::Rename;
+use pg_ast::DatabaseStmtOption::Reset;
+use pg_ast::DatabaseStmtOption::Set;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Collation;
 use pg_lexer::Keyword::Connection;
@@ -265,8 +210,6 @@ use pg_lexer::Keyword::Database;
 use pg_lexer::Keyword::Limit;
 use pg_lexer::Keyword::Owner;
 use pg_lexer::Keyword::Refresh;
-use pg_lexer::Keyword::Rename;
-use pg_lexer::Keyword::Set;
 use pg_lexer::Keyword::To;
 use pg_lexer::Keyword::Version;
 use pg_lexer::Keyword::With;
