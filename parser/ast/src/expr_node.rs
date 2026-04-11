@@ -1,0 +1,80 @@
+#[derive(Debug, Clone, Eq, PartialEq, From)]
+pub enum ExprNode {
+    /* Constants */
+    NullConst,
+    StringConst(Box<str>),
+    BinaryStringConst(Box<str>),
+    HexStringConst(Box<str>),
+    IntegerConst(i32),
+    NumericConst { value: Box<str>, radix: NumberRadix },
+    BooleanConst(bool),
+
+    DefaultExpr,
+    #[from(CaseExpr)]
+    CaseExpr(Box<CaseExpr>),
+    ParamRef { index: i32 },
+    Row(Option<Vec<ExprNode>>),
+
+    /// String constant type cast.
+    ///
+    /// (e.g.: `int '1'`)
+    #[from(StringTypecastExpr)]
+    StringTypecast(Box<StringTypecastExpr>),
+
+    #[from(BinaryExpr)]
+    BinaryExpr(Box<BinaryExpr>),
+    #[from(UnaryExpr)]
+    UnaryExpr(Box<UnaryExpr>),
+    #[from]
+    BoolExpr(BoolExpr),
+    #[from(FuncCallExpr)]
+    FuncCallExpr(Box<FuncCallExpr>),
+    #[from(JsonArrayAggExpr)]
+    JsonArrayAggExpr(Box<JsonArrayAggExpr>),
+    #[from(JsonObjectAggExpr)]
+    JsonObjectAggExpr(Box<JsonObjectAggExpr>),
+
+    /// `IS DISTINCT FROM`
+    Distinct(BinaryOperands),
+    /// `IS NOT DISTINCT FROM`
+    NotDistinct(BinaryOperands),
+
+    #[from(IndirectionExpr)]
+    Indirection(Box<IndirectionExpr>),
+    #[from]
+    ColumnRef(ColumnRef),
+
+    /* Function calls */
+    GroupingFunc(Vec<ExprNode>),
+    #[from(FuncCall)]
+    FuncCall(Box<FuncCall>),
+    #[from(SqlFunction)]
+    SqlFunction(Box<SqlFunction>),
+}
+
+impl From<UnsignedNumber> for ExprNode {
+    fn from(value: UnsignedNumber) -> Self {
+        match value {
+            // SAFETY: `int` is originally parsed by `i32::from_str_radix()`, so `0 <= int <= i32::MAX`
+            UnsignedNumber::IntegerConst(int) => Self::IntegerConst(int.into()),
+            UnsignedNumber::NumericConst { value, radix } => Self::NumericConst { radix, value }
+        }
+    }
+}
+
+use crate::BinaryExpr;
+use crate::BinaryOperands;
+use crate::BoolExpr;
+use crate::CaseExpr;
+use crate::ColumnRef;
+use crate::FuncCall;
+use crate::FuncCallExpr;
+use crate::IndirectionExpr;
+use crate::JsonArrayAggExpr;
+use crate::JsonObjectAggExpr;
+use crate::SqlFunction;
+use crate::StringTypecastExpr;
+use crate::UnaryExpr;
+use derive_more::From;
+use pg_basics::NumberRadix;
+use pg_basics::UnsignedNumber;
