@@ -1,5 +1,5 @@
 /// Alias: `opt_graph_pattern_quantifier`
-pub fn graph_pattern_quantifier(ctx: &mut ParserContext) -> scan::Result<RangeInclusive<NonNegative>> {
+pub(super) fn graph_pattern_quantifier(ctx: &mut ParserContext) -> scan::Result<RangeInclusive<NonNegative>> {
 
     /*
         | '{' ',' ICONST '}'        => (0,   max)
