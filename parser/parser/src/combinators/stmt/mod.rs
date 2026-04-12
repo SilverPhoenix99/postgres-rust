@@ -130,6 +130,7 @@ pg_basics::reexport! {
     set_stmt,
     show_stmt,
     system_stmt,
+    target_list,
     truncate_stmt,
     unlisten_stmt,
     utility_options,
