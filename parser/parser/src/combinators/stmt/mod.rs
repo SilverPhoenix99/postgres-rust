@@ -108,6 +108,7 @@ pg_basics::reexport! {
     from_list,
     function_stmt,
     generic_options,
+    having_clause,
     import_stmt,
     language_stmt,
     large_object_stmt,
