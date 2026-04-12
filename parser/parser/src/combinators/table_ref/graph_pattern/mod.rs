@@ -3,4 +3,5 @@ pg_basics::reexport! {
     is_label_expression,
     path_primary,
     path_primary_expr,
+    path_factor,
 }
