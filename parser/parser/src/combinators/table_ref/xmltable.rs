@@ -175,9 +175,9 @@ fn xml_namespace_el(ctx: &mut ParserContext) -> scan::Result<NamedValue> {
 
     alt!(
         seq!(DefaultKw, b_expr)
-            .map(|(_, value)| NamedValue::unnamed(value)),
+            .map(|(_, value)| NamedValue::new(value)),
         seq!(b_expr, As, col_label)
-            .map(|(value, _, name)| NamedValue::new(Some(name), value)),
+            .map(|(value, _, name)| NamedValue::new(value).with_name(name)),
     ).parse(ctx)
 }
 
@@ -240,8 +240,8 @@ mod tests {
                 ]
             )
             .with_namespaces(vec![
-                NamedValue::unnamed(StringConst("foo".into())),
-                NamedValue::new(Some("x".into()), StringConst("bar".into())),
+                NamedValue::new(StringConst("foo".into())),
+                NamedValue::new(StringConst("bar".into())).with_name("x"),
             ])
         )
     )]
@@ -303,15 +303,13 @@ mod tests {
     }
 
     #[test_case("default 'foo'" => Ok(
-        NamedValue::unnamed(
+        NamedValue::new(
             StringConst("foo".into())
         )
     ))]
     #[test_case("'foo' as bar" => Ok(
-        NamedValue::new(
-            Some("bar".into()),
-            StringConst("foo".into())
-        )
+        NamedValue::new(StringConst("foo".into()))
+            .with_name("bar")
     ))]
     fn test_xml_namespace_el(source: &str) -> scan::Result<NamedValue> {
         test_parser!(source, xml_namespace_el)

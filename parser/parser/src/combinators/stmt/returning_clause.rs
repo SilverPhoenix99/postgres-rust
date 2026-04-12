@@ -77,10 +77,12 @@ mod tests {
         ReturningClause::new(
             vec![
                 OneOrAll::One(
-                    NamedValue::new(Some("foo".into()), IntegerConst(1))
+                    NamedValue::new(IntegerConst(1))
+                        .with_name("foo")
                 ),
                 OneOrAll::One(
-                    NamedValue::new(Some("bar".into()), StringConst("b".into()))
+                    NamedValue::new(StringConst("b".into()))
+                        .with_name("bar")
                 ),
             ]
         )

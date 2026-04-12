@@ -30,7 +30,7 @@ fn overlay_args(ctx: &mut ParserContext) -> scan::Result<OverlayFunc> {
         && arg.name().is_none()
         && let Some((placing, from, r#for)) = overlay_list(ctx).optional()?
     {
-        let (_, arg) = mem::replace(arg, NamedValue::unnamed(NullConst)).into();
+        let (_, arg) = mem::replace(arg, NamedValue::new(NullConst)).into();
         let args = OverlaySqlArgs::new(arg, placing, from, r#for);
         let args = OverlayFunc::SqlSyntax(args);
         return Ok(args);
@@ -64,7 +64,7 @@ mod tests {
     #[test_case("overlay(1)" => Ok(
         OverlayFunc::ExplicitCall(
             Some(vec![
-                NamedValue::unnamed(IntegerConst(1))
+                NamedValue::new(IntegerConst(1))
             ])
         )
     ))]
@@ -75,16 +75,16 @@ mod tests {
     #[test_case("'foo'" => Ok(
         OverlayFunc::ExplicitCall(
             Some(vec![
-                NamedValue::unnamed(StringConst("foo".into()))
+                NamedValue::new(StringConst("foo".into()))
             ])
         )
     ))]
     #[test_case("'foo', bar := 1, baz => 2" => Ok(
         OverlayFunc::ExplicitCall(
             Some(vec![
-                NamedValue::unnamed(StringConst("foo".into())),
-                NamedValue::new(Some("bar".into()), IntegerConst(1)),
-                NamedValue::new(Some("baz".into()), IntegerConst(2)),
+                NamedValue::new(StringConst("foo".into())),
+                NamedValue::new(IntegerConst(1)).with_name("bar"),
+                NamedValue::new(IntegerConst(2)).with_name("baz"),
             ])
         )
     ))]

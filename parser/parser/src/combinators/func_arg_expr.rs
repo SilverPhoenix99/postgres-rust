@@ -24,12 +24,12 @@ pub(super) fn func_arg_expr(ctx: &mut ParserContext) -> scan::Result<Located<Nam
                 a_expr
             )).parse(ctx)?;
 
-            let arg = NamedValue::new(Some(name), value);
+            let arg = NamedValue::new(value).with_name(name);
             Ok(Located(arg, loc))
         },
         _ => {
             let Located(value, loc) = located!(a_expr).parse(ctx)?;
-            let arg = NamedValue::unnamed(value);
+            let arg = NamedValue::new(value);
             Ok(Located(arg, loc))
         },
     }
@@ -52,9 +52,17 @@ mod tests {
     use pg_ast::ExprNode::IntegerConst;
     use test_case::test_case;
 
-    #[test_case("1" => Ok(NamedValue::unnamed(IntegerConst(1))))]
-    #[test_case("foo := 2" => Ok(NamedValue::new(Some("foo".into()), IntegerConst(2))))]
-    #[test_case("bar => 3" => Ok(NamedValue::new(Some("bar".into()), IntegerConst(3))))]
+    #[test_case("1" => Ok(
+        NamedValue::new(IntegerConst(1))
+    ))]
+    #[test_case("foo := 2" => Ok(
+        NamedValue::new(IntegerConst(2))
+            .with_name("foo")
+    ))]
+    #[test_case("bar => 3" => Ok(
+        NamedValue::new(IntegerConst(3))
+            .with_name("bar")
+    ))]
     fn test_func_arg_expr(source: &str) -> scan::Result<NamedValue> {
         test_parser!(
             source,

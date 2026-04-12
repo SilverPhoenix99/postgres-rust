@@ -86,7 +86,7 @@ mod tests {
     #[test_case("xmlelement(name foo, xmlattributes(1 as a), 'foo')" => Ok(
         XmlElement::new("foo".into())
             .with_attributes(vec![
-                NamedValue::new(Some("a".into()), IntegerConst(1))
+                NamedValue::new(IntegerConst(1)).with_name("a")
             ])
             .with_content(vec![
                 StringConst("foo".into())
@@ -104,8 +104,8 @@ mod tests {
     }
 
     #[test_case("xmlattributes(1, 2 as x)" => Ok(vec![
-        NamedValue::unnamed(IntegerConst(1)),
-        NamedValue::new(Some("x".into()), IntegerConst(2)),
+        NamedValue::new(IntegerConst(1)),
+        NamedValue::new(IntegerConst(2)).with_name("x"),
     ]))]
     fn test_xml_attributes(source: &str) -> scan::Result<Vec<NamedValue>> {
         let mut ctx = ParserContext::new(source);

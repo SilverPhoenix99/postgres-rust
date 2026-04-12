@@ -66,7 +66,7 @@ mod tests {
                 FuncArgsKind::All {
                     args: vec![
                         Located(
-                            NamedValue::unnamed(IntegerConst(1)),
+                            NamedValue::new(IntegerConst(1)),
                             Location::new(4..5, 1, 5)
                         )
                     ],

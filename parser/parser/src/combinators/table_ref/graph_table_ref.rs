@@ -43,7 +43,7 @@ mod tests {
                 .with_path_patterns(vec![vec![
                     EdgePatternRight(Default::default())
                 ]]),
-            vec![NamedValue::unnamed(ColumnRef(SingleName("bar".into())))]
+            vec![NamedValue::new(ColumnRef(SingleName("bar".into())))]
         )
     ))]
     #[test_case("graph_table (baz match -> columns (qux)) as a" => Ok(
@@ -53,7 +53,7 @@ mod tests {
                 .with_path_patterns(vec![vec![
                     EdgePatternRight(Default::default())
                 ]]),
-            vec![NamedValue::unnamed(ColumnRef(SingleName("qux".into())))]
+            vec![NamedValue::new(ColumnRef(SingleName("qux".into())))]
         )
         .with_alias("a")
     ))]

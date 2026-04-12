@@ -121,9 +121,9 @@ mod tests {
             .with_output(JsonOutput::from(Int4))
     )))]
     #[test_case("1, foo := 2, bar => 3" => Ok(ExplicitCall(Some(vec![
-        NamedValue::unnamed(IntegerConst(1)),
-        NamedValue::new(Some("foo".into()), IntegerConst(2)),
-        NamedValue::new(Some("bar".into()), IntegerConst(3)),
+        NamedValue::new(IntegerConst(1)),
+        NamedValue::new(IntegerConst(2)).with_name("foo"),
+        NamedValue::new(IntegerConst(3)).with_name("bar"),
     ]))))]
     #[test_case("'bar': 2" => Ok(SqlSyntax(
         JsonObjectArgs::new()

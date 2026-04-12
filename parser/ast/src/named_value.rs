@@ -6,15 +6,21 @@ pub struct NamedValue {
 }
 
 impl NamedValue {
-    pub fn new(name: Option<Str>, value: ExprNode) -> Self {
-        Self { name, value }
-    }
-
-    pub fn unnamed(value: ExprNode) -> Self {
+    pub fn new(value: ExprNode) -> Self {
         Self {
             name: None,
-            value,
+            value
         }
+    }
+
+    pub fn set_name(&mut self, name: Option<Str>) -> &mut Self {
+        self.name = name;
+        self
+    }
+
+    pub fn with_name<T: Into<Str>>(mut self, name: T) -> Self {
+        self.name = Some(name.into());
+        self
     }
 
     pub fn name(&self) -> Option<&str> {

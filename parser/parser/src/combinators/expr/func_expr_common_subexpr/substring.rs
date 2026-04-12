@@ -30,7 +30,7 @@ fn substring_args(ctx: &mut ParserContext) -> scan::Result<SubstringFunc> {
         && arg.name().is_none()
         && let Some((from, r#for)) = substring_list(ctx).optional()?
     {
-        let (_, arg) = mem::replace(arg, NamedValue::unnamed(NullConst)).into();
+        let (_, arg) = mem::replace(arg, NamedValue::new(NullConst)).into();
         let args = SubstringFunc::SqlSyntax(arg, from, r#for);
         return Ok(args)
     }
@@ -136,7 +136,7 @@ mod tests {
     #[test_case("substring('foo')" => Ok(
         SubstringFunc::ExplicitCall(
             Some(vec![
-                NamedValue::unnamed(StringConst("foo".into()))
+                NamedValue::new(StringConst("foo".into()))
             ])
         )
     ))]
@@ -146,13 +146,13 @@ mod tests {
 
     #[test_case("'foo'" => Ok(
         SubstringFunc::ExplicitCall(Some(vec![
-            NamedValue::unnamed(StringConst("foo".into())),
+            NamedValue::new(StringConst("foo".into())),
         ]))
     ))]
     #[test_case("'foo', bar => 1" => Ok(
         SubstringFunc::ExplicitCall(Some(vec![
-            NamedValue::unnamed(StringConst("foo".into())),
-            NamedValue::new(Some("bar".into()), IntegerConst(1))
+            NamedValue::new(StringConst("foo".into())),
+            NamedValue::new(IntegerConst(1)).with_name("bar")
         ]))
     ))]
     #[test_case("'foo' similar 'bar' escape 'baz'" => Ok(

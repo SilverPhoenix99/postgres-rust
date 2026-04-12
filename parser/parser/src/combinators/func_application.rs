@@ -205,13 +205,13 @@ mod tests {
     #[test_case("(*)" => Ok(Wildcard { order_within_group: None }))]
     #[test_case("(distinct 1, 2)" => Ok(Distinct {
         args: vec![
-            NamedValue::unnamed(IntegerConst(1)),
-            NamedValue::unnamed(IntegerConst(2)),
+            NamedValue::new(IntegerConst(1)),
+            NamedValue::new(IntegerConst(2)),
         ],
         order: None
     }))]
     #[test_case("(variadic 1)" => Ok(Variadic {
-        args: vec![NamedValue::unnamed(IntegerConst(1))],
+        args: vec![NamedValue::new(IntegerConst(1))],
         order: None
     }))]
     #[test_case("()" => Ok(Empty { order_within_group: None }))]
@@ -234,8 +234,8 @@ mod tests {
 
         assert_eq!(
             vec![
-                NamedValue::unnamed(IntegerConst(1)),
-                NamedValue::unnamed(IntegerConst(2)),
+                NamedValue::new(IntegerConst(1)),
+                NamedValue::new(IntegerConst(2)),
             ],
             args
         )
@@ -256,9 +256,9 @@ mod tests {
 
         assert_eq!(
             vec![
-                NamedValue::unnamed(IntegerConst(1)),
-                NamedValue::unnamed(IntegerConst(2)),
-                NamedValue::unnamed(IntegerConst(3)),
+                NamedValue::new(IntegerConst(1)),
+                NamedValue::new(IntegerConst(2)),
+                NamedValue::new(IntegerConst(3)),
             ],
             args
         )
@@ -266,17 +266,17 @@ mod tests {
 
     #[test_case("1, 2, variadic 3" => Ok((
         vec![
-            NamedValue::unnamed(IntegerConst(1)),
-            NamedValue::unnamed(IntegerConst(2)),
-            NamedValue::unnamed(IntegerConst(3)),
+            NamedValue::new(IntegerConst(1)),
+            NamedValue::new(IntegerConst(2)),
+            NamedValue::new(IntegerConst(3)),
         ],
         true
     )))]
     #[test_case("1, 2, 3" => Ok((
         vec![
-            NamedValue::unnamed(IntegerConst(1)),
-            NamedValue::unnamed(IntegerConst(2)),
-            NamedValue::unnamed(IntegerConst(3)),
+            NamedValue::new(IntegerConst(1)),
+            NamedValue::new(IntegerConst(2)),
+            NamedValue::new(IntegerConst(3)),
         ],
         false
     )))]
@@ -306,29 +306,29 @@ mod tests {
                         .collect::<Vec<_>>()
                 ),
             expected = vec![
-                NamedValue::unnamed(IntegerConst(1)),
-                NamedValue::unnamed(IntegerConst(2)),
-                NamedValue::unnamed(IntegerConst(3)),
-                NamedValue::new(Some("foo".into()), IntegerConst(4)),
-                NamedValue::new(Some("bar".into()), IntegerConst(5)),
+                NamedValue::new(IntegerConst(1)),
+                NamedValue::new(IntegerConst(2)),
+                NamedValue::new(IntegerConst(3)),
+                NamedValue::new(IntegerConst(4)).with_name("foo"),
+                NamedValue::new(IntegerConst(5)).with_name("bar"),
             ]
         )
     }
 
     #[test_case("1" => Ok((
-        NamedValue::unnamed(IntegerConst(1)),
+        NamedValue::new(IntegerConst(1)),
         false
     )))]
     #[test_case("VARIADIC 2" => Ok((
-        NamedValue::unnamed(IntegerConst(2)),
+        NamedValue::new(IntegerConst(2)),
         true
     )))]
     #[test_case("foo := 3" => Ok((
-        NamedValue::new(Some("foo".into()), IntegerConst(3)),
+        NamedValue::new(IntegerConst(3)).with_name("foo"),
         false
     )))]
     #[test_case("VARIADIC bar => 4" => Ok((
-        NamedValue::new(Some("bar".into()), IntegerConst(4)),
+        NamedValue::new(IntegerConst(4)).with_name("bar"),
         true
     )))]
     fn test_variadic_arg(source: &str) -> scan::Result<(NamedValue, bool)> {

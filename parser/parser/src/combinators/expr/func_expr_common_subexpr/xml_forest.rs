@@ -25,8 +25,8 @@ mod tests {
 
     #[test_case("xmlforest('foo', 'bar' as baz)" => Ok(
         XmlForest(vec![
-            NamedValue::unnamed(StringConst("foo".into())),
-            NamedValue::new(Some("baz".into()), StringConst("bar".into())),
+            NamedValue::new(StringConst("foo".into())),
+            NamedValue::new(StringConst("bar".into())).with_name("baz"),
         ])
     ))]
     fn test_xml_forest(source: &str) -> scan::Result<SqlFunction> {

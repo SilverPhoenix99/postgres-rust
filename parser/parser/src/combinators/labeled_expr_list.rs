@@ -19,7 +19,10 @@ fn labeled_expr(ctx: &mut ParserContext) -> scan::Result<NamedValue> {
     ).parse(ctx)?;
 
     let name = name.map(|(_, name)| name);
-    let value = NamedValue::new(name, value);
+
+    let mut value = NamedValue::new(value);
+    value.set_name(name);
+
     Ok(value)
 }
 
@@ -32,10 +35,10 @@ mod tests {
     use test_case::test_case;
 
     #[test_case("1" => Ok(
-        NamedValue::unnamed(IntegerConst(1))
+        NamedValue::new(IntegerConst(1))
     ))]
     #[test_case("2 as x" => Ok(
-        NamedValue::new(Some("x".into()), IntegerConst(2))
+        NamedValue::new(IntegerConst(2)).with_name("x")
     ))]
     fn test_labeled_expr(source: &str) -> scan::Result<NamedValue> {
         test_parser!(source, labeled_expr)

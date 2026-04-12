@@ -186,7 +186,7 @@ mod tests {
         AttrTail::FuncTail {
             args: FuncArgsKind::All {
                 args: vec![Located(
-                    NamedValue::unnamed(IntegerConst(1)),
+                    NamedValue::new(IntegerConst(1)),
                     Location::new(1..2, 1, 2)
                 )],
                 order: None

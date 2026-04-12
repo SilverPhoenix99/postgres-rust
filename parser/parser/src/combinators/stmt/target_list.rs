@@ -22,7 +22,9 @@ fn target_el(ctx: &mut ParserContext) -> scan::Result<OneOrAll<NamedValue>> {
             target_el_alias.optional()
         )
             .map(|(value, name)| {
-                OneOrAll::One(NamedValue::new(name, value))
+                let mut value = NamedValue::new(value);
+                value.set_name(name);
+                OneOrAll::One(value)
             })
     ).parse(ctx)
 }
@@ -55,10 +57,10 @@ mod tests {
 
     #[test_case("*" => Ok(OneOrAll::All))]
     #[test_case("1" => Ok(OneOrAll::One(
-        NamedValue::unnamed(IntegerConst(1))
+        NamedValue::new(IntegerConst(1))
     )))]
     #[test_case("2 foo" => Ok(OneOrAll::One(
-        NamedValue::new(Some("foo".into()), IntegerConst(2))
+        NamedValue::new(IntegerConst(2)).with_name("foo")
     )))]
     fn test_target_el(source: &str) -> scan::Result<OneOrAll<NamedValue>> {
         test_parser!(source, target_el)
