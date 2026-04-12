@@ -48,6 +48,7 @@ pg_basics::reexport! { pub
     generic_option_kind,
     grant_option,
     grant_stmt,
+    graph_table_ref,
     indirection,
     indirection_expr,
     interval_range,

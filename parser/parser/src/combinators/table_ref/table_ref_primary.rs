@@ -2,7 +2,7 @@ pub(super) fn table_ref_primary(ctx: &mut ParserContext) -> scan::Result<TableRe
 
     /*
           paren_table_ref
-        | TODO: GRAPH_TABLE '(' qualified_name MATCH graph_pattern COLUMNS '(' labeled_expr_list ')' ')' ( alias_clause )?
+        | GRAPH_TABLE '(' qualified_name MATCH graph_pattern COLUMNS '(' labeled_expr_list ')' ')' ( alias_clause )?
         | LATERAL '(' SelectStmt ')' ( alias_clause )?
         | LATERAL lateral_table_ref
         | LATERAL func_expr_windowless ( ordinality )? ( func_alias_clause )?
@@ -15,6 +15,7 @@ pub(super) fn table_ref_primary(ctx: &mut ParserContext) -> scan::Result<TableRe
 
     alt!(
         paren_table_ref,
+        graph_table_ref.map(From::from),
         seq!(
             Lateral,
             alt!(
@@ -56,6 +57,7 @@ mod tests {
     }
 
     #[test_case("(foo) as bar" => matches Ok(_))]
+    #[test_case("graph_table (foo match -> columns(bar)) as baz" => matches Ok(_))]
     #[test_case("lateral rows from ( foo() )" => matches Ok(_))]
     #[test_case("lateral baz()" => matches Ok(_))]
     #[test_case("rows from ( foo() )" => matches Ok(_))]
@@ -73,6 +75,7 @@ use crate::combinators::core::Combinator;
 use crate::combinators::table_ref::ambiguous_table_ref;
 use crate::combinators::table_ref::func_subexpr_table_ref;
 use crate::combinators::table_ref::func_windowless_table_ref;
+use crate::combinators::table_ref::graph_table_ref;
 use crate::combinators::table_ref::json_aggregate_table_ref;
 use crate::combinators::table_ref::lateral_table_ref;
 use crate::combinators::table_ref::paren_table_ref;

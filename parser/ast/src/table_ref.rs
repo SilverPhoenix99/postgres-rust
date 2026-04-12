@@ -1,6 +1,5 @@
 #[derive(Debug, Clone, PartialEq, Eq, From)]
 pub enum TableRef {
-    // TODO: GraphTable(GraphTable),
     #[from]
     Xml(XmlTable),
     #[from]
@@ -19,9 +18,12 @@ pub enum TableRef {
     Join(Box<JoinExpr>),
     #[from(ParenTableRef)]
     Parenthesized(Box<ParenTableRef>),
+    #[from]
+    Graph(GraphTableRef),
 }
 
 use crate::FunctionTableRef;
+use crate::GraphTableRef;
 use crate::JoinExpr;
 use crate::JsonTable;
 use crate::ParenTableRef;

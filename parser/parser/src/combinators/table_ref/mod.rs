@@ -5,6 +5,7 @@ pg_basics::reexport! {
     func_subexpr_table_ref,
     func_windowless_table_ref,
     graph_pattern,
+    graph_table_ref,
     join_qual,
     join_type,
     join_type_prefix,
