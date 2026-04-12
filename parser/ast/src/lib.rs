@@ -100,6 +100,8 @@ pg_basics::reexport! { pub
     relation_name,
     relation_table_ref,
     rename_stmt,
+    returning_clause,
+    returning_option_kind,
     role_kind,
     role_spec,
     role_stmt,

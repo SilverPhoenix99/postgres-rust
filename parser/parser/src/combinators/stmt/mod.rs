@@ -122,6 +122,7 @@ pg_basics::reexport! {
     reindex_stmt,
     repack_stmt,
     reset_stmt,
+    returning_clause,
     revoke_stmt,
     role_stmt,
     security_label_stmt,
