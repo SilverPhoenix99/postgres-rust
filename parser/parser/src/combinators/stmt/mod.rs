@@ -96,6 +96,7 @@ pg_basics::reexport! {
     database_stmt,
     deallocate_stmt,
     default_privileges_stmt,
+    delete_stmt,
     discard_stmt,
     do_stmt,
     drop_stmt,
