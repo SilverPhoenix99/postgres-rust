@@ -18,6 +18,29 @@ pub(super) fn prepare_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
     Ok(stmt)
 }
 
+/// Alias: `PreparableStmt`
+pub(super) fn preparable_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+
+    /*
+        ( with_clause )? direct_preparable_stmt
+    */
+
+    todo!()
+}
+
+fn direct_preparable_stmt(ctx: &mut ParserContext) -> scan::Result<RawStmt> {
+
+    /*
+          direct_select_stmt
+        | direct_insert_stmt
+        | direct_update_stmt
+        | direct_delete_stmt
+        | direct_merge_stmt
+    */
+
+    todo!()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

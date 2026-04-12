@@ -1,6 +1,25 @@
+/// Alias: `SelectStmt`
 pub(in crate::combinators) fn select_stmt(ctx: &mut ParserContext) -> scan::Result<SelectStmt> {
 
+    /*
+        ( with_clause )? direct_select_stmt
+    */
+
     todo!()
+}
+
+/// `SelectStmt` without CTE
+pub(in crate::combinators) fn direct_select_stmt(ctx: &mut ParserContext) -> scan::Result<SelectStmt> {
+
+    /*
+        select_clause ( sort_clause )? ( select_suffix )?
+    */
+
+    todo!()
+}
+
+pg_basics::reexport! {
+    having_clause,
 }
 
 #[cfg(test)]
