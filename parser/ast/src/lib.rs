@@ -159,6 +159,7 @@ pub use {
     database_stmt::*,
     graph_pattern::graph_element_pattern::*,
     graph_pattern::graph_element_pattern_kind::*,
+    graph_pattern::*,
 };
 
 pub type BinaryOperands = Box<(ExprNode, ExprNode)>;
