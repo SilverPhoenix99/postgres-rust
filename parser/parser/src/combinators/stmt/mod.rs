@@ -103,6 +103,7 @@ pg_basics::reexport! {
     explain_stmt,
     extension_stmt,
     fetch_stmt,
+    from_clause,
     from_list,
     function_stmt,
     generic_options,
