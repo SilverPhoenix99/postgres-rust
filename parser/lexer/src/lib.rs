@@ -207,7 +207,6 @@ impl<'src> Lexer<'src> {
         // The length is guaranteed to be at least 1.
 
         let start_index = self.buffer.current_index();
-        let mut pg_op = false;
         while self.buffer.peek().is_some_and(is_op) {
             let is_comment_start = {
                 let rem = self.buffer.remainder();
@@ -220,13 +219,42 @@ impl<'src> Lexer<'src> {
             }
 
             // Consume all ops for now, and check for restrictions afterward
-            let c = self.buffer.consume_one()
+            self.buffer.consume_one()
                 .expect("consuming inside a scope with peek");
-            pg_op |= is_pg_op(c)
         }
 
         // SAFETY: Length is guaranteed to be at least 1.
         let mut op = self.buffer.slice(start_index);
+
+        let pg_op = op.chars().any(is_pg_op);
+
+        if !pg_op {
+            // Custom operator with PG op chars can have '+' or '-' as suffixes.
+            // E.g., '?-' is a valid operator.
+
+            // On the other hand, custom operators that only have SQL-standard chars
+            // cannot have '+' or '-' as suffixes.
+            // E.g., '=-' should be tokenized as '=' and '-' separately.
+            let mut num = op.as_bytes()
+                .iter()
+                .rev()
+                .take_while(|c| **c == b'+' || **c == b'-')
+                .count();
+
+            if num == op.len() {
+                // All chars are either '+' or '-'.
+                // Keep just a single char.
+                num -= 1;
+            }
+
+            let pos = self.buffer.current_index() - num as u32;
+
+            // SAFETY: only returns ASCII chars ('+' and '-')
+            self.buffer.seek(pos);
+
+            let len = op.len() - num;
+            op = &op[..len];
+        }
 
         match op {
             "%"  => Ok(Operator(Percent)),
@@ -246,25 +274,6 @@ impl<'src> Lexer<'src> {
             "<>" => Ok(Operator(NotEquals)),
             "->" => Ok(Operator(RightArrow)),
             _ => {
-                // Custom operator with PG op chars can have '+' or '-' as suffixes.
-                // E.g., '?-' is a valid operator.
-
-                if !pg_op {
-                    // Custom operators that only have SQL-standard chars
-                    // cannot have '+' or '-' as suffixes.
-                    // E.g., '=-' should be tokenized as '=' and '-' separately.
-                    let num = op.as_bytes()
-                        .iter()
-                        .rev()
-                        .take_while(|c| **c == b'+' || **c == b'-')
-                        .count();
-                    // SAFETY: only returns ASCII chars ('+' and '-')
-                    self.buffer.seek(self.buffer.current_index() - num as u32);
-
-                    let len = op.len() - num;
-                    op = &op[..len];
-                }
-
                 if op.len() >= NAMEDATALEN {
                     Err(OperatorTooLong)
                 }
@@ -776,6 +785,7 @@ mod tests {
         //=-\n\
         -@-\n\
         ||-\n\
+        <-\n\
         ";
         let mut lex = Lexer::new(source);
 
@@ -783,6 +793,8 @@ mod tests {
         assert_tok(Operator(Minus), 3..4, 1, 4, lex.next());
         assert_tok(UserDefinedOperator, 5..8, 2, 1, lex.next());
         assert_tok(UserDefinedOperator, 9..12, 3, 1, lex.next());
+        assert_tok(Operator(Less), 13..14, 4, 1, lex.next());
+        assert_tok(Operator(Minus), 14..15, 4, 2, lex.next());
         assert_eq!(None, lex.next());
     }
 
