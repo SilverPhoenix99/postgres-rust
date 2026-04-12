@@ -9,7 +9,7 @@ pub(super) fn path_factor(ctx: &mut ParserContext) -> scan::Result<GraphElementP
         graph_pattern_quantifier.optional()
     ).parse(ctx)?;
 
-    primary.pattern_mut().set_quantifier(quantifier);
+    primary.set_quantifier(quantifier);
 
     Ok(primary)
 }

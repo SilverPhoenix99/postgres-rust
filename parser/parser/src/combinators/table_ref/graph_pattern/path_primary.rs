@@ -1,23 +1,46 @@
 pub(super) fn path_primary(ctx: &mut ParserContext) -> scan::Result<GraphElementPatternKind> {
 
     /*
+        | '(' path_term ( where_clause )? ')'       => ParenExpr
+        | '(' path_primary_expr           ')'       => VertexPattern
         | right_arrow                               => EdgePatternRight
         | left_arrow                                => EdgePatternLeft
         | left_arrow '[' path_primary_expr ']' '-'  => EdgePatternLeft
         | '-'                                       => EdgePatternAny
         | '-' '[' path_primary_expr ']' '-'         => EdgePatternAny
         | '-' '[' path_primary_expr ']' right_arrow => EdgePatternRight
-        | TODO: '(' path_term ( where_clause )? ')'       => ParenExpr
-        | TODO: '(' path_primary_expr           ')'       => VertexPattern
     */
 
     let kind: GraphElementPatternKind = alt!(
+        paren!(paren_pattern),
         right_arrow_pattern,
         left_arrow_pattern,
         any_pattern
     ).parse(ctx)?;
 
     Ok(kind)
+}
+
+fn paren_pattern(ctx: &mut ParserContext) -> scan::Result<GraphElementPatternKind> {
+
+    /*
+        path_term ( where_clause )?
+        path_primary_expr
+    */
+
+        alt!(
+            seq!(
+                path_term,
+                where_clause.optional()
+            ).map(|(sub_expr, where_clause)|
+                GraphElementPatternKind::ParenExpr {
+                    sub_expr,
+                    where_clause,
+                    quantifier: None,
+                }
+            ),
+            path_primary_expr.map(GraphElementPatternKind::VertexPattern)
+        ).parse(ctx)
 }
 
 fn right_arrow_pattern(ctx: &mut ParserContext) -> scan::Result<GraphElementPatternKind> {
@@ -120,6 +143,10 @@ fn left_arrow(ctx: &mut ParserContext) -> scan::Result<()> {
 mod tests {
     use super::*;
     use crate::test_parser;
+    #[allow(unused_imports)]
+    use pg_ast::ExprNode::BooleanConst;
+    use pg_ast::GraphElementPatternKind;
+    use pg_parser_core::scan;
     use test_case::test_case;
 
     #[test_case("->" => matches Ok(_); "right pattern")]
@@ -127,6 +154,57 @@ mod tests {
     #[test_case("-" => matches Ok(_); "any pattern")]
     fn test_path_primary(source: &str) -> scan::Result<GraphElementPatternKind> {
         test_parser!(source, path_primary)
+    }
+
+    // path_primary
+    // path_primary where_clause
+    #[test_case("" => Ok(
+        GraphElementPatternKind::VertexPattern(
+            GraphElementPattern::default()
+        )
+    ); "empty")]
+    #[test_case("foo" => Ok(
+        GraphElementPatternKind::VertexPattern(
+            GraphElementPattern::default()
+                .with_variable("foo")
+        )
+    ))]
+    #[test_case("is a" => Ok(
+        GraphElementPatternKind::VertexPattern(
+            GraphElementPattern::default()
+                .with_label_expr(vec!["a".into()])
+        )
+    ))]
+    #[test_case("where true" => Ok(
+        GraphElementPatternKind::VertexPattern(
+            GraphElementPattern::default()
+                .with_where_clause(BooleanConst(true))
+        )
+    ))]
+    #[test_case("-[]-" => Ok(
+        GraphElementPatternKind::ParenExpr {
+            sub_expr: vec![
+                GraphElementPatternKind::EdgePatternAny(
+                    GraphElementPattern::default()
+                )
+            ],
+            where_clause: None,
+            quantifier: None,
+        }
+    ))]
+    #[test_case("-[]- where true" => Ok(
+        GraphElementPatternKind::ParenExpr {
+            sub_expr: vec![
+                GraphElementPatternKind::EdgePatternAny(
+                    GraphElementPattern::default()
+                )
+            ],
+            where_clause: Some(BooleanConst(true)),
+            quantifier: None,
+        }
+    ); "paren where true")]
+    fn test_paren_pattern(source: &str) -> scan::Result<GraphElementPatternKind> {
+        test_parser!(source, paren_pattern)
     }
 
     #[test_case("->" => Ok(EdgePatternRight(
@@ -176,11 +254,14 @@ mod tests {
 }
 
 use super::path_primary_expr;
+use super::path_term;
 use crate::alt;
 use crate::brackets;
 use crate::combinators::core::Combinator;
+use crate::combinators::where_clause;
 use crate::context::ParserContext;
 use crate::no_match;
+use crate::paren;
 use crate::seq;
 use pg_ast::GraphElementPattern;
 use pg_ast::GraphElementPatternKind;

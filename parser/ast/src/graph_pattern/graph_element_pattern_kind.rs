@@ -5,33 +5,29 @@ pub enum GraphElementPatternKind {
     EdgePatternRight(GraphElementPattern),
     EdgePatternAny(GraphElementPattern),
     ParenExpr {
-        sub_expr: Box<GraphElementPattern>,
+        sub_expr: Vec<GraphElementPatternKind>,
         where_clause: Option<ExprNode>,
+        quantifier: Option<RangeInclusive<NonNegative>>,
     },
 }
 
 impl GraphElementPatternKind {
-
-    pub fn pattern(&self) -> &GraphElementPattern {
+    
+    pub fn set_quantifier(&mut self, quantifier: Option<RangeInclusive<NonNegative>>) -> &mut Self {
+        
         match self {
-            Self::VertexPattern(pattern) => pattern,
-            Self::EdgePatternLeft(pattern) => pattern,
-            Self::EdgePatternRight(pattern) => pattern,
-            Self::EdgePatternAny(pattern) => pattern,
-            Self::ParenExpr { sub_expr, .. } => sub_expr,
+            Self::VertexPattern(pattern) => { pattern.set_quantifier(quantifier); }
+            Self::EdgePatternLeft(pattern) => { pattern.set_quantifier(quantifier); }
+            Self::EdgePatternRight(pattern) => { pattern.set_quantifier(quantifier); }
+            Self::EdgePatternAny(pattern) => { pattern.set_quantifier(quantifier); }
+            Self::ParenExpr { quantifier: q, .. } => { *q = quantifier; }
         }
-    }
 
-    pub fn pattern_mut(&mut self) -> &mut GraphElementPattern {
-        match self {
-            Self::VertexPattern(pattern) => pattern,
-            Self::EdgePatternLeft(pattern) => pattern,
-            Self::EdgePatternRight(pattern) => pattern,
-            Self::EdgePatternAny(pattern) => pattern,
-            Self::ParenExpr { sub_expr, .. } => sub_expr,
-        }
+        self
     }
 }
 
 use crate::ExprNode;
 use crate::GraphElementPattern;
+use core::ops::RangeInclusive;
+use pg_basics::NonNegative;
