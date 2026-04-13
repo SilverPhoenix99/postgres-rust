@@ -1,3 +1,5 @@
+mod for_locking_clause;
+
 /// Alias: `SelectStmt`
 pub(in crate::combinators) fn select_stmt(ctx: &mut ParserContext) -> scan::Result<SelectStmt> {
 
