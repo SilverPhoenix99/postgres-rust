@@ -77,6 +77,7 @@ pg_basics::reexport! { pub
     json_wrapper_behavior,
     lock_clause_strength,
     lock_wait_policy,
+    locking_clause,
     named_value,
     normalize_func,
     notify_stmt,
