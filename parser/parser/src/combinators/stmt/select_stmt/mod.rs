@@ -22,6 +22,21 @@ pg_basics::reexport! {
     having_clause,
 }
 
+pub(in crate::combinators) fn is_select_stmt(ctx: &mut ParserContext) -> bool {
+
+    /*
+        - WITH | SELECT | TABLE are Reserved keywords, so they don't conflict on many use cases.
+        - VALUES is ColumnName, so it needs to check for '('.
+    */
+
+    matches!(ctx.stream_mut().peek2(),
+        Ok(
+            (Keyword(With | Select | Table), _)
+            | (Keyword(Values), Operator(OpenParenthesis))
+        )
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -36,4 +51,11 @@ mod tests {
 
 use crate::context::ParserContext;
 use pg_ast::SelectStmt;
+use pg_lexer::Keyword::Select;
+use pg_lexer::Keyword::Table;
+use pg_lexer::Keyword::Values;
+use pg_lexer::Keyword::With;
+use pg_lexer::OperatorKind::OpenParenthesis;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenValue::Keyword;
+use pg_parser_core::stream::TokenValue::Operator;

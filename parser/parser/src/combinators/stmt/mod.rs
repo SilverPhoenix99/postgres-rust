@@ -143,8 +143,9 @@ mod transaction_stmt;
 pub(in crate::combinators) use transaction_stmt::transaction_stmt_legacy;
 use transaction_stmt::{transaction_mode_list, transaction_stmt};
 
-mod select_stmt;
-pub(in crate::combinators) use select_stmt::select_stmt;
+pg_basics::reexport! { pub(in crate::combinators)
+    select_stmt
+}
 
 use object_type_name::{
     access_method::*,

@@ -19,22 +19,17 @@ pub(super) fn paren_table_ref(ctx: &mut ParserContext) -> scan::Result<TableRef>
 fn table_ref_paren(ctx: &mut ParserContext) -> scan::Result<TableRef> {
 
     /*
-          WITH | SELECT | TABLE => SelectStmt
-        | (VALUES, '(') => SelectStmt
-        | _ => table_ref
+          SelectStmt
+        | table_ref
     */
 
-    match ctx.stream_mut().peek2() {
-        Ok(
-            (Keyword(With | Select | Table), _)
-            | (Keyword(Values), Operator(OpenParenthesis))
-        ) => {
-            select_stmt(ctx)
-                .map(SubselectTableRef::new)
-                .map(From::from)
-        },
-
-        _ => table_ref(ctx)
+    if is_select_stmt(ctx) {
+        select_stmt(ctx)
+            .map(SubselectTableRef::new)
+            .map(From::from)
+    }
+    else {
+        table_ref(ctx)
     }
 }
 
@@ -77,6 +72,7 @@ mod tests {
 }
 
 use crate::combinators::core::Combinator;
+use crate::combinators::stmt::is_select_stmt;
 use crate::combinators::stmt::select_stmt;
 use crate::combinators::table_ref;
 use crate::combinators::table_ref::alias_clause;
@@ -86,11 +82,4 @@ use crate::seq;
 use pg_ast::ParenTableRef;
 use pg_ast::SubselectTableRef;
 use pg_ast::TableRef;
-use pg_lexer::Keyword::Select;
-use pg_lexer::Keyword::Table;
-use pg_lexer::Keyword::Values;
-use pg_lexer::Keyword::With;
-use pg_lexer::OperatorKind::OpenParenthesis;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenValue::Keyword;
-use pg_parser_core::stream::TokenValue::Operator;
