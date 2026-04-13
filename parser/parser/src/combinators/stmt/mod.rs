@@ -104,6 +104,7 @@ pg_basics::reexport! {
     explain_stmt,
     extension_stmt,
     fetch_stmt,
+    for_locking_strength,
     from_clause,
     from_list,
     function_stmt,
