@@ -1,3 +1,20 @@
+/// The `Option` result does not come from an absence of value.
+/// It returns `None` for the expression `FOR READ ONLY`.
+pub(in crate::combinators) fn for_locking_clause(ctx: &mut ParserContext) -> scan::Result<Option<Vec<LockingClause>>> {
+
+    /*
+          FOR READ ONLY
+        | for_locking_items
+    */
+
+    if matches!(ctx.stream_mut().peek2(), Ok((Keyword(For), Keyword(Read)))) {
+        seq!(For, Read, Only).parse(ctx)?;
+        return Ok(None)
+    }
+
+    Ok(Some(for_locking_items(ctx)?))
+}
+
 fn for_locking_items(ctx: &mut ParserContext) -> scan::Result<Vec<LockingClause>> {
 
     /*
@@ -60,7 +77,14 @@ mod tests {
     };
     use test_case::test_case;
 
-    #[test_case("for update of foo, bar nowait for no key update of qux" => matches Ok(_))]
+    #[test_case("for read only" => matches Ok(None))]
+    #[test_case("for share of foo" => matches Ok(Some(_)))]
+    fn test_for_locking_clause(source: &str) -> scan::Result<Option<Vec<LockingClause>>> {
+        test_parser!(source, for_locking_clause)
+
+    }
+
+    #[test_case("for key share of foo, bar skip locked for no key update of qux" => matches Ok(_))]
     fn test_for_locking_items(source: &str) -> scan::Result<Vec<LockingClause>> {
         test_parser!(source, for_locking_items)
     }
@@ -119,8 +143,12 @@ use pg_ast::LockWaitPolicy::WaitError;
 use pg_ast::LockWaitPolicy::WaitSkip;
 use pg_ast::LockingClause;
 use pg_ast::RelationName;
+use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::Locked;
 use pg_lexer::Keyword::Nowait;
 use pg_lexer::Keyword::Of;
+use pg_lexer::Keyword::Only;
+use pg_lexer::Keyword::Read;
 use pg_lexer::Keyword::Skip;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenValue::Keyword;
