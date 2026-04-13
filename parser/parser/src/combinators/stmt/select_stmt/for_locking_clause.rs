@@ -1,3 +1,12 @@
+fn for_locking_items(ctx: &mut ParserContext) -> scan::Result<Vec<LockingClause>> {
+
+    /*
+        ( for_locking_item )+
+    */
+
+    many!(for_locking_item).parse(ctx)
+}
+
 fn for_locking_item(ctx: &mut ParserContext) -> scan::Result<LockingClause> {
 
     /*
@@ -51,6 +60,10 @@ mod tests {
     };
     use test_case::test_case;
 
+    #[test_case("for update of foo, bar nowait for no key update of qux" => matches Ok(_))]
+    fn test_for_locking_items(source: &str) -> scan::Result<Vec<LockingClause>> {
+        test_parser!(source, for_locking_items)
+    }
 
     #[test_case("for update of foo, bar nowait" => Ok(
         LockingClause::new(
@@ -99,6 +112,7 @@ use crate::combinators::core::Combinator;
 use crate::combinators::qualified_name_list;
 use crate::combinators::stmt::for_locking_strength;
 use crate::context::ParserContext;
+use crate::many;
 use crate::seq;
 use pg_ast::LockWaitPolicy;
 use pg_ast::LockWaitPolicy::WaitError;
