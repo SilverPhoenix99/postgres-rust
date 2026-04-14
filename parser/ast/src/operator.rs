@@ -16,5 +16,7 @@ pub enum Operator {
     NotLike,
     ILike,
     NotILike,
+    RightArrow,
+    Pipe,
     UserDefined(Box<str>),
 }

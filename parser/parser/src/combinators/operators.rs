@@ -67,6 +67,8 @@ fn all_op(ctx: &mut ParserContext) -> scan::Result<Operator> {
         multiplicative_op,
         exponentiation_op,
         boolean_op,
+        RightArrow.map(|_| Operator::RightArrow),
+        Pipe.map(|_| Operator::Pipe),
         user_defined_operator.map(UserDefined)
     ).parse(ctx)
 }
@@ -175,7 +177,7 @@ mod tests {
     #[test]
     fn test_math_op() {
 
-        let source = "+ - * / % ^ < > = <= >= != <>";
+        let source = "+ - * / % ^ < > = <= >= != <> -> |";
         let mut ctx = ParserContext::from(source);
 
         assert_eq!(Ok(Addition), all_op(&mut ctx));
@@ -191,6 +193,8 @@ mod tests {
         assert_eq!(Ok(Operator::GreaterEquals), all_op(&mut ctx));
         assert_eq!(Ok(Operator::NotEquals), all_op(&mut ctx));
         assert_eq!(Ok(Operator::NotEquals), all_op(&mut ctx));
+        assert_eq!(Ok(Operator::RightArrow), all_op(&mut ctx));
+        assert_eq!(Ok(Operator::Pipe), all_op(&mut ctx));
     }
 
     #[test]
@@ -236,5 +240,7 @@ use pg_lexer::OperatorKind::Minus;
 use pg_lexer::OperatorKind::Mul;
 use pg_lexer::OperatorKind::NotEquals;
 use pg_lexer::OperatorKind::Percent;
+use pg_lexer::OperatorKind::Pipe;
 use pg_lexer::OperatorKind::Plus;
+use pg_lexer::OperatorKind::RightArrow;
 use pg_parser_core::scan;
