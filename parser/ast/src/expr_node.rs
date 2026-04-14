@@ -35,9 +35,14 @@ pub enum ExprNode {
     JsonObjectAggExpr(Box<JsonObjectAggExpr>),
 
     /// `IS DISTINCT FROM`
-    Distinct(BinaryOperands),
+    IsDistinct(BinaryOperands),
     /// `IS NOT DISTINCT FROM`
-    NotDistinct(BinaryOperands),
+    IsNotDistinct(BinaryOperands),
+
+    /// `IS DOCUMENT`
+    IsDocument(Box<ExprNode>),
+    /// `IS NOT DOCUMENT`
+    IsNotDocument(Box<ExprNode>),
 
     #[from(IndirectionExpr)]
     Indirection(Box<IndirectionExpr>),

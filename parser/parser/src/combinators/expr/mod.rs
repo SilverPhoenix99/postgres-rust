@@ -47,9 +47,47 @@ fn b_expr_primary(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
     ).parse(ctx)
 }
 
+fn is_expr_tail(ctx: &mut ParserContext, lhs: ExprNode) -> scan::Result<ExprNode> {
+
+    /*
+        IS ( NOT )? ( DOCUMENT | DISTINCT FROM b_expr_prec(1) )
+    */
+
+    let (_, not, rhs) = seq!(
+        Is,
+        Not.optional(),
+        alt!(
+            Document.map(|_| None),
+            seq!(Distinct, FromKw, b_expr /* b_expr_prec(1) */).map(|(_, _, r)| Some(r))
+        )
+    ).parse(ctx)?;
+
+    if let Some(rhs) = rhs {
+        // IS ( NOT )? DISTINCT FROM
+        let expr = (lhs, rhs).into();
+        let expr = if not.is_some() {
+            ExprNode::IsNotDistinct(expr)
+        } else {
+            ExprNode::IsDistinct(expr)
+        };
+        return Ok(expr)
+    }
+
+    let expr = lhs.into();
+    let expr = if not.is_some() {
+        ExprNode::IsNotDocument(expr)
+    }
+    else {
+        ExprNode::IsDocument(expr)
+    };
+
+    Ok(expr)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::combinators::core::parser;
     use crate::test_parser;
     #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
@@ -62,6 +100,24 @@ mod tests {
     fn test_b_expr_primary(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, b_expr_primary)
     }
+
+    #[test_case("is document" => Ok(
+        ExprNode::IsDocument(IntegerConst(1).into())
+    ))]
+    #[test_case("is not document" => Ok(
+        ExprNode::IsNotDocument(IntegerConst(1).into())
+    ))]
+    #[test_case("is distinct from 2" => Ok(
+        ExprNode::IsDistinct((IntegerConst(1), IntegerConst(2)).into())
+    ))]
+    #[test_case("is not distinct from 3" => Ok(
+        ExprNode::IsNotDistinct((IntegerConst(1), IntegerConst(3)).into())
+    ))]
+    fn test_is_expr_tail(source: &str) -> scan::Result<ExprNode> {
+        test_parser!(source, parser(|ctx|
+            is_expr_tail(ctx, IntegerConst(1))
+        ))
+    }
 }
 
 use crate::alt;
@@ -73,6 +129,11 @@ use pg_ast::ExprNode;
 use pg_ast::Operator::Addition;
 use pg_ast::Operator::Subtraction;
 use pg_ast::UnaryExpr;
+use pg_lexer::Keyword::Distinct;
+use pg_lexer::Keyword::Document;
+use pg_lexer::Keyword::FromKw;
+use pg_lexer::Keyword::Is;
+use pg_lexer::Keyword::Not;
 use pg_lexer::OperatorKind::Minus;
 use pg_lexer::OperatorKind::Plus;
 use pg_parser_core::scan;
