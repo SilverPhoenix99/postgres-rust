@@ -1,22 +1,21 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct TypecastExpr<E = ExprNode> {
-    arg: E,
+pub struct TypecastExpr {
+    arg: ExprNode,
     type_name: Type,
 }
 
-impl<E> TypecastExpr<E> {
-    pub fn new<F, T>(arg: F, type_name: T) -> Self
+impl TypecastExpr {
+    pub fn new<T>(arg: ExprNode, type_name: T) -> Self
     where
-        F: Into<E>,
         T: Into<Type>
     {
         Self {
-            arg: arg.into(),
+            arg,
             type_name: type_name.into(),
         }
     }
 
-    pub fn arg(&self) -> &E {
+    pub fn arg(&self) -> &ExprNode {
         &self.arg
     }
 
@@ -24,8 +23,6 @@ impl<E> TypecastExpr<E> {
         &self.type_name
     }
 }
-
-pub type StringTypecastExpr = TypecastExpr<Box<str>>;
 
 use crate::ExprNode;
 use crate::Type;

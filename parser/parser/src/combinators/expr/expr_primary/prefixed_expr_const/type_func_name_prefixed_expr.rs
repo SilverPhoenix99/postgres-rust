@@ -26,23 +26,23 @@ mod tests {
         FuncArgsKind,
         FuncCall,
         FuncCallExpr,
-        StringTypecastExpr,
         TypeName,
+        TypecastExpr,
     };
     use test_case::test_case;
 
     #[test_case("verbose 'foo'" => Ok(
-        StringTypecastExpr::new(
-            "foo",
+        TypecastExpr::new(
+            StringConst("foo".into()),
             TypeName::Generic {
                 name: vec![Str::from("verbose")],
                 type_modifiers: None,
             }
         ).into()
     ))]
-    #[test_case("current_schema(1) 'foo'" => Ok(
-        StringTypecastExpr::new(
-            "foo",
+    #[test_case("current_schema(1) 'bar'" => Ok(
+        TypecastExpr::new(
+            StringConst("bar".into()),
             TypeName::Generic {
                 name: vec![Str::from("current_schema")],
                 type_modifiers: Some(vec![IntegerConst(1)]),

@@ -15,11 +15,12 @@ pub enum ExprNode {
     ParamRef { index: i32 },
     Row(Option<Vec<ExprNode>>),
 
-    /// String constant type cast.
-    ///
-    /// (e.g.: `int '1'`)
-    #[from(StringTypecastExpr)]
-    StringTypecast(Box<StringTypecastExpr>),
+    /// Typecasts:
+    /// * `'1'::int`
+    /// * `int '1'`
+    /// * `CAST('1' as int)`
+    #[from(TypecastExpr)]
+    Typecast(Box<TypecastExpr>),
 
     #[from(BinaryExpr)]
     BinaryExpr(Box<BinaryExpr>),
@@ -78,7 +79,7 @@ use crate::IndirectionExpr;
 use crate::JsonArrayAggExpr;
 use crate::JsonObjectAggExpr;
 use crate::SqlFunction;
-use crate::StringTypecastExpr;
+use crate::TypecastExpr;
 use crate::UnaryExpr;
 use derive_more::From;
 use pg_basics::NumberRadix;
