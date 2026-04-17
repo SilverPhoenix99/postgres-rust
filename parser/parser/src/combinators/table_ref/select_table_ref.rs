@@ -20,8 +20,7 @@ mod tests {
     use super::*;
     use test_case::test_case;
 
-    #[ignore]
-    #[test_case("select 1" => matches Ok(_))]
+    #[test_case("select 1" => ignore["select_stmt not implemented yet"] matches Ok(_))]
     fn test_select_table_ref(source: &str) -> scan::Result<SubselectTableRef> {
         todo!()
     }

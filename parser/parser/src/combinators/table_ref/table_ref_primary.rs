@@ -49,13 +49,7 @@ mod tests {
     use crate::test_parser;
     use test_case::test_case;
 
-    #[ignore]
-    #[test_case("lateral (select 1)" => matches Ok(_))]
-    fn test_table_ref_primary_subselect_table_ref(source: &str) -> scan::Result<TableRef> {
-        // TODO: merge with test_table_ref_primary, when subselect_stmt is working
-        test_parser!(source, table_ref_primary)
-    }
-
+    #[test_case("lateral (select 1)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
     #[test_case("(foo) as bar" => matches Ok(_))]
     #[test_case("graph_table (foo match -> columns(bar)) as baz" => matches Ok(_))]
     #[test_case("lateral rows from ( foo() )" => matches Ok(_))]

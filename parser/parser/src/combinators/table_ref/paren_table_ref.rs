@@ -44,16 +44,11 @@ mod tests {
     #[test_case("foo" => Ok(
         RelationTableRef::new("foo").into()
     ))]
+    #[test_case("select 1" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_case("table" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_case("values (1)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_case("with (1) as t select * from t" => ignore["select_stmt not implemented yet"] matches Ok(_))]
     fn test_table_ref_paren(source: &str) -> scan::Result<TableRef> {
-        test_parser!(source, table_ref_paren)
-    }
-
-    #[ignore]
-    #[test_case("select 1" => matches Ok(_))]
-    #[test_case("table" => matches Ok(_))]
-    #[test_case("values (1)" => matches Ok(_))]
-    #[test_case("with (1) as t select * from t" => matches Ok(_))]
-    fn test_table_ref_paren_select_stmt(source: &str) -> scan::Result<TableRef> {
         test_parser!(source, table_ref_paren)
     }
 
