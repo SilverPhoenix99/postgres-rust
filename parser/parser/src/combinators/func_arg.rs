@@ -11,8 +11,8 @@ pub(super) fn func_arg(ctx: &mut ParserContext) -> scan::Result<FunctionParamete
 
     let mut mode = arg_class(ctx).optional()?;
 
-    let has_name = ctx.stream_mut().peek2()
-        .map(|(first, second)| is_arg_name(first, second))
+    let has_name = ctx.stream_mut().peek_n::<2>()
+        .map(|[first, second]| is_arg_name(first, second))
         .unwrap_or_default();
 
     let arg_name = if has_name {

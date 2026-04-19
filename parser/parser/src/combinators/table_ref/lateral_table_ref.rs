@@ -6,10 +6,10 @@ pub(super) fn lateral_table_ref(ctx: &mut ParserContext) -> scan::Result<TableRe
         | rows_from_stmt
     */
 
-    let table_ref = match ctx.stream_mut().peek2()? {
-        (Keyword(Xmltable), Operator(OpenParenthesis)) => xmltable(ctx)?.into(),
-        (Keyword(Kw::JsonTable), Operator(OpenParenthesis)) => json_table(ctx)?.into(),
-        (Keyword(Rows), Keyword(FromKw)) => rows_from_stmt(ctx)?.into(),
+    let table_ref = match ctx.stream_mut().peek_n::<2>()? {
+        [Keyword(Xmltable), Operator(OpenParenthesis)] => xmltable(ctx)?.into(),
+        [Keyword(Kw::JsonTable), Operator(OpenParenthesis)] => json_table(ctx)?.into(),
+        [Keyword(Rows), Keyword(FromKw)] => rows_from_stmt(ctx)?.into(),
         _ => return no_match(ctx),
     };
 

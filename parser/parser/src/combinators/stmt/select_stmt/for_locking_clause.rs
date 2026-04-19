@@ -7,7 +7,7 @@ pub(in crate::combinators) fn for_locking_clause(ctx: &mut ParserContext) -> sca
         | for_locking_items
     */
 
-    if matches!(ctx.stream_mut().peek2(), Ok((Keyword(For), Keyword(Read)))) {
+    if matches!(ctx.stream_mut().peek_n::<2>(), Ok([Keyword(For), Keyword(Read)])) {
         seq!(For, Read, Only).parse(ctx)?;
         return Ok(None)
     }

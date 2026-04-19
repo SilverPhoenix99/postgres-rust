@@ -15,8 +15,8 @@ pub(super) fn func_arg_expr(ctx: &mut ParserContext) -> scan::Result<Located<Nam
       | a_expr
     */
 
-    match ctx.stream_mut().peek2() {
-        Ok((first, Operator(ColonEquals | EqualsGreater))) if is_type_function_name(first) => {
+    match ctx.stream_mut().peek_n::<2>() {
+        Ok([first, Operator(ColonEquals | EqualsGreater)]) if is_type_function_name(first) => {
 
             let Located((name, _, value), loc) = located!(seq!(
                 type_function_name,

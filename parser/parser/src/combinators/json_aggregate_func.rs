@@ -25,9 +25,9 @@ pub(super) fn json_aggregate_func(ctx: &mut ParserContext) -> scan::Result<JsonA
     // Both 1st keywords are ColumnName, and they conflict with `func_application` and `prefixed_expr`,
     // so peeking is needed.
 
-    match ctx.stream_mut().peek2()? {
-        (K(JsonObjectagg), Op(OpenParenthesis)) => json_objectagg(ctx).map(From::from),
-        (K(JsonArrayagg), Op(OpenParenthesis)) => json_arrayagg(ctx).map(From::from),
+    match ctx.stream_mut().peek_n::<2>()? {
+        [K(JsonObjectagg), Op(OpenParenthesis)] => json_objectagg(ctx).map(From::from),
+        [K(JsonArrayagg), Op(OpenParenthesis)] => json_arrayagg(ctx).map(From::from),
         _ => no_match(ctx)
     }
 }

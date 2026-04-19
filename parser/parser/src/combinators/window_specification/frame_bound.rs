@@ -18,12 +18,12 @@ pub(super) fn frame_bound(ctx: &mut ParserContext) -> scan::Result<FrameBound> {
     */
 
     // A single keyword is ambiguous with a_expr, so we need to check 2.
-    if let Ok((first, second)) = ctx.stream_mut().peek2() {
+    if let Ok(toks) = ctx.stream_mut().peek_n::<2>() {
 
-        let res = match (first, second) {
-            (Kw(Unbounded), Kw(Preceding)) => Some(UnboundedPreceding),
-            (Kw(Unbounded), Kw(Following)) => Some(UnboundedFollowing),
-            (Kw(Current), Kw(Row)) => Some(CurrentRow),
+        let res = match toks {
+            [Kw(Unbounded), Kw(Preceding)] => Some(UnboundedPreceding),
+            [Kw(Unbounded), Kw(Following)] => Some(UnboundedFollowing),
+            [Kw(Current), Kw(Row)] => Some(CurrentRow),
             _ => None
         };
 

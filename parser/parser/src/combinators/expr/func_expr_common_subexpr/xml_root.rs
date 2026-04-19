@@ -55,7 +55,7 @@ fn version_no_value(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
         NO VALUE
     */
 
-    if ! matches!(ctx.stream_mut().peek2(), Ok((K(Kw::No), K(Value)))) {
+    if ! matches!(ctx.stream_mut().peek_n::<2>(), Ok([K(Kw::No), K(Value)])) {
         return no_match(ctx)
     }
 

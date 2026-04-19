@@ -4,7 +4,7 @@ pub(super) fn explicit_row(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
         ROW '(' ( expr_list )? ')'
     */
 
-    let (Keyword(Kw::Row), Operator(OpenParenthesis)) = ctx.stream_mut().peek2()? else {
+    let [Keyword(Kw::Row), Operator(OpenParenthesis)] = ctx.stream_mut().peek_n::<2>()? else {
         return no_match(ctx)
     };
 

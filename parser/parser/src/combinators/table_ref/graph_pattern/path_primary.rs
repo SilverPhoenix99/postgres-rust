@@ -118,7 +118,7 @@ fn right_arrow(ctx: &mut ParserContext) -> scan::Result<()> {
     if matches!(stream.peek(), Ok(Operator(RightArrow))) {
         stream.skip(1);
     }
-    else if matches!(stream.peek2(), Ok((Operator(Minus), Operator(Greater)))) {
+    else if matches!(stream.peek_n::<2>(), Ok([Operator(Minus), Operator(Greater)])) {
         stream.skip(2);
     }
     else {

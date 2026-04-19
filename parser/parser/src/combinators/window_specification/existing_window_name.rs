@@ -5,13 +5,13 @@ pub(super) fn existing_window_name(ctx: &mut ParserContext) -> scan::Result<Str>
         col_id
     */
 
-    let tokens = ctx.stream_mut().peek2()?;
+    let tokens = ctx.stream_mut().peek_n::<2>()?;
 
     // These 2 rules need to be checked first, due to conflicts with Unreserved keywords.
     if {
         matches!(tokens,
-            (Kw(Partition), Kw(By))
-            | (Kw(RangeKw | Rows | Groups), Kw(Unbounded | Current | Between))
+            [Kw(Partition), Kw(By)]
+            | [Kw(RangeKw | Rows | Groups), Kw(Unbounded | Current | Between)]
         )
     } {
         return no_match(ctx)

@@ -22,7 +22,7 @@ fn xml_passing_mech(ctx: &mut ParserContext) -> scan::Result<()> {
         BY ( REF | VALUE )
     */
 
-    if ! matches!(ctx.stream_mut().peek2(), Ok((K(By), K(RefKw | Value)))) {
+    if ! matches!(ctx.stream_mut().peek_n::<2>(), Ok([K(By), K(RefKw | Value)])) {
         return no_match(ctx)
     }
 

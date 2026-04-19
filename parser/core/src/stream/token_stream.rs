@@ -50,7 +50,7 @@ impl<'src> TokenStream<'src> {
         }
 
         for _ in 0..n {
-            self.fill_buf();
+            self.fill_buf::<2>();
             self.next();
         }
     }
@@ -64,40 +64,43 @@ impl<'src> TokenStream<'src> {
 
     fn peek_mut(&mut self) -> &mut eof::Result<Located<TokenValue>> {
 
-        self.fill_buf();
+        self.fill_buf::<2>();
 
-        // SAFETY: `fill_buf()` always adds 2 elements to `self.buf`,
-        //         even when the lexer is done
+        // SAFETY: `fill_buf::<2>()` always adds 2 elements to `self.buf`.
+        //          If the lexer is done, it'll continuously return `Eof`, and fill the buffer.
         self.buf.front_mut().unwrap()
     }
 
-    /// Either returns both tokens, or the first error between the two.
-    pub fn peek2(&mut self) -> eof::Result<(&TokenValue, &TokenValue)> {
+    /// Either returns an array of `N` tokens, or the first error.
+    pub fn peek_n<const N: usize>(&mut self) -> eof::Result<[&TokenValue; N]> {
 
-        self.fill_buf();
+        const { assert!(N >= 2, "N must be >= 2. Use peek() instead.") }
 
-        // SAFETY: `fill_buf()` always adds 2 elements to `self.buf`,
-        //         even when the lexer is in Eof
-        let first = self.buf.front()
-            .expect("first element missing: `fill_buf()` should have filled 2 elements into `self.buf`");
-        let second = self.buf.get(1)
-            .expect("second element missing: `fill_buf()` should have filled 2 elements into `self.buf`");
+        self.fill_buf::<N>();
 
-        let first = match first {
-            Ok(Located(tok, _)) => tok,
-            Err(err) => return Err(err.clone()),
-        };
+        let mut iter = self.buf.iter();
+        let mut tokens: [MaybeUninit<&TokenValue>; N] = [MaybeUninit::uninit(); N];
 
-        let second = match second {
-            Ok(Located(tok, _)) => tok,
-            Err(err) => return  Err(err.clone()),
-        };
+        // SAFETY: `fill_buf_n()` always adds `N` elements to `self.buf`, even when the lexer is in Eof
+        for item in &mut tokens {
+            let result = iter.next().expect("buf should have at least N elements");
+            match result {
+                Ok(Located(tok, _)) => item.write(tok),
+                Err(err) => return Err(err.clone()),
+            };
+        }
 
-        Ok((first, second))
+        // SAFETY: All elements of `tokens` are initialized by the loop above.
+        unsafe {
+            Ok(transmute_copy(&tokens))
+        }
     }
 
-    fn fill_buf(&mut self) {
-        while self.buf.len() < 2 {
+    fn fill_buf<const N: usize>(&mut self) {
+
+        const { assert!(N != 0, "N must be greater than 0.") }
+
+        while self.buf.len() < N {
             let result = self.lex_next();
             self.buf.push_back(result);
         }
@@ -315,25 +318,25 @@ mod tests {
     }
 
     #[test]
-    fn test_peek2() {
+    fn test_peek_n() {
         let mut buffer =  TokenStream::from("three identifiers innit");
 
-        let result = buffer.peek2();
-        assert_matches!(result, Ok((Identifier(_), Identifier(_))));
+        let result = buffer.peek_n::<2>();
+        assert_matches!(result, Ok([Identifier(_), Identifier(_)]));
         assert_eq!(Location::new(0..5, 1, 1), buffer.current_location());
 
         buffer.next();
-        let result = buffer.peek2();
-        assert_matches!(result, Ok((Identifier(_), Identifier(_))));
+        let result = buffer.peek_n::<2>();
+        assert_matches!(result, Ok([Identifier(_), Identifier(_)]));
         assert_eq!(Location::new(6..17, 1, 7), buffer.current_location());
 
         buffer.next();
-        let result = buffer.peek2();
+        let result = buffer.peek_n::<2>();
         assert_matches!(result, Err(Eof(_)));
         assert_eq!(Location::new(18..23, 1, 19), buffer.current_location());
 
         buffer.next();
-        let result = buffer.peek2();
+        let result = buffer.peek_n::<2>();
         assert_matches!(result, Err(Eof(_)));
         assert_eq!(Location::new(23..23, 1, 24), buffer.current_location());
     }
@@ -349,6 +352,8 @@ use crate::stream::buffered_lexer::BufferedLexer;
 use crate::stream::TokenValue;
 use crate::ParserConfig;
 use alloc::collections::VecDeque;
+use core::mem::transmute_copy;
+use core::mem::MaybeUninit;
 use pg_basics::guc::BackslashQuote;
 use pg_basics::Located;
 use pg_basics::Location;

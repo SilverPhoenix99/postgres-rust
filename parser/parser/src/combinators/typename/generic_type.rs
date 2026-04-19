@@ -11,7 +11,7 @@ pub(super) fn generic_type(ctx: &mut ParserContext) -> scan::Result<TypeName> {
     // `Double` conflicts with, and has lower precedence than, any other `Keyword::Unreserved`.
     // If it's followed by `Precision`, then it's a Float8.
     // Otherwise, it's a plain `Unreserved` keyword, which can be its own User Defined Type.
-    if matches!(ctx.stream_mut().peek2(), Ok((Keyword(Double), Keyword(Precision)))) {
+    if matches!(ctx.stream_mut().peek_n::<2>(), Ok([Keyword(Double), Keyword(Precision)])) {
         ctx.stream_mut().skip(2);
         return Ok(Float8)
     }

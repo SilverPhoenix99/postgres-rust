@@ -31,10 +31,10 @@ pub(in crate::combinators) fn is_select_stmt(ctx: &mut ParserContext) -> bool {
         - VALUES is ColumnName, so it needs to check for '('.
     */
 
-    matches!(ctx.stream_mut().peek2(),
+    matches!(ctx.stream_mut().peek_n::<2>(),
         Ok(
-            (Keyword(With | Select | Table), _)
-            | (Keyword(Values), Operator(OpenParenthesis))
+            [Keyword(With | Select | Table), _]
+            | [Keyword(Values), Operator(OpenParenthesis)]
         )
     )
 }

@@ -1,7 +1,7 @@
 pub(super) fn current_schema(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 
     // `current_schema()` is valid syntax for `prefix_expr`, so exclude that case from here.
-    if matches!(ctx.stream_mut().peek2(), Ok((K(Kw::CurrentSchema), Op(OpenParenthesis)))) {
+    if matches!(ctx.stream_mut().peek_n::<2>(), Ok([K(Kw::CurrentSchema), Op(OpenParenthesis)])) {
         return no_match(ctx)
     }
 

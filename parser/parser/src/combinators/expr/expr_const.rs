@@ -56,35 +56,35 @@ fn const_typename(ctx: &mut ParserContext) -> scan::Result<TypecastExpr> {
     // Lookahead is required to disambiguate with `prefixed_expr_const`,
     // due to conflicts with the 1st keyword.
 
-    match ctx.stream_mut().peek2()? {
+    match ctx.stream_mut().peek_n::<2>()? {
 
-        (
+        [
             K(Interval),
             O(OpenParenthesis) | String(_)
-        ) =>
+        ] =>
             interval_typecast(ctx),
 
-        (
+        [
             K(Kw::Json | Boolean | Smallint | Int | Integer | Bigint | Real),
             String(_)
-        )
-        | (K(Double), K(Precision))
-        | (
+        ]
+        | [K(Double), K(Precision)]
+        | [
             K(Float | Dec | Decimal | Kw::Numeric | Kw::Varchar),
             O(OpenParenthesis) | String(_)
-        )
-        |(
+        ]
+        |[
             K(Kw::Bit | Char | Character | Nchar),
             K(Varying) | O(OpenParenthesis) | String(_)
-        )
-        | (
+        ]
+        | [
             K(National),
             K(Char | Character)
-        )
-        | (
+        ]
+        | [
             K(Timestamp | Time),
             K(With | Without) | O(OpenParenthesis) | String(_)
-        ) =>
+        ] =>
             simple_typecast(ctx),
 
         _ => no_match(ctx)
