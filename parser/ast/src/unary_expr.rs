@@ -5,13 +5,14 @@ pub struct UnaryExpr {
 }
 
 impl UnaryExpr {
-    pub fn new<T>(operator: T, operand: ExprNode) -> Self
+    pub fn new<T, R>(operator: T, operand: R) -> Self
     where
         T: Into<QualifiedOperator>,
+        R: Into<ExprNode>,
     {
         Self {
             operator: operator.into(),
-            operand
+            operand: operand.into(),
         }
     }
 }
