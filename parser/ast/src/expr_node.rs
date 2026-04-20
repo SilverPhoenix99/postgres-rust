@@ -6,7 +6,11 @@ pub enum ExprNode {
     BinaryStringConst(Box<str>),
     HexStringConst(Box<str>),
     IntegerConst(i32),
-    NumericConst { value: Box<str>, radix: NumberRadix },
+    NumericConst {
+        value: Box<str>,
+        radix: NumberRadix,
+        negative: bool
+    },
     BooleanConst(bool),
 
     DefaultExpr,
@@ -63,7 +67,24 @@ impl From<UnsignedNumber> for ExprNode {
         match value {
             // SAFETY: `int` is originally parsed by `i32::from_str_radix()`, so `0 <= int <= i32::MAX`
             UnsignedNumber::IntegerConst(int) => Self::IntegerConst(int.into()),
-            UnsignedNumber::NumericConst { value, radix } => Self::NumericConst { radix, value }
+            UnsignedNumber::NumericConst { value, radix } => Self::NumericConst {
+                radix,
+                value,
+                negative: false,
+            }
+        }
+    }
+}
+
+impl From<SignedNumber> for ExprNode {
+    fn from(value: SignedNumber) -> Self {
+        match value {
+            SignedNumber::IntegerConst(int) => Self::IntegerConst(int),
+            SignedNumber::NumericConst { value, radix, negative } => Self::NumericConst {
+                radix,
+                value,
+                negative,
+            }
         }
     }
 }
@@ -78,6 +99,7 @@ use crate::FuncCallExpr;
 use crate::IndirectionExpr;
 use crate::JsonArrayAggExpr;
 use crate::JsonObjectAggExpr;
+use crate::SignedNumber;
 use crate::SqlFunction;
 use crate::TypecastExpr;
 use crate::UnaryExpr;

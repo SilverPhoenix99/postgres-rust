@@ -149,7 +149,7 @@ mod tests {
     };
 
     #[test_case("123", IntegerConst(123))]
-    #[test_case("123.45", NumericConst { radix: Decimal, value: "123.45".into() })]
+    #[test_case("123.45", NumericConst { radix: Decimal, value: "123.45".into(), negative: false })]
     #[test_case("true", BooleanConst(true))]
     #[test_case("false", BooleanConst(false))]
     #[test_case("null", NullConst)]

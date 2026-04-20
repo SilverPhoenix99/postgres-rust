@@ -175,7 +175,15 @@ fn b_expr_primary(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 
     alt!(
         seq!(Minus, b_expr_prec(7))
-            .map(|(_, rhs)| UnaryExpr::new(Subtraction, rhs).into()),
+            .map(|(_, rhs)| match rhs {
+                IntegerConst(int) => IntegerConst(-int),
+                NumericConst { value, radix, negative } => NumericConst {
+                    value,
+                    radix,
+                    negative: !negative,
+                },
+                rhs => UnaryExpr::new(Subtraction, rhs).into()
+            }),
         seq!(Plus, b_expr_prec(7))
             .map(|(_, rhs)| UnaryExpr::new(Addition, rhs).into()),
         seq!(qual_op, b_expr_prec(3))
@@ -197,7 +205,7 @@ mod tests {
     use pg_parser_core::scan;
     use test_case::test_case;
 
-    #[test_case("- 1" => Ok(UnaryExpr::new(Subtraction, Int(1)).into()); "unary minus")]
+    #[test_case("- 1" => Ok(Int(-1)); "unary minus")]
     #[test_case("+ 2" => Ok(UnaryExpr::new(Addition, Int(2)).into()); "unary plus")]
     #[test_case("operator(+) 3" => Ok(UnaryExpr::new(Addition, Int(3)).into()); "unary qual_op")]
     #[test_case("4" => Ok(Int(4)); "expr primary")]
@@ -220,11 +228,8 @@ mod tests {
     }
 
     #[test_case("- 2 ^ 4" => Ok(
-        BinaryExpr::new(
-            Exponentiation,
-            UnaryExpr::new(Subtraction, Int(2)),
-            Int(4)
-        ).into()
+        BinaryExpr::new(Exponentiation, Int(-2), Int(4))
+            .into()
     ))]
     #[test_case("operator(-) 5 ^ 3" => Ok(
         UnaryExpr::new(Subtraction,
@@ -244,10 +249,12 @@ use crate::seq;
 use crate::ParserContext;
 use pg_ast::BinaryExpr;
 use pg_ast::ExprNode;
+use pg_ast::ExprNode::IntegerConst;
 use pg_ast::ExprNode::IsDistinct;
 use pg_ast::ExprNode::IsDocument;
 use pg_ast::ExprNode::IsNotDistinct;
 use pg_ast::ExprNode::IsNotDocument;
+use pg_ast::ExprNode::NumericConst;
 use pg_ast::Operator::Addition;
 use pg_ast::Operator::Division;
 use pg_ast::Operator::Equals;
