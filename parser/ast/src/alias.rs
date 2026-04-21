@@ -15,7 +15,7 @@ impl Alias {
         }
     }
 
-    pub fn alias(&self) -> &Str {
+    pub fn alias(&self) -> &str {
         &self.alias
     }
 
