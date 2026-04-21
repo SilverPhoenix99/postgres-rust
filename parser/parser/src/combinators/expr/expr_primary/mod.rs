@@ -1,6 +1,7 @@
 pg_basics::reexport! {
     case_expr,
     explicit_row,
+    expr_primary_paren,
     func_expr,
     grouping_func,
     param_expr,
@@ -16,6 +17,7 @@ pub(in crate::combinators) fn expr_primary(ctx: &mut ParserContext) -> scan::Res
         func_expr,
         explicit_row,
         grouping_func,
+        expr_primary_paren,
 
         // ❗ Must be after most other productions,
         // due to conflicts with the 1st keyword.
@@ -36,8 +38,9 @@ mod tests {
             "case when 1 then 2 end", // case_expr
             "user",                   // func_expr
             "row()",                  // explicit_row
-            "grouping(1)",            // explicit_row
+            "grouping(1)",            // grouping_func
             "current_schema",         // prefix_expr
+            "(1, 2)",                 // expr_primary_paren
         ]
         => matches Ok(_)
     )]

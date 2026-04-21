@@ -53,6 +53,9 @@ pub enum ExprNode {
     FuncCall(Box<FuncCall>),
     #[from(SqlFunction)]
     SqlFunction(Box<SqlFunction>),
+
+    #[from]
+    Select(SelectStmt),
 }
 
 impl From<UnsignedNumber> for ExprNode {
@@ -98,6 +101,7 @@ use crate::FuncCallExpr;
 use crate::IndirectionExpr;
 use crate::JsonArrayAggExpr;
 use crate::JsonObjectAggExpr;
+use crate::SelectStmt;
 use crate::SignedNumber;
 use crate::SqlFunction;
 use crate::SqlFunction::Typecast;
