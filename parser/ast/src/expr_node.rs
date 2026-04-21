@@ -19,13 +19,6 @@ pub enum ExprNode {
     ParamRef { index: i32 },
     Row(Option<Vec<ExprNode>>),
 
-    /// Typecasts:
-    /// * `'1'::int`
-    /// * `int '1'`
-    /// * `CAST('1' as int)`
-    #[from(TypecastExpr)]
-    Typecast(Box<TypecastExpr>),
-
     #[from(BinaryExpr)]
     BinaryExpr(Box<BinaryExpr>),
     #[from(UnaryExpr)]
@@ -89,6 +82,12 @@ impl From<SignedNumber> for ExprNode {
     }
 }
 
+impl From<TypecastExpr> for ExprNode {
+    fn from(value: TypecastExpr) -> Self {
+        Self::SqlFunction(Typecast(value).into())
+    }
+}
+
 use crate::BinaryExpr;
 use crate::BinaryOperands;
 use crate::BoolExpr;
@@ -101,6 +100,7 @@ use crate::JsonArrayAggExpr;
 use crate::JsonObjectAggExpr;
 use crate::SignedNumber;
 use crate::SqlFunction;
+use crate::SqlFunction::Typecast;
 use crate::TypecastExpr;
 use crate::UnaryExpr;
 use derive_more::From;

@@ -11,9 +11,10 @@ pub enum SqlFunction {
     NullIf(ExprNode, ExprNode),
     Treat(TypecastExpr),
 
-    /// SQL function-like format, or double-colon format
-    ///
-    /// (e.g.`CAST(1 to text)` or `1::text`)
+    /// Typecasts:
+    /// * `'1'::int`
+    /// * `int '1'`
+    /// * `CAST('1' as int)`
     #[from] Typecast(TypecastExpr),
 
     // String functions
