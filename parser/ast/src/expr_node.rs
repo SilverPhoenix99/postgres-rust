@@ -18,6 +18,7 @@ pub enum ExprNode {
     CaseExpr(Box<CaseExpr>),
     ParamRef { index: i32 },
     Row(Option<Vec<ExprNode>>),
+    Array(Option<Vec<ExprNode>>),
 
     #[from(BinaryExpr)]
     BinaryExpr(Box<BinaryExpr>),

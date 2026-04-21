@@ -1,4 +1,5 @@
 pg_basics::reexport! {
+    array_expr,
     case_expr,
     explicit_row,
     expr_primary_paren,
@@ -17,6 +18,7 @@ pub(in crate::combinators) fn expr_primary(ctx: &mut ParserContext) -> scan::Res
         func_expr,
         explicit_row,
         grouping_func,
+        array_expr,
         expr_primary_paren,
 
         // ❗ Must be after most other productions,
@@ -41,6 +43,7 @@ mod tests {
             "grouping(1)",            // grouping_func
             "current_schema",         // prefix_expr
             "(1, 2)",                 // expr_primary_paren
+            "array[1, 2]",            // array_expr
         ]
         => matches Ok(_)
     )]
