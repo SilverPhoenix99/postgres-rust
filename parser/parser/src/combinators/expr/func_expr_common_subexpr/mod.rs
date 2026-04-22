@@ -49,6 +49,7 @@ pub(in crate::combinators) fn func_expr_common_subexpr(ctx: &mut ParserContext) 
         | EXTRACT '(' extract_list ')'
         | GREATEST '(' expr_list ')'
         | JSON '(' ... ')'
+        | JSON_ARRAY '(' ... ')'
         | JSON_EXISTS '(' ... ')'
         | JSON_OBJECT '(' ( json_object_args )? ')'
         | JSON_QUERY '(' ... ')'

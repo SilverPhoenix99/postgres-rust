@@ -21,7 +21,6 @@ pub(in crate::combinators) fn expr_primary(ctx: &mut ParserContext) -> scan::Res
         | ROW '(' ... ')'
         | GROUPING '(' ... ')'
         | ARRAY '[' ... ']'
-        | JSON_ARRAY '(' ... ')'
         | EXISTS '(' SelectStmt ')'
         | '(' ... ')'
     */

@@ -4,9 +4,9 @@ pub(super) fn explicit_row(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
         ROW '(' ( expr_list )? ')'
     */
 
-    let [Keyword(Kw::Row), Operator(OpenParenthesis)] = ctx.stream_mut().peek_n::<2>()? else {
+    if !matches!(ctx.stream_mut().peek_n::<2>(), Ok([Keyword(Kw::Row), Operator(OpenParenthesis)])) {
         return no_match(ctx)
-    };
+    }
 
     let (_, col_values) = seq!(skip(1), paren!(expr_list.optional()))
         .parse(ctx)?;

@@ -4,9 +4,9 @@ pub(super) fn grouping_func(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
         GROUPING '(' expr_list ')'
     */
 
-    let [Keyword(Grouping), Operator(OpenParenthesis)] = ctx.stream_mut().peek_n::<2>()? else {
-        return no_match(ctx);
-    };
+    if !matches!(ctx.stream_mut().peek_n::<2>(), Ok([Keyword(Grouping), Operator(OpenParenthesis)])) {
+        return no_match(ctx)
+    }
 
     let (_, args) = seq!(skip(1), paren!(expr_list))
         .parse(ctx)?;
