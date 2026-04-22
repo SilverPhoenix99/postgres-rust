@@ -55,8 +55,8 @@ pub enum ExprNode {
     #[from(SqlFunction)]
     SqlFunction(Box<SqlFunction>),
 
-    #[from]
-    Select(SelectStmt),
+    #[from] Select(SelectStmt),
+    Exists(SelectStmt),
 }
 
 impl From<UnsignedNumber> for ExprNode {

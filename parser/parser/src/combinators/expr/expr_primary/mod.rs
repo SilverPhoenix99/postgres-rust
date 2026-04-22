@@ -1,6 +1,7 @@
 pg_basics::reexport! {
     array_expr,
     case_expr,
+    exists_expr,
     explicit_row,
     expr_primary_paren,
     func_expr,
@@ -11,6 +12,20 @@ pg_basics::reexport! {
 
 /// Alias: `c_expr`
 pub(in crate::combinators) fn expr_primary(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
+
+    /*
+          PARAM ( indirection )?
+        | AexprConst
+        | CASE ... WHEN ... END
+        | func_expr
+        | ROW '(' ... ')'
+        | GROUPING '(' ... ')'
+        | ARRAY '[' ... ']'
+        | JSON_ARRAY '(' ... ')'
+        | EXISTS '(' SelectStmt ')'
+        | '(' ... ')'
+    */
+
     alt!(
         param_expr,
         expr_const,
@@ -19,6 +34,7 @@ pub(in crate::combinators) fn expr_primary(ctx: &mut ParserContext) -> scan::Res
         explicit_row,
         grouping_func,
         array_expr,
+        exists_expr,
         expr_primary_paren,
 
         // ❗ Must be after most other productions,
@@ -30,6 +46,8 @@ pub(in crate::combinators) fn expr_primary(ctx: &mut ParserContext) -> scan::Res
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_parser;
+    use test_case::test_case;
     use test_case::test_matrix;
 
     // These only quickly check that statements aren't missing:
@@ -48,8 +66,12 @@ mod tests {
         => matches Ok(_)
     )]
     fn test_expr_primary(source: &str) -> scan::Result<ExprNode> {
-        let mut ctx = ParserContext::new(source);
-        expr_primary(&mut ctx)
+        test_parser!(source, expr_primary)
+    }
+
+    #[test_case("exists (select 1)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    fn test_expr_primary_exists_expr(source: &str) -> scan::Result<ExprNode> {
+        test_parser!(source, expr_primary)
     }
 }
 
