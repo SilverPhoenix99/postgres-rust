@@ -58,6 +58,8 @@ pg_basics::reexport! { pub
     json,
     json_array_agg,
     json_array_agg_expr,
+    json_array_constructor,
+    json_array_query_constructor,
     json_behavior,
     json_exists,
     json_format,

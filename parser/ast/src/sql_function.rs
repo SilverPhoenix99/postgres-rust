@@ -41,6 +41,9 @@ pub enum SqlFunction {
 
     // JSON functions
     #[from] Json(JsonFunc),
+    #[from] JsonArray(JsonArrayConstructor),
+    #[from] JsonArrayQuery(JsonArrayQueryConstructor),
+    JsonArrayEmpty(Option<JsonOutput>),
     #[from] JsonArrayAgg(JsonArrayAgg),
     #[from] JsonExists(JsonExistsExpr),
     #[from] JsonObject(JsonObjectExpr),
@@ -64,10 +67,13 @@ pub enum SqlFunction {
 use crate::ExprNode;
 use crate::ExtractFunc;
 use crate::JsonArrayAgg;
+use crate::JsonArrayConstructor;
+use crate::JsonArrayQueryConstructor;
 use crate::JsonExistsExpr;
 use crate::JsonFunc;
 use crate::JsonObjectAgg;
 use crate::JsonObjectExpr;
+use crate::JsonOutput;
 use crate::JsonQueryExpr;
 use crate::JsonSerializeExpr;
 use crate::JsonValueFunc;

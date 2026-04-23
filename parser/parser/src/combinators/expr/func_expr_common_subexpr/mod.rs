@@ -6,6 +6,7 @@ pg_basics::reexport! {
     extract,
     greatest_expr,
     json,
+    json_array,
     json_exists_expr,
     json_object,
     json_query_expr,
@@ -87,6 +88,7 @@ pub(in crate::combinators) fn func_expr_common_subexpr(ctx: &mut ParserContext) 
         Ok([K(Extract), Op(OpenParenthesis)]) => return extract(ctx).map(From::from),
         Ok([K(Greatest), Op(OpenParenthesis)]) => return greatest_expr(ctx),
         Ok([K(Json), Op(OpenParenthesis)]) => return json(ctx).map(From::from),
+        Ok([K(JsonArray), Op(OpenParenthesis)]) => return json_array(ctx),
         Ok([K(JsonExists), Op(OpenParenthesis)]) => return json_exists_expr(ctx).map(From::from),
         Ok([K(JsonObject), Op(OpenParenthesis)]) => return json_object(ctx).map(From::from),
         Ok([K(JsonQuery), Op(OpenParenthesis)]) => return json_query_expr(ctx).map(From::from),
@@ -146,6 +148,7 @@ mod tests {
             "current_schema",
             "extract(month from 1)",
             "greatest(1)",
+            "json_array(1)",
             "json_exists('{}', 'foo')",
             "json_object()",
             "json_query('{}', 'foo')",
@@ -258,6 +261,7 @@ use pg_lexer::Keyword::Extract;
 use pg_lexer::Keyword::For;
 use pg_lexer::Keyword::Greatest;
 use pg_lexer::Keyword::Json;
+use pg_lexer::Keyword::JsonArray;
 use pg_lexer::Keyword::JsonExists;
 use pg_lexer::Keyword::JsonObject;
 use pg_lexer::Keyword::JsonQuery;
