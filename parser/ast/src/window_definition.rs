@@ -10,10 +10,10 @@ impl WindowDefinition {
     pub fn new(
         name: Option<Str>,
         partition_clause: Option<Vec<ExprNode>>,
-        order_by: Option<Vec<SortBy>>,
+        order_clause: Option<Vec<SortBy>>,
         frame_clause: Option<WindowFrame>,
     ) -> Self {
-        Self { name, partition_clause, order_clause: order_by, frame_clause }
+        Self { name, partition_clause, order_clause, frame_clause }
     }
 
     pub fn name(&self) -> Option<&str> {

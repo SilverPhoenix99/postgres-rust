@@ -31,7 +31,10 @@ fn overlay_args(ctx: &mut ParserContext) -> scan::Result<OverlayFunc> {
         && let Some((placing, from, r#for)) = overlay_list(ctx).optional()?
     {
         let (_, arg) = mem::replace(arg, NamedValue::new(NullConst)).into();
-        let args = OverlaySqlArgs::new(arg, placing, from, r#for);
+
+        let mut args = OverlaySqlArgs::new(arg, placing, from);
+        args.set_for_expr(r#for);
+
         let args = OverlayFunc::SqlSyntax(args);
         return Ok(args);
     }
@@ -93,8 +96,7 @@ mod tests {
             OverlaySqlArgs::new(
                 StringConst("foo".into()),
                 StringConst("bar".into()),
-                IntegerConst(1),
-                None
+                IntegerConst(1)
             )
         )
     ))]
@@ -103,9 +105,9 @@ mod tests {
             OverlaySqlArgs::new(
                 StringConst("foo".into()),
                 StringConst("bar".into()),
-                IntegerConst(1),
-                Some(IntegerConst(2))
+                IntegerConst(1)
             )
+            .with_for_expr(IntegerConst(2))
         )
     ))]
     fn test_overlay_args(source: &str) -> scan::Result<OverlayFunc> {

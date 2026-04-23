@@ -60,7 +60,9 @@ fn user_role_stmt(ctx: &mut ParserContext) -> scan::Result<RoleStmt> {
         },
 
         Change::Options(options) => {
-            AlterRoleStmt::new(role, options).into()
+            let mut stmt = AlterRoleStmt::new(role);
+            stmt.set_options(options);
+            stmt.into()
         },
 
         Change::Role { db_name, set_stmt } => {
@@ -145,22 +147,20 @@ mod tests {
         ).into()
     ))]
     #[test_case("public encrypted password 'abc123'" => Ok(
-        AlterRoleStmt::new(
-            RoleSpec::Public,
-            Some(vec![AlterRoleOption::Password(Some("abc123".into()))]),
-        ).into()
+        AlterRoleStmt::new(RoleSpec::Public)
+            .with_options(vec![AlterRoleOption::Password(Some("abc123".into()))])
+            .into()
     ))]
     #[test_case("public with noinherit" => Ok(
-        AlterRoleStmt::new(
-            RoleSpec::Public,
-            Some(vec![AlterRoleOption::Inherit(false)]),
-        ).into()
+        AlterRoleStmt::new(RoleSpec::Public)
+            .with_options(vec![AlterRoleOption::Inherit(false)])
+            .into()
     ))]
     #[test_case("public" => Ok(
-        AlterRoleStmt::new(RoleSpec::Public, None).into()
+        AlterRoleStmt::new(RoleSpec::Public).into()
     ))]
     #[test_case("public with" => Ok(
-        AlterRoleStmt::new(RoleSpec::Public, None).into()
+        AlterRoleStmt::new(RoleSpec::Public).into()
     ))]
     fn test_user_stmt(source: &str) -> scan::Result<RoleStmt> {
         test_parser!(source, user_stmt)

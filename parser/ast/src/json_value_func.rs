@@ -27,12 +27,17 @@ impl JsonValueFunc {
     }
 
     pub fn set_passing(&mut self, passing: Option<Vec<JsonArgument>>) -> &mut Self {
-        self.passing = passing;
+
+        self.passing = passing.and_then(|passing|
+            if passing.is_empty() { None }
+            else { Some(passing) }
+        );
+
         self
     }
 
     pub fn with_passing(mut self, passing: Vec<JsonArgument>) -> Self {
-        self.passing = Some(passing);
+        self.passing = if passing.is_empty() { None } else { Some(passing) };
         self
     }
 
@@ -53,12 +58,12 @@ impl JsonValueFunc {
     pub fn output(&self) -> Option<&JsonOutput> {
         self.output.as_ref()
     }
-    
+
     pub fn set_behavior(&mut self, behavior: JsonBehaviorClause) -> &mut Self {
         self.behavior = behavior;
         self
     }
-    
+
     pub fn with_behavior(mut self, behavior: JsonBehaviorClause) -> Self {
         self.behavior = behavior;
         self

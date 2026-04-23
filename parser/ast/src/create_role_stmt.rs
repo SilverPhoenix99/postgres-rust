@@ -24,12 +24,11 @@ impl CreateRoleStmt {
 
     pub fn set_options(&mut self, options: Option<Vec<CreateRoleOption>>) -> &mut Self {
 
-        let options = options.and_then(|options|
+        self.options = options.and_then(|options|
             if options.is_empty() { None }
             else { Some(options) }
         );
 
-        self.options = options;
         self
     }
 

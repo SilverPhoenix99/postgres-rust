@@ -21,12 +21,17 @@ impl XmlTable {
     }
 
     pub fn set_namespaces(&mut self, namespaces: Option<Vec<NamedValue>>) -> &mut Self {
-        self.namespaces = namespaces;
+
+        self.namespaces = namespaces.and_then(|namespaces|
+            if namespaces.is_empty() { None }
+            else { Some(namespaces)
+        });
+
         self
     }
 
     pub fn with_namespaces(mut self, namespaces: Vec<NamedValue>) -> Self {
-        self.namespaces = Some(namespaces);
+        self.namespaces = if namespaces.is_empty() { None } else { Some(namespaces) };
         self
     }
 

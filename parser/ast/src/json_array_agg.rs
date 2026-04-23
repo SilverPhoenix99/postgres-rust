@@ -49,12 +49,17 @@ impl JsonArrayAgg {
     }
 
     pub fn set_sort(&mut self, sort: Option<Vec<SortBy>>) -> &mut Self {
-        self.sort = sort;
+
+        self.sort = sort.and_then(|sort|
+            if sort.is_empty() { None }
+            else { Some(sort) }
+        );
+
         self
     }
 
     pub fn with_sort(mut self, sort: Vec<SortBy>) -> Self {
-        self.sort = Some(sort);
+        self.sort = if sort.is_empty() { None } else { Some(sort) };
         self
     }
 

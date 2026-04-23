@@ -32,9 +32,10 @@ pub(in crate::combinators::stmt) fn alter_group_stmt(ctx: &mut ParserContext) ->
 
         Change::Role { action, members } => {
 
-            let options = Some(vec![RoleMembers { action, members }]);
-
-            AlterRoleStmt::new(group, options).into()
+            let options = vec![RoleMembers { action, members }];
+            AlterRoleStmt::new(group)
+                .with_options(options)
+                .into()
         }
     };
 
@@ -71,28 +72,26 @@ mod tests {
         }
     ))]
     #[test_case("group some_group add user current_role, new_user" => Ok(
-        AlterRoleStmt::new(
-            RoleSpec::Name("some_group".into()),
-            Some(vec![RoleMembers {
+        AlterRoleStmt::new(RoleSpec::Name("some_group".into()))
+            .with_options(vec![RoleMembers {
                 action: AddDrop::Add,
                 members: vec![
                     RoleSpec::CurrentRole,
                     RoleSpec::Name("new_user".into())
                 ]
             }])
-        ).into()
+            .into()
     ))]
     #[test_case("group some_group drop user session_user, public" => Ok(
-        AlterRoleStmt::new(
-            RoleSpec::Name("some_group".into()),
-            Some(vec![RoleMembers {
+        AlterRoleStmt::new(RoleSpec::Name("some_group".into()))
+            .with_options(vec![RoleMembers {
                 action: AddDrop::Drop,
                 members: vec![
                     RoleSpec::SessionUser,
                     RoleSpec::Public
                 ]
             }])
-        ).into()
+            .into()
     ))]
     fn test_alter_group_stmt(source: &str) -> scan::Result<RoleStmt> {
         test_parser!(source, alter_group_stmt)

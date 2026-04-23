@@ -12,7 +12,7 @@ impl Default for JsonObjectExpr {
 
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct JsonObjectArgs {
-    exprs: Option<Vec<JsonKeyValue>>,
+    expressions: Option<Vec<JsonKeyValue>>,
     output: Option<JsonOutput>,
     unique: bool,
     absent_on_null: bool,
@@ -23,18 +23,23 @@ impl JsonObjectArgs {
         Self::default()
     }
 
-    pub fn set_exprs(&mut self, exprs: Option<Vec<JsonKeyValue>>) -> &mut Self {
-        self.exprs = exprs;
+    pub fn set_expressions(&mut self, expressions: Option<Vec<JsonKeyValue>>) -> &mut Self {
+
+        self.expressions = expressions.and_then(|expressions|
+            if expressions.is_empty() { None }
+            else { Some(expressions) }
+        );
+
         self
     }
 
-    pub fn with_exprs(mut self, exprs: Vec<JsonKeyValue>) -> Self {
-        self.exprs = if exprs.is_empty() { None} else { Some(exprs) };
+    pub fn with_expressions(mut self, expressions: Vec<JsonKeyValue>) -> Self {
+        self.expressions = if expressions.is_empty() { None} else { Some(expressions) };
         self
     }
 
-    pub fn exprs(&self) -> Option<&[JsonKeyValue]> {
-        self.exprs.as_deref()
+    pub fn expressions(&self) -> Option<&[JsonKeyValue]> {
+        self.expressions.as_deref()
     }
 
     pub fn set_output(&mut self, output: Option<JsonOutput>) -> &mut Self {

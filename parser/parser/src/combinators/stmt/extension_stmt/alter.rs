@@ -38,7 +38,9 @@ pub(in crate::combinators::stmt) fn alter_extension_stmt(ctx: &mut ParserContext
             ).into()
         },
         Change::Options(options) => {
-            AlterExtensionStmt::new(extension, options).into()
+            let mut stmt = AlterExtensionStmt::new(extension);
+            stmt.set_options(options);
+            stmt.into()
         },
         Change::Contents { action, target } => {
             AlterExtensionContentsStmt::new(extension, action, target).into()
@@ -202,10 +204,9 @@ mod tests {
         ).into()
     )]
     #[test_case("extension some_extension update to 'option1'",
-        AlterExtensionStmt::new(
-            "some_extension",
-            Some(vec!["option1".into()])
-        ).into()
+        AlterExtensionStmt::new("some_extension")
+            .with_options(vec!["option1".into()])
+            .into()
     )]
     #[test_case("extension some_extension add aggregate some_aggregate(*)",
         AlterExtensionContentsStmt::new(

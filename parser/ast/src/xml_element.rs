@@ -15,14 +15,17 @@ impl XmlElement {
     }
 
     pub fn set_attributes(&mut self, attributes: Option<Vec<NamedValue>>) -> &mut Self {
-        self.attributes = attributes;
+
+        self.attributes = attributes.and_then(|attributes|
+            if attributes.is_empty() { None }
+            else { Some(attributes)
+        });
+
         self
     }
 
     pub fn with_attributes(mut self, attributes: Vec<NamedValue>) -> Self {
-
-        let attributes = if attributes.is_empty() { None } else { Some(attributes) };
-        self.set_attributes(attributes);
+        self.attributes = if attributes.is_empty() { None } else { Some(attributes) };
         self
     }
 
@@ -31,13 +34,17 @@ impl XmlElement {
     }
 
     pub fn set_content(&mut self, content: Option<Vec<ExprNode>>) -> &mut Self {
-        self.content = content;
+
+        self.content = content.and_then(|content|
+            if content.is_empty() { None }
+            else { Some(content) }
+        );
+
         self
     }
 
     pub fn with_content(mut self, content: Vec<ExprNode>) -> Self {
-        let content = if content.is_empty() { None } else { Some(content) };
-        self.set_content(content);
+        self.content = if content.is_empty() { None } else { Some(content) };
         self
     }
 

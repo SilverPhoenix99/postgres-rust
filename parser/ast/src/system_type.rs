@@ -22,13 +22,18 @@ impl Type {
         &self.name
     }
 
-    pub fn with_array_bounds(mut self, array_bounds: Vec<Option<i32>>) -> Self {
-        self.array_bounds = if array_bounds.is_empty() { None } else { Some(array_bounds) };
+    pub fn set_array_bounds(&mut self, array_bounds: Option<Vec<Option<i32>>>) -> &mut Self {
+
+        self.array_bounds = array_bounds.and_then(|array_bounds|
+            if array_bounds.is_empty() { None }
+            else { Some(array_bounds)
+        });
+
         self
     }
 
-    pub fn set_array_bounds(&mut self, array_bounds: Option<Vec<Option<i32>>>) -> &mut Self {
-        self.array_bounds = array_bounds;
+    pub fn with_array_bounds(mut self, array_bounds: Vec<Option<i32>>) -> Self {
+        self.array_bounds = if array_bounds.is_empty() { None } else { Some(array_bounds) };
         self
     }
 

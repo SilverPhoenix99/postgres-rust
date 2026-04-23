@@ -29,7 +29,10 @@ fn create_user_mapping(ctx: &mut ParserContext) -> scan::Result<CreateUserMappin
         create_generic_options.optional()
     ).parse(ctx)?;
 
-    let stmt = CreateUserMappingStmt::new(user, server, options, existence);
+    let mut stmt = CreateUserMappingStmt::new(user, server);
+    stmt.set_existence(existence)
+        .set_options(options);
+
     Ok(stmt)
 }
 
@@ -73,20 +76,12 @@ mod tests {
     }
 
     #[test_case("mapping if not exists for test_user server test_server options (foo '42')" => Ok(
-        CreateUserMappingStmt::new(
-            RoleSpec::Name("test_user".into()),
-            "test_server",
-            Some(vec![GenericOption::new("foo", "42")]),
-            Presence::Ignore
-        )
+        CreateUserMappingStmt::new(RoleSpec::Name("test_user".into()), "test_server")
+        .with_options(vec![GenericOption::new("foo", "42")])
+        .with_existence(Presence::Ignore)
     ))]
     #[test_case("mapping for foo server bar" => Ok(
-        CreateUserMappingStmt::new(
-            RoleSpec::Name("foo".into()),
-            "bar",
-            None,
-            Presence::Fail
-        )
+        CreateUserMappingStmt::new(RoleSpec::Name("foo".into()), "bar")
     ))]
     fn test_create_user_mapping(source: &str) -> scan::Result<CreateUserMappingStmt> {
         test_parser!(source, create_user_mapping)

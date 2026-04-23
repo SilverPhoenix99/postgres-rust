@@ -87,7 +87,7 @@ fn json_object_args(ctx: &mut ParserContext) -> scan::Result<JsonObjectExpr> {
     };
 
     let mut expr = JsonObjectArgs::new();
-    expr.set_exprs(Some(exprs))
+    expr.set_expressions(Some(exprs))
         .set_output(output)
         .set_unique(unique.unwrap_or_default())
         .set_absent_on_null(absent_on_null.unwrap_or_default());
@@ -127,7 +127,7 @@ mod tests {
     ]))))]
     #[test_case("'bar': 2" => Ok(SqlSyntax(
         JsonObjectArgs::new()
-            .with_exprs(vec![
+            .with_expressions(vec![
                 JsonKeyValue::new(
                     StringConst("bar".into()),
                     JsonValueExpr::from(IntegerConst(2))
@@ -137,7 +137,7 @@ mod tests {
     )))]
     #[test_case("'baz' value 3 absent on null with unique keys returning int" => Ok(SqlSyntax(
         JsonObjectArgs::new()
-            .with_exprs(vec![
+            .with_expressions(vec![
                 JsonKeyValue::new(
                     StringConst("baz".into()),
                     JsonValueExpr::from(IntegerConst(3))

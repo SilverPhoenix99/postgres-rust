@@ -16,8 +16,8 @@ impl JsonExistsExpr {
         Self {
             context_item,
             path_spec,
-            passing: Default::default(),
-            on_error: Default::default(),
+            passing: None,
+            on_error: None,
         }
     }
 
@@ -30,12 +30,17 @@ impl JsonExistsExpr {
     }
 
     pub fn set_passing(&mut self, passing: Option<Vec<JsonArgument>>) -> &mut Self {
-        self.passing = passing;
+
+        self.passing = passing.and_then(|passing|
+            if passing.is_empty() { None }
+            else { Some(passing) }
+        );
+
         self
     }
 
     pub fn with_passing(mut self, passing: Vec<JsonArgument>) -> Self {
-        self.passing = Some(passing);
+        self.passing = if passing.is_empty() { None } else { Some(passing) };
         self
     }
 

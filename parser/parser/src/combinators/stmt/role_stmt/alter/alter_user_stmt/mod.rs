@@ -57,7 +57,7 @@ mod tests {
         test_parser!(
             source = "role public",
             parser = alter_user_stmt,
-            expected = AlterRoleStmt::new(Public, None)
+            expected = AlterRoleStmt::new(Public)
         )
     }
 
@@ -66,7 +66,7 @@ mod tests {
         test_parser!(
             source = "user public",
             parser = alter_user_stmt,
-            expected = AlterRoleStmt::new(Public, None)
+            expected = AlterRoleStmt::new(Public)
         )
     }
 }

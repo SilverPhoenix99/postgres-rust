@@ -6,8 +6,11 @@ pub struct AlterRoleStmt {
 
 impl AlterRoleStmt {
 
-    pub fn new(role: RoleSpec, options: Option<Vec<AlterRoleOption>>) -> Self {
-        Self { role, options }
+    pub fn new(role: RoleSpec) -> Self {
+        Self {
+            role,
+            options: None
+        }
     }
 
     pub fn role(&self) -> &RoleSpec {
