@@ -98,6 +98,9 @@ pub enum Error {
 
     #[display("only string constants are supported in JSON_TABLE path specification")]
     NonStringJsonTablePathSpec,
+
+    #[display("UNIQUE predicate is not yet implemented")]
+    UniquePredicateNotImplemented,
 }
 
 impl core::error::Error for Error {}
@@ -183,6 +186,7 @@ impl_log_message! {
     PathValueAlreadyDeclared => [SyntaxError, None],
     ConflictingNullability => [SyntaxError, None],
     NonStringJsonTablePathSpec => [FeatureNotSupported, None],
+    UniquePredicateNotImplemented => [FeatureNotSupported, None],
 }
 
 use crate::sql_state::SqlState;
