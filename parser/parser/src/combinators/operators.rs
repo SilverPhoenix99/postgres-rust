@@ -67,13 +67,13 @@ fn all_op(ctx: &mut ParserContext) -> scan::Result<Operator> {
         multiplicative_op,
         exponentiation_op,
         boolean_op,
-        RightArrow.map(|_| Operator::RightArrow),
-        Pipe.map(|_| Operator::Pipe),
+        Op::RightArrow.map(|_| RightArrow),
+        Op::Pipe.map(|_| Pipe),
         user_defined_operator.map(UserDefined)
     ).parse(ctx)
 }
 
-fn additive_op(ctx: &mut ParserContext) -> scan::Result<Operator> {
+pub(super) fn additive_op(ctx: &mut ParserContext) -> scan::Result<Operator> {
     alt!(
         Plus.map(|_| Addition),
         Minus.map(|_| Subtraction)
@@ -95,18 +95,18 @@ fn exponentiation_op(ctx: &mut ParserContext) -> scan::Result<Operator> {
 
 fn boolean_op(ctx: &mut ParserContext) -> scan::Result<Operator> {
     alt!(
-        Less.map(|_| Operator::Less),
-        Equals.map(|_| Operator::Equals),
-        Greater.map(|_| Operator::Greater),
-        LessEquals.map(|_| Operator::LessEquals),
-        GreaterEquals.map(|_| Operator::GreaterEquals),
-        NotEquals.map(|_| Operator::NotEquals),
+        Op::Less.map(|_| Less),
+        Op::Equals.map(|_| Equals),
+        Op::Greater.map(|_| Greater),
+        Op::LessEquals.map(|_| LessEquals),
+        Op::GreaterEquals.map(|_| GreaterEquals),
+        Op::NotEquals.map(|_| NotEquals),
     ).parse(ctx)
 }
 
 fn like_op(ctx: &mut ParserContext) -> scan::Result<Operator> {
     alt!(
-        Like.map(|_| Operator::Like),
+        Kw::Like.map(|_| Like),
         Ilike.map(|_| ILike)
     ).parse(ctx)
 }
@@ -154,7 +154,7 @@ mod tests {
 
         let expected = QualifiedOperator(
             vec![],
-            Operator::NotEquals
+            NotEquals
         );
         assert_eq!(Ok(expected), any_operator(&mut ctx));
 
@@ -171,7 +171,7 @@ mod tests {
         let mut ctx = ParserContext::from(source);
 
         assert_eq!(Ok(UserDefined("~@".into())), all_op(&mut ctx));
-        assert_eq!(Ok(Operator::NotEquals), all_op(&mut ctx));
+        assert_eq!(Ok(NotEquals), all_op(&mut ctx));
     }
 
     #[test]
@@ -186,15 +186,15 @@ mod tests {
         assert_eq!(Ok(Division), all_op(&mut ctx));
         assert_eq!(Ok(Modulo), all_op(&mut ctx));
         assert_eq!(Ok(Exponentiation), all_op(&mut ctx));
-        assert_eq!(Ok(Operator::Less), all_op(&mut ctx));
-        assert_eq!(Ok(Operator::Greater), all_op(&mut ctx));
-        assert_eq!(Ok(Operator::Equals), all_op(&mut ctx));
-        assert_eq!(Ok(Operator::LessEquals), all_op(&mut ctx));
-        assert_eq!(Ok(Operator::GreaterEquals), all_op(&mut ctx));
-        assert_eq!(Ok(Operator::NotEquals), all_op(&mut ctx));
-        assert_eq!(Ok(Operator::NotEquals), all_op(&mut ctx));
-        assert_eq!(Ok(Operator::RightArrow), all_op(&mut ctx));
-        assert_eq!(Ok(Operator::Pipe), all_op(&mut ctx));
+        assert_eq!(Ok(Less), all_op(&mut ctx));
+        assert_eq!(Ok(Greater), all_op(&mut ctx));
+        assert_eq!(Ok(Equals), all_op(&mut ctx));
+        assert_eq!(Ok(LessEquals), all_op(&mut ctx));
+        assert_eq!(Ok(GreaterEquals), all_op(&mut ctx));
+        assert_eq!(Ok(NotEquals), all_op(&mut ctx));
+        assert_eq!(Ok(NotEquals), all_op(&mut ctx));
+        assert_eq!(Ok(RightArrow), all_op(&mut ctx));
+        assert_eq!(Ok(Pipe), all_op(&mut ctx));
     }
 
     #[test]
@@ -202,7 +202,7 @@ mod tests {
         let source = "like ilike";
         let mut ctx = ParserContext::from(source);
 
-        assert_eq!(Ok(Operator::Like.into()), subquery_op(&mut ctx));
+        assert_eq!(Ok(Like.into()), subquery_op(&mut ctx));
         assert_eq!(Ok(ILike.into()), subquery_op(&mut ctx));
     }
 }
@@ -218,29 +218,31 @@ use crate::ParserContext;
 use pg_ast::Operator;
 use pg_ast::Operator::Addition;
 use pg_ast::Operator::Division;
+use pg_ast::Operator::Equals;
 use pg_ast::Operator::Exponentiation;
+use pg_ast::Operator::Greater;
+use pg_ast::Operator::GreaterEquals;
 use pg_ast::Operator::ILike;
+use pg_ast::Operator::Less;
+use pg_ast::Operator::LessEquals;
+use pg_ast::Operator::Like;
 use pg_ast::Operator::Modulo;
 use pg_ast::Operator::Multiplication;
+use pg_ast::Operator::NotEquals;
+use pg_ast::Operator::Pipe;
+use pg_ast::Operator::RightArrow;
 use pg_ast::Operator::Subtraction;
 use pg_ast::Operator::UserDefined;
 use pg_ast::QualifiedOperator;
+use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Ilike;
-use pg_lexer::Keyword::Like;
 use pg_lexer::Keyword::Operator as OperatorKw;
+use pg_lexer::OperatorKind as Op;
 use pg_lexer::OperatorKind::Circumflex;
 use pg_lexer::OperatorKind::Div;
 use pg_lexer::OperatorKind::Dot;
-use pg_lexer::OperatorKind::Equals;
-use pg_lexer::OperatorKind::Greater;
-use pg_lexer::OperatorKind::GreaterEquals;
-use pg_lexer::OperatorKind::Less;
-use pg_lexer::OperatorKind::LessEquals;
 use pg_lexer::OperatorKind::Minus;
 use pg_lexer::OperatorKind::Mul;
-use pg_lexer::OperatorKind::NotEquals;
 use pg_lexer::OperatorKind::Percent;
-use pg_lexer::OperatorKind::Pipe;
 use pg_lexer::OperatorKind::Plus;
-use pg_lexer::OperatorKind::RightArrow;
 use pg_parser_core::scan;
