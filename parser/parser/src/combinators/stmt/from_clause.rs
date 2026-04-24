@@ -13,9 +13,9 @@ pub(super) fn from_clause(ctx: &mut ParserContext) -> scan::Result<Vec<TableRef>
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("from foo, bar join qux using(baz)" => matches Ok(_))]
+    #[test_matrix("from foo, bar join qux using(baz)" => matches Ok(_))]
     fn test_from_clause(source: &str) -> scan::Result<Vec<TableRef>> {
         test_parser!(source, from_clause)
     }

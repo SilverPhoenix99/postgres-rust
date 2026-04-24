@@ -21,25 +21,22 @@ pub(super) fn func_subexpr_table_ref(ctx: &mut ParserContext) -> scan::Result<Fu
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        OneOrBoth,
-        SqlFunction,
-    };
-    use test_case::test_case;
+    use pg_ast::OneOrBoth;
+    use pg_ast::SqlFunction;
+    use test_case::test_matrix;
 
-    #[test_case("current_catalog" => Ok(
+    #[test_matrix("current_catalog" => Ok(
         FunctionTableRef::new(SqlFunction::CurrentCatalog)
     ))]
-    #[test_case("current_date with ordinality" => Ok(
+    #[test_matrix("current_date with ordinality" => Ok(
         FunctionTableRef::new(SqlFunction::CurrentDate)
             .with_ordinality(true)
     ))]
-    #[test_case("current_role as foo" => Ok(
+    #[test_matrix("current_role as foo" => Ok(
         FunctionTableRef::new(SqlFunction::CurrentRole)
             .with_alias(OneOrBoth::Left("foo".into()))
     ))]
-    #[test_case("current_schema with ordinality as bar" => Ok(
+    #[test_matrix("current_schema with ordinality as bar" => Ok(
         FunctionTableRef::new(SqlFunction::CurrentSchema)
             .with_ordinality(true)
             .with_alias(OneOrBoth::Left("bar".into()))

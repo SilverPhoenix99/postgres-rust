@@ -31,19 +31,17 @@ pub(crate) fn json_name_and_value(ctx: &mut ParserContext) -> scan::Result<JsonK
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        ExprNode::{IntegerConst, StringConst},
-        JsonFormat,
-        JsonValueExpr,
-    };
-    use test_case::test_case;
+    use pg_ast::ExprNode::IntegerConst;
+    use pg_ast::ExprNode::StringConst;
+    use pg_ast::JsonFormat;
+    use pg_ast::JsonValueExpr;
+    use test_case::test_matrix;
 
-    #[test_case("'foo' : 1" => Ok(JsonKeyValue::new(
+    #[test_matrix("'foo' : 1" => Ok(JsonKeyValue::new(
         StringConst("foo".into()),
         IntegerConst(1)
     )))]
-    #[test_case("'foo' : 1 format json" => Ok(JsonKeyValue::new(
+    #[test_matrix("'foo' : 1 format json" => Ok(JsonKeyValue::new(
         StringConst("foo".into()),
         JsonValueExpr::new(IntegerConst(1))
             .with_format(JsonFormat::text())

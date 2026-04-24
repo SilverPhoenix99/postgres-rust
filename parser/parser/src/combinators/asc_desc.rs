@@ -16,12 +16,12 @@ pub(super) fn asc_desc(ctx: &mut ParserContext) -> scan::Result<SortDirection> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("asc", Ascending)]
-    #[test_case("desc", Descending)]
-    fn test_asc_desc(source: &str, expected: SortDirection) {
-        test_parser!(source, asc_desc, expected)
+    #[test_matrix("asc" => Ok(Ascending))]
+    #[test_matrix("desc" => Ok(Descending))]
+    fn test_asc_desc(source: &str) -> scan::Result<SortDirection> {
+        test_parser!(source, asc_desc)
     }
 }
 

@@ -32,19 +32,16 @@ fn role_kind(ctx: &mut ParserContext) -> scan::Result<RoleKind> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::CreateRoleOption,
-        pg_ast::RoleSpec::Public,
-    };
+    use pg_ast::CreateRoleOption;
+    use pg_ast::RoleSpec::Public;
+    use test_case::test_matrix;
 
-    #[test_case("role foo" => Ok(CreateRoleStmt::new("foo", RoleKind::Role)))]
-    #[test_case("role test_role with sysid 42" => Ok(
+    #[test_matrix("role foo" => Ok(CreateRoleStmt::new("foo", RoleKind::Role)))]
+    #[test_matrix("role test_role with sysid 42" => Ok(
         CreateRoleStmt::new("test_role", RoleKind::Role)
             .with_options(vec![CreateRoleOption::SysId(42.into())])
     ))]
-    #[test_case("group test_role inherit role public" => Ok(
+    #[test_matrix("group test_role inherit role public" => Ok(
         CreateRoleStmt::new("test_role", RoleKind::Group)
             .with_options(vec![CreateRoleOption::AddRoleTo(vec![Public])])
     ))]
@@ -52,8 +49,8 @@ mod tests {
         test_parser!(source, create_role_stmt)
     }
 
-    #[test_case("group" => Ok(RoleKind::Group))]
-    #[test_case("role" => Ok(RoleKind::Role))]
+    #[test_matrix("group" => Ok(RoleKind::Group))]
+    #[test_matrix("role" => Ok(RoleKind::Role))]
     fn test_role_kind(source: &str) -> scan::Result<RoleKind> {
         test_parser!(source, role_kind)
     }

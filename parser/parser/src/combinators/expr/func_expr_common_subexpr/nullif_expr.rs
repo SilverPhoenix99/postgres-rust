@@ -18,12 +18,11 @@ pub(super) fn nullif_expr(ctx: &mut ParserContext) -> scan::Result<SqlFunction> 
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::{NullConst, StringConst};
     use pg_ast::SqlFunction;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("nullif(null, 'foo')" => Ok(
+    #[test_matrix("nullif(null, 'foo')" => Ok(
         NullIf(
             NullConst,
             StringConst("foo".into())

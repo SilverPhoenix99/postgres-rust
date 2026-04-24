@@ -15,14 +15,10 @@ pub(super) fn least_expr(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::IntegerConst,
-        scan::Error::NoMatch,
-    };
+    use pg_ast::ExprNode::IntegerConst;
+    use test_case::test_matrix;
 
-    #[test_case("least(1, 2)" => Ok(
+    #[test_matrix("least(1, 2)" => Ok(
         Least(vec![
             IntegerConst(1),
             IntegerConst(2)

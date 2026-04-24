@@ -18,14 +18,14 @@ pub(super) fn end_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStmt>
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("end" => Ok(Commit { chain: false }))]
-    #[test_case("end and chain" => Ok(Commit { chain: true }))]
-    #[test_case("end and no chain" => Ok(Commit { chain: false }))]
-    #[test_case("end transaction" => Ok(Commit { chain: false }))]
-    #[test_case("end transaction and chain" => Ok(Commit { chain: true }))]
-    #[test_case("end transaction and no chain" => Ok(Commit { chain: false }))]
+    #[test_matrix("end" => Ok(Commit { chain: false }))]
+    #[test_matrix("end and chain" => Ok(Commit { chain: true }))]
+    #[test_matrix("end and no chain" => Ok(Commit { chain: false }))]
+    #[test_matrix("end transaction" => Ok(Commit { chain: false }))]
+    #[test_matrix("end transaction and chain" => Ok(Commit { chain: true }))]
+    #[test_matrix("end transaction and no chain" => Ok(Commit { chain: false }))]
     fn test_end(source: &str) -> scan::Result<TransactionStmt> {
         test_parser!(source, end_stmt)
     }

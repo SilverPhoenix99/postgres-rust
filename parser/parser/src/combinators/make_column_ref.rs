@@ -61,22 +61,20 @@ pub(in crate::combinators) fn make_column_ref(
 }
 
 #[cfg(test)]
-#[allow(unused_imports)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
     use pg_basics::Location;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("name", None, SingleName("name".into()))]
-    #[test_case("name",
+    #[test_matrix("name", None, SingleName("name".into()))]
+    #[test_matrix("name",
         Some(Located(
             vec![Wildcard],
             Location::new(0..0, 0, 0)
         )),
         WildcardName(vec!["name".into()])
     )]
-    #[test_case(
+    #[test_matrix(
         "name",
         Some(Located(
             vec![Property("foo".into())],
@@ -84,7 +82,7 @@ mod tests {
         )),
         Name(vec!["name".into(), "foo".into()])
     )]
-    #[test_case(
+    #[test_matrix(
         "name",
         Some(Located(
             vec![Property("foo".into()), Wildcard],

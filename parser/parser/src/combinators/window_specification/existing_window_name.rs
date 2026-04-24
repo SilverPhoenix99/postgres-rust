@@ -25,38 +25,38 @@ mod tests {
     use super::*;
     use crate::combinators::core::Combinator;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("partition by", None)]
-    #[test_case("partition partition", Some("partition".into()))]
-    #[test_case("partition range", Some("partition".into()))]
-    #[test_case("partition rows", Some("partition".into()))]
-    #[test_case("partition groups", Some("partition".into()))]
-    #[test_case("range between", None)]
-    #[test_case("range unbounded", None)]
-    #[test_case("range current", None)]
-    #[test_case("range partition", Some("range".into()))]
-    #[test_case("range range", Some("range".into()))]
-    #[test_case("range rows", Some("range".into()))]
-    #[test_case("range groups", Some("range".into()))]
-    #[test_case("rows between", None)]
-    #[test_case("rows unbounded", None)]
-    #[test_case("rows current", None)]
-    #[test_case("rows partition", Some("rows".into()))]
-    #[test_case("rows range", Some("rows".into()))]
-    #[test_case("rows rows", Some("rows".into()))]
-    #[test_case("rows groups", Some("rows".into()))]
-    #[test_case("groups between", None)]
-    #[test_case("groups unbounded", None)]
-    #[test_case("groups current", None)]
-    #[test_case("groups partition", Some("groups".into()))]
-    #[test_case("groups range", Some("groups".into()))]
-    #[test_case("groups rows", Some("groups".into()))]
-    #[test_case("groups groups", Some("groups".into()))]
-    #[test_case("something else", Some("something".into()))]
-    #[test_case("", None)]
-    fn test_existing_window_name(source: &str, expected: Option<Str>) {
-        test_parser!(source, existing_window_name.optional(), expected);
+    #[test_matrix("partition by" => Ok(None))]
+    #[test_matrix("partition partition" => Ok(Some("partition".into())))]
+    #[test_matrix("partition range" => Ok(Some("partition".into())))]
+    #[test_matrix("partition rows" => Ok(Some("partition".into())))]
+    #[test_matrix("partition groups" => Ok(Some("partition".into())))]
+    #[test_matrix("range between" => Ok(None))]
+    #[test_matrix("range unbounded" => Ok(None))]
+    #[test_matrix("range current" => Ok(None))]
+    #[test_matrix("range partition" => Ok(Some("range".into())))]
+    #[test_matrix("range range" => Ok(Some("range".into())))]
+    #[test_matrix("range rows" => Ok(Some("range".into())))]
+    #[test_matrix("range groups" => Ok(Some("range".into())))]
+    #[test_matrix("rows between" => Ok(None))]
+    #[test_matrix("rows unbounded" => Ok(None))]
+    #[test_matrix("rows current" => Ok(None))]
+    #[test_matrix("rows partition" => Ok(Some("rows".into())))]
+    #[test_matrix("rows range" => Ok(Some("rows".into())))]
+    #[test_matrix("rows rows" => Ok(Some("rows".into())))]
+    #[test_matrix("rows groups" => Ok(Some("rows".into())))]
+    #[test_matrix("groups between" => Ok(None))]
+    #[test_matrix("groups unbounded" => Ok(None))]
+    #[test_matrix("groups current" => Ok(None))]
+    #[test_matrix("groups partition" => Ok(Some("groups".into())))]
+    #[test_matrix("groups range" => Ok(Some("groups".into())))]
+    #[test_matrix("groups rows" => Ok(Some("groups".into())))]
+    #[test_matrix("groups groups" => Ok(Some("groups".into())))]
+    #[test_matrix("something else" => Ok(Some("something".into())))]
+    #[test_matrix("" => Ok(None))]
+    fn test_existing_window_name(source: &str) -> scan::Result<Option<Str>> {
+        test_parser!(source, existing_window_name.optional())
     }
 }
 

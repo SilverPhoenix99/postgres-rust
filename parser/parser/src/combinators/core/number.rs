@@ -14,12 +14,11 @@ pub(in crate::combinators) fn number(ctx: &mut ParserContext) -> scan::Result<Un
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_basics::NumberRadix::Decimal;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("1.1" => Ok(UnsignedNumber::NumericConst { value: "1.1".into(), radix: Decimal }))]
-    #[test_case("11" => Ok(UnsignedNumber::IntegerConst(11.into())))]
+    #[test_matrix("1.1" => Ok(UnsignedNumber::NumericConst { value: "1.1".into(), radix: Decimal }))]
+    #[test_matrix("11" => Ok(UnsignedNumber::IntegerConst(11.into())))]
     fn test_unsigned_number(source: &str) -> scan::Result<UnsignedNumber> {
         test_parser!(source, number)
     }

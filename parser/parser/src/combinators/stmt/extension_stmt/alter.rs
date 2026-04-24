@@ -187,28 +187,26 @@ fn alter_extension_target(ctx: &mut ParserContext) -> scan::Result<AlterExtensio
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        AggregateWithArgs,
-        FunctionWithArgs,
-        Transform as TransformAst,
-        TypeName::{Int4, Varchar},
-        Typecast as Cast,
-    };
-    use test_case::test_case;
+    use pg_ast::AggregateWithArgs;
+    use pg_ast::FunctionWithArgs;
+    use pg_ast::Transform as TransformAst;
+    use pg_ast::TypeName::Int4;
+    use pg_ast::TypeName::Varchar;
+    use pg_ast::Typecast as Cast;
+    use test_case::test_matrix;
 
-    #[test_case("extension some_extension set schema some_schema",
+    #[test_matrix("extension some_extension set schema some_schema" => Ok(
         AlterObjectSchemaStmt::new(
             AlterObjectSchemaTarget::Extension("some_extension".into()),
             "some_schema"
         ).into()
-    )]
-    #[test_case("extension some_extension update to 'option1'",
+    ))]
+    #[test_matrix("extension some_extension update to 'option1'" => Ok(
         AlterExtensionStmt::new("some_extension")
             .with_options(vec!["option1".into()])
             .into()
-    )]
-    #[test_case("extension some_extension add aggregate some_aggregate(*)",
+    ))]
+    #[test_matrix("extension some_extension add aggregate some_aggregate(*)" => Ok(
         AlterExtensionContentsStmt::new(
             "some_extension",
             AddDrop::Add,
@@ -218,16 +216,16 @@ mod tests {
                 vec![]
             ))
         ).into()
-    )]
-    #[test_case("extension some_extension drop function some_function",
+    ))]
+    #[test_matrix("extension some_extension drop function some_function" => Ok(
         AlterExtensionContentsStmt::new(
             "some_extension",
             AddDrop::Drop,
             Function(FunctionWithArgs::new(vec!["some_function".into()], None))
         ).into()
-    )]
-    fn test_alter_extension_stmt(source: &str, expected: RawStmt) {
-        test_parser!(source, alter_extension_stmt, expected);
+    ))]
+    fn test_alter_extension_stmt(source: &str) -> scan::Result<RawStmt> {
+        test_parser!(source, alter_extension_stmt)
     }
 
     #[test]
@@ -245,62 +243,62 @@ mod tests {
         );
     }
 
-    #[test_case("access method some_method", AccessMethod("some_method".into()))]
-    #[test_case("aggregate some_aggregate(*)",
+    #[test_matrix("access method some_method" => Ok(AccessMethod("some_method".into())))]
+    #[test_matrix("aggregate some_aggregate(*)" => Ok(
         Aggregate(AggregateWithArgs::new(
             vec!["some_aggregate".into()],
             vec![],
             vec![]
         ))
-    )]
-    #[test_case("cast (int as varchar)",
+    ))]
+    #[test_matrix("cast (int as varchar)" => Ok(
         Typecast(Cast::new(
             Int4,
             Varchar { max_length: None }
         ))
-    )]
-    #[test_case("collation some_collation", Collation(vec!["some_collation".into()]))]
-    #[test_case("conversion some_conversion", Conversion(vec!["some_conversion".into()]))]
-    #[test_case("database some_database", Database("some_database".into()))]
-    #[test_case("domain int", Domain(Int4.into()))]
-    #[test_case("event trigger some_trigger", EventTrigger("some_trigger".into()))]
-    #[test_case("extension some_extension", Extension("some_extension".into()))]
-    #[test_case("foreign data wrapper some_wrapper", ForeignDataWrapper("some_wrapper".into()))]
-    #[test_case("foreign table some_table", ForeignTable(vec!["some_table".into()]))]
-    #[test_case("function some_function", Function(
+    ))]
+    #[test_matrix("collation some_collation" => Ok(Collation(vec!["some_collation".into()])))]
+    #[test_matrix("conversion some_conversion" => Ok(Conversion(vec!["some_conversion".into()])))]
+    #[test_matrix("database some_database" => Ok(Database("some_database".into())))]
+    #[test_matrix("domain int" => Ok(Domain(Int4.into())))]
+    #[test_matrix("event trigger some_trigger" => Ok(EventTrigger("some_trigger".into())))]
+    #[test_matrix("extension some_extension" => Ok(Extension("some_extension".into())))]
+    #[test_matrix("foreign data wrapper some_wrapper" => Ok(ForeignDataWrapper("some_wrapper".into())))]
+    #[test_matrix("foreign table some_table" => Ok(ForeignTable(vec!["some_table".into()])))]
+    #[test_matrix("function some_function" => Ok(Function(
         FunctionWithArgs::new(vec!["some_function".into()], None)
-    ))]
-    #[test_case("index some_index", Index(vec!["some_index".into()]))]
-    #[test_case("materialized view some_view", MaterializedView(vec!["some_view".into()]))]
-    #[test_case("procedural language some_language", Language("some_language".into()))]
-    #[test_case("language some_language", Language("some_language".into()))]
-    #[test_case("procedure some_procedure", Procedure(
+    )))]
+    #[test_matrix("index some_index" => Ok(Index(vec!["some_index".into()])))]
+    #[test_matrix("materialized view some_view" => Ok(MaterializedView(vec!["some_view".into()])))]
+    #[test_matrix("procedural language some_language" => Ok(Language("some_language".into())))]
+    #[test_matrix("language some_language" => Ok(Language("some_language".into())))]
+    #[test_matrix("procedure some_procedure" => Ok(Procedure(
         FunctionWithArgs::new(vec!["some_procedure".into()], None)
-    ))]
-    #[test_case("publication some_publication", Publication("some_publication".into()))]
-    #[test_case("property graph some_prop_graph", PropertyGraph(vec!["some_prop_graph".into()]))]
-    #[test_case("role some_role", Role("some_role".into()))]
-    #[test_case("routine some_routine", Routine(
+    )))]
+    #[test_matrix("publication some_publication" => Ok(Publication("some_publication".into())))]
+    #[test_matrix("property graph some_prop_graph" => Ok(PropertyGraph(vec!["some_prop_graph".into()])))]
+    #[test_matrix("role some_role" => Ok(Role("some_role".into())))]
+    #[test_matrix("routine some_routine" => Ok(Routine(
         FunctionWithArgs::new(vec!["some_routine".into()], None)
-    ))]
-    #[test_case("schema some_schema", Schema("some_schema".into()))]
-    #[test_case("sequence some_sequence", Sequence(vec!["some_sequence".into()]))]
-    #[test_case("server some_server", ForeignServer("some_server".into()))]
-    #[test_case("statistics some_statistics", ExtendedStatistics(vec!["some_statistics".into()]))]
-    #[test_case("subscription some_subscription", Subscription("some_subscription".into()))]
-    #[test_case("table some_table", Table(vec!["some_table".into()]))]
-    #[test_case("tablespace some_tablespace", Tablespace("some_tablespace".into()))]
-    #[test_case("text search configuration some_configuration",
+    )))]
+    #[test_matrix("schema some_schema" => Ok(Schema("some_schema".into())))]
+    #[test_matrix("sequence some_sequence" => Ok(Sequence(vec!["some_sequence".into()])))]
+    #[test_matrix("server some_server" => Ok(ForeignServer("some_server".into())))]
+    #[test_matrix("statistics some_statistics" => Ok(ExtendedStatistics(vec!["some_statistics".into()])))]
+    #[test_matrix("subscription some_subscription" => Ok(Subscription("some_subscription".into())))]
+    #[test_matrix("table some_table" => Ok(Table(vec!["some_table".into()])))]
+    #[test_matrix("tablespace some_tablespace" => Ok(Tablespace("some_tablespace".into())))]
+    #[test_matrix("text search configuration some_configuration" => Ok(
         TextSearchConfiguration(vec!["some_configuration".into()])
-    )]
-    #[test_case("text search dictionary some_dictionary", TextSearchDictionary(vec!["some_dictionary".into()]))]
-    #[test_case("text search parser some_parser", TextSearchParser(vec!["some_parser".into()]))]
-    #[test_case("text search template some_template", TextSearchTemplate(vec!["some_template".into()]))]
-    #[test_case("transform for int language some_language", Transform(TransformAst::new(Int4, "some_language")))]
-    #[test_case("type int", Type(Int4.into()))]
-    #[test_case("view some_view", View(vec!["some_view".into()]))]
-    fn test_alter_extension_target(source: &str, expected: AlterExtensionContentsTarget) {
-        test_parser!(source, alter_extension_target, expected);
+    ))]
+    #[test_matrix("text search dictionary some_dictionary" => Ok(TextSearchDictionary(vec!["some_dictionary".into()])))]
+    #[test_matrix("text search parser some_parser" => Ok(TextSearchParser(vec!["some_parser".into()])))]
+    #[test_matrix("text search template some_template" => Ok(TextSearchTemplate(vec!["some_template".into()])))]
+    #[test_matrix("transform for int language some_language" => Ok(Transform(TransformAst::new(Int4, "some_language"))))]
+    #[test_matrix("type int" => Ok(Type(Int4.into())))]
+    #[test_matrix("view some_view" => Ok(View(vec!["some_view".into()])))]
+    fn test_alter_extension_target(source: &str) -> scan::Result<AlterExtensionContentsTarget> {
+        test_parser!(source, alter_extension_target)
     }
 }
 

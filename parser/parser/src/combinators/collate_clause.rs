@@ -15,9 +15,9 @@ pub(super) fn collate_clause(ctx: &mut ParserContext) -> scan::Result<QualifiedN
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("collate foo.bar" => Ok(vec!["foo".into(), "bar".into()]))]
+    #[test_matrix("collate foo.bar" => Ok(vec!["foo".into(), "bar".into()]))]
     fn test_collate_clause(source: &str) -> scan::Result<QualifiedName> {
         test_parser!(source, collate_clause)
     }

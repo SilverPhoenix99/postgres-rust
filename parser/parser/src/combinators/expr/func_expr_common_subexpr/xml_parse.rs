@@ -45,21 +45,18 @@ fn xml_whitespace_option(ctx: &mut ParserContext) -> scan::Result<XmlWhitespaceO
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::StringConst,
-        pg_ast::XmlNodeKind,
-    };
+    use pg_ast::ExprNode::StringConst;
+    use pg_ast::XmlNodeKind;
+    use test_case::test_matrix;
 
-    #[test_case("xmlparse(content 'foo')" => Ok(
+    #[test_matrix("xmlparse(content 'foo')" => Ok(
         XmlParse::new(
             XmlNodeKind::Content,
             StringConst("foo".into()),
             Strip
         )
     ))]
-    #[test_case("xmlparse(document 'foo' preserve whitespace)" => Ok(
+    #[test_matrix("xmlparse(document 'foo' preserve whitespace)" => Ok(
         XmlParse::new(
             XmlNodeKind::Document,
             StringConst("foo".into()),
@@ -70,8 +67,8 @@ mod tests {
         test_parser!(source, xml_parse)
     }
 
-    #[test_case("preserve whitespace" => Ok(Preserve))]
-    #[test_case("strip whitespace" => Ok(Strip))]
+    #[test_matrix("preserve whitespace" => Ok(Preserve))]
+    #[test_matrix("strip whitespace" => Ok(Strip))]
     fn test_xml_whitespace_option(source: &str) -> scan::Result<XmlWhitespaceOption> {
         test_parser!(source, xml_whitespace_option)
     }

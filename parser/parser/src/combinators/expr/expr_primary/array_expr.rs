@@ -47,23 +47,22 @@ fn array_expr_list(ctx: &mut ParserContext) -> scan::Result<Vec<ExprNode>> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::{IntegerConst, StringConst};
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("array[]" => Ok(Array(None)); "empty array")]
-    #[test_case("array[1]" => Ok(Array(Some(vec![IntegerConst(1)]))))]
-    #[test_case("array(select1)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_matrix("array[]" => Ok(Array(None)); "empty array")]
+    #[test_matrix("array[1]" => Ok(Array(Some(vec![IntegerConst(1)]))))]
+    #[test_matrix("array(select1)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
     fn test_array_expr(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, array_expr)
     }
 
-    #[test_case("[]" => Ok(None); "empty array")]
-    #[test_case("['foo', 'bar']" => Ok(Some(vec![
+    #[test_matrix("[]" => Ok(None); "empty array")]
+    #[test_matrix("['foo', 'bar']" => Ok(Some(vec![
         StringConst("foo".into()),
         StringConst("bar".into())
     ])))]
-    #[test_case("[['baz'],[1]]" => Ok(Some(vec![
+    #[test_matrix("[['baz'],[1]]" => Ok(Some(vec![
         Array(Some(vec![StringConst("baz".into())])),
         Array(Some(vec![IntegerConst(1)]))
     ])))]

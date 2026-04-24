@@ -132,81 +132,80 @@ fn single_frame_bound(ctx: &mut ParserContext) -> scan::Result<FrameExtent> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("unbounded preceding",
+    #[test_matrix("unbounded preceding" => Ok(
         FrameExtent::Unbounded { end: None }
-    )]
-    #[test_case("current row",
+    ))]
+    #[test_matrix("current row" => Ok(
         FrameExtent::CurrentRow { end: None }
-    )]
-    #[test_case("1 preceding",
+    ))]
+    #[test_matrix("1 preceding" => Ok(
         FrameExtent::Preceding {
             start: IntegerConst(1),
             end: None
         }
-    )]
-    #[test_case("between unbounded preceding and unbounded following",
+    ))]
+    #[test_matrix("between unbounded preceding and unbounded following" => Ok(
         FrameExtent::Unbounded { end: Some(PrecedingEnd::Unbounded) }
-    )]
-    #[test_case("between unbounded preceding and current row",
+    ))]
+    #[test_matrix("between unbounded preceding and current row" => Ok(
         FrameExtent::Unbounded { end: Some(PrecedingEnd::CurrentRow) }
-    )]
-    #[test_case("between unbounded preceding and 1 preceding",
+    ))]
+    #[test_matrix("between unbounded preceding and 1 preceding" => Ok(
         FrameExtent::Unbounded { end: Some(PrecedingEnd::Preceding(IntegerConst(1))) }
-    )]
-    #[test_case("between unbounded preceding and 1 following",
+    ))]
+    #[test_matrix("between unbounded preceding and 1 following" => Ok(
         FrameExtent::Unbounded { end: Some(PrecedingEnd::Following(IntegerConst(1))) }
-    )]
-    #[test_case("between current row and unbounded following",
+    ))]
+    #[test_matrix("between current row and unbounded following" => Ok(
         FrameExtent::CurrentRow { end: Some(CurrentRowEnd::Unbounded) }
-    )]
-    #[test_case("between current row and current row",
+    ))]
+    #[test_matrix("between current row and current row" => Ok(
         FrameExtent::CurrentRow { end: Some(CurrentRowEnd::CurrentRow) }
-    )]
-    #[test_case("between current row and 1 following",
+    ))]
+    #[test_matrix("between current row and 1 following" => Ok(
         FrameExtent::CurrentRow { end: Some(CurrentRowEnd::Following(IntegerConst(1))) }
-    )]
-    #[test_case("between 1 preceding and unbounded following",
+    ))]
+    #[test_matrix("between 1 preceding and unbounded following" => Ok(
         FrameExtent::Preceding {
             start: IntegerConst(1),
             end: Some(PrecedingEnd::Unbounded)
         }
-    )]
-    #[test_case("between 1 preceding and current row",
+    ))]
+    #[test_matrix("between 1 preceding and current row" => Ok(
         FrameExtent::Preceding {
             start: IntegerConst(1),
             end: Some(PrecedingEnd::CurrentRow)
         }
-    )]
-    #[test_case("between 1 preceding and 1 preceding",
+    ))]
+    #[test_matrix("between 1 preceding and 1 preceding" => Ok(
         FrameExtent::Preceding {
             start: IntegerConst(1),
             end: Some(PrecedingEnd::Preceding(IntegerConst(1)))
         }
-    )]
-    #[test_case("between 1 preceding and 1 following",
+    ))]
+    #[test_matrix("between 1 preceding and 1 following" => Ok(
         FrameExtent::Preceding {
             start: IntegerConst(1),
             end: Some(PrecedingEnd::Following(IntegerConst(1)))
         }
-    )]
-    #[test_case("between 1 following and unbounded following",
+    ))]
+    #[test_matrix("between 1 following and unbounded following" => Ok(
         FrameExtent::Following {
             start: IntegerConst(1),
             end: FollowingEnd::Unbounded
         }
-    )]
-    #[test_case("between 1 following and 1 following",
+    ))]
+    #[test_matrix("between 1 following and 1 following" => Ok(
         FrameExtent::Following {
             start: IntegerConst(1),
             end: FollowingEnd::Following(IntegerConst(1))
         }
-    )]
-    fn test_frame_extent(source: &str, expected: FrameExtent) {
-        test_parser!(source, frame_extent, expected)
+    ))]
+    fn test_frame_extent(source: &str) -> scan::Result<FrameExtent> {
+        test_parser!(source, frame_extent)
     }
 }
 

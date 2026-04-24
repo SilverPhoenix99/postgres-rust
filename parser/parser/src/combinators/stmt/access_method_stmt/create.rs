@@ -24,7 +24,7 @@ fn am_type(ctx: &mut ParserContext) -> scan::Result<AccessMethodKind> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
     #[test]
     fn test_create_access_method_stmt() {
@@ -35,10 +35,10 @@ mod tests {
         )
     }
 
-    #[test_case("index", Index)]
-    #[test_case("table", Table)]
-    fn test_am_type(source: &str, expected: AccessMethodKind) {
-        test_parser!(source, am_type, expected);
+    #[test_matrix("index" => Ok(Index))]
+    #[test_matrix("table" => Ok(Table))]
+    fn test_am_type(source: &str) -> scan::Result<AccessMethodKind> {
+        test_parser!(source, am_type)
     }
 }
 

@@ -20,18 +20,16 @@ pub(super) fn type_func_name_prefixed_expr(ctx: &mut ParserContext) -> scan::Res
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        ExprNode::{IntegerConst, StringConst},
-        FuncArgsKind,
-        FuncCall,
-        FuncCallExpr,
-        TypeName,
-        TypecastExpr,
-    };
-    use test_case::test_case;
+    use pg_ast::ExprNode::IntegerConst;
+    use pg_ast::ExprNode::StringConst;
+    use pg_ast::FuncArgsKind;
+    use pg_ast::FuncCall;
+    use pg_ast::FuncCallExpr;
+    use pg_ast::TypeName;
+    use pg_ast::TypecastExpr;
+    use test_case::test_matrix;
 
-    #[test_case("verbose 'foo'" => Ok(
+    #[test_matrix("verbose 'foo'" => Ok(
         TypecastExpr::new(
             StringConst("foo".into()),
             TypeName::Generic {
@@ -40,7 +38,7 @@ mod tests {
             }
         ).into()
     ))]
-    #[test_case("current_schema(1) 'bar'" => Ok(
+    #[test_matrix("current_schema(1) 'bar'" => Ok(
         TypecastExpr::new(
             StringConst("bar".into()),
             TypeName::Generic {
@@ -49,7 +47,7 @@ mod tests {
             }
         ).into()
     ))]
-    #[test_case("collation() filter (where 1)" => Ok(
+    #[test_matrix("collation() filter (where 1)" => Ok(
         FuncCallExpr::from(
             FuncCall::new(
                 vec![Str::from("collation")],

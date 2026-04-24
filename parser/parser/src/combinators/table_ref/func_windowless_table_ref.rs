@@ -21,29 +21,26 @@ pub(super) fn func_windowless_table_ref(ctx: &mut ParserContext) -> scan::Result
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        FuncAliasColumn,
-        FuncArgsKind,
-        FuncCall,
-        OneOrBoth::Both,
-    };
-    use test_case::test_case;
+    use pg_ast::FuncAliasColumn;
+    use pg_ast::FuncArgsKind;
+    use pg_ast::FuncCall;
+    use pg_ast::OneOrBoth::Both;
+    use test_case::test_matrix;
 
-    #[test_case("foo()" => Ok(
+    #[test_matrix("foo()" => Ok(
         FunctionTableRef::new(FuncCall::new(
             vec!["foo".into()],
             FuncArgsKind::Empty { order_within_group: None }
         ))
     ))]
-    #[test_case("bar() with ordinality" => Ok(
+    #[test_matrix("bar() with ordinality" => Ok(
         FunctionTableRef::new(FuncCall::new(
             vec!["bar".into()],
             FuncArgsKind::Empty { order_within_group: None }
         ))
         .with_ordinality(true)
     ))]
-    #[test_case("baz() as t(x)" => Ok(
+    #[test_matrix("baz() as t(x)" => Ok(
         FunctionTableRef::new(FuncCall::new(
             vec!["baz".into()],
             FuncArgsKind::Empty { order_within_group: None }
@@ -53,7 +50,7 @@ mod tests {
             vec![FuncAliasColumn::new("x")]
         ))
     ))]
-    #[test_case("qux() with ordinality as s(y)" => Ok(
+    #[test_matrix("qux() with ordinality as s(y)" => Ok(
         FunctionTableRef::new(FuncCall::new(
             vec!["qux".into()],
             FuncArgsKind::Empty { order_within_group: None }

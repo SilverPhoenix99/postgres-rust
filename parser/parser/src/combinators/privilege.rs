@@ -94,14 +94,14 @@ fn named(ctx: &mut ParserContext) -> scan::Result<SpecificAccessPrivilege> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("all", All { columns: None })]
-    #[test_case("all privileges", All { columns: None })]
-    #[test_case("all (column_name)", All { columns: Some(vec!["column_name".into()]) })]
-    #[test_case("select, references", Specific(vec![Select { columns: None }, References { columns: None }]))]
-    fn test_privileges(source: &str, expected: AccessPrivilege) {
-        test_parser!(source, privileges, expected)
+    #[test_matrix("all" => Ok(All { columns: None }))]
+    #[test_matrix("all privileges" => Ok(All { columns: None }))]
+    #[test_matrix("all (column_name)" => Ok(All { columns: Some(vec!["column_name".into()]) }))]
+    #[test_matrix("select, references" => Ok(Specific(vec![Select { columns: None }, References { columns: None }])))]
+    fn test_privileges(source: &str) -> scan::Result<AccessPrivilege> {
+        test_parser!(source, privileges)
     }
 
     #[test]
@@ -118,22 +118,22 @@ mod tests {
         )
     }
 
-    #[test_case("alter system", AlterSystem)]
-    #[test_case("select", Select { columns: None })]
-    #[test_case("select(column_name)", Select { columns: Some(vec!["column_name".into()]) })]
-    #[test_case("references", References { columns: None })]
-    #[test_case("references(column_name)", References { columns: Some(vec!["column_name".into()]) })]
-    #[test_case("create", Create { columns: None })]
-    #[test_case("create(column_name)", Create { columns: Some(vec!["column_name".into()]) })]
-    #[test_case("some_name", Named { privilege: "some_name".into(), columns: None })]
-    #[test_case("another_name(column_name)",
+    #[test_matrix("alter system" => Ok(AlterSystem))]
+    #[test_matrix("select" => Ok(Select { columns: None }))]
+    #[test_matrix("select(column_name)" => Ok(Select { columns: Some(vec!["column_name".into()]) }))]
+    #[test_matrix("references" => Ok(References { columns: None }))]
+    #[test_matrix("references(column_name)" => Ok(References { columns: Some(vec!["column_name".into()]) }))]
+    #[test_matrix("create" => Ok(Create { columns: None }))]
+    #[test_matrix("create(column_name)" => Ok(Create { columns: Some(vec!["column_name".into()]) }))]
+    #[test_matrix("some_name" => Ok(Named { privilege: "some_name".into(), columns: None }))]
+    #[test_matrix("another_name(column_name)" => Ok(
         Named {
             privilege: "another_name".into(),
             columns: Some(vec!["column_name".into()])
         }
-    )]
-    fn test_privilege(source: &str, expected: SpecificAccessPrivilege) {
-        test_parser!(source, privilege, expected)
+    ))]
+    fn test_privilege(source: &str) -> scan::Result<SpecificAccessPrivilege> {
+        test_parser!(source, privilege)
     }
 }
 

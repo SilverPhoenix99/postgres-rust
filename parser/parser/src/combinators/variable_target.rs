@@ -27,13 +27,13 @@ pub(super) fn variable_target(ctx: &mut ParserContext) -> scan::Result<VariableT
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("all" => Ok(VariableTarget::All))]
-    #[test_case("session authorization" => Ok(VariableTarget::SessionAuthorization))]
-    #[test_case("time zone" => Ok(VariableTarget::TimeZone))]
-    #[test_case("transaction isolation level" => Ok(VariableTarget::TransactionIsolation))]
-    #[test_case("qualified.name" => Ok(VariableTarget::Variable { name: vec!["qualified".into(), "name".into()] }))]
+    #[test_matrix("all" => Ok(VariableTarget::All))]
+    #[test_matrix("session authorization" => Ok(SessionAuthorization))]
+    #[test_matrix("time zone" => Ok(TimeZone))]
+    #[test_matrix("transaction isolation level" => Ok(TransactionIsolation))]
+    #[test_matrix("qualified.name" => Ok(VariableTarget::Variable { name: vec!["qualified".into(), "name".into()] }))]
     fn test_variable_target(source: &str) -> scan::Result<VariableTarget> {
         test_parser!(source, variable_target)
     }

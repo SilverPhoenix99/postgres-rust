@@ -50,25 +50,22 @@ fn json_query_args(ctx: &mut ParserContext) -> scan::Result<JsonQueryExpr> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::{IntegerConst, StringConst},
-        pg_ast::JsonBehavior,
-        pg_ast::JsonBehaviorClause,
-        pg_ast::JsonQuotes,
-        pg_ast::JsonValueExpr,
-        pg_ast::JsonWrapperBehavior,
-        pg_ast::TypeName::Int4,
-    };
+    use pg_ast::ExprNode::{IntegerConst, StringConst};
+    use pg_ast::JsonBehavior;
+    use pg_ast::JsonBehaviorClause;
+    use pg_ast::JsonQuotes;
+    use pg_ast::JsonValueExpr;
+    use pg_ast::JsonWrapperBehavior;
+    use pg_ast::TypeName::Int4;
+    use test_case::test_matrix;
 
-    #[test_case("json_query('{}', 'foo')" => Ok(
+    #[test_matrix("json_query('{}', 'foo')" => Ok(
         JsonQueryExpr::new(
             JsonValueExpr::from(StringConst("{}".into())),
             StringConst("foo".into())
         )
     ))]
-    #[test_case("json_query('{}', 'foo' passing 1 as a returning int with wrapper keep quotes error on empty)" => Ok(
+    #[test_matrix("json_query('{}', 'foo' passing 1 as a returning int with wrapper keep quotes error on empty)" => Ok(
         JsonQueryExpr::new(
             JsonValueExpr::from(StringConst("{}".into())),
             StringConst("foo".into())

@@ -21,12 +21,12 @@ pub(super) fn json_key_uniqueness_constraint(ctx: &mut ParserContext) -> scan::R
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("with unique keys" => Ok(true))]
-    #[test_case("with unique" => Ok(true))]
-    #[test_case("without unique keys" => Ok(false))]
-    #[test_case("without unique" => Ok(false))]
+    #[test_matrix("with unique keys" => Ok(true))]
+    #[test_matrix("with unique" => Ok(true))]
+    #[test_matrix("without unique keys" => Ok(false))]
+    #[test_matrix("without unique" => Ok(false))]
     fn test_json_key_uniqueness_constraint(source: &str) -> scan::Result<bool> {
         test_parser!(source, json_key_uniqueness_constraint)
     }

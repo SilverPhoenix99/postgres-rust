@@ -17,18 +17,14 @@ pub(in crate::combinators) fn bit_string(ctx: &mut ParserContext) -> scan::Resul
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("b'0110'", BitStringKind::Binary, "0110".into())]
-    #[test_case("b'0110'\n'1010'\n'0101'", BitStringKind::Binary, "011010100101".into())]
-    #[test_case("x'abcd'", BitStringKind::Hex, "abcd".into())]
-    #[test_case("x'abcd'\n'4321'\n'f765'", BitStringKind::Hex, "abcd4321f765".into())]
-    fn test_bit_string(source: &str, expected_kind: BitStringKind, expected_slice: Box<str>) {
-        test_parser!(
-            source,
-            bit_string,
-            (expected_kind, expected_slice)
-        )
+    #[test_matrix("b'0110'" => Ok((BitStringKind::Binary, "0110".into())))]
+    #[test_matrix("b'0110'\n'1010'\n'0101'" => Ok((BitStringKind::Binary, "011010100101".into())))]
+    #[test_matrix("x'abcd'" => Ok((BitStringKind::Hex, "abcd".into())))]
+    #[test_matrix("x'abcd'\n'4321'\n'f765'" => Ok((BitStringKind::Hex, "abcd4321f765".into())))]
+    fn test_bit_string(source: &str) -> scan::Result<(BitStringKind, Box<str>)> {
+        test_parser!(source, bit_string)
     }
 }
 

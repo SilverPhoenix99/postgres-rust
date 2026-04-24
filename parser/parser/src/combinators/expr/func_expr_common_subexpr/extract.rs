@@ -55,13 +55,12 @@ fn extract_arg(ctx: &mut ParserContext) -> scan::Result<ExtractArg> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::{IntegerConst, StringConst};
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("extract(year from 'foo')" => Ok(
+    #[test_matrix("extract(year from 'foo')" => Ok(
         ExtractFunc::new(
-            ExtractArg::Year,
+            Year,
             StringConst("foo".into())
         )
     ))]
@@ -69,15 +68,15 @@ mod tests {
         test_parser!(source, extract)
     }
 
-    #[test_case("second from 1" => Ok(ExtractFunc::new(
+    #[test_matrix("second from 1" => Ok(ExtractFunc::new(
         Second,
         IntegerConst(1)
     )))]
-    #[test_case("foo from 2" => Ok(ExtractFunc::new(
+    #[test_matrix("foo from 2" => Ok(ExtractFunc::new(
         Named("foo".into()),
         IntegerConst(2)
     )))]
-    #[test_case("'bar' from 'foo'" => Ok(ExtractFunc::new(
+    #[test_matrix("'bar' from 'foo'" => Ok(ExtractFunc::new(
         Named("bar".into()),
         StringConst("foo".into())
     )))]
@@ -85,14 +84,14 @@ mod tests {
         test_parser!(source, extract_args)
     }
 
-    #[test_case("year" => Ok(Year))]
-    #[test_case("month" => Ok(Month))]
-    #[test_case("day" => Ok(Day))]
-    #[test_case("hour" => Ok(Hour))]
-    #[test_case("minute" => Ok(Minute))]
-    #[test_case("second" => Ok(Second))]
-    #[test_case("foo" => Ok(Named("foo".into())))]
-    #[test_case("'bar'" => Ok(Named("bar".into())))]
+    #[test_matrix("year" => Ok(Year))]
+    #[test_matrix("month" => Ok(Month))]
+    #[test_matrix("day" => Ok(Day))]
+    #[test_matrix("hour" => Ok(Hour))]
+    #[test_matrix("minute" => Ok(Minute))]
+    #[test_matrix("second" => Ok(Second))]
+    #[test_matrix("foo" => Ok(Named("foo".into())))]
+    #[test_matrix("'bar'" => Ok(Named("bar".into())))]
     fn test_extract_arg(source: &str) -> scan::Result<ExtractArg> {
         test_parser!(source, extract_arg)
     }

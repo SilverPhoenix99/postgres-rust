@@ -59,12 +59,11 @@ fn overlay_list(ctx: &mut ParserContext) -> scan::Result<(ExprNode, ExprNode, Op
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::{IntegerConst, StringConst};
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("overlay()" => Ok(OverlayFunc::ExplicitCall(None)))]
-    #[test_case("overlay(1)" => Ok(
+    #[test_matrix("overlay()" => Ok(OverlayFunc::ExplicitCall(None)))]
+    #[test_matrix("overlay(1)" => Ok(
         OverlayFunc::ExplicitCall(
             Some(vec![
                 NamedValue::new(IntegerConst(1))
@@ -75,14 +74,14 @@ mod tests {
         test_parser!(source, overlay)
     }
 
-    #[test_case("'foo'" => Ok(
+    #[test_matrix("'foo'" => Ok(
         OverlayFunc::ExplicitCall(
             Some(vec![
                 NamedValue::new(StringConst("foo".into()))
             ])
         )
     ))]
-    #[test_case("'foo', bar := 1, baz => 2" => Ok(
+    #[test_matrix("'foo', bar := 1, baz => 2" => Ok(
         OverlayFunc::ExplicitCall(
             Some(vec![
                 NamedValue::new(StringConst("foo".into())),
@@ -91,7 +90,7 @@ mod tests {
             ])
         )
     ))]
-    #[test_case("'foo' placing 'bar' from 1" => Ok(
+    #[test_matrix("'foo' placing 'bar' from 1" => Ok(
         OverlayFunc::SqlSyntax(
             OverlaySqlArgs::new(
                 StringConst("foo".into()),
@@ -100,7 +99,7 @@ mod tests {
             )
         )
     ))]
-    #[test_case("'foo' placing 'bar' from 1 for 2" => Ok(
+    #[test_matrix("'foo' placing 'bar' from 1 for 2" => Ok(
         OverlayFunc::SqlSyntax(
             OverlaySqlArgs::new(
                 StringConst("foo".into()),

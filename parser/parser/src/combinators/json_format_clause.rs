@@ -38,22 +38,20 @@ pub(super) fn json_format_clause(ctx: &mut ParserContext) -> scan::Result<JsonFo
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::JsonFormatKind::Text;
     use pg_elog::Error::Parser;
     use scan::Error::ScanErr;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("format json" => Ok(JsonFormat::text()))]
-    #[test_case("format json encoding UTF8" => Ok(
+    #[test_matrix("format json" => Ok(JsonFormat::text()))]
+    #[test_matrix("format json encoding UTF8" => Ok(
         JsonFormat::text()
             .with_encoding(UTF8)
     ))]
-    #[test_case("format json encoding uTf16" => Ok(
+    #[test_matrix("format json encoding uTf16" => Ok(
         JsonFormat::text()
             .with_encoding(UTF16)
     ))]
-    #[test_case("format json encoding utf32" => Ok(
+    #[test_matrix("format json encoding utf32" => Ok(
         JsonFormat::text()
             .with_encoding(UTF32)
     ))]

@@ -14,9 +14,9 @@ pub(super) fn merge_action(ctx: &mut ParserContext) -> scan::Result<SqlFunction>
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("merge_action()" => Ok(MergeAction))]
+    #[test_matrix("merge_action()" => Ok(MergeAction))]
     fn test_merge_action(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, merge_action)
     }

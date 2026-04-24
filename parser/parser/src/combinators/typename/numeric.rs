@@ -78,39 +78,36 @@ fn float(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::IntegerConst,
-        pg_elog::Error::Parser,
-        pg_parser_core::scan::Error::ScanErr,
-    };
+    use crate::test_parser;
+    use pg_ast::ExprNode::IntegerConst;
+    use pg_elog::Error::Parser;
+    use pg_parser_core::scan::Error::ScanErr;
+    use test_case::test_matrix;
 
-    #[test_case("boolean"     => Ok(Bool))]
-    #[test_case("smallint"    => Ok(Int2))]
-    #[test_case("int"         => Ok(Int4))]
-    #[test_case("integer"     => Ok(Int4))]
-    #[test_case("bigint"      => Ok(Int8))]
-    #[test_case("real"        => Ok(Float4))]
-    #[test_case("float"       => Ok(Float8))]
-    #[test_case("float(17)"   => Ok(Float4))]
-    #[test_case("float(44)"   => Ok(Float8))]
-    #[test_case("decimal"     => Ok(Numeric(None)))]
-    #[test_case("decimal(10)" => Ok(Numeric(Some(vec![IntegerConst(10)]))))]
-    #[test_case("dec"         => Ok(Numeric(None)))]
-    #[test_case("dec(20)"     => Ok(Numeric(Some(vec![IntegerConst(20)]))))]
-    #[test_case("numeric"     => Ok(Numeric(None)))]
-    #[test_case("numeric(30)" => Ok(Numeric(Some(vec![IntegerConst(30)]))))]
+    #[test_matrix("boolean"     => Ok(Bool))]
+    #[test_matrix("smallint"    => Ok(Int2))]
+    #[test_matrix("int"         => Ok(Int4))]
+    #[test_matrix("integer"     => Ok(Int4))]
+    #[test_matrix("bigint"      => Ok(Int8))]
+    #[test_matrix("real"        => Ok(Float4))]
+    #[test_matrix("float"       => Ok(Float8))]
+    #[test_matrix("float(17)"   => Ok(Float4))]
+    #[test_matrix("float(44)"   => Ok(Float8))]
+    #[test_matrix("decimal"     => Ok(Numeric(None)))]
+    #[test_matrix("decimal(10)" => Ok(Numeric(Some(vec![IntegerConst(10)]))))]
+    #[test_matrix("dec"         => Ok(Numeric(None)))]
+    #[test_matrix("dec(20)"     => Ok(Numeric(Some(vec![IntegerConst(20)]))))]
+    #[test_matrix("numeric"     => Ok(Numeric(None)))]
+    #[test_matrix("numeric(30)" => Ok(Numeric(Some(vec![IntegerConst(30)]))))]
     // Test error cases
-    #[test_case("float(0)" => matches Err(ScanErr(
+    #[test_matrix("float(0)" => matches Err(ScanErr(
         Located(Parser(FloatPrecisionUnderflow(0)), _)
     )))]
-    #[test_case("float(99)" => matches Err(ScanErr(
+    #[test_matrix("float(99)" => matches Err(ScanErr(
         Located(Parser(FloatPrecisionOverflow(99)), _)
     )))]
     fn test_numeric(source: &str) -> scan::Result<TypeName> {
-        let mut ctx = ParserContext::new(source);
-        numeric(&mut ctx)
+        test_parser!(source, numeric)
     }
 }
 

@@ -94,18 +94,15 @@ fn json_arrayagg(ctx: &mut ParserContext) -> scan::Result<JsonArrayAgg> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::{IntegerConst, StringConst},
-        pg_ast::JsonKeyValue,
-        pg_ast::JsonOutput,
-        pg_ast::SortBy,
-        pg_ast::TypeName::{Int4, Int8},
-        scan::Error::{Eof, NoMatch},
-    };
+    use pg_ast::ExprNode::{IntegerConst, StringConst};
+    use pg_ast::JsonKeyValue;
+    use pg_ast::JsonOutput;
+    use pg_ast::SortBy;
+    use pg_ast::TypeName::{Int4, Int8};
+    use scan::Error::{Eof, NoMatch};
+    use test_case::test_matrix;
 
-    #[test_case("json_objectagg('foo': 1)" => Ok(
+    #[test_matrix("json_objectagg('foo': 1)" => Ok(
         JsonObjectAgg::new(
             JsonKeyValue::new(
                 StringConst("foo".into()),
@@ -114,7 +111,7 @@ mod tests {
         )
         .into()
     ))]
-    #[test_case("json_objectagg('bar': 2 absent on null with unique returning int)" => Ok(
+    #[test_matrix("json_objectagg('bar': 2 absent on null with unique returning int)" => Ok(
         JsonObjectAgg::new(
             JsonKeyValue::new(
                 StringConst("bar".into()),
@@ -126,12 +123,12 @@ mod tests {
         .with_absent_on_null(true)
         .into()
     ))]
-    #[test_case("json_arrayagg(1)" => Ok(
+    #[test_matrix("json_arrayagg(1)" => Ok(
         JsonArrayAgg::new(IntegerConst(1))
             .with_absent_on_null(true)
             .into()
     ))]
-    #[test_case("json_arrayagg(2 order by 3 null on null returning bigint)" => Ok(
+    #[test_matrix("json_arrayagg(2 order by 3 null on null returning bigint)" => Ok(
         JsonArrayAgg::new(IntegerConst(2))
             .with_output(JsonOutput::from(Int8))
             .with_sort(vec![SortBy::new(
@@ -141,10 +138,10 @@ mod tests {
             )])
             .into()
     ))]
-    #[test_case("json_objectagg" => matches Err(Eof(_)))]
-    #[test_case("json_objectagg 1" => matches Err(NoMatch(_)))]
-    #[test_case("json_arrayagg" => matches Err(Eof(_)))]
-    #[test_case("json_arrayagg 1" => matches Err(NoMatch(_)))]
+    #[test_matrix("json_objectagg" => matches Err(Eof(_)))]
+    #[test_matrix("json_objectagg 1" => matches Err(NoMatch(_)))]
+    #[test_matrix("json_arrayagg" => matches Err(Eof(_)))]
+    #[test_matrix("json_arrayagg 1" => matches Err(NoMatch(_)))]
     fn test_json_aggregate_func(source: &str) -> scan::Result<JsonAggFunc> {
         test_parser!(source, json_aggregate_func)
     }

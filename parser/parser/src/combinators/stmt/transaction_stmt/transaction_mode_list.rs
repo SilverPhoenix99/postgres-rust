@@ -76,38 +76,37 @@ fn isolation_level(ctx: &mut ParserContext) -> scan::Result<IsolationLevel> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use scan::Error::NoMatch;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("read only , read write isolation level read committed" => Ok(
+    #[test_matrix("read only , read write isolation level read committed" => Ok(
         vec![
             ReadOnly,
             ReadWrite,
             TransactionMode::IsolationLevel(ReadCommitted),
         ]
     ))]
-    #[test_case("no_match" => matches Err(NoMatch(_)))]
+    #[test_matrix("no_match" => matches Err(NoMatch(_)))]
     fn test_transaction_mode_list(source: &str) -> scan::Result<Vec<TransactionMode>> {
         test_parser!(source, transaction_mode_list)
     }
 
-    #[test_case("read only" => Ok(ReadOnly))]
-    #[test_case("read write" => Ok(ReadWrite))]
-    #[test_case("deferrable" => Ok(Deferrable))]
-    #[test_case("not deferrable" => Ok(NotDeferrable))]
-    #[test_case("isolation level read committed" => Ok(TransactionMode::IsolationLevel(ReadCommitted)))]
-    #[test_case("isolation level read uncommitted" => Ok(TransactionMode::IsolationLevel(ReadUncommitted)))]
-    #[test_case("isolation level repeatable read" => Ok(TransactionMode::IsolationLevel(RepeatableRead)))]
-    #[test_case("isolation level serializable" => Ok(TransactionMode::IsolationLevel(Serializable)))]
+    #[test_matrix("read only" => Ok(ReadOnly))]
+    #[test_matrix("read write" => Ok(ReadWrite))]
+    #[test_matrix("deferrable" => Ok(Deferrable))]
+    #[test_matrix("not deferrable" => Ok(NotDeferrable))]
+    #[test_matrix("isolation level read committed" => Ok(TransactionMode::IsolationLevel(ReadCommitted)))]
+    #[test_matrix("isolation level read uncommitted" => Ok(TransactionMode::IsolationLevel(ReadUncommitted)))]
+    #[test_matrix("isolation level repeatable read" => Ok(TransactionMode::IsolationLevel(RepeatableRead)))]
+    #[test_matrix("isolation level serializable" => Ok(TransactionMode::IsolationLevel(Serializable)))]
     fn test_transaction_mode(source: &str) -> scan::Result<TransactionMode> {
         test_parser!(source, transaction_mode)
     }
 
-    #[test_case("read committed" => Ok(ReadCommitted))]
-    #[test_case("read uncommitted" => Ok(ReadUncommitted))]
-    #[test_case("repeatable read" => Ok(RepeatableRead))]
-    #[test_case("serializable" => Ok(Serializable))]
+    #[test_matrix("read committed" => Ok(ReadCommitted))]
+    #[test_matrix("read uncommitted" => Ok(ReadUncommitted))]
+    #[test_matrix("repeatable read" => Ok(RepeatableRead))]
+    #[test_matrix("serializable" => Ok(Serializable))]
     fn test_isolation_level(source: &str) -> scan::Result<IsolationLevel> {
         test_parser!(source, isolation_level)
     }

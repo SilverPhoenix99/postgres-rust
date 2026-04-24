@@ -19,14 +19,14 @@ pub(super) fn abort_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStm
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("abort" => Ok(Rollback { chain: false }))]
-    #[test_case("abort and chain" => Ok(Rollback { chain: true }))]
-    #[test_case("abort and no chain" => Ok(Rollback { chain: false }))]
-    #[test_case("abort transaction" => Ok(Rollback { chain: false }))]
-    #[test_case("abort transaction and chain" => Ok(Rollback { chain: true }))]
-    #[test_case("abort transaction and no chain" => Ok(Rollback { chain: false }))]
+    #[test_matrix("abort" => Ok(Rollback { chain: false }))]
+    #[test_matrix("abort and chain" => Ok(Rollback { chain: true }))]
+    #[test_matrix("abort and no chain" => Ok(Rollback { chain: false }))]
+    #[test_matrix("abort transaction" => Ok(Rollback { chain: false }))]
+    #[test_matrix("abort transaction and chain" => Ok(Rollback { chain: true }))]
+    #[test_matrix("abort transaction and no chain" => Ok(Rollback { chain: false }))]
     fn test_abort(source: &str) -> scan::Result<TransactionStmt> {
         test_parser!(source, abort_stmt)
     }

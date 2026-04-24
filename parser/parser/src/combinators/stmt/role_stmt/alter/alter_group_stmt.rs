@@ -63,15 +63,15 @@ fn change_role(ctx: &mut ParserContext) -> scan::Result<Change> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("group some_group rename to new_group_name" => Ok(
+    #[test_matrix("group some_group rename to new_group_name" => Ok(
         RoleStmt::Rename {
             role_name: "some_group".into(),
             new_name: "new_group_name".into()
         }
     ))]
-    #[test_case("group some_group add user current_role, new_user" => Ok(
+    #[test_matrix("group some_group add user current_role, new_user" => Ok(
         AlterRoleStmt::new(RoleSpec::Name("some_group".into()))
             .with_options(vec![RoleMembers {
                 action: AddDrop::Add,
@@ -82,7 +82,7 @@ mod tests {
             }])
             .into()
     ))]
-    #[test_case("group some_group drop user session_user, public" => Ok(
+    #[test_matrix("group some_group drop user session_user, public" => Ok(
         AlterRoleStmt::new(RoleSpec::Name("some_group".into()))
             .with_options(vec![RoleMembers {
                 action: AddDrop::Drop,

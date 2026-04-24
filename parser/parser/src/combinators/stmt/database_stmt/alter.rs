@@ -109,50 +109,45 @@ fn alterdb_opt_name(ctx: &mut ParserContext) -> scan::Result<AlterdbOptionKind> 
 
 #[cfg(test)]
 mod tests {
-    #[allow(unused_imports)]
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        CreatedbOptionValue,
-        RoleSpec,
-        SetResetClause,
-        SetRest::TransactionSnapshot,
-        VariableTarget::TimeZone,
-    };
-    use test_case::test_case;
+    use pg_ast::CreatedbOptionValue;
+    use pg_ast::RoleSpec;
+    use pg_ast::SetRest::TransactionSnapshot;
+    use pg_ast::VariableTarget::TimeZone;
+    use test_case::test_matrix;
 
-    #[test_case("database db_name refresh collation version" => Ok(
+    #[test_matrix("database db_name refresh collation version" => Ok(
         DatabaseStmt::new("db_name", RefreshCollationVersion)
     ))]
-    #[test_case("database db_name owner to public" => Ok(
+    #[test_matrix("database db_name owner to public" => Ok(
         DatabaseStmt::new("db_name",
             AlterOwner { new_owner: RoleSpec::Public }
         )
     ))]
-    #[test_case("database db_name rename to this_db" => Ok(
+    #[test_matrix("database db_name rename to this_db" => Ok(
         DatabaseStmt::new("db_name",
             Rename { new_name: "this_db".into() }
         )
     ))]
-    #[test_case("database db_name set tablespace some_name" => Ok(
+    #[test_matrix("database db_name set tablespace some_name" => Ok(
         DatabaseStmt::new("db_name",
             AlterOptions(vec![
                 AlterdbOption::new(Tablespace, "some_name")
             ])
         )
     ))]
-    #[test_case("database db_name set transaction snapshot 'tx'" => Ok(
+    #[test_matrix("database db_name set transaction snapshot 'tx'" => Ok(
         DatabaseStmt::new("db_name",
             Set(TransactionSnapshot("tx".into()))
         )
     ))]
-    #[test_case("database db_name reset time zone" => Ok(
+    #[test_matrix("database db_name reset time zone" => Ok(
         DatabaseStmt::new("db_name",
             Reset(TimeZone)
         )
     ))]
-    #[test_case("database the_db_name with ALLOW_CONNECTIONS default CONNECTION LIMIT = +5 IS_TEMPLATE false TABLESPACE = tbspace" => Ok(
+    #[test_matrix("database the_db_name with ALLOW_CONNECTIONS default CONNECTION LIMIT = +5 IS_TEMPLATE false TABLESPACE = tbspace" => Ok(
         DatabaseStmt::new("the_db_name",
             AlterOptions(vec![
                 AlterdbOption::new(AllowConnections, CreatedbOptionValue::Default),
@@ -162,7 +157,7 @@ mod tests {
             ])
         )
     ))]
-    #[test_case("database the_db_name ALLOW_CONNECTIONS = default CONNECTION LIMIT 5 IS_TEMPLATE = false TABLESPACE tbspace" => Ok(
+    #[test_matrix("database the_db_name ALLOW_CONNECTIONS = default CONNECTION LIMIT 5 IS_TEMPLATE = false TABLESPACE tbspace" => Ok(
         DatabaseStmt::new("the_db_name",
             AlterOptions(vec![
                 AlterdbOption::new(AllowConnections, CreatedbOptionValue::Default),

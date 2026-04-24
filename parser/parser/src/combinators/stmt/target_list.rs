@@ -46,28 +46,27 @@ fn target_el_alias(ctx: &mut ParserContext) -> scan::Result<Str> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("1, 2 as x, *" => matches Ok(_))]
+    #[test_matrix("1, 2 as x, *" => matches Ok(_))]
     fn test_target_list(source: &str) -> scan::Result<Vec<OneOrAll<NamedValue>>> {
         test_parser!(source, target_list)
     }
 
-    #[test_case("*" => Ok(OneOrAll::All))]
-    #[test_case("1" => Ok(OneOrAll::One(
+    #[test_matrix("*" => Ok(OneOrAll::All))]
+    #[test_matrix("1" => Ok(OneOrAll::One(
         NamedValue::new(IntegerConst(1))
     )))]
-    #[test_case("2 foo" => Ok(OneOrAll::One(
+    #[test_matrix("2 foo" => Ok(OneOrAll::One(
         NamedValue::new(IntegerConst(2)).with_name("foo")
     )))]
     fn test_target_el(source: &str) -> scan::Result<OneOrAll<NamedValue>> {
         test_parser!(source, target_el)
     }
 
-    #[test_case("as foo" => Ok("foo".into()))]
-    #[test_case("bar" => Ok("bar".into()))]
+    #[test_matrix("as foo" => Ok("foo".into()))]
+    #[test_matrix("bar" => Ok("bar".into()))]
     fn test_target_el_alias(source: &str) -> scan::Result<Str> {
         test_parser!(source, target_el_alias)
     }

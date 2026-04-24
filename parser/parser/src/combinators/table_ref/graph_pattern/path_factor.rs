@@ -18,20 +18,17 @@ pub(super) fn path_factor(ctx: &mut ParserContext) -> scan::Result<GraphElementP
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        core::ops::RangeInclusive,
-        pg_ast::GraphElementPattern,
-        pg_basics::NonNegative
-    };
+    use core::ops::RangeInclusive;
+    use pg_ast::GraphElementPattern;
+    use pg_basics::NonNegative;
+    use test_case::test_matrix;
 
-    #[test_case("->" => Ok(
+    #[test_matrix("->" => Ok(
         GraphElementPatternKind::EdgePatternRight(
             GraphElementPattern::default()
         )
     ))]
-    #[test_case("<-{1}" => Ok(
+    #[test_matrix("<-{1}" => Ok(
         GraphElementPatternKind::EdgePatternLeft(
             GraphElementPattern::default()
                 .with_quantifier(RangeInclusive::new(NonNegative::from(1), NonNegative::from(1)))

@@ -21,16 +21,16 @@ pub(super) fn var_value(ctx: &mut ParserContext) -> scan::Result<VarValue> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("true", true.into())]
-    #[test_case("false", false.into())]
-    #[test_case("on", "on".into())]
-    #[test_case("off", "off".into())]
-    #[test_case("'value'", "value".into())]
-    #[test_case("+123", 123.into())]
-    fn test_var_value(source: &str, expected: VarValue) {
-        test_parser!(source, var_value, expected)
+    #[test_matrix("true" => Ok(true.into()))]
+    #[test_matrix("false" => Ok(false.into()))]
+    #[test_matrix("on" => Ok("on".into()))]
+    #[test_matrix("off" => Ok("off".into()))]
+    #[test_matrix("'value'" => Ok("value".into()))]
+    #[test_matrix("+123" => Ok(123.into()))]
+    fn test_var_value(source: &str) -> scan::Result<VarValue> {
+        test_parser!(source, var_value)
     }
 }
 

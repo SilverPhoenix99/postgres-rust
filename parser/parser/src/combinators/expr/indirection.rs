@@ -104,63 +104,48 @@ pub(super) fn check_indirection(indirection: Located<Vec<Indirection>>) -> scan:
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
     use pg_ast::Indirection;
     use pg_ast::Indirection::Property;
     use pg_ast::Indirection::Slice;
     use pg_basics::Location;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case(".*", Wildcard)]
-    #[test_case(".some_property", Property("some_property".into()))]
-    #[test_case("[:]", Slice(None, None))]
-    #[test_case("[:1]", Slice(None, Some(IntegerConst(1))))]
-    #[test_case("[2]", Index(IntegerConst(2)))]
-    #[test_case("[3:]", Slice(Some(IntegerConst(3)), None))]
-    #[test_case("[4:5]", Slice(Some(IntegerConst(4)), Some(IntegerConst(5))))]
-    fn test_indirection_el(source: &str, expected: Indirection) {
-        test_parser!(source, indirection_el, expected)
+    #[test_matrix(".*" => Ok(Wildcard))]
+    #[test_matrix(".some_property" => Ok(Property("some_property".into())))]
+    #[test_matrix("[:]" => Ok(Slice(None, None)))]
+    #[test_matrix("[:1]" => Ok(Slice(None, Some(IntegerConst(1)))))]
+    #[test_matrix("[2]" => Ok(Index(IntegerConst(2))))]
+    #[test_matrix("[3:]" => Ok(Slice(Some(IntegerConst(3)), None)))]
+    #[test_matrix("[4:5]" => Ok(Slice(Some(IntegerConst(4)), Some(IntegerConst(5)))))]
+    fn test_indirection_el(source: &str) -> scan::Result<Indirection> {
+        test_parser!(source, indirection_el)
     }
 
-    #[test]
-    fn test_indirection() {
-        test_parser!(
-            source = ".some_property[:].*",
-            parser = indirection,
-            expected = vec![
-                Property("some_property".into()),
-                Slice(None, None),
-                Wildcard,
-            ]
-        )
+    #[test_matrix(".some_property[:].*" => Ok(
+        vec![
+            Property("some_property".into()),
+            Slice(None, None),
+            Wildcard,
+        ]
+    ))]
+    fn test_indirection(source: &str) -> scan::Result<Vec<Indirection>> {
+        test_parser!(source, indirection)
     }
 
-    #[test]
-    fn test_check_indirection() {
-        assert_matches!(
-            check_indirection(Located(
-                vec![Property("some_property".into()), Wildcard],
-                Location::new(0..0, 0, 0)
-            )),
-            Ok(_)
-        );
-
-        assert_matches!(
-            check_indirection(Located(
-                vec![Property("some_property".into())],
-                Location::new(0..0, 0, 0)
-            )),
-            Ok(_)
-        );
-
-        assert_matches!(
-            check_indirection(Located(
-                vec![Wildcard, Property("some_property".into())],
-                Location::new(0..0, 0, 0)
-            )),
-            Err(_)
-        );
+    #[test_matrix(
+        [
+            vec![Property("some_property".into()), Wildcard],
+            vec![Property("some_property".into())]
+        ]
+        => matches Ok(_)
+    )]
+    #[test_matrix(vec![Wildcard, Property("some_property".into())] => matches Err(_))]
+    fn test_check_indirection(indirection: Vec<Indirection>) -> scan::Result<Vec<Indirection>> {
+        check_indirection(Located(
+            indirection,
+            Location::new(0..0, 0, 0)
+        ))
     }
 }
 

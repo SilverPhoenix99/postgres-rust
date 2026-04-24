@@ -74,35 +74,32 @@ fn security(ctx: &mut ParserContext) -> scan::Result<AlterFunctionOption> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::SetRestMore::TimeZone,
-        pg_ast::SignedNumber::IntegerConst,
-        pg_ast::VariableTarget::All,
-        pg_ast::ZoneValue::Local,
-    };
+    use pg_ast::SetRestMore::TimeZone;
+    use pg_ast::SignedNumber::IntegerConst;
+    use pg_ast::VariableTarget::All;
+    use pg_ast::ZoneValue::Local;
+    use test_case::test_matrix;
 
-    #[test_case("called on null input", Strict(false))]
-    #[test_case("returns null on null input", Strict(true))]
-    #[test_case("strict", Strict(true))]
-    #[test_case("immutable", Volatility(Immutable))]
-    #[test_case("stable", Volatility(Stable))]
-    #[test_case("volatile", Volatility(Volatile))]
-    #[test_case("external security definer", Security(true))]
-    #[test_case("external security invoker", Security(false))]
-    #[test_case("security definer", Security(true))]
-    #[test_case("security invoker", Security(false))]
-    #[test_case("leakproof", Leakproof(true))]
-    #[test_case("not leakproof", Leakproof(false))]
-    #[test_case("cost 10", Cost(IntegerConst(10)))]
-    #[test_case("rows 5", Rows(IntegerConst(5)))]
-    #[test_case("support some_function", Support(vec!["some_function".into()]))]
-    #[test_case("parallel safe", Parallel("safe".into()))]
-    #[test_case("set time zone local", Set(TimeZone(Local)))]
-    #[test_case("reset all", Reset(All))]
-    fn test_common_func_opt_item(source: &str, expected: AlterFunctionOption) {
-        test_parser!(source, alter_function_option, expected);
+    #[test_matrix("called on null input" => Ok(Strict(false)))]
+    #[test_matrix("returns null on null input" => Ok(Strict(true)))]
+    #[test_matrix("strict" => Ok(Strict(true)))]
+    #[test_matrix("immutable" => Ok(Volatility(Immutable)))]
+    #[test_matrix("stable" => Ok(Volatility(Stable)))]
+    #[test_matrix("volatile" => Ok(Volatility(Volatile)))]
+    #[test_matrix("external security definer" => Ok(Security(true)))]
+    #[test_matrix("external security invoker" => Ok(Security(false)))]
+    #[test_matrix("security definer" => Ok(Security(true)))]
+    #[test_matrix("security invoker" => Ok(Security(false)))]
+    #[test_matrix("leakproof" => Ok(Leakproof(true)))]
+    #[test_matrix("not leakproof" => Ok(Leakproof(false)))]
+    #[test_matrix("cost 10" => Ok(Cost(IntegerConst(10))))]
+    #[test_matrix("rows 5" => Ok(Rows(IntegerConst(5))))]
+    #[test_matrix("support some_function" => Ok(Support(vec!["some_function".into()])))]
+    #[test_matrix("parallel safe" => Ok(Parallel("safe".into())))]
+    #[test_matrix("set time zone local" => Ok(Set(TimeZone(Local))))]
+    #[test_matrix("reset all" => Ok(Reset(All)))]
+    fn test_common_func_opt_item(source: &str) -> scan::Result<AlterFunctionOption> {
+        test_parser!(source, alter_function_option)
     }
 }
 

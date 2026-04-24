@@ -22,14 +22,14 @@ pub(super) fn deallocate_stmt(ctx: &mut ParserContext) -> scan::Result<OneOrAll<
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("deallocate all", OneOrAll::All)]
-    #[test_case("deallocate prepare all", OneOrAll::All)]
-    #[test_case("deallocate abort", OneOrAll::One("abort".into()))]
-    #[test_case("deallocate prepare ident", OneOrAll::One("ident".into()))]
-    fn test_deallocate(source: &str, expected: OneOrAll<Str>) {
-        test_parser!(source, deallocate_stmt, expected)
+    #[test_matrix("deallocate all" => Ok(OneOrAll::All))]
+    #[test_matrix("deallocate prepare all" => Ok(OneOrAll::All))]
+    #[test_matrix("deallocate abort" => Ok(OneOrAll::One("abort".into())))]
+    #[test_matrix("deallocate prepare ident" => Ok(OneOrAll::One("ident".into())))]
+    fn test_deallocate(source: &str) -> scan::Result<OneOrAll<Str>> {
+        test_parser!(source, deallocate_stmt)
     }
 }
 

@@ -62,52 +62,50 @@ fn column_ref(ctx: &mut ParserContext) -> scan::Result<ColumnRef> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        ExprNode::{IntegerConst, StringConst},
-        FuncArgsKind,
-        FuncCall,
-        FuncCallExpr,
-        OverClause,
-        TypeName,
-        TypecastExpr,
-    };
-    use test_case::test_case;
+    use pg_ast::ExprNode::IntegerConst;
+    use pg_ast::ExprNode::StringConst;
+    use pg_ast::FuncArgsKind;
+    use pg_ast::FuncCall;
+    use pg_ast::FuncCallExpr;
+    use pg_ast::OverClause;
+    use pg_ast::TypeName;
+    use pg_ast::TypecastExpr;
+    use test_case::test_matrix;
 
-    #[test_case("foo" => Ok(
+    #[test_matrix("foo" => Ok(
         ColumnRef::SingleName("foo".into()).into()
     ))]
-    #[test_case("double" => Ok(
+    #[test_matrix("double" => Ok(
         ColumnRef::SingleName("double".into()).into()
     ))]
-    #[test_case("foo.bar" => Ok( /* identifier */
+    #[test_matrix("foo.bar" => Ok( /* identifier */
         ColumnRef::Name(vec!["foo".into(), "bar".into()]).into()
     ))]
-    #[test_case("double.baz" => Ok( /* Unreserved */
+    #[test_matrix("double.baz" => Ok( /* Unreserved */
         ColumnRef::Name(vec!["double".into(), "baz".into()]).into()
     ))]
-    #[test_case("between.qux" => Ok( /* ColumnName */
+    #[test_matrix("between.qux" => Ok( /* ColumnName */
         ColumnRef::Name(vec!["between".into(), "qux".into()]).into()
     ))]
-    #[test_case("foo.* '123'" => Ok(
+    #[test_matrix("foo.* '123'" => Ok(
         ColumnRef::WildcardName(vec!["foo".into()]).into()
     ))]
-    #[test_case("double.* '123'" => Ok(
+    #[test_matrix("double.* '123'" => Ok(
         ColumnRef::WildcardName(vec!["double".into()]).into()
     ))]
-    #[test_case("between.* '123'" => Ok(
+    #[test_matrix("between.* '123'" => Ok(
         ColumnRef::WildcardName(vec!["between".into()]).into()
     ))]
-    #[test_case("foo.*()" => Ok(
+    #[test_matrix("foo.*()" => Ok(
         ColumnRef::WildcardName(vec!["foo".into()]).into()
     ))]
-    #[test_case("double.*()" => Ok(
+    #[test_matrix("double.*()" => Ok(
         ColumnRef::WildcardName(vec!["double".into()]).into()
     ))]
-    #[test_case("between.*()" => Ok(
+    #[test_matrix("between.*()" => Ok(
         ColumnRef::WildcardName(vec!["between".into()]).into()
     ))]
-    #[test_case("foo '123'" => Ok(
+    #[test_matrix("foo '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -116,7 +114,7 @@ mod tests {
             }
         ).into()
     ))]
-    #[test_case("double '123'" => Ok(
+    #[test_matrix("double '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -125,7 +123,7 @@ mod tests {
             }
         ).into()
     ))]
-    #[test_case("foo.bar '123'" => Ok(
+    #[test_matrix("foo.bar '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -134,7 +132,7 @@ mod tests {
             }
         ).into()
     ))]
-    #[test_case("double.baz '123'" => Ok(
+    #[test_matrix("double.baz '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -143,7 +141,7 @@ mod tests {
             }
         ).into()
     ))]
-    #[test_case("between.qux '123'" => Ok(
+    #[test_matrix("between.qux '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -152,7 +150,7 @@ mod tests {
             }
         ).into()
     ))]
-    #[test_case("foo(1) '123'" => Ok(
+    #[test_matrix("foo(1) '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -161,7 +159,7 @@ mod tests {
             }
         ).into()
     ))]
-    #[test_case("double(1) '123'" => Ok(
+    #[test_matrix("double(1) '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -170,7 +168,7 @@ mod tests {
             }
         ).into()
     ))]
-    #[test_case("foo.bar(1) '123'" => Ok(
+    #[test_matrix("foo.bar(1) '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -179,7 +177,7 @@ mod tests {
             }
         ).into()
     ))]
-    #[test_case("double.baz(1) '123'" => Ok(
+    #[test_matrix("double.baz(1) '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -188,7 +186,7 @@ mod tests {
             }
         ).into()
     ))]
-    #[test_case("between.qux(1) '123'" => Ok(
+    #[test_matrix("between.qux(1) '123'" => Ok(
         TypecastExpr::new(
             StringConst("123".into()),
             TypeName::Generic {
@@ -197,7 +195,7 @@ mod tests {
             }
         ).into()
     ))]
-    #[test_case("foo() '123'" => Ok(
+    #[test_matrix("foo() '123'" => Ok(
         FuncCallExpr::from(
             FuncCall::new(
                 vec!["foo".into()],
@@ -205,7 +203,7 @@ mod tests {
             )
         ).into()
     ))]
-    #[test_case("double() '123'" => Ok(
+    #[test_matrix("double() '123'" => Ok(
         FuncCallExpr::from(
             FuncCall::new(
                 vec!["double".into()],
@@ -213,7 +211,7 @@ mod tests {
             )
         ).into()
     ))]
-    #[test_case("foo.bar() over qux" => Ok(
+    #[test_matrix("foo.bar() over qux" => Ok(
         FuncCallExpr::from(
             FuncCall::new(
                 vec!["foo".into(), "bar".into()],
@@ -223,7 +221,7 @@ mod tests {
         .with_over(OverClause::WindowName("qux".into()))
         .into()
     ))]
-    #[test_case("double.baz() filter (where 1)" => Ok(
+    #[test_matrix("double.baz() filter (where 1)" => Ok(
         FuncCallExpr::from(
             FuncCall::new(
                 vec!["double".into(), "baz".into()],
@@ -233,7 +231,7 @@ mod tests {
         .with_agg_filter(IntegerConst(1))
         .into()
     ))]
-    #[test_case("between.qux() filter (where 1)" => Ok(
+    #[test_matrix("between.qux() filter (where 1)" => Ok(
         FuncCallExpr::from(
             FuncCall::new(
                 vec!["between".into(), "qux".into()],

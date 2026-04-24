@@ -24,19 +24,16 @@ pub(super) fn json(ctx: &mut ParserContext) -> scan::Result<JsonFunc> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        ExprNode::StringConst,
-        JsonEncoding,
-        JsonFormat,
-        JsonValueExpr,
-    };
-    use test_case::test_case;
+    use pg_ast::ExprNode::StringConst;
+    use pg_ast::JsonEncoding;
+    use pg_ast::JsonFormat;
+    use pg_ast::JsonValueExpr;
+    use test_case::test_matrix;
 
-    #[test_case("json('foo')" => Ok(
+    #[test_matrix("json('foo')" => Ok(
         JsonFunc::new(StringConst("foo".into()))
     ))]
-    #[test_case("json('bar' format json encoding UTF8 with unique keys)" => Ok(
+    #[test_matrix("json('bar' format json encoding UTF8 with unique keys)" => Ok(
         JsonFunc::new(
             JsonValueExpr::new(StringConst("bar".into()))
                 .with_format(

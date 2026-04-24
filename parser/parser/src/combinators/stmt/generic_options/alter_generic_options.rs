@@ -48,7 +48,7 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_ast::GenericOption;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
     #[test]
     fn test_alter_generic_options() {
@@ -76,12 +76,12 @@ mod tests {
         )
     }
 
-    #[test_case("set some_opt 'foo'", Set(GenericOption::new("some_opt", "foo")))]
-    #[test_case("add some_opt 'foo'", Add(GenericOption::new("some_opt", "foo")))]
-    #[test_case("drop some_opt", Drop("some_opt".into()))]
-    #[test_case("some_opt 'foo'", Unspecified(GenericOption::new("some_opt", "foo")))]
-    fn test_alter_generic_option(source: &str, expected: GenericOptionKind) {
-        test_parser!(source, alter_generic_option, expected)
+    #[test_matrix("set some_opt 'foo'" => Ok(Set(GenericOption::new("some_opt", "foo"))))]
+    #[test_matrix("add some_opt 'foo'" => Ok(Add(GenericOption::new("some_opt", "foo"))))]
+    #[test_matrix("drop some_opt" => Ok(Drop("some_opt".into())))]
+    #[test_matrix("some_opt 'foo'" => Ok(Unspecified(GenericOption::new("some_opt", "foo"))))]
+    fn test_alter_generic_option(source: &str) -> scan::Result<GenericOptionKind> {
+        test_parser!(source, alter_generic_option)
     }
 }
 

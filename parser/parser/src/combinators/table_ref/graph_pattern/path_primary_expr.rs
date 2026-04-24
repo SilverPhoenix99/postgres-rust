@@ -22,41 +22,40 @@ pub(super) fn path_primary_expr(ctx: &mut ParserContext) -> scan::Result<GraphEl
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::BooleanConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("" => Ok(GraphElementPattern::default()))]
-    #[test_case("foo" => Ok(
+    #[test_matrix("" => Ok(GraphElementPattern::default()))]
+    #[test_matrix("foo" => Ok(
         GraphElementPattern::default()
             .with_variable("foo")
     ))]
-    #[test_case("bar is a | b" => Ok(
+    #[test_matrix("bar is a | b" => Ok(
         GraphElementPattern::default()
             .with_variable("bar")
             .with_label_expr(vec!["a".into(), "b".into()])
     ))]
-    #[test_case("baz where true" => Ok(
+    #[test_matrix("baz where true" => Ok(
         GraphElementPattern::default()
             .with_variable("baz")
             .with_where_clause(BooleanConst(true))
     ))]
-    #[test_case("qux is c | d where true" => Ok(
+    #[test_matrix("qux is c | d where true" => Ok(
         GraphElementPattern::default()
             .with_variable("qux")
             .with_label_expr(vec!["c".into(), "d".into()])
             .with_where_clause(BooleanConst(true))
     ))]
-    #[test_case("is e" => Ok(
+    #[test_matrix("is e" => Ok(
         GraphElementPattern::default()
             .with_label_expr(vec!["e".into()])
     ))]
-    #[test_case("is f where true" => Ok(
+    #[test_matrix("is f where true" => Ok(
         GraphElementPattern::default()
             .with_label_expr(vec!["f".into()])
             .with_where_clause(BooleanConst(true))
     ))]
-    #[test_case("where false" => Ok(
+    #[test_matrix("where false" => Ok(
         GraphElementPattern::default()
             .with_where_clause(BooleanConst(false))
     ))]

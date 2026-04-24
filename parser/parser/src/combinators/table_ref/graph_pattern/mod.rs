@@ -30,15 +30,12 @@ pub(super) fn graph_pattern(ctx: &mut ParserContext) -> scan::Result<GraphPatter
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        ExprNode::BooleanConst,
-        GraphElementPattern,
-        GraphElementPatternKind,
-    };
-    use test_case::test_case;
+    use pg_ast::ExprNode::BooleanConst;
+    use pg_ast::GraphElementPattern;
+    use pg_ast::GraphElementPatternKind;
+    use test_case::test_matrix;
 
-    #[test_case("-[]->" => Ok(
+    #[test_matrix("-[]->" => Ok(
         GraphPattern::default()
             .with_path_patterns(vec![vec![
                 GraphElementPatternKind::EdgePatternRight(
@@ -46,7 +43,7 @@ mod tests {
                 )
             ]])
     ))]
-    #[test_case("-[]-> where true" => Ok(
+    #[test_matrix("-[]-> where true" => Ok(
         GraphPattern::default()
             .with_path_patterns(vec![vec![
                 GraphElementPatternKind::EdgePatternRight(

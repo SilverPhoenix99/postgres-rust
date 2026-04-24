@@ -15,10 +15,10 @@ pub(super) fn drop_behavior(ctx: &mut ParserContext) -> scan::Result<DropBehavio
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("restrict" => Ok(DropBehavior::Restrict))]
-    #[test_case("cascade" => Ok(DropBehavior::Cascade))]
+    #[test_matrix("restrict" => Ok(DropBehavior::Restrict))]
+    #[test_matrix("cascade" => Ok(DropBehavior::Cascade))]
     fn test_drop_behavior(source: &str) -> scan::Result<DropBehavior> {
         test_parser!(source, drop_behavior)
     }

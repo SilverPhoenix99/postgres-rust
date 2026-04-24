@@ -101,9 +101,8 @@ fn ident_option(ctx: &mut ParserContext) -> scan::Result<AlterRoleOption> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::RoleSpec::Public;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
     #[test]
     fn test_alter_role_options() {
@@ -114,38 +113,38 @@ mod tests {
         )
     }
 
-    #[test_case("password null", Password(None))]
-    #[test_case("connection limit 5", ConnectionLimit(5))]
-    #[test_case("valid until 'tomorrow'", ValidUntil("tomorrow".into()))]
-    #[test_case("user public", RoleMembers { action: AddDrop::Add, members: vec![Public] })]
-    #[test_case("inherit", Inherit(true))]
-    #[test_case("noinherit", Inherit(false))]
-    fn test_alter_role_option(source: &str, expected: AlterRoleOption) {
-        test_parser!(source, alter_role_option, expected)
+    #[test_matrix("password null" => Ok(Password(None)))]
+    #[test_matrix("connection limit 5" => Ok(ConnectionLimit(5)))]
+    #[test_matrix("valid until 'tomorrow'" => Ok(ValidUntil("tomorrow".into())))]
+    #[test_matrix("user public" => Ok(RoleMembers { action: AddDrop::Add, members: vec![Public] }))]
+    #[test_matrix("inherit" => Ok(Inherit(true)))]
+    #[test_matrix("noinherit" => Ok(Inherit(false)))]
+    fn test_alter_role_option(source: &str) -> scan::Result<AlterRoleOption> {
+        test_parser!(source, alter_role_option)
     }
 
-    #[test_case("password 'password1'", Some("password1".into()))]
-    #[test_case("password null", None)]
-    #[test_case("encrypted password 'epw123'", Some("epw123".into()))]
-    fn test_password_option(source: &str, expected: Option<Box<str>>) {
-        test_parser!(source, password_option, Password(expected))
+    #[test_matrix("password 'password1'" => Ok(Password(Some("password1".into()))))]
+    #[test_matrix("password null" => Ok(Password(None)))]
+    #[test_matrix("encrypted password 'epw123'" => Ok(Password(Some("epw123".into()))))]
+    fn test_password_option(source: &str) -> scan::Result<AlterRoleOption> {
+        test_parser!(source, password_option)
     }
 
-    #[test_case("superuser", SuperUser(true))]
-    #[test_case("nosuperuser", SuperUser(false))]
-    #[test_case("createrole", CreateRole(true))]
-    #[test_case("nocreaterole", CreateRole(false))]
-    #[test_case("replication", IsReplication(true))]
-    #[test_case("noreplication", IsReplication(false))]
-    #[test_case("createdb", CreateDatabase(true))]
-    #[test_case("nocreatedb", CreateDatabase(false))]
-    #[test_case("login", CanLogin(true))]
-    #[test_case("nologin", CanLogin(false))]
-    #[test_case("bypassrls", BypassRls(true))]
-    #[test_case("nobypassrls", BypassRls(false))]
-    #[test_case("noinherit", Inherit(false))]
-    fn test_ident_option(source: &str, expected: AlterRoleOption) {
-        test_parser!(source, ident_option, expected)
+    #[test_matrix("superuser" => Ok(SuperUser(true)))]
+    #[test_matrix("nosuperuser" => Ok(SuperUser(false)))]
+    #[test_matrix("createrole" => Ok(CreateRole(true)))]
+    #[test_matrix("nocreaterole" => Ok(CreateRole(false)))]
+    #[test_matrix("replication" => Ok(IsReplication(true)))]
+    #[test_matrix("noreplication" => Ok(IsReplication(false)))]
+    #[test_matrix("createdb" => Ok(CreateDatabase(true)))]
+    #[test_matrix("nocreatedb" => Ok(CreateDatabase(false)))]
+    #[test_matrix("login" => Ok(CanLogin(true)))]
+    #[test_matrix("nologin" => Ok(CanLogin(false)))]
+    #[test_matrix("bypassrls" => Ok(BypassRls(true)))]
+    #[test_matrix("nobypassrls" => Ok(BypassRls(false)))]
+    #[test_matrix("noinherit" => Ok(Inherit(false)))]
+    fn test_ident_option(source: &str) -> scan::Result<AlterRoleOption> {
+        test_parser!(source, ident_option)
     }
 }
 

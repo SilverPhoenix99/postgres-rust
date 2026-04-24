@@ -21,19 +21,18 @@ pub(super) fn join_qual(ctx: &mut ParserContext) -> scan::Result<(JoinQual, Opti
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::BooleanConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("using (foo, bar) as qux" => Ok((
+    #[test_matrix("using (foo, bar) as qux" => Ok((
         JoinQual::Using(vec!["foo".into(), "bar".into()]),
         Some("qux".into())
     )))]
-    #[test_case("using (baz)" => Ok((
+    #[test_matrix("using (baz)" => Ok((
         JoinQual::Using(vec!["baz".into()]),
         None
     )))]
-    #[test_case("on true" => Ok((
+    #[test_matrix("on true" => Ok((
         JoinQual::On(Box::new(BooleanConst(true))),
         None
     )))]

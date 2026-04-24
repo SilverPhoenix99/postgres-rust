@@ -24,23 +24,23 @@ pub(super) fn uescape_escape(source: &str) -> Option<char> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test_case("", None ; "empty string")]
-    #[test_case(" ", None ; "space")]
-    #[test_case("a", None)]
-    #[test_case("f", None)]
-    #[test_case("0", None)]
-    #[test_case("9", None)]
-    #[test_case("+", None ; "plus sign")]
-    #[test_case("'", None ; "single quote")]
-    #[test_case(r#"""#, None ; "double quote")]
-    #[test_case("-", Some('-') ; "minus sign")]
-    #[test_case("z", Some('z'))]
-    #[test_case("!", Some('!') ; "exclamation mark")]
-    fn test_uescape_escape(source: &str, expected: Option<char>) {
-        assert_eq!(expected, uescape_escape(source));
-    }
+    use test_case::test_matrix;
 
-    use test_case::test_case;
+    #[test_matrix("" => None ; "empty string")]
+    #[test_matrix(" " => None ; "space")]
+    #[test_matrix("a" => None)]
+    #[test_matrix("f" => None)]
+    #[test_matrix("0" => None)]
+    #[test_matrix("9" => None)]
+    #[test_matrix("+" => None ; "plus sign")]
+    #[test_matrix("'" => None ; "single quote")]
+    #[test_matrix(r#"""# => None ; "double quote")]
+    #[test_matrix("-" => Some('-') ; "minus sign")]
+    #[test_matrix("z" => Some('z'))]
+    #[test_matrix("!" => Some('!') ; "exclamation mark")]
+    fn test_uescape_escape(source: &str) -> Option<char> {
+        uescape_escape(source)
+    }
 }
 
 use pg_basics::ascii::is_hex_digit;

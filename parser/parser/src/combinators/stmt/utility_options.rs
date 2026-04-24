@@ -57,7 +57,7 @@ fn utility_option_name(ctx: &mut ParserContext) -> scan::Result<UtilityOptionNam
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
     #[test]
     fn test_utility_options() {
@@ -84,28 +84,28 @@ mod tests {
         )
     }
 
-    #[test_case("format 'json'",
+    #[test_matrix("format 'json'" => Ok(
         UtilityOption::new(Format)
             .with_value("json")
-    )]
-    #[test_case("analyse", Analyze.into())]
-    #[test_case("foo false",
+    ))]
+    #[test_matrix("analyse" => Ok(Analyze.into()))]
+    #[test_matrix("foo false" => Ok(
         UtilityOption::new(Generic("foo".into()))
             .with_value(false)
-    )]
-    fn test_utility_option(source: &str, expected: UtilityOption) {
-        test_parser!(source, utility_option, expected)
+    ))]
+    fn test_utility_option(source: &str)  -> scan::Result<UtilityOption> {
+        test_parser!(source, utility_option)
     }
 
-    #[test_case("analyze", Analyze)]
-    #[test_case("analyse", Analyze)]
-    #[test_case("format", Format)]
-    #[test_case("xxyyzz", Generic("xxyyzz".into()))]
-    #[test_case("breadth", Generic("breadth".into()))]
-    #[test_case("boolean", Generic("boolean".into()))]
-    #[test_case("authorization", Generic("authorization".into()))]
-    fn test_utility_option_name(source: &str, expected: UtilityOptionName) {
-        test_parser!(source, utility_option_name, expected)
+    #[test_matrix("analyze" => Ok(Analyze))]
+    #[test_matrix("analyse" => Ok(Analyze))]
+    #[test_matrix("format" => Ok(Format))]
+    #[test_matrix("xxyyzz" => Ok(Generic("xxyyzz".into())))]
+    #[test_matrix("breadth" => Ok(Generic("breadth".into())))]
+    #[test_matrix("boolean" => Ok(Generic("boolean".into())))]
+    #[test_matrix("authorization" => Ok(Generic("authorization".into())))]
+    fn test_utility_option_name(source: &str) -> scan::Result<UtilityOptionName> {
+        test_parser!(source, utility_option_name)
     }
 }
 

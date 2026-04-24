@@ -20,12 +20,12 @@ pub(super) fn unique_null_treatment(ctx: &mut ParserContext) -> scan::Result<Uni
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("nulls distinct", UniqueNullTreatment::NullsDistinct)]
-    #[test_case("nulls not distinct", UniqueNullTreatment::NullsNotDistinct)]
-    fn test_unique_null_treatment(source: &str, expected: UniqueNullTreatment) {
-        test_parser!(source, unique_null_treatment, expected)
+    #[test_matrix("nulls distinct" => Ok(UniqueNullTreatment::NullsDistinct))]
+    #[test_matrix("nulls not distinct" => Ok(UniqueNullTreatment::NullsNotDistinct))]
+    fn test_unique_null_treatment(source: &str) -> scan::Result<UniqueNullTreatment> {
+        test_parser!(source, unique_null_treatment)
     }
 }
 

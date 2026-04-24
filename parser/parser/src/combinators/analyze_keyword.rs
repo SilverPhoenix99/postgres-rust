@@ -16,10 +16,9 @@ pub(super) fn analyze_keyword(ctx: &mut ParserContext) -> scan::Result<()> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("analyze")]
-    #[test_case("analyse")]
+    #[test_matrix(["analyze", "analyse"])]
     fn test_analyze_keyword(source: &str) {
         test_parser!(source, analyze_keyword, ())
     }

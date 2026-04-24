@@ -48,18 +48,17 @@ fn is_type_function_name(tok: &TokenValue) -> bool {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("1" => Ok(
+    #[test_matrix("1" => Ok(
         NamedValue::new(IntegerConst(1))
     ))]
-    #[test_case("foo := 2" => Ok(
+    #[test_matrix("foo := 2" => Ok(
         NamedValue::new(IntegerConst(2))
             .with_name("foo")
     ))]
-    #[test_case("bar => 3" => Ok(
+    #[test_matrix("bar => 3" => Ok(
         NamedValue::new(IntegerConst(3))
             .with_name("bar")
     ))]

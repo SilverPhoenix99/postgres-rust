@@ -21,15 +21,15 @@ pub(super) fn boolean_or_string(ctx: &mut ParserContext) -> scan::Result<Boolean
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("true", true.into())]
-    #[test_case("false", false.into())]
-    #[test_case("on", "on".into())]
-    #[test_case("off", "off".into())]
-    #[test_case("'value'", "value".into())]
-    fn test_boolean_or_string(source: &str, expected: BooleanOrString) {
-        test_parser!(source, boolean_or_string, expected)
+    #[test_matrix("true" => Ok(true.into()))]
+    #[test_matrix("false" => Ok(false.into()))]
+    #[test_matrix("on" => Ok("on".into()))]
+    #[test_matrix("off" => Ok("off".into()))]
+    #[test_matrix("'value'" => Ok("value".into()))]
+    fn test_boolean_or_string(source: &str) -> scan::Result<BooleanOrString> {
+        test_parser!(source, boolean_or_string)
     }
 }
 

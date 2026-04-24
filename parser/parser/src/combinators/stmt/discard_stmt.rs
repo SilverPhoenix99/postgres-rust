@@ -23,15 +23,15 @@ pub(super) fn discard_stmt(ctx: &mut ParserContext) -> scan::Result<DiscardStmt>
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("discard all", DiscardStmt::All)]
-    #[test_case("discard plans", DiscardStmt::Plans)]
-    #[test_case("discard sequences", DiscardStmt::Sequences)]
-    #[test_case("discard temp", DiscardStmt::Temporary)]
-    #[test_case("discard temporary", DiscardStmt::Temporary)]
-    fn test_discard(source: &str, expected: DiscardStmt) {
-        test_parser!(source, discard_stmt, expected)
+    #[test_matrix("discard all" => Ok(DiscardStmt::All))]
+    #[test_matrix("discard plans" => Ok(DiscardStmt::Plans))]
+    #[test_matrix("discard sequences" => Ok(DiscardStmt::Sequences))]
+    #[test_matrix("discard temp" => Ok(DiscardStmt::Temporary))]
+    #[test_matrix("discard temporary" => Ok(DiscardStmt::Temporary))]
+    fn test_discard(source: &str) -> scan::Result<DiscardStmt> {
+        test_parser!(source, discard_stmt)
     }
 }
 

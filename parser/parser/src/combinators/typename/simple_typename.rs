@@ -16,23 +16,27 @@ pub(in crate::combinators) fn simple_typename(ctx: &mut ParserContext) -> scan::
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
+    use crate::test_parser;
     use pg_ast::ExprNode::IntegerConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("json" => Ok(Json))]
+    #[test_matrix("json" => Ok(Json))]
     // Quick checks
-    #[test_case("int"         => matches Ok(_))]
-    #[test_case("interval"    => matches Ok(_))]
-    #[test_case("timestamp"   => matches Ok(_))]
-    #[test_case("time"        => matches Ok(_))]
-    #[test_case("identif(33)" => matches Ok(_))]
+    #[test_matrix(
+        [
+            "int",
+            "interval",
+            "timestamp",
+            "time",
+            "identif(33)",
+        ]
+        => matches Ok(_))
+    ]
     // Still quick checks, but confirming the default lengths are set to 1
-    #[test_case("bit" => Ok(TypeName::Bit(Some(vec![IntegerConst(1)]))))]
-    #[test_case("char" => Ok(TypeName::Bpchar { length: Some(1) }))]
+    #[test_matrix("bit" => Ok(TypeName::Bit(Some(vec![IntegerConst(1)]))))]
+    #[test_matrix("char" => Ok(TypeName::Bpchar { length: Some(1) }))]
     fn test_simple_typename(source: &str) -> scan::Result<TypeName> {
-        let mut ctx = ParserContext::new(source);
-        simple_typename(&mut ctx)
+        test_parser!(source, simple_typename)
     }
 }
 

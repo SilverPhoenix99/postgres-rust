@@ -26,14 +26,14 @@ pub(super) fn commit_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionSt
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("commit" => Ok(Commit { chain: false }))]
-    #[test_case("commit and chain" => Ok(Commit { chain: true }))]
-    #[test_case("commit and no chain" => Ok(Commit { chain: false }))]
-    #[test_case("commit transaction" => Ok(Commit { chain: false }))]
-    #[test_case("commit transaction and chain" => Ok(Commit { chain: true }))]
-    #[test_case("commit transaction and no chain" => Ok(Commit { chain: false }))]
+    #[test_matrix("commit" => Ok(Commit { chain: false }))]
+    #[test_matrix("commit and chain" => Ok(Commit { chain: true }))]
+    #[test_matrix("commit and no chain" => Ok(Commit { chain: false }))]
+    #[test_matrix("commit transaction" => Ok(Commit { chain: false }))]
+    #[test_matrix("commit transaction and chain" => Ok(Commit { chain: true }))]
+    #[test_matrix("commit transaction and no chain" => Ok(Commit { chain: false }))]
     fn test_commit(source: &str) -> scan::Result<TransactionStmt> {
         test_parser!(source, commit_stmt)
     }

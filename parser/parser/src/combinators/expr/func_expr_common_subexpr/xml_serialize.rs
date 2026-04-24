@@ -47,22 +47,19 @@ fn xml_indent_option(ctx: &mut ParserContext) -> scan::Result<bool> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::StringConst,
-        pg_ast::TypeName::{Int4, Int8},
-        pg_ast::XmlNodeKind,
-    };
+    use pg_ast::ExprNode::StringConst;
+    use pg_ast::TypeName::{Int4, Int8};
+    use pg_ast::XmlNodeKind;
+    use test_case::test_matrix;
 
-    #[test_case("xmlserialize(content 'foo' as int)" => Ok(
+    #[test_matrix("xmlserialize(content 'foo' as int)" => Ok(
         XmlSerialize::new(
             XmlNodeKind::Content,
             StringConst("foo".into()),
             Int4
         )
     ))]
-    #[test_case("xmlserialize(document 'bar' as bigint indent)" => Ok(
+    #[test_matrix("xmlserialize(document 'bar' as bigint indent)" => Ok(
         XmlSerialize::new(
             XmlNodeKind::Document,
             StringConst("bar".into()),
@@ -74,8 +71,8 @@ mod tests {
         test_parser!(source, xml_serialize)
     }
 
-    #[test_case("indent" => Ok(true))]
-    #[test_case("no indent" => Ok(false))]
+    #[test_matrix("indent" => Ok(true))]
+    #[test_matrix("no indent" => Ok(false))]
     fn test_xml_indent_option(source: &str) -> scan::Result<bool> {
         test_parser!(source, xml_indent_option)
     }

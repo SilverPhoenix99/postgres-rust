@@ -21,10 +21,10 @@ fn null_treatment(ctx: &mut ParserContext) -> scan::Result<NullTreatment> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("ignore nulls" => Ok(NullTreatment::Ignore))]
-    #[test_case("respect nulls" => Ok(NullTreatment::Respect))]
+    #[test_matrix("ignore nulls" => Ok(Ignore))]
+    #[test_matrix("respect nulls" => Ok(Respect))]
     fn test_null_treatment(source: &str) -> scan::Result<NullTreatment> {
         test_parser!(source, null_treatment)
     }

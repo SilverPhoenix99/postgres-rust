@@ -25,12 +25,12 @@ pub(super) fn for_locking_strength(ctx: &mut ParserContext) -> scan::Result<Lock
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("for key share" => Ok(ForKeyShare))]
-    #[test_case("for share" => Ok(ForShare))]
-    #[test_case("for no key update" => Ok(ForNoKeyUpdate))]
-    #[test_case("for update" => Ok(ForUpdate))]
+    #[test_matrix("for key share" => Ok(ForKeyShare))]
+    #[test_matrix("for share" => Ok(ForShare))]
+    #[test_matrix("for no key update" => Ok(ForNoKeyUpdate))]
+    #[test_matrix("for update" => Ok(ForUpdate))]
     fn test_for_locking_strength(source: &str) -> scan::Result<LockClauseStrength> {
         test_parser!(source, for_locking_strength)
     }

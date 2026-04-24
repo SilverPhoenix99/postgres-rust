@@ -42,17 +42,14 @@ fn rows_from_stmt(ctx: &mut ParserContext) -> scan::Result<RowsTableRef> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        FuncAliasColumn,
-        FuncArgsKind,
-        FuncCall,
-        OneOrBoth::Both,
-        RangeFunction,
-    };
-    use test_case::test_case;
+    use pg_ast::FuncAliasColumn;
+    use pg_ast::FuncArgsKind;
+    use pg_ast::FuncCall;
+    use pg_ast::OneOrBoth::Both;
+    use pg_ast::RangeFunction;
+    use test_case::test_matrix;
 
-    #[test_case("rows from ( foo() )" => Ok(
+    #[test_matrix("rows from ( foo() )" => Ok(
         RowsTableRef::new(
             vec![RangeFunction::new(FuncCall::new(
                 vec!["foo".into()],
@@ -60,7 +57,7 @@ mod tests {
             ))]
         )
     ))]
-    #[test_case("rows from ( baz() ) with ordinality" => Ok(
+    #[test_matrix("rows from ( baz() ) with ordinality" => Ok(
         RowsTableRef::new(
             vec![RangeFunction::new(FuncCall::new(
                 vec!["baz".into()],
@@ -69,7 +66,7 @@ mod tests {
         )
         .with_ordinality(true)
     ))]
-    #[test_case("rows from ( qux() ) as t(x)" => Ok(
+    #[test_matrix("rows from ( qux() ) as t(x)" => Ok(
         RowsTableRef::new(
             vec![RangeFunction::new(FuncCall::new(
                 vec!["qux".into()],
@@ -81,7 +78,7 @@ mod tests {
             vec![FuncAliasColumn::new("x")]
         ))
     ))]
-    #[test_case("rows from ( foo() ) with ordinality as s(y)" => Ok(
+    #[test_matrix("rows from ( foo() ) with ordinality as s(y)" => Ok(
         RowsTableRef::new(
             vec![RangeFunction::new(FuncCall::new(
                 vec!["foo".into()],
@@ -98,9 +95,9 @@ mod tests {
         test_parser!(source, rows_from_stmt)
     }
 
-    #[test_case("xmltable('foo' passing 'bar' columns qux int)" => matches Ok(_))]
-    #[test_case("json_table('foo', 'bar' columns(qux for ordinality))" => matches Ok(_))]
-    #[test_case("rows from ( foo(1), bar(*) )" => matches Ok(_))]
+    #[test_matrix("xmltable('foo' passing 'bar' columns qux int)" => matches Ok(_))]
+    #[test_matrix("json_table('foo', 'bar' columns(qux for ordinality))" => matches Ok(_))]
+    #[test_matrix("rows from ( foo(1), bar(*) )" => matches Ok(_))]
     fn test_lateral_table_ref(source: &str) -> scan::Result<TableRef> {
         test_parser!(source, lateral_table_ref)
     }

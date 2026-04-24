@@ -29,11 +29,11 @@ pub(super) fn graph_pattern_quantifier(ctx: &mut ParserContext) -> scan::Result<
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("{,1}" => Ok(range(0, 1)))]
-    #[test_case("{2,3}" => Ok(range(2, 3)))]
-    #[test_case("{4}" => Ok(range(4, 4)))]
+    #[test_matrix("{,1}" => Ok(range(0, 1)))]
+    #[test_matrix("{2,3}" => Ok(range(2, 3)))]
+    #[test_matrix("{4}" => Ok(range(4, 4)))]
     fn test_graph_pattern_quantifier(source: &str) -> scan::Result<RangeInclusive<NonNegative>> {
         test_parser!(source, graph_pattern_quantifier)
     }

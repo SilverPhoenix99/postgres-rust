@@ -41,18 +41,17 @@ fn repeatable_clause(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("tablesample foo(1) repeatable (10)" => Ok(
+    #[test_matrix("tablesample foo(1) repeatable (10)" => Ok(
         SampleClause {
             function_name: vec!["foo".into()],
             args: vec![IntegerConst(1)],
             repeatable_expr: Some(IntegerConst(10)),
         }
     ))]
-    #[test_case("tablesample bar(2)" => Ok(
+    #[test_matrix("tablesample bar(2)" => Ok(
         SampleClause {
             function_name: vec!["bar".into()],
             args: vec![IntegerConst(2)],
@@ -63,7 +62,7 @@ mod tests {
         test_parser!(source, tablesample_clause)
     }
 
-    #[test_case("repeatable (1)" => Ok(ExprNode::IntegerConst(1)))]
+    #[test_matrix("repeatable (1)" => Ok(IntegerConst(1)))]
     fn test_repeatable_clause(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, repeatable_clause)
     }

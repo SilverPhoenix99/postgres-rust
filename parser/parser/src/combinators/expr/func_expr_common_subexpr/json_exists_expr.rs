@@ -41,19 +41,16 @@ fn json_exists_args(ctx: &mut ParserContext) -> scan::Result<JsonExistsExpr> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::{IntegerConst, StringConst},
-        pg_ast::JsonBehavior,
-        pg_ast::JsonValueExpr,
-    };
+    use pg_ast::ExprNode::{IntegerConst, StringConst};
+    use pg_ast::JsonBehavior;
+    use pg_ast::JsonValueExpr;
+    use test_case::test_matrix;
 
-    #[test_case("json_exists('{}', 'foo')" => Ok(JsonExistsExpr::new(
+    #[test_matrix("json_exists('{}', 'foo')" => Ok(JsonExistsExpr::new(
         JsonValueExpr::from(StringConst("{}".into())),
         StringConst("foo".into())
     )))]
-    #[test_case("json_exists('{}', 'foo' passing 1 as a null on error)" => Ok(
+    #[test_matrix("json_exists('{}', 'foo' passing 1 as a null on error)" => Ok(
         JsonExistsExpr::new(
             JsonValueExpr::from(StringConst("{}".into())),
             StringConst("foo".into())

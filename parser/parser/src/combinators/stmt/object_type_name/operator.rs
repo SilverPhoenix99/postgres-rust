@@ -35,35 +35,34 @@ pub(in crate::combinators::stmt) fn operator(ctx: &mut ParserContext) -> scan::R
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::OneOrBoth,
-        pg_ast::Operator::Addition,
-        pg_ast::QualifiedOperator,
-        pg_ast::TypeName::Int4,
-    };
+    use pg_ast::OneOrBoth;
+    use pg_ast::Operator::Addition;
+    use pg_ast::QualifiedOperator;
+    use pg_ast::TypeName::Int4;
+    use test_case::test_matrix;
 
-    #[test_case("operator +(int, int)", Operator::WithArgs(
-        OperatorWithArgs::new(
-            QualifiedOperator(vec![], Addition),
-            OneOrBoth::Both(Int4.into(), Int4.into())
+    #[test_matrix("operator +(int, int)" => Ok(
+        Operator::WithArgs(
+            OperatorWithArgs::new(
+                QualifiedOperator(vec![], Addition),
+                OneOrBoth::Both(Int4.into(), Int4.into())
+            )
         )
     ))]
-    #[test_case("operator family some_family using some_method",
+    #[test_matrix("operator family some_family using some_method" => Ok(
         Operator::Family {
             name: vec!["some_family".into()],
             index_method: "some_method".into()
-            }
-    )]
-    #[test_case("operator class some_class using some_method",
+        }
+    ))]
+    #[test_matrix("operator class some_class using some_method" => Ok(
         Operator::Class {
             name: vec!["some_class".into()],
             index_method: "some_method".into()
-            }
-    )]
-    fn test_operator(source: &str, expected: Operator) {
-        test_parser!(source, operator, expected)
+        }
+    ))]
+    fn test_operator(source: &str) -> scan::Result<Operator> {
+        test_parser!(source, operator)
     }
 }
 

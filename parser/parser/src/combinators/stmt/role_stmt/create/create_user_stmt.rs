@@ -55,12 +55,9 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_ast::CreateRoleOption;
-    use test_case::{test_case, test_matrix};
-    #[allow(unused_imports)]
-    use {
-        pg_ast::GenericOption,
-        pg_ast::{Presence, RoleSpec},
-    };
+    use pg_ast::GenericOption;
+    use pg_ast::{Presence, RoleSpec};
+    use test_case::test_matrix;
 
     // This only quickly tests that statement types aren't missing.
     // More in-depth testing is within each statement's module.
@@ -75,12 +72,12 @@ mod tests {
         test_parser!(source, create_user_stmt)
     }
 
-    #[test_case("mapping if not exists for test_user server test_server options (foo '42')" => Ok(
+    #[test_matrix("mapping if not exists for test_user server test_server options (foo '42')" => Ok(
         CreateUserMappingStmt::new(RoleSpec::Name("test_user".into()), "test_server")
         .with_options(vec![GenericOption::new("foo", "42")])
         .with_existence(Presence::Ignore)
     ))]
-    #[test_case("mapping for foo server bar" => Ok(
+    #[test_matrix("mapping for foo server bar" => Ok(
         CreateUserMappingStmt::new(RoleSpec::Name("foo".into()), "bar")
     ))]
     fn test_create_user_mapping(source: &str) -> scan::Result<CreateUserMappingStmt> {

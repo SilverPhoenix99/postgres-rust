@@ -16,12 +16,12 @@ pub(super) fn string_or_null(ctx: &mut ParserContext) -> scan::Result<Option<Box
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("null", None)]
-    #[test_case("'abc'", Some("abc".into()))]
-    fn test_string_or_null(source: &str, expected: Option<Box<str>>) {
-        test_parser!(source, string_or_null, expected)
+    #[test_matrix("null" => Ok(None))]
+    #[test_matrix("'abc'" => Ok(Some("abc".into())))]
+    fn test_string_or_null(source: &str) -> scan::Result<Option<Box<str>>> {
+        test_parser!(source, string_or_null)
     }
 }
 

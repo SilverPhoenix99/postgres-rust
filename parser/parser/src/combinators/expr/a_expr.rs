@@ -56,16 +56,13 @@ fn unique_predicate(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 mod tests {
     use super::*;
     use crate::test_parser;
+    use pg_ast::ExprNode::BooleanConst;
+    use pg_ast::ExprNode::IntegerConst;
+    use pg_ast::Operator::Addition;
+    use pg_ast::Operator::Subtraction;
+    use pg_elog::Error::Parser;
+    use pg_parser_core::scan::Error::ScanErr;
     use test_case::test_matrix;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::BooleanConst,
-        pg_ast::ExprNode::IntegerConst,
-        pg_ast::Operator::Addition,
-        pg_ast::Operator::Subtraction,
-        pg_elog::Error::Parser,
-        pg_parser_core::scan::Error::ScanErr,
-    };
 
     #[test_matrix("+ 1" => Ok(
         UnaryExpr::new(Addition, IntegerConst(1)).into()

@@ -39,14 +39,14 @@ pub(in crate::combinators::stmt) fn text_search(ctx: &mut ParserContext) -> scan
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("text search configuration foo", TextSearch::Configuration(vec!["foo".into()]))]
-    #[test_case("text search dictionary foo", TextSearch::Dictionary(vec!["foo".into()]))]
-    #[test_case("text search parser foo", TextSearch::Parser(vec!["foo".into()]))]
-    #[test_case("text search template foo", TextSearch::Template(vec!["foo".into()]))]
-    fn test_text_search(source: &str, expected: TextSearch) {
-        test_parser!(source, text_search, expected)
+    #[test_matrix("text search configuration foo" => Ok(TextSearch::Configuration(vec!["foo".into()])))]
+    #[test_matrix("text search dictionary foo" => Ok(TextSearch::Dictionary(vec!["foo".into()])))]
+    #[test_matrix("text search parser foo" => Ok(TextSearch::Parser(vec!["foo".into()])))]
+    #[test_matrix("text search template foo" => Ok(TextSearch::Template(vec!["foo".into()])))]
+    fn test_text_search(source: &str) -> scan::Result<TextSearch> {
+        test_parser!(source, text_search)
     }
 }
 

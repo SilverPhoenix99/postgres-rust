@@ -19,11 +19,10 @@ pub(super) fn xml_exists(ctx: &mut ParserContext) -> scan::Result<XmlExists> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::StringConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("xmlexists('foo' passing 'bar')" => Ok(
+    #[test_matrix("xmlexists('foo' passing 'bar')" => Ok(
         XmlExists::new(
             StringConst("foo".into()),
             StringConst("bar".into())

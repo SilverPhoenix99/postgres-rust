@@ -19,19 +19,22 @@ pub(super) fn begin_stmt(ctx: &mut ParserContext) -> scan::Result<TransactionStm
 mod tests {
     use super::*;
     use crate::test_parser;
-    use pg_ast::IsolationLevel::*;
-    use pg_ast::TransactionMode::{self, *};
-    use test_case::test_case;
-    use TransactionStmt::Begin;
+    use pg_ast::IsolationLevel::Serializable;
+    use pg_ast::TransactionMode::Deferrable;
+    use pg_ast::TransactionMode::IsolationLevel;
+    use pg_ast::TransactionMode::ReadOnly;
+    use pg_ast::TransactionMode::ReadWrite;
+    use pg_ast::TransactionStmt::Begin;
+    use test_case::test_matrix;
 
-    #[test_case("begin", Vec::new())]
-    #[test_case("begin transaction", Vec::new())]
-    #[test_case("begin work", Vec::new())]
-    #[test_case("begin read only, read write deferrable", vec![ReadOnly, ReadWrite, Deferrable])]
-    #[test_case("begin transaction read write", vec![ReadWrite])]
-    #[test_case("begin work isolation level serializable", vec![IsolationLevel(Serializable)])]
-    fn test_begin(source: &str, expected: Vec<TransactionMode>) {
-        test_parser!(source, begin_stmt, Begin(expected))
+    #[test_matrix("begin" => Ok(Begin(Vec::new())))]
+    #[test_matrix("begin transaction" => Ok(Begin(Vec::new())))]
+    #[test_matrix("begin work" => Ok(Begin(Vec::new())))]
+    #[test_matrix("begin read only, read write deferrable" => Ok(Begin(vec![ReadOnly, ReadWrite, Deferrable])))]
+    #[test_matrix("begin transaction read write" => Ok(Begin(vec![ReadWrite])))]
+    #[test_matrix("begin work isolation level serializable" => Ok(Begin(vec![IsolationLevel(Serializable)])))]
+    fn test_begin(source: &str) -> scan::Result<TransactionStmt> {
+        test_parser!(source, begin_stmt)
     }
 }
 

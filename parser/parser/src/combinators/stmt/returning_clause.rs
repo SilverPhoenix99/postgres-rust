@@ -64,16 +64,13 @@ fn returning_option(ctx: &mut ParserContext) -> scan::Result<ReturningOptionKind
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        ExprNode::IntegerConst,
-        ExprNode::StringConst,
-        NamedValue,
-        OneOrAll,
-    };
-    use test_case::test_case;
+    use pg_ast::ExprNode::IntegerConst;
+    use pg_ast::ExprNode::StringConst;
+    use pg_ast::NamedValue;
+    use pg_ast::OneOrAll;
+    use test_case::test_matrix;
 
-    #[test_case("returning 1 as foo, 'b' as bar" => Ok(
+    #[test_matrix("returning 1 as foo, 'b' as bar" => Ok(
         ReturningClause::new(
             vec![
                 OneOrAll::One(
@@ -87,7 +84,7 @@ mod tests {
             ]
         )
     ))]
-    #[test_case("returning with(old as qux) *" => Ok(
+    #[test_matrix("returning with(old as qux) *" => Ok(
         ReturningClause::new(vec![OneOrAll::All])
         .with_options(vec![Old("qux".into())])
     ))]

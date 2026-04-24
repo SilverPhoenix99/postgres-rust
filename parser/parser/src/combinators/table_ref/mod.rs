@@ -52,28 +52,24 @@ pub(super) fn table_ref(ctx: &mut ParserContext) -> scan::Result<TableRef> {
 mod tests {
     use super::*;
     use crate::test_parser;
+    use pg_ast::JoinKind;
+    use pg_ast::JoinQual;
+    use pg_ast::RelationTableRef;
     use pg_ast::TableRef;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        JoinKind,
-        JoinQual,
-        RelationExpr,
-        RelationTableRef,
-    };
     use pg_parser_core::scan;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("foo" => Ok(
+    #[test_matrix("foo" => Ok(
         RelationTableRef::new("foo").into()
     ))]
-    #[test_case("bar natural join qux" => Ok(
+    #[test_matrix("bar natural join qux" => Ok(
         JoinExpr::new(
             JoinKind::Inner(Some(JoinQual::Natural)),
             RelationTableRef::new("bar"),
             RelationTableRef::new("qux")
         ).into()
     ))]
-    #[test_case("a cross join b left join c using(d)" => Ok(
+    #[test_matrix("a cross join b left join c using(d)" => Ok(
         JoinExpr::new(
             JoinKind::Left(
                 JoinQual::Using(
@@ -88,7 +84,7 @@ mod tests {
             RelationTableRef::new("c")
         ).into()
     ))]
-    #[test_case("a cross join b left join c using(d) join (e cross join f) using(g) as h" => Ok(
+    #[test_matrix("a cross join b left join c using(d) join (e cross join f) using(g) as h" => Ok(
         JoinExpr::new(
             JoinKind::Inner(Some(
                 JoinQual::Using(

@@ -32,16 +32,16 @@ pub(in crate::combinators::stmt) fn create_conversion_stmt(ctx: &mut ParserConte
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("conversion foo for 'bar' to 'baz' from qux",
+    #[test_matrix("conversion foo for 'bar' to 'baz' from qux" => Ok(
         CreateConversionStmt::new(vec!["foo".into()], "bar", "baz", vec!["qux".into()], false)
-    )]
-    #[test_case("default conversion foo for 'bar' to 'baz' from qux",
+    ))]
+    #[test_matrix("default conversion foo for 'bar' to 'baz' from qux" => Ok(
         CreateConversionStmt::new(vec!["foo".into()], "bar", "baz", vec!["qux".into()], true)
-    )]
-    fn test_create_conversion_stmt(source: &str, expected: CreateConversionStmt) {
-        test_parser!(source, create_conversion_stmt, expected);
+    ))]
+    fn test_create_conversion_stmt(source: &str) -> scan::Result<CreateConversionStmt> {
+        test_parser!(source, create_conversion_stmt)
     }
 }
 

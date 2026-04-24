@@ -180,42 +180,37 @@ fn b_expr_primary(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use pg_ast::ExprNode;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        ExprNode::IntegerConst as Int,
-        TypeName::Varchar,
-    };
-    use pg_parser_core::scan;
-    use test_case::test_case;
+    use pg_ast::ExprNode::IntegerConst as Int;
+    use pg_ast::TypeName::Varchar;
+    use test_case::test_matrix;
 
-    #[test_case("- 1" => Ok(Int(-1)); "unary minus")]
-    #[test_case("+ 2" => Ok(UnaryExpr::new(Addition, Int(2)).into()); "unary plus")]
-    #[test_case("operator(+) 3" => Ok(UnaryExpr::new(Addition, Int(3)).into()); "unary qual_op")]
-    #[test_case("4" => Ok(Int(4)); "expr primary")]
+    #[test_matrix("- 1" => Ok(Int(-1)); "unary minus")]
+    #[test_matrix("+ 2" => Ok(UnaryExpr::new(Addition, Int(2)).into()); "unary plus")]
+    #[test_matrix("operator(+) 3" => Ok(UnaryExpr::new(Addition, Int(3)).into()); "unary qual_op")]
+    #[test_matrix("4" => Ok(Int(4)); "expr primary")]
     fn test_b_expr_primary(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, b_expr_primary)
     }
 
-    #[test_case("1::varchar" => Ok(TypecastExpr::new(Int(1), Varchar { max_length: None }).into()))]
-    #[test_case("1 ^ 2"  => Ok(BinaryExpr::new(Exponentiation, Int(1), Int(2)).into()))]
-    #[test_case("3 % 4"  => Ok(BinaryExpr::new(Modulo,         Int(3), Int(4)).into()))]
-    #[test_case("5 + 6"  => Ok(BinaryExpr::new(Addition,       Int(5), Int(6)).into()))]
-    #[test_case("7 -> 8" => Ok(BinaryExpr::new(RightArrow,     Int(7), Int(8)).into()))]
-    #[test_case("9 operator(-) 10" => Ok(BinaryExpr::new(Subtraction, Int(9), Int(10)).into()))]
-    #[test_case("1 is document" => Ok(IsDocument(Int(1).into())))]
-    #[test_case("2 is not document" => Ok(IsNotDocument(Int(2).into())))]
-    #[test_case("3 is distinct from 4" => Ok(IsDistinct((Int(3), Int(4)).into())))]
-    #[test_case("5 is not distinct from 6" => Ok(IsNotDistinct((Int(5), Int(6)).into())))]
+    #[test_matrix("1::varchar" => Ok(TypecastExpr::new(Int(1), Varchar { max_length: None }).into()))]
+    #[test_matrix("1 ^ 2"  => Ok(BinaryExpr::new(Exponentiation, Int(1), Int(2)).into()))]
+    #[test_matrix("3 % 4"  => Ok(BinaryExpr::new(Modulo,         Int(3), Int(4)).into()))]
+    #[test_matrix("5 + 6"  => Ok(BinaryExpr::new(Addition,       Int(5), Int(6)).into()))]
+    #[test_matrix("7 -> 8" => Ok(BinaryExpr::new(RightArrow,     Int(7), Int(8)).into()))]
+    #[test_matrix("9 operator(-) 10" => Ok(BinaryExpr::new(Subtraction, Int(9), Int(10)).into()))]
+    #[test_matrix("1 is document" => Ok(IsDocument(Int(1).into())))]
+    #[test_matrix("2 is not document" => Ok(IsNotDocument(Int(2).into())))]
+    #[test_matrix("3 is distinct from 4" => Ok(IsDistinct((Int(3), Int(4)).into())))]
+    #[test_matrix("5 is not distinct from 6" => Ok(IsNotDistinct((Int(5), Int(6)).into())))]
     fn test_b_expr_single_expr(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, b_expr)
     }
 
-    #[test_case("- 2 ^ 4" => Ok(
+    #[test_matrix("- 2 ^ 4" => Ok(
         BinaryExpr::new(Exponentiation, Int(-2), Int(4))
             .into()
     ))]
-    #[test_case("operator(-) 5 ^ 3" => Ok(
+    #[test_matrix("operator(-) 5 ^ 3" => Ok(
         UnaryExpr::new(Subtraction,
             BinaryExpr::new(Exponentiation, Int(5), Int(3))
         ).into()

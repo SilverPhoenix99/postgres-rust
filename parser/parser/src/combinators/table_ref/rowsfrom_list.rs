@@ -39,19 +39,16 @@ fn col_def_list(ctx: &mut ParserContext) -> scan::Result<Vec<SimpleColumnDefinit
 mod tests {
     use super::*;
     use crate::test_parser;
+    use pg_ast::ExprNode::IntegerConst;
+    use pg_ast::FuncArgsKind;
+    use pg_ast::FuncCall;
+    use pg_ast::NamedValue;
     use pg_ast::RangeFunction;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::IntegerConst,
-        pg_ast::FuncArgsKind,
-        pg_ast::FuncCall,
-        pg_ast::NamedValue,
-        pg_ast::TypeName::Int4,
-        pg_basics::{Located, Location},
-    };
+    use pg_ast::TypeName::Int4;
+    use pg_basics::{Located, Location};
+    use test_case::test_matrix;
 
-    #[test_case("foo(*)" => Ok(
+    #[test_matrix("foo(*)" => Ok(
         RangeFunction::new(
             FuncCall::new(
                 vec!["foo".into()],
@@ -59,7 +56,7 @@ mod tests {
             )
         )
     ))]
-    #[test_case("bar(1) as (a int)" => Ok(
+    #[test_matrix("bar(1) as (a int)" => Ok(
         RangeFunction::new(
             FuncCall::new(
                 vec!["bar".into()],
@@ -82,7 +79,7 @@ mod tests {
         test_parser!(source, rowsfrom_item)
     }
 
-    #[test_case("as (foo int)" => matches Ok(_))]
+    #[test_matrix("as (foo int)" => matches Ok(_))]
     fn test_col_def_list(source: &str) -> scan::Result<Vec<SimpleColumnDefinition>> {
         test_parser!(source, col_def_list)
     }

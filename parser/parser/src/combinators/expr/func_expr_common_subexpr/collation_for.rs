@@ -16,11 +16,10 @@ pub(super) fn collation_for(ctx: &mut ParserContext) -> scan::Result<SqlFunction
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::StringConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("collation for ('foo')" => Ok(
+    #[test_matrix("collation for ('foo')" => Ok(
         CollationFor(
             StringConst("foo".into())
         )

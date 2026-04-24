@@ -26,14 +26,11 @@ pub(super) fn treat_expr(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::IntegerConst,
-        pg_ast::TypeName::Int4,
-    };
+    use pg_ast::ExprNode::IntegerConst;
+    use pg_ast::TypeName::Int4;
+    use test_case::test_matrix;
 
-    #[test_case("treat(123 as int)" => Ok(
+    #[test_matrix("treat(123 as int)" => Ok(
         Treat(
             TypecastExpr::new(
                 IntegerConst(123),

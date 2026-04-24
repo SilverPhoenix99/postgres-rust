@@ -15,11 +15,10 @@ pub(super) fn coalesce_expr(ctx: &mut ParserContext) -> scan::Result<SqlFunction
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::StringConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("coalesce('foo', 'bar')" => Ok(
+    #[test_matrix("coalesce('foo', 'bar')" => Ok(
         Coalesce(vec![
             StringConst("foo".into()),
             StringConst("bar".into())

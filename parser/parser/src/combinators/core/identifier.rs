@@ -12,12 +12,12 @@ pub(in crate::combinators) fn identifier(ctx: &mut ParserContext) -> scan::Resul
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("sOmE_iDeNtIfIeR" => Ok("some_identifier".into()))]
-    #[test_case(r#""quoted""# => Ok("quoted".into()))]
-    #[test_case(r#"u&"d\0061ta""# => Ok("data".into()))]
-    #[test_case(r#"u&"d!0061ta" UESCAPE '!'"# => Ok("data".into()))]
+    #[test_matrix("sOmE_iDeNtIfIeR" => Ok("some_identifier".into()))]
+    #[test_matrix(r#""quoted""# => Ok("quoted".into()))]
+    #[test_matrix(r#"u&"d\0061ta""# => Ok("data".into()))]
+    #[test_matrix(r#"u&"d!0061ta" UESCAPE '!'"# => Ok("data".into()))]
     fn test_identifier(source: &str) -> scan::Result<Box<str>> {
         test_parser!(source, identifier)
     }

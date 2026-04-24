@@ -14,14 +14,13 @@ pub(super) fn partition_clause(ctx: &mut ParserContext) -> scan::Result<Vec<Expr
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
+    use crate::test_parser;
     use pg_ast::ExprNode::IntegerConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("partition by 1, 2" => Ok(vec![IntegerConst(1), IntegerConst(2)]))]
+    #[test_matrix("partition by 1, 2" => Ok(vec![IntegerConst(1), IntegerConst(2)]))]
     fn test_partition_clause(source: &str) -> scan::Result<Vec<ExprNode>> {
-        let mut ctx = ParserContext::new(source);
-        partition_clause(&mut ctx)
+        test_parser!(source, partition_clause)
     }
 }
 

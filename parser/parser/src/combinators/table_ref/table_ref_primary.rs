@@ -47,18 +47,23 @@ pub(super) fn table_ref_primary(ctx: &mut ParserContext) -> scan::Result<TableRe
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("lateral (select 1)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
-    #[test_case("(foo) as bar" => matches Ok(_))]
-    #[test_case("graph_table (foo match -> columns(bar)) as baz" => matches Ok(_))]
-    #[test_case("lateral rows from ( foo() )" => matches Ok(_))]
-    #[test_case("lateral baz()" => matches Ok(_))]
-    #[test_case("rows from ( foo() )" => matches Ok(_))]
-    #[test_case("current_time" => matches Ok(_))]
-    #[test_case("json_arrayagg(1)" => matches Ok(_))]
-    #[test_case("only bar" => matches Ok(_))]
-    #[test_case("row.integer()" => matches Ok(_))]
+    #[test_matrix("lateral (select 1)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_matrix(
+        [
+            "(foo) as bar",
+            "graph_table (foo match -> columns(bar)) as baz",
+            "lateral rows from ( foo() )",
+            "lateral baz()",
+            "rows from ( foo() )",
+            "current_time",
+            "json_arrayagg(1)",
+            "only bar",
+            "row.integer()",
+        ]
+        => matches Ok(_)
+    )]
     fn test_table_ref_primary(source: &str) -> scan::Result<TableRef> {
         test_parser!(source, table_ref_primary)
     }

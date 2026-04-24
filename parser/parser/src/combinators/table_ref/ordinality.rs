@@ -14,9 +14,9 @@ pub(super) fn ordinality(ctx: &mut ParserContext) -> scan::Result<()> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("with ordinality" => Ok(()))]
+    #[test_matrix("with ordinality" => Ok(()))]
     fn test_ordinality(source: &str) -> scan::Result<()> {
         test_parser!(source, ordinality)
     }

@@ -21,12 +21,12 @@ pub(super) fn nulls_order(ctx: &mut ParserContext) -> scan::Result<SortNulls> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("nulls first", NullsFirst)]
-    #[test_case("nulls last", NullsLast)]
-    fn test_nulls_order(source: &str, expected: SortNulls) {
-        test_parser!(source, nulls_order, expected)
+    #[test_matrix("nulls first" => Ok(NullsFirst))]
+    #[test_matrix("nulls last" => Ok(NullsLast))]
+    fn test_nulls_order(source: &str) -> scan::Result<SortNulls> {
+        test_parser!(source, nulls_order)
     }
 }
 

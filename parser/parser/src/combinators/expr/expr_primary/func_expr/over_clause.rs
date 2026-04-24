@@ -22,16 +22,16 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_ast::WindowDefinition;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("over foo", WindowName("foo".into()))]
-    #[test_case("over (foo)",
+    #[test_matrix("over foo" => Ok(WindowName("foo".into())))]
+    #[test_matrix("over (foo)" => Ok(
         OverClause::WindowDefinition(
             WindowDefinition::new(Some("foo".into()), None, None, None)
         )
-    )]
-    fn test_over_clause(source: &str, expected: OverClause) {
-        test_parser!(source, over_clause, expected);
+    ))]
+    fn test_over_clause(source: &str) -> scan::Result<OverClause> {
+        test_parser!(source, over_clause)
     }
 }
 

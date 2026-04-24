@@ -62,15 +62,12 @@ fn qualified_join(ctx: &mut ParserContext) -> scan::Result<JoinRightSide> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        ExprNode::BooleanConst,
-        JoinQual,
-        RelationTableRef,
-    };
-    use test_case::test_case;
+    use pg_ast::ExprNode::BooleanConst;
+    use pg_ast::JoinQual;
+    use pg_ast::RelationTableRef;
+    use test_case::test_matrix;
 
-    #[test_case("cross join foo" => Ok(JoinRightSide {
+    #[test_matrix("cross join foo" => Ok(JoinRightSide {
         table_ref: RelationTableRef::new("foo").into(),
         join_kind: JoinKind::cross_join(),
         alias: None
@@ -79,18 +76,18 @@ mod tests {
         test_parser!(source, unqualified_join)
     }
 
-    #[test_case("join bar on true" => Ok(JoinRightSide {
+    #[test_matrix("join bar on true" => Ok(JoinRightSide {
         table_ref: RelationTableRef::new("bar").into(),
-        join_kind: JoinKind::Inner(Some(
+        join_kind: Inner(Some(
             JoinQual::On(
                 Box::new(BooleanConst(true))
             )
         )),
         alias: None
     }))]
-    #[test_case("inner join baz using(qux)" => Ok(JoinRightSide {
+    #[test_matrix("inner join baz using(qux)" => Ok(JoinRightSide {
         table_ref: RelationTableRef::new("baz").into(),
-        join_kind: JoinKind::Inner(Some(
+        join_kind: Inner(Some(
             JoinQual::Using(
                 vec!["qux".into()]
             )
@@ -101,9 +98,9 @@ mod tests {
         test_parser!(source, qualified_join)
     }
 
-    #[test_case("natural join a" => matches Ok(_))]
-    #[test_case("join b using(x)" => matches Ok(_))]
-    #[test_case("left join c on true" => matches Ok(_))]
+    #[test_matrix("natural join a" => matches Ok(_))]
+    #[test_matrix("join b using(x)" => matches Ok(_))]
+    #[test_matrix("left join c on true" => matches Ok(_))]
     fn test_joined_table_right(source: &str) -> scan::Result<JoinRightSide> {
         test_parser!(source, joined_table_right)
     }

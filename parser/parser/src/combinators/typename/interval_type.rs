@@ -22,11 +22,11 @@ pub(super) fn interval_type(ctx: &mut ParserContext) -> scan::Result<IntervalRan
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("interval"     => Ok(IntervalRange::default()))]
-    #[test_case("interval day" => Ok(IntervalRange::Day))]
-    #[test_case("interval(5)"  => Ok(IntervalRange::Full { precision: Some(5) }))]
+    #[test_matrix("interval"     => Ok(IntervalRange::default()))]
+    #[test_matrix("interval day" => Ok(IntervalRange::Day))]
+    #[test_matrix("interval(5)"  => Ok(Full { precision: Some(5) }))]
     fn test_interval_type(source: &str) -> scan::Result<IntervalRange> {
         test_parser!(source, interval_type)
     }

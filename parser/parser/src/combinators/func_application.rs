@@ -188,7 +188,7 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_ast::ExprNode::IntegerConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
     #[test]
     fn test_func_application() {
@@ -202,19 +202,19 @@ mod tests {
         )
     }
 
-    #[test_case("(*)" => Ok(Wildcard { order_within_group: None }))]
-    #[test_case("(distinct 1, 2)" => Ok(Distinct {
+    #[test_matrix("(*)" => Ok(Wildcard { order_within_group: None }))]
+    #[test_matrix("(distinct 1, 2)" => Ok(Distinct {
         args: vec![
             NamedValue::new(IntegerConst(1)),
             NamedValue::new(IntegerConst(2)),
         ],
         order: None
     }))]
-    #[test_case("(variadic 1)" => Ok(Variadic {
+    #[test_matrix("(variadic 1)" => Ok(Variadic {
         args: vec![NamedValue::new(IntegerConst(1))],
         order: None
     }))]
-    #[test_case("()" => Ok(Empty { order_within_group: None }))]
+    #[test_matrix("()" => Ok(Empty { order_within_group: None }))]
     fn test_func_application_args(source: &str) -> scan::Result<FuncArgsKind> {
         test_parser!(source, func_application_args)
     }
@@ -264,7 +264,7 @@ mod tests {
         )
     }
 
-    #[test_case("1, 2, variadic 3" => Ok((
+    #[test_matrix("1, 2, variadic 3" => Ok((
         vec![
             NamedValue::new(IntegerConst(1)),
             NamedValue::new(IntegerConst(2)),
@@ -272,7 +272,7 @@ mod tests {
         ],
         true
     )))]
-    #[test_case("1, 2, 3" => Ok((
+    #[test_matrix("1, 2, 3" => Ok((
         vec![
             NamedValue::new(IntegerConst(1)),
             NamedValue::new(IntegerConst(2)),
@@ -315,19 +315,19 @@ mod tests {
         )
     }
 
-    #[test_case("1" => Ok((
+    #[test_matrix("1" => Ok((
         NamedValue::new(IntegerConst(1)),
         false
     )))]
-    #[test_case("VARIADIC 2" => Ok((
+    #[test_matrix("VARIADIC 2" => Ok((
         NamedValue::new(IntegerConst(2)),
         true
     )))]
-    #[test_case("foo := 3" => Ok((
+    #[test_matrix("foo := 3" => Ok((
         NamedValue::new(IntegerConst(3)).with_name("foo"),
         false
     )))]
-    #[test_case("VARIADIC bar => 4" => Ok((
+    #[test_matrix("VARIADIC bar => 4" => Ok((
         NamedValue::new(IntegerConst(4)).with_name("bar"),
         true
     )))]

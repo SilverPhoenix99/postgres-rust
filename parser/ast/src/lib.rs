@@ -156,7 +156,6 @@ pg_basics::reexport! { pub
 mod database_stmt;
 mod graph_pattern;
 
-#[allow(unused_imports)]
 pub use {
     database_stmt::alterdb_option::*,
     database_stmt::alterdb_option_kind::*,

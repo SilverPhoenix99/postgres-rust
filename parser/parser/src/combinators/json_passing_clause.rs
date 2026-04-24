@@ -29,15 +29,11 @@ fn json_argument(ctx: &mut ParserContext) -> scan::Result<JsonArgument> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::{IntegerConst, StringConst},
-        pg_ast::JsonValueExpr,
-        scan::Error::NoMatch,
-    };
+    use pg_ast::ExprNode::{IntegerConst, StringConst};
+    use pg_ast::JsonValueExpr;
+    use test_case::test_matrix;
 
-    #[test_case("passing 1 as a, 2 as b" => Ok(vec![
+    #[test_matrix("passing 1 as a, 2 as b" => Ok(vec![
         (
             "a".into(),
             JsonValueExpr::from(IntegerConst(1))
@@ -51,7 +47,7 @@ mod tests {
         test_parser!(source, json_passing_clause)
     }
 
-    #[test_case("'foo' as bar" => Ok((
+    #[test_matrix("'foo' as bar" => Ok((
         "bar".into(),
         JsonValueExpr::from(StringConst("foo".into()))
     )))]

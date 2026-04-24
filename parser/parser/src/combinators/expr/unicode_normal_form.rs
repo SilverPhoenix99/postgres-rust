@@ -12,14 +12,14 @@ pub(super) fn unicode_normal_form(ctx: &mut ParserContext) -> scan::Result<Unico
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("nfc", CanonicalComposition)]
-    #[test_case("nfd", CanonicalDecomposition)]
-    #[test_case("nfkc", CompatibilityComposition)]
-    #[test_case("nfkd", CompatibilityDecomposition)]
-    fn test_unicode_normal_form(source: &str, expected: UnicodeNormalForm) {
-        test_parser!(source, unicode_normal_form, expected)
+    #[test_matrix("nfc" => Ok(CanonicalComposition))]
+    #[test_matrix("nfd" => Ok(CanonicalDecomposition))]
+    #[test_matrix("nfkc" => Ok(CompatibilityComposition))]
+    #[test_matrix("nfkd" => Ok(CompatibilityDecomposition))]
+    fn test_unicode_normal_form(source: &str) -> scan::Result<UnicodeNormalForm> {
+        test_parser!(source, unicode_normal_form)
     }
 }
 

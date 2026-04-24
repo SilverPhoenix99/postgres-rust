@@ -42,11 +42,12 @@ pub(in crate::combinators) fn is_select_stmt(ctx: &mut ParserContext) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use test_case::test_case;
+    use crate::test_parser;
+    use test_case::test_matrix;
 
-    #[test_case("select 1" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_matrix("select 1" => ignore["select_stmt not implemented yet"] matches Ok(_))]
     fn test_select_stmt(source: &str) -> scan::Result<SelectStmt> {
-        todo!()
+        test_parser!(source, select_stmt)
     }
 }
 

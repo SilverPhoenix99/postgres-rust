@@ -27,14 +27,13 @@ pub(super) fn xml_processing_instruction(ctx: &mut ParserContext) -> scan::Resul
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::StringConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("xmlpi(name foo)" => Ok(
+    #[test_matrix("xmlpi(name foo)" => Ok(
         XmlProcessingInstruction::new("foo")
     ))]
-    #[test_case("xmlpi(name bar, 'baz')" => Ok(
+    #[test_matrix("xmlpi(name bar, 'baz')" => Ok(
         XmlProcessingInstruction::new("bar")
             .with_value(StringConst("baz".into()))
     ))]

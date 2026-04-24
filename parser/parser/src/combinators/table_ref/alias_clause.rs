@@ -21,15 +21,15 @@ pub(super) fn alias_clause(ctx: &mut ParserContext) -> scan::Result<Alias> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("foo" => Ok(Alias::new("foo")))]
-    #[test_case("as bar" => Ok(Alias::new("bar")))]
-    #[test_case("baz(lorem)" => Ok(
+    #[test_matrix("foo" => Ok(Alias::new("foo")))]
+    #[test_matrix("as bar" => Ok(Alias::new("bar")))]
+    #[test_matrix("baz(lorem)" => Ok(
         Alias::new("baz")
             .with_columns(vec!["lorem".into()])
     ))]
-    #[test_case("as qux(ipsum)" => Ok(
+    #[test_matrix("as qux(ipsum)" => Ok(
         Alias::new("qux")
             .with_columns(vec!["ipsum".into()])
     ))]

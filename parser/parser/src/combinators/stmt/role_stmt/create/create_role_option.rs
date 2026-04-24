@@ -56,7 +56,7 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_ast::RoleSpec::Public;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
     #[test]
     fn test_create_role_options() {
@@ -72,14 +72,14 @@ mod tests {
         );
     }
 
-    #[test_case("sysid 42", CreateRoleOption::SysId(42.into()))]
-    #[test_case("admin public", CreateRoleOption::AdminMembers(vec![Public]))]
-    #[test_case("role public", CreateRoleOption::AddRoleTo(vec![Public]))]
-    #[test_case("inherit role public", CreateRoleOption::AddRoleTo(vec![Public]))]
-    #[test_case("inherit group public", CreateRoleOption::AddRoleTo(vec![Public]))]
-    #[test_case("password null", CreateRoleOption::Password(None))]
-    fn test_create_role_option(source: &str, expected: CreateRoleOption) {
-        test_parser!(source, create_role_option, expected);
+    #[test_matrix("sysid 42" => Ok(CreateRoleOption::SysId(42.into())))]
+    #[test_matrix("admin public" => Ok(CreateRoleOption::AdminMembers(vec![Public])))]
+    #[test_matrix("role public" => Ok(CreateRoleOption::AddRoleTo(vec![Public])))]
+    #[test_matrix("inherit role public" => Ok(CreateRoleOption::AddRoleTo(vec![Public])))]
+    #[test_matrix("inherit group public" => Ok(CreateRoleOption::AddRoleTo(vec![Public])))]
+    #[test_matrix("password null" => Ok(CreateRoleOption::Password(None)))]
+    fn test_create_role_option(source: &str) -> scan::Result<CreateRoleOption> {
+        test_parser!(source, create_role_option)
     }
 }
 

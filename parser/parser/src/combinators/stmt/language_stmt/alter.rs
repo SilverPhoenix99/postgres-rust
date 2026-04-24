@@ -46,26 +46,23 @@ pub(in crate::combinators::stmt) fn alter_language_stmt(ctx: &mut ParserContext)
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::RoleSpec::Public;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case(
-        "procedural language some_language owner to public",
+    #[test_matrix("procedural language some_language owner to public" => Ok(
         AlterOwnerStmt::new(
             AlterOwnerTarget::Language("some_language".into()),
             Public
         ).into()
-    )]
-    #[test_case(
-        "language some_language rename to new_lang",
+    ))]
+    #[test_matrix("language some_language rename to new_lang" => Ok(
         RenameStmt::new(
             RenameTarget::Language("some_language".into()),
             "new_lang"
         ).into()
-    )]
-    fn test_alter_language_stmt(source: &str, expected: RawStmt) {
-        test_parser!(source, alter_language_stmt, expected);
+    ))]
+    fn test_alter_language_stmt(source: &str) -> scan::Result<RawStmt> {
+        test_parser!(source, alter_language_stmt)
     }
 }
 

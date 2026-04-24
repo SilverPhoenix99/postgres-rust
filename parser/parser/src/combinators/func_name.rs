@@ -47,12 +47,12 @@ fn column_name(ctx: &mut ParserContext) -> scan::Result<QualifiedName> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("authorization", vec!["authorization".into()])]
-    #[test_case("trim.something", vec!["trim".into(), "something".into()])]
-    fn test_type_func_name(source: &str, expected: QualifiedName) {
-        test_parser!(source, func_name, expected)
+    #[test_matrix("authorization" => Ok(vec!["authorization".into()]))]
+    #[test_matrix("trim.something" => Ok(vec!["trim".into(), "something".into()]))]
+    fn test_type_func_name(source: &str) -> scan::Result<QualifiedName> {
+        test_parser!(source, func_name)
     }
 
     #[test]

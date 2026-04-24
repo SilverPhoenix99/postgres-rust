@@ -50,14 +50,11 @@ mod tests {
     use crate::test_parser;
     use pg_ast::ExprNode::IntegerConst;
     use pg_ast::Operator::Less;
+    use pg_ast::SortDirection;
     use pg_ast::SortDirection::Ascending;
+    use pg_ast::SortNulls::NullsFirst;
     use pg_ast::SortNulls::NullsLast;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        SortDirection,
-        SortNulls::NullsFirst,
-    };
-    use test_case::test_case;
+    use test_case::test_matrix;
 
     #[test]
     fn test_sort_clause() {
@@ -87,27 +84,27 @@ mod tests {
         )
     }
 
-    #[test_case("1 using < nulls first" => Ok(SortBy::new(
+    #[test_matrix("1 using < nulls first" => Ok(SortBy::new(
         IntegerConst(1),
         Some(Using(Less.into())),
         Some(NullsFirst)
     )))]
-    #[test_case("2 asc nulls last" => Ok(SortBy::new(
+    #[test_matrix("2 asc nulls last" => Ok(SortBy::new(
         IntegerConst(2),
         Some(Ascending),
         Some(NullsLast)
     )))]
-    #[test_case("3 desc" => Ok(SortBy::new(
+    #[test_matrix("3 desc" => Ok(SortBy::new(
         IntegerConst(3),
         Some(SortDirection::Descending),
         None
     )))]
-    #[test_case("4" => Ok(SortBy::new(
+    #[test_matrix("4" => Ok(SortBy::new(
         IntegerConst(4),
         None,
         None
     )))]
-    #[test_case("5 nulls first" => Ok(SortBy::new(
+    #[test_matrix("5 nulls first" => Ok(SortBy::new(
         IntegerConst(5),
         None,
         Some(NullsFirst)

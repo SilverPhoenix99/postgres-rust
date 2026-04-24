@@ -16,13 +16,12 @@ pub(super) fn current_schema(ctx: &mut ParserContext) -> scan::Result<SqlFunctio
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use scan::Error::NoMatch;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("current_schema 1" => Ok(CurrentSchema))]
-    #[test_case("current_schema" => Ok(CurrentSchema))]
-    #[test_case("current_schema(" => matches Err(NoMatch(_)))]
+    #[test_matrix("current_schema 1" => Ok(CurrentSchema))]
+    #[test_matrix("current_schema" => Ok(CurrentSchema))]
+    #[test_matrix("current_schema(" => matches Err(NoMatch(_)))]
     fn test_current_schema(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, current_schema)
     }

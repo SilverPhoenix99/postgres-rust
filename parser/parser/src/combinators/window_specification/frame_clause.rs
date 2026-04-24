@@ -27,38 +27,35 @@ pub(super) fn frame_clause(ctx: &mut ParserContext) -> scan::Result<WindowFrame>
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        CurrentRowEnd,
-        ExprNode::IntegerConst,
-        FrameExtent,
-        WindowExclusion::{NoOthers, Ties},
-    };
-    use test_case::test_case;
+    use pg_ast::CurrentRowEnd;
+    use pg_ast::FrameExtent;
+    use pg_ast::WindowExclusion::NoOthers;
+    use pg_ast::WindowExclusion::Ties;
+    use test_case::test_matrix;
 
-    #[test_case("range between current row and unbounded following",
+    #[test_matrix("range between current row and unbounded following" => Ok(
         WindowFrame::new(
             Range,
             FrameExtent::CurrentRow { end: Some(CurrentRowEnd::Unbounded) },
             NoOthers
         )
-    )]
-    #[test_case("rows current row exclude ties",
+    ))]
+    #[test_matrix("rows current row exclude ties" => Ok(
         WindowFrame::new(
             Rows,
             FrameExtent::CurrentRow { end: None },
             Ties
         )
-    )]
-    #[test_case("groups unbounded preceding",
+    ))]
+    #[test_matrix("groups unbounded preceding" => Ok(
         WindowFrame::new(
             Groups,
             FrameExtent::Unbounded { end: None },
             NoOthers
         )
-    )]
-    fn test_frame_clause(source: &str, expected: WindowFrame) {
-        test_parser!(source, frame_clause, expected);
+    ))]
+    fn test_frame_clause(source: &str) -> scan::Result<WindowFrame> {
+        test_parser!(source, frame_clause)
     }
 }
 

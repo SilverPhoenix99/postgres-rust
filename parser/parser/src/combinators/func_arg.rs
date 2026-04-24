@@ -89,15 +89,15 @@ mod tests {
     use pg_ast::Type;
     use pg_ast::TypeName;
     use pg_basics::Str;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("json", None, FunctionParameterMode::Default, TypeName::Json, SetOf::Record)]
-    #[test_case("in json", None, FunctionParameterMode::In, TypeName::Json, SetOf::Record)]
-    #[test_case("inout double precision", None, FunctionParameterMode::InOut, TypeName::Float8, SetOf::Record)]
-    #[test_case("double out double precision", Some("double".into()), FunctionParameterMode::Out, TypeName::Float8, SetOf::Record)]
-    #[test_case("double double precision", Some("double".into()), FunctionParameterMode::Default, TypeName::Float8, SetOf::Record)]
-    #[test_case("double int", Some("double".into()), FunctionParameterMode::Default, TypeName::Int4, SetOf::Record)]
-    #[test_case("setof json", None, FunctionParameterMode::Default, TypeName::Json, SetOf::Table)]
+    #[test_matrix("json", None, FunctionParameterMode::Default, TypeName::Json, SetOf::Record)]
+    #[test_matrix("in json", None, In, TypeName::Json, SetOf::Record)]
+    #[test_matrix("inout double precision", None, InOut, TypeName::Float8, SetOf::Record)]
+    #[test_matrix("double out double precision", Some("double".into()), Out, TypeName::Float8, SetOf::Record)]
+    #[test_matrix("double double precision", Some("double".into()), FunctionParameterMode::Default, TypeName::Float8, SetOf::Record)]
+    #[test_matrix("double int", Some("double".into()), FunctionParameterMode::Default, TypeName::Int4, SetOf::Record)]
+    #[test_matrix("setof json", None, FunctionParameterMode::Default, TypeName::Json, SetOf::Table)]
     fn test_func_arg(
         source: &str,
         arg_name: Option<Str>,
@@ -115,13 +115,13 @@ mod tests {
         test_parser!(source, func_arg, expected)
     }
 
-    #[test_case("in", FunctionParameterMode::In)]
-    #[test_case("in out", FunctionParameterMode::InOut)]
-    #[test_case("out", FunctionParameterMode::Out)]
-    #[test_case("inout", FunctionParameterMode::InOut)]
-    #[test_case("variadic", FunctionParameterMode::Variadic)]
-    fn test_arg_class(source: &str, expected: FunctionParameterMode) {
-        test_parser!(source, arg_class, expected)
+    #[test_matrix("in" => Ok(In))]
+    #[test_matrix("in out" => Ok(InOut))]
+    #[test_matrix("out" => Ok(Out))]
+    #[test_matrix("inout" => Ok(InOut))]
+    #[test_matrix("variadic" => Ok(Variadic))]
+    fn test_arg_class(source: &str) -> scan::Result<FunctionParameterMode> {
+        test_parser!(source, arg_class)
     }
 }
 

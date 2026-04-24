@@ -34,24 +34,23 @@ fn xml_passing_mech(ctx: &mut ParserContext) -> scan::Result<()> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::StringConst,
-        scan::Error::NoMatch,
-    };
+    use pg_ast::ExprNode::StringConst;
+    use scan::Error::NoMatch;
+    use test_case::test_matrix;
 
-    #[test_case("passing by ref 'foo' by value")]
-    #[test_case("passing 'foo' by ref")]
-    #[test_case("passing by value 'foo'")]
-    #[test_case("passing 'foo'")]
+    #[test_matrix([
+        "passing by ref 'foo' by value",
+        "passing 'foo' by ref",
+        "passing by value 'foo'",
+        "passing 'foo'",
+    ])]
     fn test_xmlexists_argument(source: &str) {
         test_parser!(source, xmlexists_argument, StringConst("foo".into()))
     }
 
-    #[test_case("by ref" => Ok(()))]
-    #[test_case("by value" => Ok(()))]
-    #[test_case("by" => matches Err(NoMatch(_)))]
+    #[test_matrix("by ref" => Ok(()))]
+    #[test_matrix("by value" => Ok(()))]
+    #[test_matrix("by" => matches Err(NoMatch(_)))]
     fn test_xml_passing_mech(source: &str) -> scan::Result<()> {
         test_parser!(source, xml_passing_mech)
     }

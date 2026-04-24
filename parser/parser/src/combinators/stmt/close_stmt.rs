@@ -21,13 +21,13 @@ pub(super) fn close_stmt(ctx: &mut ParserContext) -> scan::Result<OneOrAll<Str>>
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("close all", OneOrAll::All)]
-    #[test_case("close abort", OneOrAll::One("abort".into()))]
-    #[test_case("close ident", OneOrAll::One("ident".into()))]
-    fn test_close_all(source: &str, expected: OneOrAll<Str>) {
-        test_parser!(source, close_stmt, expected)
+    #[test_matrix("close all" => Ok(OneOrAll::All))]
+    #[test_matrix("close abort" => Ok(OneOrAll::One("abort".into())))]
+    #[test_matrix("close ident" => Ok(OneOrAll::One("ident".into())))]
+    fn test_close_all(source: &str) -> scan::Result<OneOrAll<Str>> {
+        test_parser!(source, close_stmt)
     }
 }
 

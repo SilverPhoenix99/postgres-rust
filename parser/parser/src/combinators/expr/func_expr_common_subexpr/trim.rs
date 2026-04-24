@@ -75,11 +75,10 @@ fn trim_list(ctx: &mut ParserContext) -> scan::Result<Vec<ExprNode>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::StringConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("trim('foo' from 'bar')" => Ok(
+    #[test_matrix("trim('foo' from 'bar')" => Ok(
         TrimFunc::new(
             Both,
             vec![StringConst("bar".into()), StringConst("foo".into())]
@@ -90,19 +89,19 @@ mod tests {
         trim(&mut ctx)
     }
 
-    #[test_case("leading from 'foo'" => Ok(TrimFunc::new(
+    #[test_matrix("leading from 'foo'" => Ok(TrimFunc::new(
         Leading,
         vec![StringConst("foo".into())]
     )))]
-    #[test_case("trailing 'foo' from 'bar'" => Ok(TrimFunc::new(
+    #[test_matrix("trailing 'foo' from 'bar'" => Ok(TrimFunc::new(
         Trailing,
         vec![StringConst("bar".into()), StringConst("foo".into())]
     )))]
-    #[test_case("both 'foo'" => Ok(TrimFunc::new(
+    #[test_matrix("both 'foo'" => Ok(TrimFunc::new(
         Both,
         vec![StringConst("foo".into())]
     )))]
-    #[test_case("'foo', 'bar'" => Ok(TrimFunc::new(
+    #[test_matrix("'foo', 'bar'" => Ok(TrimFunc::new(
         Both,
         vec![StringConst("foo".into()), StringConst("bar".into())]
     )))]
@@ -111,26 +110,26 @@ mod tests {
         trim_args(&mut ctx)
     }
 
-    #[test_case("from 'foo'" => Ok(vec![StringConst("foo".into())]))]
-    #[test_case("from 'foo', 'bar'" => Ok(vec![
+    #[test_matrix("from 'foo'" => Ok(vec![StringConst("foo".into())]))]
+    #[test_matrix("from 'foo', 'bar'" => Ok(vec![
         StringConst("foo".into()),
         StringConst("bar".into())
     ]))]
-    #[test_case("'foo'" => Ok(vec![StringConst("foo".into())]))]
-    #[test_case("'foo' from 'bar'" => Ok(vec![
+    #[test_matrix("'foo'" => Ok(vec![StringConst("foo".into())]))]
+    #[test_matrix("'foo' from 'bar'" => Ok(vec![
         StringConst("bar".into()),
         StringConst("foo".into())
     ]))]
-    #[test_case("'foo' from 'bar', 'baz'" => Ok(vec![
+    #[test_matrix("'foo' from 'bar', 'baz'" => Ok(vec![
         StringConst("bar".into()),
         StringConst("baz".into()),
         StringConst("foo".into())
     ]))]
-    #[test_case("'foo', 'bar'" => Ok(vec![
+    #[test_matrix("'foo', 'bar'" => Ok(vec![
         StringConst("foo".into()),
         StringConst("bar".into())
     ]))]
-    #[test_case("'foo', 'bar', 'baz'" => Ok(vec![
+    #[test_matrix("'foo', 'bar', 'baz'" => Ok(vec![
         StringConst("foo".into()),
         StringConst("bar".into()),
         StringConst("baz".into()),

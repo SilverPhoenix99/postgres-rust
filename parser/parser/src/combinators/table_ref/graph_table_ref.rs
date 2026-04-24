@@ -26,17 +26,14 @@ pub(super) fn graph_table_ref(ctx: &mut ParserContext) -> scan::Result<GraphTabl
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        ColumnRef::SingleName,
-        ExprNode::ColumnRef,
-        GraphElementPatternKind::EdgePatternRight,
-        GraphPattern,
-        NamedValue,
-    };
-    use test_case::test_case;
+    use pg_ast::ColumnRef::SingleName;
+    use pg_ast::ExprNode::ColumnRef;
+    use pg_ast::GraphElementPatternKind::EdgePatternRight;
+    use pg_ast::GraphPattern;
+    use pg_ast::NamedValue;
+    use test_case::test_matrix;
 
-    #[test_case("graph_table (foo match -[]-> columns (bar))" => Ok(
+    #[test_matrix("graph_table (foo match -[]-> columns (bar))" => Ok(
         GraphTableRef::new(
             "foo",
             GraphPattern::new()
@@ -46,7 +43,7 @@ mod tests {
             vec![NamedValue::new(ColumnRef(SingleName("bar".into())))]
         )
     ))]
-    #[test_case("graph_table (baz match -> columns (qux)) as a" => Ok(
+    #[test_matrix("graph_table (baz match -> columns (qux)) as a" => Ok(
         GraphTableRef::new(
             "baz",
             GraphPattern::new()

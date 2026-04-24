@@ -126,14 +126,13 @@ fn for_from_args(ctx: &mut ParserContext) -> scan::Result<(ExprNode, Option<Expr
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::{IntegerConst, StringConst};
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("substring()" => Ok(
+    #[test_matrix("substring()" => Ok(
         SubstringFunc::ExplicitCall(None)
     ))]
-    #[test_case("substring('foo')" => Ok(
+    #[test_matrix("substring('foo')" => Ok(
         SubstringFunc::ExplicitCall(
             Some(vec![
                 NamedValue::new(StringConst("foo".into()))
@@ -144,46 +143,46 @@ mod tests {
         test_parser!(source, substring)
     }
 
-    #[test_case("'foo'" => Ok(
+    #[test_matrix("'foo'" => Ok(
         SubstringFunc::ExplicitCall(Some(vec![
             NamedValue::new(StringConst("foo".into())),
         ]))
     ))]
-    #[test_case("'foo', bar => 1" => Ok(
+    #[test_matrix("'foo', bar => 1" => Ok(
         SubstringFunc::ExplicitCall(Some(vec![
             NamedValue::new(StringConst("foo".into())),
             NamedValue::new(IntegerConst(1)).with_name("bar")
         ]))
     ))]
-    #[test_case("'foo' similar 'bar' escape 'baz'" => Ok(
+    #[test_matrix("'foo' similar 'bar' escape 'baz'" => Ok(
         SubstringFunc::SqlSyntax(
             StringConst("foo".into()),
             StringConst("bar".into()),
             Some(StringConst("baz".into()))
         )
     ))]
-    #[test_case("'foo' from 1 for 2" => Ok(
+    #[test_matrix("'foo' from 1 for 2" => Ok(
         SubstringFunc::SqlSyntax(
             StringConst("foo".into()),
             IntegerConst(1),
             Some(IntegerConst(2))
         )
     ))]
-    #[test_case("'foo' for 2 from 1" => Ok(
+    #[test_matrix("'foo' for 2 from 1" => Ok(
         SubstringFunc::SqlSyntax(
             StringConst("foo".into()),
             IntegerConst(1),
             Some(IntegerConst(2))
         )
     ))]
-    #[test_case("'foo' from 1" => Ok(
+    #[test_matrix("'foo' from 1" => Ok(
         SubstringFunc::SqlSyntax(
             StringConst("foo".into()),
             IntegerConst(1),
             None
         )
     ))]
-    #[test_case("'foo' for 2" => Ok(
+    #[test_matrix("'foo' for 2" => Ok(
         SubstringFunc::SqlSyntax(
             StringConst("foo".into()),
             IntegerConst(1),

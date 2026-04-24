@@ -150,25 +150,22 @@ fn func_args_tail(ctx: &mut ParserContext) -> scan::Result<FuncArgsTail> {
 mod tests {
     use super::*;
     use crate::test_parser;
+    use pg_ast::ExprNode::IntegerConst;
+    use pg_ast::NamedValue;
+    use pg_ast::NullTreatment;
+    use pg_basics::Location;
     use pg_basics::Str;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::IntegerConst,
-        pg_ast::NamedValue,
-        pg_ast::NullTreatment,
-        pg_basics::Location,
-        pg_elog::Error::Parser,
-        scan::Error::ScanErr,
-    };
+    use pg_elog::Error::Parser;
+    use scan::Error::ScanErr;
+    use test_case::test_matrix;
 
-    #[test_case("'foo'" => Ok(
+    #[test_matrix("'foo'" => Ok(
         AttrTail::Typecast {
             value: "foo".into(),
             type_modifiers: None
         }
     ))]
-    #[test_case("() 'foo'" => Ok(
+    #[test_matrix("() 'foo'" => Ok(
         AttrTail::FuncTail {
             args: FuncArgsKind::Empty { order_within_group: None },
             filter: None,
@@ -176,13 +173,13 @@ mod tests {
             over: None
         }
     ))]
-    #[test_case("(1) 'foo'" => Ok(
+    #[test_matrix("(1) 'foo'" => Ok(
         AttrTail::Typecast {
             value: "foo".into(),
             type_modifiers: Some(vec![IntegerConst(1)]),
         }
     ))]
-    #[test_case("(1) over bar" => Ok(
+    #[test_matrix("(1) over bar" => Ok(
         AttrTail::FuncTail {
             args: FuncArgsKind::All {
                 args: vec![Located(
@@ -196,41 +193,41 @@ mod tests {
             over: Some(OverClause::WindowName("bar".into()))
         }
     ))]
-    #[test_case("(a := 1) 'foo'" => matches Err(ScanErr(
+    #[test_matrix("(a := 1) 'foo'" => matches Err(ScanErr(
         Located(Parser(InvalidNamedTypeModifier), _)
     )))]
-    #[test_case("(1 order by 2) 'foo'" => matches Err(ScanErr(
+    #[test_matrix("(1 order by 2) 'foo'" => matches Err(ScanErr(
         Located(Parser(InvalidOrderedTypeModifiers), _)
     )))]
-    #[test_case("(1 order by 2) within group (order by 3)" => matches Err(ScanErr(
+    #[test_matrix("(1 order by 2) within group (order by 3)" => matches Err(ScanErr(
         Located(Parser(MultipleOrderBy), _)
     )))]
-    #[test_case("(distinct 1) within group (order by 3)" => matches Err(ScanErr(
+    #[test_matrix("(distinct 1) within group (order by 3)" => matches Err(ScanErr(
         Located(Parser(DistinctWithinGroup), _)
     )))]
-    #[test_case("(distinct 1 order by 2) within group (order by 3)" => matches Err(ScanErr(
+    #[test_matrix("(distinct 1 order by 2) within group (order by 3)" => matches Err(ScanErr(
         Located(Parser(MultipleOrderBy), _)
     )))]
-    #[test_case("(variadic 1) within group (order by 3)" => matches Err(ScanErr(
+    #[test_matrix("(variadic 1) within group (order by 3)" => matches Err(ScanErr(
         Located(Parser(VariadicWithinGroup), _)
     )))]
-    #[test_case("(variadic 1 order by 2) within group (order by 3)" => matches Err(ScanErr(
+    #[test_matrix("(variadic 1 order by 2) within group (order by 3)" => matches Err(ScanErr(
         Located(Parser(MultipleOrderBy), _)
     )))]
     fn test_attr_tail(source: &str) -> scan::Result<AttrTail> {
         test_parser!(source, attr_tail)
     }
 
-    #[test_case("'some string'" => Ok(AttrSuffix::String("some string".into())))]
-    #[test_case("()" => Ok(AttrSuffix::FuncArgs(
+    #[test_matrix("'some string'" => Ok(AttrSuffix::String("some string".into())))]
+    #[test_matrix("()" => Ok(AttrSuffix::FuncArgs(
         FuncArgsKind::Empty { order_within_group: None }
     )))]
     fn test_attr_suffix(source: &str) -> scan::Result<AttrSuffix> {
         test_parser!(source, attr_suffix)
     }
 
-    #[test_case("", None, None, None, None)]
-    #[test_case("within group (order by 1) filter (where 2) ignore nulls over foo",
+    #[test_matrix("", None, None, None, None)]
+    #[test_matrix("within group (order by 1) filter (where 2) ignore nulls over foo",
         Some(Located(
             SortBy::new(
                 IntegerConst(1),

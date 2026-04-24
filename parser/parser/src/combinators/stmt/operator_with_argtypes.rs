@@ -101,7 +101,7 @@ mod tests {
     use crate::test_parser;
     use pg_ast::Operator::Equals;
     use pg_ast::TypeName::Int4;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
     #[test]
     fn test_operator_with_argtypes_list() {
@@ -116,22 +116,24 @@ mod tests {
         )
     }
 
-    #[test_case("= (int,  int)", OneOrBoth::Both(Int4.into(), Int4.into()))]
-    #[test_case("= (none, int)", OneOrBoth::Right(Int4.into()))]
-    #[test_case("= (int,  none)", OneOrBoth::Left(Int4.into()))]
-    fn test_operator_with_argtypes(source: &str, expected: OneOrBoth<Type>) {
-        test_parser!(
-            source = source,
-            parser = operator_with_argtypes,
-            expected = OperatorWithArgs::new(Equals, expected)
-        )
+    #[test_matrix("= (int,  int)" => Ok(
+        OperatorWithArgs::new(Equals, OneOrBoth::Both(Int4.into(), Int4.into()))
+    ))]
+    #[test_matrix("= (none, int)" => Ok(
+        OperatorWithArgs::new(Equals, OneOrBoth::Right(Int4.into()))
+    ))]
+    #[test_matrix("= (int,  none)" => Ok(
+        OperatorWithArgs::new(Equals, OneOrBoth::Left(Int4.into()))
+    ))]
+    fn test_operator_with_argtypes(source: &str) -> scan::Result<OperatorWithArgs> {
+        test_parser!(source, operator_with_argtypes)
     }
 
-    #[test_case("(int, int)", OneOrBoth::Both(Int4.into(), Int4.into()))]
-    #[test_case("(none, int)", OneOrBoth::Right(Int4.into()))]
-    #[test_case("(int, none)", OneOrBoth::Left(Int4.into()))]
-    fn test_oper_argtypes(source: &str, expected: OneOrBoth<Type>) {
-        test_parser!(source, oper_argtypes, expected);
+    #[test_matrix("(int, int)" => Ok(OneOrBoth::Both(Int4.into(), Int4.into())))]
+    #[test_matrix("(none, int)" => Ok(OneOrBoth::Right(Int4.into())))]
+    #[test_matrix("(int, none)" => Ok(OneOrBoth::Left(Int4.into())))]
+    fn test_oper_argtypes(source: &str) -> scan::Result<OneOrBoth<Type>> {
+        test_parser!(source, oper_argtypes)
     }
 }
 

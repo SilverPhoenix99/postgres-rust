@@ -76,14 +76,13 @@ fn xml_attributes(ctx: &mut ParserContext) -> scan::Result<Vec<NamedValue>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::{IntegerConst, StringConst};
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("xmlelement(name foo)" => Ok(
+    #[test_matrix("xmlelement(name foo)" => Ok(
         XmlElement::new("foo".into())
     ))]
-    #[test_case("xmlelement(name foo, xmlattributes(1 as a), 'foo')" => Ok(
+    #[test_matrix("xmlelement(name foo, xmlattributes(1 as a), 'foo')" => Ok(
         XmlElement::new("foo".into())
             .with_attributes(vec![
                 NamedValue::new(IntegerConst(1)).with_name("a")
@@ -92,7 +91,7 @@ mod tests {
                 StringConst("foo".into())
             ])
     ))]
-    #[test_case("xmlelement(name foo, 'bar')" => Ok(
+    #[test_matrix("xmlelement(name foo, 'bar')" => Ok(
         XmlElement::new("foo".into())
             .with_content(vec![
                 StringConst("bar".into())
@@ -103,7 +102,7 @@ mod tests {
         xml_element(&mut ctx)
     }
 
-    #[test_case("xmlattributes(1, 2 as x)" => Ok(vec![
+    #[test_matrix("xmlattributes(1, 2 as x)" => Ok(vec![
         NamedValue::new(IntegerConst(1)),
         NamedValue::new(IntegerConst(2)).with_name("x"),
     ]))]

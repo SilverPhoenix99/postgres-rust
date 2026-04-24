@@ -52,17 +52,16 @@ pub(super) fn frame_bound(ctx: &mut ParserContext) -> scan::Result<FrameBound> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("unbounded preceding", UnboundedPreceding)]
-    #[test_case("unbounded following", UnboundedFollowing)]
-    #[test_case("current row", CurrentRow)]
-    #[test_case("1 preceding", OffsetPreceding(IntegerConst(1)))]
-    #[test_case("1 following", OffsetFollowing(IntegerConst(1)))]
-    fn test_frame_bound(source: &str, expected: FrameBound) {
-        test_parser!(source, frame_bound, expected);
+    #[test_matrix("unbounded preceding" => Ok(UnboundedPreceding))]
+    #[test_matrix("unbounded following" => Ok(UnboundedFollowing))]
+    #[test_matrix("current row" => Ok(CurrentRow))]
+    #[test_matrix("1 preceding" => Ok(OffsetPreceding(IntegerConst(1))))]
+    #[test_matrix("1 following" => Ok(OffsetFollowing(IntegerConst(1))))]
+    fn test_frame_bound(source: &str) -> scan::Result<FrameBound> {
+        test_parser!(source, frame_bound)
     }
 }
 

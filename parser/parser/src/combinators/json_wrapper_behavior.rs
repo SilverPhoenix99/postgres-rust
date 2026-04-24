@@ -32,18 +32,18 @@ fn wrapper_behavior(ctx: &mut ParserContext) -> scan::Result<JsonWrapperBehavior
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("without wrapper" => Ok(Without))]
-    #[test_case("with conditional array wrapper" => Ok(Conditional))]
+    #[test_matrix("without wrapper" => Ok(Without))]
+    #[test_matrix("with conditional array wrapper" => Ok(Conditional))]
     fn test_json_wrapper_behavior(source: &str) -> scan::Result<JsonWrapperBehavior> {
         test_parser!(source, json_wrapper_behavior)
     }
 
-    #[test_case("without" => Ok(Without))]
-    #[test_case("with conditional" => Ok(Conditional))]
-    #[test_case("with" => Ok(Unconditional))]
-    #[test_case("with unconditional" => Ok(Unconditional))]
+    #[test_matrix("without" => Ok(Without))]
+    #[test_matrix("with conditional" => Ok(Conditional))]
+    #[test_matrix("with" => Ok(Unconditional))]
+    #[test_matrix("with unconditional" => Ok(Unconditional))]
     fn test_wrapper_behavior(source: &str) -> scan::Result<JsonWrapperBehavior> {
         test_parser!(source, wrapper_behavior)
     }

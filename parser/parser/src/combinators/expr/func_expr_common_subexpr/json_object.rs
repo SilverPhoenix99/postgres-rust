@@ -99,33 +99,30 @@ fn json_object_args(ctx: &mut ParserContext) -> scan::Result<JsonObjectExpr> {
 mod tests {
     use super::*;
     use crate::test_parser;
+    use pg_ast::ExprNode::{IntegerConst, StringConst};
     use pg_ast::JsonObjectExpr;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::{IntegerConst, StringConst},
-        pg_ast::JsonOutput,
-        pg_ast::JsonValueExpr,
-        pg_ast::NamedValue,
-        pg_ast::TypeName::Int4,
-    };
+    use pg_ast::JsonOutput;
+    use pg_ast::JsonValueExpr;
+    use pg_ast::NamedValue;
+    use pg_ast::TypeName::Int4;
+    use test_case::test_matrix;
 
-    #[test_case("json_object()" => Ok(ExplicitCall(None)) ; "json_object_with_empty_args")]
-    #[test_case("json_object('foo')" => matches Ok(ExplicitCall(Some(_))))]
+    #[test_matrix("json_object()" => Ok(ExplicitCall(None)) ; "json_object_with_empty_args")]
+    #[test_matrix("json_object('foo')" => matches Ok(ExplicitCall(Some(_))))]
     fn test_json_object(source: &str) -> scan::Result<JsonObjectExpr> {
         test_parser!(source, json_object)
     }
 
-    #[test_case("returning int" => Ok(SqlSyntax(
+    #[test_matrix("returning int" => Ok(SqlSyntax(
         JsonObjectArgs::new()
             .with_output(JsonOutput::from(Int4))
     )))]
-    #[test_case("1, foo := 2, bar => 3" => Ok(ExplicitCall(Some(vec![
+    #[test_matrix("1, foo := 2, bar => 3" => Ok(ExplicitCall(Some(vec![
         NamedValue::new(IntegerConst(1)),
         NamedValue::new(IntegerConst(2)).with_name("foo"),
         NamedValue::new(IntegerConst(3)).with_name("bar"),
     ]))))]
-    #[test_case("'bar': 2" => Ok(SqlSyntax(
+    #[test_matrix("'bar': 2" => Ok(SqlSyntax(
         JsonObjectArgs::new()
             .with_expressions(vec![
                 JsonKeyValue::new(
@@ -135,7 +132,7 @@ mod tests {
             ])
 
     )))]
-    #[test_case("'baz' value 3 absent on null with unique keys returning int" => Ok(SqlSyntax(
+    #[test_matrix("'baz' value 3 absent on null with unique keys returning int" => Ok(SqlSyntax(
         JsonObjectArgs::new()
             .with_expressions(vec![
                 JsonKeyValue::new(

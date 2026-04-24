@@ -15,11 +15,10 @@ pub(super) fn greatest_expr(ctx: &mut ParserContext) -> scan::Result<SqlFunction
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("greatest(1, 2)" => Ok(
+    #[test_matrix("greatest(1, 2)" => Ok(
         Greatest(vec![
             IntegerConst(1),
             IntegerConst(2)

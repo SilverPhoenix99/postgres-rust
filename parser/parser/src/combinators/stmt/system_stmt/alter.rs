@@ -30,14 +30,29 @@ pub(in crate::combinators::stmt) fn alter_system_stmt(ctx: &mut ParserContext) -
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("system reset all", AlterSystemStmt::ResetAll)]
-    #[test_case("system reset some_.name_", AlterSystemStmt::Reset { name: vec!["some_".into(), "name_".into()] })]
-    #[test_case("system set var_._name to default", AlterSystemStmt::SetDefault { name: vec!["var_".into(), "_name".into()] })]
-    #[test_case("system set var_._name = 'x'", AlterSystemStmt::Set { name: vec!["var_".into(), "_name".into()], values: vec!["x".into()] })]
-    fn test_(source: &str, expected: AlterSystemStmt) {
-        test_parser!(source, alter_system_stmt, expected)
+    #[test_matrix("system reset all" => Ok(
+        AlterSystemStmt::ResetAll
+    ))]
+    #[test_matrix("system reset some_.name_" => Ok(
+        AlterSystemStmt::Reset {
+            name: vec!["some_".into(), "name_".into()]
+        }
+    ))]
+    #[test_matrix("system set var_._name to default" => Ok(
+        AlterSystemStmt::SetDefault {
+            name: vec!["var_".into(), "_name".into()]
+        }
+    ))]
+    #[test_matrix("system set var_._name = 'x'" => Ok(
+        AlterSystemStmt::Set {
+            name: vec!["var_".into(), "_name".into()],
+            values: vec!["x".into()]
+        }
+    ))]
+    fn test_(source: &str) -> scan::Result<AlterSystemStmt> {
+        test_parser!(source, alter_system_stmt)
     }
 }
 

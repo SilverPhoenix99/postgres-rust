@@ -16,11 +16,10 @@ pub(super) fn json_scalar(ctx: &mut ParserContext) -> scan::Result<SqlFunction> 
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("json_scalar(1)" => Ok(
+    #[test_matrix("json_scalar(1)" => Ok(
         JsonScalar(IntegerConst(1))
     ))]
     fn test_json_scalar(source: &str) -> scan::Result<SqlFunction> {

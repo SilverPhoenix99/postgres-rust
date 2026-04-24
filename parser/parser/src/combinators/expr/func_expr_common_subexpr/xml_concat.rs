@@ -15,12 +15,11 @@ pub(super) fn xml_concat(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::StringConst;
     use pg_ast::SqlFunction;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("xmlconcat('foo', 'bar')" => Ok(
+    #[test_matrix("xmlconcat('foo', 'bar')" => Ok(
         XmlConcat(vec![
             StringConst("foo".into()),
             StringConst("bar".into()),

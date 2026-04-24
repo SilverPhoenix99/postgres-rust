@@ -16,10 +16,10 @@ pub(super) fn all_or_var_name(ctx: &mut ParserContext) -> scan::Result<OneOrAll<
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("all" => Ok(OneOrAll::All))]
-    #[test_case("_ident" => Ok(OneOrAll::One(vec!["_ident".into()])))]
+    #[test_matrix("all" => Ok(OneOrAll::All))]
+    #[test_matrix("_ident" => Ok(OneOrAll::One(vec!["_ident".into()])))]
     fn test_all_or_var_name(source: &str) -> scan::Result<OneOrAll<QualifiedName>> {
         test_parser!(source, all_or_var_name)
     }

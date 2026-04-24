@@ -13,6 +13,11 @@
   * `backend/utils/mb/stringinfo_mb.c` / `include/mb/stringinfo_mb.h`
 * Check layout of structs and enums with `#![feature(rustc_attrs)]` + `#[rustc_layout(debug)]`.
   * Ref: https://doc.rust-lang.org/beta/unstable-book/language-features/rustc-attrs.html
+* Use `test_matrix` instead of `test_case`.
+  * Even though `test_matrix` has advanced features, it can still be used as a replacement for `test_case`.
+  * RustRover doesn't detect the syntax of `test_case`,
+    likely from a conflict with std's macro of the same name.
+  * RustRover can also detect the syntax of `test_matrix`, so there'll be no complaints about unused imports.
 * `indirection` and `opt_indirection` functions:
   * `check_func_name`: only allows `( '.' col_label )[1..]` == `( attrs )[1..]`
   * `check_indirection`: `*` is only allowed as the last item

@@ -27,24 +27,21 @@ pub(super) fn json_value_expr(ctx: &mut ParserContext) -> scan::Result<JsonValue
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        ExprNode::StringConst,
-        JsonEncoding::UTF8,
-        JsonFormat,
-    };
-    use test_case::test_case;
+    use pg_ast::ExprNode::StringConst;
+    use pg_ast::JsonEncoding::UTF8;
+    use pg_ast::JsonFormat;
+    use test_case::test_matrix;
 
-    #[test_case("'foo'" => Ok(
+    #[test_matrix("'foo'" => Ok(
         JsonValueExpr::new(
             StringConst("foo".into())
         )
     ))]
-    #[test_case("'foo' format json" => Ok(
+    #[test_matrix("'foo' format json" => Ok(
         JsonValueExpr::new(StringConst("foo".into()))
             .with_format(JsonFormat::text())
     ))]
-    #[test_case("'foo' format json encoding utf8" => Ok(
+    #[test_matrix("'foo' format json encoding utf8" => Ok(
         JsonValueExpr::new(StringConst("foo".into()))
             .with_format(
                 JsonFormat::text()

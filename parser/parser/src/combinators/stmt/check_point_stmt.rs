@@ -17,12 +17,11 @@ pub(super) fn check_point_stmt(ctx: &mut ParserContext) -> scan::Result<Option<V
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::UtilityOptionName::Analyze;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("checkpoint" => Ok(None))]
-    #[test_case("checkpoint(analyze)" => Ok(Some(vec![Analyze.into()])))]
+    #[test_matrix("checkpoint" => Ok(None))]
+    #[test_matrix("checkpoint(analyze)" => Ok(Some(vec![Analyze.into()])))]
     fn test_check_point_stmt(source: &str) -> scan::Result<Option<Vec<UtilityOption>>> {
         test_parser!(source, check_point_stmt)
     }

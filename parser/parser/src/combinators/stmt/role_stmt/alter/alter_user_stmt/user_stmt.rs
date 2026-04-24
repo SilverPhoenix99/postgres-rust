@@ -99,20 +99,17 @@ fn change_role(ctx: &mut ParserContext) -> scan::Result<Change> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::RoleSpec,
-        pg_ast::SetResetClause::Reset,
-        pg_ast::SetResetClause::Set,
-        pg_ast::SetRest::LocalTransactionCharacteristics,
-        pg_ast::SetRest::TransactionSnapshot,
-        pg_ast::TransactionMode::Deferrable,
-        pg_ast::VariableTarget::SessionAuthorization,
-        pg_ast::VariableTarget::TimeZone,
-    };
+    use pg_ast::RoleSpec;
+    use pg_ast::SetResetClause::Reset;
+    use pg_ast::SetResetClause::Set;
+    use pg_ast::SetRest::LocalTransactionCharacteristics;
+    use pg_ast::SetRest::TransactionSnapshot;
+    use pg_ast::TransactionMode::Deferrable;
+    use pg_ast::VariableTarget::SessionAuthorization;
+    use pg_ast::VariableTarget::TimeZone;
+    use test_case::test_matrix;
 
-    #[test_case("all in database foo set transaction snapshot 'bar'" => Ok(
+    #[test_matrix("all in database foo set transaction snapshot 'bar'" => Ok(
         AlterRoleSetStmt::new(
             OneOrAll::All,
             Set(TransactionSnapshot("bar".into()))
@@ -120,19 +117,19 @@ mod tests {
         .with_database("foo")
         .into()
     ))]
-    #[test_case("all set transaction deferrable" => Ok(
+    #[test_matrix("all set transaction deferrable" => Ok(
         AlterRoleSetStmt::new(
             OneOrAll::All,
             Set(LocalTransactionCharacteristics(vec![Deferrable]))
         ).into()
     ))]
-    #[test_case("this_user rename to that_role" => Ok(
+    #[test_matrix("this_user rename to that_role" => Ok(
         RoleStmt::Rename {
             role_name: "this_user".into(),
             new_name: "that_role".into()
         }
     ))]
-    #[test_case("current_user in database test_db reset session authorization" => Ok(
+    #[test_matrix("current_user in database test_db reset session authorization" => Ok(
         AlterRoleSetStmt::new(
             OneOrAll::One(RoleSpec::CurrentUser),
             Reset(SessionAuthorization)
@@ -140,26 +137,26 @@ mod tests {
         .with_database("test_db")
         .into()
     ))]
-    #[test_case("public reset time zone" => Ok(
+    #[test_matrix("public reset time zone" => Ok(
         AlterRoleSetStmt::new(
             OneOrAll::One(RoleSpec::Public),
             Reset(TimeZone)
         ).into()
     ))]
-    #[test_case("public encrypted password 'abc123'" => Ok(
+    #[test_matrix("public encrypted password 'abc123'" => Ok(
         AlterRoleStmt::new(RoleSpec::Public)
             .with_options(vec![AlterRoleOption::Password(Some("abc123".into()))])
             .into()
     ))]
-    #[test_case("public with noinherit" => Ok(
+    #[test_matrix("public with noinherit" => Ok(
         AlterRoleStmt::new(RoleSpec::Public)
             .with_options(vec![AlterRoleOption::Inherit(false)])
             .into()
     ))]
-    #[test_case("public" => Ok(
+    #[test_matrix("public" => Ok(
         AlterRoleStmt::new(RoleSpec::Public).into()
     ))]
-    #[test_case("public with" => Ok(
+    #[test_matrix("public with" => Ok(
         AlterRoleStmt::new(RoleSpec::Public).into()
     ))]
     fn test_user_stmt(source: &str) -> scan::Result<RoleStmt> {

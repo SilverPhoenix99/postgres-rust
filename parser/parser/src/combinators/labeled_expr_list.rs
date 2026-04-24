@@ -30,14 +30,13 @@ fn labeled_expr(ctx: &mut ParserContext) -> scan::Result<NamedValue> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::IntegerConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("1" => Ok(
+    #[test_matrix("1" => Ok(
         NamedValue::new(IntegerConst(1))
     ))]
-    #[test_case("2 as x" => Ok(
+    #[test_matrix("2 as x" => Ok(
         NamedValue::new(IntegerConst(2)).with_name("x")
     ))]
     fn test_labeled_expr(source: &str) -> scan::Result<NamedValue> {

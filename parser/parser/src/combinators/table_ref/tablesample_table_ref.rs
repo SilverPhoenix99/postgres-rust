@@ -29,14 +29,11 @@ pub(super) fn tablesample_table_ref(ctx: &mut ParserContext) -> scan::Result<Tab
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        ExprNode::IntegerConst,
-        RelationExpr,
-    };
-    use test_case::test_case;
+    use pg_ast::ExprNode::IntegerConst;
+    use pg_ast::RelationExpr;
+    use test_case::test_matrix;
 
-    #[test_case("only(foo) as t tablesample f(1)" => Ok(
+    #[test_matrix("only(foo) as t tablesample f(1)" => Ok(
         SampleTableRef::new(
             RelationTableRef::new(
                 RelationExpr::new("foo")
@@ -48,7 +45,7 @@ mod tests {
         )
         .into()
     ))]
-    #[test_case("only bar as s" => Ok(
+    #[test_matrix("only bar as s" => Ok(
         RelationTableRef::new(
             RelationExpr::new("bar")
                 .with_inherited(false)
@@ -56,14 +53,14 @@ mod tests {
         .with_alias("s")
         .into()
     ))]
-    #[test_case("only(baz)" => Ok(
+    #[test_matrix("only(baz)" => Ok(
         RelationTableRef::new(
             RelationExpr::new("baz")
                 .with_inherited(false)
         )
         .into()
     ))]
-    #[test_case("only qux tablesample g(2)" => Ok(
+    #[test_matrix("only qux tablesample g(2)" => Ok(
         SampleTableRef::new(
             RelationTableRef::new(
                 RelationExpr::new("qux")

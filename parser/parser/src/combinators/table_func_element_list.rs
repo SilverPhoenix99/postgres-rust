@@ -34,14 +34,13 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_ast::SimpleColumnDefinition;
-    #[allow(unused_imports)]
     use pg_ast::TypeName;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("json json" => Ok(
+    #[test_matrix("json json" => Ok(
         SimpleColumnDefinition::new("json", TypeName::Json)
     ))]
-    #[test_case("int int collate foo" => Ok(
+    #[test_matrix("int int collate foo" => Ok(
         SimpleColumnDefinition::new("int", TypeName::Int4)
             .with_collation(vec!["foo".into()])
     ))]

@@ -45,7 +45,6 @@ pub(in crate::combinators) fn expr_primary(ctx: &mut ParserContext) -> scan::Res
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
     use test_case::test_matrix;
 
     // These only quickly check that statements aren't missing:
@@ -67,7 +66,7 @@ mod tests {
         test_parser!(source, expr_primary)
     }
 
-    #[test_case("exists (select 1)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_matrix("exists (select 1)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
     fn test_expr_primary_exists_expr(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, expr_primary)
     }

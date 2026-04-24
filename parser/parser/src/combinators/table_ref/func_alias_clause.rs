@@ -120,38 +120,35 @@ fn func_alias_column(ctx: &mut ParserContext) -> scan::Result<FuncAliasColumn> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::TypeName::{Generic, Int4},
-        pg_basics::Located,
-        pg_elog::parser::Error::Syntax,
-        pg_elog::Error::Parser,
-        scan::Error::ScanErr,
-    };
+    use pg_ast::TypeName::{Generic, Int4};
+    use pg_basics::Located;
+    use pg_elog::parser::Error::Syntax;
+    use pg_elog::Error::Parser;
+    use scan::Error::ScanErr;
+    use test_case::test_matrix;
 
-    #[test_case("as (x int)" => Ok(
+    #[test_matrix("as (x int)" => Ok(
         FuncAlias::Right(vec![
             FuncAliasColumn::new("x")
                 .with_type_name(Int4)
         ])
     ))]
-    #[test_case("as foo(x)" => matches Ok(_))]
-    #[test_case("bar(x int)" => matches Ok(_))]
+    #[test_matrix("as foo(x)" => matches Ok(_))]
+    #[test_matrix("bar(x int)" => matches Ok(_))]
     fn test_func_alias_clause(source: &str) -> scan::Result<FuncAlias> {
         test_parser!(source, func_alias_clause)
     }
 
-    #[test_case("narslog" => Ok(
+    #[test_matrix("narslog" => Ok(
         FuncAlias::Left("narslog".into())
     ))]
-    #[test_case("umpus(x)" => Ok(
+    #[test_matrix("umpus(x)" => Ok(
         FuncAlias::Both(
             "umpus".into(),
             vec![FuncAliasColumn::new("x")]
         )
     ))]
-    #[test_case("wawas(x int)" => Ok(
+    #[test_matrix("wawas(x int)" => Ok(
         FuncAlias::Both(
             "wawas".into(),
             vec![
@@ -164,23 +161,23 @@ mod tests {
         test_parser!(source, named_alias)
     }
 
-    #[test_case("(foo, bar)" => matches Ok(_))]
-    #[test_case("(baz int, qux int)" => matches Ok(_))]
-    #[test_case("(umpus int, narslog)" => matches Err(ScanErr(
+    #[test_matrix("(foo, bar)" => matches Ok(_))]
+    #[test_matrix("(baz int, qux int)" => matches Ok(_))]
+    #[test_matrix("(umpus int, narslog)" => matches Err(ScanErr(
         Located(Parser(Syntax), _) // ')'
     )))]
-    #[test_case("(wawas, narslog int)" => matches Err(ScanErr(
+    #[test_matrix("(wawas, narslog int)" => matches Err(ScanErr(
         Located(Parser(Syntax), _) // "int"
     )))]
     fn test_func_alias_columns(source: &str) -> scan::Result<Vec<FuncAliasColumn>> {
         test_parser!(source, func_alias_columns)
     }
 
-    #[test_case("foo, bar" => Ok(vec![
+    #[test_matrix("foo, bar" => Ok(vec![
         FuncAliasColumn::new("foo"),
         FuncAliasColumn::new("bar"),
     ]))]
-    #[test_case("baz int collate lorem, qux int" => Ok(vec![
+    #[test_matrix("baz int collate lorem, qux int" => Ok(vec![
         FuncAliasColumn::new("baz")
             .with_type_name(Int4)
             .with_collation(vec!["lorem".into()]),
@@ -191,14 +188,14 @@ mod tests {
         test_parser!(source, func_alias_column_list)
     }
 
-    #[test_case("foo" => Ok(
+    #[test_matrix("foo" => Ok(
         FuncAliasColumn::new("foo")
     ))]
-    #[test_case("bar int" => Ok(
+    #[test_matrix("bar int" => Ok(
         FuncAliasColumn::new("bar")
             .with_type_name(Int4)
     ))]
-    #[test_case("qux text collate lorem" => Ok(
+    #[test_matrix("qux text collate lorem" => Ok(
         FuncAliasColumn::new("qux")
             .with_type_name(
                 Generic {

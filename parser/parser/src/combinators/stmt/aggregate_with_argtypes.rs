@@ -82,7 +82,7 @@ mod tests {
     use pg_ast::TypeName::Int4;
     use pg_ast::TypeName::Int8;
     use pg_ast::TypeName::Json;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
     #[test]
     fn test_aggregate_with_argtypes_list() {
@@ -113,21 +113,21 @@ mod tests {
         )
     }
 
-    #[test_case("(*)", vec![], vec![])]
-    #[test_case("(int, json)",
+    #[test_matrix("(*)" => Ok((vec![], vec![])))]
+    #[test_matrix("(int, json)" => Ok((
         vec![Int4.into(), Json.into()],
         vec![]
-    )]
-    #[test_case("(order by bigint, int)",
+    )))]
+    #[test_matrix("(order by bigint, int)" => Ok((
         vec![],
         vec![Int8.into(), Int4.into()]
-    )]
-    #[test_case("(int, bigint order by json, bigint)",
+    )))]
+    #[test_matrix("(int, bigint order by json, bigint)" => Ok((
         vec![Int4.into(), Int8.into()],
         vec![Json.into(), Int8.into()]
-    )]
-    fn test_aggr_args(source: &str, args: Vec<FunctionParameter>, order_by: Vec<FunctionParameter>) {
-        test_parser!(source, aggr_args, (args, order_by))
+    )))]
+    fn test_aggr_args(source: &str) -> scan::Result<(Vec<FunctionParameter>, Vec<FunctionParameter>)> {
+        test_parser!(source, aggr_args)
     }
 
     #[test]

@@ -64,19 +64,16 @@ fn json_array_params(ctx: &mut ParserContext) -> scan::Result<Params> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        ExprNode::IntegerConst,
-        JsonFormat,
-        JsonOutput,
-        JsonValueExpr,
-        TypeName,
-    };
-    use test_case::test_case;
+    use pg_ast::ExprNode::IntegerConst;
+    use pg_ast::JsonFormat;
+    use pg_ast::JsonOutput;
+    use pg_ast::JsonValueExpr;
+    use pg_ast::TypeName;
+    use test_case::test_matrix;
 
-    #[test_case("select 1 format json" => ignore["select_stmt not implemented yet"] matches Ok(_))]
-    #[test_case("select 1" => ignore["select_stmt not implemented yet"] matches Ok(_))]
-    #[test_case("1 format json, 2 null on null" => Ok(Values(
+    #[test_matrix("select 1 format json" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_matrix("select 1" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_matrix("1 format json, 2 null on null" => Ok(Values(
         JsonArrayConstructor::new(vec![
             JsonValueExpr::new(IntegerConst(1))
                 .with_format(JsonFormat::text()),
@@ -88,21 +85,21 @@ mod tests {
         test_parser!(source, json_array_params)
     }
 
-    #[test_case("json_array()" => Ok(
+    #[test_matrix("json_array()" => Ok(
         JsonArrayEmpty(None)
     ))]
-    #[test_case("json_array(returning int)" => Ok(
+    #[test_matrix("json_array(returning int)" => Ok(
         JsonArrayEmpty(Some(
             JsonOutput::new(TypeName::Int4)
         ))
     ))]
-    #[test_case("json_array(1)" => Ok(
+    #[test_matrix("json_array(1)" => Ok(
         JsonArrayConstructor::new(vec![
             JsonValueExpr::new(IntegerConst(1))
         ])
         .into()
     ))]
-    #[test_case("json_array(2 returning int)" => Ok(
+    #[test_matrix("json_array(2 returning int)" => Ok(
         JsonArrayConstructor::new(vec![
             JsonValueExpr::new(IntegerConst(2))
         ])
@@ -111,8 +108,8 @@ mod tests {
         )
         .into()
     ))]
-    #[test_case("json_array(select 1)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
-    #[test_case("json_array(select 2 returning int)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_matrix("json_array(select 1)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_matrix("json_array(select 2 returning int)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
     fn test_json_array(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, json_array)
     }

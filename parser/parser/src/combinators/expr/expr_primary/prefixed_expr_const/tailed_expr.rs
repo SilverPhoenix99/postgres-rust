@@ -27,17 +27,15 @@ pub(super) fn tailed_expr(name: Vec<Str>, tail: AttrTail) -> ExprNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        ExprNode::{IntegerConst, StringConst},
-        FuncArgsKind,
-        FuncCallExpr,
-        NullTreatment::Respect,
-        OverClause::WindowName,
-    };
-    use test_case::test_case;
+    use pg_ast::ExprNode::IntegerConst;
+    use pg_ast::ExprNode::StringConst;
+    use pg_ast::FuncArgsKind;
+    use pg_ast::FuncCallExpr;
+    use pg_ast::NullTreatment::Respect;
+    use pg_ast::OverClause::WindowName;
+    use test_case::test_matrix;
 
-    #[test_case(
+    #[test_matrix(
         AttrTail::Typecast {
             value: "123".into(),
             type_modifiers: Some(vec![IntegerConst(234)]),
@@ -52,7 +50,7 @@ mod tests {
             )
         )
     )]
-    #[test_case(
+    #[test_matrix(
         AttrTail::FuncTail {
             args: FuncArgsKind::Wildcard { order_within_group: None },
             filter: Some(IntegerConst(123)),

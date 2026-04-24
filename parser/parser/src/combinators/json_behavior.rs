@@ -105,42 +105,40 @@ fn default_behavior(ctx: &mut ParserContext) -> scan::Result<JsonBehavior> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::ExprNode::{IntegerConst, StringConst};
-    use pg_ast::JsonBehavior;
-    use test_case::test_case;
+    use pg_ast::ExprNode::IntegerConst;
+    use test_case::test_matrix;
 
-    #[test_case("error on error" => Ok(
+    #[test_matrix("error on error" => Ok(
         JsonBehaviorClause::new()
-            .with_on_error(JsonBehavior::Error)
+            .with_on_error(Error)
     ))]
-    #[test_case("false on empty" => Ok(
+    #[test_matrix("false on empty" => Ok(
         JsonBehaviorClause::new()
-            .with_on_empty(JsonBehavior::False)
+            .with_on_empty(False)
     ))]
-    #[test_case("true on empty false on error" => Ok(
+    #[test_matrix("true on empty false on error" => Ok(
         JsonBehaviorClause::new()
-            .with_on_empty(JsonBehavior::True)
-            .with_on_error(JsonBehavior::False)
+            .with_on_empty(True)
+            .with_on_error(False)
     ))]
     fn test_json_behavior_clause(source: &str) -> scan::Result<JsonBehaviorClause> {
         test_parser!(source, json_behavior_clause)
     }
 
-    #[test_case("null on error" => Ok(JsonBehavior::Null))]
+    #[test_matrix("null on error" => Ok(Null))]
     fn test_json_on_error_clause(source: &str) -> scan::Result<JsonBehavior> {
         test_parser!(source, json_on_error_clause)
     }
 
-    #[test_case("error" => Ok(Error))]
-    #[test_case("null" => Ok(Null))]
-    #[test_case("true" => Ok(True))]
-    #[test_case("false" => Ok(False))]
-    #[test_case("unknown" => Ok(Unknown))]
-    #[test_case("empty" => Ok(EmptyArray))]
-    #[test_case("empty array" => Ok(EmptyArray))]
-    #[test_case("empty object" => Ok(EmptyObject))]
-    #[test_case("default 1" => Ok(JsonBehavior::Default(IntegerConst(1))))]
+    #[test_matrix("error" => Ok(Error))]
+    #[test_matrix("null" => Ok(Null))]
+    #[test_matrix("true" => Ok(True))]
+    #[test_matrix("false" => Ok(False))]
+    #[test_matrix("unknown" => Ok(Unknown))]
+    #[test_matrix("empty" => Ok(EmptyArray))]
+    #[test_matrix("empty array" => Ok(EmptyArray))]
+    #[test_matrix("empty object" => Ok(EmptyObject))]
+    #[test_matrix("default 1" => Ok(JsonBehavior::Default(IntegerConst(1))))]
     fn test_json_behavior(source: &str) -> scan::Result<JsonBehavior> {
         test_parser!(source, json_behavior)
     }

@@ -18,10 +18,10 @@ pub(super) fn transaction_chain(ctx: &mut ParserContext) -> scan::Result<bool> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("and no chain" => Ok(false))]
-    #[test_case("and chain" => Ok(true))]
+    #[test_matrix("and no chain" => Ok(false))]
+    #[test_matrix("and chain" => Ok(true))]
     fn test_transaction_chain(source: &str) -> scan::Result<bool> {
         test_parser!(source, transaction_chain)
     }

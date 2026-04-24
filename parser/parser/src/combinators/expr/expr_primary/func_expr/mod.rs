@@ -52,24 +52,21 @@ fn json_agg_func(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 mod tests {
     use super::*;
     use crate::test_parser;
+    use pg_ast::ExprNode::{IntegerConst, StringConst};
+    use pg_ast::JsonArrayAgg;
+    use pg_ast::JsonKeyValue;
+    use pg_ast::JsonObjectAgg;
+    use pg_ast::JsonValueExpr;
     use pg_parser_core::scan;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::{IntegerConst, StringConst},
-        pg_ast::JsonArrayAgg,
-        pg_ast::JsonKeyValue,
-        pg_ast::JsonObjectAgg,
-        pg_ast::JsonValueExpr,
-    };
+    use test_case::test_matrix;
 
-    #[test_case("json_arrayagg(1)" => Ok(
+    #[test_matrix("json_arrayagg(1)" => Ok(
         JsonArrayAggExpr::new(
             JsonArrayAgg::new(IntegerConst(1))
                 .with_absent_on_null(true)
         ).into()
     ))]
-    #[test_case("json_objectagg('foo': 1) where 2 over foo" => Ok(
+    #[test_matrix("json_objectagg('foo': 1) where 2 over foo" => Ok(
         JsonObjectAggExpr::new(
             JsonObjectAgg::new(
                 JsonKeyValue::new(
@@ -80,7 +77,7 @@ mod tests {
         ).into()
     ))]
     // These only quickly check that statements aren't missing:
-    #[test_case("collation for (5)" => matches Ok(_))]
+    #[test_matrix("collation for (5)" => matches Ok(_))]
     fn test_func_expr(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, func_expr)
     }

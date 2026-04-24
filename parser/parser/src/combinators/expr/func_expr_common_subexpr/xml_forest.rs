@@ -16,14 +16,11 @@ pub(super) fn xml_forest(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::StringConst,
-        pg_ast::NamedValue,
-    };
+    use pg_ast::ExprNode::StringConst;
+    use pg_ast::NamedValue;
+    use test_case::test_matrix;
 
-    #[test_case("xmlforest('foo', 'bar' as baz)" => Ok(
+    #[test_matrix("xmlforest('foo', 'bar' as baz)" => Ok(
         XmlForest(vec![
             NamedValue::new(StringConst("foo".into())),
             NamedValue::new(StringConst("bar".into())).with_name("baz"),

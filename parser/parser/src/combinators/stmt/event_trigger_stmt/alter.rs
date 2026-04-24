@@ -71,36 +71,33 @@ fn enable_trigger(ctx: &mut ParserContext) -> scan::Result<EventTriggerState> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case(
-        "event trigger trigger_name enable",
+    #[test_matrix("event trigger trigger_name enable" => Ok(
         AlterEventTrigStmt::new("trigger_name", FiresOnOrigin).into()
-    )]
-    #[test_case(
-        "event trigger trigger_name owner to public",
+    ))]
+    #[test_matrix("event trigger trigger_name owner to public" => Ok(
         AlterOwnerStmt::new(
             AlterOwnerTarget::EventTrigger("trigger_name".into()),
             RoleSpec::Public,
         ).into()
-    )]
-    #[test_case(
-        "event trigger trigger_name rename to another_trigger",
+    ))]
+    #[test_matrix("event trigger trigger_name rename to another_trigger" => Ok(
         RenameStmt::new(
             RenameTarget::EventTrigger("trigger_name".into()),
             "another_trigger"
         ).into()
-    )]
-    fn test_alter_enable(source: &str, expected: RawStmt) {
-        test_parser!(source, alter_event_trigger_stmt, expected)
+    ))]
+    fn test_alter_enable(source: &str) -> scan::Result<RawStmt> {
+        test_parser!(source, alter_event_trigger_stmt)
     }
 
-    #[test_case("disable", Disabled)]
-    #[test_case("enable", FiresOnOrigin)]
-    #[test_case("enable replica", FiresOnReplica)]
-    #[test_case("enable always", FiresAlways)]
-    fn test_enable_trigger(source: &str, expected: EventTriggerState) {
-        test_parser!(source, enable_trigger, expected)
+    #[test_matrix("disable" => Ok(Disabled))]
+    #[test_matrix("enable" => Ok(FiresOnOrigin))]
+    #[test_matrix("enable replica" => Ok(FiresOnReplica))]
+    #[test_matrix("enable always" => Ok(FiresAlways))]
+    fn test_enable_trigger(source: &str) -> scan::Result<EventTriggerState> {
+        test_parser!(source, enable_trigger)
     }
 }
 

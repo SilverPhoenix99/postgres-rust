@@ -47,23 +47,20 @@ fn expr_or_select(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        ExprNode::IntegerConst,
-        Indirection::Property,
-    };
-    use test_case::test_case;
+    use pg_ast::ExprNode::IntegerConst;
+    use pg_ast::Indirection::Property;
+    use test_case::test_matrix;
 
-    #[test_case("(select 1)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
-    #[test_case("(select 1).foo" => ignore["select_stmt not implemented yet"] matches Ok(_))]
-    #[test_case("(1)" => Ok(IntegerConst(1)))]
-    #[test_case("(1).foo" => Ok(
+    #[test_matrix("(select 1)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_matrix("(select 1).foo" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_matrix("(1)" => Ok(IntegerConst(1)))]
+    #[test_matrix("(1).foo" => Ok(
         IndirectionExpr::new(
             IntegerConst(1),
             vec![Property("foo".into())]
         ).into()
     ))]
-    #[test_case("(1, 2)" => Ok(ExprNode::Row(Some(vec![
+    #[test_matrix("(1, 2)" => Ok(ExprNode::Row(Some(vec![
         IntegerConst(1),
         IntegerConst(2)
     ]))))]
@@ -71,9 +68,9 @@ mod tests {
         test_parser!(source, expr_primary_paren)
     }
 
-    #[test_case("select 1" => ignore["select_stmt not implemented yet"] matches Ok(_))]
-    #[test_case("1" => Ok(IntegerConst(1)))]
-    #[test_case("1, 2" => Ok(ExprNode::Row(Some(vec![
+    #[test_matrix("select 1" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_matrix("1" => Ok(IntegerConst(1)))]
+    #[test_matrix("1, 2" => Ok(ExprNode::Row(Some(vec![
         IntegerConst(1),
         IntegerConst(2)
     ]))))]

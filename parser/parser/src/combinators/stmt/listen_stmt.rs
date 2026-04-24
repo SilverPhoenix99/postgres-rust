@@ -15,12 +15,12 @@ pub(super) fn listen_stmt(ctx: &mut ParserContext) -> scan::Result<Str> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("listen abort", "abort".into())]
-    #[test_case("listen ident", "ident".into())]
-    fn test_listen_stmt(source: &str, expected: Str) {
-        test_parser!(source, listen_stmt, expected)
+    #[test_matrix("listen abort" => Ok("abort".into()))]
+    #[test_matrix("listen ident" => Ok("ident".into()))]
+    fn test_listen_stmt(source: &str) -> scan::Result<Str> {
+        test_parser!(source, listen_stmt)
     }
 }
 

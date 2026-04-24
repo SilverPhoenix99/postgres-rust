@@ -26,14 +26,14 @@ pub(super) fn time(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("time"                      => Ok(Time { precision: None }))]
-    #[test_case("time(5)"                   => Ok(Time { precision: Some(5) }))]
-    #[test_case("time without time zone"    => Ok(Time { precision: None }))]
-    #[test_case("time(7) without time zone" => Ok(Time { precision: Some(7) }))]
-    #[test_case("time with time zone"       => Ok(TimeTz { precision: None }))]
-    #[test_case("time(9) with time zone"    => Ok(TimeTz { precision: Some(9) }))]
+    #[test_matrix("time"                      => Ok(Time { precision: None }))]
+    #[test_matrix("time(5)"                   => Ok(Time { precision: Some(5) }))]
+    #[test_matrix("time without time zone"    => Ok(Time { precision: None }))]
+    #[test_matrix("time(7) without time zone" => Ok(Time { precision: Some(7) }))]
+    #[test_matrix("time with time zone"       => Ok(TimeTz { precision: None }))]
+    #[test_matrix("time(9) with time zone"    => Ok(TimeTz { precision: Some(9) }))]
     fn test_time(source: &str) -> scan::Result<TypeName> {
         test_parser!(source, time)
     }

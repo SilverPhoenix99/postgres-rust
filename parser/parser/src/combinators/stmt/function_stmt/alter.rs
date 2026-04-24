@@ -165,17 +165,13 @@ fn alterfunc_opt_list(ctx: &mut ParserContext) -> scan::Result<Vec<AlterFunction
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        DefaultableValue,
-        FunctionWithArgs,
-        RoleSpec::CurrentUser,
-        SetRestMore::ConfigurationParameter,
-    };
-    use test_case::test_case;
+    use pg_ast::DefaultableValue;
+    use pg_ast::FunctionWithArgs;
+    use pg_ast::RoleSpec::CurrentUser;
+    use pg_ast::SetRestMore::ConfigurationParameter;
+    use test_case::test_matrix;
 
-    #[test_case(
-        "function my_func() depends on extension my_extension",
+    #[test_matrix("function my_func() depends on extension my_extension" => Ok(
         AlterObjectDependsStmt::new(
             AlterObjectDependsTarget::Function(
                 FunctionWithArgs::new(
@@ -186,9 +182,8 @@ mod tests {
             "my_extension",
             AddDrop::Add
         ).into()
-    )]
-    #[test_case(
-        "procedure my_func() no depends on extension my_extension",
+    ))]
+    #[test_matrix("procedure my_func() no depends on extension my_extension" => Ok(
         AlterObjectDependsStmt::new(
             AlterObjectDependsTarget::Procedure(
                 FunctionWithArgs::new(
@@ -199,9 +194,8 @@ mod tests {
             "my_extension",
             AddDrop::Drop
         ).into()
-    )]
-    #[test_case(
-        "routine my_func owner to current_user",
+    ))]
+    #[test_matrix("routine my_func owner to current_user" => Ok(
         AlterOwnerStmt::new(
             AlterOwnerTarget::Routine(
                 FunctionWithArgs::new(
@@ -211,9 +205,8 @@ mod tests {
             ),
             CurrentUser
         ).into()
-    )]
-    #[test_case(
-        "function my_func rename to new_name",
+    ))]
+    #[test_matrix("function my_func rename to new_name" => Ok(
         RenameStmt::new(
             RenameTarget::Function(
                 FunctionWithArgs::new(
@@ -223,9 +216,8 @@ mod tests {
             ),
             "new_name"
         ).into()
-    )]
-    #[test_case(
-        "procedure my_func set schema new_schema",
+    ))]
+    #[test_matrix("procedure my_func set schema new_schema" => Ok(
         AlterObjectSchemaStmt::new(
             AlterObjectSchemaTarget::Procedure(
                 FunctionWithArgs::new(
@@ -235,9 +227,8 @@ mod tests {
             ),
             "new_schema"
         ).into()
-    )]
-    #[test_case(
-        "routine my_func set schema 'new_schema' restrict",
+    ))]
+    #[test_matrix("routine my_func set schema 'new_schema' restrict" => Ok(
         AlterObjectSchemaStmt::new(
             AlterObjectSchemaTarget::Routine(
                 FunctionWithArgs::new(
@@ -247,9 +238,8 @@ mod tests {
             ),
             "new_schema"
         ).into()
-    )]
-    #[test_case(
-        "function my_func set schema 'new_schema'",
+    ))]
+    #[test_matrix("function my_func set schema 'new_schema'" => Ok(
         AlterObjectSchemaStmt::new(
             AlterObjectSchemaTarget::Function(
                 FunctionWithArgs::new(
@@ -259,9 +249,8 @@ mod tests {
             ),
             "new_schema"
         ).into()
-    )]
-    #[test_case(
-        "procedure my_func leakproof cost 100 restrict",
+    ))]
+    #[test_matrix("procedure my_func leakproof cost 100 restrict" => Ok(
         AlterFunctionStmt::new(
             AlterFunctionKind::Procedure,
             FunctionWithArgs::new(
@@ -273,9 +262,8 @@ mod tests {
                 AlterFunctionOption::Cost(100.into()),
             ]
         ).into()
-    )]
-    #[test_case(
-        "routine my_func cost 100 not leakproof set foo='bar'",
+    ))]
+    #[test_matrix("routine my_func cost 100 not leakproof set foo='bar'" => Ok(
         AlterFunctionStmt::new(
             AlterFunctionKind::Routine,
             FunctionWithArgs::new(
@@ -291,16 +279,16 @@ mod tests {
                 })
             ]
         ).into()
-    )]
-    fn test_alter_function_stmt(source: &str, expected: RawStmt) {
-        test_parser!(source, alter_function_stmt, expected);
+    ))]
+    fn test_alter_function_stmt(source: &str) -> scan::Result<RawStmt> {
+        test_parser!(source, alter_function_stmt)
     }
 
-    #[test_case("function", AlterFunctionKind::Function)]
-    #[test_case("procedure", AlterFunctionKind::Procedure)]
-    #[test_case("routine", AlterFunctionKind::Routine)]
-    fn test_func_type(source: &str, expected: AlterFunctionKind) {
-        test_parser!(source, func_type, expected);
+    #[test_matrix("function" => Ok(AlterFunctionKind::Function))]
+    #[test_matrix("procedure" => Ok(AlterFunctionKind::Procedure))]
+    #[test_matrix("routine" => Ok(AlterFunctionKind::Routine))]
+    fn test_func_type(source: &str) -> scan::Result<AlterFunctionKind> {
+        test_parser!(source, func_type)
     }
 
     #[test]

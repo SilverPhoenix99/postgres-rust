@@ -246,18 +246,13 @@ fn json_table_column_path_clause(ctx: &mut ParserContext) -> scan::Result<JsonTa
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
+    use pg_ast::JsonValueExpr;
     use pg_ast::TypeName::Int4;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::Alias,
-        pg_ast::JsonValueExpr,
-        pg_elog::Error::Parser,
-        scan::Error::ScanErr,
-    };
+    use pg_elog::Error::Parser;
+    use scan::Error::ScanErr;
+    use test_case::test_matrix;
 
-    #[test_case(
+    #[test_matrix(
         "json_table(\
             'doc', \
             'path' \
@@ -276,7 +271,7 @@ mod tests {
             .with_alias("j")
         )
     )]
-    #[test_case(
+    #[test_matrix(
         "json_table(\
             'umpus' format json, \
             'wawas' as foo \
@@ -306,27 +301,27 @@ mod tests {
         test_parser!(source, json_table)
     }
 
-    #[test_case("'foo'" => Ok(JsonTablePathSpec::new("foo")))]
-    #[test_case("'foo' as bar" => Ok(
+    #[test_matrix("'foo'" => Ok(JsonTablePathSpec::new("foo")))]
+    #[test_matrix("'foo' as bar" => Ok(
         JsonTablePathSpec::new("foo")
             .with_name("bar")
     ))]
-    #[test_case("1" => matches Err(ScanErr(
+    #[test_matrix("1" => matches Err(ScanErr(
         Located(Parser(NonStringJsonTablePathSpec), _)
     )))]
     fn test_path_spec(source: &str) -> scan::Result<JsonTablePathSpec> {
         test_parser!(source, path_spec)
     }
 
-    #[test_case("foo for ordinality" => Ok(
+    #[test_matrix("foo for ordinality" => Ok(
         ForOrdinality {
             column_name: "foo".into(),
         }
     ))]
-    #[test_case("bar int exists" => Ok(
+    #[test_matrix("bar int exists" => Ok(
         JsonTableExistsColumn::new("bar", Int4).into()
     ))]
-    #[test_case(
+    #[test_matrix(
         "baz int exists \
             path 'baz/path' \
             false on error"
@@ -337,10 +332,10 @@ mod tests {
                 .into()
         )
     )]
-    #[test_case("qux int without wrapper" => Ok(
+    #[test_matrix("qux int without wrapper" => Ok(
         JsonTableRegularColumn::new("qux", Int4, JsonWrapperBehavior::Without).into()
     ))]
-    #[test_case(
+    #[test_matrix(
         "yumyum int \
             format json \
             path 'yumyum/path' \
@@ -359,7 +354,7 @@ mod tests {
                 .into()
         )
     )]
-    #[test_case(
+    #[test_matrix(
         "nested 'narslog/nested' \
             columns(\
                 umpus int exists\
@@ -374,7 +369,7 @@ mod tests {
                 .into()
         )
     )]
-    #[test_case(
+    #[test_matrix(
         "nested \
             path 'wawas/nested' as lorem \
             columns(\
@@ -395,7 +390,7 @@ mod tests {
         test_parser!(source, json_table_column_definition)
     }
 
-    #[test_case("path 'foo'" => Ok(JsonTablePathSpec::new("foo")))]
+    #[test_matrix("path 'foo'" => Ok(JsonTablePathSpec::new("foo")))]
     fn test_json_table_column_path_clause(source: &str) -> scan::Result<JsonTablePathSpec> {
         test_parser!(source, json_table_column_path_clause)
     }

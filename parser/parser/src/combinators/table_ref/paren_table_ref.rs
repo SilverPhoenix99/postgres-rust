@@ -37,25 +37,24 @@ fn table_ref_paren(ctx: &mut ParserContext) -> scan::Result<TableRef> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::RelationTableRef;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("foo" => Ok(
+    #[test_matrix("foo" => Ok(
         RelationTableRef::new("foo").into()
     ))]
-    #[test_case("select 1" => ignore["select_stmt not implemented yet"] matches Ok(_))]
-    #[test_case("table" => ignore["select_stmt not implemented yet"] matches Ok(_))]
-    #[test_case("values (1)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
-    #[test_case("with (1) as t select * from t" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_matrix("select 1" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_matrix("table" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_matrix("values (1)" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_matrix("with (1) as t select * from t" => ignore["select_stmt not implemented yet"] matches Ok(_))]
     fn test_table_ref_paren(source: &str) -> scan::Result<TableRef> {
         test_parser!(source, table_ref_paren)
     }
 
-    #[test_case("(foo)" => Ok(
+    #[test_matrix("(foo)" => Ok(
         RelationTableRef::new("foo").into()
     ))]
-    #[test_case("(bar) as qux" => Ok(
+    #[test_matrix("(bar) as qux" => Ok(
         ParenTableRef::new(
             RelationTableRef::new("bar"),
             "qux"

@@ -21,10 +21,10 @@ pub(super) fn unlisten_stmt(ctx: &mut ParserContext) -> scan::Result<OneOrAll<St
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("unlisten *" => Ok(OneOrAll::All))]
-    #[test_case("unlisten test_name" => Ok(OneOrAll::One("test_name".into())))]
+    #[test_matrix("unlisten *" => Ok(OneOrAll::All))]
+    #[test_matrix("unlisten test_name" => Ok(OneOrAll::One("test_name".into())))]
     fn test_unlisten(source: &str) -> scan::Result<OneOrAll<Str>> {
         test_parser!(source, unlisten_stmt)
     }

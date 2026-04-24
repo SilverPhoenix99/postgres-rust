@@ -13,18 +13,18 @@ pub(in crate::combinators) fn string(ctx: &mut ParserContext) -> scan::Result<Bo
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("$dollar$a $ string$dollar$" => Ok("a $ string".into()))]
-    #[test_case("'basic string'" => Ok("basic string".into()))]
-    #[test_case("'basic ''string'''\n' concatenation'" => Ok("basic 'string' concatenation".into()))]
-    #[test_case(r"e'\u0061n extended string'" => Ok("an extended string".into()))]
-    #[test_case("e'extended string'\n' concatenation'" => Ok("extended string concatenation".into()))]
-    #[test_case(r"u&'\0061n unicode string'" => Ok("an unicode string".into()))]
-    #[test_case("u&'!0061n escaped unicode string!0021' UESCAPE '!'" => Ok("an escaped unicode string!".into()))]
-    #[test_case("u&'unicode string'\n' concatenation'" => Ok("unicode string concatenation".into()))]
-    #[test_case("u&'*002a extended unicode *002a' UESCAPE e'*'" => Ok("* extended unicode *".into()))]
-    #[test_case("u&'unicode esc!0061pe concatenation' UESCAPE ''\n''\n'!'" => Ok("unicode escape concatenation".into()))]
+    #[test_matrix("$dollar$a $ string$dollar$" => Ok("a $ string".into()))]
+    #[test_matrix("'basic string'" => Ok("basic string".into()))]
+    #[test_matrix("'basic ''string'''\n' concatenation'" => Ok("basic 'string' concatenation".into()))]
+    #[test_matrix(r"e'\u0061n extended string'" => Ok("an extended string".into()))]
+    #[test_matrix("e'extended string'\n' concatenation'" => Ok("extended string concatenation".into()))]
+    #[test_matrix(r"u&'\0061n unicode string'" => Ok("an unicode string".into()))]
+    #[test_matrix("u&'!0061n escaped unicode string!0021' UESCAPE '!'" => Ok("an escaped unicode string!".into()))]
+    #[test_matrix("u&'unicode string'\n' concatenation'" => Ok("unicode string concatenation".into()))]
+    #[test_matrix("u&'*002a extended unicode *002a' UESCAPE e'*'" => Ok("* extended unicode *".into()))]
+    #[test_matrix("u&'unicode esc!0061pe concatenation' UESCAPE ''\n''\n'!'" => Ok("unicode escape concatenation".into()))]
     fn test_string(source: &str) -> scan::Result<Box<str>> {
         test_parser!(source, string)
     }

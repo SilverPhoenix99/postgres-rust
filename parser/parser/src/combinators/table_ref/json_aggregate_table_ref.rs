@@ -21,33 +21,27 @@ pub(super) fn json_aggregate_table_ref(ctx: &mut ParserContext) -> scan::Result<
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::{
-            IntegerConst,
-            StringConst,
-        },
-        pg_ast::JsonArrayAgg,
-        pg_ast::JsonKeyValue,
-        pg_ast::JsonObjectAgg,
-        pg_ast::OneOrBoth,
-    };
+    use pg_ast::ExprNode::{IntegerConst, StringConst};
+    use pg_ast::JsonArrayAgg;
+    use pg_ast::JsonKeyValue;
+    use pg_ast::JsonObjectAgg;
+    use pg_ast::OneOrBoth;
+    use test_case::test_matrix;
 
-    #[test_case("json_arrayagg(1)" => Ok(
+    #[test_matrix("json_arrayagg(1)" => Ok(
         FunctionTableRef::new(
             JsonArrayAgg::new(IntegerConst(1))
                 .with_absent_on_null(true)
         )
     ))]
-    #[test_case("json_arrayagg(2) with ordinality" => Ok(
+    #[test_matrix("json_arrayagg(2) with ordinality" => Ok(
         FunctionTableRef::new(
             JsonArrayAgg::new(IntegerConst(2))
                 .with_absent_on_null(true)
         )
         .with_ordinality(true)
     ))]
-    #[test_case("json_objectagg('foo': 3) as a" => Ok(
+    #[test_matrix("json_objectagg('foo': 3) as a" => Ok(
         FunctionTableRef::new(
             JsonObjectAgg::new(
                 JsonKeyValue::new(
@@ -58,7 +52,7 @@ mod tests {
         )
         .with_alias(OneOrBoth::Left("a".into()))
     ))]
-    #[test_case("json_objectagg('bar': 4) with ordinality as a" => Ok(
+    #[test_matrix("json_objectagg('bar': 4) with ordinality as a" => Ok(
         FunctionTableRef::new(
             JsonObjectAgg::new(
                 JsonKeyValue::new(

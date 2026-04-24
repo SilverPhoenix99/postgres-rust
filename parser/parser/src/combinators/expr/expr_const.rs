@@ -140,45 +140,42 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_ast::ExprNode::*;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::IntervalRange::YearToMonth,
-        pg_ast::TypeName::*,
-        pg_basics::NumberRadix::Decimal,
-    };
+    use pg_ast::IntervalRange::YearToMonth;
+    use pg_ast::TypeName::*;
+    use pg_basics::NumberRadix::Decimal;
+    use test_case::test_matrix;
 
-    #[test_case("123", IntegerConst(123))]
-    #[test_case("123.45", NumericConst { radix: Decimal, value: "123.45".into(), negative: false })]
-    #[test_case("true", BooleanConst(true))]
-    #[test_case("false", BooleanConst(false))]
-    #[test_case("null", NullConst)]
-    #[test_case("b'0101'", BinaryStringConst("0101".into()))]
-    #[test_case("x'19af'", HexStringConst("19af".into()))]
-    #[test_case("'string literal'", StringConst("string literal".into()))]
-    #[test_case("double precision '1.23'", TypecastExpr::new(StringConst("1.23".into()), Float8).into())]
+    #[test_matrix("123", IntegerConst(123))]
+    #[test_matrix("123.45", NumericConst { radix: Decimal, value: "123.45".into(), negative: false })]
+    #[test_matrix("true", BooleanConst(true))]
+    #[test_matrix("false", BooleanConst(false))]
+    #[test_matrix("null", NullConst)]
+    #[test_matrix("b'0101'", BinaryStringConst("0101".into()))]
+    #[test_matrix("x'19af'", HexStringConst("19af".into()))]
+    #[test_matrix("'string literal'", StringConst("string literal".into()))]
+    #[test_matrix("double precision '1.23'", TypecastExpr::new(StringConst("1.23".into()), Float8).into())]
     fn test_expr_const(source: &str, expected: ExprNode) {
         test_parser!(source, expr_const, expected)
     }
 
     // NB: Methods using `stream.next()` cannot be tested directly with `test_parser!`.
     // NB2: A lot of cases are already tested in `simple_typename()`.
-    #[test_case("json '{}'"                        => Ok(TypecastExpr::new(StringConst("{}".into()), Json)))]
-    #[test_case("double precision '1.23'"          => Ok(TypecastExpr::new(StringConst("1.23".into()), Float8)))]
-    #[test_case("boolean 'true'"                   => Ok(TypecastExpr::new(StringConst("true".into()), Bool)))]
-    #[test_case("smallint '11'"                    => Ok(TypecastExpr::new(StringConst("11".into()), Int2)))]
-    #[test_case("int '42'"                         => Ok(TypecastExpr::new(StringConst("42".into()), Int4)))]
-    #[test_case("integer '420'"                    => Ok(TypecastExpr::new(StringConst("420".into()), Int4)))]
-    #[test_case("bigint '1'"                       => Ok(TypecastExpr::new(StringConst("1".into()), Int8)))]
-    #[test_case("real '42.0'"                      => Ok(TypecastExpr::new(StringConst("42.0".into()), Float4)))]
-    #[test_case("numeric '123.45'"                 => Ok(TypecastExpr::new(StringConst("123.45".into()), Numeric(None))))]
-    #[test_case("float(25) '123.45'"               => Ok(TypecastExpr::new(StringConst("123.45".into()), Float8)))]
-    #[test_case("bit varying(6) '7'"               => Ok(TypecastExpr::new(StringConst("7".into()), Varbit(Some(vec![IntegerConst(6)])))))]
-    #[test_case("character varying 'foo'"          => Ok(TypecastExpr::new(StringConst("foo".into()), Varchar { max_length: None })))]
-    #[test_case("timestamp with time zone 'foo'"   => Ok(TypecastExpr::new(StringConst("foo".into()), TimestampTz { precision: None })))]
-    #[test_case("interval '1 day'"                 => Ok(TypecastExpr::new(StringConst("1 day".into()), TypeName::Interval(Full { precision: None }))))]
-    #[test_case("interval(3) '1 day'"              => Ok(TypecastExpr::new(StringConst("1 day".into()), TypeName::Interval(Full { precision: Some(3) }))))]
-    #[test_case("interval '1970-01' year to month" => Ok(TypecastExpr::new(StringConst("1970-01".into()), TypeName::Interval(YearToMonth))))]
+    #[test_matrix("json '{}'"                        => Ok(TypecastExpr::new(StringConst("{}".into()), Json)))]
+    #[test_matrix("double precision '1.23'"          => Ok(TypecastExpr::new(StringConst("1.23".into()), Float8)))]
+    #[test_matrix("boolean 'true'"                   => Ok(TypecastExpr::new(StringConst("true".into()), Bool)))]
+    #[test_matrix("smallint '11'"                    => Ok(TypecastExpr::new(StringConst("11".into()), Int2)))]
+    #[test_matrix("int '42'"                         => Ok(TypecastExpr::new(StringConst("42".into()), Int4)))]
+    #[test_matrix("integer '420'"                    => Ok(TypecastExpr::new(StringConst("420".into()), Int4)))]
+    #[test_matrix("bigint '1'"                       => Ok(TypecastExpr::new(StringConst("1".into()), Int8)))]
+    #[test_matrix("real '42.0'"                      => Ok(TypecastExpr::new(StringConst("42.0".into()), Float4)))]
+    #[test_matrix("numeric '123.45'"                 => Ok(TypecastExpr::new(StringConst("123.45".into()), Numeric(None))))]
+    #[test_matrix("float(25) '123.45'"               => Ok(TypecastExpr::new(StringConst("123.45".into()), Float8)))]
+    #[test_matrix("bit varying(6) '7'"               => Ok(TypecastExpr::new(StringConst("7".into()), Varbit(Some(vec![IntegerConst(6)])))))]
+    #[test_matrix("character varying 'foo'"          => Ok(TypecastExpr::new(StringConst("foo".into()), Varchar { max_length: None })))]
+    #[test_matrix("timestamp with time zone 'foo'"   => Ok(TypecastExpr::new(StringConst("foo".into()), TimestampTz { precision: None })))]
+    #[test_matrix("interval '1 day'"                 => Ok(TypecastExpr::new(StringConst("1 day".into()), TypeName::Interval(Full { precision: None }))))]
+    #[test_matrix("interval(3) '1 day'"              => Ok(TypecastExpr::new(StringConst("1 day".into()), TypeName::Interval(Full { precision: Some(3) }))))]
+    #[test_matrix("interval '1970-01' year to month" => Ok(TypecastExpr::new(StringConst("1970-01".into()), TypeName::Interval(YearToMonth))))]
     fn test_const_typename(source: &str) -> scan::Result<TypecastExpr> {
         let mut ctx = ParserContext::new(source);
         const_typename(&mut ctx)

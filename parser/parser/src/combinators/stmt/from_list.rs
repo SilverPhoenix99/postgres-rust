@@ -12,9 +12,9 @@ pub(super) fn from_list(ctx: &mut ParserContext) -> scan::Result<Vec<TableRef>> 
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("foo, bar join qux using(baz)" => matches Ok(_))]
+    #[test_matrix("foo, bar join qux using(baz)" => matches Ok(_))]
     fn test_from_list(source: &str) -> scan::Result<Vec<TableRef>> {
         test_parser!(source, from_list)
     }

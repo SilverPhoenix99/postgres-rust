@@ -139,23 +139,23 @@ fn interval_second(ctx: &mut ParserContext) -> scan::Result<Option<i32>> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("year",              IntervalRange::Year)]
-    #[test_case("year to month",     IntervalRange::YearToMonth)]
-    #[test_case("month",             IntervalRange::Month)]
-    #[test_case("day",               IntervalRange::Day)]
-    #[test_case("day to hour",       IntervalRange::DayToHour)]
-    #[test_case("day to second",     IntervalRange::DayToSecond { precision: None })]
-    #[test_case("day to second(7)",  IntervalRange::DayToSecond { precision: Some(7) })]
-    #[test_case("hour",              IntervalRange::Hour)]
-    #[test_case("hour to minute",    IntervalRange::HourToMinute)]
-    #[test_case("hour to second",    IntervalRange::HourToSecond { precision: None })]
-    #[test_case("hour to second(5)", IntervalRange::HourToSecond { precision: Some(5) })]
-    #[test_case("second",            IntervalRange::Second { precision: None })]
-    #[test_case("second(3)",         IntervalRange::Second { precision: Some(3) })]
-    fn test_interval(source: &str, expected: IntervalRange) {
-        test_parser!(source, interval, expected)
+    #[test_matrix("year"              => Ok(Year))]
+    #[test_matrix("year to month"     => Ok(YearToMonth))]
+    #[test_matrix("month"             => Ok(Month))]
+    #[test_matrix("day"               => Ok(Day))]
+    #[test_matrix("day to hour"       => Ok(DayToHour))]
+    #[test_matrix("day to second"     => Ok(DayToSecond { precision: None }))]
+    #[test_matrix("day to second(7)"  => Ok(DayToSecond { precision: Some(7) }))]
+    #[test_matrix("hour"              => Ok(Hour))]
+    #[test_matrix("hour to minute"    => Ok(HourToMinute))]
+    #[test_matrix("hour to second"    => Ok(HourToSecond { precision: None }))]
+    #[test_matrix("hour to second(5)" => Ok(HourToSecond { precision: Some(5) }))]
+    #[test_matrix("second"            => Ok(Second { precision: None }))]
+    #[test_matrix("second(3)"         => Ok(Second { precision: Some(3) }))]
+    fn test_interval(source: &str) -> scan::Result<IntervalRange> {
+        test_parser!(source, interval)
     }
 }
 

@@ -11,10 +11,10 @@ pub(super) fn path_term(ctx: &mut ParserContext) -> scan::Result<Vec<GraphElemen
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("->" => matches Ok(_); "one")]
-    #[test_case("-[]-> <- -[]- -" => matches Ok(_); "four")]
+    #[test_matrix("->" => matches Ok(_); "one")]
+    #[test_matrix("-[]-> <- -[]- -" => matches Ok(_); "four")]
     fn test_path_term(source: &str) -> scan::Result<Vec<GraphElementPatternKind>> {
         test_parser!(source, path_term)
     }

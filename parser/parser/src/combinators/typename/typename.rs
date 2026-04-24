@@ -23,30 +23,30 @@ pub(in crate::combinators) fn typename(ctx: &mut ParserContext) -> scan::Result<
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{SetOf, TypeName};
-    use test_case::test_case;
+    use pg_ast::SetOf;
+    use pg_ast::TypeName;
+    use test_case::test_matrix;
 
-    #[test_case("int" => Ok(Type::from(TypeName::Int4)))]
-    #[test_case("int[]" => Ok(
+    #[test_matrix("int" => Ok(Type::from(TypeName::Int4)))]
+    #[test_matrix("int[]" => Ok(
         Type::from(TypeName::Int4)
             .with_array_bounds(vec![None])
     ))]
-    #[test_case("setof int" => Ok(
+    #[test_matrix("setof int" => Ok(
         Type::from(TypeName::Int4)
             .with_mult(SetOf::Table)
     ))]
-    #[test_case("setof int[]" => Ok(
+    #[test_matrix("setof int[]" => Ok(
         Type::from(TypeName::Int4)
             .with_array_bounds(vec![None])
             .with_mult(SetOf::Table)
     ))]
-    #[test_case("setof double precision[10][]" => Ok(
+    #[test_matrix("setof double precision[10][]" => Ok(
         Type::from(TypeName::Float8)
             .with_array_bounds(vec![Some(10), None])
             .with_mult(SetOf::Table)
     ))]
-    #[test_case("setof some_.qualified_name" => Ok(
+    #[test_matrix("setof some_.qualified_name" => Ok(
         Type::from(
             TypeName::Generic {
                 name: vec!["some_".into(), "qualified_name".into()],

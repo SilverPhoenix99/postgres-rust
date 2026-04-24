@@ -91,18 +91,17 @@ fn xml_root_standalone(ctx: &mut ParserContext) -> scan::Result<XmlStandalone> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::{NullConst, StringConst};
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("xmlroot('foo', version '1.0', standalone yes)" => Ok(
+    #[test_matrix("xmlroot('foo', version '1.0', standalone yes)" => Ok(
         XmlRoot::new(
             StringConst("foo".into()),
             StringConst("1.0".into())
         )
-            .with_standalone(XmlStandalone::Yes)
+        .with_standalone(Yes)
     ))]
-    #[test_case("xmlroot('foo', version no value)" => Ok(
+    #[test_matrix("xmlroot('foo', version no value)" => Ok(
         XmlRoot::new(
             StringConst("foo".into()),
             NullConst
@@ -112,15 +111,15 @@ mod tests {
         test_parser!(source, xml_root)
     }
 
-    #[test_case("version '1.0'" => Ok(StringConst("1.0".into())))]
-    #[test_case("version no value" => Ok(NullConst))]
+    #[test_matrix("version '1.0'" => Ok(StringConst("1.0".into())))]
+    #[test_matrix("version no value" => Ok(NullConst))]
     fn test_xml_root_version(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, xml_root_version)
     }
 
-    #[test_case("standalone yes" => Ok(XmlStandalone::Yes))]
-    #[test_case("standalone no" => Ok(XmlStandalone::No))]
-    #[test_case("standalone no value" => Ok(XmlStandalone::NoValue))]
+    #[test_matrix("standalone yes" => Ok(Yes))]
+    #[test_matrix("standalone no" => Ok(No))]
+    #[test_matrix("standalone no value" => Ok(NoValue))]
     fn test_xml_root_standalone(source: &str) -> scan::Result<XmlStandalone> {
         test_parser!(source, xml_root_standalone)
     }

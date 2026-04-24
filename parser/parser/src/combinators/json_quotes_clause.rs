@@ -21,12 +21,12 @@ pub(super) fn json_quotes_clause(ctx: &mut ParserContext) -> scan::Result<JsonQu
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("keep quotes" => Ok(JsonQuotes::Keep))]
-    #[test_case("keep quotes on scalar string" => Ok(JsonQuotes::Keep))]
-    #[test_case("omit quotes" => Ok(JsonQuotes::Omit))]
-    #[test_case("omit quotes on scalar string" => Ok(JsonQuotes::Omit))]
+    #[test_matrix("keep quotes" => Ok(Keep))]
+    #[test_matrix("keep quotes on scalar string" => Ok(Keep))]
+    #[test_matrix("omit quotes" => Ok(Omit))]
+    #[test_matrix("omit quotes on scalar string" => Ok(Omit))]
     fn test_json_quotes_clause(source: &str) -> scan::Result<JsonQuotes> {
         test_parser!(source, json_quotes_clause)
     }

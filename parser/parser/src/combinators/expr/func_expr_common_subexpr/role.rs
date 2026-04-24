@@ -21,13 +21,13 @@ pub(super) fn role(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("CURRENT_role" => Ok(CurrentRole))]
-    #[test_case("current_USER" => Ok(CurrentUser))]
-    #[test_case("SESSION_USER" => Ok(SessionUser))]
-    #[test_case("system_user" => Ok(SystemUser))]
-    #[test_case("uSeR" => Ok(User))]
+    #[test_matrix("CURRENT_role" => Ok(CurrentRole))]
+    #[test_matrix("current_USER" => Ok(CurrentUser))]
+    #[test_matrix("SESSION_USER" => Ok(SessionUser))]
+    #[test_matrix("system_user" => Ok(SystemUser))]
+    #[test_matrix("uSeR" => Ok(User))]
     fn test_role(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, role)
     }

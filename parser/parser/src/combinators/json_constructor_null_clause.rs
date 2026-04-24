@@ -23,10 +23,10 @@ pub(super) fn json_constructor_null_clause(ctx: &mut ParserContext) -> scan::Res
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("null on null" => Ok(false))]
-    #[test_case("absent on null" => Ok(true))]
+    #[test_matrix("null on null" => Ok(false))]
+    #[test_matrix("absent on null" => Ok(true))]
     fn test_json_constructor_null_clause(source: &str) -> scan::Result<bool> {
         test_parser!(source, json_constructor_null_clause)
     }

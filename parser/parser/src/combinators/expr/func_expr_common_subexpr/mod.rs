@@ -128,12 +128,10 @@ pub(in crate::combinators) fn func_expr_common_subexpr(ctx: &mut ParserContext) 
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use scan::Error::NoMatch;
-    use test_case::test_case;
     use test_case::test_matrix;
 
-    #[test_case("current_catalog" => Ok(CurrentCatalog))]
+    #[test_matrix("current_catalog" => Ok(CurrentCatalog))]
     fn test_func_expr_common_subexpr(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, func_expr_common_subexpr)
     }

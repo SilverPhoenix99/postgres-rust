@@ -134,10 +134,9 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_ast::AccessPrivilege;
-    #[allow(unused_imports)]
     use pg_ast::DropBehavior;
     use pg_ast::RoleSpec::*;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
     #[test]
     fn test_alter_default_privileges_stmt() {
@@ -169,56 +168,70 @@ mod tests {
         )
     }
 
-    #[test_case("in schema a,b,c", AclOption::Schemas(vec![
-        "a".into(),
-        "b".into(),
-        "c".into()
-    ]))]
-    #[test_case("for role public,current_role", AclOption::Roles(vec![Public, CurrentRole]))]
-    #[test_case("for user my_user,session_user", AclOption::Roles(vec![Name("my_user".into()), SessionUser]))]
-    fn test_def_acl_option(source: &str, expected: AclOption) {
-        test_parser!(source, def_acl_option, expected)
+    #[test_matrix("in schema a,b,c" => Ok(
+        AclOption::Schemas(vec![
+            "a".into(),
+            "b".into(),
+            "c".into()
+        ])
+    ))]
+    #[test_matrix("for role public,current_role" => Ok(
+        AclOption::Roles(vec![Public, CurrentRole])
+    ))]
+    #[test_matrix("for user my_user,session_user" => Ok(
+        AclOption::Roles(vec![Name("my_user".into()), SessionUser])
+    ))]
+    fn test_def_acl_option(source: &str) -> scan::Result<AclOption> {
+        test_parser!(source, def_acl_option)
     }
 
-    #[test_case("grant all on tables to public", GrantStmt::grant(
-        AccessPrivilege::All { columns: None },
-        Tables,
-        vec![Public],
-        GrantOption::WithoutGrant
+    #[test_matrix("grant all on tables to public" => Ok(
+        GrantStmt::grant(
+            AccessPrivilege::All { columns: None },
+            Tables,
+            vec![Public],
+            GrantOption::WithoutGrant
+        )
     ))]
-    #[test_case("grant all privileges on tables to public with grant option", GrantStmt::grant(
-        AccessPrivilege::All { columns: None },
-        Tables,
-        vec![Public],
-        GrantOption::WithGrant
+    #[test_matrix("grant all privileges on tables to public with grant option" => Ok(
+        GrantStmt::grant(
+            AccessPrivilege::All { columns: None },
+            Tables,
+            vec![Public],
+            GrantOption::WithGrant
+        )
     ))]
-    #[test_case("revoke all privileges on tables from public", GrantStmt::revoke(
-        AccessPrivilege::All { columns: None },
-        Tables,
-        vec![Public],
-        GrantOption::WithoutGrant,
-        DropBehavior::Restrict
+    #[test_matrix("revoke all privileges on tables from public" => Ok(
+        GrantStmt::revoke(
+            AccessPrivilege::All { columns: None },
+            Tables,
+            vec![Public],
+            GrantOption::WithoutGrant,
+            DropBehavior::Restrict
+        )
     ))]
-    #[test_case("revoke grant option for all privileges on tables from public cascade", GrantStmt::revoke(
-        AccessPrivilege::All { columns: None },
-        Tables,
-        vec![Public],
-        GrantOption::WithGrant,
-        DropBehavior::Cascade
+    #[test_matrix("revoke grant option for all privileges on tables from public cascade" => Ok(
+        GrantStmt::revoke(
+            AccessPrivilege::All { columns: None },
+            Tables,
+            vec![Public],
+            GrantOption::WithGrant,
+            DropBehavior::Cascade
+        )
     ))]
-    fn test_def_acl_action(source: &str, expected: GrantStmt) {
-        test_parser!(source, def_acl_action, expected)
+    fn test_def_acl_action(source: &str) -> scan::Result<GrantStmt> {
+        test_parser!(source, def_acl_action)
     }
 
-    #[test_case("functions", Functions)]
-    #[test_case("large objects", LargeObjects)]
-    #[test_case("routines", Functions)]
-    #[test_case("schemas", Schemas)]
-    #[test_case("sequences", Sequences)]
-    #[test_case("tables", Tables)]
-    #[test_case("types", Types)]
-    fn test_def_acl_privilege_target(source: &str, expected: PrivilegeDefaultsTarget) {
-        test_parser!(source, def_acl_privilege_target, expected);
+    #[test_matrix("functions" => Ok(Functions))]
+    #[test_matrix("large objects" => Ok(LargeObjects))]
+    #[test_matrix("routines" => Ok(Functions))]
+    #[test_matrix("schemas" => Ok(Schemas))]
+    #[test_matrix("sequences" => Ok(Sequences))]
+    #[test_matrix("tables" => Ok(Tables))]
+    #[test_matrix("types" => Ok(Types))]
+    fn test_def_acl_privilege_target(source: &str) -> scan::Result<PrivilegeDefaultsTarget> {
+        test_parser!(source, def_acl_privilege_target)
     }
 }
 

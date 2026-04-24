@@ -62,23 +62,21 @@ fn inherited_relation_expr(ctx: &mut ParserContext) -> scan::Result<RelationExpr
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::RelationName;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("foo"
+    #[test_matrix("foo"
         => Ok(RelationExpr::new("foo"))
         ; "inherited without wildcard"
     )]
-    #[test_case("foo *"
+    #[test_matrix("foo *"
         => Ok(RelationExpr::new("foo"))
         ; "inherited with wildcard"
     )]
-    #[test_case("only foo"
+    #[test_matrix("only foo"
         => Ok(RelationExpr::new("foo").with_inherited(false))
         ; "non-inherited without parens"
     )]
-    #[test_case("only(foo)"
+    #[test_matrix("only(foo)"
         => Ok(RelationExpr::new("foo").with_inherited(false))
         ; "non-inherited with parens"
     )]

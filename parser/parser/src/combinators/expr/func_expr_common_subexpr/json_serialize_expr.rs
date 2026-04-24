@@ -24,19 +24,16 @@ pub(super) fn json_serialize_expr(ctx: &mut ParserContext) -> scan::Result<JsonS
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::IntegerConst,
-        pg_ast::JsonOutput,
-        pg_ast::JsonValueExpr,
-        pg_ast::TypeName::Int4,
-    };
+    use pg_ast::ExprNode::IntegerConst;
+    use pg_ast::JsonOutput;
+    use pg_ast::JsonValueExpr;
+    use pg_ast::TypeName::Int4;
+    use test_case::test_matrix;
 
-    #[test_case("json_serialize(1)" => Ok(JsonSerializeExpr::new(
+    #[test_matrix("json_serialize(1)" => Ok(JsonSerializeExpr::new(
         JsonValueExpr::from(IntegerConst(1))
     )))]
-    #[test_case("json_serialize(1 returning int)" => Ok(
+    #[test_matrix("json_serialize(1 returning int)" => Ok(
         JsonSerializeExpr::new(JsonValueExpr::from(IntegerConst(1)))
             .with_output(JsonOutput::from(Int4))
     ))]

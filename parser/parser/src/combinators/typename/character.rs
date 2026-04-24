@@ -50,30 +50,30 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_parser_core::scan;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("varchar"                       => Ok(Varchar { max_length: None }))]
-    #[test_case("char varying"                  => Ok(Varchar { max_length: None }))]
-    #[test_case("varchar(3)"                    => Ok(Varchar { max_length: Some(3) }))]
-    #[test_case("char varying(5)"               => Ok(Varchar { max_length: Some(5) }))]
-    #[test_case("character varying"             => Ok(Varchar { max_length: None }))]
-    #[test_case("character varying(2)"          => Ok(Varchar { max_length: Some(2) }))]
-    #[test_case("nchar varying"                 => Ok(Varchar { max_length: None }))]
-    #[test_case("nchar varying(7)"              => Ok(Varchar { max_length: Some(7) }))]
-    #[test_case("national char varying"         => Ok(Varchar { max_length: None }))]
-    #[test_case("national char varying(5)"      => Ok(Varchar { max_length: Some(5) }))]
-    #[test_case("national character varying"    => Ok(Varchar { max_length: None }))]
-    #[test_case("national character varying(3)" => Ok(Varchar { max_length: Some(3) }))]
-    #[test_case("char"                          => Ok(Bpchar { length: Some(66) }))]
-    #[test_case("char(4)"                       => Ok(Bpchar { length: Some(4) }))]
-    #[test_case("character"                     => Ok(Bpchar { length: Some(66) }))]
-    #[test_case("character(2)"                  => Ok(Bpchar { length: Some(2) }))]
-    #[test_case("nchar"                         => Ok(Bpchar { length: Some(66) }))]
-    #[test_case("nchar(9)"                      => Ok(Bpchar { length: Some(9) }))]
-    #[test_case("national char"                 => Ok(Bpchar { length: Some(66) }))]
-    #[test_case("national char(7)"              => Ok(Bpchar { length: Some(7) }))]
-    #[test_case("national character"            => Ok(Bpchar { length: Some(66) }))]
-    #[test_case("national character(8)"         => Ok(Bpchar { length: Some(8) }))]
+    #[test_matrix("varchar"                       => Ok(Varchar { max_length: None }))]
+    #[test_matrix("char varying"                  => Ok(Varchar { max_length: None }))]
+    #[test_matrix("varchar(3)"                    => Ok(Varchar { max_length: Some(3) }))]
+    #[test_matrix("char varying(5)"               => Ok(Varchar { max_length: Some(5) }))]
+    #[test_matrix("character varying"             => Ok(Varchar { max_length: None }))]
+    #[test_matrix("character varying(2)"          => Ok(Varchar { max_length: Some(2) }))]
+    #[test_matrix("nchar varying"                 => Ok(Varchar { max_length: None }))]
+    #[test_matrix("nchar varying(7)"              => Ok(Varchar { max_length: Some(7) }))]
+    #[test_matrix("national char varying"         => Ok(Varchar { max_length: None }))]
+    #[test_matrix("national char varying(5)"      => Ok(Varchar { max_length: Some(5) }))]
+    #[test_matrix("national character varying"    => Ok(Varchar { max_length: None }))]
+    #[test_matrix("national character varying(3)" => Ok(Varchar { max_length: Some(3) }))]
+    #[test_matrix("char"                          => Ok(Bpchar { length: Some(66) }))]
+    #[test_matrix("char(4)"                       => Ok(Bpchar { length: Some(4) }))]
+    #[test_matrix("character"                     => Ok(Bpchar { length: Some(66) }))]
+    #[test_matrix("character(2)"                  => Ok(Bpchar { length: Some(2) }))]
+    #[test_matrix("nchar"                         => Ok(Bpchar { length: Some(66) }))]
+    #[test_matrix("nchar(9)"                      => Ok(Bpchar { length: Some(9) }))]
+    #[test_matrix("national char"                 => Ok(Bpchar { length: Some(66) }))]
+    #[test_matrix("national char(7)"              => Ok(Bpchar { length: Some(7) }))]
+    #[test_matrix("national character"            => Ok(Bpchar { length: Some(66) }))]
+    #[test_matrix("national character(8)"         => Ok(Bpchar { length: Some(8) }))]
     fn test_character(source: &str) -> scan::Result<TypeName> {
         test_parser!(source, character(Some(66)))
     }

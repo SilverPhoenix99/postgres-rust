@@ -27,20 +27,19 @@ pub(super) fn generic_type(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
+    use crate::test_parser;
     use pg_ast::ExprNode::IntegerConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("double precision"      => Ok(Float8))]
-    #[test_case("identif.attrib"        => Ok(TypeName::Generic { name: vec!["identif".into(), "attrib".into()], type_modifiers: None }))]
-    #[test_case("identif(33)"           => Ok(TypeName::Generic { name: vec!["identif".into()], type_modifiers: Some(vec![IntegerConst(33)]) }))]
-    #[test_case("double"                => Ok(TypeName::Generic { name: vec!["double".into()], type_modifiers: None }))]
-    #[test_case("double.unreserved"     => Ok(TypeName::Generic { name: vec!["double".into(), "unreserved".into()], type_modifiers: None }))]
-    #[test_case("double.unreserved(55)" => Ok(TypeName::Generic { name: vec!["double".into(), "unreserved".into()], type_modifiers: Some(vec![IntegerConst(55)]) }))]
-    #[test_case("full.type_func_name"   => Ok(TypeName::Generic { name: vec!["full".into(), "type_func_name".into()], type_modifiers: None }))]
+    #[test_matrix("double precision"      => Ok(Float8))]
+    #[test_matrix("identif.attrib"        => Ok(Generic { name: vec!["identif".into(), "attrib".into()], type_modifiers: None }))]
+    #[test_matrix("identif(33)"           => Ok(Generic { name: vec!["identif".into()], type_modifiers: Some(vec![IntegerConst(33)]) }))]
+    #[test_matrix("double"                => Ok(Generic { name: vec!["double".into()], type_modifiers: None }))]
+    #[test_matrix("double.unreserved"     => Ok(Generic { name: vec!["double".into(), "unreserved".into()], type_modifiers: None }))]
+    #[test_matrix("double.unreserved(55)" => Ok(Generic { name: vec!["double".into(), "unreserved".into()], type_modifiers: Some(vec![IntegerConst(55)]) }))]
+    #[test_matrix("full.type_func_name"   => Ok(Generic { name: vec!["full".into(), "type_func_name".into()], type_modifiers: None }))]
     fn test_generic_type(source: &str) -> scan::Result<TypeName> {
-        let mut ctx = ParserContext::new(source);
-        generic_type(&mut ctx)
+        test_parser!(source, generic_type)
     }
 }
 

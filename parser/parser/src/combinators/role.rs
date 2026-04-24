@@ -75,12 +75,9 @@ impl IntoRoleId for RoleSpec {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_elog::Error::Role,
-        scan::Error::{NoMatch, ScanErr},
-    };
+    use pg_elog::Error::Role;
+    use scan::Error::{NoMatch, ScanErr};
+    use test_case::test_matrix;
 
     #[test]
     fn test_role_list() {
@@ -101,35 +98,35 @@ mod tests {
         assert_eq!(expected, actual.as_slice());
     }
 
-    #[test_case("coalesce" => Ok("coalesce".into()))]
-    #[test_case("xxyyzz" => Ok("xxyyzz".into()))]
-    #[test_case("none" => matches Err(ScanErr(
+    #[test_matrix("coalesce" => Ok("coalesce".into()))]
+    #[test_matrix("xxyyzz" => Ok("xxyyzz".into()))]
+    #[test_matrix("none" => matches Err(ScanErr(
         Located(Role(ReservedRoleSpec { role: "none" }), _)
     )))]
-    #[test_case("public" => matches Err(ScanErr(
+    #[test_matrix("public" => matches Err(ScanErr(
         Located(Role(ReservedRoleSpec { role: "public" }), _)
     )))]
-    #[test_case("current_role" => matches Err(ScanErr(
+    #[test_matrix("current_role" => matches Err(ScanErr(
         Located(Role(ForbiddenRoleSpec { role: "CURRENT_ROLE" }), _)
     )))]
-    #[test_case("current_user" => matches Err(ScanErr(
+    #[test_matrix("current_user" => matches Err(ScanErr(
         Located(Role(ForbiddenRoleSpec { role: "CURRENT_USER" }), _)
     )))]
-    #[test_case("session_user" => matches Err(ScanErr(
+    #[test_matrix("session_user" => matches Err(ScanErr(
         Located(Role(ForbiddenRoleSpec { role: "SESSION_USER" }), _)
     )))]
     fn test_role_id(source: &str) -> scan::Result<Str> {
         test_parser!(source, role_id)
     }
 
-    #[test_case("public" => Ok(RoleSpec::Public))]
-    #[test_case("CuRrEnT_rOlE" => Ok(RoleSpec::CurrentRole))]
-    #[test_case("CURRENT_USER" => Ok(RoleSpec::CurrentUser))]
-    #[test_case("session_user" => Ok(RoleSpec::SessionUser))]
-    #[test_case("coalesce" => Ok(RoleSpec::Name("coalesce".into())))]
-    #[test_case("xxyyzz" => Ok(RoleSpec::Name("xxyyzz".into())))]
-    #[test_case("collate" => matches Err(NoMatch(_)))]
-    #[test_case("none" => matches Err(ScanErr(
+    #[test_matrix("public" => Ok(RoleSpec::Public))]
+    #[test_matrix("CuRrEnT_rOlE" => Ok(RoleSpec::CurrentRole))]
+    #[test_matrix("CURRENT_USER" => Ok(RoleSpec::CurrentUser))]
+    #[test_matrix("session_user" => Ok(RoleSpec::SessionUser))]
+    #[test_matrix("coalesce" => Ok(RoleSpec::Name("coalesce".into())))]
+    #[test_matrix("xxyyzz" => Ok(RoleSpec::Name("xxyyzz".into())))]
+    #[test_matrix("collate" => matches Err(NoMatch(_)))]
+    #[test_matrix("none" => matches Err(ScanErr(
         Located(Role(ReservedRoleSpec { role: "none" }), _)
     )))]
     fn test_role_spec(source: &str) -> scan::Result<RoleSpec> {

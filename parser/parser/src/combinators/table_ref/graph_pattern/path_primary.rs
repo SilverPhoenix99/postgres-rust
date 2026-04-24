@@ -143,48 +143,47 @@ fn left_arrow(ctx: &mut ParserContext) -> scan::Result<()> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::BooleanConst;
     use pg_ast::GraphElementPatternKind;
     use pg_parser_core::scan;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("->" => matches Ok(_); "right pattern")]
-    #[test_case("<-" => matches Ok(_); "left pattern")]
-    #[test_case("-" => matches Ok(_); "any pattern")]
+    #[test_matrix("->" => matches Ok(_); "right pattern")]
+    #[test_matrix("<-" => matches Ok(_); "left pattern")]
+    #[test_matrix("-" => matches Ok(_); "any pattern")]
     fn test_path_primary(source: &str) -> scan::Result<GraphElementPatternKind> {
         test_parser!(source, path_primary)
     }
 
     // path_primary
     // path_primary where_clause
-    #[test_case("" => Ok(
+    #[test_matrix("" => Ok(
         GraphElementPatternKind::VertexPattern(
             GraphElementPattern::default()
         )
     ); "empty")]
-    #[test_case("foo" => Ok(
+    #[test_matrix("foo" => Ok(
         GraphElementPatternKind::VertexPattern(
             GraphElementPattern::default()
                 .with_variable("foo")
         )
     ))]
-    #[test_case("is a" => Ok(
+    #[test_matrix("is a" => Ok(
         GraphElementPatternKind::VertexPattern(
             GraphElementPattern::default()
                 .with_label_expr(vec!["a".into()])
         )
     ))]
-    #[test_case("where true" => Ok(
+    #[test_matrix("where true" => Ok(
         GraphElementPatternKind::VertexPattern(
             GraphElementPattern::default()
                 .with_where_clause(BooleanConst(true))
         )
     ))]
-    #[test_case("-[]-" => Ok(
+    #[test_matrix("-[]-" => Ok(
         GraphElementPatternKind::ParenExpr {
             sub_expr: vec![
-                GraphElementPatternKind::EdgePatternAny(
+                EdgePatternAny(
                     GraphElementPattern::default()
                 )
             ],
@@ -192,10 +191,10 @@ mod tests {
             quantifier: None,
         }
     ))]
-    #[test_case("-[]- where true" => Ok(
+    #[test_matrix("-[]- where true" => Ok(
         GraphElementPatternKind::ParenExpr {
             sub_expr: vec![
-                GraphElementPatternKind::EdgePatternAny(
+                EdgePatternAny(
                     GraphElementPattern::default()
                 )
             ],
@@ -207,17 +206,17 @@ mod tests {
         test_parser!(source, paren_pattern)
     }
 
-    #[test_case("->" => Ok(EdgePatternRight(
+    #[test_matrix("->" => Ok(EdgePatternRight(
         GraphElementPattern::default()
     )))]
     fn test_right_arrow_pattern(source: &str) -> scan::Result<GraphElementPatternKind> {
         test_parser!(source, right_arrow_pattern)
     }
 
-    #[test_case("<-" => Ok(EdgePatternLeft(
+    #[test_matrix("<-" => Ok(EdgePatternLeft(
         GraphElementPattern::default()
     )))]
-    #[test_case("<-[foo]-" => Ok(EdgePatternLeft(
+    #[test_matrix("<-[foo]-" => Ok(EdgePatternLeft(
         GraphElementPattern::default()
             .with_variable("foo")
     )))]
@@ -225,14 +224,14 @@ mod tests {
         test_parser!(source, left_arrow_pattern)
     }
 
-    #[test_case("-" => Ok(EdgePatternAny(
+    #[test_matrix("-" => Ok(EdgePatternAny(
         GraphElementPattern::default()
     )); "dash")]
-    #[test_case("-[foo]-" => Ok(EdgePatternAny(
+    #[test_matrix("-[foo]-" => Ok(EdgePatternAny(
         GraphElementPattern::default()
             .with_variable("foo")
     )); "double-dash")]
-    #[test_case("-[is a]->" => Ok(EdgePatternRight(
+    #[test_matrix("-[is a]->" => Ok(EdgePatternRight(
         GraphElementPattern::default()
             .with_label_expr(vec!["a".into()])
     )); "dash-right-arrow")]
@@ -240,14 +239,14 @@ mod tests {
         test_parser!(source, any_pattern)
     }
 
-    #[test_case("->" => Ok(()); "right-arrow")]
-    #[test_case("- >" => Ok(()); "dash-greater")]
+    #[test_matrix("->" => Ok(()); "right-arrow")]
+    #[test_matrix("- >" => Ok(()); "dash-greater")]
     fn test_right_arrow(source: &str) -> scan::Result<()> {
         test_parser!(source, right_arrow)
     }
 
-    #[test_case("<-" => Ok(()); "left-arrow")]
-    #[test_case("< -" => Ok(()); "less-dash")]
+    #[test_matrix("<-" => Ok(()); "left-arrow")]
+    #[test_matrix("< -" => Ok(()); "less-dash")]
     fn test_left_arrow(source: &str) -> scan::Result<()> {
         test_parser!(source, left_arrow)
     }

@@ -11,15 +11,13 @@ pub(in crate::combinators) fn transaction_stmt_legacy(ctx: &mut ParserContext) -
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        TransactionMode::ReadOnly,
-        TransactionStmt::{Begin, Commit}
-    };
-    use test_case::test_case;
+    use pg_ast::TransactionMode::ReadOnly;
+    use pg_ast::TransactionStmt::Begin;
+    use pg_ast::TransactionStmt::Commit;
+    use test_case::test_matrix;
 
-    #[test_case("begin transaction read only" => Ok(Begin(vec![ReadOnly])))]
-    #[test_case("end transaction" => Ok(Commit { chain: false }))]
+    #[test_matrix("begin transaction read only" => Ok(Begin(vec![ReadOnly])))]
+    #[test_matrix("end transaction" => Ok(Commit { chain: false }))]
     fn test_transaction(source: &str) -> scan::Result<TransactionStmt> {
         test_parser!(source, transaction_stmt_legacy)
     }

@@ -114,98 +114,97 @@ fn signed_number_list(ctx: &mut ParserContext) -> scan::Result<Vec<SignedNumber>
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::FunctionWithArgs;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("all functions in schema a, b" => Ok(
+    #[test_matrix("all functions in schema a, b" => Ok(
         AllFunctionsInSchema(vec!["a".into(), "b".into()])
     ))]
-    #[test_case("all procedures in schema a, b" => Ok(
+    #[test_matrix("all procedures in schema a, b" => Ok(
         AllProceduresInSchema(vec!["a".into(), "b".into()])
     ))]
-    #[test_case("all routines in schema a, b" => Ok(
+    #[test_matrix("all routines in schema a, b" => Ok(
         AllRoutinesInSchema(vec!["a".into(), "b".into()])
     ))]
-    #[test_case("all sequences in schema a, b" => Ok(
+    #[test_matrix("all sequences in schema a, b" => Ok(
         AllSequencesInSchema(vec!["a".into(), "b".into()])
     ))]
-    #[test_case("all tables in schema a, b" => Ok(
+    #[test_matrix("all tables in schema a, b" => Ok(
         AllTablesInSchema(vec!["a".into(), "b".into()])
     ))]
-    #[test_case("database a, b" => Ok(
+    #[test_matrix("database a, b" => Ok(
         Database(vec!["a".into(), "b".into()])
     ))]
-    #[test_case("domain a, b" => Ok(
+    #[test_matrix("domain a, b" => Ok(
         Domain(vec![vec!["a".into()], vec!["b".into()]])
     ))]
-    #[test_case("foreign data wrapper a, b" => Ok(
+    #[test_matrix("foreign data wrapper a, b" => Ok(
         ForeignDataWrapper(vec!["a".into(), "b".into()])
     ))]
-    #[test_case("foreign server a, b" => Ok(
+    #[test_matrix("foreign server a, b" => Ok(
         ForeignServer(vec!["a".into(), "b".into()])
     ))]
-    #[test_case("function a, b" => Ok(
+    #[test_matrix("function a, b" => Ok(
         Function(vec![
             FunctionWithArgs::new(vec!["a".into()], None),
             FunctionWithArgs::new(vec!["b".into()], None)
         ])
     ))]
-    #[test_case("language a, b" => Ok(
+    #[test_matrix("language a, b" => Ok(
         Language(vec!["a".into(), "b".into()])
     ))]
-    #[test_case("large object 1, 2" => Ok(
+    #[test_matrix("large object 1, 2" => Ok(
         LargeObject(vec![1.into(), 2.into()])
     ))]
-    #[test_case("parameter a, b" => Ok(
+    #[test_matrix("parameter a, b" => Ok(
         ParameterAcl(vec![
             vec!["a".into()],
             vec!["b".into()]
         ])
     ))]
-    #[test_case("procedure a, b" => Ok(
+    #[test_matrix("procedure a, b" => Ok(
         Procedure(vec![
             FunctionWithArgs::new(vec!["a".into()], None),
             FunctionWithArgs::new(vec!["b".into()], None)
         ])
     ))]
-    #[test_case("property graph a, b" => Ok(
+    #[test_matrix("property graph a, b" => Ok(
         PropertyGraph(vec![
             "a".into(),
             "b".into()
         ])
     ))]
-    #[test_case("routine a, b" => Ok(
+    #[test_matrix("routine a, b" => Ok(
         Routine(vec![
             FunctionWithArgs::new(vec!["a".into()], None),
             FunctionWithArgs::new(vec!["b".into()], None)
         ])
     ))]
-    #[test_case("schema a, b" => Ok(
+    #[test_matrix("schema a, b" => Ok(
         Schema(vec!["a".into(), "b".into()])
     ))]
-    #[test_case("sequence a, b" => Ok(
+    #[test_matrix("sequence a, b" => Ok(
         Sequence(vec![
             "a".into(),
             "b".into()
         ])
     ))]
-    #[test_case("tablespace a, b" => Ok(
+    #[test_matrix("tablespace a, b" => Ok(
         Tablespace(vec!["a".into(), "b".into()])
     ))]
-    #[test_case("type a, b" => Ok(
+    #[test_matrix("type a, b" => Ok(
         Type(vec![
             vec!["a".into()],
             vec!["b".into()]
         ])
     ))]
-    #[test_case("table a, b" => Ok(
+    #[test_matrix("table a, b" => Ok(
         Table(vec![
             "a".into(),
             "b".into()
         ])
     ))]
-    #[test_case("a, b" => Ok(
+    #[test_matrix("a, b" => Ok(
         Table(vec![
             "a".into(),
             "b".into()

@@ -11,12 +11,12 @@ pub(super) fn non_reserved_word_or_sconst(ctx: &mut ParserContext) -> scan::Resu
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("action", Str::Static("action"))]
-    #[test_case("'some_string'", Str::Static("some_string"))]
-    fn test_non_reserved_word_or_sconst(source: &str, expected: Str) {
-        test_parser!(source, non_reserved_word_or_sconst, expected)
+    #[test_matrix("action" => Ok("action".into()))]
+    #[test_matrix("'some_string'" => Ok("some_string".into()))]
+    fn test_non_reserved_word_or_sconst(source: &str) -> scan::Result<Str> {
+        test_parser!(source, non_reserved_word_or_sconst)
     }
 }
 

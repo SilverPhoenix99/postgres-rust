@@ -87,7 +87,7 @@ pub(super) fn createdb_opt_value(ctx: &mut ParserContext) -> scan::Result<Create
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
     #[test]
     fn test_create_database_stmt() {
@@ -118,44 +118,44 @@ mod tests {
         )
     }
 
-    #[test_case("allow_connections DEFAULT", CreatedbOption::new(AllowConnections, CreatedbOptionValue::Default))]
-    #[test_case("oid = 54321", CreatedbOption::new(Oid, 54321))]
-    fn test_createdb_opt_item(source: &str, expected: CreatedbOption) {
-        test_parser!(source, createdb_opt_item, expected)
+    #[test_matrix("allow_connections DEFAULT" => Ok(CreatedbOption::new(AllowConnections, CreatedbOptionValue::Default)))]
+    #[test_matrix("oid = 54321" => Ok(CreatedbOption::new(Oid, 54321)))]
+    fn test_createdb_opt_item(source: &str) -> scan::Result<CreatedbOption> {
+        test_parser!(source, createdb_opt_item)
     }
 
-    #[test_case("allow_connections", AllowConnections)]
-    #[test_case("builtin_locale", BuiltinLocale)]
-    #[test_case("collation_version", CollationVersion)]
-    #[test_case("icu_locale", IcuLocale)]
-    #[test_case("icu_rules", IcuRules)]
-    #[test_case("is_template", IsTemplate)]
-    #[test_case("lc_collate", LcCollate)]
-    #[test_case("lc_ctype", LcCtype)]
-    #[test_case("locale", Locale)]
-    #[test_case("locale_provider", LocaleProvider)]
-    #[test_case("oid", Oid)]
-    #[test_case("strategy", Strategy)]
-    #[test_case("connection limit", ConnectionLimit)]
-    #[test_case("encoding", Encoding)]
-    #[test_case("location", Location)]
-    #[test_case("owner", Owner)]
-    #[test_case("tablespace", Tablespace)]
-    #[test_case("template", Template)]
-    #[test_case("foo", Unknown("foo".into()))]
-    fn test_createdb_opt_name(source: &str, expected: CreatedbOptionKind) {
-        test_parser!(source, createdb_opt_name, expected)
+    #[test_matrix("allow_connections" => Ok(AllowConnections))]
+    #[test_matrix("builtin_locale" => Ok(BuiltinLocale))]
+    #[test_matrix("collation_version" => Ok(CollationVersion))]
+    #[test_matrix("icu_locale" => Ok(IcuLocale))]
+    #[test_matrix("icu_rules" => Ok(IcuRules))]
+    #[test_matrix("is_template" => Ok(IsTemplate))]
+    #[test_matrix("lc_collate" => Ok(LcCollate))]
+    #[test_matrix("lc_ctype" => Ok(LcCtype))]
+    #[test_matrix("locale" => Ok(Locale))]
+    #[test_matrix("locale_provider" => Ok(LocaleProvider))]
+    #[test_matrix("oid" => Ok(Oid))]
+    #[test_matrix("strategy" => Ok(Strategy))]
+    #[test_matrix("connection limit" => Ok(ConnectionLimit))]
+    #[test_matrix("encoding" => Ok(Encoding))]
+    #[test_matrix("location" => Ok(Location))]
+    #[test_matrix("owner" => Ok(Owner))]
+    #[test_matrix("tablespace" => Ok(Tablespace))]
+    #[test_matrix("template" => Ok(Template))]
+    #[test_matrix("foo" => Ok(Unknown("foo".into())))]
+    fn test_createdb_opt_name(source: &str) -> scan::Result<CreatedbOptionKind> {
+        test_parser!(source, createdb_opt_name)
     }
 
-    #[test_case("default", CreatedbOptionValue::Default)]
-    #[test_case("true", true.into())]
-    #[test_case("false", false.into())]
-    #[test_case("on", "on".into())]
-    #[test_case("off", "off".into())]
-    #[test_case("'value'", "value".into())]
-    #[test_case("+123", 123.into())]
-    fn test_createdb_opt_value(source: &str, expected: CreatedbOptionValue) {
-        test_parser!(source, createdb_opt_value, expected)
+    #[test_matrix("default" => Ok(CreatedbOptionValue::Default))]
+    #[test_matrix("true" => Ok(true.into()))]
+    #[test_matrix("false" => Ok(false.into()))]
+    #[test_matrix("on" => Ok("on".into()))]
+    #[test_matrix("off" => Ok("off".into()))]
+    #[test_matrix("'value'" => Ok("value".into()))]
+    #[test_matrix("+123" => Ok(123.into()))]
+    fn test_createdb_opt_value(source: &str) -> scan::Result<CreatedbOptionValue> {
+        test_parser!(source, createdb_opt_value)
     }
 }
 

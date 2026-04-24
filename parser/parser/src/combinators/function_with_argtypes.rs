@@ -111,44 +111,41 @@ fn func_args_list(ctx: &mut ParserContext) -> scan::Result<Vec<FunctionParameter
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        FuncType,
-        TypeName,
-    };
-    use pg_ast::{FunctionParameter, FunctionWithArgs};
-    use test_case::test_case;
+    use pg_ast::FuncType;
+    use pg_ast::FunctionWithArgs;
+    use pg_ast::TypeName;
+    use test_case::test_matrix;
 
     // type_func_name_keyword ( func_args )?
-    #[test_case("collation", FunctionWithArgs::new(vec!["collation".into()], None))]
-    #[test_case("current_schema()", FunctionWithArgs::new(vec!["current_schema".into()], Some(None)))]
+    #[test_matrix("collation" => Ok(FunctionWithArgs::new(vec!["collation".into()], None)))]
+    #[test_matrix("current_schema()" => Ok(FunctionWithArgs::new(vec!["current_schema".into()], Some(None))))]
     // unreserved_keyword ( attrs )? ( func_args )?
-    #[test_case("double.trouble()", FunctionWithArgs::new(vec!["double".into(), "trouble".into()], Some(None)))]
-    #[test_case("double.double", FunctionWithArgs::new(vec!["double".into(), "double".into()], None))]
-    #[test_case("double()", FunctionWithArgs::new(vec!["double".into()], Some(None)))]
-    #[test_case("double", FunctionWithArgs::new(vec!["double".into()], None))]
+    #[test_matrix("double.trouble()" => Ok(FunctionWithArgs::new(vec!["double".into(), "trouble".into()], Some(None))))]
+    #[test_matrix("double.double" => Ok(FunctionWithArgs::new(vec!["double".into(), "double".into()], None)))]
+    #[test_matrix("double()" => Ok(FunctionWithArgs::new(vec!["double".into()], Some(None))))]
+    #[test_matrix("double" => Ok(FunctionWithArgs::new(vec!["double".into()], None)))]
     // IDENT ( attrs )? ( func_args )?
-    #[test_case("ident.qualified_()", FunctionWithArgs::new(vec!["ident".into(), "qualified_".into()], Some(None)))]
-    #[test_case("qualif.ident", FunctionWithArgs::new(vec!["qualif".into(), "ident".into()], None))]
-    #[test_case("ident()", FunctionWithArgs::new(vec!["ident".into()], Some(None)))]
-    #[test_case("ident", FunctionWithArgs::new(vec!["ident".into()], None))]
+    #[test_matrix("ident.qualified_()" => Ok(FunctionWithArgs::new(vec!["ident".into(), "qualified_".into()], Some(None))))]
+    #[test_matrix("qualif.ident" => Ok(FunctionWithArgs::new(vec!["qualif".into(), "ident".into()], None)))]
+    #[test_matrix("ident()" => Ok(FunctionWithArgs::new(vec!["ident".into()], Some(None))))]
+    #[test_matrix("ident" => Ok(FunctionWithArgs::new(vec!["ident".into()], None)))]
     // col_name_keyword ( attrs ( func_args )? )?
-    #[test_case("float.point()", FunctionWithArgs::new(vec!["float".into(), "point".into()], Some(None)))]
-    #[test_case("float.boat", FunctionWithArgs::new(vec!["float".into(), "boat".into()], None))]
-    #[test_case("float", FunctionWithArgs::new(vec!["float".into()], None))]
-    fn test_function_with_argtypes(source: &str, expected: FunctionWithArgs) {
-        test_parser!(source, function_with_argtypes, expected)
+    #[test_matrix("float.point()" => Ok(FunctionWithArgs::new(vec!["float".into(), "point".into()], Some(None))))]
+    #[test_matrix("float.boat" => Ok(FunctionWithArgs::new(vec!["float".into(), "boat".into()], None)))]
+    #[test_matrix("float" => Ok(FunctionWithArgs::new(vec!["float".into()], None)))]
+    fn test_function_with_argtypes(source: &str) -> scan::Result<FunctionWithArgs> {
+        test_parser!(source, function_with_argtypes)
     }
 
-    #[test_case("", None)]
-    #[test_case("won't match", None)]
-    #[test_case("()", Some(None))]
-    #[test_case("(json, int)", Some(Some(vec![
+    #[test_matrix("" => Ok(None))]
+    #[test_matrix("won't match" => Ok(None))]
+    #[test_matrix("()" => Ok(Some(None)))]
+    #[test_matrix("(json, int)" => Ok(Some(Some(vec![
         FuncType::Type(TypeName::Json.into()).into(),
         FuncType::Type(TypeName::Int4.into()).into()
-    ])))]
-    fn test_func_args(source: &str, expected: Option<Option<Vec<FunctionParameter>>>) {
-        test_parser!(source, func_args, expected)
+    ]))))]
+    fn test_func_args(source: &str) -> scan::Result<Option<Option<Vec<FunctionParameter>>>> {
+        test_parser!(source, func_args)
     }
 }
 

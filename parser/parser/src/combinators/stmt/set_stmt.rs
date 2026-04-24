@@ -61,43 +61,31 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_ast::SetRest;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test]
-    fn test_set_constraints() {
-        test_parser!(
-            source = "set constraints all immediate",
-            parser = set_stmt,
-            expected = ConstraintsSetStmt::new(OneOrAll::All, Immediate)
-        )
+    #[test_matrix("set constraints all immediate" => Ok(ConstraintsSetStmt::new(OneOrAll::All, Immediate).into()))]
+    #[test_matrix("set local transaction snapshot 'abc'" => Ok(VariableSetStmt::local(SetRest::TransactionSnapshot("abc".into())).into()))]
+    #[test_matrix(
+        [
+            "set session transaction snapshot 'abc'",
+            "set transaction snapshot 'abc'"
+        ]
+        => Ok(VariableSetStmt::session(SetRest::TransactionSnapshot("abc".into())).into())
+    )]
+    fn test_set_session(source: &str) -> scan::Result<RawStmt> {
+        test_parser!(source, set_stmt)
     }
 
-    #[test]
-    fn test_set_local() {
-        test_parser!(
-            source = "set local transaction snapshot 'abc'",
-            parser = set_stmt,
-            expected = VariableSetStmt::local(SetRest::TransactionSnapshot("abc".into()))
-        )
+    #[test_matrix("all" => Ok(OneOrAll::All))]
+    #[test_matrix("_relation" => Ok(OneOrAll::One(vec![RelationName::new("_relation")])))]
+    fn test_constraints_set_list(source: &str) -> scan::Result<OneOrAll<Vec<RelationName>>> {
+        test_parser!(source, constraints_set_list)
     }
 
-    #[test_case("set session transaction snapshot 'abc'")]
-    #[test_case("set transaction snapshot 'abc'")]
-    fn test_set_session(source: &str) {
-        let expected = VariableSetStmt::session(SetRest::TransactionSnapshot("abc".into()));
-        test_parser!(source, set_stmt, expected)
-    }
-
-    #[test_case("all", OneOrAll::All)]
-    #[test_case("_relation", OneOrAll::One(vec![RelationName::new("_relation")]))]
-    fn test_constraints_set_list(source: &str, expected: OneOrAll<Vec<RelationName>>) {
-        test_parser!(source, constraints_set_list, expected)
-    }
-
-    #[test_case("immediate", Immediate)]
-    #[test_case("deferred", Deferred)]
-    fn test_constraints_set_mode(source: &str, expected: ConstraintsSetMode) {
-        test_parser!(source, constraints_set_mode, expected)
+    #[test_matrix("immediate" => Ok(Immediate))]
+    #[test_matrix("deferred" => Ok(Deferred))]
+    fn test_constraints_set_mode(source: &str) -> scan::Result<ConstraintsSetMode> {
+        test_parser!(source, constraints_set_mode)
     }
 }
 

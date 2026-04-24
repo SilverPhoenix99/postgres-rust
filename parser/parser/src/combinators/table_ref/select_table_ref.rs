@@ -18,11 +18,12 @@ pub(super) fn select_table_ref(ctx: &mut ParserContext) -> scan::Result<Subselec
 #[cfg(test)]
 mod tests {
     use super::*;
-    use test_case::test_case;
+    use crate::test_parser;
+    use test_case::test_matrix;
 
-    #[test_case("select 1" => ignore["select_stmt not implemented yet"] matches Ok(_))]
+    #[test_matrix("select 1" => ignore["select_stmt not implemented yet"] matches Ok(_))]
     fn test_select_table_ref(source: &str) -> scan::Result<SubselectTableRef> {
-        todo!()
+        test_parser!(source, select_table_ref)
     }
 }
 

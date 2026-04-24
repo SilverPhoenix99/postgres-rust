@@ -69,27 +69,24 @@ fn nowait_or_skip(ctx: &mut ParserContext) -> scan::Result<LockWaitPolicy> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        LockClauseStrength::ForNoKeyUpdate,
-        LockClauseStrength::ForUpdate,
-        LockWaitPolicy::Block,
-    };
-    use test_case::test_case;
+    use pg_ast::LockClauseStrength::ForNoKeyUpdate;
+    use pg_ast::LockClauseStrength::ForUpdate;
+    use pg_ast::LockWaitPolicy::Block;
+    use test_case::test_matrix;
 
-    #[test_case("for read only" => matches Ok(None))]
-    #[test_case("for share of foo" => matches Ok(Some(_)))]
+    #[test_matrix("for read only" => matches Ok(None))]
+    #[test_matrix("for share of foo" => matches Ok(Some(_)))]
     fn test_for_locking_clause(source: &str) -> scan::Result<Option<Vec<LockingClause>>> {
         test_parser!(source, for_locking_clause)
 
     }
 
-    #[test_case("for key share of foo, bar skip locked for no key update of qux" => matches Ok(_))]
+    #[test_matrix("for key share of foo, bar skip locked for no key update of qux" => matches Ok(_))]
     fn test_for_locking_items(source: &str) -> scan::Result<Vec<LockingClause>> {
         test_parser!(source, for_locking_items)
     }
 
-    #[test_case("for update of foo, bar nowait" => Ok(
+    #[test_matrix("for update of foo, bar nowait" => Ok(
         LockingClause::new(
             vec![
                 RelationName::new("foo"),
@@ -99,7 +96,7 @@ mod tests {
             WaitError
         )
     ))]
-    #[test_case("for no key update of qux" => Ok(
+    #[test_matrix("for no key update of qux" => Ok(
         LockingClause::new(
             vec![
                 RelationName::new("qux"),
@@ -124,8 +121,8 @@ mod tests {
         )
     }
 
-    #[test_case("nowait" => Ok(WaitError))]
-    #[test_case("skip locked" => Ok(WaitSkip))]
+    #[test_matrix("nowait" => Ok(WaitError))]
+    #[test_matrix("skip locked" => Ok(WaitSkip))]
     fn test_nowait_or_skip(source: &str) -> scan::Result<LockWaitPolicy> {
         test_parser!(source, nowait_or_skip)
     }

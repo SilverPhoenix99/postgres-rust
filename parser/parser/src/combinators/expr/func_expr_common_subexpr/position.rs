@@ -24,11 +24,10 @@ pub(super) fn position(ctx: &mut ParserContext) -> scan::Result<PositionFunc> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::StringConst;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("position('f' in 'foo')" => Ok(
+    #[test_matrix("position('f' in 'foo')" => Ok(
         PositionFunc::new(
             StringConst("f".into()),
             StringConst("foo".into())

@@ -53,9 +53,8 @@ pub(super) fn overlaps_row(ctx: &mut ParserContext) -> scan::Result<Located<Opti
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
     use pg_ast::ExprNode::{IntegerConst, StringConst};
-    use test_case::{test_case, test_matrix};
+    use test_case::test_matrix;
 
     #[test_matrix(
         [
@@ -70,14 +69,14 @@ mod tests {
         test_parser!(source, row)
     }
 
-    #[test_case("row()" => Ok(None))]
-    #[test_case("row(1)" => Ok(Some(vec![IntegerConst(1)])))]
-    #[test_case("row(1, 'foo')" => Ok(Some(vec![IntegerConst(1), StringConst("foo".into())])))]
+    #[test_matrix("row()" => Ok(None))]
+    #[test_matrix("row(1)" => Ok(Some(vec![IntegerConst(1)])))]
+    #[test_matrix("row(1, 'foo')" => Ok(Some(vec![IntegerConst(1), StringConst("foo".into())])))]
     fn test_explicit_row(source: &str) -> scan::Result<Option<Vec<ExprNode>>> {
         test_parser!(source, explicit_row)
     }
 
-    #[test_case("(1, 'foo')" => Ok(vec![IntegerConst(1), StringConst("foo".into())]))]
+    #[test_matrix("(1, 'foo')" => Ok(vec![IntegerConst(1), StringConst("foo".into())]))]
     fn test_implicit_row(source: &str) -> scan::Result<Vec<ExprNode>> {
         test_parser!(source, implicit_row)
     }

@@ -25,14 +25,14 @@ pub(super) fn window_exclusion_clause(ctx: &mut ParserContext) -> scan::Result<W
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("exclude current row", CurrentRow)]
-    #[test_case("exclude group", Group)]
-    #[test_case("exclude ties", Ties)]
-    #[test_case("exclude no others", NoOthers)]
-    fn test_window_exclusion_clause(source: &str, expected: WindowExclusion) {
-        test_parser!(source, window_exclusion_clause, expected);
+    #[test_matrix("exclude current row" => Ok(CurrentRow))]
+    #[test_matrix("exclude group" => Ok(Group))]
+    #[test_matrix("exclude ties" => Ok(Ties))]
+    #[test_matrix("exclude no others" => Ok(NoOthers))]
+    fn test_window_exclusion_clause(source: &str) -> scan::Result<WindowExclusion> {
+        test_parser!(source, window_exclusion_clause)
     }
 }
 

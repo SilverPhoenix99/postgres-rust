@@ -33,17 +33,16 @@ pub(super) fn bit(default_type_modifiers:  Option<i32>) -> impl Combinator<Outpu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ParserContext;
+    use crate::test_parser;
     use pg_parser_core::scan;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("bit"             => Ok(Bit(Some(vec![IntegerConst(3)]))))]
-    #[test_case("bit(77)"         => Ok(Bit(Some(vec![IntegerConst(77)]))))]
-    #[test_case("bit varying"     => Ok(Varbit(None)))]
-    #[test_case("bit varying(55)" => Ok(Varbit(Some(vec![IntegerConst(55)]))))]
+    #[test_matrix("bit"             => Ok(Bit(Some(vec![IntegerConst(3)]))))]
+    #[test_matrix("bit(77)"         => Ok(Bit(Some(vec![IntegerConst(77)]))))]
+    #[test_matrix("bit varying"     => Ok(Varbit(None)))]
+    #[test_matrix("bit varying(55)" => Ok(Varbit(Some(vec![IntegerConst(55)]))))]
     fn test_bit(source: &str) -> scan::Result<TypeName> {
-        let mut ctx = ParserContext::new(source);
-        bit(Some(3)).parse(&mut ctx)
+        test_parser!(source, bit(Some(3)))
     }
 }
 

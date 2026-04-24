@@ -21,22 +21,19 @@ pub(super) fn json_returning_clause(ctx: &mut ParserContext) -> scan::Result<Jso
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        JsonEncoding::UTF8,
-        JsonFormat,
-        TypeName::Json,
-    };
-    use test_case::test_case;
+    use pg_ast::JsonEncoding::UTF8;
+    use pg_ast::JsonFormat;
+    use pg_ast::TypeName::Json;
+    use test_case::test_matrix;
 
-    #[test_case("returning json" => Ok(
+    #[test_matrix("returning json" => Ok(
         JsonOutput::new(Json)
     ))]
-    #[test_case("returning json format json" => Ok(
+    #[test_matrix("returning json format json" => Ok(
         JsonOutput::new(Json)
             .with_format(JsonFormat::text())
     ))]
-    #[test_case("returning json format json encoding utf8" => Ok(
+    #[test_matrix("returning json format json encoding utf8" => Ok(
         JsonOutput::new(Json)
             .with_format(
                 JsonFormat::text()

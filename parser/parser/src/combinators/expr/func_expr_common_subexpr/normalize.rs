@@ -25,20 +25,17 @@ pub(super) fn normalize(ctx: &mut ParserContext) -> scan::Result<NormalizeFunc> 
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::StringConst,
-        pg_ast::UnicodeNormalForm::CanonicalComposition
-    };
+    use pg_ast::ExprNode::StringConst;
+    use pg_ast::UnicodeNormalForm::CanonicalComposition;
+    use test_case::test_matrix;
 
-    #[test_case("normalize('foo')" => Ok(
+    #[test_matrix("normalize('foo')" => Ok(
         NormalizeFunc::new(
             StringConst("foo".into()),
             None
         )
     ))]
-    #[test_case("normalize('foo', nfc)" => Ok(
+    #[test_matrix("normalize('foo', nfc)" => Ok(
         NormalizeFunc::new(
             StringConst("foo".into()),
             Some(CanonicalComposition)

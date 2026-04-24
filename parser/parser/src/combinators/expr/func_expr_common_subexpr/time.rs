@@ -30,17 +30,17 @@ pub(super) fn time(ctx: &mut ParserContext) -> scan::Result<SqlFunction> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("current_date" => Ok(CurrentDate))]
-    #[test_case("current_time" => Ok(CurrentTime { precision: None }))]
-    #[test_case("current_time(3)" => Ok(CurrentTime { precision: Some(3) }))]
-    #[test_case("current_timestamp" => Ok(CurrentTimestamp { precision: None }))]
-    #[test_case("current_timestamp(7)" => Ok(CurrentTimestamp { precision: Some(7) }))]
-    #[test_case("localtime" => Ok(LocalTime { precision: None }))]
-    #[test_case("localtime(6)" => Ok(LocalTime { precision: Some(6) }))]
-    #[test_case("localtimestamp" => Ok(LocalTimestamp { precision: None }))]
-    #[test_case("localtimestamp(4)" => Ok(LocalTimestamp { precision: Some(4) }))]
+    #[test_matrix("current_date" => Ok(CurrentDate))]
+    #[test_matrix("current_time" => Ok(CurrentTime { precision: None }))]
+    #[test_matrix("current_time(3)" => Ok(CurrentTime { precision: Some(3) }))]
+    #[test_matrix("current_timestamp" => Ok(CurrentTimestamp { precision: None }))]
+    #[test_matrix("current_timestamp(7)" => Ok(CurrentTimestamp { precision: Some(7) }))]
+    #[test_matrix("localtime" => Ok(LocalTime { precision: None }))]
+    #[test_matrix("localtime(6)" => Ok(LocalTime { precision: Some(6) }))]
+    #[test_matrix("localtimestamp" => Ok(LocalTimestamp { precision: None }))]
+    #[test_matrix("localtimestamp(4)" => Ok(LocalTimestamp { precision: Some(4) }))]
     fn test_time(source: &str) -> scan::Result<SqlFunction> {
         test_parser!(source, time)
     }

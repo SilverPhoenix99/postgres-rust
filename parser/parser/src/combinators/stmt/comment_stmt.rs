@@ -223,21 +223,18 @@ fn comment_text(ctx: &mut ParserContext) -> scan::Result<Option<Box<str>>> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::AggregateWithArgs,
-        pg_ast::FunctionWithArgs,
-        pg_ast::OneOrBoth,
-        pg_ast::Operator::Addition,
-        pg_ast::OperatorWithArgs,
-        pg_ast::QualifiedOperator,
-        pg_ast::SignedNumber::IntegerConst,
-        pg_ast::Transform as TransformAst,
-        pg_ast::TypeName::Int4,
-        pg_ast::TypeName::Varchar,
-        pg_ast::Typecast as Cast,
-    };
+    use pg_ast::AggregateWithArgs;
+    use pg_ast::FunctionWithArgs;
+    use pg_ast::OneOrBoth;
+    use pg_ast::Operator::Addition;
+    use pg_ast::OperatorWithArgs;
+    use pg_ast::QualifiedOperator;
+    use pg_ast::SignedNumber::IntegerConst;
+    use pg_ast::Transform as TransformAst;
+    use pg_ast::TypeName::Int4;
+    use pg_ast::TypeName::Varchar;
+    use pg_ast::Typecast as Cast;
+    use test_case::test_matrix;
 
     #[test]
     fn test_comment_stmt() {
@@ -251,186 +248,186 @@ mod tests {
         )
     }
 
-    #[test_case("access method some_method" => Ok(Target::Comment(
+    #[test_matrix("access method some_method" => Ok(Target::Comment(
         AccessMethod("some_method".into())
     )))]
-    #[test_case("aggregate some_aggregate(*)" => Ok(Target::Comment(
+    #[test_matrix("aggregate some_aggregate(*)" => Ok(Target::Comment(
         Aggregate(AggregateWithArgs::new(
             vec!["some_aggregate".into()],
             vec![],
             vec![]
         ))
     )))]
-    #[test_case("cast (int as varchar)" => Ok(Target::Comment(
+    #[test_matrix("cast (int as varchar)" => Ok(Target::Comment(
         Typecast(Cast::new(
             Int4,
             Varchar { max_length: None }
         ))
     )))]
-    #[test_case("collation some_collation" => Ok(Target::Comment(
+    #[test_matrix("collation some_collation" => Ok(Target::Comment(
         Collation(vec!["some_collation".into()])
     )))]
-    #[test_case("column some_column" => Ok(Target::Comment(
+    #[test_matrix("column some_column" => Ok(Target::Comment(
         Column(vec!["some_column".into()])
     )))]
-    #[test_case("constraint some_constraint on domain int" => Ok(Target::Comment(
+    #[test_matrix("constraint some_constraint on domain int" => Ok(Target::Comment(
         DomainConstraint {
             constraint: "some_constraint".into(),
             domain: Int4
         }
     )))]
-    #[test_case("constraint some_constraint on some_table" => Ok(Target::Comment(
+    #[test_matrix("constraint some_constraint on some_table" => Ok(Target::Comment(
         TableConstraint {
             constraint: "some_constraint".into(),
             table: vec!["some_table".into()]
         }
     )))]
-    #[test_case("conversion some_conversion" => Ok(Target::Comment(
+    #[test_matrix("conversion some_conversion" => Ok(Target::Comment(
         Conversion(vec!["some_conversion".into()])
     )))]
-    #[test_case("database some_database" => Ok(
+    #[test_matrix("database some_database" => Ok(
         Target::Database { db_name: "some_database".into() }
     ))]
-    #[test_case("domain int" => Ok(Target::Comment(
+    #[test_matrix("domain int" => Ok(Target::Comment(
         Domain(Int4.into())
     )))]
-    #[test_case("event trigger some_trigger" => Ok(Target::Comment(
+    #[test_matrix("event trigger some_trigger" => Ok(Target::Comment(
         EventTrigger("some_trigger".into())
     )))]
-    #[test_case("extension some_extension" => Ok(Target::Comment(
+    #[test_matrix("extension some_extension" => Ok(Target::Comment(
         Extension("some_extension".into())
     )))]
-    #[test_case("foreign data wrapper some_wrapper" => Ok(Target::Comment(
+    #[test_matrix("foreign data wrapper some_wrapper" => Ok(Target::Comment(
         ForeignDataWrapper("some_wrapper".into())
     )))]
-    #[test_case("foreign table some_table" => Ok(Target::Comment(
+    #[test_matrix("foreign table some_table" => Ok(Target::Comment(
         ForeignTable(vec!["some_table".into()])
     )))]
-    #[test_case("function some_function" => Ok(Target::Comment(
+    #[test_matrix("function some_function" => Ok(Target::Comment(
         Function(
             FunctionWithArgs::new(vec!["some_function".into()], None)
         )
     )))]
-    #[test_case("index some_index" => Ok(Target::Comment(
+    #[test_matrix("index some_index" => Ok(Target::Comment(
         Index(vec!["some_index".into()])
     )))]
-    #[test_case("large object 123" => Ok(Target::Comment(
+    #[test_matrix("large object 123" => Ok(Target::Comment(
         LargeObject(IntegerConst(123))
     )))]
-    #[test_case("materialized view some_view" => Ok(Target::Comment(
+    #[test_matrix("materialized view some_view" => Ok(Target::Comment(
         MaterializedView(vec!["some_view".into()])
     )))]
-    #[test_case("operator class some_class using some_method" => Ok(Target::Comment(
+    #[test_matrix("operator class some_class using some_method" => Ok(Target::Comment(
         OperatorClass {
             name: vec!["some_class".into()],
             index_method: "some_method".into()
         }
     )))]
-    #[test_case("operator family some_family using some_method" => Ok(Target::Comment(
+    #[test_matrix("operator family some_family using some_method" => Ok(Target::Comment(
         OperatorFamily {
             name: vec!["some_family".into()],
             index_method: "some_method".into()
         }
     )))]
-    #[test_case("operator +(int, int)" => Ok(Target::Comment(Operator(
+    #[test_matrix("operator +(int, int)" => Ok(Target::Comment(Operator(
         OperatorWithArgs::new(
             QualifiedOperator(vec![], Addition),
             OneOrBoth::Both(Int4.into(), Int4.into())
         )
     ))))]
-    #[test_case("procedural language some_language" => Ok(Target::Comment(
+    #[test_matrix("procedural language some_language" => Ok(Target::Comment(
         Language("some_language".into())
     )))]
-    #[test_case("language some_language" => Ok(Target::Comment(
+    #[test_matrix("language some_language" => Ok(Target::Comment(
         Language("some_language".into())
     )))]
-    #[test_case("policy some_policy on some_table" => Ok(Target::Comment(
+    #[test_matrix("policy some_policy on some_table" => Ok(Target::Comment(
         Policy {
             name: "some_policy".into(),
             table: vec!["some_table".into()]
         }
     )))]
-    #[test_case("procedure some_procedure" => Ok(Target::Comment(
+    #[test_matrix("procedure some_procedure" => Ok(Target::Comment(
         Procedure(
             FunctionWithArgs::new(vec!["some_procedure".into()], None)
         )
     )))]
-    #[test_case("property graph some_prop_graph" => Ok(Target::Comment(
+    #[test_matrix("property graph some_prop_graph" => Ok(Target::Comment(
         PropertyGraph(vec!["some_prop_graph".into()])
     )))]
-    #[test_case("publication some_publication" => Ok(Target::Comment(
+    #[test_matrix("publication some_publication" => Ok(Target::Comment(
         Publication("some_publication".into())
     )))]
-    #[test_case("role some_role" => Ok(Target::Comment(
+    #[test_matrix("role some_role" => Ok(Target::Comment(
         Role("some_role".into())
     )))]
-    #[test_case("routine some_routine" => Ok(Target::Comment(
+    #[test_matrix("routine some_routine" => Ok(Target::Comment(
         Routine(
             FunctionWithArgs::new(vec!["some_routine".into()], None)
         )
     )))]
-    #[test_case("rule some_rule on some_table" => Ok(Target::Comment(
+    #[test_matrix("rule some_rule on some_table" => Ok(Target::Comment(
         Rule {
             name: "some_rule".into(),
             table: vec!["some_table".into()]
         }
     )))]
-    #[test_case("schema some_schema" => Ok(Target::Comment(
+    #[test_matrix("schema some_schema" => Ok(Target::Comment(
         Schema("some_schema".into())
     )))]
-    #[test_case("sequence some_sequence" => Ok(Target::Comment(
+    #[test_matrix("sequence some_sequence" => Ok(Target::Comment(
         Sequence(vec!["some_sequence".into()])
     )))]
-    #[test_case("server some_server" => Ok(Target::Comment(
+    #[test_matrix("server some_server" => Ok(Target::Comment(
         ForeignServer("some_server".into())
     )))]
-    #[test_case("statistics some_statistics" => Ok(Target::Comment(
+    #[test_matrix("statistics some_statistics" => Ok(Target::Comment(
         ExtendedStatistics(vec!["some_statistics".into()])
     )))]
-    #[test_case("subscription some_subscription" => Ok(Target::Comment(
+    #[test_matrix("subscription some_subscription" => Ok(Target::Comment(
         Subscription("some_subscription".into())
     )))]
-    #[test_case("table some_table" => Ok(Target::Comment(
+    #[test_matrix("table some_table" => Ok(Target::Comment(
         Table(vec!["some_table".into()])
     )))]
-    #[test_case("tablespace some_tablespace" => Ok(Target::Comment(
+    #[test_matrix("tablespace some_tablespace" => Ok(Target::Comment(
         Tablespace("some_tablespace".into())
     )))]
-    #[test_case("text search configuration some_configuration" => Ok(Target::Comment(
+    #[test_matrix("text search configuration some_configuration" => Ok(Target::Comment(
         TextSearchConfiguration(vec!["some_configuration".into()])
     )))]
-    #[test_case("text search dictionary some_dictionary" => Ok(Target::Comment(
+    #[test_matrix("text search dictionary some_dictionary" => Ok(Target::Comment(
         TextSearchDictionary(vec!["some_dictionary".into()])
     )))]
-    #[test_case("text search parser some_parser" => Ok(Target::Comment(
+    #[test_matrix("text search parser some_parser" => Ok(Target::Comment(
         TextSearchParser(vec!["some_parser".into()])
     )))]
-    #[test_case("text search template some_template" => Ok(Target::Comment(
+    #[test_matrix("text search template some_template" => Ok(Target::Comment(
         TextSearchTemplate(vec!["some_template".into()])
     )))]
-    #[test_case("transform for int language some_language" => Ok(Target::Comment(
+    #[test_matrix("transform for int language some_language" => Ok(Target::Comment(
         Transform(TransformAst::new(Int4, "some_language"))
     )))]
-    #[test_case("trigger some_trigger on some_table" => Ok(Target::Comment(
+    #[test_matrix("trigger some_trigger on some_table" => Ok(Target::Comment(
         Trigger {
             name: "some_trigger".into(),
             table: vec!["some_table".into()]
         }
     )))]
-    #[test_case("type int" => Ok(Target::Comment(
+    #[test_matrix("type int" => Ok(Target::Comment(
         Type(Int4.into())
     )))]
-    #[test_case("view some_view" => Ok(Target::Comment(
+    #[test_matrix("view some_view" => Ok(Target::Comment(
         View(vec!["some_view".into()])
     )))]
     fn test_comment_target(source: &str) -> scan::Result<Target> {
         test_parser!(source, comment_target)
     }
 
-    #[test_case("is 'abc'", Some("abc".into()))]
-    #[test_case("is null", None)]
-    fn test_comment_text(source: &str, expected: Option<Box<str>>) {
-        test_parser!(source, comment_text, expected)
+    #[test_matrix("is 'abc'" => Ok(Some("abc".into())))]
+    #[test_matrix("is null" => Ok(None))]
+    fn test_comment_text(source: &str) -> scan::Result<Option<Box<str>>> {
+        test_parser!(source, comment_text)
     }
 }
 

@@ -187,72 +187,69 @@ fn encoding(ctx: &mut ParserContext) -> scan::Result<ValueOrDefault<Box<str>>> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    #[allow(unused_imports)]
-    use pg_ast::{
-        DefaultableValue,
-        SignedNumber::IntegerConst,
-        TransactionMode::ReadOnly,
-        XmlNodeKind::Document,
-    };
-    use test_case::test_case;
+    use pg_ast::DefaultableValue;
+    use pg_ast::SignedNumber::IntegerConst;
+    use pg_ast::TransactionMode::ReadOnly;
+    use pg_ast::XmlNodeKind::Document;
+    use test_case::test_matrix;
 
-    #[test_case("session characteristics as transaction read only", SetRest::SessionTransactionCharacteristics(vec![ReadOnly]))]
-    #[test_case("session authorization default", SetRest::SessionAuthorization { user: ValueOrDefault::Default })]
-    #[test_case("transaction snapshot 'abc'", SetRest::TransactionSnapshot("abc".into()))]
-    #[test_case("transaction read only", SetRest::LocalTransactionCharacteristics(vec![ReadOnly]))]
-    #[test_case("time zone default", SetRest::TimeZone(ZoneValue::Local))]
-    fn test_set_rest(source: &str, expected: SetRest) {
-        test_parser!(source, set_rest, expected)
+    #[test_matrix("session characteristics as transaction read only" => Ok(SetRest::SessionTransactionCharacteristics(vec![ReadOnly])))]
+    #[test_matrix("session authorization default" => Ok(SetRest::SessionAuthorization { user: ValueOrDefault::Default }))]
+    #[test_matrix("transaction snapshot 'abc'" => Ok(SetRest::TransactionSnapshot("abc".into())))]
+    #[test_matrix("transaction read only" => Ok(SetRest::LocalTransactionCharacteristics(vec![ReadOnly])))]
+    #[test_matrix("time zone default" => Ok(SetRest::TimeZone(Local)))]
+    fn test_set_rest(source: &str) -> scan::Result<SetRest> {
+        test_parser!(source, set_rest)
     }
 
-    #[test_case("session authorization default", SetRestMore::SessionAuthorization { user: ValueOrDefault::Default })]
-    #[test_case("transaction snapshot 'abc'", SetRestMore::TransactionSnapshot("abc".into()))]
-    #[test_case("time zone default", SetRestMore::TimeZone(ZoneValue::Local))]
-    #[test_case("catalog 'def'", SetRestMore::Catalog("def".into()))]
-    #[test_case("schema 'ghi'", SetRestMore::Schema("ghi".into()))]
-    #[test_case("names default", SetRestMore::ClientEncoding(ValueOrDefault::Default))]
-    #[test_case("names 'utf8'", SetRestMore::ClientEncoding(ValueOrDefault::Value("utf8".into())))]
-    #[test_case("names", SetRestMore::ClientEncoding(ValueOrDefault::Default))]
-    #[test_case("role action", SetRestMore::Role("action".into()))]
-    #[test_case("xml option document", SetRestMore::XmlOption(Document))]
-    #[test_case("_var from current", SetRestMore::FromCurrent { name: vec!["_var".into()] })]
-    #[test_case("_var to default", SetRestMore::ConfigurationParameter {
+    #[test_matrix("session authorization default" => Ok(SetRestMore::SessionAuthorization { user: ValueOrDefault::Default }))]
+    #[test_matrix("transaction snapshot 'abc'" => Ok(SetRestMore::TransactionSnapshot("abc".into())))]
+    #[test_matrix("time zone default" => Ok(SetRestMore::TimeZone(Local)))]
+    #[test_matrix("catalog 'def'" => Ok(SetRestMore::Catalog("def".into())))]
+    #[test_matrix("schema 'ghi'" => Ok(SetRestMore::Schema("ghi".into())))]
+    #[test_matrix("names default" => Ok(SetRestMore::ClientEncoding(ValueOrDefault::Default)))]
+    #[test_matrix("names 'utf8'" => Ok(SetRestMore::ClientEncoding(ValueOrDefault::Value("utf8".into()))))]
+    #[test_matrix("names" => Ok(SetRestMore::ClientEncoding(ValueOrDefault::Default)))]
+    #[test_matrix("role action" => Ok(SetRestMore::Role("action".into())))]
+    #[test_matrix("xml option document" => Ok(SetRestMore::XmlOption(Document)))]
+    #[test_matrix("_var from current" => Ok(SetRestMore::FromCurrent { name: vec!["_var".into()] }))]
+    #[test_matrix("_var to default" => Ok(SetRestMore::ConfigurationParameter {
         name: vec!["_var".into()],
         value: DefaultableValue::Default
-    })]
-    fn test_set_rest_more(source: &str, expected: SetRestMore) {
-        test_parser!(source, set_rest_more, expected)
+    }))]
+    fn test_set_rest_more(source: &str) -> scan::Result<SetRestMore> {
+        test_parser!(source, set_rest_more)
     }
 
-    #[test_case("default", ValueOrDefault::Default)]
-    #[test_case("numeric", ValueOrDefault::Value(Str::Static("numeric")))]
-    #[test_case("'test-string'", ValueOrDefault::Value(Str::Static("test-string")))]
-    fn test_session_auth_user(source: &str, expected: ValueOrDefault<Str>) {
-        test_parser!(source, session_auth_user, expected)
+    #[test_matrix("default" => Ok(ValueOrDefault::Default))]
+    #[test_matrix("numeric" => Ok(ValueOrDefault::Value(Str::Static("numeric"))))]
+    #[test_matrix("'test-string'" => Ok(ValueOrDefault::Value(Str::Static("test-string"))))]
+    fn test_session_auth_user(source: &str) -> scan::Result<ValueOrDefault<Str>> {
+        test_parser!(source, session_auth_user)
     }
 
-    #[test_case("default", ZoneValue::Local)]
-    #[test_case("local", ZoneValue::Local)]
-    #[test_case("-10", ZoneValue::Numeric(IntegerConst(-10)))]
-    #[test_case("'+01:00'", ZoneValue::String("+01:00".into()))]
-    #[test_case("utf8", ZoneValue::String("utf8".into()))]
-    #[test_case("interval '5' hour", ZoneValue::Interval { value: "5".into(), range: Hour })]
-    #[test_case("interval(3) '5'", ZoneValue::Interval { value: "5".into(), range: Full { precision: Some(3) } })]
-    fn test_zone_value(source: &str, expected: ZoneValue) {
-        test_parser!(source, zone_value, expected)
+    #[test_matrix("default" => Ok(Local))]
+    #[test_matrix("local" => Ok(Local))]
+    #[test_matrix("-10" => Ok(Numeric(IntegerConst(-10))))]
+    #[test_matrix("'+01:00'" => Ok(ZoneValue::String("+01:00".into())))]
+    #[test_matrix("utf8" => Ok(ZoneValue::String("utf8".into())))]
+    #[test_matrix("interval '5' hour" => Ok(Interval { value: "5".into(), range: Hour }))]
+    #[test_matrix("interval(3) '5'" => Ok(Interval { value: "5".into(), range: Full { precision: Some(3) } }))]
+    fn test_zone_value(source: &str) -> scan::Result<ZoneValue> {
+        test_parser!(source, zone_value)
     }
 
-    #[test_case("", IntervalRange::default())]
-    #[test_case("hour", Hour)]
-    #[test_case("hour to minute", HourToMinute)]
-    fn test_zone_value_interval(source: &str, expected: IntervalRange) {
-        test_parser!(source, zone_value_interval, expected)
+    #[test_matrix("" => Ok(IntervalRange::default()))]
+    #[test_matrix("hour" => Ok(Hour))]
+    #[test_matrix("hour to minute" => Ok(HourToMinute))]
+    fn test_zone_value_interval(source: &str) -> scan::Result<IntervalRange> {
+        test_parser!(source, zone_value_interval)
     }
 
-    #[test_case("default", ValueOrDefault::Default)]
-    #[test_case("'utf8'", ValueOrDefault::Value("utf8".into()))]
-    fn test_encoding(source: &str, expected: ValueOrDefault<Box<str>>) {
-        test_parser!(source, encoding, expected)
+    #[test_matrix("default" => Ok(ValueOrDefault::Default))]
+    #[test_matrix("'utf8'" => Ok(ValueOrDefault::Value("utf8".into())))]
+    fn test_encoding(source: &str) -> scan::Result<ValueOrDefault<Box<str>>> {
+        test_parser!(source, encoding)
     }
 }
 

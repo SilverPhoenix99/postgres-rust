@@ -21,12 +21,12 @@ pub(super) fn with_timezone(ctx: &mut ParserContext) -> scan::Result<bool> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("with time zone", true)]
-    #[test_case("without time zone", false)]
-    fn test_with_timezone(source: &str, expected: bool) {
-        test_parser!(source, with_timezone, expected);
+    #[test_matrix("with time zone" => Ok(true))]
+    #[test_matrix("without time zone" => Ok(false))]
+    fn test_with_timezone(source: &str) -> scan::Result<bool> {
+        test_parser!(source, with_timezone)
     }
 }
 

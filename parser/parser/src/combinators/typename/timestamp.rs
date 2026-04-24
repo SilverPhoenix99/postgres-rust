@@ -26,14 +26,14 @@ pub(super) fn timestamp(ctx: &mut ParserContext) -> scan::Result<TypeName> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("timestamp"                      => Ok(Timestamp { precision: None }))]
-    #[test_case("timestamp(5)"                   => Ok(Timestamp { precision: Some(5) }))]
-    #[test_case("timestamp without time zone"    => Ok(Timestamp { precision: None }))]
-    #[test_case("timestamp(7) without time zone" => Ok(Timestamp { precision: Some(7) }))]
-    #[test_case("timestamp with time zone"       => Ok(TimestampTz { precision: None }))]
-    #[test_case("timestamp(9) with time zone"    => Ok(TimestampTz { precision: Some(9) }))]
+    #[test_matrix("timestamp"                      => Ok(Timestamp { precision: None }))]
+    #[test_matrix("timestamp(5)"                   => Ok(Timestamp { precision: Some(5) }))]
+    #[test_matrix("timestamp without time zone"    => Ok(Timestamp { precision: None }))]
+    #[test_matrix("timestamp(7) without time zone" => Ok(Timestamp { precision: Some(7) }))]
+    #[test_matrix("timestamp with time zone"       => Ok(TimestampTz { precision: None }))]
+    #[test_matrix("timestamp(9) with time zone"    => Ok(TimestampTz { precision: Some(9) }))]
     fn test_timestamp(source: &str) -> scan::Result<TypeName> {
         test_parser!(source, timestamp)
     }

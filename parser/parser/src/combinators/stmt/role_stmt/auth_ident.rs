@@ -10,12 +10,12 @@ pub(super) fn auth_ident(ctx: &mut ParserContext) -> scan::Result<RoleSpec> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("public", RoleSpec::Public)]
-    #[test_case("user", CurrentUser)]
-    fn test_auth_ident(source: &str, expected: RoleSpec) {
-        test_parser!(source, auth_ident, expected)
+    #[test_matrix("public" => Ok(RoleSpec::Public))]
+    #[test_matrix("user" => Ok(CurrentUser))]
+    fn test_auth_ident(source: &str) -> scan::Result<RoleSpec> {
+        test_parser!(source, auth_ident)
     }
 }
 

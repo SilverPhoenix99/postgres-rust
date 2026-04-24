@@ -32,21 +32,20 @@ pub(super) fn rollback_stmt(ctx: &mut ParserContext) -> scan::Result<Transaction
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[allow(unused_imports)]
     use crate::test_parser;
-    use test_case::test_case;
+    use test_case::test_matrix;
 
-    #[test_case("rollback" => Ok(Rollback { chain: false }))]
-    #[test_case("rollback and chain" => Ok(Rollback { chain: true }))]
-    #[test_case("rollback and no chain" => Ok(Rollback { chain: false }))]
-    #[test_case("rollback to test_ident" => Ok(RollbackTo("test_ident".into())))]
-    #[test_case("rollback to savepoint test_ident" => Ok(RollbackTo("test_ident".into())))]
-    #[test_case("rollback transaction" => Ok(Rollback { chain: false }))]
-    #[test_case("rollback transaction and chain" => Ok(Rollback { chain: true }))]
-    #[test_case("rollback transaction and no chain" => Ok(Rollback { chain: false }))]
-    #[test_case("rollback transaction to test_ident" => Ok(RollbackTo("test_ident".into())))]
-    #[test_case("rollback transaction to savepoint test_ident" => Ok(RollbackTo("test_ident".into())))]
-    #[test_case("rollback prepared 'test-string'" => Ok(RollbackPrepared("test-string".into())))]
+    #[test_matrix("rollback" => Ok(Rollback { chain: false }))]
+    #[test_matrix("rollback and chain" => Ok(Rollback { chain: true }))]
+    #[test_matrix("rollback and no chain" => Ok(Rollback { chain: false }))]
+    #[test_matrix("rollback to test_ident" => Ok(RollbackTo("test_ident".into())))]
+    #[test_matrix("rollback to savepoint test_ident" => Ok(RollbackTo("test_ident".into())))]
+    #[test_matrix("rollback transaction" => Ok(Rollback { chain: false }))]
+    #[test_matrix("rollback transaction and chain" => Ok(Rollback { chain: true }))]
+    #[test_matrix("rollback transaction and no chain" => Ok(Rollback { chain: false }))]
+    #[test_matrix("rollback transaction to test_ident" => Ok(RollbackTo("test_ident".into())))]
+    #[test_matrix("rollback transaction to savepoint test_ident" => Ok(RollbackTo("test_ident".into())))]
+    #[test_matrix("rollback prepared 'test-string'" => Ok(RollbackPrepared("test-string".into())))]
     fn test_rollback(source: &str) -> scan::Result<TransactionStmt> {
         test_parser!(source, rollback_stmt)
     }

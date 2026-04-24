@@ -44,22 +44,19 @@ fn json_value_args(ctx: &mut ParserContext) -> scan::Result<JsonValueFunc> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::ExprNode::{IntegerConst, StringConst},
-        pg_ast::JsonBehavior,
-        pg_ast::JsonBehaviorClause,
-        pg_ast::JsonOutput,
-        pg_ast::JsonValueExpr,
-        pg_ast::TypeName::Int4,
-    };
+    use pg_ast::ExprNode::{IntegerConst, StringConst};
+    use pg_ast::JsonBehavior;
+    use pg_ast::JsonBehaviorClause;
+    use pg_ast::JsonOutput;
+    use pg_ast::JsonValueExpr;
+    use pg_ast::TypeName::Int4;
+    use test_case::test_matrix;
 
-    #[test_case("json_value('{}', 'foo')" => Ok(JsonValueFunc::new(
+    #[test_matrix("json_value('{}', 'foo')" => Ok(JsonValueFunc::new(
         JsonValueExpr::from(StringConst("{}".into())),
         StringConst("foo".into())
     )))]
-    #[test_case("json_value('{}', 'foo' passing 1 as a returning int null on error)" => Ok(
+    #[test_matrix("json_value('{}', 'foo' passing 1 as a returning int null on error)" => Ok(
         JsonValueFunc::new(
             JsonValueExpr::from(StringConst("{}".into())),
             StringConst("foo".into())

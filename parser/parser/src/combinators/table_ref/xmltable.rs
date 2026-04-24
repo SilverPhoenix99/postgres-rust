@@ -185,17 +185,14 @@ fn xml_namespace_el(ctx: &mut ParserContext) -> scan::Result<NamedValue> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::Alias,
-        pg_ast::ExprNode::{IntegerConst, StringConst},
-        pg_ast::TypeName::Int4,
-        pg_elog::Error::Parser,
-        scan::Error::ScanErr,
-    };
+    use pg_ast::Alias;
+    use pg_ast::ExprNode::{IntegerConst, StringConst};
+    use pg_ast::TypeName::Int4;
+    use pg_elog::Error::Parser;
+    use scan::Error::ScanErr;
+    use test_case::test_matrix;
 
-    #[test_case(
+    #[test_matrix(
         "xmltable(\
             'path' \
             passing by ref 'doc' \
@@ -219,7 +216,7 @@ mod tests {
             )
         )
     )]
-    #[test_case(
+    #[test_matrix(
         "xmltable(\
             xmlnamespaces(default 'foo', 'bar' as x), \
             'path' \
@@ -249,16 +246,16 @@ mod tests {
         test_parser!(source, xmltable)
     }
 
-    #[test_case("foo for ordinality" => Ok(
+    #[test_matrix("foo for ordinality" => Ok(
         XmlTableColumn::new("foo", ForOrdinality)
     ))]
-    #[test_case("bar int" => Ok(
+    #[test_matrix("bar int" => Ok(
         XmlTableColumn::new(
             "bar",
             XmlTableColumnDefinition::from(Int4)
         )
     ))]
-    #[test_case("baz int not null default 1" => Ok(
+    #[test_matrix("baz int not null default 1" => Ok(
         XmlTableColumn::new(
             "baz",
             XmlTableColumnDefinition::from(Int4)
@@ -266,48 +263,48 @@ mod tests {
                 .with_default_value(IntegerConst(1))
         )
     ))]
-    #[test_case("qux int default 1 default 2" => matches Err(ScanErr(
+    #[test_matrix("qux int default 1 default 2" => matches Err(ScanErr(
         Located(Parser(DefaultValueAlreadyDeclared), _)
     )))]
-    #[test_case("lorem int path 'x' path 'y'" => matches Err(ScanErr(
+    #[test_matrix("lorem int path 'x' path 'y'" => matches Err(ScanErr(
         Located(Parser(PathValueAlreadyDeclared), _)
     )))]
-    #[test_case("yumyum int not null null" => matches Err(ScanErr(
+    #[test_matrix("yumyum int not null null" => matches Err(ScanErr(
         Located(Parser(ConflictingNullability(_)), _)
     )))]
-    #[test_case("narslog int null not null" => matches Err(ScanErr(
+    #[test_matrix("narslog int null not null" => matches Err(ScanErr(
         Located(Parser(ConflictingNullability(_)), _)
     )))]
-    #[test_case("umpus int null null" => matches Err(ScanErr(
+    #[test_matrix("umpus int null null" => matches Err(ScanErr(
         Located(Parser(ConflictingNullability(_)), _)
     )))]
-    #[test_case("wawas int not null not null" => matches Err(ScanErr(
+    #[test_matrix("wawas int not null not null" => matches Err(ScanErr(
         Located(Parser(ConflictingNullability(_)), _)
     )))]
     fn test_xmltable_column_el(source: &str) -> scan::Result<XmlTableColumn> {
         test_parser!(source, xmltable_column_el)
     }
 
-    #[test_case("null" => Ok(Null))]
-    #[test_case("not null" => Ok(NotNull))]
-    #[test_case("default 'foo'" => Ok(DefaultOption(StringConst("foo".into()))))]
-    #[test_case("path 'foo'" => Ok(Path(StringConst("foo".into()))))]
-    #[test_case("foo 'bar'" => matches Err(ScanErr(
+    #[test_matrix("null" => Ok(Null))]
+    #[test_matrix("not null" => Ok(NotNull))]
+    #[test_matrix("default 'foo'" => Ok(DefaultOption(StringConst("foo".into()))))]
+    #[test_matrix("path 'foo'" => Ok(Path(StringConst("foo".into()))))]
+    #[test_matrix("foo 'bar'" => matches Err(ScanErr(
         Located(Parser(UnrecognizedColumnOption(_)), _)
     )))]
-    #[test_case("__pg__is_not_null 'foo'" => matches Err(ScanErr(
+    #[test_matrix("__pg__is_not_null 'foo'" => matches Err(ScanErr(
         Located(Parser(InvalidXmlTableOptionName(_)), _)
     )))]
     fn test_xmltable_column_option_el(source: &str) -> scan::Result<XmlTableColumnOption> {
         test_parser!(source, xmltable_column_option_el)
     }
 
-    #[test_case("default 'foo'" => Ok(
+    #[test_matrix("default 'foo'" => Ok(
         NamedValue::new(
             StringConst("foo".into())
         )
     ))]
-    #[test_case("'foo' as bar" => Ok(
+    #[test_matrix("'foo' as bar" => Ok(
         NamedValue::new(StringConst("foo".into()))
             .with_name("bar")
     ))]

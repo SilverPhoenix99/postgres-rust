@@ -147,167 +147,162 @@ fn security_label(ctx: &mut ParserContext) -> scan::Result<Option<Box<str>>> {
 mod tests {
     use super::*;
     use crate::test_parser;
-    use test_case::test_case;
-    #[allow(unused_imports)]
-    use {
-        pg_ast::AggregateWithArgs,
-        pg_ast::FunctionWithArgs,
-        pg_ast::SignedNumber::IntegerConst,
-        pg_ast::TypeName::Int4,
-    };
+    use pg_ast::AggregateWithArgs;
+    use pg_ast::FunctionWithArgs;
+    use pg_ast::SignedNumber::IntegerConst;
+    use pg_ast::TypeName::Int4;
+    use test_case::test_matrix;
 
-    #[test_case(
-        "SECURITY LABEL ON access method some_method IS 'foo'",
+    #[test_matrix("SECURITY LABEL ON access method some_method IS 'foo'" => Ok(
         SecurityLabelStmt::new(
             AccessMethod("some_method".into()),
             SecurityLabel::new(
                 None,
                 Some("foo".into())
             )
-        )
-    )]
-    #[test_case(
-        "SECURITY LABEL FOR 'some_label' ON access method some_method IS 'foo'",
+        ).into()
+    ))]
+    #[test_matrix("SECURITY LABEL FOR 'some_label' ON access method some_method IS 'foo'" => Ok(
         SecurityLabelStmt::new(
             AccessMethod("some_method".into()),
             SecurityLabel::new(
                 Some("some_label".into()),
                 Some("foo".into())
             )
-        )
-    )]
-    fn test_security_label_stmt(source: &str, expected: SecurityLabelStmt) {
-        test_parser!(source, security_label_stmt, expected)
+        ).into()
+    ))]
+    fn test_security_label_stmt(source: &str) -> scan::Result<RawStmt> {
+        test_parser!(source, security_label_stmt)
     }
 
-    #[test_case("for 'foo'", "foo".into())]
-    fn test_provider(source: &str, expected: Str) {
-        test_parser!(source, provider, expected);
+    #[test_matrix("for 'foo'" => Ok("foo".into()))]
+    fn test_provider(source: &str) -> scan::Result<Str> {
+        test_parser!(source, provider)
     }
 
-    #[test_case("access method some_method" => Ok(Target::Label(
+    #[test_matrix("access method some_method" => Ok(Target::Label(
         AccessMethod("some_method".into())
     )))]
-    #[test_case("aggregate some_aggregate(*)" => Ok(Target::Label(
+    #[test_matrix("aggregate some_aggregate(*)" => Ok(Target::Label(
         Aggregate(AggregateWithArgs::new(
             vec!["some_aggregate".into()],
             vec![],
             vec![]
         ))
     )))]
-    #[test_case("collation some_collation" => Ok(Target::Label(
+    #[test_matrix("collation some_collation" => Ok(Target::Label(
         Collation(vec!["some_collation".into()])
     )))]
-    #[test_case("column some_column" => Ok(Target::Label(
+    #[test_matrix("column some_column" => Ok(Target::Label(
         Column(vec!["some_column".into()])
     )))]
-    #[test_case("conversion some_conversion" => Ok(Target::Label(
+    #[test_matrix("conversion some_conversion" => Ok(Target::Label(
         Conversion(vec!["some_conversion".into()])
     )))]
-    #[test_case("database some_database" => Ok(
+    #[test_matrix("database some_database" => Ok(
         Target::Database{ db_name: "some_database".into() }
     ))]
-    #[test_case("domain int" => Ok(Target::Label(
+    #[test_matrix("domain int" => Ok(Target::Label(
         Domain(Int4.into())
     )))]
-    #[test_case("event trigger some_trigger" => Ok(Target::Label(
+    #[test_matrix("event trigger some_trigger" => Ok(Target::Label(
         EventTrigger("some_trigger".into())
     )))]
-    #[test_case("extension some_extension" => Ok(Target::Label(
+    #[test_matrix("extension some_extension" => Ok(Target::Label(
         Extension("some_extension".into())
     )))]
-    #[test_case("foreign data wrapper some_wrapper" => Ok(Target::Label(
+    #[test_matrix("foreign data wrapper some_wrapper" => Ok(Target::Label(
         ForeignDataWrapper("some_wrapper".into())
     )))]
-    #[test_case("foreign table some_table" => Ok(Target::Label(
+    #[test_matrix("foreign table some_table" => Ok(Target::Label(
         ForeignTable(vec!["some_table".into()])
     )))]
-    #[test_case("function some_function" => Ok(Target::Label(
+    #[test_matrix("function some_function" => Ok(Target::Label(
         Function(
             FunctionWithArgs::new(vec!["some_function".into()], None)
         )
     )))]
-    #[test_case("index some_index" => Ok(Target::Label(
+    #[test_matrix("index some_index" => Ok(Target::Label(
         Index(vec!["some_index".into()])
     )))]
-    #[test_case("large object 123" => Ok(Target::Label(
+    #[test_matrix("large object 123" => Ok(Target::Label(
         LargeObject(IntegerConst(123))
     )))]
-    #[test_case("materialized view some_view" => Ok(Target::Label(
+    #[test_matrix("materialized view some_view" => Ok(Target::Label(
         MaterializedView(vec!["some_view".into()])
     )))]
-    #[test_case("procedural language some_language" => Ok(Target::Label(
+    #[test_matrix("procedural language some_language" => Ok(Target::Label(
         Language("some_language".into())
     )))]
-    #[test_case("language some_language" => Ok(Target::Label(
+    #[test_matrix("language some_language" => Ok(Target::Label(
         Language("some_language".into())
     )))]
-    #[test_case("procedure some_procedure" => Ok(Target::Label(
+    #[test_matrix("procedure some_procedure" => Ok(Target::Label(
         Procedure(
             FunctionWithArgs::new(vec!["some_procedure".into()], None)
         )
     )))]
-    #[test_case("property graph some_prop_graph" => Ok(Target::Label(
+    #[test_matrix("property graph some_prop_graph" => Ok(Target::Label(
         PropertyGraph(vec!["some_prop_graph".into()])
     )))]
-    #[test_case("publication some_publication" => Ok(Target::Label(
+    #[test_matrix("publication some_publication" => Ok(Target::Label(
         Publication("some_publication".into())
     )))]
-    #[test_case("role some_role" => Ok(Target::Label(
+    #[test_matrix("role some_role" => Ok(Target::Label(
         Role("some_role".into())
     )))]
-    #[test_case("routine some_routine" => Ok(Target::Label(
+    #[test_matrix("routine some_routine" => Ok(Target::Label(
         Routine(
             FunctionWithArgs::new(vec!["some_routine".into()], None)
         )
     )))]
-    #[test_case("schema some_schema" => Ok(Target::Label(
+    #[test_matrix("schema some_schema" => Ok(Target::Label(
         Schema("some_schema".into())
     )))]
-    #[test_case("sequence some_sequence" => Ok(Target::Label(
+    #[test_matrix("sequence some_sequence" => Ok(Target::Label(
         Sequence(vec!["some_sequence".into()])
     )))]
-    #[test_case("server some_server" => Ok(Target::Label(
+    #[test_matrix("server some_server" => Ok(Target::Label(
         ForeignServer("some_server".into())
     )))]
-    #[test_case("statistics some_statistics" => Ok(Target::Label(
+    #[test_matrix("statistics some_statistics" => Ok(Target::Label(
         ExtendedStatistics(vec!["some_statistics".into()])
     )))]
-    #[test_case("subscription some_subscription" => Ok(Target::Label(
+    #[test_matrix("subscription some_subscription" => Ok(Target::Label(
         Subscription("some_subscription".into())
     )))]
-    #[test_case("table some_table" => Ok(Target::Label(
+    #[test_matrix("table some_table" => Ok(Target::Label(
         Table(vec!["some_table".into()])
     )))]
-    #[test_case("tablespace some_tablespace" => Ok(Target::Label(
+    #[test_matrix("tablespace some_tablespace" => Ok(Target::Label(
         Tablespace("some_tablespace".into())
     )))]
-    #[test_case("text search configuration some_configuration" => Ok(Target::Label(
+    #[test_matrix("text search configuration some_configuration" => Ok(Target::Label(
         TextSearchConfiguration(vec!["some_configuration".into()])
     )))]
-    #[test_case("text search dictionary some_dictionary" => Ok(Target::Label(
+    #[test_matrix("text search dictionary some_dictionary" => Ok(Target::Label(
         TextSearchDictionary(vec!["some_dictionary".into()])
     )))]
-    #[test_case("text search parser some_parser" => Ok(Target::Label(
+    #[test_matrix("text search parser some_parser" => Ok(Target::Label(
         TextSearchParser(vec!["some_parser".into()])
     )))]
-    #[test_case("text search template some_template" => Ok(Target::Label(
+    #[test_matrix("text search template some_template" => Ok(Target::Label(
         TextSearchTemplate(vec!["some_template".into()])
     )))]
-    #[test_case("type int" => Ok(Target::Label(
+    #[test_matrix("type int" => Ok(Target::Label(
         Type(Int4.into())
     )))]
-    #[test_case("view some_view" => Ok(Target::Label(
+    #[test_matrix("view some_view" => Ok(Target::Label(
         View(vec!["some_view".into()])
     )))]
     fn test_label_target(source: &str) -> scan::Result<Target> {
         test_parser!(source, label_target)
     }
 
-    #[test_case("is 'abc'", Some("abc".into()))]
-    #[test_case("is null", None)]
-    fn test_comment_text(source: &str, expected: Option<Box<str>>) {
-        test_parser!(source, security_label, expected)
+    #[test_matrix("is 'abc'" => Ok(Some("abc".into())))]
+    #[test_matrix("is null" => Ok(None))]
+    fn test_comment_text(source: &str) -> scan::Result<Option<Box<str>>> {
+        test_parser!(source, security_label)
     }
 }
 
