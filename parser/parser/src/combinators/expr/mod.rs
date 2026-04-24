@@ -6,6 +6,7 @@ pg_basics::reexport! { pub(super)
 pg_basics::reexport! {
     expr_const,
     indirection,
+    row,
     unicode_normal_form,
 }
 

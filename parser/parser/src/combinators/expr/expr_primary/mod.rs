@@ -2,7 +2,6 @@ pg_basics::reexport! {
     array_expr,
     case_expr,
     exists_expr,
-    explicit_row,
     expr_primary_paren,
     func_expr,
     grouping_func,
@@ -30,7 +29,7 @@ pub(in crate::combinators) fn expr_primary(ctx: &mut ParserContext) -> scan::Res
         expr_const,
         case_expr.map(From::from),
         func_expr,
-        explicit_row,
+        explicit_row.map(Row),
         grouping_func,
         array_expr,
         exists_expr,
@@ -76,7 +75,9 @@ mod tests {
 
 use crate::alt;
 use crate::combinators::core::Combinator;
+use crate::combinators::expr::explicit_row;
 use crate::combinators::expr::expr_const;
 use crate::ParserContext;
 use pg_ast::ExprNode;
+use pg_ast::ExprNode::Row;
 use pg_parser_core::scan;
