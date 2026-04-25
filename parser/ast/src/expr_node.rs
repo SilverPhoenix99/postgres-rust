@@ -18,6 +18,8 @@ pub enum ExprNode {
     CaseExpr(Box<CaseExpr>),
     ParamRef { index: i32 },
     Row(Option<Vec<ExprNode>>),
+    #[from(RowOverlaps)]
+    RowOverlaps(Box<RowOverlaps>),
     Array(Option<Vec<ExprNode>>),
 
     #[from(BinaryExpr)]
@@ -102,6 +104,7 @@ use crate::FuncCallExpr;
 use crate::IndirectionExpr;
 use crate::JsonArrayAggExpr;
 use crate::JsonObjectAggExpr;
+use crate::RowOverlaps;
 use crate::SelectStmt;
 use crate::SignedNumber;
 use crate::SqlFunction;

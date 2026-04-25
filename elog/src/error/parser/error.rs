@@ -101,6 +101,12 @@ pub enum Error {
 
     #[display("UNIQUE predicate is not yet implemented")]
     UniquePredicateNotImplemented,
+
+    #[display("wrong number of parameters on left side of OVERLAPS expression")]
+    WrongNumberOfLeftOverlapsParameters,
+
+    #[display("wrong number of parameters on right side of OVERLAPS expression")]
+    WrongNumberOfRightOverlapsParameters,
 }
 
 impl core::error::Error for Error {}
@@ -187,6 +193,8 @@ impl_log_message! {
     ConflictingNullability => [SyntaxError, None],
     NonStringJsonTablePathSpec => [FeatureNotSupported, None],
     UniquePredicateNotImplemented => [FeatureNotSupported, None],
+    WrongNumberOfLeftOverlapsParameters => [SyntaxError, None],
+    WrongNumberOfRightOverlapsParameters => [SyntaxError, None],
 }
 
 use crate::sql_state::SqlState;

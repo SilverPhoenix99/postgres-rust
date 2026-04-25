@@ -110,6 +110,7 @@ pg_basics::reexport! { pub
     role_kind,
     role_spec,
     role_stmt,
+    row_overlaps,
     rows_table_ref,
     sample_table_ref,
     security_label,
