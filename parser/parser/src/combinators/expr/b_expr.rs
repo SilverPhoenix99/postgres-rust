@@ -173,6 +173,10 @@ mod tests {
         test_parser!(source, b_expr_primary)
     }
 
+    /*
+        Single expressions
+     */
+    #[test_matrix("1" => Ok(Int(1)))]
     #[test_matrix("1::varchar" => Ok(TypecastExpr::new(Int(1), Varchar { max_length: None }).into()))]
     #[test_matrix("1 ^ 2"  => Ok(BinaryExpr::new(Exponentiation, Int(1), Int(2)).into()))]
     #[test_matrix("3 % 4"  => Ok(BinaryExpr::new(Modulo,         Int(3), Int(4)).into()))]
@@ -183,10 +187,9 @@ mod tests {
     #[test_matrix("2 is not document" => Ok(IsNotDocument(Int(2).into())))]
     #[test_matrix("3 is distinct from 4" => Ok(IsDistinct((Int(3), Int(4)).into())))]
     #[test_matrix("5 is not distinct from 6" => Ok(IsNotDistinct((Int(5), Int(6)).into())))]
-    fn test_b_expr_single_expr(source: &str) -> scan::Result<ExprNode> {
-        test_parser!(source, b_expr)
-    }
-
+    /*
+        Multiple expressions
+    */
     #[test_matrix("- 2 ^ 4" => Ok(
         BinaryExpr::new(Exponentiation, Int(-2), Int(4))
             .into()
@@ -236,7 +239,7 @@ mod tests {
             BinaryExpr::new(Addition, Int(2), Int(3))
         ).into()
     ))]
-    fn test_b_expr_multiple_expr(source: &str) -> scan::Result<ExprNode> {
+    fn test_b_expr(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, b_expr)
     }
 }
