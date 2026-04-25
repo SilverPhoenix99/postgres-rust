@@ -80,7 +80,7 @@ pub(super) fn additive_op(ctx: &mut ParserContext) -> scan::Result<Operator> {
     ).parse(ctx)
 }
 
-fn multiplicative_op(ctx: &mut ParserContext) -> scan::Result<Operator> {
+pub(super) fn multiplicative_op(ctx: &mut ParserContext) -> scan::Result<Operator> {
     alt!(
         Mul.map(|_| Multiplication),
         Div.map(|_| Division),
@@ -93,7 +93,7 @@ fn exponentiation_op(ctx: &mut ParserContext) -> scan::Result<Operator> {
         .map(|_| Exponentiation)
 }
 
-fn boolean_op(ctx: &mut ParserContext) -> scan::Result<Operator> {
+pub(super) fn boolean_op(ctx: &mut ParserContext) -> scan::Result<Operator> {
     alt!(
         Op::Less.map(|_| Less),
         Op::Equals.map(|_| Equals),

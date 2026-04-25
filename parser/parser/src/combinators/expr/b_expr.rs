@@ -55,14 +55,7 @@ fn b_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
             }
 
             if prec <= 4 && let Some((op, rhs)) = {
-                seq!(
-                    alt!(
-                        Mul.map(|_| Multiplication),
-                        Div.map(|_| Division),
-                        Percent.map(|_| Modulo),
-                    ),
-                    b_expr_prec(5)
-                )
+                seq!(multiplicative_op, b_expr_prec(5))
                     .parse(ctx)
                     .optional()?
             } {
@@ -71,13 +64,7 @@ fn b_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
             }
 
             if prec <= 3 && let Some((op, rhs)) = {
-                seq!(
-                    alt!(
-                        Minus.map(|_| Subtraction),
-                        Plus.map(|_| Addition),
-                    ),
-                    b_expr_prec(4)
-                )
+                seq!(additive_op, b_expr_prec(4))
                     .parse(ctx)
                     .optional()?
             } {
@@ -102,17 +89,7 @@ fn b_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
             }
 
             if prec <= 1 && let Some((op, rhs)) = {
-                seq!(
-                    alt!(
-                        Op::Equals.map(|_| Equals),
-                        Op::Greater.map(|_| Greater),
-                        Op::GreaterEquals.map(|_| GreaterEquals),
-                        Op::Less.map(|_| Less),
-                        Op::LessEquals.map(|_| LessEquals),
-                        Op::NotEquals.map(|_| NotEquals),
-                    ),
-                    b_expr_prec(2)
-                )
+                seq!(boolean_op, b_expr_prec(2))
                     .parse(ctx)
                     .optional()?
             } {
@@ -181,6 +158,10 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_ast::ExprNode::IntegerConst as Int;
+    use pg_ast::Operator::Equals;
+    use pg_ast::Operator::Modulo;
+    use pg_ast::Operator::Multiplication;
+    use pg_ast::TypeName::Int4;
     use pg_ast::TypeName::Varchar;
     use test_case::test_matrix;
 
@@ -215,6 +196,46 @@ mod tests {
             BinaryExpr::new(Exponentiation, Int(5), Int(3))
         ).into()
     ))]
+    #[test_matrix("1 + 2 * 3" => Ok(
+        BinaryExpr::new(Addition,
+            Int(1),
+            BinaryExpr::new(Multiplication, Int(2), Int(3))
+        ).into()
+    ))]
+    #[test_matrix("4 - 5 - 6" => Ok(
+        BinaryExpr::new(Subtraction,
+            BinaryExpr::new(Subtraction, Int(4), Int(5)),
+            Int(6)
+        ).into()
+    ))]
+    #[test_matrix("7 ^ 8 ^ 9" => Ok(
+        BinaryExpr::new(Exponentiation,
+            BinaryExpr::new(Exponentiation, Int(7), Int(8)),
+            Int(9)
+        ).into()
+    ))]
+    // Won't match "= 3"
+    #[test_matrix("1 = 2 = 3" => Ok(
+        BinaryExpr::new(Equals, Int(1), Int(2)).into()
+    ))]
+    #[test_matrix("1::varchar::int" => Ok(
+        TypecastExpr::new(
+            TypecastExpr::new(Int(1), Varchar { max_length: None }).into(),
+            Int4
+        ).into()
+    ))]
+    #[test_matrix("1::varchar ^ 2" => Ok(
+        BinaryExpr::new(Exponentiation,
+            TypecastExpr::new(Int(1), Varchar { max_length: None }),
+            Int(2)
+        ).into()
+    ))]
+    #[test_matrix("1 -> 2 + 3" => Ok(
+        BinaryExpr::new(RightArrow,
+            Int(1),
+            BinaryExpr::new(Addition, Int(2), Int(3))
+        ).into()
+    ))]
     fn test_b_expr_multiple_expr(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, b_expr)
     }
@@ -222,7 +243,10 @@ mod tests {
 
 use super::expr_primary;
 use crate::alt;
+use crate::combinators::additive_op;
+use crate::combinators::boolean_op;
 use crate::combinators::core::Combinator;
+use crate::combinators::multiplicative_op;
 use crate::combinators::qual_op;
 use crate::combinators::typename;
 use crate::seq;
@@ -236,16 +260,7 @@ use pg_ast::ExprNode::IsNotDistinct;
 use pg_ast::ExprNode::IsNotDocument;
 use pg_ast::ExprNode::NumericConst;
 use pg_ast::Operator::Addition;
-use pg_ast::Operator::Division;
-use pg_ast::Operator::Equals;
 use pg_ast::Operator::Exponentiation;
-use pg_ast::Operator::Greater;
-use pg_ast::Operator::GreaterEquals;
-use pg_ast::Operator::Less;
-use pg_ast::Operator::LessEquals;
-use pg_ast::Operator::Modulo;
-use pg_ast::Operator::Multiplication;
-use pg_ast::Operator::NotEquals;
 use pg_ast::Operator::Pipe;
 use pg_ast::Operator::RightArrow;
 use pg_ast::Operator::Subtraction;
@@ -258,10 +273,7 @@ use pg_lexer::Keyword::Is;
 use pg_lexer::Keyword::Not;
 use pg_lexer::OperatorKind as Op;
 use pg_lexer::OperatorKind::Circumflex;
-use pg_lexer::OperatorKind::Div;
 use pg_lexer::OperatorKind::Minus;
-use pg_lexer::OperatorKind::Mul;
-use pg_lexer::OperatorKind::Percent;
 use pg_lexer::OperatorKind::Plus;
 use pg_lexer::OperatorKind::Typecast;
 use pg_parser_core::scan;
