@@ -4,7 +4,13 @@
 pub enum SqlFunction {
 
     Coalesce(Vec<ExprNode>),
+
+    /// `COLLATION FOR '(' expr ')'`
     CollationFor(ExprNode),
+
+    /// `expr COLLATE collation`
+    Collate(ExprNode, QualifiedName),
+
     CurrentCatalog,
     CurrentSchema,
     Greatest(Vec<ExprNode>),
@@ -97,3 +103,4 @@ use crate::XmlProcessingInstruction;
 use crate::XmlRoot;
 use crate::XmlSerialize;
 use derive_more::From;
+use pg_basics::QualifiedName;

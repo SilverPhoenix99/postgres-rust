@@ -16,7 +16,7 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                   ✅ a_expr_primary
                 | ✅ a_expr TYPECAST Typename                                              // %left(14)
                 | ✅ a_expr AT ( LOCAL | TIME ZONE a_expr )                                // %left(12)
-                | a_expr COLLATE any_name                                               // %left(10)
+                | ✅ a_expr COLLATE any_name                                               // %left(10)
 
                 | a_expr '^' a_expr                                                     // %left(9)
                 | a_expr '^' sub_type '(' SelectStmt | a_expr ')'                       // %left(6)
@@ -90,6 +90,8 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                 continue
             }
 
+            // TODO: a_expr NOT IN '(' expr_list ')'  -- %left(13)
+
             // a_expr AT ( LOCAL | TIME ZONE a_expr )  -- %left(12)
             if prec <= 12 && let Some((_, zone)) = {
                 seq!(At, alt!(
@@ -99,7 +101,13 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                 .parse(ctx)
                 .optional()?
             } {
-                lhs = SqlFunction::Timezone(lhs, zone).into();
+                lhs = Timezone(lhs, zone).into();
+                continue
+            }
+
+            // a_expr COLLATE any_name  -- %left(10)
+            if prec <= 10 && let Some((_, collation)) = seq!(Kw::Collate, any_name).parse(ctx).optional()? {
+                lhs = Collate(lhs, collation).into();
                 continue
             }
 
@@ -157,13 +165,19 @@ mod tests {
         TypecastExpr::new(Int(1), Varchar { max_length: None }).into()
     ))]
     #[test_matrix("1 at time zone 'UTC'" => Ok(
-        SqlFunction::Timezone(
+        Timezone(
             Int(1),
             Some(StringConst("UTC".into()))
         ).into()
     ))]
     #[test_matrix("2 at local" => Ok(
-        SqlFunction::Timezone(Int(2), None).into()
+        Timezone(Int(2), None).into()
+    ))]
+    #[test_matrix(r#"'foo' collate "C""# => Ok(
+        Collate(
+            StringConst("foo".into()),
+            vec!["C".into()]
+        ).into()
     ))]
     /*
         Multiple expressions
@@ -182,14 +196,17 @@ mod tests {
 }
 
 use crate::alt;
+use crate::combinators::any_name;
 use crate::combinators::core::Combinator;
 use crate::combinators::typename;
 use crate::context::ParserContext;
 use crate::seq;
 use pg_ast::BoolExpr;
 use pg_ast::ExprNode;
-use pg_ast::SqlFunction;
+use pg_ast::SqlFunction::Collate;
+use pg_ast::SqlFunction::Timezone;
 use pg_ast::TypecastExpr;
+use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::And;
 use pg_lexer::Keyword::At;
 use pg_lexer::Keyword::Local;
