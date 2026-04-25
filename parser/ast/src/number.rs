@@ -6,18 +6,22 @@ pub struct Number {
 }
 
 impl Number {
-    pub fn new(value: Box<str>, radix: NumberRadix, negative: bool) -> Self {
-        Self { value, radix, negative }
+    pub fn new(value: Box<str>, radix: NumberRadix) -> Self {
+        Self {
+            value,
+            radix,
+            negative: false
+        }
     }
-    
+
     pub fn value(&self) -> &str {
         &self.value
     }
-    
+
     pub fn radix(&self) -> NumberRadix {
         self.radix
     }
-    
+
     pub fn is_negative(&self) -> bool {
         self.negative
     }

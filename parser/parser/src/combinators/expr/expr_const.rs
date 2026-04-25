@@ -147,7 +147,7 @@ mod tests {
     use test_case::test_matrix;
 
     #[test_matrix("123", IntegerConst(123))]
-    #[test_matrix("123.45", Number::new("123.45".into(), Decimal, false).into())]
+    #[test_matrix("123.45", Number::new("123.45".into(), Decimal).into())]
     #[test_matrix("true", BooleanConst(true))]
     #[test_matrix("false", BooleanConst(false))]
     #[test_matrix("null", NullConst)]

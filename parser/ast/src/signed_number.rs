@@ -21,7 +21,7 @@ impl From<UnsignedNumber> for SignedNumber {
             // SAFETY: `int` is originally parsed by `i32::from_str_radix()`, so `0 <= int <= i32::MAX`
             UnsignedNumber::IntegerConst(int) => Self::IntegerConst(int.into()),
             UnsignedNumber::NumericConst { value, radix } => Self::NumericConst(
-                Number::new(value, radix, false)
+                Number::new(value, radix)
             ),
         }
     }
