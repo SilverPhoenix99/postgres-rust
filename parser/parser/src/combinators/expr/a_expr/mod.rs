@@ -15,7 +15,7 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
             a_expr:
                   ✅ a_expr_primary
                 | ✅ a_expr TYPECAST Typename                                              // %left(14)
-                | a_expr AT ( LOCAL | TIME ZONE a_expr )                                // %left(12)
+                | ✅ a_expr AT ( LOCAL | TIME ZONE a_expr )                                // %left(12)
                 | a_expr COLLATE any_name                                               // %left(10)
 
                 | a_expr '^' a_expr                                                     // %left(9)
@@ -84,13 +84,28 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
 
         loop {
 
+            // a_expr TYPECAST Typename  -- %left(14)
             if prec <= 14 && let Some((_, rhs)) = seq!(Typecast, typename).parse(ctx).optional()? {
                 lhs = TypecastExpr::new(lhs, rhs).into();
                 continue
             }
 
+            // a_expr AT ( LOCAL | TIME ZONE a_expr )  -- %left(12)
+            if prec <= 12 && let Some((_, zone)) = {
+                seq!(At, alt!(
+                    Local.map(|_| None),
+                    seq!(Time, Zone, a_expr_prec(13)).map(|(.., tz)| Some(tz))
+                ))
+                .parse(ctx)
+                .optional()?
+            } {
+                lhs = SqlFunction::Timezone(lhs, zone).into();
+                continue
+            }
+
             // TODO
 
+            // a_expr AND a_expr  -- %left(1)
             if prec <= 1 && let Some((_, rhs)) = seq!(And, a_expr_prec(2)).parse(ctx).optional()? {
 
                 if let ExprNode::BoolExpr(BoolExpr::And(args)) = &mut lhs {
@@ -104,6 +119,7 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                 continue
             }
 
+            // a_expr OR a_expr  -- %left(0)
             if prec == 0 && let Some((_, rhs)) = seq!(Or, a_expr_prec(1)).parse(ctx).optional()? {
 
                 if let ExprNode::BoolExpr(BoolExpr::Or(args)) = &mut lhs {
@@ -129,6 +145,7 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_ast::ExprNode::IntegerConst as Int;
+    use pg_ast::ExprNode::StringConst;
     use pg_ast::TypeName::Varchar;
     use test_case::test_matrix;
 
@@ -136,7 +153,18 @@ mod tests {
         Single expressions
      */
     #[test_matrix("1" => matches Ok(Int(1)))]
-    #[test_matrix("1::varchar" => Ok(TypecastExpr::new(Int(1), Varchar { max_length: None }).into()))]
+    #[test_matrix("1::varchar" => Ok(
+        TypecastExpr::new(Int(1), Varchar { max_length: None }).into()
+    ))]
+    #[test_matrix("1 at time zone 'UTC'" => Ok(
+        SqlFunction::Timezone(
+            Int(1),
+            Some(StringConst("UTC".into()))
+        ).into()
+    ))]
+    #[test_matrix("2 at local" => Ok(
+        SqlFunction::Timezone(Int(2), None).into()
+    ))]
     /*
         Multiple expressions
     */
@@ -153,15 +181,21 @@ mod tests {
     }
 }
 
+use crate::alt;
 use crate::combinators::core::Combinator;
 use crate::combinators::typename;
 use crate::context::ParserContext;
 use crate::seq;
 use pg_ast::BoolExpr;
 use pg_ast::ExprNode;
+use pg_ast::SqlFunction;
 use pg_ast::TypecastExpr;
 use pg_lexer::Keyword::And;
+use pg_lexer::Keyword::At;
+use pg_lexer::Keyword::Local;
 use pg_lexer::Keyword::Or;
+use pg_lexer::Keyword::Time;
+use pg_lexer::Keyword::Zone;
 use pg_lexer::OperatorKind::Typecast;
 use pg_parser_core::scan;
 use pg_parser_core::Optional;

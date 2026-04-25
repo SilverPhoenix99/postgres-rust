@@ -1,3 +1,5 @@
+/// Special expressions that might not look like function calls,
+/// but will likely call pre-defined functions in Postgres.
 #[derive(Debug, Clone, Eq, PartialEq, From)]
 pub enum SqlFunction {
 
@@ -31,6 +33,10 @@ pub enum SqlFunction {
     LocalTime { precision: Option<i32> },
     LocalTimestamp { precision: Option<i32> },
     #[from] Extract(ExtractFunc),
+
+    /// * `lhs AT TIME ZONE zone`
+    /// * `lhs AT LOCAL`
+    Timezone(ExprNode, Option<ExprNode>),
 
     // Role functions
     CurrentRole,
