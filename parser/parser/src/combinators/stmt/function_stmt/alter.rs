@@ -166,6 +166,7 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_ast::DefaultableValue;
+    use pg_ast::FuncArgs::{EmptyArgs, NoArgs};
     use pg_ast::FunctionWithArgs;
     use pg_ast::RoleSpec::CurrentUser;
     use pg_ast::SetRestMore::ConfigurationParameter;
@@ -176,7 +177,7 @@ mod tests {
             AlterObjectDependsTarget::Function(
                 FunctionWithArgs::new(
                     vec!["my_func".into()],
-                    Some(None)
+                    EmptyArgs
                 )
             ),
             "my_extension",
@@ -188,7 +189,7 @@ mod tests {
             AlterObjectDependsTarget::Procedure(
                 FunctionWithArgs::new(
                     vec!["my_func".into()],
-                    Some(None)
+                    EmptyArgs
                 )
             ),
             "my_extension",
@@ -200,7 +201,7 @@ mod tests {
             AlterOwnerTarget::Routine(
                 FunctionWithArgs::new(
                     vec!["my_func".into()],
-                    None
+                    NoArgs
                 )
             ),
             CurrentUser
@@ -211,7 +212,7 @@ mod tests {
             RenameTarget::Function(
                 FunctionWithArgs::new(
                     vec!["my_func".into()],
-                    None
+                    NoArgs
                 )
             ),
             "new_name"
@@ -222,7 +223,7 @@ mod tests {
             AlterObjectSchemaTarget::Procedure(
                 FunctionWithArgs::new(
                     vec!["my_func".into()],
-                    None
+                    NoArgs
                 )
             ),
             "new_schema"
@@ -233,7 +234,7 @@ mod tests {
             AlterObjectSchemaTarget::Routine(
                 FunctionWithArgs::new(
                     vec!["my_func".into()],
-                    None
+                    NoArgs
                 )
             ),
             "new_schema"
@@ -244,7 +245,7 @@ mod tests {
             AlterObjectSchemaTarget::Function(
                 FunctionWithArgs::new(
                     vec!["my_func".into()],
-                    None
+                    NoArgs
                 )
             ),
             "new_schema"
@@ -255,7 +256,7 @@ mod tests {
             AlterFunctionKind::Procedure,
             FunctionWithArgs::new(
                 vec!["my_func".into()],
-                None
+                NoArgs
             ),
             vec![
                 AlterFunctionOption::Leakproof(true),
@@ -268,7 +269,7 @@ mod tests {
             AlterFunctionKind::Routine,
             FunctionWithArgs::new(
                 vec!["my_func".into()],
-                None
+                NoArgs
             ),
             vec![
                 AlterFunctionOption::Cost(100.into()),

@@ -14,13 +14,14 @@ pub(in crate::combinators::stmt) fn routine(ctx: &mut ParserContext) -> scan::Re
 mod tests {
     use super::*;
     use crate::test_parser;
+    use pg_ast::FuncArgs::NoArgs;
 
     #[test]
     fn test_routine() {
         test_parser!(
             source = "routine foo",
             parser = routine,
-            expected = FunctionWithArgs::new(vec!["foo".into()], None)
+            expected = FunctionWithArgs::new(vec!["foo".into()], NoArgs)
         )
     }
 }

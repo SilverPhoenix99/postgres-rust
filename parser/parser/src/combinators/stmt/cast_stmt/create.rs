@@ -58,6 +58,7 @@ fn cast_context(ctx: &mut ParserContext) -> scan::Result<CoercionContext> {
 mod tests {
     use super::*;
     use crate::test_parser;
+    use pg_ast::FuncArgs::NoArgs;
     use pg_ast::FunctionWithArgs;
     use pg_ast::TypeName::Int4;
     use pg_ast::TypeName::Int8;
@@ -78,7 +79,7 @@ mod tests {
     }
 
     #[test_matrix("with inout" => Ok(WithInout))]
-    #[test_matrix("with function foo" => Ok(WithFunction(FunctionWithArgs::new(vec!["foo".into()], None))))]
+    #[test_matrix("with function foo" => Ok(WithFunction(FunctionWithArgs::new(vec!["foo".into()], NoArgs))))]
     #[test_matrix("without function" => Ok(WithoutFunction))]
     fn test_cast_conversion(source: &str) -> scan::Result<CastConversion> {
         test_parser!(source, cast_conversion)

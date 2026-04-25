@@ -1,14 +1,11 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct FunctionWithArgs {
     name: QualifiedName,
-    /// * `None` if parameters weren't specified, e.g., `func`.
-    /// * `Some(None)` if parameters were specified, but the list is empty, e.g., `func()`.
-    /// * `Some(Some(vec![...]))` if parameters were specified and the list is not empty, e.g., `func(a, b)`.
-    args: Option<Option<Vec<FunctionParameter>>>
+    args: FuncArgs
 }
 
 impl FunctionWithArgs {
-    pub fn new(name: QualifiedName, args: Option<Option<Vec<FunctionParameter>>>) -> Self {
+    pub fn new(name: QualifiedName, args: FuncArgs) -> Self {
         Self { name, args }
     }
 
@@ -16,9 +13,19 @@ impl FunctionWithArgs {
         &self.name
     }
 
-    pub fn args(&self) -> Option<Option<&[FunctionParameter]>> {
-        self.args.as_ref().map(Option::as_deref)
+    pub fn args(&self) -> &FuncArgs {
+        &self.args
     }
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum FuncArgs {
+    /// When parameters weren't specified, e.g., `func`.
+    NoArgs,
+    /// When parameters were specified, but the list is empty, e.g., `func()`.
+    EmptyArgs,
+    /// When parameters were specified and the list is not empty, e.g., `func(a, b)`.
+    Args(Vec<FunctionParameter>)
 }
 
 use crate::FunctionParameter;

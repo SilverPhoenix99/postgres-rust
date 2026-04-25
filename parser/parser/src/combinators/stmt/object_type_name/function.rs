@@ -14,13 +14,14 @@ pub(in crate::combinators::stmt) fn function(ctx: &mut ParserContext) -> scan::R
 mod tests {
     use super::*;
     use crate::test_parser;
+    use pg_ast::FuncArgs::NoArgs;
 
     #[test]
     fn test_function() {
         test_parser!(
             source = "function foo",
             parser = function,
-            expected = FunctionWithArgs::new(vec!["foo".into()], None)
+            expected = FunctionWithArgs::new(vec!["foo".into()], NoArgs)
         )
     }
 }

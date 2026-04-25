@@ -188,6 +188,7 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_ast::AggregateWithArgs;
+    use pg_ast::FuncArgs::NoArgs;
     use pg_ast::FunctionWithArgs;
     use pg_ast::Transform as TransformAst;
     use pg_ast::TypeName::Int4;
@@ -221,7 +222,7 @@ mod tests {
         AlterExtensionContentsStmt::new(
             "some_extension",
             AddDrop::Drop,
-            Function(FunctionWithArgs::new(vec!["some_function".into()], None))
+            Function(FunctionWithArgs::new(vec!["some_function".into()], NoArgs))
         ).into()
     ))]
     fn test_alter_extension_stmt(source: &str) -> scan::Result<RawStmt> {
@@ -266,20 +267,20 @@ mod tests {
     #[test_matrix("foreign data wrapper some_wrapper" => Ok(ForeignDataWrapper("some_wrapper".into())))]
     #[test_matrix("foreign table some_table" => Ok(ForeignTable(vec!["some_table".into()])))]
     #[test_matrix("function some_function" => Ok(Function(
-        FunctionWithArgs::new(vec!["some_function".into()], None)
+        FunctionWithArgs::new(vec!["some_function".into()], NoArgs)
     )))]
     #[test_matrix("index some_index" => Ok(Index(vec!["some_index".into()])))]
     #[test_matrix("materialized view some_view" => Ok(MaterializedView(vec!["some_view".into()])))]
     #[test_matrix("procedural language some_language" => Ok(Language("some_language".into())))]
     #[test_matrix("language some_language" => Ok(Language("some_language".into())))]
     #[test_matrix("procedure some_procedure" => Ok(Procedure(
-        FunctionWithArgs::new(vec!["some_procedure".into()], None)
+        FunctionWithArgs::new(vec!["some_procedure".into()], NoArgs)
     )))]
     #[test_matrix("publication some_publication" => Ok(Publication("some_publication".into())))]
     #[test_matrix("property graph some_prop_graph" => Ok(PropertyGraph(vec!["some_prop_graph".into()])))]
     #[test_matrix("role some_role" => Ok(Role("some_role".into())))]
     #[test_matrix("routine some_routine" => Ok(Routine(
-        FunctionWithArgs::new(vec!["some_routine".into()], None)
+        FunctionWithArgs::new(vec!["some_routine".into()], NoArgs)
     )))]
     #[test_matrix("schema some_schema" => Ok(Schema("some_schema".into())))]
     #[test_matrix("sequence some_sequence" => Ok(Sequence(vec!["some_sequence".into()])))]

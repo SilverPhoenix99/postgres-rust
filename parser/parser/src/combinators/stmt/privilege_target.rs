@@ -114,6 +114,7 @@ fn signed_number_list(ctx: &mut ParserContext) -> scan::Result<Vec<SignedNumber>
 mod tests {
     use super::*;
     use crate::test_parser;
+    use pg_ast::FuncArgs::NoArgs;
     use pg_ast::FunctionWithArgs;
     use test_case::test_matrix;
 
@@ -146,8 +147,8 @@ mod tests {
     ))]
     #[test_matrix("function a, b" => Ok(
         Function(vec![
-            FunctionWithArgs::new(vec!["a".into()], None),
-            FunctionWithArgs::new(vec!["b".into()], None)
+            FunctionWithArgs::new(vec!["a".into()], NoArgs),
+            FunctionWithArgs::new(vec!["b".into()], NoArgs)
         ])
     ))]
     #[test_matrix("language a, b" => Ok(
@@ -164,8 +165,8 @@ mod tests {
     ))]
     #[test_matrix("procedure a, b" => Ok(
         Procedure(vec![
-            FunctionWithArgs::new(vec!["a".into()], None),
-            FunctionWithArgs::new(vec!["b".into()], None)
+            FunctionWithArgs::new(vec!["a".into()], NoArgs),
+            FunctionWithArgs::new(vec!["b".into()], NoArgs)
         ])
     ))]
     #[test_matrix("property graph a, b" => Ok(
@@ -176,8 +177,8 @@ mod tests {
     ))]
     #[test_matrix("routine a, b" => Ok(
         Routine(vec![
-            FunctionWithArgs::new(vec!["a".into()], None),
-            FunctionWithArgs::new(vec!["b".into()], None)
+            FunctionWithArgs::new(vec!["a".into()], NoArgs),
+            FunctionWithArgs::new(vec!["b".into()], NoArgs)
         ])
     ))]
     #[test_matrix("schema a, b" => Ok(

@@ -224,6 +224,7 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_ast::AggregateWithArgs;
+    use pg_ast::FuncArgs::NoArgs;
     use pg_ast::FunctionWithArgs;
     use pg_ast::OneOrBoth;
     use pg_ast::Operator::Addition;
@@ -305,7 +306,7 @@ mod tests {
     )))]
     #[test_matrix("function some_function" => Ok(Target::Comment(
         Function(
-            FunctionWithArgs::new(vec!["some_function".into()], None)
+            FunctionWithArgs::new(vec!["some_function".into()], NoArgs)
         )
     )))]
     #[test_matrix("index some_index" => Ok(Target::Comment(
@@ -349,7 +350,7 @@ mod tests {
     )))]
     #[test_matrix("procedure some_procedure" => Ok(Target::Comment(
         Procedure(
-            FunctionWithArgs::new(vec!["some_procedure".into()], None)
+            FunctionWithArgs::new(vec!["some_procedure".into()], NoArgs)
         )
     )))]
     #[test_matrix("property graph some_prop_graph" => Ok(Target::Comment(
@@ -363,7 +364,7 @@ mod tests {
     )))]
     #[test_matrix("routine some_routine" => Ok(Target::Comment(
         Routine(
-            FunctionWithArgs::new(vec!["some_routine".into()], None)
+            FunctionWithArgs::new(vec!["some_routine".into()], NoArgs)
         )
     )))]
     #[test_matrix("rule some_rule on some_table" => Ok(Target::Comment(

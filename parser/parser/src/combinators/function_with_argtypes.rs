@@ -70,7 +70,7 @@ fn function_with_argtypes_2(ctx: &mut ParserContext) -> scan::Result<FunctionWit
         .parse(ctx)?;
 
     if name.len() == 1 {
-        return Ok(FunctionWithArgs::new(name, None))
+        return Ok(FunctionWithArgs::new(name, NoArgs))
     }
 
     // arguments are only allowed when the function name is qualified
@@ -79,13 +79,7 @@ fn function_with_argtypes_2(ctx: &mut ParserContext) -> scan::Result<FunctionWit
     Ok(FunctionWithArgs::new(name, args))
 }
 
-/// # Return
-/// The combinator returns `Option<_>` over a possibly missing arguments list:
-/// * `None` if there's no arguments specified, i.e., `(` didn't match;
-/// * `Some(_)` if there are parenthesis, but the arguments list might still be empty. E.g.s:
-///     * `"()"`: An empty list returns `Some(None)`;
-///     * `"(arg1, arg2)"`: If arguments exist, then it returns them `Some(Some([arg1, arg2]))`.
-fn func_args(ctx: &mut ParserContext) -> scan::Result<Option<Option<Vec<FunctionParameter>>>> {
+fn func_args(ctx: &mut ParserContext) -> scan::Result<FuncArgs> {
 
     /*
         ( '(' ( func_args_list )? ')' )?
@@ -94,6 +88,12 @@ fn func_args(ctx: &mut ParserContext) -> scan::Result<Option<Option<Vec<Function
     let args = paren!(func_args_list.optional())
         .parse(ctx)
         .optional()?;
+
+    let args = match args {
+        None => NoArgs,
+        Some(None) => EmptyArgs,
+        Some(Some(args)) => Args(args)
+    };
 
     Ok(args)
 }
@@ -117,34 +117,34 @@ mod tests {
     use test_case::test_matrix;
 
     // type_func_name_keyword ( func_args )?
-    #[test_matrix("collation" => Ok(FunctionWithArgs::new(vec!["collation".into()], None)))]
-    #[test_matrix("current_schema()" => Ok(FunctionWithArgs::new(vec!["current_schema".into()], Some(None))))]
+    #[test_matrix("collation" => Ok(FunctionWithArgs::new(vec!["collation".into()], NoArgs)))]
+    #[test_matrix("current_schema()" => Ok(FunctionWithArgs::new(vec!["current_schema".into()], EmptyArgs)))]
     // unreserved_keyword ( attrs )? ( func_args )?
-    #[test_matrix("double.trouble()" => Ok(FunctionWithArgs::new(vec!["double".into(), "trouble".into()], Some(None))))]
-    #[test_matrix("double.double" => Ok(FunctionWithArgs::new(vec!["double".into(), "double".into()], None)))]
-    #[test_matrix("double()" => Ok(FunctionWithArgs::new(vec!["double".into()], Some(None))))]
-    #[test_matrix("double" => Ok(FunctionWithArgs::new(vec!["double".into()], None)))]
+    #[test_matrix("double.trouble()" => Ok(FunctionWithArgs::new(vec!["double".into(), "trouble".into()], EmptyArgs)))]
+    #[test_matrix("double.double" => Ok(FunctionWithArgs::new(vec!["double".into(), "double".into()], NoArgs)))]
+    #[test_matrix("double()" => Ok(FunctionWithArgs::new(vec!["double".into()], EmptyArgs)))]
+    #[test_matrix("double" => Ok(FunctionWithArgs::new(vec!["double".into()], NoArgs)))]
     // IDENT ( attrs )? ( func_args )?
-    #[test_matrix("ident.qualified_()" => Ok(FunctionWithArgs::new(vec!["ident".into(), "qualified_".into()], Some(None))))]
-    #[test_matrix("qualif.ident" => Ok(FunctionWithArgs::new(vec!["qualif".into(), "ident".into()], None)))]
-    #[test_matrix("ident()" => Ok(FunctionWithArgs::new(vec!["ident".into()], Some(None))))]
-    #[test_matrix("ident" => Ok(FunctionWithArgs::new(vec!["ident".into()], None)))]
+    #[test_matrix("ident.qualified_()" => Ok(FunctionWithArgs::new(vec!["ident".into(), "qualified_".into()], EmptyArgs)))]
+    #[test_matrix("qualif.ident" => Ok(FunctionWithArgs::new(vec!["qualif".into(), "ident".into()], NoArgs)))]
+    #[test_matrix("ident()" => Ok(FunctionWithArgs::new(vec!["ident".into()], EmptyArgs)))]
+    #[test_matrix("ident" => Ok(FunctionWithArgs::new(vec!["ident".into()], NoArgs)))]
     // col_name_keyword ( attrs ( func_args )? )?
-    #[test_matrix("float.point()" => Ok(FunctionWithArgs::new(vec!["float".into(), "point".into()], Some(None))))]
-    #[test_matrix("float.boat" => Ok(FunctionWithArgs::new(vec!["float".into(), "boat".into()], None)))]
-    #[test_matrix("float" => Ok(FunctionWithArgs::new(vec!["float".into()], None)))]
+    #[test_matrix("float.point()" => Ok(FunctionWithArgs::new(vec!["float".into(), "point".into()], EmptyArgs)))]
+    #[test_matrix("float.boat" => Ok(FunctionWithArgs::new(vec!["float".into(), "boat".into()], NoArgs)))]
+    #[test_matrix("float" => Ok(FunctionWithArgs::new(vec!["float".into()], NoArgs)))]
     fn test_function_with_argtypes(source: &str) -> scan::Result<FunctionWithArgs> {
         test_parser!(source, function_with_argtypes)
     }
 
-    #[test_matrix("" => Ok(None))]
-    #[test_matrix("won't match" => Ok(None))]
-    #[test_matrix("()" => Ok(Some(None)))]
-    #[test_matrix("(json, int)" => Ok(Some(Some(vec![
+    #[test_matrix("" => Ok(NoArgs))]
+    #[test_matrix("won't match" => Ok(NoArgs))]
+    #[test_matrix("()" => Ok(EmptyArgs))]
+    #[test_matrix("(json, int)" => Ok(Args(vec![
         FuncType::Type(TypeName::Json.into()).into(),
         FuncType::Type(TypeName::Int4.into()).into()
-    ]))))]
-    fn test_func_args(source: &str) -> scan::Result<Option<Option<Vec<FunctionParameter>>>> {
+    ])))]
+    fn test_func_args(source: &str) -> scan::Result<FuncArgs> {
         test_parser!(source, func_args)
     }
 }
@@ -158,6 +158,10 @@ use crate::many;
 use crate::paren;
 use crate::seq;
 use crate::ParserContext;
+use pg_ast::FuncArgs;
+use pg_ast::FuncArgs::Args;
+use pg_ast::FuncArgs::EmptyArgs;
+use pg_ast::FuncArgs::NoArgs;
 use pg_ast::FunctionParameter;
 use pg_ast::FunctionWithArgs;
 use pg_basics::QualifiedName;

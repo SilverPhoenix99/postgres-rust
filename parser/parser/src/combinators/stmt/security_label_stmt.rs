@@ -148,6 +148,7 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_ast::AggregateWithArgs;
+    use pg_ast::FuncArgs::NoArgs;
     use pg_ast::FunctionWithArgs;
     use pg_ast::SignedNumber::IntegerConst;
     use pg_ast::TypeName::Int4;
@@ -219,7 +220,7 @@ mod tests {
     )))]
     #[test_matrix("function some_function" => Ok(Target::Label(
         Function(
-            FunctionWithArgs::new(vec!["some_function".into()], None)
+            FunctionWithArgs::new(vec!["some_function".into()], NoArgs)
         )
     )))]
     #[test_matrix("index some_index" => Ok(Target::Label(
@@ -239,7 +240,7 @@ mod tests {
     )))]
     #[test_matrix("procedure some_procedure" => Ok(Target::Label(
         Procedure(
-            FunctionWithArgs::new(vec!["some_procedure".into()], None)
+            FunctionWithArgs::new(vec!["some_procedure".into()], NoArgs)
         )
     )))]
     #[test_matrix("property graph some_prop_graph" => Ok(Target::Label(
@@ -253,7 +254,7 @@ mod tests {
     )))]
     #[test_matrix("routine some_routine" => Ok(Target::Label(
         Routine(
-            FunctionWithArgs::new(vec!["some_routine".into()], None)
+            FunctionWithArgs::new(vec!["some_routine".into()], NoArgs)
         )
     )))]
     #[test_matrix("schema some_schema" => Ok(Target::Label(
