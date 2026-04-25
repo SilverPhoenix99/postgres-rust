@@ -138,11 +138,7 @@ fn b_expr_primary(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
         seq!(Minus, b_expr_prec(7))
             .map(|(_, rhs)| match rhs {
                 IntegerConst(int) => IntegerConst(-int),
-                NumericConst { value, radix, negative } => NumericConst {
-                    value,
-                    radix,
-                    negative: !negative,
-                },
+                NumericConst(number) => NumericConst(-number),
                 rhs => UnaryExpr::new(Subtraction, rhs).into()
             }),
         seq!(Plus, b_expr_prec(7))

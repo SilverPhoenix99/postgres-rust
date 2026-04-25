@@ -1,7 +1,7 @@
 #[derive(Debug, Clone, Eq, PartialEq, From)]
 pub enum SignedNumber {
     #[from] IntegerConst(i32),
-    NumericConst { value: Box<str>, radix: NumberRadix, negative: bool },
+    #[from] NumericConst(Number),
 }
 
 impl core::ops::Neg for SignedNumber {
@@ -9,14 +9,8 @@ impl core::ops::Neg for SignedNumber {
 
     fn neg(self) -> Self::Output {
         match self {
-            SignedNumber::IntegerConst(int) => SignedNumber::IntegerConst(-int),
-            SignedNumber::NumericConst { value, radix, negative } => {
-                SignedNumber::NumericConst {
-                    value,
-                    radix,
-                    negative: !negative,
-                }
-            }
+            Self::IntegerConst(int) => Self::IntegerConst(-int),
+            Self::NumericConst(number) => Self::NumericConst(-number),
         }
     }
 }
@@ -24,12 +18,15 @@ impl core::ops::Neg for SignedNumber {
 impl From<UnsignedNumber> for SignedNumber {
     fn from(value: UnsignedNumber) -> Self {
         match value {
+            // SAFETY: `int` is originally parsed by `i32::from_str_radix()`, so `0 <= int <= i32::MAX`
             UnsignedNumber::IntegerConst(int) => Self::IntegerConst(int.into()),
-            UnsignedNumber::NumericConst { value, radix } => Self::NumericConst { value, radix, negative: false },
+            UnsignedNumber::NumericConst { value, radix } => Self::NumericConst(
+                Number::new(value, radix, false)
+            ),
         }
     }
 }
 
+use crate::Number;
 use derive_more::From;
-use pg_basics::NumberRadix;
 use pg_basics::UnsignedNumber;

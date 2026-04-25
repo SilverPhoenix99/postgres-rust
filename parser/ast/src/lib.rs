@@ -84,6 +84,7 @@ pg_basics::reexport! { pub
     normalize_func,
     notify_stmt,
     null_treatment,
+    number,
     numeric_spec,
     one_or_all,
     one_or_both,

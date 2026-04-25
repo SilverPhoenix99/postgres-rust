@@ -6,11 +6,7 @@ pub enum ExprNode {
     BinaryStringConst(Box<str>),
     HexStringConst(Box<str>),
     IntegerConst(i32),
-    NumericConst {
-        value: Box<str>,
-        radix: NumberRadix,
-        negative: bool
-    },
+    #[from] NumericConst(Number),
     BooleanConst(bool),
 
     DefaultExpr,
@@ -65,15 +61,7 @@ pub enum ExprNode {
 
 impl From<UnsignedNumber> for ExprNode {
     fn from(value: UnsignedNumber) -> Self {
-        match value {
-            // SAFETY: `int` is originally parsed by `i32::from_str_radix()`, so `0 <= int <= i32::MAX`
-            UnsignedNumber::IntegerConst(int) => Self::IntegerConst(int.into()),
-            UnsignedNumber::NumericConst { value, radix } => Self::NumericConst {
-                radix,
-                value,
-                negative: false,
-            }
-        }
+        SignedNumber::from(value).into()
     }
 }
 
@@ -81,11 +69,7 @@ impl From<SignedNumber> for ExprNode {
     fn from(value: SignedNumber) -> Self {
         match value {
             SignedNumber::IntegerConst(int) => Self::IntegerConst(int),
-            SignedNumber::NumericConst { value, radix, negative } => Self::NumericConst {
-                radix,
-                value,
-                negative,
-            }
+            SignedNumber::NumericConst(number) => Self::NumericConst(number),
         }
     }
 }
@@ -106,6 +90,7 @@ use crate::FuncCallExpr;
 use crate::IndirectionExpr;
 use crate::JsonArrayAggExpr;
 use crate::JsonObjectAggExpr;
+use crate::Number;
 use crate::RowExpr;
 use crate::RowOverlaps;
 use crate::SelectStmt;
@@ -115,5 +100,4 @@ use crate::SqlFunction::Typecast;
 use crate::TypecastExpr;
 use crate::UnaryExpr;
 use derive_more::From;
-use pg_basics::NumberRadix;
 use pg_basics::UnsignedNumber;

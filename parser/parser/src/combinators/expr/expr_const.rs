@@ -141,12 +141,13 @@ mod tests {
     use crate::test_parser;
     use pg_ast::ExprNode::*;
     use pg_ast::IntervalRange::YearToMonth;
+    use pg_ast::Number;
     use pg_ast::TypeName::*;
     use pg_basics::NumberRadix::Decimal;
     use test_case::test_matrix;
 
     #[test_matrix("123", IntegerConst(123))]
-    #[test_matrix("123.45", NumericConst { radix: Decimal, value: "123.45".into(), negative: false })]
+    #[test_matrix("123.45", Number::new("123.45".into(), Decimal, false).into())]
     #[test_matrix("true", BooleanConst(true))]
     #[test_matrix("false", BooleanConst(false))]
     #[test_matrix("null", NullConst)]

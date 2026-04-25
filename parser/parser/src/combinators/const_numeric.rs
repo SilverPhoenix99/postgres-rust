@@ -45,12 +45,13 @@ fn sign(ctx: &mut ParserContext) -> scan::Result<OperatorKind> {
 mod tests {
     use super::*;
     use crate::test_parser;
+    use pg_ast::Number;
     use pg_basics::NumberRadix::Decimal;
     use test_case::test_matrix;
 
-    #[test_matrix( "1.01" => Ok(SignedNumber::NumericConst { value: "1.01".into(), radix: Decimal, negative: false }))]
-    #[test_matrix("+2.02" => Ok(SignedNumber::NumericConst { value: "2.02".into(), radix: Decimal, negative: false }))]
-    #[test_matrix("-3.03" => Ok(SignedNumber::NumericConst { value: "3.03".into(), radix: Decimal, negative: true }))]
+    #[test_matrix( "1.01" => Ok(SignedNumber::NumericConst(Number::new("1.01".into(), Decimal, false ))))]
+    #[test_matrix("+2.02" => Ok(SignedNumber::NumericConst(Number::new("2.02".into(), Decimal, false ))))]
+    #[test_matrix("-3.03" => Ok(SignedNumber::NumericConst(Number::new("3.03".into(), Decimal, true ))))]
     #[test_matrix(  "101" => Ok(SignedNumber::IntegerConst(101)))]
     #[test_matrix( "+202" => Ok(SignedNumber::IntegerConst(202)))]
     #[test_matrix( "-303" => Ok(SignedNumber::IntegerConst(-303)))]
