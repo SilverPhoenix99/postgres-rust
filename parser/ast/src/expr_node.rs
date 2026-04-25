@@ -17,7 +17,8 @@ pub enum ExprNode {
     #[from(CaseExpr)]
     CaseExpr(Box<CaseExpr>),
     ParamRef { index: i32 },
-    Row(Option<Vec<ExprNode>>),
+    #[from]
+    Row(RowExpr),
     #[from(RowOverlaps)]
     RowOverlaps(Box<RowOverlaps>),
     Array(Option<Vec<ExprNode>>),
@@ -57,7 +58,8 @@ pub enum ExprNode {
     #[from(SqlFunction)]
     SqlFunction(Box<SqlFunction>),
 
-    #[from] Select(SelectStmt),
+    #[from]
+    Select(SelectStmt),
     Exists(SelectStmt),
 }
 
@@ -104,6 +106,7 @@ use crate::FuncCallExpr;
 use crate::IndirectionExpr;
 use crate::JsonArrayAggExpr;
 use crate::JsonObjectAggExpr;
+use crate::RowExpr;
 use crate::RowOverlaps;
 use crate::SelectStmt;
 use crate::SignedNumber;

@@ -47,7 +47,7 @@ fn unique_predicate(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
     Err(UniquePredicateNotImplemented.at_location(loc).into())
 }
 
-fn row_overlaps_expr(ctx: &mut ParserContext, lhs: Option<Vec<ExprNode>>, lhs_loc: Location) -> scan::Result<ExprNode> {
+fn row_overlaps_expr(ctx: &mut ParserContext, lhs: RowExpr, lhs_loc: Location) -> scan::Result<ExprNode> {
 
     /*
         row OVERLAPS row
@@ -57,13 +57,23 @@ fn row_overlaps_expr(ctx: &mut ParserContext, lhs: Option<Vec<ExprNode>>, lhs_lo
         return Ok(Row(lhs))
     };
 
+    let (lhs, lhs_implicit) = lhs.into();
     let mut lhs = lhs.unwrap_or_default();
+
+    let (rhs, rhs_implicit) = rhs.into();
     let mut rhs = rhs.unwrap_or_default();
 
     if let ([l1, l2], [r1, r2]) = (lhs.as_mut_slice(), rhs.as_mut_slice()) {
         let lhs = (mem::replace(l1, DefaultExpr), mem::replace(l2, DefaultExpr));
         let rhs = (mem::replace(r1, DefaultExpr), mem::replace(r2, DefaultExpr));
-        let expr = RowOverlaps::new(lhs, rhs).into();
+
+        let expr = RowOverlaps::new(
+            lhs,
+            lhs_implicit,
+            rhs,
+            rhs_implicit
+        ).into();
+
         return Ok(expr)
     }
 
@@ -100,18 +110,38 @@ mod tests {
     ))]
     #[test_matrix("default" => Ok(DefaultExpr))]
     #[test_matrix("3" => Ok(IntegerConst(3)))]
-    #[test_matrix(
-        [
-            "row(1, 2) overlaps row(3, 4)",
-            "row(1, 2) overlaps (3, 4)",
-            "(1, 2) overlaps row(3, 4)",
-            "(1, 2) overlaps (3, 4)",
-        ]
-        => Ok(RowOverlaps::new(
+    #[test_matrix("row(1, 2) overlaps row(3, 4)" => Ok(
+        RowOverlaps::new(
             (IntegerConst(1), IntegerConst(2)),
+            false,
             (IntegerConst(3), IntegerConst(4)),
-        ).into())
-    )]
+            false
+        ).into()
+    ))]
+    #[test_matrix("row(1, 2) overlaps (3, 4)" => Ok(
+        RowOverlaps::new(
+            (IntegerConst(1), IntegerConst(2)),
+            false,
+            (IntegerConst(3), IntegerConst(4)),
+            true
+        ).into()
+    ))]
+    #[test_matrix("(1, 2) overlaps row(3, 4)" => Ok(
+        RowOverlaps::new(
+            (IntegerConst(1), IntegerConst(2)),
+            true,
+            (IntegerConst(3), IntegerConst(4)),
+            false
+        ).into()
+    ))]
+    #[test_matrix("(1, 2) overlaps (3, 4)" => Ok(
+        RowOverlaps::new(
+            (IntegerConst(1), IntegerConst(2)),
+            true,
+            (IntegerConst(3), IntegerConst(4)),
+            true
+        ).into()
+    ))]
     #[test_matrix(
         [
             "row() overlaps row()",
@@ -178,6 +208,7 @@ use pg_ast::BoolExpr;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::DefaultExpr;
 use pg_ast::ExprNode::Row;
+use pg_ast::RowExpr;
 use pg_ast::RowOverlaps;
 use pg_ast::UnaryExpr;
 use pg_basics::IntoLocated;

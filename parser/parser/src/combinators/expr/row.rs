@@ -1,12 +1,12 @@
-pub(super) fn row(ctx: &mut ParserContext) -> scan::Result<Option<Vec<ExprNode>>> {
+pub(super) fn row(ctx: &mut ParserContext) -> scan::Result<RowExpr> {
 
     alt!(
         explicit_row,
-        implicit_row.map(Some)
+        implicit_row
     ).parse(ctx)
 }
 
-pub(super) fn explicit_row(ctx: &mut ParserContext) -> scan::Result<Option<Vec<ExprNode>>> {
+pub(super) fn explicit_row(ctx: &mut ParserContext) -> scan::Result<RowExpr> {
 
     /*
         ROW '(' ( expr_list )? ')'
@@ -19,10 +19,11 @@ pub(super) fn explicit_row(ctx: &mut ParserContext) -> scan::Result<Option<Vec<E
     let (_, col_values) = seq!(skip(1), paren!(expr_list.optional()))
         .parse(ctx)?;
 
-    Ok(col_values)
+    let row = RowExpr::explicit(col_values);
+    Ok(row)
 }
 
-fn implicit_row(ctx: &mut ParserContext) -> scan::Result<Vec<ExprNode>> {
+fn implicit_row(ctx: &mut ParserContext) -> scan::Result<RowExpr> {
 
     /*
         '(' a_expr ',' expr_list ')' // 2+ elements
@@ -31,10 +32,11 @@ fn implicit_row(ctx: &mut ParserContext) -> scan::Result<Vec<ExprNode>> {
     let (first, _, mut expressions) = paren!(seq!(a_expr, Comma, expr_list)).parse(ctx)?;
     expressions.insert(0, first);
 
-    Ok(expressions)
+    let row = RowExpr::implicit(expressions);
+    Ok(row)
 }
 
-pub(super) fn overlaps_row(ctx: &mut ParserContext) -> scan::Result<Located<Option<Vec<ExprNode>>>> {
+pub(super) fn overlaps_row(ctx: &mut ParserContext) -> scan::Result<Located<RowExpr>> {
 
     /*
         OVERLAPS row
@@ -65,19 +67,35 @@ mod tests {
         ]
         => matches Ok(_)
     )]
-    fn test_row(source: &str) -> scan::Result<Option<Vec<ExprNode>>> {
+    fn test_row(source: &str) -> scan::Result<RowExpr> {
         test_parser!(source, row)
     }
 
-    #[test_matrix("row()" => Ok(None))]
-    #[test_matrix("row(1)" => Ok(Some(vec![IntegerConst(1)])))]
-    #[test_matrix("row(1, 'foo')" => Ok(Some(vec![IntegerConst(1), StringConst("foo".into())])))]
-    fn test_explicit_row(source: &str) -> scan::Result<Option<Vec<ExprNode>>> {
+    #[test_matrix("row()" => Ok(
+        RowExpr::explicit(None)
+    ))]
+    #[test_matrix("row(1)" => Ok(
+        RowExpr::explicit(Some(vec![IntegerConst(1)]))
+    ))]
+    #[test_matrix("row(1, 'foo')" => Ok(
+        RowExpr::explicit(
+            Some(vec![
+                IntegerConst(1),
+                StringConst("foo".into())
+            ])
+        )
+    ))]
+    fn test_explicit_row(source: &str) -> scan::Result<RowExpr> {
         test_parser!(source, explicit_row)
     }
 
-    #[test_matrix("(1, 'foo')" => Ok(vec![IntegerConst(1), StringConst("foo".into())]))]
-    fn test_implicit_row(source: &str) -> scan::Result<Vec<ExprNode>> {
+    #[test_matrix("(1, 'foo')" => Ok(
+        RowExpr::implicit(vec![
+            IntegerConst(1),
+            StringConst("foo".into())
+        ])
+    ))]
+    fn test_implicit_row(source: &str) -> scan::Result<RowExpr> {
         test_parser!(source, implicit_row)
     }
 
@@ -90,7 +108,7 @@ mod tests {
         ]
         => matches Ok(_)
     )]
-    fn test_overlaps_row(source: &str) -> scan::Result<Located<Option<Vec<ExprNode>>>> {
+    fn test_overlaps_row(source: &str) -> scan::Result<Located<RowExpr>> {
         test_parser!(source, overlaps_row)
     }
 }
@@ -105,7 +123,7 @@ use crate::no_match;
 use crate::paren;
 use crate::seq;
 use crate::ParserContext;
-use pg_ast::ExprNode;
+use pg_ast::RowExpr;
 use pg_basics::Located;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Overlaps;

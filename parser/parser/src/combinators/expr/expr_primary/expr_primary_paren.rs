@@ -37,7 +37,7 @@ fn expr_or_select(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
             .expect("already checked the length")
     }
     else {
-        ExprNode::Row(Some(exprs))
+        RowExpr::implicit(exprs).into()
     };
 
     Ok(expr)
@@ -60,20 +60,24 @@ mod tests {
             vec![Property("foo".into())]
         ).into()
     ))]
-    #[test_matrix("(1, 2)" => Ok(ExprNode::Row(Some(vec![
-        IntegerConst(1),
-        IntegerConst(2)
-    ]))))]
+    #[test_matrix("(1, 2)" => Ok(
+        RowExpr::implicit(vec![
+            IntegerConst(1),
+            IntegerConst(2)
+        ]).into()
+    ))]
     fn test_expr_primary_paren(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, expr_primary_paren)
     }
 
     #[test_matrix("select 1" => ignore["select_stmt not implemented yet"] matches Ok(_))]
     #[test_matrix("1" => Ok(IntegerConst(1)))]
-    #[test_matrix("1, 2" => Ok(ExprNode::Row(Some(vec![
-        IntegerConst(1),
-        IntegerConst(2)
-    ]))))]
+    #[test_matrix("1, 2" => Ok(
+        RowExpr::implicit(vec![
+            IntegerConst(1),
+            IntegerConst(2)
+        ]).into()
+    ))]
     fn test_expr_or_select(source: &str) -> scan::Result<ExprNode> {
         test_parser!(source, expr_or_select)
     }
@@ -88,5 +92,6 @@ use crate::context::ParserContext;
 use crate::paren;
 use pg_ast::ExprNode;
 use pg_ast::IndirectionExpr;
+use pg_ast::RowExpr;
 use pg_parser_core::scan;
 use pg_parser_core::Optional;
