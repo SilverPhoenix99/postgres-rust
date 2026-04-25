@@ -1,15 +1,4 @@
-pub(in crate::combinators) fn a_expr(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
-    a_expr_prec(0).parse(ctx)
-}
-
-fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode> {
-    move |ctx| {
-        // TODO
-        a_expr_primary(ctx)
-    }
-}
-
-fn a_expr_primary(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
+pub(super) fn a_expr_primary(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
 
     /*
           ( '-' | '+' ) a_expr  // %right(11)
@@ -171,11 +160,12 @@ mod tests {
     }
 }
 
+use super::a_expr_prec;
 use crate::alt;
 use crate::combinators::additive_op;
 use crate::combinators::core::Combinator;
 use crate::combinators::expr::expr_primary;
-use crate::combinators::expr::row::overlaps_row;
+use crate::combinators::expr::overlaps_row;
 use crate::combinators::qual_op;
 use crate::combinators::stmt::select_stmt;
 use crate::combinators::unique_null_treatment;
