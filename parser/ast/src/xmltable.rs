@@ -1,18 +1,30 @@
+/// Alias: `RangeTableFunc`
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct XmlTable {
+
+    /// list of namespaces
     namespaces: Option<Vec<NamedValue>>,
-    row_spec: ExprNode,
+
+    /// row generator expression
+    row_expr: ExprNode,
+
+    /// document expression
     doc: ExprNode,
+
     columns: Vec<XmlTableColumn>,
+
+    /// table alias & optional column aliases
     alias: Option<Alias>,
+
+    /// does it have LATERAL prefix?
     lateral: bool,
 }
 
 impl XmlTable {
-    pub fn new(doc: ExprNode, row_spec: ExprNode, columns: Vec<XmlTableColumn>) -> Self {
+    pub fn new(doc: ExprNode, row_expr: ExprNode, columns: Vec<XmlTableColumn>) -> Self {
         Self {
             namespaces: None,
-            row_spec,
+            row_expr,
             doc,
             columns,
             alias: None,
@@ -39,8 +51,8 @@ impl XmlTable {
         self.namespaces.as_ref()
     }
 
-    pub fn row_spec(&self) -> &ExprNode {
-        &self.row_spec
+    pub fn row_expr(&self) -> &ExprNode {
+        &self.row_expr
     }
 
     pub fn doc(&self) -> &ExprNode {
@@ -80,8 +92,10 @@ impl XmlTable {
     }
 }
 
+/// Alias: `RangeTableFuncCol`
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct XmlTableColumn {
+    /// name of generated column
     name: Str,
     kind: XmlTableColumnKind
 }
@@ -115,10 +129,17 @@ pub enum XmlTableColumnKind {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct XmlTableColumnDefinition {
+
+    /// type of generated column
     type_name: Type,
+
+    /// does it have NOT NULL?
     is_not_null: bool,
+
+    /// column default value expression
     default_value: Option<ExprNode>,
-    path_spec: Option<ExprNode>,
+
+    column_expression: Option<ExprNode>,
 }
 
 impl XmlTableColumnDefinition {
@@ -130,7 +151,7 @@ impl XmlTableColumnDefinition {
             type_name: type_name.into(),
             is_not_null: Default::default(),
             default_value: Default::default(),
-            path_spec: Default::default(),
+            column_expression: Default::default(),
         }
     }
 
@@ -166,18 +187,18 @@ impl XmlTableColumnDefinition {
         self.default_value.as_ref()
     }
 
-    pub fn set_path_spec(&mut self, path: Option<ExprNode>) -> &mut Self {
-        self.path_spec = path;
+    pub fn set_column_expression(&mut self, path: Option<ExprNode>) -> &mut Self {
+        self.column_expression = path;
         self
     }
 
-    pub fn with_path_spec(mut self, path: ExprNode) -> Self {
-        self.path_spec = Some(path);
+    pub fn with_column_expression(mut self, path: ExprNode) -> Self {
+        self.column_expression = Some(path);
         self
     }
 
-    pub fn path_spec(&self) -> Option<&ExprNode> {
-        self.path_spec.as_ref()
+    pub fn column_expression(&self) -> Option<&ExprNode> {
+        self.column_expression.as_ref()
     }
 }
 

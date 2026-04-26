@@ -11,7 +11,7 @@ pub(super) fn xmltable(ctx: &mut ParserContext) -> scan::Result<XmlTable> {
         ( alias_clause )?
     */
 
-    let (_, (namespaces, row_spec, doc, _, columns), alias) = seq!(
+    let (_, (namespaces, row_expr, doc, _, columns), alias) = seq!(
         Xmltable,
         paren!(seq!(
             xml_namespaces.optional(),
@@ -23,7 +23,7 @@ pub(super) fn xmltable(ctx: &mut ParserContext) -> scan::Result<XmlTable> {
         alias_clause.optional()
     ).parse(ctx)?;
 
-    let mut xml_table = XmlTable::new(doc, row_spec, columns);
+    let mut xml_table = XmlTable::new(doc, row_expr, columns);
     xml_table.set_namespaces(namespaces)
         .set_alias(alias);
 
@@ -101,10 +101,10 @@ fn xmltable_column_el(ctx: &mut ParserContext) -> scan::Result<XmlTableColumn> {
                 column_def.set_default_value(Some(value));
             }
             Path(value) => {
-                if column_def.path_spec().is_some() {
+                if column_def.column_expression().is_some() {
                     return Err(PathValueAlreadyDeclared.at_location(loc).into())
                 }
-                column_def.set_path_spec(Some(value));
+                column_def.set_column_expression(Some(value));
             }
         }
     }
