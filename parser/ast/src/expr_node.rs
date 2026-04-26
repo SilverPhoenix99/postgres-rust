@@ -48,6 +48,18 @@ pub enum ExprNode {
     /// `IS NOT DOCUMENT`
     IsNotDocument(Box<ExprNode>),
 
+    /// `expr IN ( expr... )`
+    InArray(Vec<ExprNode>),
+
+    /// `expr IN ( select_stmt )`
+    InSubquery(SelectStmt),
+
+    /// `expr NOT IN ( expr... )`
+    NotInArray(Vec<ExprNode>),
+
+    /// `expr NOT IN ( select_stmt )`
+    NotInSubquery(SelectStmt),
+
     #[from(IndirectionExpr)]
     Indirection(Box<IndirectionExpr>),
 

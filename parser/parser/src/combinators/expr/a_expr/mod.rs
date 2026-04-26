@@ -33,7 +33,7 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                 | a_expr ILIKE sub_type '(' SelectStmt | a_expr ')'                     // %left(6)
                 | a_expr ILIKE a_expr ( ESCAPE a_expr )?                                // %nonassoc(5)
 
-                | a_expr IN '(' expr_list ')'                                           // %left(13)
+                | ✅ a_expr IN '(' expr_list ')'                                           // %left(13)
                 | a_expr IN '(' SelectStmt ')'                                          // %nonassoc(5)
 
                 | a_expr LIKE sub_type '(' SelectStmt | a_expr ')'                      // %left(6)
@@ -90,7 +90,20 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                 continue
             }
 
-            // TODO: a_expr NOT IN '(' expr_list ')'  -- %left(13)
+            // a_expr NOT IN '(' expr_list ')'  -- %left(13)
+            if prec <= 13
+                && let Ok(toks) = ctx.stream_mut().peek_n::<5>()
+                && matches!(toks, [Keyword(Not), Keyword(In), Operator(OpenParenthesis), ..])
+                // must Not be select_stmt
+                && ! matches!(toks,
+                    [.., Keyword(With | Select | Table), _]
+                    | [.., Keyword(Values), Operator(OpenParenthesis)]
+                )
+                && let Some((_, expr_list)) = seq!(skip(2), paren!(expr_list)).parse(ctx).optional()?
+            {
+                lhs = ExprNode::NotInArray(expr_list);
+                continue
+            }
 
             // a_expr AT ( LOCAL | TIME ZONE a_expr )  -- %left(12)
             if prec <= 12 && let Some((_, zone)) = {
@@ -179,6 +192,9 @@ mod tests {
             vec!["C".into()]
         ).into()
     ))]
+    #[test_matrix("1 not in (2, 3)" => Ok(
+        ExprNode::NotInArray(vec![Int(2), Int(3)])
+    ))]
     /*
         Multiple expressions
     */
@@ -197,9 +213,12 @@ mod tests {
 
 use crate::alt;
 use crate::combinators::collate_clause;
+use crate::combinators::core::skip;
 use crate::combinators::core::Combinator;
+use crate::combinators::expr_list;
 use crate::combinators::typename;
 use crate::context::ParserContext;
+use crate::paren;
 use crate::seq;
 use pg_ast::BoolExpr;
 use pg_ast::CollationExpr;
@@ -208,10 +227,19 @@ use pg_ast::TimezoneExpr;
 use pg_ast::TypecastExpr;
 use pg_lexer::Keyword::And;
 use pg_lexer::Keyword::At;
+use pg_lexer::Keyword::In;
 use pg_lexer::Keyword::Local;
+use pg_lexer::Keyword::Not;
 use pg_lexer::Keyword::Or;
+use pg_lexer::Keyword::Select;
+use pg_lexer::Keyword::Table;
 use pg_lexer::Keyword::Time;
+use pg_lexer::Keyword::Values;
+use pg_lexer::Keyword::With;
 use pg_lexer::Keyword::Zone;
+use pg_lexer::OperatorKind::OpenParenthesis;
 use pg_lexer::OperatorKind::Typecast;
 use pg_parser_core::scan;
+use pg_parser_core::stream::TokenValue::Keyword;
+use pg_parser_core::stream::TokenValue::Operator;
 use pg_parser_core::Optional;
