@@ -44,10 +44,7 @@ pub(super) fn ambiguous_table_ref(ctx: &mut ParserContext) -> scan::Result<Table
         tablesample_clause.optional()
     ).parse(ctx)?;
 
-    let relation = RelationExpr::new(name)
-        .with_inherited(true);
-
-    let mut table_ref = RelationTableRef::new(relation);
+    let mut table_ref = RelationTableRef::new(name);
     table_ref.set_alias(alias);
 
     if let Some(SampleClause { function_name, args, repeatable_expr }) = tablesample {
@@ -119,16 +116,12 @@ mod tests {
         .into()
     ))]
     #[test_matrix("abort" => Ok(
-        RelationTableRef::new(
-            RelationExpr::new("abort")
-                .with_inherited(true)
-        )
-        .into()
+        RelationTableRef::new("abort")
+            .into()
     ))]
     #[test_matrix("integer * tablesample fun1(1)" => Ok(
         SampleTableRef::new(
-            RelationExpr::new("integer")
-                .with_inherited(true),
+            RelationTableRef::new("integer"),
             vec!["fun1".into()],
             vec![IntegerConst(1)]
         )
@@ -136,22 +129,16 @@ mod tests {
     ))]
     #[test_matrix("integer.row c" => Ok(
         RelationTableRef::new(
-            RelationExpr::new(
-                RelationName::new("row")
-                    .with_schema("integer")
-            )
-            .with_inherited(true)
+            RelationName::new("row")
+                .with_schema("integer")
         )
         .with_alias("c")
         .into()
     ))]
     #[test_matrix("qux * as d tablesample fun2(2)" => Ok(
         SampleTableRef::new(
-            RelationTableRef::new(
-                RelationExpr::new("qux")
-                    .with_inherited(true)
-            )
-            .with_alias("d"),
+            RelationTableRef::new("qux")
+                .with_alias("d"),
             vec!["fun2".into()],
             vec![IntegerConst(2)]
         )
@@ -176,7 +163,6 @@ use crate::located;
 use crate::seq;
 use pg_ast::FuncCall;
 use pg_ast::FunctionTableRef;
-use pg_ast::RelationExpr;
 use pg_ast::RelationTableRef;
 use pg_ast::SampleTableRef;
 use pg_ast::TableRef;

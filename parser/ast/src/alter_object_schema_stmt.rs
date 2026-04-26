@@ -29,7 +29,11 @@ pub enum AlterObjectSchemaTarget {
     Conversion(QualifiedName),
     Domain(QualifiedName),
     Extension(Str),
-    ForeignTable { target: RelationExpr, missing_ok: bool },
+    ForeignTable {
+        name: RelationName,
+        inherited: bool,
+        missing_ok: bool
+    },
     Function(FunctionWithArgs),
     MaterializedView { target: QualifiedName, missing_ok: bool },
     Operator(OperatorWithArgs),
@@ -39,7 +43,11 @@ pub enum AlterObjectSchemaTarget {
     Routine(FunctionWithArgs),
     Sequence { target: QualifiedName, missing_ok: bool },
     Statistic(QualifiedName),
-    Table { target: RelationExpr, missing_ok: bool },
+    Table {
+        name: RelationName,
+        inherited: bool,
+        missing_ok: bool
+    },
     TextSearchConfiguration(QualifiedName),
     TextSearchDictionary(QualifiedName),
     TextSearchParser(QualifiedName),
@@ -51,6 +59,6 @@ pub enum AlterObjectSchemaTarget {
 use crate::AggregateWithArgs;
 use crate::FunctionWithArgs;
 use crate::OperatorWithArgs;
-use crate::RelationExpr;
+use crate::RelationName;
 use pg_basics::QualifiedName;
 use pg_basics::Str;

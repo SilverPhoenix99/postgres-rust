@@ -1,20 +1,36 @@
 /// Alias: `RangeVar`
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RelationTableRef {
-    relation: RelationExpr,
+    relation: RelationName,
+    inherited: bool,
     alias: Option<Alias>,
 }
 
 impl RelationTableRef {
-    pub fn new<T: Into<RelationExpr>>(relation: T) -> Self {
+    pub fn new<T: Into<RelationName>>(relation: T) -> Self {
         Self {
             relation: relation.into(),
+            inherited: true,
             alias: None
         }
     }
 
-    pub fn relation(&self) -> &RelationExpr {
+    pub fn relation(&self) -> &RelationName {
         &self.relation
+    }
+
+    pub fn set_inherited(&mut self, inherited: bool) -> &mut Self {
+        self.inherited = inherited;
+        self
+    }
+
+    pub fn with_inherited(mut self, inherited: bool) -> Self {
+        self.inherited = inherited;
+        self
+    }
+
+    pub fn inherited(&self) -> bool {
+        self.inherited
     }
 
     pub fn set_alias(&mut self, alias: Option<Alias>) -> &mut Self {
@@ -32,11 +48,11 @@ impl RelationTableRef {
     }
 }
 
-impl From<RelationExpr> for RelationTableRef {
-    fn from(relation: RelationExpr) -> Self {
+impl From<RelationName> for RelationTableRef {
+    fn from(relation: RelationName) -> Self {
         Self::new(relation)
     }
 }
 
 use crate::Alias;
-use crate::RelationExpr;
+use crate::RelationName;

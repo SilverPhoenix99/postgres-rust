@@ -101,7 +101,6 @@ pg_basics::reexport! { pub
     range_function,
     raw_stmt,
     reassign_owned_stmt,
-    relation_expr,
     relation_name,
     relation_persistence,
     relation_table_ref,

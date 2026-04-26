@@ -10,7 +10,10 @@ pub(super) fn tablesample_table_ref(ctx: &mut ParserContext) -> scan::Result<Tab
         tablesample_clause.optional()
     ).parse(ctx)?;
 
-    let mut table_ref = RelationTableRef::new(relation);
+    let (name, inherited) = relation.into();
+    let mut table_ref = RelationTableRef::new(name)
+        .with_inherited(inherited);
+
     table_ref.set_alias(alias);
 
     if let Some(SampleClause { function_name, args, repeatable_expr }) = tablesample {
@@ -30,42 +33,33 @@ mod tests {
     use super::*;
     use crate::test_parser;
     use pg_ast::ExprNode::IntegerConst;
-    use pg_ast::RelationExpr;
     use test_case::test_matrix;
 
     #[test_matrix("only(foo) as t tablesample f(1)" => Ok(
         SampleTableRef::new(
-            RelationTableRef::new(
-                RelationExpr::new("foo")
-                    .with_inherited(false)
-            )
-            .with_alias("t"),
+            RelationTableRef::new("foo")
+                .with_inherited(false)
+                .with_alias("t"),
             vec!["f".into()],
             vec![IntegerConst(1)]
         )
         .into()
     ))]
     #[test_matrix("only bar as s" => Ok(
-        RelationTableRef::new(
-            RelationExpr::new("bar")
-                .with_inherited(false)
-        )
-        .with_alias("s")
-        .into()
+        RelationTableRef::new("bar")
+            .with_inherited(false)
+            .with_alias("s")
+            .into()
     ))]
     #[test_matrix("only(baz)" => Ok(
-        RelationTableRef::new(
-            RelationExpr::new("baz")
-                .with_inherited(false)
-        )
-        .into()
+        RelationTableRef::new("baz")
+            .with_inherited(false)
+            .into()
     ))]
     #[test_matrix("only qux tablesample g(2)" => Ok(
         SampleTableRef::new(
-            RelationTableRef::new(
-                RelationExpr::new("qux")
-                    .with_inherited(false)
-            ),
+            RelationTableRef::new("qux")
+                .with_inherited(false),
             vec!["g".into()],
             vec![IntegerConst(2)]
         )

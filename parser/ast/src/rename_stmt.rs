@@ -32,8 +32,17 @@ pub enum RenameTarget {
     EventTrigger(Str),
     ForeignDataWrapper(Str),
     ForeignServer(Str),
-    ForeignTable { target: RelationExpr, missing_ok: bool },
-    ForeignTableColumn { table: RelationExpr, column: Str, missing_ok: bool },
+    ForeignTable {
+        name: RelationName,
+        inherited: bool,
+        missing_ok: bool
+    },
+    ForeignTableColumn {
+        name: RelationName,
+        inherited: bool,
+        column: Str,
+        missing_ok: bool
+    },
     Function(FunctionWithArgs),
     Index { target: QualifiedName, missing_ok: bool },
     Language(Str),
@@ -54,9 +63,23 @@ pub enum RenameTarget {
     Sequence { target: QualifiedName, missing_ok: bool },
     Statistic(QualifiedName),
     Subscription(Str),
-    Table { target: RelationExpr, missing_ok: bool },
-    TableColumn { table: RelationExpr, column: Str, missing_ok: bool },
-    TableConstraint { table: RelationExpr, constraint: Str, missing_ok: bool },
+    Table {
+        name: RelationName,
+        inherited: bool,
+        missing_ok: bool
+    },
+    TableColumn {
+        name: RelationName,
+        inherited: bool,
+        column: Str,
+        missing_ok: bool
+    },
+    TableConstraint {
+        name: RelationName,
+        inherited: bool,
+        constraint: Str,
+        missing_ok: bool
+    },
     Tablespace(Str),
     TextSearchConfiguration(QualifiedName),
     TextSearchDictionary(QualifiedName),
@@ -71,6 +94,6 @@ pub enum RenameTarget {
 
 use crate::AggregateWithArgs;
 use crate::FunctionWithArgs;
-use crate::RelationExpr;
+use crate::RelationName;
 use pg_basics::QualifiedName;
 use pg_basics::Str;

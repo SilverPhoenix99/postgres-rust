@@ -1,3 +1,60 @@
+#[derive(Debug, Clone, PartialEq, Eq, Into)]
+pub(crate) struct RelationExpr {
+    name: RelationName,
+    inherited: bool,
+}
+
+impl RelationExpr {
+    pub fn new<T: Into<RelationName>>(name: T) -> Self {
+        Self {
+            name: name.into(),
+            inherited: true
+        }
+    }
+
+    pub fn name(&self) -> &RelationName {
+        &self.name
+    }
+
+    pub fn set_inherited(&mut self, inherited: bool) -> &mut Self {
+        self.inherited = inherited;
+        self
+    }
+
+    pub fn with_inherited(mut self, inherited: bool) -> Self {
+        self.inherited = inherited;
+        self
+    }
+
+    pub fn is_inherited(&self) -> bool {
+        self.inherited
+    }
+}
+
+impl From<RelationName> for RelationExpr {
+    fn from(name: RelationName) -> Self {
+        Self { name, inherited: true }
+    }
+}
+
+impl From<Str> for RelationExpr {
+    fn from(name: Str) -> Self {
+        Self {
+            name: name.into(),
+            inherited: true
+        }
+    }
+}
+
+impl From<&'static str> for RelationExpr {
+    fn from(name: &'static str) -> Self {
+        Self {
+            name: name.into(),
+            inherited: true
+        }
+    }
+}
+
 pub(super) fn relation_expr_list(ctx: &mut ParserContext) -> scan::Result<Vec<RelationExpr>> {
 
     /*
@@ -92,7 +149,9 @@ use crate::many;
 use crate::paren;
 use crate::seq;
 use crate::ParserContext;
-use pg_ast::RelationExpr;
+use derive_more::Into;
+use pg_ast::RelationName;
+use pg_basics::Str;
 use pg_lexer::Keyword::Only;
 use pg_lexer::OperatorKind::Comma;
 use pg_lexer::OperatorKind::Mul;
