@@ -1,6 +1,11 @@
+/// Alias: `RangeVar`
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct RelationName {
+
+    /// the relation/sequence name
     name: Str,
+
+    /// the schema name
     schema: Option<SchemaName>,
 }
 
@@ -48,9 +53,14 @@ impl From<&'static str> for RelationName {
     }
 }
 
+/// Originally inlined in `RangeVar`
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SchemaName {
+
+    /// the schema name
     name: Str,
+
+    /// the catalog (database) name
     catalog: Option<Str>
 }
 

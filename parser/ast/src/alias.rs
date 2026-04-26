@@ -1,6 +1,10 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Alias {
+
+    /// aliased rel name (never qualified)
     alias: Str,
+
+    /// optional list of column aliases
     columns: Option<Vec<Str>>
 }
 
