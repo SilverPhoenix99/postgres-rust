@@ -1,6 +1,9 @@
 #[derive(Debug, Clone, Eq, PartialEq, From)]
 pub enum ExprNode {
-    /* Constants */
+    /*
+        Constants/Literals
+    */
+
     NullConst,
     StringConst(Box<str>),
     BinaryStringConst(Box<str>),
@@ -8,6 +11,10 @@ pub enum ExprNode {
     IntegerConst(i32),
     #[from] NumericConst(Number),
     BooleanConst(bool),
+
+    /*
+        Other Expressions
+    */
 
     DefaultExpr,
     #[from(CaseExpr)]
@@ -25,8 +32,7 @@ pub enum ExprNode {
     UnaryExpr(Box<UnaryExpr>),
     #[from]
     BoolExpr(BoolExpr),
-    #[from(FuncCallExpr)]
-    FuncCallExpr(Box<FuncCallExpr>),
+
     #[from(JsonArrayAggExpr)]
     JsonArrayAggExpr(Box<JsonArrayAggExpr>),
     #[from(JsonObjectAggExpr)]
@@ -44,19 +50,44 @@ pub enum ExprNode {
 
     #[from(IndirectionExpr)]
     Indirection(Box<IndirectionExpr>),
+
     #[from]
     ColumnRef(ColumnRef),
 
-    /* Function calls */
+    #[from]
+    Select(SelectStmt),
+
+    /// EXISTS ( subquery )
+    Exists(SelectStmt),
+
+    /*
+        Function calls
+    */
+
+    /// `GROUPING '(' expr_list ')'`
     GroupingFunc(Vec<ExprNode>),
+
+    /// Generic function call.
     #[from(FuncCall)]
     FuncCall(Box<FuncCall>),
+
+    /// Function call with extra clauses.
+    #[from(FuncCallExpr)]
+    FuncCallExpr(Box<FuncCallExpr>),
+
+    /// Function calls that might not fit the normal function call pattern,
+    /// usually associated with a predefined PG function.
     #[from(SqlFunction)]
     SqlFunction(Box<SqlFunction>),
 
-    #[from]
-    Select(SelectStmt),
-    Exists(SelectStmt),
+    /// `expr COLLATE collation`
+    #[from(CollationExpr)]
+    Collate(Box<CollationExpr>),
+
+    /// * `lhs AT TIME ZONE zone`
+    /// * `lhs AT LOCAL`
+    #[from(TimezoneExpr)]
+    Timezone(Box<TimezoneExpr>),
 }
 
 impl From<UnsignedNumber> for ExprNode {
@@ -84,6 +115,7 @@ use crate::BinaryExpr;
 use crate::BinaryOperands;
 use crate::BoolExpr;
 use crate::CaseExpr;
+use crate::CollationExpr;
 use crate::ColumnRef;
 use crate::FuncCall;
 use crate::FuncCallExpr;
@@ -97,6 +129,7 @@ use crate::SelectStmt;
 use crate::SignedNumber;
 use crate::SqlFunction;
 use crate::SqlFunction::Typecast;
+use crate::TimezoneExpr;
 use crate::TypecastExpr;
 use crate::UnaryExpr;
 use derive_more::From;

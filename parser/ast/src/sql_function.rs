@@ -3,77 +3,194 @@
 #[derive(Debug, Clone, Eq, PartialEq, From)]
 pub enum SqlFunction {
 
+    /// `COALESCE( expr... )`
     Coalesce(Vec<ExprNode>),
 
-    /// `COLLATION FOR '(' expr ')'`
+    /// `COLLATION FOR( expr )`
     CollationFor(ExprNode),
 
-    /// `expr COLLATE collation`
-    Collate(ExprNode, QualifiedName),
-
+    /// `CURRENT_CATALOG`
     CurrentCatalog,
+
+    /// `CURRENT_SCHEMA`
     CurrentSchema,
+
+    /// `GREATEST( expr... )`
     Greatest(Vec<ExprNode>),
+
+    /// `LEAST( expr... )`
     Least(Vec<ExprNode>),
+
+    /// `MERGE_ACTION()`
     MergeAction,
+
+    /// `NULLIF( expr , expr )`
     NullIf(ExprNode, ExprNode),
+
+    /// `TREAT( expr AS Type )`
     Treat(TypecastExpr),
 
     /// Typecasts:
     /// * `'1'::int`
     /// * `int '1'`
     /// * `CAST('1' as int)`
-    #[from] Typecast(TypecastExpr),
+    #[from]
+    Typecast(TypecastExpr),
 
-    // String functions
-    #[from] Normalize(NormalizeFunc),
-    #[from] Overlay(OverlayFunc),
-    #[from] Position(PositionFunc),
-    #[from] Substring(SubstringFunc),
-    #[from] Trim(TrimFunc),
+    /*
+        String functions
+    */
 
-    // Time functions
+    /// `NORMALIZE( expr , unicode_normal_form )`
+    #[from]
+    Normalize(NormalizeFunc),
+
+    /// `OVERLAY( ... )`
+    #[from]
+    Overlay(OverlayFunc),
+
+    /// `POSITION( expr IN expr )`
+    #[from]
+    Position(PositionFunc),
+
+    /// `SUBSTRING( ... )`
+    #[from]
+    Substring(SubstringFunc),
+
+    /// `TRIM( ... )`
+    #[from]
+    Trim(TrimFunc),
+
+    /*
+        Time functions
+    */
+
+    /// `CURRENT_DATE`
     CurrentDate,
+
+    /// * `CURRENT_TIME`
+    /// * `CURRENT_TIME( ICONST )`
     CurrentTime { precision: Option<i32> },
+
+    /// * `CURRENT_TIMESTAMP`
+    /// * `CURRENT_TIMESTAMP( ICONST )`
     CurrentTimestamp { precision: Option<i32> },
+
+    /// * `LOCALTIME`
+    /// * `LOCALTIME( ICONST )`
     LocalTime { precision: Option<i32> },
+
+    /// * `LOCALTIMESTAMP`
+    /// * `LOCALTIMESTAMP( ICONST )`
     LocalTimestamp { precision: Option<i32> },
-    #[from] Extract(ExtractFunc),
 
-    /// * `lhs AT TIME ZONE zone`
-    /// * `lhs AT LOCAL`
-    Timezone(ExprNode, Option<ExprNode>),
+    /// `EXTRACT( ... )`
+    #[from]
+    Extract(ExtractFunc),
 
-    // Role functions
+    /*
+        Role functions
+    */
+
+    /// `CURRENT_ROLE`
     CurrentRole,
+
+    /// `CURRENT_USER`
     CurrentUser,
+
+    /// `SESSION_USER`
     SessionUser,
+
+    /// `SYSTEM_USER`
     SystemUser,
+
+    /// `USER`
     User,
 
-    // JSON functions
-    #[from] Json(JsonFunc),
-    #[from] JsonArray(JsonArrayConstructor),
-    #[from] JsonArrayQuery(JsonArrayQueryConstructor),
-    JsonArrayEmpty(Option<JsonOutput>),
-    #[from] JsonArrayAgg(JsonArrayAgg),
-    #[from] JsonExists(JsonExistsExpr),
-    #[from] JsonObject(JsonObjectExpr),
-    #[from] JsonObjectAgg(JsonObjectAgg),
-    #[from] JsonQuery(JsonQueryExpr),
-    #[from] JsonScalar(ExprNode),
-    #[from] JsonSerialize(JsonSerializeExpr),
-    #[from] JsonValue(JsonValueFunc),
+    /*
+        JSON functions
+    */
 
-    // XML functions
+    /// `JSON( ... )`
+    #[from]
+    Json(JsonFunc),
+
+    /// `JSON_ARRAY( ... )`
+    #[from]
+    JsonArray(JsonArrayConstructor),
+
+    /// `JSON_ARRAY( select_stmt ... )`
+    #[from]
+    JsonArrayQuery(JsonArrayQueryConstructor),
+
+    /// `JSON_ARRAY()`
+    JsonArrayEmpty(Option<JsonOutput>),
+
+    /// `JSON_ARRAYAGG( ... )`
+    #[from]
+    JsonArrayAgg(JsonArrayAgg),
+
+    /// `JSON_EXISTS( ... )`
+    #[from]
+    JsonExists(JsonExistsExpr),
+
+    /// `JSON_OBJECT( ... )`
+    #[from]
+    JsonObject(JsonObjectExpr),
+
+    /// `JSON_OBJECTAGG( ... )`
+    #[from]
+    JsonObjectAgg(JsonObjectAgg),
+
+    /// `JSON_QUERY( ... )`
+    #[from]
+    JsonQuery(JsonQueryExpr),
+
+    /// `JSON_SCALAR( expr )`
+    #[from]
+    JsonScalar(ExprNode),
+
+    /// `JSON_SERIALIZE( ... )`
+    #[from]
+    JsonSerialize(JsonSerializeExpr),
+
+    /// `JSON_VALUE( ... )`
+    #[from]
+    JsonValue(JsonValueFunc),
+
+    /*
+        XML functions
+    */
+
+    /// `XMLCONCAT( expr... )`
     XmlConcat(Vec<ExprNode>),
-    #[from] XmlElement(XmlElement),
-    #[from] XmlExists(XmlExists),
+
+    /// `XMLELEMENT( ... )`
+    #[from]
+    XmlElement(XmlElement),
+
+    /// `XMLEXISTS( ... )`
+    #[from]
+    XmlExists(XmlExists),
+
+    /// `XMLFOREST( ... )`
     XmlForest(Vec<NamedValue>),
-    #[from] XmlParse(XmlParse),
-    #[from] XmlProcessingInstruction(XmlProcessingInstruction),
-    #[from] XmlRoot(XmlRoot),
-    #[from] XmlSerialize(XmlSerialize),
+
+    /// `XMLPARSE( ... )`
+    #[from]
+    XmlParse(XmlParse),
+
+    /// `XMLPI( ... )`
+    #[from]
+    XmlProcessingInstruction(XmlProcessingInstruction),
+
+    /// `XMLROOT( ... )`
+    #[from]
+    XmlRoot(XmlRoot),
+
+    /// `XMLSERIALIZE( ... )`
+    #[from]
+    XmlSerialize(XmlSerialize),
 }
 
 use crate::ExprNode;
@@ -103,4 +220,3 @@ use crate::XmlProcessingInstruction;
 use crate::XmlRoot;
 use crate::XmlSerialize;
 use derive_more::From;
-use pg_basics::QualifiedName;

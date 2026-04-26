@@ -101,13 +101,13 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                 .parse(ctx)
                 .optional()?
             } {
-                lhs = Timezone(lhs, zone).into();
+                lhs = TimezoneExpr::new(lhs, zone).into();
                 continue
             }
 
             // a_expr COLLATE any_name  -- %left(10)
-            if prec <= 10 && let Some((_, collation)) = seq!(Kw::Collate, any_name).parse(ctx).optional()? {
-                lhs = Collate(lhs, collation).into();
+            if prec <= 10 && let Some(collation) = collate_clause(ctx).optional()? {
+                lhs = CollationExpr::new(lhs, collation).into();
                 continue
             }
 
@@ -165,16 +165,16 @@ mod tests {
         TypecastExpr::new(Int(1), Varchar { max_length: None }).into()
     ))]
     #[test_matrix("1 at time zone 'UTC'" => Ok(
-        Timezone(
+        TimezoneExpr::new(
             Int(1),
             Some(StringConst("UTC".into()))
         ).into()
     ))]
     #[test_matrix("2 at local" => Ok(
-        Timezone(Int(2), None).into()
+        TimezoneExpr::new(Int(2), None).into()
     ))]
     #[test_matrix(r#"'foo' collate "C""# => Ok(
-        Collate(
+        CollationExpr::new(
             StringConst("foo".into()),
             vec!["C".into()]
         ).into()
@@ -196,17 +196,16 @@ mod tests {
 }
 
 use crate::alt;
-use crate::combinators::any_name;
+use crate::combinators::collate_clause;
 use crate::combinators::core::Combinator;
 use crate::combinators::typename;
 use crate::context::ParserContext;
 use crate::seq;
 use pg_ast::BoolExpr;
+use pg_ast::CollationExpr;
 use pg_ast::ExprNode;
-use pg_ast::SqlFunction::Collate;
-use pg_ast::SqlFunction::Timezone;
+use pg_ast::TimezoneExpr;
 use pg_ast::TypecastExpr;
-use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::And;
 use pg_lexer::Keyword::At;
 use pg_lexer::Keyword::Local;
