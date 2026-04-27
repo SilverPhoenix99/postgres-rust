@@ -36,10 +36,10 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                 | ✅ a_expr '^' a_expr                                                         // %left(9)
                 | a_expr '^' sub_type '(' SelectStmt | a_expr ')'                           // %left(6)
 
-                | a_expr additive_op a_expr                                                 // %left(8)
+                | ✅ a_expr additive_op a_expr                                                 // %left(8)
                 | a_expr additive_op sub_type '(' SelectStmt | a_expr ')'                   // %left(6)
 
-                | a_expr multiplicative_op a_expr                                           // %left(7)
+                | ✅ a_expr multiplicative_op a_expr                                           // %left(7)
                 | a_expr multiplicative_op sub_type '(' SelectStmt | a_expr ')'             // %left(6)
 
                 | a_expr ILIKE sub_type '(' SelectStmt | a_expr ')'                         // %left(6)
@@ -164,6 +164,42 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                         .parse(ctx)
                         .optional()?
             } {
+                lhs = BinaryExpr::new(op, lhs, rhs).into();
+                continue
+            }
+
+            // a_expr additive_op a_expr  -- %left(8)
+            if prec <= 8
+                // must Not be followed by `ALL(`/`ANY(`/`SOME(`
+                && ! matches!(ctx.stream_mut().peek_n::<3>(), Ok([
+                    Operator(Minus | Plus),
+                    Keyword(All | Any | SomeKw),
+                    Operator(OpenParenthesis)
+                ]))
+                && let Some((op, rhs)) = {
+                    seq!(additive_op, a_expr_prec(9))
+                        .parse(ctx)
+                        .optional()?
+                }
+            {
+                lhs = BinaryExpr::new(op, lhs, rhs).into();
+                continue
+            }
+
+            // a_expr multiplicative_op a_expr  -- %left(7)
+            if prec <= 7
+                // must Not be followed by `ALL(`/`ANY(`/`SOME(`
+                && ! matches!(ctx.stream_mut().peek_n::<3>(), Ok([
+                    Operator(Mul | Div | Percent),
+                    Keyword(All | Any | SomeKw),
+                    Operator(OpenParenthesis)
+                ]))
+                && let Some((op, rhs)) = {
+                    seq!(multiplicative_op, a_expr_prec(8))
+                        .parse(ctx)
+                        .optional()?
+                }
+            {
                 lhs = BinaryExpr::new(op, lhs, rhs).into();
                 continue
             }
@@ -328,8 +364,10 @@ mod tests {
     use crate::test_parser;
     use pg_ast::ExprNode::IntegerConst as Int;
     use pg_ast::ExprNode::StringConst;
+    use pg_ast::Operator::Division;
     use pg_ast::Operator::Exponentiation;
     use pg_ast::Operator::LessEquals;
+    use pg_ast::Operator::Subtraction;
     use pg_ast::TypeName::Varchar;
     use test_case::test_matrix;
 
@@ -437,6 +475,12 @@ mod tests {
     #[test_matrix("2 ^ 3" => Ok(
         BinaryExpr::new(Exponentiation, Int(2), Int(3)).into()
     ))]
+    #[test_matrix("5 - 4" => Ok(
+        BinaryExpr::new(Subtraction, Int(5), Int(4)).into()
+    ))]
+    #[test_matrix("6 / 3" => Ok(
+        BinaryExpr::new(Division, Int(6), Int(3)).into()
+    ))]
     /*
         Multiple expressions
     */
@@ -462,6 +506,7 @@ use self::IsExprRhs::Null;
 use self::IsExprRhs::True;
 use self::IsExprRhs::Unknown;
 use crate::alt;
+use crate::combinators::additive_op;
 use crate::combinators::boolean_op;
 use crate::combinators::collate_clause;
 use crate::combinators::core::skip;
@@ -470,6 +515,7 @@ use crate::combinators::exponentiation_op;
 use crate::combinators::expr::unicode_normal_form;
 use crate::combinators::expr_list;
 use crate::combinators::json_key_uniqueness_constraint;
+use crate::combinators::multiplicative_op;
 use crate::combinators::typename;
 use crate::context::ParserContext;
 use crate::paren;
@@ -518,8 +564,6 @@ use pg_lexer::Keyword::Time;
 use pg_lexer::Keyword::Values;
 use pg_lexer::Keyword::With;
 use pg_lexer::Keyword::Zone;
-use pg_lexer::OperatorKind::Circumflex;
-use pg_lexer::OperatorKind::Equals;
 use pg_lexer::OperatorKind::Greater;
 use pg_lexer::OperatorKind::GreaterEquals;
 use pg_lexer::OperatorKind::Less;
@@ -527,6 +571,8 @@ use pg_lexer::OperatorKind::LessEquals;
 use pg_lexer::OperatorKind::NotEquals;
 use pg_lexer::OperatorKind::OpenParenthesis;
 use pg_lexer::OperatorKind::Typecast;
+use pg_lexer::OperatorKind::{Circumflex, Minus, Plus};
+use pg_lexer::OperatorKind::{Div, Equals, Mul, Percent};
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenValue::Keyword;
 use pg_parser_core::stream::TokenValue::Operator;
