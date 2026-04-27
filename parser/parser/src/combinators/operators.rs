@@ -88,7 +88,7 @@ pub(super) fn multiplicative_op(ctx: &mut ParserContext) -> scan::Result<Operato
     ).parse(ctx)
 }
 
-fn exponentiation_op(ctx: &mut ParserContext) -> scan::Result<Operator> {
+pub(super) fn exponentiation_op(ctx: &mut ParserContext) -> scan::Result<Operator> {
     Circumflex.parse(ctx)
         .map(|_| Exponentiation)
 }

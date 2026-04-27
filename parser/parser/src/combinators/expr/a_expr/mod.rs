@@ -33,7 +33,7 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                 | ✅ a_expr AT ( LOCAL | TIME ZONE a_expr )                                    // %left(12)
                 | ✅ a_expr COLLATE any_name                                                   // %left(10)
 
-                | a_expr '^' a_expr                                                         // %left(9)
+                | ✅ a_expr '^' a_expr                                                         // %left(9)
                 | a_expr '^' sub_type '(' SelectStmt | a_expr ')'                           // %left(6)
 
                 | a_expr additive_op a_expr                                                 // %left(8)
@@ -148,6 +148,23 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
             // a_expr COLLATE any_name  -- %left(10)
             if prec <= 10 && let Some(collation) = collate_clause(ctx).optional()? {
                 lhs = CollationExpr::new(lhs, collation).into();
+                continue
+            }
+
+            // a_expr '^' a_expr  -- %left(9)
+            if prec <= 9
+                // must Not be followed by `ALL(`/`ANY(`/`SOME(`
+                && ! matches!(ctx.stream_mut().peek_n::<3>(), Ok([
+                    Operator(Circumflex),
+                    Keyword(All | Any | SomeKw),
+                    Operator(OpenParenthesis)
+                ]))
+                && let Some((op, rhs)) = {
+                    seq!(exponentiation_op, a_expr_prec(10))
+                        .parse(ctx)
+                        .optional()?
+            } {
+                lhs = BinaryExpr::new(op, lhs, rhs).into();
                 continue
             }
 
@@ -311,6 +328,7 @@ mod tests {
     use crate::test_parser;
     use pg_ast::ExprNode::IntegerConst as Int;
     use pg_ast::ExprNode::StringConst;
+    use pg_ast::Operator::Exponentiation;
     use pg_ast::Operator::LessEquals;
     use pg_ast::TypeName::Varchar;
     use test_case::test_matrix;
@@ -416,6 +434,9 @@ mod tests {
     #[test_matrix("1 <= 2" => Ok(
         BinaryExpr::new(LessEquals, Int(1), Int(2)).into()
     ))]
+    #[test_matrix("2 ^ 3" => Ok(
+        BinaryExpr::new(Exponentiation, Int(2), Int(3)).into()
+    ))]
     /*
         Multiple expressions
     */
@@ -445,6 +466,7 @@ use crate::combinators::boolean_op;
 use crate::combinators::collate_clause;
 use crate::combinators::core::skip;
 use crate::combinators::core::Combinator;
+use crate::combinators::exponentiation_op;
 use crate::combinators::expr::unicode_normal_form;
 use crate::combinators::expr_list;
 use crate::combinators::json_key_uniqueness_constraint;
@@ -496,6 +518,7 @@ use pg_lexer::Keyword::Time;
 use pg_lexer::Keyword::Values;
 use pg_lexer::Keyword::With;
 use pg_lexer::Keyword::Zone;
+use pg_lexer::OperatorKind::Circumflex;
 use pg_lexer::OperatorKind::Equals;
 use pg_lexer::OperatorKind::Greater;
 use pg_lexer::OperatorKind::GreaterEquals;
