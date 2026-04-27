@@ -29,46 +29,44 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
 
             a_expr:
                   ✅ a_expr_primary
-                | ✅ a_expr TYPECAST Typename                                              // %left(14)
-                | ✅ a_expr AT ( LOCAL | TIME ZONE a_expr )                                // %left(12)
-                | ✅ a_expr COLLATE any_name                                               // %left(10)
+                | ✅ a_expr TYPECAST Typename                                                  // %left(14)
+                | ✅ a_expr AT ( LOCAL | TIME ZONE a_expr )                                    // %left(12)
+                | ✅ a_expr COLLATE any_name                                                   // %left(10)
 
-                | a_expr '^' a_expr                                                     // %left(9)
-                | a_expr '^' sub_type '(' SelectStmt | a_expr ')'                       // %left(6)
+                | a_expr '^' a_expr                                                         // %left(9)
+                | a_expr '^' sub_type '(' SelectStmt | a_expr ')'                           // %left(6)
 
-                | a_expr additive_op a_expr                                             // %left(8)
-                | a_expr additive_op sub_type '(' SelectStmt | a_expr ')'               // %left(6)
+                | a_expr additive_op a_expr                                                 // %left(8)
+                | a_expr additive_op sub_type '(' SelectStmt | a_expr ')'                   // %left(6)
 
-                | a_expr multiplicative_op a_expr                                       // %left(7)
-                | a_expr multiplicative_op sub_type '(' SelectStmt | a_expr ')'         // %left(6)
+                | a_expr multiplicative_op a_expr                                           // %left(7)
+                | a_expr multiplicative_op sub_type '(' SelectStmt | a_expr ')'             // %left(6)
 
-                | a_expr boolean_op sub_type '(' SelectStmt | a_expr ')'                // %left(6)
-                | a_expr boolean_op a_expr                                              // %nonassoc(4)
+                | a_expr ILIKE sub_type '(' SelectStmt | a_expr ')'                         // %left(6)
+                | a_expr ILIKE a_expr ( ESCAPE a_expr )?                                    // %nonassoc(5)
 
-                | a_expr ILIKE sub_type '(' SelectStmt | a_expr ')'                     // %left(6)
-                | a_expr ILIKE a_expr ( ESCAPE a_expr )?                                // %nonassoc(5)
+                | a_expr LIKE sub_type '(' SelectStmt | a_expr ')'                          // %left(6)
+                | a_expr LIKE a_expr ( ESCAPE a_expr )?                                     // %nonassoc(5)
 
-                | ✅ a_expr IN '(' expr_list ')'                                           // %left(13)
-                | a_expr IN '(' SelectStmt ')'                                          // %nonassoc(5)
+                | a_expr boolean_op sub_type '(' SelectStmt | a_expr ')'                    // %left(6)
+                | ✅ a_expr boolean_op a_expr                                                  // %nonassoc(4)
 
-                | a_expr LIKE sub_type '(' SelectStmt | a_expr ')'                      // %left(6)
-                | a_expr LIKE a_expr ( ESCAPE a_expr )?                                 // %nonassoc(5)
+                | ✅ a_expr IN '(' expr_list ')'                                               // %left(13)
+                | a_expr IN '(' SelectStmt ')'                                              // %nonassoc(5)
 
-                | ✅ a_expr NOT IN '(' expr_list ')'                                       // %left(13)
-                | a_expr NOT IN '(' SelectStmt ')'                                      // %nonassoc(5)
+                | ✅ a_expr NOT IN '(' expr_list ')'                                           // %left(13)
+                | a_expr NOT IN '(' SelectStmt ')'                                          // %nonassoc(5)
 
-                | a_expr NOT BETWEEN ( ASYMMETRIC | SYMMETRIC )? b_expr AND a_expr      // %nonassoc(5)
-                | a_expr NOT ILIKE sub_type '(' SelectStmt | a_expr ')'                 // %left(6)
-                | a_expr NOT ILIKE a_expr ( ESCAPE a_expr )?                            // %nonassoc(5)
-                | a_expr NOT LIKE sub_type '(' SelectStmt | a_expr ')'                  // %left(6)
-                | a_expr NOT LIKE a_expr ( ESCAPE a_expr )?                             // %nonassoc(5)
-                | a_expr NOT SIMILAR TO a_expr ( ESCAPE a_expr )?                       // %nonassoc(5)
+                | a_expr NOT ILIKE sub_type '(' SelectStmt | a_expr ')'                     // %left(6)
+                | a_expr NOT ILIKE a_expr ( ESCAPE a_expr )?                                // %nonassoc(5)
+                | a_expr NOT LIKE sub_type '(' SelectStmt | a_expr ')'                      // %left(6)
+                | a_expr NOT LIKE a_expr ( ESCAPE a_expr )?                                 // %nonassoc(5)
 
-                | a_expr misc_op sub_type '(' SelectStmt | a_expr ')'                   // %left(6)
-                | a_expr misc_op a_expr                                                 // %left(6)
+                | a_expr misc_op sub_type '(' SelectStmt | a_expr ')'                       // %left(6)
+                | a_expr misc_op a_expr                                                     // %left(6)
 
-                | a_expr BETWEEN ( ASYMMETRIC | SYMMETRIC )? b_expr AND a_expr          // %nonassoc(5)
-                | a_expr SIMILAR TO a_expr ( ESCAPE a_expr )?                           // %nonassoc(5)
+                | a_expr ( NOT )? BETWEEN ( ASYMMETRIC | SYMMETRIC )? b_expr AND a_expr     // %nonassoc(5)
+                | a_expr ( NOT )? SIMILAR TO a_expr ( ESCAPE a_expr )?                      // %nonassoc(5)
 
                 | ✅ a_expr ISNULL                                                         // %nonassoc(3)
                 | ✅ a_expr NOTNULL                                                        // %nonassoc(3)
@@ -154,6 +152,20 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
             }
 
             // TODO
+
+            // a_expr boolean_op a_expr  -- %nonassoc(4)
+            if prec <= 4
+                && matches!(ctx.stream_mut().peek(), Ok(Operator(Less | Equals | Greater | LessEquals | GreaterEquals | NotEquals)))
+                && ! matches!(ctx.stream_mut().peek_n::<3>(), Ok([_, Keyword(All | Any | SomeKw), Operator(OpenParenthesis)]))
+                && let Some((op, rhs)) = {
+                    seq!(boolean_op, a_expr_prec(5))
+                        .parse(ctx)
+                        .optional()?
+                }
+            {
+                let expr = BinaryExpr::new(op, lhs, rhs);
+                return Ok(expr.into())
+            }
 
             /*
                 All %nonassoc(3):
@@ -299,6 +311,7 @@ mod tests {
     use crate::test_parser;
     use pg_ast::ExprNode::IntegerConst as Int;
     use pg_ast::ExprNode::StringConst;
+    use pg_ast::Operator::LessEquals;
     use pg_ast::TypeName::Varchar;
     use test_case::test_matrix;
 
@@ -400,7 +413,9 @@ mod tests {
             .with_unique_keys(false)
             .into()
     ))]
-
+    #[test_matrix("1 <= 2" => Ok(
+        BinaryExpr::new(LessEquals, Int(1), Int(2)).into()
+    ))]
     /*
         Multiple expressions
     */
@@ -426,6 +441,7 @@ use self::IsExprRhs::Null;
 use self::IsExprRhs::True;
 use self::IsExprRhs::Unknown;
 use crate::alt;
+use crate::combinators::boolean_op;
 use crate::combinators::collate_clause;
 use crate::combinators::core::skip;
 use crate::combinators::core::Combinator;
@@ -436,6 +452,7 @@ use crate::combinators::typename;
 use crate::context::ParserContext;
 use crate::paren;
 use crate::seq;
+use pg_ast::BinaryExpr;
 use pg_ast::BoolExpr;
 use pg_ast::BoolExpr::Not;
 use pg_ast::CollationExpr;
@@ -460,7 +477,9 @@ use pg_ast::TimezoneExpr;
 use pg_ast::TypecastExpr;
 use pg_ast::UnicodeNormalForm;
 use pg_lexer::Keyword as Kw;
+use pg_lexer::Keyword::All;
 use pg_lexer::Keyword::And;
+use pg_lexer::Keyword::Any;
 use pg_lexer::Keyword::At;
 use pg_lexer::Keyword::Distinct;
 use pg_lexer::Keyword::FromKw;
@@ -471,11 +490,18 @@ use pg_lexer::Keyword::Local;
 use pg_lexer::Keyword::Notnull;
 use pg_lexer::Keyword::Or;
 use pg_lexer::Keyword::Select;
+use pg_lexer::Keyword::SomeKw;
 use pg_lexer::Keyword::Table;
 use pg_lexer::Keyword::Time;
 use pg_lexer::Keyword::Values;
 use pg_lexer::Keyword::With;
 use pg_lexer::Keyword::Zone;
+use pg_lexer::OperatorKind::Equals;
+use pg_lexer::OperatorKind::Greater;
+use pg_lexer::OperatorKind::GreaterEquals;
+use pg_lexer::OperatorKind::Less;
+use pg_lexer::OperatorKind::LessEquals;
+use pg_lexer::OperatorKind::NotEquals;
 use pg_lexer::OperatorKind::OpenParenthesis;
 use pg_lexer::OperatorKind::Typecast;
 use pg_parser_core::scan;
