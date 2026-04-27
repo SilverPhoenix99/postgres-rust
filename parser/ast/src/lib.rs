@@ -77,6 +77,7 @@ pg_basics::reexport! { pub
     json_table_path_spec,
     json_value_expr,
     json_value_func,
+    json_is_predicate,
     json_wrapper_behavior,
     lock_clause_strength,
     lock_wait_policy,

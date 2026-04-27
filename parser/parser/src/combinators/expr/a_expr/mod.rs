@@ -1,5 +1,6 @@
 pg_basics::reexport! {
-    a_expr_primary
+    a_expr_primary,
+    json_predicate_type_constraint,
 }
 
 pub(in crate::combinators) fn a_expr(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
