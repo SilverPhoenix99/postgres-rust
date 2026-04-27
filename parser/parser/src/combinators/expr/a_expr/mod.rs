@@ -39,7 +39,7 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                 | a_expr LIKE sub_type '(' SelectStmt | a_expr ')'                      // %left(6)
                 | a_expr LIKE a_expr ( ESCAPE a_expr )?                                 // %nonassoc(5)
 
-                | a_expr NOT IN '(' expr_list ')'                                       // %left(13)
+                | ✅ a_expr NOT IN '(' expr_list ')'                                       // %left(13)
                 | a_expr NOT IN '(' SelectStmt ')'                                      // %nonassoc(5)
 
                 | a_expr NOT BETWEEN ( ASYMMETRIC | SYMMETRIC )? b_expr AND a_expr      // %nonassoc(5)
@@ -54,6 +54,7 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
 
                 | a_expr BETWEEN ( ASYMMETRIC | SYMMETRIC )? b_expr AND a_expr          // %nonassoc(5)
                 | a_expr SIMILAR TO a_expr ( ESCAPE a_expr )?                           // %nonassoc(5)
+
                 | a_expr ISNULL                                                         // %nonassoc(3)
                 | a_expr NOTNULL                                                        // %nonassoc(3)
 
@@ -90,19 +91,41 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                 continue
             }
 
-            // a_expr NOT IN '(' expr_list ')'  -- %left(13)
-            if prec <= 13
-                && let Ok(toks) = ctx.stream_mut().peek_n::<5>()
-                && matches!(toks, [Keyword(Not), Keyword(In), Operator(OpenParenthesis), ..])
-                // must Not be select_stmt
-                && ! matches!(toks,
-                    [.., Keyword(With | Select | Table), _]
-                    | [.., Keyword(Values), Operator(OpenParenthesis)]
-                )
-                && let Some((_, expr_list)) = seq!(skip(2), paren!(expr_list)).parse(ctx).optional()?
-            {
-                lhs = ExprNode::NotInArray(expr_list);
-                continue
+            if prec <= 13 {
+
+                // a_expr NOT IN '(' expr_list ')'  -- %left(13)
+                if
+                    let Ok(toks) = ctx.stream_mut().peek_n::<5>()
+                    && matches!(toks, [Keyword(Not), Keyword(In), Operator(OpenParenthesis), ..])
+                    // must Not be select_stmt
+                    && ! matches!(toks,
+                        [.., Keyword(With | Select | Table), _]
+                        | [.., Keyword(Values), Operator(OpenParenthesis)]
+                    )
+                    && let Some((_, expr_list)) = seq!(skip(2), paren!(expr_list))
+                        .parse(ctx)
+                        .optional()?
+                {
+                    lhs = ExprNode::NotInArray(expr_list);
+                    continue
+                }
+
+                // a_expr IN '(' expr_list ')'  -- %left(13)
+                if
+                    let Ok(toks) = ctx.stream_mut().peek_n::<4>()
+                    && matches!(toks, [Keyword(In), Operator(OpenParenthesis), ..])
+                    // must Not be select_stmt
+                    && ! matches!(toks,
+                        [.., Keyword(With | Select | Table), _]
+                        | [.., Keyword(Values), Operator(OpenParenthesis)]
+                    )
+                    && let Some((_, expr_list)) = seq!(skip(1), paren!(expr_list))
+                        .parse(ctx)
+                        .optional()?
+                {
+                    lhs = ExprNode::InArray(expr_list);
+                    continue
+                }
             }
 
             // a_expr AT ( LOCAL | TIME ZONE a_expr )  -- %left(12)
@@ -194,6 +217,9 @@ mod tests {
     ))]
     #[test_matrix("1 not in (2, 3)" => Ok(
         ExprNode::NotInArray(vec![Int(2), Int(3)])
+    ))]
+    #[test_matrix("1 in (2, 3)" => Ok(
+        ExprNode::InArray(vec![Int(2), Int(3)])
     ))]
     /*
         Multiple expressions
