@@ -97,7 +97,7 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                 // a_expr NOT IN '(' expr_list ')'  -- %left(13)
                 if
                     let Ok(toks) = ctx.stream_mut().peek_n::<5>()
-                    && matches!(toks, [Keyword(Not), Keyword(In), Operator(OpenParenthesis), ..])
+                    && matches!(toks, [Keyword(Kw::Not), Keyword(In), Operator(OpenParenthesis), ..])
                     // must Not be select_stmt
                     && ! matches!(toks,
                         [.., Keyword(With | Select | Table), _]
@@ -107,7 +107,7 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                         .parse(ctx)
                         .optional()?
                 {
-                    lhs = ExprNode::NotInArray(expr_list);
+                    lhs = Not(InArray(expr_list).into()).into();
                     continue
                 }
 
@@ -124,7 +124,7 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                         .parse(ctx)
                         .optional()?
                 {
-                    lhs = ExprNode::InArray(expr_list);
+                    lhs = InArray(expr_list);
                     continue
                 }
             }
@@ -217,10 +217,10 @@ mod tests {
         ).into()
     ))]
     #[test_matrix("1 not in (2, 3)" => Ok(
-        ExprNode::NotInArray(vec![Int(2), Int(3)])
+        Not(InArray(vec![Int(2), Int(3)]).into()).into()
     ))]
     #[test_matrix("1 in (2, 3)" => Ok(
-        ExprNode::InArray(vec![Int(2), Int(3)])
+        InArray(vec![Int(2), Int(3)])
     ))]
     /*
         Multiple expressions
@@ -248,15 +248,16 @@ use crate::context::ParserContext;
 use crate::paren;
 use crate::seq;
 use pg_ast::BoolExpr;
+use pg_ast::BoolExpr::Not;
 use pg_ast::CollationExpr;
 use pg_ast::ExprNode;
 use pg_ast::TimezoneExpr;
 use pg_ast::TypecastExpr;
+use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::And;
 use pg_lexer::Keyword::At;
 use pg_lexer::Keyword::In;
 use pg_lexer::Keyword::Local;
-use pg_lexer::Keyword::Not;
 use pg_lexer::Keyword::Or;
 use pg_lexer::Keyword::Select;
 use pg_lexer::Keyword::Table;
@@ -270,3 +271,4 @@ use pg_parser_core::scan;
 use pg_parser_core::stream::TokenValue::Keyword;
 use pg_parser_core::stream::TokenValue::Operator;
 use pg_parser_core::Optional;
+use ExprNode::InArray;

@@ -12,7 +12,7 @@ pub(in crate::combinators::stmt) fn alter_database_stmt(ctx: &mut ParserContext)
             | ( WITH )? alterdb_opt_list => AlterDatabaseStmt
         )
 
-        NB: The RHS are the struct names in PG-C.
+        NB: The RHS are the struct names in C-PG.
     */
 
     let (_, db_name, change) = seq!(Database, col_id, change).parse(ctx)?;

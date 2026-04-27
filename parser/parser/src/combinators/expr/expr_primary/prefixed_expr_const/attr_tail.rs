@@ -31,7 +31,7 @@ pub(super) fn attr_tail(ctx: &mut ParserContext) -> scan::Result<AttrTail> {
         AttrSuffix::FuncArgs(args) => args,
     };
 
-    // PG-C matches for a string first, and then checks if function arguments are valid type modifiers.
+    // C-PG matches for a string first, and then checks if function arguments are valid type modifiers.
     if let FuncArgsKind::All { args, order } = &mut args
         && let Some(value) = string(ctx).optional()?
     {

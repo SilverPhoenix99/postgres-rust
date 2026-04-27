@@ -99,7 +99,7 @@ fn b_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
             if prec == 0 && let Some((_, not, rhs)) = {
                 seq!(
                     Is,
-                    Not.optional(),
+                    Kw::Not.optional(),
                     alt!(
                         Document.map(|_| None),
                         seq!(Distinct, FromKw, b_expr_prec(1)).map(|(_, _, rhs)| Some(rhs))
@@ -113,7 +113,7 @@ fn b_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                     (Some(rhs), false) => IsDistinct((lhs, rhs).into()),
                     (Some(rhs), true) => IsNotDistinct((lhs, rhs).into()),
                     (None, false) => IsDocument(lhs.into()),
-                    (None, true) => IsNotDocument(lhs.into()),
+                    (None, true) => Not(IsDocument(lhs.into()).into()).into(),
                 };
 
                 return Ok(expr)
@@ -180,7 +180,7 @@ mod tests {
     #[test_matrix("7 -> 8" => Ok(BinaryExpr::new(RightArrow,     Int(7), Int(8)).into()))]
     #[test_matrix("9 operator(-) 10" => Ok(BinaryExpr::new(Subtraction, Int(9), Int(10)).into()))]
     #[test_matrix("1 is document" => Ok(IsDocument(Int(1).into())))]
-    #[test_matrix("2 is not document" => Ok(IsNotDocument(Int(2).into())))]
+    #[test_matrix("2 is not document" => Ok(Not(IsDocument(Int(2).into()).into()).into()))]
     #[test_matrix("3 is distinct from 4" => Ok(IsDistinct((Int(3), Int(4)).into())))]
     #[test_matrix("5 is not distinct from 6" => Ok(IsNotDistinct((Int(5), Int(6)).into())))]
     /*
@@ -251,12 +251,12 @@ use crate::combinators::typename;
 use crate::seq;
 use crate::ParserContext;
 use pg_ast::BinaryExpr;
+use pg_ast::BoolExpr::Not;
 use pg_ast::ExprNode;
 use pg_ast::ExprNode::IntegerConst;
 use pg_ast::ExprNode::IsDistinct;
 use pg_ast::ExprNode::IsDocument;
 use pg_ast::ExprNode::IsNotDistinct;
-use pg_ast::ExprNode::IsNotDocument;
 use pg_ast::ExprNode::NumericConst;
 use pg_ast::Operator::Addition;
 use pg_ast::Operator::Exponentiation;
@@ -265,11 +265,11 @@ use pg_ast::Operator::RightArrow;
 use pg_ast::Operator::Subtraction;
 use pg_ast::TypecastExpr;
 use pg_ast::UnaryExpr;
+use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::Distinct;
 use pg_lexer::Keyword::Document;
 use pg_lexer::Keyword::FromKw;
 use pg_lexer::Keyword::Is;
-use pg_lexer::Keyword::Not;
 use pg_lexer::OperatorKind as Op;
 use pg_lexer::OperatorKind::Circumflex;
 use pg_lexer::OperatorKind::Minus;

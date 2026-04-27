@@ -13,6 +13,54 @@ pub enum ExprNode {
     BooleanConst(bool),
 
     /*
+        Boolean test expressions
+    */
+
+    /// * `expr IS NULL`
+    /// * `expr ISNULL`
+    IsNull(Box<ExprNode>),
+
+    /// * `expr IS NOT NULL`
+    /// * `expr NOTNULL`
+    IsNotNull(Box<ExprNode>),
+
+    /// `expr IS TRUE`
+    IsTrue(Box<ExprNode>),
+
+    /// `expr IS NOT TRUE`
+    IsNotTrue(Box<ExprNode>),
+
+    /// `expr IS FALSE`
+    IsFalse(Box<ExprNode>),
+
+    /// `expr IS NOT FALSE`
+    IsNotFalse(Box<ExprNode>),
+
+    /// `expr IS UNKNOWN`
+    IsUnknown(Box<ExprNode>),
+
+    /// `expr IS NOT UNKNOWN`
+    IsNotUnknown(Box<ExprNode>),
+
+    /// `expr IS DISTINCT FROM expr`
+    IsDistinct(BinaryOperands),
+
+    /// `expr IS NOT DISTINCT FROM expr`
+    IsNotDistinct(BinaryOperands),
+
+    /// `expr IS DOCUMENT`
+    IsDocument(Box<ExprNode>),
+
+    /// `expr IS NORMALIZED`
+    IsNormalized(Box<ExprNode>, Option<UnicodeNormalForm>),
+
+    /// `expr IN ( expr... )`
+    InArray(Vec<ExprNode>),
+
+    /// `expr IN ( select_stmt )`
+    InSubquery(SelectStmt),
+
+    /*
         Other Expressions
     */
 
@@ -37,28 +85,6 @@ pub enum ExprNode {
     JsonArrayAggExpr(Box<JsonArrayAggExpr>),
     #[from(JsonObjectAggExpr)]
     JsonObjectAggExpr(Box<JsonObjectAggExpr>),
-
-    /// `IS DISTINCT FROM`
-    IsDistinct(BinaryOperands),
-    /// `IS NOT DISTINCT FROM`
-    IsNotDistinct(BinaryOperands),
-
-    /// `IS DOCUMENT`
-    IsDocument(Box<ExprNode>),
-    /// `IS NOT DOCUMENT`
-    IsNotDocument(Box<ExprNode>),
-
-    /// `expr IN ( expr... )`
-    InArray(Vec<ExprNode>),
-
-    /// `expr IN ( select_stmt )`
-    InSubquery(SelectStmt),
-
-    /// `expr NOT IN ( expr... )`
-    NotInArray(Vec<ExprNode>),
-
-    /// `expr NOT IN ( select_stmt )`
-    NotInSubquery(SelectStmt),
 
     #[from(IndirectionExpr)]
     Indirection(Box<IndirectionExpr>),
@@ -144,5 +170,6 @@ use crate::SqlFunction::Typecast;
 use crate::TimezoneExpr;
 use crate::TypecastExpr;
 use crate::UnaryExpr;
+use crate::UnicodeNormalForm;
 use derive_more::From;
 use pg_basics::UnsignedNumber;
