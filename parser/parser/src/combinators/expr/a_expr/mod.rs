@@ -7,6 +7,20 @@ pub(in crate::combinators) fn a_expr(ctx: &mut ParserContext) -> scan::Result<Ex
     a_expr_prec(0).parse(ctx)
 }
 
+enum IsExprRhs {
+    DistinctFrom(ExprNode),
+    False,
+    Null,
+    True,
+    Unknown,
+    Document,
+    Normalized(Option<UnicodeNormalForm>),
+    Json {
+        kind: JsonValueKind,
+        unique_keys: bool,
+    },
+}
+
 fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode> {
     move |ctx| {
 
@@ -56,27 +70,18 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                 | a_expr BETWEEN ( ASYMMETRIC | SYMMETRIC )? b_expr AND a_expr          // %nonassoc(5)
                 | a_expr SIMILAR TO a_expr ( ESCAPE a_expr )?                           // %nonassoc(5)
 
-                | a_expr ISNULL                                                         // %nonassoc(3)
-                | a_expr NOTNULL                                                        // %nonassoc(3)
-
-                | a_expr IS DISTINCT FROM a_expr                                        // %nonassoc(3)
-                | a_expr IS DOCUMENT                                                    // %nonassoc(3)
-                | a_expr IS FALSE                                                       // %nonassoc(3)
-                | a_expr IS JSON json_expr                                              // %nonassoc(3)
-                | a_expr IS NORMALIZED                                                  // %nonassoc(3)
-                | a_expr IS NOT DISTINCT FROM a_expr                                    // %nonassoc(3)
-                | a_expr IS NOT DOCUMENT                                                // %nonassoc(3)
-                | a_expr IS NOT FALSE                                                   // %nonassoc(3)
-                | a_expr IS NOT JSON json_expr                                          // %nonassoc(3)
-                | a_expr IS NOT NORMALIZED                                              // %nonassoc(3)
-                | a_expr IS NOT NULL                                                    // %nonassoc(3)
-                | a_expr IS NOT TRUE                                                    // %nonassoc(3)
-                | a_expr IS NOT unicode_normal_form NORMALIZED                          // %nonassoc(3)
-                | a_expr IS NOT UNKNOWN                                                 // %nonassoc(3)
-                | a_expr IS NULL                                                        // %nonassoc(3)
-                | a_expr IS TRUE                                                        // %nonassoc(3)
-                | a_expr IS unicode_normal_form NORMALIZED                              // %nonassoc(3)
-                | a_expr IS UNKNOWN                                                     // %nonassoc(3)
+                | ✅ a_expr ISNULL                                                         // %nonassoc(3)
+                | ✅ a_expr NOTNULL                                                        // %nonassoc(3)
+                | ✅ a_expr IS ( NOT )? DISTINCT FROM a_expr                               // %nonassoc(3)
+                | ✅ a_expr IS ( NOT )? DOCUMENT                                           // %nonassoc(3)
+                | ✅ a_expr IS ( NOT )? FALSE                                              // %nonassoc(3)
+                | ✅ a_expr IS ( NOT )? NULL                                               // %nonassoc(3)
+                | ✅ a_expr IS ( NOT )? TRUE                                               // %nonassoc(3)
+                | ✅ a_expr IS ( NOT )? UNKNOWN                                            // %nonassoc(3)
+                | ✅ a_expr IS ( NOT )? ( unicode_normal_form )? NORMALIZED                // %nonassoc(3)
+                | ✅ a_expr IS ( NOT )? JSON                                               // %nonassoc(3)
+                      ( json_predicate_type_constraint )?
+                      ( json_key_uniqueness_constraint )?
 
                 | ✅ a_expr AND a_expr                                                     // %left(1)
                 | ✅ a_expr OR a_expr                                                      // %left(0)
@@ -150,6 +155,109 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
 
             // TODO
 
+            /*
+                All %nonassoc(3):
+                  a_expr ISNULL
+                | a_expr NOTNULL
+                | a_expr IS ( NOT )? DISTINCT FROM a_expr_prec(4)
+                | a_expr IS ( NOT )? DOCUMENT
+                | a_expr IS ( NOT )? FALSE
+                | a_expr IS ( NOT )? NULL
+                | a_expr IS ( NOT )? TRUE
+                | a_expr IS ( NOT )? UNKNOWN
+                | a_expr IS ( NOT )? ( unicode_normal_form )? NORMALIZED
+                | a_expr IS ( NOT )? JSON ( json_predicate_type_constraint )? ( json_key_uniqueness_constraint )?
+            */
+            if prec <= 3 {
+
+                let rhs = alt!(
+                    Isnull.map(|_| (None, Null)),
+                    Notnull.map(|_| (Some(Kw::Not), Null)),
+                    seq!(
+                        Is,
+                        Kw::Not.optional(),
+                        alt!(
+                            seq!(Distinct, FromKw, a_expr_prec(4))
+                                .map(|(.., rhs)| DistinctFrom(rhs)),
+                            Kw::Document.map(|_| Document),
+                            Kw::False.map(|_| False),
+                            Kw::Null.map(|_| Null),
+                            Kw::True.map(|_| True),
+                            Kw::Unknown.map(|_| Unknown),
+                            seq!(
+                                unicode_normal_form.optional(),
+                                Kw::Normalized
+                            ).map(|(form, _)|
+                                Normalized(form)
+                            ),
+                            seq!(
+                                Kw::Json,
+                                json_predicate_type_constraint.optional(),
+                                json_key_uniqueness_constraint.optional()
+                            ).map(|(_, kind, unique_keys)|
+                                Json {
+                                    kind: kind.unwrap_or_default(),
+                                    unique_keys: unique_keys.unwrap_or_default()
+                                }
+                            )
+                        )
+                    )
+                    .map(|(.., not, rhs)| (not, rhs))
+                ).parse(ctx)
+                    .optional()?;
+
+                if let Some((not, rhs)) = rhs {
+
+                    let expr = match (rhs, not.is_some()) {
+                        (DistinctFrom(rhs), false) => IsDistinct((lhs, rhs).into()),
+                        (DistinctFrom(rhs), true) => IsNotDistinct((lhs, rhs).into()),
+                        (False, false) => IsFalse(lhs.into()),
+                        (False, true) => IsNotFalse(lhs.into()),
+                        (Null, false) => IsNull(lhs.into()),
+                        (Null, true) => IsNotNull(lhs.into()),
+                        (True, false) => IsTrue(lhs.into()),
+                        (True, true) => IsNotTrue(lhs.into()),
+                        (Unknown, false) => IsUnknown(lhs.into()),
+                        (Unknown, true) => IsNotUnknown(lhs.into()),
+                        (Document, not) => {
+                            let expr = IsDocument(lhs.into());
+                            if not {
+                                Not(expr.into()).into()
+                            }
+                            else {
+                                expr
+                            }
+                        },
+                        (Normalized(form), not) => {
+                            let expr = IsNormalized(lhs.into(), form);
+                            if not {
+                                Not(expr.into()).into()
+                            }
+                            else {
+                                expr
+                            }
+                        },
+                        (Json { kind, unique_keys }, not) => {
+
+                            let expr = JsonIsPredicate::new(lhs)
+                                .with_kind(kind)
+                                .with_unique_keys(unique_keys);
+
+                            let expr = IsJson(expr.into());
+
+                            if not {
+                                Not(expr.into()).into()
+                            }
+                            else {
+                                expr
+                            }
+                        },
+                    };
+
+                    return Ok(expr)
+                }
+            }
+
             // a_expr AND a_expr  -- %left(1)
             if prec <= 1 && let Some((_, rhs)) = seq!(And, a_expr_prec(2)).parse(ctx).optional()? {
 
@@ -222,6 +330,77 @@ mod tests {
     #[test_matrix("1 in (2, 3)" => Ok(
         InArray(vec![Int(2), Int(3)])
     ))]
+    #[test_matrix("1 isnull" => Ok(IsNull(Int(1).into())))]
+    #[test_matrix("2 notnull" => Ok(IsNotNull(Int(2).into())))]
+    #[test_matrix("3 is distinct from 4" => Ok(
+        IsDistinct((Int(3), Int(4)).into())
+    ))]
+    #[test_matrix("5 is not distinct from 6" => Ok(
+        IsNotDistinct((Int(5), Int(6)).into())
+    ))]
+    #[test_matrix("7 is document" => Ok(
+        IsDocument(Int(7).into())
+    ))]
+    #[test_matrix("8 is not document" => Ok(
+        Not(IsDocument(Int(8).into()).into()).into()
+    ))]
+    #[test_matrix("9 is false" => Ok(IsFalse(Int(9).into())))]
+    #[test_matrix("10 is not false" => Ok(IsNotFalse(Int(10).into())))]
+    #[test_matrix("11 is null" => Ok(IsNull(Int(11).into())))]
+    #[test_matrix("12 is not null" => Ok(IsNotNull(Int(12).into())))]
+    #[test_matrix("13 is true" => Ok(IsTrue(Int(13).into())))]
+    #[test_matrix("14 is not true" => Ok(IsNotTrue(Int(14).into())))]
+    #[test_matrix("15 is unknown" => Ok(IsUnknown(Int(15).into())))]
+    #[test_matrix("16 is not unknown" => Ok(IsNotUnknown(Int(16).into())))]
+    #[test_matrix("'foo' is nfc normalized" => Ok(
+        IsNormalized(
+            StringConst("foo".into()).into(),
+            Some(UnicodeNormalForm::CanonicalComposition)
+        )
+    ))]
+    #[test_matrix("'bar' is normalized" => Ok(
+        IsNormalized(
+            StringConst("bar".into()).into(),
+            None
+        )
+    ))]
+    #[test_matrix("'baz' is not nfd normalized" => Ok(
+        Not(
+            IsNormalized(
+                StringConst("baz".into()).into(),
+                Some(UnicodeNormalForm::CanonicalDecomposition)
+            ).into()
+        ).into()
+    ))]
+    #[test_matrix("'qux' is not normalized" => Ok(
+        Not(
+            IsNormalized(
+                StringConst("qux".into()).into(),
+                None
+            ).into()
+        ).into()
+    ))]
+    #[test_matrix("'[1]' is json" => Ok(
+        JsonIsPredicate::new(StringConst("[1]".into()))
+            .into()
+    ))]
+    #[test_matrix("'[2]' is json value" => Ok(
+        JsonIsPredicate::new(StringConst("[2]".into()))
+            .with_kind(JsonValueKind::Value)
+            .into()
+    ))]
+    #[test_matrix(r#"'{"foo": 1}' is json with unique keys"# => Ok(
+        JsonIsPredicate::new(StringConst(r#"{"foo": 1}"#.into()))
+            .with_unique_keys(true)
+            .into()
+    ))]
+    #[test_matrix(r#"'{"bar": 2}' is json object without unique"# => Ok(
+        JsonIsPredicate::new(StringConst(r#"{"bar": 2}"#.into()))
+            .with_kind(JsonValueKind::Object)
+            .with_unique_keys(false)
+            .into()
+    ))]
+
     /*
         Multiple expressions
     */
@@ -238,11 +417,21 @@ mod tests {
     }
 }
 
+use self::IsExprRhs::DistinctFrom;
+use self::IsExprRhs::Document;
+use self::IsExprRhs::False;
+use self::IsExprRhs::Json;
+use self::IsExprRhs::Normalized;
+use self::IsExprRhs::Null;
+use self::IsExprRhs::True;
+use self::IsExprRhs::Unknown;
 use crate::alt;
 use crate::combinators::collate_clause;
 use crate::combinators::core::skip;
 use crate::combinators::core::Combinator;
+use crate::combinators::expr::unicode_normal_form;
 use crate::combinators::expr_list;
+use crate::combinators::json_key_uniqueness_constraint;
 use crate::combinators::typename;
 use crate::context::ParserContext;
 use crate::paren;
@@ -251,13 +440,35 @@ use pg_ast::BoolExpr;
 use pg_ast::BoolExpr::Not;
 use pg_ast::CollationExpr;
 use pg_ast::ExprNode;
+use pg_ast::ExprNode::InArray;
+use pg_ast::ExprNode::IsDistinct;
+use pg_ast::ExprNode::IsDocument;
+use pg_ast::ExprNode::IsFalse;
+use pg_ast::ExprNode::IsJson;
+use pg_ast::ExprNode::IsNormalized;
+use pg_ast::ExprNode::IsNotDistinct;
+use pg_ast::ExprNode::IsNotFalse;
+use pg_ast::ExprNode::IsNotNull;
+use pg_ast::ExprNode::IsNotTrue;
+use pg_ast::ExprNode::IsNotUnknown;
+use pg_ast::ExprNode::IsNull;
+use pg_ast::ExprNode::IsTrue;
+use pg_ast::ExprNode::IsUnknown;
+use pg_ast::JsonIsPredicate;
+use pg_ast::JsonValueKind;
 use pg_ast::TimezoneExpr;
 use pg_ast::TypecastExpr;
+use pg_ast::UnicodeNormalForm;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::And;
 use pg_lexer::Keyword::At;
+use pg_lexer::Keyword::Distinct;
+use pg_lexer::Keyword::FromKw;
 use pg_lexer::Keyword::In;
+use pg_lexer::Keyword::Is;
+use pg_lexer::Keyword::Isnull;
 use pg_lexer::Keyword::Local;
+use pg_lexer::Keyword::Notnull;
 use pg_lexer::Keyword::Or;
 use pg_lexer::Keyword::Select;
 use pg_lexer::Keyword::Table;
@@ -271,4 +482,3 @@ use pg_parser_core::scan;
 use pg_parser_core::stream::TokenValue::Keyword;
 use pg_parser_core::stream::TokenValue::Operator;
 use pg_parser_core::Optional;
-use ExprNode::InArray;

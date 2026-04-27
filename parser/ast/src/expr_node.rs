@@ -54,6 +54,9 @@ pub enum ExprNode {
     /// `expr IS NORMALIZED`
     IsNormalized(Box<ExprNode>, Option<UnicodeNormalForm>),
 
+    #[from(JsonIsPredicate)]
+    IsJson(Box<JsonIsPredicate>),
+
     /// `expr IN ( expr... )`
     InArray(Vec<ExprNode>),
 
@@ -159,6 +162,7 @@ use crate::FuncCall;
 use crate::FuncCallExpr;
 use crate::IndirectionExpr;
 use crate::JsonArrayAggExpr;
+use crate::JsonIsPredicate;
 use crate::JsonObjectAggExpr;
 use crate::Number;
 use crate::RowExpr;
