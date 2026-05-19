@@ -243,17 +243,8 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
             // TODO
 
             // a_expr boolean_op a_expr  -- %nonassoc(4)
-            if prec <= 4
-                && matches!(ctx.stream_mut().peek(), Ok(Operator(Less | Equals | Greater | LessEquals | GreaterEquals | NotEquals)))
-                && ! matches!(ctx.stream_mut().peek_n::<3>(), Ok([_, Keyword(All | Any | SomeKw), Operator(OpenParenthesis)]))
-                && let Some((op, rhs)) = {
-                    seq!(boolean_op, a_expr_prec(5))
-                        .parse(ctx)
-                        .optional()?
-                }
-            {
-                let expr = BinaryExpr::new(op, lhs, rhs);
-                return Ok(expr.into())
+            if prec <= 4 {
+                prec_unwrap!(ctx, lhs, a_expr_prec_4 => return);
             }
 
             /*
@@ -399,6 +390,24 @@ fn a_expr_prec_14(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
 
     lhs = TypecastExpr::new(lhs, rhs).into();
     Ok(lhs)
+}
+
+fn a_expr_prec_4(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
+
+    /*
+        a_expr boolean_op a_expr  -- %nonassoc(4)
+    */
+
+    if ! matches!(ctx.stream_mut().peek(), Ok(Operator(Less | Equals | Greater | LessEquals | GreaterEquals | NotEquals)))
+        || matches!(ctx.stream_mut().peek_n::<3>(), Ok([_, Keyword(All | Any | SomeKw), Operator(OpenParenthesis)]))
+    {
+        return Err(Ok(lhs))
+    }
+
+    let (op, rhs) = prec_wrap!(ctx, lhs, seq!(boolean_op, a_expr_prec(5)));
+
+    let expr = BinaryExpr::new(op, lhs, rhs);
+    Ok(expr.into())
 }
 
 fn a_expr_prec_0(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
