@@ -21,6 +21,32 @@ enum IsExprRhs {
     },
 }
 
+macro_rules! prec_wrap {
+    ($ctx:ident, $lhs:ident, $parser:expr) => {{
+
+        let p = $parser;
+
+        let result = $crate::combinators::core::Combinator::parse(&p, $ctx);
+        let result = pg_parser_core::Optional::optional(result);
+
+        match result {
+            Ok(Some(expr)) => expr,
+            Ok(None) => return Err(Ok($lhs)),
+            Err(err) => return Err(Err(err)),
+        }
+    }};
+}
+
+macro_rules! prec_unwrap {
+    ($expr:expr) => {
+        match $expr {
+            Ok(expr) => expr,
+            Err(Ok(expr)) => return Ok(expr),
+            Err(Err(err)) => return Err(err.into()),
+        }
+    };
+}
+
 fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode> {
     move |ctx| {
 
@@ -69,21 +95,21 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                 | a_expr ( NOT )? BETWEEN ( ASYMMETRIC | SYMMETRIC )? b_expr AND a_expr     // %nonassoc(5)
                 | a_expr ( NOT )? SIMILAR TO a_expr ( ESCAPE a_expr )?                      // %nonassoc(5)
 
-                | ✅ a_expr ISNULL                                                         // %nonassoc(3)
-                | ✅ a_expr NOTNULL                                                        // %nonassoc(3)
-                | ✅ a_expr IS ( NOT )? DISTINCT FROM a_expr                               // %nonassoc(3)
-                | ✅ a_expr IS ( NOT )? DOCUMENT                                           // %nonassoc(3)
-                | ✅ a_expr IS ( NOT )? FALSE                                              // %nonassoc(3)
-                | ✅ a_expr IS ( NOT )? NULL                                               // %nonassoc(3)
-                | ✅ a_expr IS ( NOT )? TRUE                                               // %nonassoc(3)
-                | ✅ a_expr IS ( NOT )? UNKNOWN                                            // %nonassoc(3)
-                | ✅ a_expr IS ( NOT )? ( unicode_normal_form )? NORMALIZED                // %nonassoc(3)
-                | ✅ a_expr IS ( NOT )? JSON                                               // %nonassoc(3)
+                | ✅ a_expr ISNULL                                                            // %nonassoc(3)
+                | ✅ a_expr NOTNULL                                                           // %nonassoc(3)
+                | ✅ a_expr IS ( NOT )? DISTINCT FROM a_expr                                  // %nonassoc(3)
+                | ✅ a_expr IS ( NOT )? DOCUMENT                                              // %nonassoc(3)
+                | ✅ a_expr IS ( NOT )? FALSE                                                 // %nonassoc(3)
+                | ✅ a_expr IS ( NOT )? NULL                                                  // %nonassoc(3)
+                | ✅ a_expr IS ( NOT )? TRUE                                                  // %nonassoc(3)
+                | ✅ a_expr IS ( NOT )? UNKNOWN                                               // %nonassoc(3)
+                | ✅ a_expr IS ( NOT )? ( unicode_normal_form )? NORMALIZED                   // %nonassoc(3)
+                | ✅ a_expr IS ( NOT )? JSON                                                  // %nonassoc(3)
                       ( json_predicate_type_constraint )?
                       ( json_key_uniqueness_constraint )?
 
-                | ✅ a_expr AND a_expr                                                     // %left(1)
-                | ✅ a_expr OR a_expr                                                      // %left(0)
+                | ✅ a_expr AND a_expr                                                        // %left(1)
+                | ✅ a_expr OR a_expr                                                         // %left(0)
         */
 
         let mut lhs = a_expr_primary(ctx)?;
@@ -339,16 +365,8 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
             }
 
             // a_expr OR a_expr  -- %left(0)
-            if prec == 0 && let Some((_, rhs)) = seq!(Or, a_expr_prec(1)).parse(ctx).optional()? {
-
-                if let ExprNode::BoolExpr(BoolExpr::Or(args)) = &mut lhs {
-                    // Flatten "a OR b OR c ..." to a single BoolExpr on sight
-                    args.push(rhs);
-                }
-                else {
-                    lhs = BoolExpr::Or(vec![lhs, rhs]).into();
-                }
-
+            if prec == 0 {
+                lhs = prec_unwrap!(a_expr_prec_0(ctx, lhs));
                 continue
             }
 
@@ -357,6 +375,29 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
         }
 
     }
+}
+
+type PrecResult = Result<ExprNode, LocatedResult<ExprNode>>;
+
+fn a_expr_prec_0(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
+
+    /*
+        a_expr OR a_expr  -- %left(0)
+    */
+
+    let (_, rhs) = prec_wrap!(ctx, lhs,
+        seq!(Or, a_expr_prec(1))
+    );
+
+    if let ExprNode::BoolExpr(BoolExpr::Or(args)) = &mut lhs {
+        // Flatten "a OR b OR c ..." to a single BoolExpr on sight
+        args.push(rhs);
+    }
+    else {
+        lhs = BoolExpr::Or(vec![lhs, rhs]).into()
+    }
+
+    Ok(lhs)
 }
 
 #[cfg(test)]
@@ -545,6 +586,7 @@ use pg_ast::JsonValueKind;
 use pg_ast::TimezoneExpr;
 use pg_ast::TypecastExpr;
 use pg_ast::UnicodeNormalForm;
+use pg_elog::LocatedResult;
 use pg_lexer::Keyword as Kw;
 use pg_lexer::Keyword::All;
 use pg_lexer::Keyword::And;
@@ -565,15 +607,20 @@ use pg_lexer::Keyword::Time;
 use pg_lexer::Keyword::Values;
 use pg_lexer::Keyword::With;
 use pg_lexer::Keyword::Zone;
+use pg_lexer::OperatorKind::Circumflex;
+use pg_lexer::OperatorKind::Div;
+use pg_lexer::OperatorKind::Equals;
 use pg_lexer::OperatorKind::Greater;
 use pg_lexer::OperatorKind::GreaterEquals;
 use pg_lexer::OperatorKind::Less;
 use pg_lexer::OperatorKind::LessEquals;
+use pg_lexer::OperatorKind::Minus;
+use pg_lexer::OperatorKind::Mul;
 use pg_lexer::OperatorKind::NotEquals;
 use pg_lexer::OperatorKind::OpenParenthesis;
+use pg_lexer::OperatorKind::Percent;
+use pg_lexer::OperatorKind::Plus;
 use pg_lexer::OperatorKind::Typecast;
-use pg_lexer::OperatorKind::{Circumflex, Minus, Plus};
-use pg_lexer::OperatorKind::{Div, Equals, Mul, Percent};
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenValue::Keyword;
 use pg_parser_core::stream::TokenValue::Operator;
