@@ -30,26 +30,6 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
             a_expr:
                   ✅ a_expr_primary
                 | ✅ a_expr TYPECAST Typename                                                  // %left(14)
-                | ✅ a_expr AT ( LOCAL | TIME ZONE a_expr )                                    // %left(12)
-                | ✅ a_expr COLLATE any_name                                                   // %left(10)
-
-                | ✅ a_expr '^' a_expr                                                         // %left(9)
-                | a_expr '^' sub_type '(' SelectStmt | a_expr ')'                           // %left(6)
-
-                | ✅ a_expr additive_op a_expr                                                 // %left(8)
-                | a_expr additive_op sub_type '(' SelectStmt | a_expr ')'                   // %left(6)
-
-                | ✅ a_expr multiplicative_op a_expr                                           // %left(7)
-                | a_expr multiplicative_op sub_type '(' SelectStmt | a_expr ')'             // %left(6)
-
-                | a_expr ILIKE sub_type '(' SelectStmt | a_expr ')'                         // %left(6)
-                | a_expr ILIKE a_expr ( ESCAPE a_expr )?                                    // %nonassoc(5)
-
-                | a_expr LIKE sub_type '(' SelectStmt | a_expr ')'                          // %left(6)
-                | a_expr LIKE a_expr ( ESCAPE a_expr )?                                     // %nonassoc(5)
-
-                | a_expr boolean_op sub_type '(' SelectStmt | a_expr ')'                    // %left(6)
-                | ✅ a_expr boolean_op a_expr                                                  // %nonassoc(4)
 
                 | ✅ a_expr IN '(' expr_list ')'                                               // %left(13)
                 | a_expr IN '(' SelectStmt ')'                                              // %nonassoc(5)
@@ -57,13 +37,34 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                 | ✅ a_expr NOT IN '(' expr_list ')'                                           // %left(13)
                 | a_expr NOT IN '(' SelectStmt ')'                                          // %nonassoc(5)
 
-                | a_expr NOT ILIKE sub_type '(' SelectStmt | a_expr ')'                     // %left(6)
+                | ✅ a_expr AT ( LOCAL | TIME ZONE a_expr )                                    // %left(12)
+                | ✅ a_expr COLLATE any_name                                                   // %left(10)
+
+                | ✅ a_expr '^' a_expr                                                         // %left(9)
+                | a_expr '^' sub_type '(' ( SelectStmt | a_expr ) ')'                       // %left(6)
+
+                | ✅ a_expr additive_op a_expr                                                 // %left(8)
+                | a_expr additive_op sub_type '(' ( SelectStmt | a_expr ) ')'               // %left(6)
+
+                | ✅ a_expr multiplicative_op a_expr                                           // %left(7)
+                | a_expr multiplicative_op sub_type '(' ( SelectStmt | a_expr ) ')'         // %left(6)
+
+                | a_expr misc_op sub_type '(' ( SelectStmt | a_expr ) ')'                   // %left(6)
+                | a_expr misc_op a_expr                                                     // %left(6)
+
+                | a_expr ILIKE sub_type '(' ( SelectStmt | a_expr ) ')'                     // %left(6)
+                | a_expr ILIKE a_expr ( ESCAPE a_expr )?                                    // %nonassoc(5)
+
+                | a_expr LIKE sub_type '(' ( SelectStmt | a_expr ) ')'                      // %left(6)
+                | a_expr LIKE a_expr ( ESCAPE a_expr )?                                     // %nonassoc(5)
+
+                | a_expr NOT ILIKE sub_type '(' ( SelectStmt | a_expr ) ')'                 // %left(6)
                 | a_expr NOT ILIKE a_expr ( ESCAPE a_expr )?                                // %nonassoc(5)
-                | a_expr NOT LIKE sub_type '(' SelectStmt | a_expr ')'                      // %left(6)
+                | a_expr NOT LIKE sub_type '(' ( SelectStmt | a_expr ) ')'                  // %left(6)
                 | a_expr NOT LIKE a_expr ( ESCAPE a_expr )?                                 // %nonassoc(5)
 
-                | a_expr misc_op sub_type '(' SelectStmt | a_expr ')'                       // %left(6)
-                | a_expr misc_op a_expr                                                     // %left(6)
+                | a_expr boolean_op sub_type '(' ( SelectStmt | a_expr ) ')'                // %left(6)
+                | ✅ a_expr boolean_op a_expr                                                  // %nonassoc(4)
 
                 | a_expr ( NOT )? BETWEEN ( ASYMMETRIC | SYMMETRIC )? b_expr AND a_expr     // %nonassoc(5)
                 | a_expr ( NOT )? SIMILAR TO a_expr ( ESCAPE a_expr )?                      // %nonassoc(5)
