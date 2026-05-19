@@ -38,13 +38,23 @@ macro_rules! prec_wrap {
 }
 
 macro_rules! prec_unwrap {
-    ($expr:expr) => {
-        match $expr {
-            Ok(expr) => expr,
-            Err(Ok(expr)) => return Ok(expr),
-            Err(Err(err)) => return Err(err.into()),
+    ($ctx:ident, $lhs:ident, $prec_fn:ident => continue) => {{
+        let result = $prec_fn($ctx, $lhs);
+        match result {
+            Ok(expr) => {
+                $lhs = expr;
+                continue
+            },
+            Err(expr) => $lhs = expr?,
         }
-    };
+    }};
+    ($ctx:ident, $lhs:ident, $prec_fn:ident => return) => {{
+        let result = $prec_fn($ctx, $lhs);
+        match result {
+            Ok(expr) => return Ok(expr),
+            Err(expr) => $lhs = expr?,
+        }
+    }};
 }
 
 fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode> {
@@ -117,9 +127,8 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
         loop {
 
             // a_expr TYPECAST Typename  -- %left(14)
-            if prec <= 14 && let Some((_, rhs)) = seq!(Typecast, typename).parse(ctx).optional()? {
-                lhs = TypecastExpr::new(lhs, rhs).into();
-                continue
+            if prec <= 14 {
+                prec_unwrap!(ctx, lhs, a_expr_prec_14 => continue);
             }
 
             if prec <= 13 {
@@ -366,8 +375,7 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
 
             // a_expr OR a_expr  -- %left(0)
             if prec == 0 {
-                lhs = prec_unwrap!(a_expr_prec_0(ctx, lhs));
-                continue
+                prec_unwrap!(ctx, lhs, a_expr_prec_0 => continue);
             }
 
             // No more matches
@@ -378,6 +386,20 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
 }
 
 type PrecResult = Result<ExprNode, LocatedResult<ExprNode>>;
+
+fn a_expr_prec_14(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
+
+    /*
+        a_expr TYPECAST Typename  -- %left(14)
+    */
+
+    let (_, rhs) = prec_wrap!(ctx, lhs,
+        seq!(Typecast, typename)
+    );
+
+    lhs = TypecastExpr::new(lhs, rhs).into();
+    Ok(lhs)
+}
 
 fn a_expr_prec_0(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
 
