@@ -351,17 +351,8 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
             }
 
             // a_expr AND a_expr  -- %left(1)
-            if prec <= 1 && let Some((_, rhs)) = seq!(And, a_expr_prec(2)).parse(ctx).optional()? {
-
-                if let ExprNode::BoolExpr(BoolExpr::And(args)) = &mut lhs {
-                    // Flatten "a AND b AND c ..." to a single BoolExpr on sight
-                    args.push(rhs);
-                }
-                else {
-                    lhs = BoolExpr::And(vec![lhs, rhs]).into();
-                }
-
-                continue
+            if prec <= 1 {
+                prec_unwrap!(ctx, lhs, a_expr_prec_1 => continue);
             }
 
             // a_expr OR a_expr  -- %left(0)
@@ -408,6 +399,27 @@ fn a_expr_prec_4(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
 
     let expr = BinaryExpr::new(op, lhs, rhs);
     Ok(expr.into())
+}
+
+fn a_expr_prec_1(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
+
+    /*
+        a_expr AND a_expr  -- %left(1)
+    */
+
+    let (_, rhs) = prec_wrap!(ctx, lhs,
+        seq!(And, a_expr_prec(2))
+    );
+
+    if let ExprNode::BoolExpr(BoolExpr::And(args)) = &mut lhs {
+        // Flatten "a OR b OR c ..." to a single BoolExpr on sight
+        args.push(rhs);
+    }
+    else {
+        lhs = BoolExpr::And(vec![lhs, rhs]).into()
+    }
+
+    Ok(lhs)
 }
 
 fn a_expr_prec_0(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
