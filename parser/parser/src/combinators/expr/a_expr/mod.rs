@@ -42,8 +42,10 @@ macro_rules! prec_wrap {
 
 /// Runs the parser and decodes [`PrecResult`].
 macro_rules! prec_parse {
-    ($ctx:ident, $lhs:ident, $prec_fn:ident => continue) => {{
-        let result = $prec_fn($ctx, $lhs);
+
+    ($lhs:ident, $prec_combinator:expr => continue) => {
+
+        let result = $prec_combinator;
         match result {
             Ok(expr) => {
                 $lhs = expr;
@@ -51,14 +53,16 @@ macro_rules! prec_parse {
             },
             Err(expr) => $lhs = expr?,
         }
-    }};
-    ($ctx:ident, $lhs:ident, $prec_fn:ident => return) => {{
-        let result = $prec_fn($ctx, $lhs);
+    };
+
+    ($lhs:ident, $prec_combinator:expr => return) => {
+
+        let result = $prec_combinator;
         match result {
             Ok(expr) => return Ok(expr),
             Err(expr) => $lhs = expr?,
         }
-    }};
+    };
 }
 
 macro_rules! prec_climb {
@@ -72,7 +76,7 @@ macro_rules! prec_climb {
 
                 $(
                     if $prec_var <= $prec {
-                        prec_parse!(ctx, lhs, $prec_fn => $type);
+                        prec_parse!(lhs, $prec_fn(ctx, lhs) => $type);
                     }
                 )+
 
@@ -110,29 +114,26 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
 
         /*
             All %left(6):
-              a_expr '^' sub_type '(' ( SelectStmt | a_expr ) ')'
-            | a_expr additive_op sub_type '(' ( SelectStmt | a_expr ) ')'
-            | a_expr multiplicative_op sub_type '(' ( SelectStmt | a_expr ) ')'
-            | a_expr misc_op sub_type '(' ( SelectStmt | a_expr ) ')'
-            | a_expr misc_op a_expr
-            | a_expr ILIKE sub_type '(' ( SelectStmt | a_expr ) ')'
-            | a_expr LIKE sub_type '(' ( SelectStmt | a_expr ) ')'
-            | a_expr NOT ILIKE sub_type '(' ( SelectStmt | a_expr ) ')'
-            | a_expr NOT LIKE sub_type '(' ( SelectStmt | a_expr ) ')'
-            | a_expr boolean_op sub_type '(' ( SelectStmt | a_expr ) ')'
+                  a_expr '^' sub_type '(' ( SelectStmt | a_expr ) ')'
+                | a_expr additive_op sub_type '(' ( SelectStmt | a_expr ) ')'
+                | a_expr multiplicative_op sub_type '(' ( SelectStmt | a_expr ) ')'
+                | a_expr misc_op sub_type '(' ( SelectStmt | a_expr ) ')'
+                | a_expr misc_op a_expr
+                | a_expr ILIKE sub_type '(' ( SelectStmt | a_expr ) ')'
+                | a_expr LIKE sub_type '(' ( SelectStmt | a_expr ) ')'
+                | a_expr NOT ILIKE sub_type '(' ( SelectStmt | a_expr ) ')'
+                | a_expr NOT LIKE sub_type '(' ( SelectStmt | a_expr ) ')'
+                | a_expr boolean_op sub_type '(' ( SelectStmt | a_expr ) ')'
         */
         // TODO 6: a_expr_prec_6 => continue,
 
         /*
             All %nonassoc(5):
-              a_expr IN '(' SelectStmt ')'
-            | a_expr NOT IN '(' SelectStmt ')'
-            | a_expr ILIKE a_expr ( ESCAPE a_expr )?
-            | a_expr LIKE a_expr ( ESCAPE a_expr )?
-            | a_expr NOT ILIKE a_expr ( ESCAPE a_expr )?
-            | a_expr NOT LIKE a_expr ( ESCAPE a_expr )?
-            | a_expr ( NOT )? BETWEEN ( ASYMMETRIC | SYMMETRIC )? b_expr AND a_expr
-            | a_expr ( NOT )? SIMILAR TO a_expr ( ESCAPE a_expr )?
+                  a_expr ( NOT )? IN '(' SelectStmt ')'
+                | a_expr ( NOT )? ILIKE a_expr ( ESCAPE a_expr )?
+                | a_expr ( NOT )? LIKE a_expr ( ESCAPE a_expr )?
+                | a_expr ( NOT )? BETWEEN ( ASYMMETRIC | SYMMETRIC )? b_expr AND a_expr
+                | a_expr ( NOT )? SIMILAR TO a_expr ( ESCAPE a_expr )?
         */
         // TODO 5: a_expr_prec_5 => return,
 
@@ -141,16 +142,16 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
 
         /*
             All %nonassoc(3):
-              a_expr ISNULL
-            | a_expr NOTNULL
-            | a_expr IS ( NOT )? DISTINCT FROM a_expr_prec(4)
-            | a_expr IS ( NOT )? DOCUMENT
-            | a_expr IS ( NOT )? FALSE
-            | a_expr IS ( NOT )? NULL
-            | a_expr IS ( NOT )? TRUE
-            | a_expr IS ( NOT )? UNKNOWN
-            | a_expr IS ( NOT )? ( unicode_normal_form )? NORMALIZED
-            | a_expr IS ( NOT )? JSON ( json_predicate_type_constraint )? ( json_key_uniqueness_constraint )?
+                  a_expr ISNULL
+                | a_expr NOTNULL
+                | a_expr IS ( NOT )? DISTINCT FROM a_expr_prec(4)
+                | a_expr IS ( NOT )? DOCUMENT
+                | a_expr IS ( NOT )? FALSE
+                | a_expr IS ( NOT )? NULL
+                | a_expr IS ( NOT )? TRUE
+                | a_expr IS ( NOT )? UNKNOWN
+                | a_expr IS ( NOT )? ( unicode_normal_form )? NORMALIZED
+                | a_expr IS ( NOT )? JSON ( json_predicate_type_constraint )? ( json_key_uniqueness_constraint )?
         */
         3: a_expr_prec_3 => return,
 
