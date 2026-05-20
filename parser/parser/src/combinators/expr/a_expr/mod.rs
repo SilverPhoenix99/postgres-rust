@@ -169,16 +169,8 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
             }
 
             // a_expr AT ( LOCAL | TIME ZONE a_expr )  -- %left(12)
-            if prec <= 12 && let Some((_, zone)) = {
-                seq!(At, alt!(
-                    Local.map(|_| None),
-                    seq!(Time, Zone, a_expr_prec(13)).map(|(.., tz)| Some(tz))
-                ))
-                .parse(ctx)
-                .optional()?
-            } {
-                lhs = TimezoneExpr::new(lhs, zone).into();
-                continue
+            if prec <= 12 {
+                prec_unwrap!(ctx, lhs, a_expr_prec_12 => continue);
             }
 
             // a_expr COLLATE any_name  -- %left(10)
@@ -342,6 +334,23 @@ fn a_expr_prec_14(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
     );
 
     let expr = TypecastExpr::new(lhs, rhs);
+    Ok(expr.into())
+}
+
+fn a_expr_prec_12(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
+
+    /*
+        a_expr AT ( LOCAL | TIME ZONE a_expr )  -- %left(12)
+    */
+
+    let (_, zone) = prec_wrap!(ctx, lhs,
+        seq!(At, alt!(
+            Local.map(|_| None),
+            seq!(Time, Zone, a_expr_prec(13)).map(|(.., tz)| Some(tz))
+        ))
+    );
+
+    let expr = TimezoneExpr::new(lhs, zone);
     Ok(expr.into())
 }
 
