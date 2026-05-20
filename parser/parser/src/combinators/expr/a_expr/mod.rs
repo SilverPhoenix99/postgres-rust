@@ -174,9 +174,8 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
             }
 
             // a_expr COLLATE any_name  -- %left(10)
-            if prec <= 10 && let Some(collation) = collate_clause(ctx).optional()? {
-                lhs = CollationExpr::new(lhs, collation).into();
-                continue
+            if prec <= 10 {
+                prec_unwrap!(ctx, lhs, a_expr_prec_10 => continue);
             }
 
             // a_expr '^' a_expr  -- %left(9)
@@ -351,6 +350,18 @@ fn a_expr_prec_12(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
     );
 
     let expr = TimezoneExpr::new(lhs, zone);
+    Ok(expr.into())
+}
+
+fn a_expr_prec_10(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
+
+    /*
+        a_expr COLLATE any_name  -- %left(10)
+    */
+
+    let collation = prec_wrap!(ctx, lhs, collate_clause);
+
+    let expr = CollationExpr::new(lhs, collation);
     Ok(expr.into())
 }
 
