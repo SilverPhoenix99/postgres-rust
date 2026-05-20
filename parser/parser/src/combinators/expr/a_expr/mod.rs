@@ -223,21 +223,8 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
             }
 
             // a_expr multiplicative_op a_expr  -- %left(7)
-            if prec <= 7
-                // must Not be followed by `ALL(`/`ANY(`/`SOME(`
-                && ! matches!(ctx.stream_mut().peek_n::<3>(), Ok([
-                    Operator(Mul | Div | Percent),
-                    Keyword(All | Any | SomeKw),
-                    Operator(OpenParenthesis)
-                ]))
-                && let Some((op, rhs)) = {
-                    seq!(multiplicative_op, a_expr_prec(8))
-                        .parse(ctx)
-                        .optional()?
-                }
-            {
-                lhs = BinaryExpr::new(op, lhs, rhs).into();
-                continue
+            if prec <= 7 {
+                prec_unwrap!(ctx, lhs, a_expr_prec_7 => continue);
             }
 
             // TODO
@@ -381,6 +368,29 @@ fn a_expr_prec_14(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
 
     lhs = TypecastExpr::new(lhs, rhs).into();
     Ok(lhs)
+}
+
+fn a_expr_prec_7(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
+
+    /*
+        a_expr multiplicative_op a_expr  -- %left(7)
+    */
+
+    // must Not be followed by `ALL(`/`ANY(`/`SOME(`
+    if matches!(ctx.stream_mut().peek_n::<3>(), Ok([
+        Operator(Mul | Div | Percent),
+        Keyword(All | Any | SomeKw),
+        Operator(OpenParenthesis)
+    ])) {
+        return Err(Ok(lhs))
+    }
+
+    let (op, rhs) = prec_wrap!(ctx, lhs,
+        seq!(multiplicative_op, a_expr_prec(8))
+    );
+
+    let expr = BinaryExpr::new(op, lhs, rhs);
+    Ok(expr.into())
 }
 
 fn a_expr_prec_4(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
