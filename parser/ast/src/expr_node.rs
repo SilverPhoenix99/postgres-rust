@@ -58,10 +58,10 @@ pub enum ExprNode {
     IsJson(Box<JsonIsPredicate>),
 
     /// `expr IN ( expr... )`
-    InArray(Vec<ExprNode>),
+    InArray(Box<ExprNode>, Vec<ExprNode>),
 
     /// `expr IN ( select_stmt )`
-    InSubquery(SelectStmt),
+    InSubquery(Box<ExprNode>, SelectStmt),
 
     /*
         Other Expressions

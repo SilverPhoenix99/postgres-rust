@@ -131,41 +131,10 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                 prec_unwrap!(ctx, lhs, a_expr_prec_14 => continue);
             }
 
+            // a_expr NOT IN '(' expr_list ')'  -- %left(13)
+            // a_expr IN '(' expr_list ')'  -- %left(13)
             if prec <= 13 {
-
-                // a_expr NOT IN '(' expr_list ')'  -- %left(13)
-                if
-                    let Ok(toks) = ctx.stream_mut().peek_n::<5>()
-                    && matches!(toks, [Keyword(Kw::Not), Keyword(In), Operator(OpenParenthesis), ..])
-                    // must Not be select_stmt
-                    && ! matches!(toks,
-                        [.., Keyword(With | Select | Table), _]
-                        | [.., Keyword(Values), Operator(OpenParenthesis)]
-                    )
-                    && let Some((_, expr_list)) = seq!(skip(2), paren!(expr_list))
-                        .parse(ctx)
-                        .optional()?
-                {
-                    lhs = Not(InArray(expr_list).into()).into();
-                    continue
-                }
-
-                // a_expr IN '(' expr_list ')'  -- %left(13)
-                if
-                    let Ok(toks) = ctx.stream_mut().peek_n::<4>()
-                    && matches!(toks, [Keyword(In), Operator(OpenParenthesis), ..])
-                    // must Not be select_stmt
-                    && ! matches!(toks,
-                        [.., Keyword(With | Select | Table), _]
-                        | [.., Keyword(Values), Operator(OpenParenthesis)]
-                    )
-                    && let Some((_, expr_list)) = seq!(skip(1), paren!(expr_list))
-                        .parse(ctx)
-                        .optional()?
-                {
-                    lhs = InArray(expr_list);
-                    continue
-                }
+                prec_unwrap!(ctx, lhs, a_expr_prec_13 => continue);
             }
 
             // a_expr AT ( LOCAL | TIME ZONE a_expr )  -- %left(12)
@@ -334,6 +303,51 @@ fn a_expr_prec_14(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
 
     let expr = TypecastExpr::new(lhs, rhs);
     Ok(expr.into())
+}
+
+fn a_expr_prec_13(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
+
+    /*
+          a_expr IN '(' expr_list ')'      -- %left(13)
+        | a_expr NOT IN '(' expr_list ')'  -- %left(13)
+    */
+
+    if
+        let Ok(toks) = ctx.stream_mut().peek_n::<5>()
+        && matches!(toks, [Keyword(Kw::Not), Keyword(In), Operator(OpenParenthesis), ..])
+        // must Not be select_stmt
+        && ! matches!(toks,
+            [.., Keyword(With | Select | Table), _]
+            | [.., Keyword(Values), Operator(OpenParenthesis)]
+        )
+    {
+        let (_, expr_list) = prec_wrap!(ctx, lhs,
+            seq!(skip(2), paren!(expr_list))
+        );
+
+        let expr = InArray(lhs.into(), expr_list);
+        let expr = Not(expr.into());
+        return Ok(expr.into())
+    }
+
+    if
+        let Ok(toks) = ctx.stream_mut().peek_n::<4>()
+        && matches!(toks, [Keyword(In), Operator(OpenParenthesis), ..])
+        // must Not be select_stmt
+        && ! matches!(toks,
+            [.., Keyword(With | Select | Table), _]
+            | [.., Keyword(Values), Operator(OpenParenthesis)]
+        )
+    {
+        let (_, expr_list) = prec_wrap!(ctx, lhs,
+            seq!(skip(1), paren!(expr_list))
+        );
+
+        let expr = InArray(lhs.into(), expr_list);
+        return Ok(expr)
+    }
+
+    Err(Ok(lhs))
 }
 
 fn a_expr_prec_12(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
@@ -528,10 +542,15 @@ mod tests {
         ).into()
     ))]
     #[test_matrix("1 not in (2, 3)" => Ok(
-        Not(InArray(vec![Int(2), Int(3)]).into()).into()
+        Not(
+            InArray(
+                Int(1).into(),
+                vec![Int(2), Int(3)]
+            ).into()
+        ).into()
     ))]
     #[test_matrix("1 in (2, 3)" => Ok(
-        InArray(vec![Int(2), Int(3)])
+        InArray(Int(1).into(), vec![Int(2), Int(3)])
     ))]
     #[test_matrix("1 isnull" => Ok(IsNull(Int(1).into())))]
     #[test_matrix("2 notnull" => Ok(IsNotNull(Int(2).into())))]
