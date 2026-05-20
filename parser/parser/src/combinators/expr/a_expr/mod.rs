@@ -21,23 +21,27 @@ enum IsExprRhs {
     },
 }
 
+type PrecResult = Result<ExprNode, LocatedResult<ExprNode>>;
+
+/// Wraps [`scan::Result`] into [`PrecResult`].
 macro_rules! prec_wrap {
     ($ctx:ident, $lhs:ident, $parser:expr) => {{
+        use pg_parser_core::scan::Error::{Eof, NoMatch, ScanErr};
 
         let p = $parser;
 
-        let result = $crate::combinators::core::Combinator::parse(&p, $ctx);
-        let result = pg_parser_core::Optional::optional(result);
+        let result = p.parse($ctx);
 
         match result {
-            Ok(Some(expr)) => expr,
-            Ok(None) => return Err(Ok($lhs)),
-            Err(err) => return Err(Err(err)),
+            Ok(expr) => expr,
+            Err(NoMatch(_) | Eof(_)) => return Err(Ok($lhs)),
+            Err(ScanErr(err)) => return Err(Err(err)),
         }
     }};
 }
 
-macro_rules! prec_unwrap {
+/// Runs the parser and decodes [`PrecResult`].
+macro_rules! prec_parse {
     ($ctx:ident, $lhs:ident, $prec_fn:ident => continue) => {{
         let result = $prec_fn($ctx, $lhs);
         match result {
@@ -128,45 +132,45 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
 
             // a_expr TYPECAST Typename  -- %left(14)
             if prec <= 14 {
-                prec_unwrap!(ctx, lhs, a_expr_prec_14 => continue);
+                prec_parse!(ctx, lhs, a_expr_prec_14 => continue);
             }
 
             // a_expr NOT IN '(' expr_list ')'  -- %left(13)
             // a_expr IN '(' expr_list ')'  -- %left(13)
             if prec <= 13 {
-                prec_unwrap!(ctx, lhs, a_expr_prec_13 => continue);
+                prec_parse!(ctx, lhs, a_expr_prec_13 => continue);
             }
 
             // a_expr AT ( LOCAL | TIME ZONE a_expr )  -- %left(12)
             if prec <= 12 {
-                prec_unwrap!(ctx, lhs, a_expr_prec_12 => continue);
+                prec_parse!(ctx, lhs, a_expr_prec_12 => continue);
             }
 
             // a_expr COLLATE any_name  -- %left(10)
             if prec <= 10 {
-                prec_unwrap!(ctx, lhs, a_expr_prec_10 => continue);
+                prec_parse!(ctx, lhs, a_expr_prec_10 => continue);
             }
 
             // a_expr '^' a_expr  -- %left(9)
             if prec <= 9 {
-                prec_unwrap!(ctx, lhs, a_expr_prec_9 => continue);
+                prec_parse!(ctx, lhs, a_expr_prec_9 => continue);
             }
 
             // a_expr additive_op a_expr  -- %left(8)
             if prec <= 8 {
-                prec_unwrap!(ctx, lhs, a_expr_prec_8 => continue);
+                prec_parse!(ctx, lhs, a_expr_prec_8 => continue);
             }
 
             // a_expr multiplicative_op a_expr  -- %left(7)
             if prec <= 7 {
-                prec_unwrap!(ctx, lhs, a_expr_prec_7 => continue);
+                prec_parse!(ctx, lhs, a_expr_prec_7 => continue);
             }
 
             // TODO
 
             // a_expr boolean_op a_expr  -- %nonassoc(4)
             if prec <= 4 {
-                prec_unwrap!(ctx, lhs, a_expr_prec_4 => return);
+                prec_parse!(ctx, lhs, a_expr_prec_4 => return);
             }
 
             /*
@@ -183,103 +187,17 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
                 | a_expr IS ( NOT )? JSON ( json_predicate_type_constraint )? ( json_key_uniqueness_constraint )?
             */
             if prec <= 3 {
-
-                let rhs = alt!(
-                    Isnull.map(|_| (None, Null)),
-                    Notnull.map(|_| (Some(Kw::Not), Null)),
-                    seq!(
-                        Is,
-                        Kw::Not.optional(),
-                        alt!(
-                            seq!(Distinct, FromKw, a_expr_prec(4))
-                                .map(|(.., rhs)| DistinctFrom(rhs)),
-                            Kw::Document.map(|_| Document),
-                            Kw::False.map(|_| False),
-                            Kw::Null.map(|_| Null),
-                            Kw::True.map(|_| True),
-                            Kw::Unknown.map(|_| Unknown),
-                            seq!(
-                                unicode_normal_form.optional(),
-                                Kw::Normalized
-                            ).map(|(form, _)|
-                                Normalized(form)
-                            ),
-                            seq!(
-                                Kw::Json,
-                                json_predicate_type_constraint.optional(),
-                                json_key_uniqueness_constraint.optional()
-                            ).map(|(_, kind, unique_keys)|
-                                Json {
-                                    kind: kind.unwrap_or_default(),
-                                    unique_keys: unique_keys.unwrap_or_default()
-                                }
-                            )
-                        )
-                    )
-                    .map(|(.., not, rhs)| (not, rhs))
-                ).parse(ctx)
-                    .optional()?;
-
-                if let Some((not, rhs)) = rhs {
-
-                    let expr = match (rhs, not.is_some()) {
-                        (DistinctFrom(rhs), false) => IsDistinct((lhs, rhs).into()),
-                        (DistinctFrom(rhs), true) => IsNotDistinct((lhs, rhs).into()),
-                        (False, false) => IsFalse(lhs.into()),
-                        (False, true) => IsNotFalse(lhs.into()),
-                        (Null, false) => IsNull(lhs.into()),
-                        (Null, true) => IsNotNull(lhs.into()),
-                        (True, false) => IsTrue(lhs.into()),
-                        (True, true) => IsNotTrue(lhs.into()),
-                        (Unknown, false) => IsUnknown(lhs.into()),
-                        (Unknown, true) => IsNotUnknown(lhs.into()),
-                        (Document, not) => {
-                            let expr = IsDocument(lhs.into());
-                            if not {
-                                Not(expr.into()).into()
-                            }
-                            else {
-                                expr
-                            }
-                        },
-                        (Normalized(form), not) => {
-                            let expr = IsNormalized(lhs.into(), form);
-                            if not {
-                                Not(expr.into()).into()
-                            }
-                            else {
-                                expr
-                            }
-                        },
-                        (Json { kind, unique_keys }, not) => {
-
-                            let expr = JsonIsPredicate::new(lhs)
-                                .with_kind(kind)
-                                .with_unique_keys(unique_keys);
-
-                            let expr = IsJson(expr.into());
-
-                            if not {
-                                Not(expr.into()).into()
-                            }
-                            else {
-                                expr
-                            }
-                        },
-                    };
-
-                    return Ok(expr)
-                }
+                prec_parse!(ctx, lhs, a_expr_prec_3 => return);
             }
 
             // a_expr AND a_expr  -- %left(1)
             if prec <= 1 {
-                prec_unwrap!(ctx, lhs, a_expr_prec_1 => continue);
+                prec_parse!(ctx, lhs, a_expr_prec_1 => continue);
             }
 
             // a_expr OR a_expr  -- %left(0)
             if prec == 0 {
-                prec_unwrap!(ctx, lhs, a_expr_prec_0 => continue);
+                prec_parse!(ctx, lhs, a_expr_prec_0 => continue);
             }
 
             // No more matches
@@ -288,8 +206,6 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
 
     }
 }
-
-type PrecResult = Result<ExprNode, LocatedResult<ExprNode>>;
 
 fn a_expr_prec_14(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
 
@@ -464,6 +380,108 @@ fn a_expr_prec_4(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
 
     let expr = BinaryExpr::new(op, lhs, rhs);
     Ok(expr.into())
+}
+
+fn a_expr_prec_3(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
+
+    /*
+        All %nonassoc(3):
+          a_expr ISNULL
+        | a_expr NOTNULL
+        | a_expr IS ( NOT )? DISTINCT FROM a_expr_prec(4)
+        | a_expr IS ( NOT )? DOCUMENT
+        | a_expr IS ( NOT )? FALSE
+        | a_expr IS ( NOT )? NULL
+        | a_expr IS ( NOT )? TRUE
+        | a_expr IS ( NOT )? UNKNOWN
+        | a_expr IS ( NOT )? ( unicode_normal_form )? NORMALIZED
+        | a_expr IS ( NOT )? JSON ( json_predicate_type_constraint )? ( json_key_uniqueness_constraint )?
+    */
+
+    let (not, rhs) = prec_wrap!(ctx, lhs,
+        alt!(
+            Isnull.map(|_| (None, Null)),
+            Notnull.map(|_| (Some(Kw::Not), Null)),
+            seq!(
+                Is,
+                Kw::Not.optional(),
+                alt!(
+                    seq!(Distinct, FromKw, a_expr_prec(4))
+                        .map(|(.., rhs)| DistinctFrom(rhs)),
+                    Kw::Document.map(|_| Document),
+                    Kw::False.map(|_| False),
+                    Kw::Null.map(|_| Null),
+                    Kw::True.map(|_| True),
+                    Kw::Unknown.map(|_| Unknown),
+                    seq!(
+                        unicode_normal_form.optional(),
+                        Kw::Normalized
+                    ).map(|(form, _)|
+                        Normalized(form)
+                    ),
+                    seq!(
+                        Kw::Json,
+                        json_predicate_type_constraint.optional(),
+                        json_key_uniqueness_constraint.optional()
+                    ).map(|(_, kind, unique_keys)|
+                        Json {
+                            kind: kind.unwrap_or_default(),
+                            unique_keys: unique_keys.unwrap_or_default()
+                        }
+                    )
+                )
+            )
+            .map(|(.., not, rhs)| (not, rhs))
+        )
+    );
+
+    let expr = match (rhs, not.is_some()) {
+        (DistinctFrom(rhs), false) => IsDistinct((lhs, rhs).into()),
+        (DistinctFrom(rhs), true) => IsNotDistinct((lhs, rhs).into()),
+        (False, false) => IsFalse(lhs.into()),
+        (False, true) => IsNotFalse(lhs.into()),
+        (Null, false) => IsNull(lhs.into()),
+        (Null, true) => IsNotNull(lhs.into()),
+        (True, false) => IsTrue(lhs.into()),
+        (True, true) => IsNotTrue(lhs.into()),
+        (Unknown, false) => IsUnknown(lhs.into()),
+        (Unknown, true) => IsNotUnknown(lhs.into()),
+        (Document, not) => {
+            let expr = IsDocument(lhs.into());
+            if not {
+                Not(expr.into()).into()
+            }
+            else {
+                expr
+            }
+        },
+        (Normalized(form), not) => {
+            let expr = IsNormalized(lhs.into(), form);
+            if not {
+                Not(expr.into()).into()
+            }
+            else {
+                expr
+            }
+        },
+        (Json { kind, unique_keys }, not) => {
+
+            let expr = JsonIsPredicate::new(lhs)
+                .with_kind(kind)
+                .with_unique_keys(unique_keys);
+
+            let expr = IsJson(expr.into());
+
+            if not {
+                Not(expr.into()).into()
+            }
+            else {
+                expr
+            }
+        },
+    };
+
+    Ok(expr)
 }
 
 fn a_expr_prec_1(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
@@ -735,4 +753,3 @@ use pg_lexer::OperatorKind::Typecast;
 use pg_parser_core::scan;
 use pg_parser_core::stream::TokenValue::Keyword;
 use pg_parser_core::stream::TokenValue::Operator;
-use pg_parser_core::Optional;
