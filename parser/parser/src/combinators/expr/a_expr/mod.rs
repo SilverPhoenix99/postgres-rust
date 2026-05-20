@@ -1,24 +1,22 @@
 pg_basics::reexport! {
+    a_expr_prec,
+    a_expr_prec_0,
+    a_expr_prec_1,
+    a_expr_prec_10,
+    a_expr_prec_12,
+    a_expr_prec_13,
+    a_expr_prec_14,
+    a_expr_prec_3,
+    a_expr_prec_4,
+    a_expr_prec_7,
+    a_expr_prec_8,
+    a_expr_prec_9,
     a_expr_primary,
     json_predicate_type_constraint,
 }
 
 pub(in crate::combinators) fn a_expr(ctx: &mut ParserContext) -> scan::Result<ExprNode> {
     a_expr_prec(0).parse(ctx)
-}
-
-enum IsExprRhs {
-    DistinctFrom(ExprNode),
-    False,
-    Null,
-    True,
-    Unknown,
-    Document,
-    Normalized(Option<UnicodeNormalForm>),
-    Json {
-        kind: JsonValueKind,
-        unique_keys: bool,
-    },
 }
 
 type PrecResult = Result<ExprNode, LocatedResult<ExprNode>>;
@@ -30,7 +28,7 @@ macro_rules! prec_wrap {
 
         let p = $parser;
 
-        let result = p.parse($ctx);
+        let result = $crate::combinators::core::Combinator::parse(&p, $ctx);
 
         match result {
             Ok(expr) => expr,
@@ -39,458 +37,41 @@ macro_rules! prec_wrap {
         }
     }};
 }
-
-/// Runs the parser and decodes [`PrecResult`].
-macro_rules! prec_parse {
-
-    ($lhs:ident, $prec_combinator:expr => continue) => {
-
-        let result = $prec_combinator;
-        match result {
-            Ok(expr) => {
-                $lhs = expr;
-                continue
-            },
-            Err(expr) => $lhs = expr?,
-        }
-    };
-
-    ($lhs:ident, $prec_combinator:expr => return) => {
-
-        let result = $prec_combinator;
-        match result {
-            Ok(expr) => return Ok(expr),
-            Err(expr) => $lhs = expr?,
-        }
-    };
-}
-
-macro_rules! prec_climb {
-
-    ($prec_var:ident, $( $prec:literal : $prec_fn:ident => $type:ident ),+ $(,)?) => {
-        move |ctx| {
-
-            let mut lhs = a_expr_primary(ctx)?;
-
-            loop {
-
-                $(
-                    if $prec_var <= $prec {
-                        prec_parse!(lhs, $prec_fn(ctx, lhs) => $type);
-                    }
-                )+
-
-                // No more matches
-                return Ok(lhs)
-            }
-        }
-    }
-}
-
-fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode> {
-
-    prec_climb! { prec,
-        // a_expr TYPECAST Typename  -- %left(14)
-        14: a_expr_prec_14 => continue,
-
-        // a_expr NOT IN '(' expr_list ')'  -- %left(13)
-        // a_expr IN '(' expr_list ')'  -- %left(13)
-        13: a_expr_prec_13 => continue,
-
-        // a_expr AT ( LOCAL | TIME ZONE a_expr )  -- %left(12)
-        12: a_expr_prec_12 => continue,
-
-        // a_expr COLLATE any_name  -- %left(10)
-        10: a_expr_prec_10 => continue,
-
-        // a_expr '^' a_expr  -- %left(9)
-        9: a_expr_prec_9 => continue,
-
-        // a_expr additive_op a_expr  -- %left(8)
-        8: a_expr_prec_8 => continue,
-
-        // a_expr multiplicative_op a_expr  -- %left(7)
-        7: a_expr_prec_7 => continue,
-
-        /*
-            All %left(6):
-                  a_expr '^' sub_type '(' ( SelectStmt | a_expr ) ')'
-                | a_expr additive_op sub_type '(' ( SelectStmt | a_expr ) ')'
-                | a_expr multiplicative_op sub_type '(' ( SelectStmt | a_expr ) ')'
-                | a_expr misc_op sub_type '(' ( SelectStmt | a_expr ) ')'
-                | a_expr misc_op a_expr
-                | a_expr ILIKE sub_type '(' ( SelectStmt | a_expr ) ')'
-                | a_expr LIKE sub_type '(' ( SelectStmt | a_expr ) ')'
-                | a_expr NOT ILIKE sub_type '(' ( SelectStmt | a_expr ) ')'
-                | a_expr NOT LIKE sub_type '(' ( SelectStmt | a_expr ) ')'
-                | a_expr boolean_op sub_type '(' ( SelectStmt | a_expr ) ')'
-        */
-        // TODO 6: a_expr_prec_6 => continue,
-
-        /*
-            All %nonassoc(5):
-                  a_expr ( NOT )? IN '(' SelectStmt ')'
-                | a_expr ( NOT )? ILIKE a_expr ( ESCAPE a_expr )?
-                | a_expr ( NOT )? LIKE a_expr ( ESCAPE a_expr )?
-                | a_expr ( NOT )? BETWEEN ( ASYMMETRIC | SYMMETRIC )? b_expr AND a_expr
-                | a_expr ( NOT )? SIMILAR TO a_expr ( ESCAPE a_expr )?
-        */
-        // TODO 5: a_expr_prec_5 => return,
-
-        // a_expr boolean_op a_expr  -- %nonassoc(4)
-        4: a_expr_prec_4 => return,
-
-        /*
-            All %nonassoc(3):
-                  a_expr ISNULL
-                | a_expr NOTNULL
-                | a_expr IS ( NOT )? DISTINCT FROM a_expr_prec(4)
-                | a_expr IS ( NOT )? DOCUMENT
-                | a_expr IS ( NOT )? FALSE
-                | a_expr IS ( NOT )? NULL
-                | a_expr IS ( NOT )? TRUE
-                | a_expr IS ( NOT )? UNKNOWN
-                | a_expr IS ( NOT )? ( unicode_normal_form )? NORMALIZED
-                | a_expr IS ( NOT )? JSON ( json_predicate_type_constraint )? ( json_key_uniqueness_constraint )?
-        */
-        3: a_expr_prec_3 => return,
-
-        // a_expr AND a_expr  -- %left(1)
-        1: a_expr_prec_1 => continue,
-
-        // a_expr OR a_expr  -- %left(0)
-        0: a_expr_prec_0 => continue,
-    }
-}
-
-fn a_expr_prec_14(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
-
-    /*
-        a_expr TYPECAST Typename  -- %left(14)
-    */
-
-    let (_, rhs) = prec_wrap!(ctx, lhs,
-        seq!(Typecast, typename)
-    );
-
-    let expr = TypecastExpr::new(lhs, rhs);
-    Ok(expr.into())
-}
-
-fn a_expr_prec_13(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
-
-    /*
-          a_expr IN '(' expr_list ')'      -- %left(13)
-        | a_expr NOT IN '(' expr_list ')'  -- %left(13)
-    */
-
-    if
-        let Ok(toks) = ctx.stream_mut().peek_n::<5>()
-        && matches!(toks, [Keyword(Kw::Not), Keyword(In), Operator(OpenParenthesis), ..])
-        // must Not be select_stmt
-        && ! matches!(toks,
-            [.., Keyword(With | Select | Table), _]
-            | [.., Keyword(Values), Operator(OpenParenthesis)]
-        )
-    {
-        let (_, expr_list) = prec_wrap!(ctx, lhs,
-            seq!(skip(2), paren!(expr_list))
-        );
-
-        let expr = InArray(lhs.into(), expr_list);
-        let expr = Not(expr.into());
-        return Ok(expr.into())
-    }
-
-    if
-        let Ok(toks) = ctx.stream_mut().peek_n::<4>()
-        && matches!(toks, [Keyword(In), Operator(OpenParenthesis), ..])
-        // must Not be select_stmt
-        && ! matches!(toks,
-            [.., Keyword(With | Select | Table), _]
-            | [.., Keyword(Values), Operator(OpenParenthesis)]
-        )
-    {
-        let (_, expr_list) = prec_wrap!(ctx, lhs,
-            seq!(skip(1), paren!(expr_list))
-        );
-
-        let expr = InArray(lhs.into(), expr_list);
-        return Ok(expr)
-    }
-
-    Err(Ok(lhs))
-}
-
-fn a_expr_prec_12(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
-
-    /*
-        a_expr AT ( LOCAL | TIME ZONE a_expr )  -- %left(12)
-    */
-
-    let (_, zone) = prec_wrap!(ctx, lhs,
-        seq!(At, alt!(
-            Local.map(|_| None),
-            seq!(Time, Zone, a_expr_prec(13)).map(|(.., tz)| Some(tz))
-        ))
-    );
-
-    let expr = TimezoneExpr::new(lhs, zone);
-    Ok(expr.into())
-}
-
-fn a_expr_prec_10(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
-
-    /*
-        a_expr COLLATE any_name  -- %left(10)
-    */
-
-    let collation = prec_wrap!(ctx, lhs, collate_clause);
-
-    let expr = CollationExpr::new(lhs, collation);
-    Ok(expr.into())
-}
-
-fn a_expr_prec_9(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
-
-    /*
-        a_expr '^' a_expr  -- %left(9)
-    */
-
-    // must Not be followed by `ALL(`/`ANY(`/`SOME(`
-    if matches!(ctx.stream_mut().peek_n::<3>(), Ok([
-        Operator(Circumflex),
-        Keyword(All | Any | SomeKw),
-        Operator(OpenParenthesis)
-    ])) {
-        return Err(Ok(lhs))
-    }
-
-    let (op, rhs) = prec_wrap!(ctx, lhs,
-        seq!(exponentiation_op, a_expr_prec(10))
-    );
-
-    let expr = BinaryExpr::new(op, lhs, rhs);
-    Ok(expr.into())
-}
-
-fn a_expr_prec_8(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
-
-    /*
-        a_expr additive_op a_expr  -- %left(8)
-    */
-
-    // must Not be followed by `ALL(`/`ANY(`/`SOME(`
-    if matches!(ctx.stream_mut().peek_n::<3>(), Ok([
-        Operator(Minus | Plus),
-        Keyword(All | Any | SomeKw),
-        Operator(OpenParenthesis)
-    ])) {
-        return Err(Ok(lhs))
-    }
-
-    let (op, rhs) = prec_wrap!(ctx, lhs,
-        seq!(additive_op, a_expr_prec(9))
-    );
-
-    let expr = BinaryExpr::new(op, lhs, rhs);
-    Ok(expr.into())
-}
-
-fn a_expr_prec_7(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
-
-    /*
-        a_expr multiplicative_op a_expr  -- %left(7)
-    */
-
-    // must Not be followed by `ALL(`/`ANY(`/`SOME(`
-    if matches!(ctx.stream_mut().peek_n::<3>(), Ok([
-        Operator(Mul | Div | Percent),
-        Keyword(All | Any | SomeKw),
-        Operator(OpenParenthesis)
-    ])) {
-        return Err(Ok(lhs))
-    }
-
-    let (op, rhs) = prec_wrap!(ctx, lhs,
-        seq!(multiplicative_op, a_expr_prec(8))
-    );
-
-    let expr = BinaryExpr::new(op, lhs, rhs);
-    Ok(expr.into())
-}
-
-fn a_expr_prec_4(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
-
-    /*
-        a_expr boolean_op a_expr  -- %nonassoc(4)
-    */
-
-    if ! matches!(ctx.stream_mut().peek(), Ok(Operator(Less | Equals | Greater | LessEquals | GreaterEquals | NotEquals)))
-        || matches!(ctx.stream_mut().peek_n::<3>(), Ok([_, Keyword(All | Any | SomeKw), Operator(OpenParenthesis)]))
-    {
-        return Err(Ok(lhs))
-    }
-
-    let (op, rhs) = prec_wrap!(ctx, lhs, seq!(boolean_op, a_expr_prec(5)));
-
-    let expr = BinaryExpr::new(op, lhs, rhs);
-    Ok(expr.into())
-}
-
-fn a_expr_prec_3(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
-
-    /*
-        All %nonassoc(3):
-          a_expr ISNULL
-        | a_expr NOTNULL
-        | a_expr IS ( NOT )? DISTINCT FROM a_expr_prec(4)
-        | a_expr IS ( NOT )? DOCUMENT
-        | a_expr IS ( NOT )? FALSE
-        | a_expr IS ( NOT )? NULL
-        | a_expr IS ( NOT )? TRUE
-        | a_expr IS ( NOT )? UNKNOWN
-        | a_expr IS ( NOT )? ( unicode_normal_form )? NORMALIZED
-        | a_expr IS ( NOT )? JSON ( json_predicate_type_constraint )? ( json_key_uniqueness_constraint )?
-    */
-
-    let (not, rhs) = prec_wrap!(ctx, lhs,
-        alt!(
-            Isnull.map(|_| (None, Null)),
-            Notnull.map(|_| (Some(Kw::Not), Null)),
-            seq!(
-                Is,
-                Kw::Not.optional(),
-                alt!(
-                    seq!(Distinct, FromKw, a_expr_prec(4))
-                        .map(|(.., rhs)| DistinctFrom(rhs)),
-                    Kw::Document.map(|_| Document),
-                    Kw::False.map(|_| False),
-                    Kw::Null.map(|_| Null),
-                    Kw::True.map(|_| True),
-                    Kw::Unknown.map(|_| Unknown),
-                    seq!(
-                        unicode_normal_form.optional(),
-                        Kw::Normalized
-                    ).map(|(form, _)|
-                        Normalized(form)
-                    ),
-                    seq!(
-                        Kw::Json,
-                        json_predicate_type_constraint.optional(),
-                        json_key_uniqueness_constraint.optional()
-                    ).map(|(_, kind, unique_keys)|
-                        Json {
-                            kind: kind.unwrap_or_default(),
-                            unique_keys: unique_keys.unwrap_or_default()
-                        }
-                    )
-                )
-            )
-            .map(|(.., not, rhs)| (not, rhs))
-        )
-    );
-
-    let expr = match (rhs, not.is_some()) {
-        (DistinctFrom(rhs), false) => IsDistinct((lhs, rhs).into()),
-        (DistinctFrom(rhs), true) => IsNotDistinct((lhs, rhs).into()),
-        (False, false) => IsFalse(lhs.into()),
-        (False, true) => IsNotFalse(lhs.into()),
-        (Null, false) => IsNull(lhs.into()),
-        (Null, true) => IsNotNull(lhs.into()),
-        (True, false) => IsTrue(lhs.into()),
-        (True, true) => IsNotTrue(lhs.into()),
-        (Unknown, false) => IsUnknown(lhs.into()),
-        (Unknown, true) => IsNotUnknown(lhs.into()),
-        (Document, not) => {
-            let expr = IsDocument(lhs.into());
-            if not {
-                Not(expr.into()).into()
-            }
-            else {
-                expr
-            }
-        },
-        (Normalized(form), not) => {
-            let expr = IsNormalized(lhs.into(), form);
-            if not {
-                Not(expr.into()).into()
-            }
-            else {
-                expr
-            }
-        },
-        (Json { kind, unique_keys }, not) => {
-
-            let expr = JsonIsPredicate::new(lhs)
-                .with_kind(kind)
-                .with_unique_keys(unique_keys);
-
-            let expr = IsJson(expr.into());
-
-            if not {
-                Not(expr.into()).into()
-            }
-            else {
-                expr
-            }
-        },
-    };
-
-    Ok(expr)
-}
-
-fn a_expr_prec_1(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
-
-    /*
-        a_expr AND a_expr  -- %left(1)
-    */
-
-    let (_, rhs) = prec_wrap!(ctx, lhs,
-        seq!(And, a_expr_prec(2))
-    );
-
-    if let ExprNode::BoolExpr(BoolExpr::And(args)) = &mut lhs {
-        // Flatten "a OR b OR c ..." to a single BoolExpr on sight
-        args.push(rhs);
-        return Ok(lhs)
-    }
-
-    let expr = BoolExpr::And(vec![lhs, rhs]);
-    Ok(expr.into())
-}
-
-fn a_expr_prec_0(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
-
-    /*
-        a_expr OR a_expr  -- %left(0)
-    */
-
-    let (_, rhs) = prec_wrap!(ctx, lhs,
-        seq!(Or, a_expr_prec(1))
-    );
-
-    if let ExprNode::BoolExpr(BoolExpr::Or(args)) = &mut lhs {
-        // Flatten "a OR b OR c ..." to a single BoolExpr on sight
-        args.push(rhs);
-        return Ok(lhs)
-    }
-
-    let expr = BoolExpr::Or(vec![lhs, rhs]);
-    Ok(expr.into())
-}
+use prec_wrap;
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::test_parser;
+    use pg_ast::BinaryExpr;
+    use pg_ast::BoolExpr;
+    use pg_ast::BoolExpr::Not;
+    use pg_ast::CollationExpr;
+    use pg_ast::ExprNode::InArray;
     use pg_ast::ExprNode::IntegerConst as Int;
+    use pg_ast::ExprNode::IsDistinct;
+    use pg_ast::ExprNode::IsDocument;
+    use pg_ast::ExprNode::IsFalse;
+    use pg_ast::ExprNode::IsNormalized;
+    use pg_ast::ExprNode::IsNotDistinct;
+    use pg_ast::ExprNode::IsNotFalse;
+    use pg_ast::ExprNode::IsNotNull;
+    use pg_ast::ExprNode::IsNotTrue;
+    use pg_ast::ExprNode::IsNotUnknown;
+    use pg_ast::ExprNode::IsNull;
+    use pg_ast::ExprNode::IsTrue;
+    use pg_ast::ExprNode::IsUnknown;
     use pg_ast::ExprNode::StringConst;
+    use pg_ast::JsonIsPredicate;
+    use pg_ast::JsonValueKind;
     use pg_ast::Operator::Division;
     use pg_ast::Operator::Exponentiation;
     use pg_ast::Operator::LessEquals;
     use pg_ast::Operator::Subtraction;
+    use pg_ast::TimezoneExpr;
     use pg_ast::TypeName::Varchar;
+    use pg_ast::TypecastExpr;
+    use pg_ast::UnicodeNormalForm;
     use test_case::test_matrix;
 
     /*
@@ -624,88 +205,8 @@ mod tests {
     }
 }
 
-use self::IsExprRhs::DistinctFrom;
-use self::IsExprRhs::Document;
-use self::IsExprRhs::False;
-use self::IsExprRhs::Json;
-use self::IsExprRhs::Normalized;
-use self::IsExprRhs::Null;
-use self::IsExprRhs::True;
-use self::IsExprRhs::Unknown;
-use crate::alt;
-use crate::combinators::additive_op;
-use crate::combinators::boolean_op;
-use crate::combinators::collate_clause;
-use crate::combinators::core::skip;
 use crate::combinators::core::Combinator;
-use crate::combinators::exponentiation_op;
-use crate::combinators::expr::unicode_normal_form;
-use crate::combinators::expr_list;
-use crate::combinators::json_key_uniqueness_constraint;
-use crate::combinators::multiplicative_op;
-use crate::combinators::typename;
 use crate::context::ParserContext;
-use crate::paren;
-use crate::seq;
-use pg_ast::BinaryExpr;
-use pg_ast::BoolExpr;
-use pg_ast::BoolExpr::Not;
-use pg_ast::CollationExpr;
 use pg_ast::ExprNode;
-use pg_ast::ExprNode::InArray;
-use pg_ast::ExprNode::IsDistinct;
-use pg_ast::ExprNode::IsDocument;
-use pg_ast::ExprNode::IsFalse;
-use pg_ast::ExprNode::IsJson;
-use pg_ast::ExprNode::IsNormalized;
-use pg_ast::ExprNode::IsNotDistinct;
-use pg_ast::ExprNode::IsNotFalse;
-use pg_ast::ExprNode::IsNotNull;
-use pg_ast::ExprNode::IsNotTrue;
-use pg_ast::ExprNode::IsNotUnknown;
-use pg_ast::ExprNode::IsNull;
-use pg_ast::ExprNode::IsTrue;
-use pg_ast::ExprNode::IsUnknown;
-use pg_ast::JsonIsPredicate;
-use pg_ast::JsonValueKind;
-use pg_ast::TimezoneExpr;
-use pg_ast::TypecastExpr;
-use pg_ast::UnicodeNormalForm;
 use pg_elog::LocatedResult;
-use pg_lexer::Keyword as Kw;
-use pg_lexer::Keyword::All;
-use pg_lexer::Keyword::And;
-use pg_lexer::Keyword::Any;
-use pg_lexer::Keyword::At;
-use pg_lexer::Keyword::Distinct;
-use pg_lexer::Keyword::FromKw;
-use pg_lexer::Keyword::In;
-use pg_lexer::Keyword::Is;
-use pg_lexer::Keyword::Isnull;
-use pg_lexer::Keyword::Local;
-use pg_lexer::Keyword::Notnull;
-use pg_lexer::Keyword::Or;
-use pg_lexer::Keyword::Select;
-use pg_lexer::Keyword::SomeKw;
-use pg_lexer::Keyword::Table;
-use pg_lexer::Keyword::Time;
-use pg_lexer::Keyword::Values;
-use pg_lexer::Keyword::With;
-use pg_lexer::Keyword::Zone;
-use pg_lexer::OperatorKind::Circumflex;
-use pg_lexer::OperatorKind::Div;
-use pg_lexer::OperatorKind::Equals;
-use pg_lexer::OperatorKind::Greater;
-use pg_lexer::OperatorKind::GreaterEquals;
-use pg_lexer::OperatorKind::Less;
-use pg_lexer::OperatorKind::LessEquals;
-use pg_lexer::OperatorKind::Minus;
-use pg_lexer::OperatorKind::Mul;
-use pg_lexer::OperatorKind::NotEquals;
-use pg_lexer::OperatorKind::OpenParenthesis;
-use pg_lexer::OperatorKind::Percent;
-use pg_lexer::OperatorKind::Plus;
-use pg_lexer::OperatorKind::Typecast;
 use pg_parser_core::scan;
-use pg_parser_core::stream::TokenValue::Keyword;
-use pg_parser_core::stream::TokenValue::Operator;
