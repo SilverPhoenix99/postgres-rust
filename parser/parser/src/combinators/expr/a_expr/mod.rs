@@ -205,21 +205,8 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
             }
 
             // a_expr additive_op a_expr  -- %left(8)
-            if prec <= 8
-                // must Not be followed by `ALL(`/`ANY(`/`SOME(`
-                && ! matches!(ctx.stream_mut().peek_n::<3>(), Ok([
-                    Operator(Minus | Plus),
-                    Keyword(All | Any | SomeKw),
-                    Operator(OpenParenthesis)
-                ]))
-                && let Some((op, rhs)) = {
-                    seq!(additive_op, a_expr_prec(9))
-                        .parse(ctx)
-                        .optional()?
-                }
-            {
-                lhs = BinaryExpr::new(op, lhs, rhs).into();
-                continue
+            if prec <= 8 {
+                prec_unwrap!(ctx, lhs, a_expr_prec_8 => continue);
             }
 
             // a_expr multiplicative_op a_expr  -- %left(7)
@@ -356,7 +343,7 @@ fn a_expr_prec(prec: u8) -> impl Fn(&mut ParserContext) -> scan::Result<ExprNode
 
 type PrecResult = Result<ExprNode, LocatedResult<ExprNode>>;
 
-fn a_expr_prec_14(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
+fn a_expr_prec_14(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
 
     /*
         a_expr TYPECAST Typename  -- %left(14)
@@ -366,11 +353,34 @@ fn a_expr_prec_14(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
         seq!(Typecast, typename)
     );
 
-    lhs = TypecastExpr::new(lhs, rhs).into();
-    Ok(lhs)
+    let expr = TypecastExpr::new(lhs, rhs);
+    Ok(expr.into())
 }
 
-fn a_expr_prec_7(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
+fn a_expr_prec_8(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
+
+    /*
+        a_expr additive_op a_expr  -- %left(8)
+    */
+
+    // must Not be followed by `ALL(`/`ANY(`/`SOME(`
+    if matches!(ctx.stream_mut().peek_n::<3>(), Ok([
+        Operator(Minus | Plus),
+        Keyword(All | Any | SomeKw),
+        Operator(OpenParenthesis)
+    ])) {
+        return Err(Ok(lhs))
+    }
+
+    let (op, rhs) = prec_wrap!(ctx, lhs,
+        seq!(additive_op, a_expr_prec(9))
+    );
+
+    let expr = BinaryExpr::new(op, lhs, rhs);
+    Ok(expr.into())
+}
+
+fn a_expr_prec_7(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
 
     /*
         a_expr multiplicative_op a_expr  -- %left(7)
@@ -393,7 +403,7 @@ fn a_expr_prec_7(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
     Ok(expr.into())
 }
 
-fn a_expr_prec_4(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
+fn a_expr_prec_4(ctx: &mut ParserContext, lhs: ExprNode) -> PrecResult {
 
     /*
         a_expr boolean_op a_expr  -- %nonassoc(4)
@@ -424,12 +434,11 @@ fn a_expr_prec_1(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
     if let ExprNode::BoolExpr(BoolExpr::And(args)) = &mut lhs {
         // Flatten "a OR b OR c ..." to a single BoolExpr on sight
         args.push(rhs);
-    }
-    else {
-        lhs = BoolExpr::And(vec![lhs, rhs]).into()
+        return Ok(lhs)
     }
 
-    Ok(lhs)
+    let expr = BoolExpr::And(vec![lhs, rhs]);
+    Ok(expr.into())
 }
 
 fn a_expr_prec_0(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
@@ -445,12 +454,11 @@ fn a_expr_prec_0(ctx: &mut ParserContext, mut lhs: ExprNode) -> PrecResult {
     if let ExprNode::BoolExpr(BoolExpr::Or(args)) = &mut lhs {
         // Flatten "a OR b OR c ..." to a single BoolExpr on sight
         args.push(rhs);
-    }
-    else {
-        lhs = BoolExpr::Or(vec![lhs, rhs]).into()
+        return Ok(lhs)
     }
 
-    Ok(lhs)
+    let expr = BoolExpr::Or(vec![lhs, rhs]);
+    Ok(expr.into())
 }
 
 #[cfg(test)]
